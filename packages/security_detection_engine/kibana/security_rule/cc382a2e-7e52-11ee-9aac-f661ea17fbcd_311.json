@@ -1,0 +1,207 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects when a specific Okta actor has multiple device token hashes and multiple source IPs for a single Okta session. This may indicate an authenticated session has been hijacked or replayed from a different device and network. Adversaries may steal session cookies or tokens to gain unauthorized access to Okta admin console, applications, tenants, or other resources.",
+        "from": "now-9m",
+        "interval": "8m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Multiple Device Token Hashes for Single Okta Session",
+        "note": "## Triage and analysis\n\n### Investigating Multiple Device Token Hashes for Single Okta Session\n\nThis rule detects when a specific Okta actor has multiple device token hashes and multiple source IPs for a single Okta session. This may indicate an authenticated session has been hijacked or replayed from a different device and network. Adversaries may steal session cookies or tokens to gain unauthorized access to Okta admin console, applications, tenants, or other resources.\n\n> **Note**: This is an ES|QL aggregation-based rule. Exceptions can be added on the original ECS or integration-related fields. We recommend using the indicators from the alert document to pivot into the raw events for analysis.\n\n#### Possible investigation steps:\n- Use `okta.actor.alternate_id` and `okta.authentication_context.external_session_id` from the alert to pivot into the raw Okta system log events for the affected session.\n- Review the source IPs (`okta.client.ip`) and ASN information (`source.as.organization.name`) to determine if the session was used from multiple distinct networks.\n    - Multiple ASNs or geolocations (`client.geo.country_name`, `client.geo.city_name`) within the same session strongly suggest session hijacking.\n- Compare the `okta.debug_context.debug_data.dt_hash` values to identify the device token hashes associated with the session.\n    - A legitimate session should have a consistent device token hash. Multiple distinct hashes indicate the session cookie may have been replayed from a different device.\n- Examine `okta.client.user_agent.raw_user_agent` and `okta.client.device` for inconsistencies that suggest different devices or browsers using the same session.\n- Review `event.action` to understand what actions were performed during the session.\n    - Look for suspicious post-authentication activity such as admin console access, policy changes, or application assignment modifications.\n- Check `okta.debug_context.debug_data.risk_level`, `okta.debug_context.debug_data.risk_reasons`, and `okta.debug_context.debug_data.behaviors` for Okta's own risk assessment of the session activity.\n- Review the past activities of the actor(s) involved by checking their previous sessions and login patterns.\n\n### False positive analysis:\n- OAuth application integrations (e.g., backend services exchanging authorization codes for tokens) can generate multiple device token hashes per session due to the multi-step token grant flow. These typically involve `Okta-Integrations` user agents and known infrastructure IPs.\n- Users switching between networks (e.g., VPN reconnects, WiFi to cellular transitions) may produce multiple source IPs for the same session, though the device token hash should remain consistent.\n- Automated tools or scripts that interact with Okta APIs on behalf of a user may generate additional device token hashes.\n\n### Response and remediation:\n- If the alert shows multiple distinct ASNs or geolocations for the same session, immediately revoke all active sessions for the affected user via the Okta admin console.\n- Reset the user's password and all active MFA factors.\n    - If MFA is not enabled, enforce MFA enrollment before allowing re-authentication.\n- Review Okta system logs for any administrative or sensitive actions performed during the suspicious session window.\n- If the session was used to access downstream applications, review those application logs for unauthorized activity.\n- Check with the user to confirm whether they were actively using Okta during the alert time window.\n- For recurring false positives from known integrations, add exceptions on `okta.actor.alternate_id` for the specific service account or application client ID.\n",
+        "query": "from logs-okta.system-*\n| where\n    data_stream.dataset == \"okta.system\" and\n    not event.action in (\n        \"policy.evaluate_sign_on\",\n        \"user.session.start\",\n        \"user.authentication.sso\"\n    ) and\n    okta.actor.alternate_id != \"system@okta.com\" and\n    okta.actor.alternate_id rlike \"[^@\\\\s]+\\\\@[^@\\\\s]+\" and\n    okta.authentication_context.external_session_id != \"unknown\" and\n    (\n        okta.authentication_context.external_session_id IS NOT NULL and\n        okta.debug_context.debug_data.dt_hash IS NOT NULL and\n        okta.client.ip IS NOT NULL and\n        okta.client.user_agent.raw_user_agent IS NOT NULL\n    ) and\n    (\n        okta.authentication_context.external_session_id != \"-\" and\n        okta.debug_context.debug_data.dt_hash != \"-\" and\n        okta.client.user_agent.raw_user_agent != \"-\"\n    )\n| stats\n    Esql.dt_hash_count_distinct = count_distinct(okta.debug_context.debug_data.dt_hash),\n    Esql.client_ip_count_distinct = count_distinct(okta.client.ip),\n    Esql.event_count = count(*),\n    Esql.first_event_time = min(@timestamp),\n    Esql.last_event_time = max(@timestamp),\n    Esql.dt_hash_values = values(okta.debug_context.debug_data.dt_hash),\n    Esql.event_action_values = values(event.action),\n    Esql.client_ip_values = values(okta.client.ip),\n    Esql.user_agent_values = values(okta.client.user_agent.raw_user_agent),\n    Esql.device_values = values(okta.client.device),\n    Esql.is_proxy_values = values(okta.security_context.is_proxy),\n    Esql.geo_country_name_values = values(client.geo.country_name),\n    Esql.geo_city_name_values = values(client.geo.city_name),\n    Esql.source_asn_number_values = values(source.`as`.number),\n    Esql.source_asn_org_name_values = values(source.`as`.organization.name),\n    Esql.threat_suspected_values = values(okta.debug_context.debug_data.threat_suspected),\n    Esql.risk_level_values = values(okta.debug_context.debug_data.risk_level),\n    Esql.risk_reasons_values = values(okta.debug_context.debug_data.risk_reasons),\n    Esql.behaviors_values = values(okta.debug_context.debug_data.behaviors),\n    Esql.device_fingerprint_values = values(okta.debug_context.debug_data.device_fingerprint),\n    Esql.risk_behaviors_values = values(okta.debug_context.debug_data.risk_behaviors),\n    Esql.request_uri_values = values(okta.debug_context.debug_data.request_uri)\n  by\n    okta.actor.alternate_id,\n    okta.authentication_context.external_session_id\n| where\n    Esql.dt_hash_count_distinct >= 4 and\n    Esql.client_ip_count_distinct >= 2\n| keep Esql.*, okta.*\n",
+        "references": [
+            "https://developer.okta.com/docs/reference/api/system-log/",
+            "https://developer.okta.com/docs/reference/api/event-types/",
+            "https://www.elastic.co/security-labs/testing-okta-visibility-and-detection-dorothy",
+            "https://sec.okta.com/articles/2023/08/cross-tenant-impersonation-prevention-and-detection",
+            "https://support.okta.com/help/s/article/session-hijacking-attack-definition-damage-defense?language=en_US",
+            "https://www.elastic.co/security-labs/monitoring-okta-threats-with-elastic-security",
+            "https://www.elastic.co/security-labs/starter-guide-to-understanding-okta"
+        ],
+        "related_integrations": [
+            {
+                "package": "okta",
+                "version": "^3.5.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.behaviors_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.client_ip_count_distinct",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.client_ip_values",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.device_fingerprint_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.device_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.dt_hash_count_distinct",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.dt_hash_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_action_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.first_event_time",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.geo_city_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.geo_country_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.is_proxy_values",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.last_event_time",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.request_uri_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.risk_behaviors_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.risk_level_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.risk_reasons_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_asn_number_values",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_asn_org_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.threat_suspected_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_agent_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "okta.actor.alternate_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "okta.authentication_context.external_session_id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "cc382a2e-7e52-11ee-9aac-f661ea17fbcd",
+        "severity": "medium",
+        "tags": [
+            "Domain: Identity",
+            "Domain: SaaS",
+            "Data Source: Okta",
+            "Data Source: Okta System Logs",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1539",
+                        "name": "Steal Web Session Cookie",
+                        "reference": "https://attack.mitre.org/techniques/T1539/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1550",
+                        "name": "Use Alternate Authentication Material",
+                        "reference": "https://attack.mitre.org/techniques/T1550/",
+                        "subtechnique": [
+                            {
+                                "id": "T1550.004",
+                                "name": "Web Session Cookie",
+                                "reference": "https://attack.mitre.org/techniques/T1550/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 311
+    },
+    "id": "cc382a2e-7e52-11ee-9aac-f661ea17fbcd_311",
+    "type": "security-rule"
+}

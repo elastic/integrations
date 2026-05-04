@@ -5,9 +5,15 @@ source .buildkite/scripts/common.sh
 set -euo pipefail
 
 SKIP_PUBLISHING=${SKIP_PUBLISHING:-"false"}
+# Comma-separated list of package zip filenames to skip (e.g. "foo-1.0.0.zip,bar-2.0.0.zip")
+SKIP_PACKAGES=${SKIP_PACKAGES:-""}
 ARTIFACTS_FOLDER=${ARTIFACTS_FOLDER:-"packageArtifacts"}
 BUILD_PACKAGES_FOLDER="build/packages"
 DRY_RUN=${DRY_RUN:-"true"}
+
+is_skipped_package() {
+    [[ ",${SKIP_PACKAGES}," == *",${1},"* ]]
+}
 
 skipPublishing() {
     if [[ "${BUILDKITE_PULL_REQUEST}" != "false" ]]; then
@@ -48,21 +54,27 @@ report_build_failure() {
 }
 
 build_packages() {
-    pushd packages > /dev/null || exit 1
+    local packages=""
+    local version=""
+    local name=""
+    local package_zip=""
+    local package_path=""
 
-    for it in $(find . -maxdepth 1 -mindepth 1 -type d); do
-        local package
-        local version
-        local name
-        package=$(basename "${it}")
-        echo "Package ${package}: check"
+    packages=$(list_all_directories)
+    for package_path in ${packages}; do
+        pushd "${package_path}" > /dev/null || exit 1
+        echo "Package \"${package_path}\": check"
 
-        pushd "${package}" > /dev/null || exit 1
+        version=$(yq .version manifest.yml)
+        name=$(yq .name manifest.yml)
 
-        version=$(cat manifest.yml | yq .version)
-        name=$(cat manifest.yml | yq .name)
+        package_zip="${name}-${version}.zip"
 
-        local package_zip="${name}-${version}.zip"
+        if is_skipped_package "${package_zip}" ; then
+            echo "Skipping. ${package_zip} is in the skip list"
+            popd > /dev/null
+            continue
+        fi
 
         if is_already_published "${package_zip}" ; then
             echo "Skipping. ${package_zip} already published"
@@ -70,15 +82,14 @@ build_packages() {
             continue
         fi
 
-        echo "Build package as zip: ${package}"
-        if check_and_build_package "${package}" ; then
+        echo "Build package as zip: ${package_path}"
+        if check_and_build_package "${package_path}" ; then
             unpublished="true"
         else
-            report_build_failure "${package}"
+            report_build_failure "${package_path}"
         fi
         popd > /dev/null || exit 1
     done
-    popd > /dev/null || exit 1
 }
 
 if [ "${SKIP_PUBLISHING}" == "true" ] ; then
@@ -94,7 +105,7 @@ fi
 add_bin_path
 
 with_yq
-with_go
+with_mage
 use_elastic_package
 
 echo "--- Build packages"

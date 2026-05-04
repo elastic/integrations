@@ -141,50 +141,57 @@ An example event for `audit_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-16T12:01:37.000Z",
+    "@timestamp": "2024-10-17T02:06:50.000Z",
     "agent": {
-        "ephemeral_id": "36061bf9-f838-404c-b724-28267b5bcd86",
-        "id": "d6fa0f89-1fb9-474b-b2f3-0c52080145f6",
-        "name": "elastic-agent-75872",
+        "ephemeral_id": "ee552a9c-e676-4cef-9a3a-f97a235f7c65",
+        "id": "1933b9c1-c985-4d21-9296-179670233826",
+        "name": "elastic-agent-38243",
         "type": "filebeat",
         "version": "8.19.4"
     },
+    "client": {
+        "ip": "203.59.201.168"
+    },
     "data_stream": {
         "dataset": "mimecast.audit_events",
-        "namespace": "46653",
+        "namespace": "23909",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d6fa0f89-1fb9-474b-b2f3-0c52080145f6",
+        "id": "1933b9c1-c985-4d21-9296-179670233826",
         "snapshot": false,
         "version": "8.19.4"
     },
     "event": {
-        "action": "search-action",
+        "action": "api-application-updated",
         "agent_id_status": "verified",
         "category": [
             "email"
         ],
-        "created": "2025-12-16T10:34:04.141Z",
+        "created": "2024-10-17T02:06:50.000Z",
         "dataset": "mimecast.audit_events",
-        "id": "eNqrVipOTS4tSs1MUbJSSg_xMDJPNkisSDdISQ00j0gzz44wDAtL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkoaOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAAjKK2o",
-        "ingested": "2025-12-16T10:34:05Z",
-        "original": "{\"auditType\":\"Search Action\",\"category\":\"case_review_logs\",\"eventInfo\":\"Inspected Review Set Messages - Source: Review Set - Supervision - hot words, Case - GDPR/CCPA, Message Status: Pending, Date: 2021-11-16, Time: 12:01:37+0000, IP: 8.8.8.8, Application: mimecast-case-review\",\"eventTime\":\"2021-11-16T12:01:37+0000\",\"id\":\"eNqrVipOTS4tSs1MUbJSSg_xMDJPNkisSDdISQ00j0gzz44wDAtL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkoaOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAAjKK2o\",\"user\":\"johndoe@example.com\"}"
+        "id": "eNoVzk0PgiAAgOH_wrUO4SizrYOasxUzs6jWLYURfqEg6Wr99-z-bs_7AZplRjFBwQp4E3y5t3G7w1SVz9KxwxtJj7mVNripeP7WV3N2-3AohNUFGw0DmMY2aqOeq7MZfCKqyME1jeUMv_qAdVub6MJdnprZIYz2PS3u-bNuB54kfA2m4GGo6ErJ_zZCi4UD51OQGd3JiqlMUjYu-eTkIdey0di_mNJC1mAFvz-isz1f",
+        "ingested": "2026-05-03T12:56:55Z",
+        "original": "{\"auditType\":\"API Application Updated\",\"category\":\"account_logs\",\"eventInfo\":\"API Gateway Application testing Updated. Application Program Interface Addendum (22 September 2022) acknowledged, Date: 2024-10-17, Time: 02:06:50+0000, IP: 203.59.201.168, Application: Administration Console\",\"eventTime\":\"2024-10-17T02:06:50+0000\",\"id\":\"eNoVzk0PgiAAgOH_wrUO4SizrYOasxUzs6jWLYURfqEg6Wr99-z-bs_7AZplRjFBwQp4E3y5t3G7w1SVz9KxwxtJj7mVNripeP7WV3N2-3AohNUFGw0DmMY2aqOeq7MZfCKqyME1jeUMv_qAdVub6MJdnprZIYz2PS3u-bNuB54kfA2m4GGo6ErJ_zZCi4UD51OQGd3JiqlMUjYu-eTkIdey0di_mNJC1mAFvz-isz1f\",\"user\":\"user.name@company.mime-api.com\"}"
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "mimecast": {
-        "category": "case_review_logs",
-        "eventInfo": "Inspected Review Set Messages - Source: Review Set - Supervision - hot words, Case - GDPR/CCPA, Message Status: Pending, Date: 2021-11-16, Time: 12:01:37+0000, IP: 8.8.8.8, Application: mimecast-case-review"
+        "application": "Administration Console",
+        "category": "account_logs",
+        "eventInfo": "API Gateway Application testing Updated. Application Program Interface Addendum (22 September 2022) acknowledged, Date: 2024-10-17, Time: 02:06:50+0000, IP: 203.59.201.168, Application: Administration Console"
     },
     "related": {
+        "ip": [
+            "203.59.201.168"
+        ],
         "user": [
-            "johndoe",
-            "johndoe@example.com"
+            "user.name",
+            "user.name@company.mime-api.com"
         ]
     },
     "tags": [
@@ -193,9 +200,9 @@ An example event for `audit_events` looks as following:
         "mimecast-audit-events"
     ],
     "user": {
-        "domain": "example.com",
-        "email": "johndoe@example.com",
-        "name": "johndoe"
+        "domain": "company.mime-api.com",
+        "email": "user.name@company.mime-api.com",
+        "name": "user.name"
     }
 }
 ```

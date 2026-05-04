@@ -181,6 +181,7 @@ The `firewall` data stream provides events from Check Point devices, including f
 | checkpoint.analyzed_on | Check Point ThreatCloud / emulator name. | keyword |
 | checkpoint.answer_rdata | List of answer resource records to the questioned domains. | keyword |
 | checkpoint.anti_virus_type | Anti virus type. | keyword |
+| checkpoint.app_category | Application category. | keyword |
 | checkpoint.app_desc | Application description. | keyword |
 | checkpoint.app_id | Application ID. | integer |
 | checkpoint.app_package | Unique identifier of the application on the protected mobile device. | keyword |
@@ -488,6 +489,7 @@ The `firewall` data stream provides events from Check Point devices, including f
 | checkpoint.packet_capture_name |  | keyword |
 | checkpoint.packet_capture_time |  | keyword |
 | checkpoint.packet_capture_unique_id | Identifier of the packet capture files. | keyword |
+| checkpoint.packets | Raw packets field value when present in vendor logs and not converted to numeric packet counts. | keyword |
 | checkpoint.packets_data_is_sampled | Indicates whether the packets data is sampled (true when the original log contained "(sample only)" prefix). | boolean |
 | checkpoint.packets_dropped.destination.ip | Destination IP address of the dropped packet. | ip |
 | checkpoint.packets_dropped.destination.port | Destination port of the dropped packet. | long |

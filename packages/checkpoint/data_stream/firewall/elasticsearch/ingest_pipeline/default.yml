@@ -844,6 +844,11 @@ processors:
       field: checkpoint.last_detection
       target_field: event.end
       ignore_missing: true
+  - convert:
+      type: float
+      tag: convert_risk_score
+      field: checkpoint.app_risk
+      if: ctx.checkpoint?.app_risk != null
   - rename:
       tag: rename_checkpoint_app_risk_to_event_risk_score_75222087
       field: checkpoint.app_risk
@@ -1066,11 +1071,25 @@ processors:
       field: checkpoint.packets
       type: long
       ignore_missing: true
+      ignore_failure: true
   - rename:
       tag: rename_checkpoint_packets_to_network_packets_c4dea38a
       field: checkpoint.packets
       target_field: network.packets
       ignore_missing: true
+      if: ctx.checkpoint?.packets instanceof Number
+  - convert:
+      tag: convert_checkpoint_packet_amount_ff3e9341
+      field: checkpoint.packet_amount
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      tag: set_network_packets_from_checkpoint_packet_amount_205f4365
+      field: network.packets
+      copy_from: checkpoint.packet_amount
+      ignore_empty_value: true
+      if: ctx.network?.packets == null && ctx.checkpoint?.packet_amount instanceof Number
   - rename:
       tag: rename_checkpoint_layer_name_to_network_name_4d820e3c
       field: checkpoint.layer_name
@@ -1349,17 +1368,17 @@ processors:
       target_field: "@timestamp"
       ignore_missing: true
   - date:
-      tag: date_checkpoint_lastupdatetime_to_event_end_869e28e8
-      field: checkpoint.lastupdatetime
-      formats: ["ISO8601", "UNIX"]
-      target_field: event.end
-      if: "ctx.checkpoint?.lastupdatetime != null"
-  - date:
       tag: date_checkpoint_last_hit_time_to_event_end_6aeafa0a
       field: checkpoint.last_hit_time
-      formats: ["ISO8601", "UNIX"]
+      formats: ["UNIX"]
       target_field: event.end
       if: "ctx.checkpoint?.last_hit_time != null"
+  - date:
+      tag: date_checkpoint_lastupdatetime_to_event_end_869e28e8
+      field: checkpoint.lastupdatetime
+      formats: ["UNIX"]
+      target_field: event.end
+      if: "ctx.checkpoint?.lastupdatetime != null"
   - date:
       tag: date_checkpoint_creation_time_to_event_start_f2bceb79
       field: checkpoint.creation_time
