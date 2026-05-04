@@ -2,11 +2,13 @@
 description: Pipeline for AWS Health metrics
 processors:
 - script:
+    tag: script
     if: "ctx.aws != null && ctx.aws.awshealth != null && ctx.aws.awshealth.end_time == '0001-01-01T00:00:00.000Z'"
     "lang": "painless"
     "source": "ctx.aws.awshealth.end_time = null"
 
 - script:
+    tag: script_1
     lang: painless
     source: |-
         boolean drop(Object o) {
@@ -26,11 +28,13 @@ processors:
 
 on_failure:
 - set:
+    tag: set_event_kind
     field: event.kind
     value: pipeline_error
 - append:
+    tag: append_error_message
     field: error.message
     value: >-
       Processor '{{{ _ingest.on_failure_processor_type }}}'
       {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-      {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+      {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'

@@ -3,87 +3,107 @@ description: Pipeline for AWS Route53 Resolver Logs
 
 processors:
 - set:
+    tag: set_ecs_version
     field: ecs.version
     value: '8.11.0'
 - rename:
+    tag: rename_message
     field: message
     target_field: event.original
     ignore_missing: true
     if: 'ctx.event?.original == null'
     description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
 - remove:
+    tag: remove_message
     field: message
     ignore_missing: true
     if: 'ctx.event?.original != null'
     description: 'The `message` field is no longer required if the document has an `event.original` field.'
 - json:
+    tag: json_event_original
     field: event.original
     target_field: json
 - set:
+    tag: set_cloud_provider
     field: cloud.provider
     value: aws
 - rename:
+    tag: rename_json_account_id
     field: json.account_id
     target_field: cloud.account.id
     ignore_missing: true
 - date:
+    tag: date_json_query_timestamp
     field: json.query_timestamp
     target_field: '@timestamp'
     ignore_failure: true
     formats:
     - ISO8601
 - set:
+    tag: set_cloud_region
     field: cloud.region
     copy_from: json.region
     ignore_empty_value: true
 - rename:
+    tag: rename_json_vpc_id
     field: json.vpc_id
     target_field: aws.vpc_id
     ignore_missing: true
 - rename:
+    tag: rename_json_srcids_instance
     field: json.srcids.instance
     target_field: aws.instance_id
     ignore_missing: true
 - set:
+    tag: set_cloud_instance_id
     field: cloud.instance.id
     copy_from: aws.instance_id
     ignore_empty_value: true
 - gsub:
+    tag: gsub_json_query_name
     field: json.query_name
     pattern: \.$
     replacement: ""
     ignore_missing: true
 - registered_domain:
+    tag: registered_domain_json_query_name
     field: json.query_name
     target_field: dns.question
     ignore_missing: true
     if: '!ctx.json?.query_name.endsWith("in-addr.arpa") && !ctx.json?.query_name.endsWith("ip6.arpa")'
 - rename:
+    tag: rename_dns_question_domain
     field: dns.question.domain
     target_field: dns.question.name
     ignore_missing: true
 - rename:
+    tag: rename_json_query_name
     field: json.query_name
     target_field: dns.question.name
     ignore_missing: true
     if: ctx.dns?.question?.name == null
 - rename:
+    tag: rename_json_query_class
     field: json.query_class
     target_field: dns.question.class
     ignore_missing: true
 - rename:
+    tag: rename_json_query_type
     field: json.query_type
     target_field: dns.question.type
     ignore_missing: true
 - rename:
+    tag: rename_json_rcode
     field: json.rcode
     target_field: dns.response_code
     ignore_missing: true
 - rename:
+    tag: rename_json_answers
     field: json.answers
     target_field: dns.answers
     ignore_missing: true
 - script:
+    tag: script
     lang: painless
     ignore_failure: true
     if: ctx.dns?.answers != null && ctx.dns?.answers instanceof List
@@ -125,44 +145,54 @@ processors:
       }
       ctx.dns.answers = answers;
 - rename:
+    tag: rename_json_transport
     field: json.transport
     target_field: network.transport
     ignore_missing: true
 - lowercase:
+    tag: lowercase_network_transport
     field: network.transport
     ignore_missing: true
 - set:
+    tag: set_network_iana_number
     field: network.iana_number
     value: '6'
     if: ctx.network?.transport == "tcp"
 - set:
+    tag: set_network_iana_number_1
     field: network.iana_number
     value: '17'
     if: ctx.network?.transport == "udp"
 - set:
+    tag: set_network_protocol
     field: network.protocol
     value: dns
 - convert:
+    tag: convert_json_srcport
     field: json.srcport
     target_field: source.port
     type: long
     ignore_missing: true
 - rename:
+    tag: rename_json_srcaddr
     field: json.srcaddr
     target_field: source.address
     ignore_missing: true
 - convert:
+    tag: convert_source_address
     field: source.address
     target_field: source.ip
     type: ip
     ignore_missing: true
 # IP Geolocation Lookup
 - geoip:
+    tag: geoip_source_ip
     field: source.ip
     target_field: source.geo
     ignore_missing: true
 # IP Autonomous System (AS) Lookup
 - geoip:
+    tag: geoip_source_ip_1
     database_file: GeoLite2-ASN.mmdb
     field: source.ip
     target_field: source.as
@@ -171,55 +201,69 @@ processors:
     - organization_name
     ignore_missing: true
 - rename:
+    tag: rename_source_as_asn
     field: source.as.asn
     target_field: source.as.number
     ignore_missing: true
 - rename:
+    tag: rename_source_as_organization_name
     field: source.as.organization_name
     target_field: source.as.organization.name
     ignore_missing: true
 - set:
+    tag: set_network_type
     field: network.type
     value: ipv4
     if: 'ctx.source?.ip != null && ctx.source?.ip.contains(".")'
 - set:
+    tag: set_network_type_1
     field: network.type
     value: ipv6
     if: 'ctx.source?.ip != null && ctx.source?.ip.contains(":")'
 - rename:
+    tag: rename_json_firewall_rule_action
     field: json.firewall_rule_action
     target_field: aws.route53.firewall.action
     ignore_missing: true
 - rename:
+    tag: rename_json_firewall_rule_group_id
     field: json.firewall_rule_group_id
     target_field: aws.route53.firewall.rule_group.id
     ignore_missing: true
 - rename:
+    tag: rename_json_firewall_domain_list_id
     field: json.firewall_domain_list_id
     target_field: aws.route53.firewall.domain_list.id
     ignore_missing: true
 - set:
+    tag: set_event_kind
     field: event.kind
     value: event
 - append:
+    tag: append_event_category
     field: event.category
     value: network
 - append:
+    tag: append_event_type
     field: event.type
     value: protocol
 - set:
+    tag: set_event_outcome
     field: event.outcome
     value: success
     if: ctx.dns?.response_code == "NOERROR"
 - set:
+    tag: set_event_outcome_1
     field: event.outcome
     value: failure
     if: ctx.dns?.response_code != "NOERROR"
 - append:
+    tag: append_related_ip
     field: related.ip
     value: "{{source.ip}}"
     if: ctx.source?.ip != null
 - script:
+    tag: script_1
     lang: painless
     ignore_failure: true
     if: ctx.dns?.question?.name != null && ctx.dns?.question?.type == "PTR"
@@ -253,14 +297,17 @@ processors:
         ctx.related.ip.add(ip);
       }   
 - append:
+    tag: append_related_hosts
     field: related.hosts
     value: "{{dns.question.name}}"
     if: ctx.dns?.question?.name != null && ctx.dns?.question?.type != "PTR"
 - remove:
+    tag: remove
     field:
     - json
     ignore_missing: true
 - script:
+    tag: script_2
     lang: painless
     description: This script processor iterates over the whole document to remove fields with null values.
     source: |
@@ -287,11 +334,13 @@ processors:
       handleMap(ctx);
 on_failure:
 - set:
+    tag: set_event_kind_1
     field: event.kind
     value: pipeline_error
 - append:
+    tag: append_error_message
     field: error.message
     value: >-
       Processor '{{{ _ingest.on_failure_processor_type }}}'
       {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-      {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+      {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'

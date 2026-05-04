@@ -2,26 +2,32 @@
 description: Pipeline for AWS CloudTrail Logs
 processors:
   - rename:
+      tag: rename_message
       field: message
       target_field: event.original
       if: ctx.event?.original == null
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - set:
+      tag: set_event_created
       if: ctx['@timestamp'] != null
       field: event.created
       copy_from: '@timestamp'
   - json:
+      tag: json_event_original
       field: event.original
       target_field: json
   - set:
+      tag: set_ecs_version
       field: ecs.version
       value: '8.11.0'
   - date:
+      tag: date_json_eventtime
       field: json.eventTime
       target_field: "@timestamp"
       ignore_failure: true
@@ -130,10 +136,12 @@ processors:
           'AssumedRole': true
       on_failure:
         - append:
+            tag: append_tags
             field: tags
             value: preserve_original_event
             allow_duplicates: false
         - set:
+            tag: set_error_message
             description: Add error reason
             field: error.message
             value: |
@@ -1011,6 +1019,7 @@ processors:
         field("related.entity").set(enrichCtx.related);
 
   - rename:
+      tag: rename_json_eventversion
       field: json.eventVersion
       target_field: aws.cloudtrail.event_version
       ignore_failure: true
@@ -1030,28 +1039,34 @@ processors:
       ignore_missing: true
       tag: rename_user_identity_principal_id
   - rename:
+      tag: rename_json_useridentity_arn
       field: json.userIdentity.arn
       target_field: aws.cloudtrail.user_identity.arn
       ignore_failure: true
   - rename:
+      tag: rename_json_useridentity_accountid
       field: json.userIdentity.accountId
       target_field: cloud.account.id
       ignore_failure: true
   - rename:
+      tag: rename_json_useridentity_accesskeyid
       field: json.userIdentity.accessKeyId
       target_field: aws.cloudtrail.user_identity.access_key_id
       ignore_failure: true
   - rename:
+      tag: rename_json_useridentity_sessioncontext_attributes_mfaauthenticated
       field: json.userIdentity.sessionContext.attributes.mfaAuthenticated
       target_field: aws.cloudtrail.user_identity.session_context.mfa_authenticated
       ignore_failure: true
   - date:
+      tag: date_json_useridentity_sessioncontext_attributes_creationdate
       field: json.userIdentity.sessionContext.attributes.creationDate
       target_field: aws.cloudtrail.user_identity.session_context.creation_date
       ignore_failure: true
       formats:
         - ISO8601
   - rename:
+      tag: rename_json_useridentity_sessioncontext_sessionissuer_type
       field: json.userIdentity.sessionContext.sessionIssuer.type
       target_field: aws.cloudtrail.user_identity.session_context.session_issuer.type
       ignore_failure: true
@@ -1064,6 +1079,7 @@ processors:
       if: ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' || ctx.aws?.cloudtrail?.user_identity?.type == 'FederatedUser'
       tag: rename_user_name_assumed_role
   - rename:
+      tag: rename_json_useridentity_sessioncontext_sessionissuer_principalid
       field: json.userIdentity.sessionContext.sessionIssuer.principalId
       target_field: aws.cloudtrail.user_identity.session_context.session_issuer.principal_id
       ignore_missing: true
@@ -1082,32 +1098,39 @@ processors:
       if: ctx.aws?.cloudtrail?.user_identity?.type == 'IdentityCenterUser' && ctx.user?.id == null
       tag: rename_user_id_identity_center_user
   - rename:
+      tag: rename_json_useridentity_sessioncontext_sessionissuer_arn
       field: json.userIdentity.sessionContext.sessionIssuer.arn
       target_field: aws.cloudtrail.user_identity.session_context.session_issuer.arn
       ignore_failure: true
   - rename:
+      tag: rename_json_useridentity_sessioncontext_sessionissuer_accountid
       field: json.userIdentity.sessionContext.sessionIssuer.accountId
       target_field: aws.cloudtrail.user_identity.session_context.session_issuer.account_id
       ignore_failure: true
   - rename:
+      tag: rename_json_sessioncredentialfromconsole
       field: json.sessionCredentialFromConsole
       target_field: aws.cloudtrail.session_credential_from_console
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_useridentity_invokedby
       field: json.userIdentity.invokedBy
       target_field: aws.cloudtrail.user_identity.invoked_by
       ignore_failure: true
   - rename:
+      tag: rename_json_eventsource
       field: json.eventSource
       target_field: event.provider
       ignore_failure: true
   - set:
+      tag: set_event_action
       field: event.action
       value: '{{{json.eventName}}}'
       ignore_failure: true
       ignore_empty_value: true
   - rename:
+      tag: rename_json_eventcategory
       field: json.eventCategory
       target_field: aws.cloudtrail.event_category
       ignore_failure: true
@@ -1117,24 +1140,29 @@ processors:
       target_field: user.name
       if: ctx.event?.action == 'UserAuthentication' && ctx.user?.name == null && ctx.json?.additionalEventData?.UserName != null 
   - set:
+      tag: set_cloud_region
       field: cloud.region
       copy_from: json.awsRegion
       ignore_empty_value: true
   - rename:
+      tag: rename_json_sourceipaddress
       field: json.sourceIPAddress
       target_field: source.address
       ignore_failure: true
   - grok:
+      tag: grok_source_address
       field: source.address
       ignore_failure: true
       patterns:
         - ^%{IP:source.ip}$
   - geoip:
+      tag: geoip_source_ip
       field: source.ip
       target_field: source.geo
       ignore_failure: true
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_1
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -1143,26 +1171,32 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - user_agent:
+      tag: user_agent_json_useragent
       field: json.userAgent
       target_field: user_agent
       on_failure:
         - rename:
+            tag: rename_json_useragent
             field: json.userAgent
             target_field: user_agent.original
             ignore_failure: true
   - rename:
+      tag: rename_json_errorcode
       field: json.errorCode
       target_field: aws.cloudtrail.error_code
       ignore_failure: true
   - rename:
+      tag: rename_json_errormessage
       field: json.errorMessage
       target_field: aws.cloudtrail.error_message
       ignore_failure: true
@@ -1217,22 +1251,27 @@ processors:
         }
       ignore_failure: true
   - rename:
+      tag: rename_json_requestid
       field: json.requestID
       target_field: aws.cloudtrail.request_id
       ignore_failure: true
   - rename:
+      tag: rename_json_eventid
       field: json.eventID
       target_field: event.id
       ignore_failure: true
   - rename:
+      tag: rename_json_eventtype
       field: json.eventType
       target_field: aws.cloudtrail.event_type
       ignore_failure: true
   - rename:
+      tag: rename_json_apiversion
       field: json.apiVersion
       target_field: aws.cloudtrail.api_version
       ignore_failure: true
   - script:
+      tag: script
       lang: painless
       source: |
         if (ctx.json?.managementEvent != null) {
@@ -1240,10 +1279,12 @@ processors:
         }
       ignore_failure: true
   - rename:
+      tag: rename_json_readonly
       field: json.readOnly
       target_field: aws.cloudtrail.read_only
       ignore_failure: true
   - script:
+      tag: script_1
       description: 'Drops duplicates where the same combination of ARN, accountId and type is found multiple times in the resources list.'
       lang: painless
       source: >
@@ -1270,42 +1311,51 @@ processors:
           ctx.json.resources = new ArrayList(uniqueResources.values());
         }
   - rename:
+      tag: rename_json_resources
       field: json.resources
       target_field: aws.cloudtrail.resources
       ignore_failure: true
   - rename:
+      tag: rename_json_recipientaccountid
       field: json.recipientAccountId
       target_field: aws.cloudtrail.recipient_account_id
       ignore_failure: true
   - set:
+      tag: set_cloud_account_id
       field: cloud.account.id
       copy_from: aws.cloudtrail.recipient_account_id
       override: false
       ignore_empty_value: true
   - rename:
+      tag: rename_json_sharedeventid
       field: json.sharedEventId
       target_field: aws.cloudtrail.shared_event_id
       ignore_failure: true
   - rename:
+      tag: rename_json_vpcendpointid
       field: json.vpcEndpointId
       target_field: aws.cloudtrail.vpc_endpoint_id
       ignore_failure: true
   - append:
+      tag: append_related_user
       field: related.user
       value: '{{json.requestParameters.userName}}'
       allow_duplicates: false
       if: ctx.json?.requestParameters?.userName != null
   - append:
+      tag: append_related_user_1
       field: related.user
       value: '{{json.requestParameters.newUserName}}'
       allow_duplicates: false
       if: ctx.json?.requestParameters?.newUserName != null
   - append:
+      tag: append_related_user_2
       field: related.user
       value: '{{json.responseElements.user.userId}}'
       allow_duplicates: false
       if: ctx.json?.responseElements?.user?.userId != null
   - script:
+      tag: script_2
       lang: painless
       ignore_failure: true
       source: >-
@@ -1856,129 +1906,158 @@ processors:
         hm.forEach((k, v) -> ctx.event[k] = v);
 
   - rename:
+      tag: rename_json_awsaccountid
       field: json.awsAccountId
       target_field: cloud.account.id
       ignore_failure: true
   - rename:
+      tag: rename_json_digests3object
       field: json.digestS3Object
       target_field: file.path
       ignore_failure: true
   - rename:
+      tag: rename_json_previousdigestsignature
       field: json.previousDigestSignature
       target_field: file.hash.sha256
       if: >-
         ctx.json?.previousDigestHashAlgorithm != null && ctx.json?.previousDigestHashAlgorithm == 'SHA-256'
   - append:
+      tag: append_related_hash
       field: related.hash
       value: '{{{file.hash.sha256}}}'
       if: ctx.file?.hash?.sha256 != null
   - rename:
+      tag: rename_json_logfiles
       field: json.logFiles
       target_field: aws.cloudtrail.digest.log_files
       ignore_failure: true
   - date:
+      tag: date_json_digeststarttime
       field: json.digestStartTime
       target_field: aws.cloudtrail.digest.start_time
       ignore_failure: true
       formats:
         - ISO8601
   - date:
+      tag: date_json_digestendtime
       field: json.digestEndTime
       target_field: "@timestamp"
       ignore_failure: true
       formats:
         - ISO8601
   - date:
+      tag: date_json_digestendtime_1
       field: json.digestEndTime
       target_field: aws.cloudtrail.digest.end_time
       ignore_failure: true
       formats:
         - ISO8601
   - rename:
+      tag: rename_json_digests3bucket
       field: json.digestS3Bucket
       target_field: aws.cloudtrail.digest.s3_bucket
       ignore_failure: true
   - date:
+      tag: date_json_newesteventtime
       field: json.newestEventTime
       target_field: aws.cloudtrail.digest.newest_event_time
       ignore_failure: true
       formats:
         - ISO8601
   - date:
+      tag: date_json_oldesteventtime
       field: json.oldestEventTime
       target_field: aws.cloudtrail.digest.oldest_event_time
       ignore_failure: true
       formats:
         - ISO8601
   - rename:
+      tag: rename_json_previousdigests3bucket
       field: json.previousDigestS3Bucket
       target_field: aws.cloudtrail.digest.previous_s3_bucket
       ignore_failure: true
   - rename:
+      tag: rename_json_previousdigesthashalgorithm
       field: json.previousDigestHashAlgorithm
       target_field: aws.cloudtrail.digest.previous_hash_algorithm
       ignore_failure: true
   - rename:
+      tag: rename_json_publickeyfingerprint
       field: json.publicKeyFingerprint
       target_field: aws.cloudtrail.digest.public_key_fingerprint
       ignore_failure: true
   - rename:
+      tag: rename_json_digestsignaturealgorithm
       field: json.digestSignatureAlgorithm
       target_field: aws.cloudtrail.digest.signature_algorithm
       ignore_failure: true
   - set:
+      tag: set_group_id
       field: group.id
       copy_from: json.responseElements.group.groupId
       ignore_empty_value: true
   - set:
+      tag: set_user_target_id
       field: user.target.id
       copy_from: json.responseElements.user.userId
       ignore_empty_value: true
   - set:
+      tag: set_user_changes_name
       field: user.changes.name
       copy_from: json.requestParameters.newUserName
       ignore_empty_value: true
   - set:
+      tag: set_group_name
       field: group.name
       copy_from: json.requestParameters.groupName
       ignore_empty_value: true
   - set:
+      tag: set_user_target_name
       field: user.target.name
       copy_from: json.requestParameters.userName
       ignore_empty_value: true
   - remove:
+      tag: remove
       field:
         - aws.cloudtrail.digest
         - json.insightDetails
       if: '!ctx._conf.keep_flattened_duplicates'
       ignore_missing: true
   - rename:
+      tag: rename_aws_cloudtrail_digest
       field: aws.cloudtrail.digest
       target_field: aws.cloudtrail.flattened.digest
       ignore_missing: true
   - rename:
+      tag: rename_json_insightdetails
       field: json.insightDetails
       target_field: aws.cloudtrail.flattened.insight_details
       ignore_missing: true
   - remove:
+      tag: remove_json_tlsdetails
       field: json.tlsDetails
       if: ctx.json?.tlsDetails?.tlsVersion == 'tlsVersion'
   - dissect:
+      tag: dissect_json_tlsdetails_tlsversion
       field: json.tlsDetails.tlsVersion
       pattern: "%{tls.version_protocol}v%{tls.version}"
       ignore_missing: true
       on_failure:
         - rename:
+            tag: rename_json_tlsdetails_tlsversion
             field: json.tlsDetails.tlsVersion
             target_field: tls.version
   - lowercase:
+      tag: lowercase_tls_version_protocol
       field: tls.version_protocol
       ignore_missing: true
   - rename:
+      tag: rename_json_tlsdetails_ciphersuite
       field: json.tlsDetails.cipherSuite
       target_field: tls.cipher
       ignore_missing: true
   - rename:
+      tag: rename_json_tlsdetails_clientprovidedhostheader
       field: json.tlsDetails.clientProvidedHostHeader
       target_field: tls.client.server_name
       ignore_missing: true
@@ -1991,12 +2070,14 @@ processors:
   # Don't dissect the user email into <user.name>@<user.domain>
   # as the parts are meaningless on their own
   - append:
+      tag: append_related_user_3
       field: related.user
       value: '{{{user.id}}}'
       if: ctx.user?.id != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_4
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
@@ -2004,6 +2085,7 @@ processors:
       ignore_failure: true
 
   - append:
+      tag: append_related_user_5
       field: related.user
       value: '{{{user.changes.name}}}'
       if: ctx.user?.changes?.name != null
@@ -2052,6 +2134,7 @@ processors:
         }
         ctx.aws.cloudtrail.flattened = flattened;
   - remove:
+      tag: remove_1
       field:
         - aws.cloudtrail.response_elements
         - aws.cloudtrail.request_parameters
@@ -2060,6 +2143,7 @@ processors:
       if: ctx._conf?.retain != null && ctx._conf.retain != '' && ctx._conf.retain != 'all' && ctx._conf.retain != 'keyword' && ctx._conf.retain != 'minimal'
 
   - remove:
+      tag: remove_2
       field:
         - json
         - _conf
@@ -2093,15 +2177,18 @@ processors:
 
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
   - remove:
+      tag: remove_3
       field:
         - json
         - _conf

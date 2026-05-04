@@ -39,6 +39,7 @@ processors:
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -118,6 +119,7 @@ processors:
       target_field: aws.config.rule_info.config_rule_state
       ignore_missing: true
   - append:
+      tag: append_related_user
       field: related.user
       value: '{{{json.ConfigRuleInfo.CreatedBy}}}'
       allow_duplicates: false
@@ -143,6 +145,7 @@ processors:
       copy_from: aws.config.rule_info.description
       ignore_empty_value: true
   - foreach:
+      tag: foreach_json_configruleinfo_evaluationmodes
       field: json.ConfigRuleInfo.EvaluationModes
       if: ctx.json?.ConfigRuleInfo?.EvaluationModes instanceof List
       processor:
@@ -163,6 +166,7 @@ processors:
       target_field: aws.config.rule_info.input_parameters
       on_failure:
         - append:
+            tag: append_error_message_1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -193,6 +197,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -211,6 +216,7 @@ processors:
       target_field: aws.config.rule_info.source.owner
       ignore_missing: true
   - foreach:
+      tag: foreach_json_configruleinfo_source_sourcedetails
       field: json.ConfigRuleInfo.Source.SourceDetails
       if: ctx.json?.ConfigRuleInfo?.Source?.SourceDetails instanceof List
       processor:
@@ -220,6 +226,7 @@ processors:
           target_field: _ingest._value.event_source
           ignore_missing: true
   - foreach:
+      tag: foreach_json_configruleinfo_source_sourcedetails_1
       field: json.ConfigRuleInfo.Source.SourceDetails
       if: ctx.json?.ConfigRuleInfo?.Source?.SourceDetails instanceof List
       processor:
@@ -229,6 +236,7 @@ processors:
           target_field: _ingest._value.maximum_execution_frequency
           ignore_missing: true
   - foreach:
+      tag: foreach_json_configruleinfo_source_sourcedetails_2
       field: json.ConfigRuleInfo.Source.SourceDetails
       if: ctx.json?.ConfigRuleInfo?.Source?.SourceDetails instanceof List
       processor:
@@ -257,6 +265,7 @@ processors:
       if: ctx.json?.ConfigRuleInvokedTime != null && ctx.json.ConfigRuleInvokedTime != ''
       on_failure:
         - append:
+            tag: append_error_message_3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -279,6 +288,7 @@ processors:
       if: ctx.json?.EvaluationResultIdentifier?.OrderingTimestamp != null && ctx.json.EvaluationResultIdentifier.OrderingTimestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -306,6 +316,7 @@ processors:
       if: ctx.json?.ResultRecordedTime != null && ctx.json.ResultRecordedTime != ''
       on_failure:
         - append:
+            tag: append_error_message_5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -426,19 +437,22 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6
       field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
+      tag: append_tags_1
       field: tags
       value: preserve_original_event
       allow_duplicates: false

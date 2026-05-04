@@ -3,14 +3,17 @@ description: "Pipeline for EC2 metrics"
 
 processors:
   - dot_expander:
+      tag: dot_expander_all
       field: "*"
       ignore_failure: true
   - set:
+      tag: set_cloud_account_name
       field: cloud.account.name
       copy_from: cloud.account.id
       override: false
       ignore_empty_value: true
   - script:
+      tag: script
       lang: painless
       description: This script converts aws.ec2.metrics.CPUUtilization.avg from percentage to decimal.
       source: |
@@ -18,47 +21,56 @@ processors:
             ctx.aws.ec2.metrics.CPUUtilization.avg = ctx.aws.ec2.metrics.CPUUtilization.avg / 100;
         }
   - rename:
+      tag: rename_aws_ec2_metrics_cpuutilization_avg
       field: aws.ec2.metrics.CPUUtilization.avg
       target_field: host.cpu.usage
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_aws_ec2_metrics_networkin_sum
       field: aws.ec2.metrics.NetworkIn.sum
       target_field: host.network.ingress.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_aws_ec2_metrics_networkout_sum
       field: aws.ec2.metrics.NetworkOut.sum
       target_field: host.network.egress.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_aws_ec2_metrics_networkpacketsin_sum
       field: aws.ec2.metrics.NetworkPacketsIn.sum
       target_field: host.network.ingress.packets
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_aws_ec2_metrics_networkpacketsout_sum
       field: aws.ec2.metrics.NetworkPacketsOut.sum
       target_field: host.network.egress.packets
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_aws_ec2_metrics_diskreadbytes_sum
       field: aws.ec2.metrics.DiskReadBytes.sum
       target_field: host.disk.read.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_aws_ec2_metrics_diskwritebytes_sum
       field: aws.ec2.metrics.DiskWriteBytes.sum
       target_field: host.disk.write.bytes
       ignore_missing: true
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
