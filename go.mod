@@ -3,7 +3,7 @@ module github.com/elastic/integrations
 go 1.26.0
 
 require (
-	github.com/Masterminds/semver/v3 v3.4.0
+	github.com/Masterminds/semver/v3 v3.5.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/cli/go-gh/v2 v2.13.0
 	github.com/elastic/elastic-package v0.123.0
