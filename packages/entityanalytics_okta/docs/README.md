@@ -410,7 +410,7 @@ This is the `User` dataset.
 | entityanalytics_okta.user.profile.zip_code | ZIP code or postal code component of user's address (postalCode). | keyword |
 | entityanalytics_okta.user.status | current status of user. | keyword |
 | entityanalytics_okta.user.status_changed | timestamp when status last changed. | date |
-| entityanalytics_okta.user.supervises.email | The supervised user's email address. | keyword |
+| entityanalytics_okta.user.supervises.user.email | The supervised user's email address. | keyword |
 | entityanalytics_okta.user.supervises.user.id | The supervised user's ID. | keyword |
 | entityanalytics_okta.user.supervises.user.name | The supervised user's login name. | keyword |
 | entityanalytics_okta.user.transitioning_to_status | target status of an in-progress asynchronous status transition. | keyword |
@@ -434,7 +434,7 @@ This is the `User` dataset.
 | user.entity.lifecycle.last_activity |  | date |
 | user.entity.relationships.owns.host.id |  | keyword |
 | user.entity.relationships.owns.host.name |  | keyword |
-| user.entity.relationships.supervises.email |  | keyword |
+| user.entity.relationships.supervises.user.email |  | keyword |
 | user.entity.relationships.supervises.user.id |  | keyword |
 | user.entity.relationships.supervises.user.name |  | keyword |
 | user.geo.city_name |  | keyword |
