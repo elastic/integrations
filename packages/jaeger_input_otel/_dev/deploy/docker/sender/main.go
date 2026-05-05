@@ -36,6 +36,9 @@ const (
 	envHTTPTracesURL      = "JAEGER_ENDPOINT"
 	envOTELJaegerEndpoint = "OTEL_EXPORTER_JAEGER_ENDPOINT"
 	envGRPCTarget         = "JAEGER_GRPC_TARGET"
+	envUDPTarget          = "JAEGER_UDP_TARGET"
+	defaultUDPCompact     = "elastic-agent:6831"
+	defaultUDPBinary      = "elastic-agent:6832"
 )
 
 func main() {
@@ -64,8 +67,12 @@ func main() {
 		err = sendGRPC(serviceName)
 	case "http":
 		err = sendHTTPThrift(serviceName)
+	case "thrift_compact":
+		err = sendThriftCompactUDP(serviceName)
+	case "thrift_binary":
+		err = sendThriftBinaryUDP(serviceName)
 	default:
-		log.Fatalf("unsupported %s=%q (want grpc or http)", envProtocol, protocol)
+		log.Fatalf("unsupported %s=%q (want grpc, http, thrift_compact, thrift_binary)", envProtocol, protocol)
 	}
 	if err != nil {
 		log.Fatalf("send failed: %v", err)
@@ -102,6 +109,71 @@ func sendHTTPThrift(serviceName string) error {
 
 	log.Printf("sending HTTP Thrift Jaeger spans to %s", endpoint)
 
+	runOpenTracingSpanScenario(tracer, serviceName)
+	return nil
+}
+
+func sendThriftCompactUDP(serviceName string) error {
+	target := strings.TrimSpace(os.Getenv(envUDPTarget))
+	if target == "" {
+		target = defaultUDPCompact
+	}
+
+	cfg := jaegercfg.Configuration{
+		ServiceName: serviceName,
+		Sampler: &jaegercfg.SamplerConfig{
+			Type:  jaeger.SamplerTypeConst,
+			Param: 1,
+		},
+		Reporter: &jaegercfg.ReporterConfig{
+			LocalAgentHostPort: target,
+		},
+	}
+
+	tracer, closer, err := cfg.NewTracer()
+	if err != nil {
+		return fmt.Errorf("jaeger UDP compact tracer: %w", err)
+	}
+	defer closer.Close()
+
+	log.Printf("sending Jaeger Thrift compact UDP (agent EmitBatch) to %s", target)
+	runOpenTracingSpanScenario(tracer, serviceName)
+	return nil
+}
+
+func sendThriftBinaryUDP(serviceName string) error {
+	target := strings.TrimSpace(os.Getenv(envUDPTarget))
+	if target == "" {
+		target = defaultUDPBinary
+	}
+
+	transport, err := newBinaryUDPTransport(target, 0)
+	if err != nil {
+		return fmt.Errorf("binary UDP transport: %w", err)
+	}
+	reporter := jaeger.NewRemoteReporter(transport)
+
+	cfg := jaegercfg.Configuration{
+		ServiceName: serviceName,
+		Sampler: &jaegercfg.SamplerConfig{
+			Type:  jaeger.SamplerTypeConst,
+			Param: 1,
+		},
+		Reporter: &jaegercfg.ReporterConfig{},
+	}
+
+	tracer, closer, err := cfg.NewTracer(jaegercfg.Reporter(reporter))
+	if err != nil {
+		return fmt.Errorf("jaeger UDP binary tracer: %w", err)
+	}
+	defer closer.Close()
+
+	log.Printf("sending Jaeger Thrift binary UDP (agent EmitBatch) to %s", target)
+	runOpenTracingSpanScenario(tracer, serviceName)
+	return nil
+}
+
+func runOpenTracingSpanScenario(tracer opentracing.Tracer, serviceName string) {
 	for i := range iterations {
 		parent := tracer.StartSpan(fmt.Sprintf("operation-%d", i))
 		parent.SetTag("test.iteration", i)
@@ -128,8 +200,6 @@ func sendHTTPThrift(serviceName string) error {
 		)
 		parent.Finish()
 	}
-
-	return nil
 }
 
 func ensureJaegerThriftFormat(endpoint string) string {
