@@ -1,0 +1,161 @@
+rules:
+  # Round 2 / cursor-resume: first page when startTime equals running max from round 1
+  - path: /teams/audit-logs
+    methods: ["GET"]
+    query_params:
+      page: "1"
+      startTime: "2026-05-04T15:30:00.000Z"
+      endTime: "{endTime:.*}"
+      pageSize: "{pageSize:.*}"
+    request_headers:
+      Authorization:
+        - "Basic a2V5X3Rlc3QxMjM6"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "events": [
+              {
+                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0007",
+                "timestamp": "2026-05-04T16:00:00.000Z",
+                "ip_address": "198.51.100.22",
+                "user_email": "admin@example.com",
+                "event_type": "add_user",
+                "event_data": { "user_email": "newuser@example.com" }
+              },
+              {
+                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0008",
+                "timestamp": "2026-05-04T17:00:00.000Z",
+                "ip_address": "198.51.100.23",
+                "user_email": "admin2@example.com",
+                "event_type": "team_settings",
+                "event_data": { "setting": "allow_invites", "enabled": true }
+              }
+            ],
+            "pagination": {
+              "page": 1,
+              "pageSize": 100,
+              "totalCount": 2,
+              "totalPages": 1,
+              "hasNextPage": false,
+              "hasPreviousPage": false
+            },
+            "params": { "teamId": 9990001, "startDate": 0, "endDate": 0 }
+          }
+  # Round 1 — page 2 (terminal page for first poll)
+  - path: /teams/audit-logs
+    methods: ["GET"]
+    query_params:
+      page: "2"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      pageSize: "{pageSize:.*}"
+    request_headers:
+      Authorization:
+        - "Basic a2V5X3Rlc3QxMjM6"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "events": [
+              {
+                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0004",
+                "timestamp": "2026-05-04T13:00:00.000Z",
+                "ip_address": "203.0.113.10",
+                "user_email": "unknown",
+                "event_type": "remove_user",
+                "event_data": { "user_email": "gone@example.com" }
+              },
+              {
+                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0005",
+                "timestamp": "2026-05-04T14:00:00.000Z",
+                "ip_address": "198.51.100.20",
+                "user_email": "cloud@example.com",
+                "event_type": "cloud_agent_user_settings",
+                "event_data": { "agent_enabled": true }
+              },
+              {
+                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0006",
+                "timestamp": "2026-05-04T15:30:00.000Z",
+                "ip_address": "198.51.100.21",
+                "user_email": "ops@example.com",
+                "event_type": "login",
+                "event_data": { "login_type": "LOGIN_TYPE_WEB", "success": true }
+              }
+            ],
+            "pagination": {
+              "page": 2,
+              "pageSize": 100,
+              "totalCount": 6,
+              "totalPages": 2,
+              "hasNextPage": false,
+              "hasPreviousPage": true
+            },
+            "params": { "teamId": 9990001, "startDate": 0, "endDate": 0 }
+          }
+  # Round 1 — page 1 (has next page)
+  - path: /teams/audit-logs
+    methods: ["GET"]
+    query_params:
+      page: "1"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      pageSize: "{pageSize:.*}"
+    request_headers:
+      Authorization:
+        - "Basic a2V5X3Rlc3QxMjM6"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "events": [
+              {
+                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0001",
+                "timestamp": "2026-05-04T10:00:00.000Z",
+                "ip_address": "198.51.100.10",
+                "user_email": "alice@example.com",
+                "event_type": "login",
+                "event_data": { "login_type": "LOGIN_TYPE_WEB", "success": true }
+              },
+              {
+                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0002",
+                "timestamp": "2026-05-04T11:00:00.000Z",
+                "ip_address": "192.0.2.50",
+                "user_email": "mcp@example.com",
+                "event_type": "mcp_server_config",
+                "event_data": { "action": "add", "scope": "team", "server_name": "docs", "server_type": "http" }
+              },
+              {
+                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0003",
+                "timestamp": "2026-05-04T12:00:00.000Z",
+                "ip_address": "198.51.100.11",
+                "user_email": "bob@example.com",
+                "event_type": "cloud_agent_user_settings",
+                "event_data": { "theme": "dark" }
+              }
+            ],
+            "pagination": {
+              "page": 1,
+              "pageSize": 100,
+              "totalCount": 6,
+              "totalPages": 2,
+              "hasNextPage": true,
+              "hasPreviousPage": false
+            },
+            "params": { "teamId": 9990001, "startDate": 0, "endDate": 0 }
+          }

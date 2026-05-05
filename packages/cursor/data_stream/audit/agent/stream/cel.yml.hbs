@@ -1,0 +1,177 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.rate_limit.limit: 0.35
+resource.rate_limit.burst: 2
+max_executions: 500
+resource.url: "{{url}}"
+state:
+  api_key: "{{api_key}}"
+  page_size: {{page_size}}
+  initial_interval: "{{initial_interval}}"
+  event_types: "{{event_types}}"
+redact:
+  fields:
+    - api_key
+program: |
+  (
+    state.?cursor.chunk_start.orValue("") != "" ?
+      state.?cursor.chunk_start.orValue("")
+    :
+      state.?cursor.last_ts.orValue("") != "" ?
+        state.?cursor.last_ts.orValue("")
+      :
+        (now - duration(state.initial_interval)).format(time_layout.RFC3339Nano)
+  ).as(chunk_start_val,
+    timestamp(chunk_start_val).as(ts_start,
+      (ts_start + duration("720h") < now ?
+        ts_start + duration("720h")
+      :
+        now
+      ).format(time_layout.RFC3339Nano).as(chunk_end_str,
+        state.with(
+          request(
+            "GET",
+            state.url.trim_right("/") + "/teams/audit-logs?" + {
+              "startTime": [chunk_start_val],
+              "endTime": [chunk_end_str],
+              "page": [string(int(state.?cursor.page.orValue(1)))],
+              "pageSize": [string(int(state.page_size))],
+              ?"eventTypes": state.?event_types.orValue("") != "" ?
+                optional.of([state.event_types])
+              :
+                optional.none(),
+            }.format_query()
+          ).with({
+            "Header": {
+              "Accept": ["application/json"],
+              "Authorization": ["Basic " + bytes(state.api_key + ":").base64()],
+            },
+          }).do_request().as(resp,
+            resp.StatusCode == 200 ?
+              resp.Body.decode_json().as(body, {
+                "events": body.?events.orValue([]).map(e, {
+                  "message": e.encode_json(),
+                }),
+                "want_more":
+                  body.?pagination.hasNextPage.orValue(false) ||
+                  (
+                    !body.?pagination.hasNextPage.orValue(false) &&
+                    ts_start + duration("720h") < now
+                  ),
+                "cursor":
+                  body.?pagination.hasNextPage.orValue(false) ?
+                    {
+                      "last_ts": state.?cursor.last_ts.orValue(""),
+                      "chunk_start": chunk_start_val,
+                      "page": int(state.?cursor.page.orValue(1)) + 1,
+                      "running_max": (
+                        size(body.?events.orValue([])) > 0 ?
+                          (
+                            body.?events.orValue([]).map(e, e.timestamp).max() > state.?cursor.running_max.orValue("") ?
+                              body.?events.orValue([]).map(e, e.timestamp).max()
+                            :
+                              state.?cursor.running_max.orValue("")
+                          )
+                        :
+                          state.?cursor.running_max.orValue("")
+                      ),
+                    }
+                  :
+                    ts_start + duration("720h") < now ?
+                      {
+                        "last_ts": state.?cursor.last_ts.orValue(""),
+                        "chunk_start": chunk_end_str,
+                        "page": 1,
+                        "running_max": (
+                          size(body.?events.orValue([])) > 0 ?
+                            (
+                              body.?events.orValue([]).map(e, e.timestamp).max() > state.?cursor.running_max.orValue("") ?
+                                body.?events.orValue([]).map(e, e.timestamp).max()
+                              :
+                                state.?cursor.running_max.orValue("")
+                            )
+                          :
+                            state.?cursor.running_max.orValue("")
+                        ),
+                      }
+                    :
+                      {
+                        "last_ts": (
+                          (
+                            size(body.?events.orValue([])) > 0 ?
+                              (
+                                body.?events.orValue([]).map(e, e.timestamp).max() > state.?cursor.running_max.orValue("") ?
+                                  body.?events.orValue([]).map(e, e.timestamp).max()
+                                :
+                                  state.?cursor.running_max.orValue("")
+                              )
+                            :
+                              state.?cursor.running_max.orValue("")
+                          ) != "" ?
+                            (
+                              size(body.?events.orValue([])) > 0 ?
+                                (
+                                  body.?events.orValue([]).map(e, e.timestamp).max() > state.?cursor.running_max.orValue("") ?
+                                    body.?events.orValue([]).map(e, e.timestamp).max()
+                                  :
+                                    state.?cursor.running_max.orValue("")
+                                )
+                              :
+                                state.?cursor.running_max.orValue("")
+                            )
+                          :
+                            chunk_end_str
+                        ),
+                        "chunk_start": "",
+                        "page": 1,
+                        "running_max": "",
+                      },
+              })
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "GET " + state.url.trim_right("/") + "/teams/audit-logs: " + (
+                      size(resp.Body) != 0 ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status)
+                    ),
+                  },
+                },
+                "want_more": false,
+              }
+          )
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
