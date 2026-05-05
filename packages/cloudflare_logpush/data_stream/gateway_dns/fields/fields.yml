@@ -5,6 +5,9 @@
     - name: account_id
       type: keyword
       description: Cloudflare account ID.
+    - name: answers
+      type: flattened
+      description: The response data objects.
     - name: application_id
       type: long
       description: ID of the application the domain belongs to.
@@ -14,6 +17,9 @@
     - name: authoritative_name_server_ip
       type: ip
       description: The IPs of the authoritative nameservers that provided the answers, if any.
+    - name: cname
+      type: keyword
+      description: Resolved intermediate cname domains.
     - name: cname_category
       type: group
       fields:
@@ -23,9 +29,6 @@
         - name: names
           type: keyword
           description: Name or names of category that the intermediate cname domains belongs to.
-    - name: cname
-      type: keyword
-      description: Resolved intermediate cname domains.
     - name: cname_reversed
       type: keyword
       description: Resolved intermediate cname domains in reverse.
@@ -41,12 +44,12 @@
     - name: custom_resolver
       type: group
       fields:
-        - name: duration_milli
-          type: long
-          description: The time it took for the custom resolver to respond in milliseconds.
         - name: address
           type: keyword
           description: IP and port combo used to resolve the custom dns resolver query, if any.
+        - name: duration_milli
+          type: long
+          description: The time it took for the custom resolver to respond in milliseconds.
         - name: policy
           type: group
           fields:
@@ -59,18 +62,6 @@
         - name: response
           type: keyword
           description: Status of the custom resolver response.
-    - name: timestamp
-      type: date
-      description: The date and time the corresponding DNS request was made.
-    - name: host
-      type: group
-      fields:
-        - name: id
-          type: keyword
-          description: UUID of the device where the HTTP request originated from.
-        - name: name
-          type: keyword
-          description: The name of the device where the HTTP request originated from.
     - name: destination
       type: group
       fields:
@@ -89,6 +80,15 @@
     - name: extended_dns_error_codes
       type: keyword
       description: List of returned Extended DNS Error Codes.
+    - name: host
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: UUID of the device where the HTTP request originated from.
+        - name: name
+          type: keyword
+          description: The name of the device where the HTTP request originated from.
     - name: initial_category
       type: group
       fields:
@@ -104,12 +104,12 @@
     - name: location
       type: group
       fields:
-        - name: name
-          type: keyword
-          description: Name of the location the DNS request is coming from.
         - name: id
           type: keyword
           description: UUID of the location the DNS request is coming from.
+        - name: name
+          type: keyword
+          description: Name of the location the DNS request is coming from.
     - name: matched
       type: group
       fields:
@@ -134,24 +134,18 @@
     - name: policy
       type: group
       fields:
-        - name: name
-          type: keyword
-          description: Name of the policy that was applied (if any)
         - name: id
           type: keyword
           description: ID of the policy/rule that was applied (if any).
+        - name: name
+          type: keyword
+          description: Name of the policy that was applied (if any)
     - name: protocol
       type: keyword
       description: The protocol used for the DNS query by the client.
     - name: question
       type: group
       fields:
-        - name: id
-          type: keyword
-          description: Globally unique identifier of the query.
-        - name: name
-          type: keyword
-          description: The query name.
         - name: category
           type: group
           fields:
@@ -161,6 +155,9 @@
             - name: names
               type: keyword
               description: Name or names of category that the domain belongs to.
+        - name: id
+          type: keyword
+          description: Globally unique identifier of the query.
         - name: indicator_feed
           type: group
           fields:
@@ -170,6 +167,9 @@
             - name: names
               type: keyword
               description: Name or names of indicator feed(s) that the domain belongs to.
+        - name: name
+          type: keyword
+          description: The query name.
         - name: reversed
           type: keyword
           description: Query name in reverse.
@@ -182,6 +182,9 @@
         - name: type_id
           type: long
           description: ID of the type of DNS query.
+    - name: resolved_ip
+      type: ip
+      description: The resolved IPs in the response, if any.
     - name: resolved_ip_details
       type: group
       fields:
@@ -215,27 +218,21 @@
             - name: names
               type: keyword
               description: Resolver policy name, if any matched.
-    - name: resource_records
-      type: group
-      fields:
-        - name: object
-          type: flattened
-          description: The rdata objects.
-        - name: json
-          type: match_only_text
-          description: String that represents the JSON array with the returned resource records.
-    - name: response_code
-      type: keyword
-      description: The return code sent back by the DNS resolver.
-    - name: answers
-      type: flattened
-      description: The response data objects.
-    - name: resolved_ip
-      type: ip
-      description: The resolved IPs in the response, if any.
     - name: resolver_decision
       type: keyword
       description: Result of the DNS query.
+    - name: resource_records
+      type: group
+      fields:
+        - name: json
+          type: match_only_text
+          description: String that represents the JSON array with the returned resource records.
+        - name: object
+          type: flattened
+          description: The rdata objects.
+    - name: response_code
+      type: keyword
+      description: The return code sent back by the DNS resolver.
     - name: source
       type: group
       fields:
@@ -254,6 +251,9 @@
         - name: country_code
           type: keyword
           description: Country code of the source IP address making the DNS query.
+    - name: timestamp
+      type: date
+      description: The date and time the corresponding DNS request was made.
     - name: timezone
       type: keyword
       description: Time zone used to calculate the current time, if a matched rule was scheduled with it.
@@ -263,12 +263,12 @@
     - name: user
       type: group
       fields:
-        - name: id
-          type: keyword
-          description: User identity where the HTTP request originated from.
         - name: email
           type: keyword
           description: Email used to authenticate the client.
+        - name: id
+          type: keyword
+          description: User identity where the HTTP request originated from.
 - name: log.source.address
   type: keyword
   description: Source address from which the log event was read / sent from.

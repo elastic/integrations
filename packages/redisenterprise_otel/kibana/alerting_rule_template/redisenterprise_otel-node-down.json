@@ -1,0 +1,40 @@
+{
+    "id": "redisenterprise_otel-node-down",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Redis Enterprise OTel] Node down",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "redisenterprise"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE node_up IS NOT NULL\n| STATS min_up = MIN(node_up) BY node, cluster\n// Alert when any node reports as down (node_up < 1)\n// A down node triggers automatic failover of its shards to replicas on other nodes\n// Investigate host health, network connectivity, and management service status\n| WHERE min_up < 1"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "node",
+            "termSize": 100
+        }
+    }
+}

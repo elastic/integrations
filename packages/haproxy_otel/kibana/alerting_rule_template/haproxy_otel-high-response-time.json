@@ -1,0 +1,37 @@
+{
+  "id": "haproxy_otel-high-response-time",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[HAProxy OTel] High backend response time",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "haproxy"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-haproxyreceiver.otel-*\n// Response time (first byte from server) at backend/server level\n| WHERE haproxy.responses.average_time IS NOT NULL\n| STATS max_rtime = MAX(haproxy.responses.average_time)\n  BY haproxy.proxy_name, haproxy.service_name, haproxy.addr\n// Threshold in ms \u2014 tune for your application SLA\n| WHERE max_rtime > 500\n| EVAL alert_key = CONCAT(TO_STRING(haproxy.proxy_name), \"::\", TO_STRING(haproxy.service_name), \"::\", COALESCE(TO_STRING(haproxy.addr), \"\"))\n| SORT max_rtime DESC\n| LIMIT 50"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "alert_key",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

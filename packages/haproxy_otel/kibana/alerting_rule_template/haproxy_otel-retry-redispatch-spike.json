@@ -1,0 +1,37 @@
+{
+  "id": "haproxy_otel-retry-redispatch-spike",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[HAProxy OTel] Connection retries or redispatches spike",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "haproxy"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-haproxyreceiver.otel-*\n// Retries and redispatches \u2014 backend instability signals\n| WHERE haproxy.connections.retries IS NOT NULL OR haproxy.requests.redispatched IS NOT NULL\n| STATS\n    retry_inc = SUM(INCREASE(haproxy.connections.retries)),\n    redis_inc = SUM(INCREASE(haproxy.requests.redispatched))\n  BY haproxy.proxy_name, haproxy.service_name, haproxy.addr\n| EVAL retry_inc = COALESCE(retry_inc, 0), redis_inc = COALESCE(redis_inc, 0)\n| EVAL total_instability = retry_inc + redis_inc\n| WHERE total_instability > 5\n| EVAL alert_key = CONCAT(TO_STRING(haproxy.proxy_name), \"::\", TO_STRING(haproxy.service_name), \"::\", COALESCE(TO_STRING(haproxy.addr), \"\"))\n| SORT total_instability DESC\n| LIMIT 50"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "alert_key",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

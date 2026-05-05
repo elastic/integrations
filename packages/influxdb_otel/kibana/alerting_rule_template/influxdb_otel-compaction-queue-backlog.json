@@ -1,0 +1,40 @@
+{
+    "id": "influxdb_otel-compaction-queue-backlog",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[InfluxDB OTel] Compaction queue backlog",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "influxdb",
+            "storage"
+        ],
+        "schedule": {
+            "interval": "10m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 6,
+            "statusChangeThreshold": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-influxdb.otel-*\n// Compactions waiting to run (gauge)\n| WHERE COALESCE(metrics.storage_compactions_queued, storage_compactions_queued) IS NOT NULL\n// Get max queue depth per host and compaction level\n| STATS max_queued = MAX(COALESCE(metrics.storage_compactions_queued, storage_compactions_queued))\n  BY host.name, COALESCE(attributes.level, \"unknown\")\n// Alert when compaction queue exceeds threshold (e.g. 10)\n// Adjust for your environment\n| WHERE max_queued >= 10"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

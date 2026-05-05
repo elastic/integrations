@@ -1,0 +1,39 @@
+{
+  "id": "rabbitmq_otel-high-unacknowledged-messages",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[RabbitMQ OTel] High unacknowledged message count",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "rabbitmq"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-rabbitmqreceiver.otel-default\n// Unacknowledged: delivered but not yet acked; buildup indicates consumer issues\n| WHERE attributes.state == \"unacknowledged\"\n  AND metrics.rabbitmq.message.current IS NOT NULL\n| STATS unack_count = MAX(metrics.rabbitmq.message.current)\n  BY resource.attributes.rabbitmq.queue.name,\n     resource.attributes.rabbitmq.vhost.name,\n     resource.attributes.rabbitmq.node.name\n// Alert threshold: adjust 500 to tune for consumer processing expectations\n| WHERE unack_count > 500\n| SORT unack_count DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.rabbitmq.queue.name",
+      "termSize": 20
+    }
+  }
+}

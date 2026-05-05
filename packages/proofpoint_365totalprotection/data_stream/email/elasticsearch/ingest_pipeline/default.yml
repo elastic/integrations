@@ -1,0 +1,337 @@
+---
+processors:
+    - set:
+            tag: set_ecs_version
+            field: ecs.version
+            value: "9.3.0"
+    - json:
+            tag: parse_json_message
+            field: message
+            target_field: parsed_email
+            if: ctx.message != null
+    - rename:
+            tag: rename_parsed_email_to_proofpoint
+            field: parsed_email
+            target_field: proofpoint.email
+            ignore_missing: true
+    - remove:
+            tag: remove_message_after_parse
+            field: message
+            ignore_missing: true
+    - script:
+            tag: convert_size_object_to_string
+            lang: painless
+            if: ctx.proofpoint?.email?.size instanceof Map
+            source: |
+                ctx.proofpoint.email.size = ctx.proofpoint.email.size.value + ' ' + ctx.proofpoint.email.size.unit;
+            on_failure:
+                - append:
+                    tag: append_size_conversion_error
+                    field: error.message
+                    value: "Failed to convert size object to string"
+    - script:
+            tag: process_attachments_to_ecs
+            lang: painless
+            if: ctx.proofpoint?.email?.attachments instanceof List && ctx.proofpoint.email.attachments.size() > 0
+            source: |
+                def attachmentNames = [];
+                def attachmentExtensions = [];
+                def ecsAttachments = [];
+                for (att in ctx.proofpoint.email.attachments) {
+                    if (att instanceof Map && att.containsKey('name')) {
+                        def filename = att.name;
+                        attachmentNames.add(filename);
+                        
+                        // Extract file extension
+                        def lastDot = filename.lastIndexOf('.');
+                        def ext = null;
+                        if (lastDot > 0 && lastDot < filename.length() - 1) {
+                            ext = filename.substring(lastDot + 1).toLowerCase();
+                            if (!attachmentExtensions.contains(ext)) {
+                                attachmentExtensions.add(ext);
+                            }
+                        }
+                        
+                        // Create ECS attachment object
+                        def ecsAtt = ['file': ['name': filename]];
+                        if (ext != null) {
+                            ecsAtt.file.extension = ext;
+                        }
+                        if (att.containsKey('size')) {
+                            ecsAtt.file.size = att.size;
+                        }
+                        ecsAttachments.add(ecsAtt);
+                    }
+                }
+                ctx.proofpoint.email.attachmentsList = attachmentNames;
+                ctx.proofpoint.email.attachmentsExtensions = attachmentExtensions;
+                ctx.proofpoint.email.attachments = attachmentNames.size() > 0 ? 'yes' : 'no';
+                if (!ctx.containsKey('email')) {
+                    ctx.email = [:];
+                }
+                ctx.email.attachments = ecsAttachments;
+            on_failure:
+                - append:
+                    tag: append_attachments_processing_error
+                    field: error.message
+                    value: "Failed to process attachments to ECS format"
+    - set:
+            tag: set_no_attachments
+            field: proofpoint.email.attachments
+            value: "no"
+            if: ctx.proofpoint?.email?.attachmentsList == null
+    - set:
+            tag: set_empty_attachments_list
+            field: proofpoint.email.attachmentsList
+            value: []
+            if: ctx.proofpoint?.email?.attachmentsList == null
+    - set:
+            tag: set_empty_attachments_extensions
+            field: proofpoint.email.attachmentsExtensions
+            value: []
+            if: ctx.proofpoint?.email?.attachmentsExtensions == null
+    - drop:
+            tag: drop_without_msg_id
+            if: ctx.proofpoint?.email?.msg_id == null
+    # Set document ID to msg_id for deduplication.
+    # This is safe because: 
+    # 1. The integration fetches emails with a time overlap (last X minutes + buffer) to avoid missing messages
+    # 2. This causes the same emails to appear in multiple API responses
+    # 3. Emails are immutable - a msg_id always represents the exact same email data
+    # 4. Using _id ensures automatic deduplication in Elasticsearch when the same email is ingested multiple times
+    - set:
+            tag: set_document_id
+            field: _id
+            copy_from: proofpoint.email.msg_id
+            if: ctx.proofpoint?.email?.msg_id != null
+    - date:
+            tag: parse_timestamp
+            field: proofpoint.email.date
+            target_field: '@timestamp'
+            formats:
+                - 'yyyy-MM-dd HH:mm:ss'
+                - 'ISO8601'
+            ignore_failure: true
+
+    - script:
+            tag: extract_classification_fields
+            lang: painless
+            if: ctx.proofpoint?.email?.classification instanceof Map
+            source: |
+                if (ctx.proofpoint.email.classification.containsKey('text')) {
+                    ctx.proofpoint.email.classification_text = ctx.proofpoint.email.classification.text;
+                    ctx.proofpoint.email.classification_id = ctx.proofpoint.email.classification.id;
+                }
+            ignore_failure: true
+
+    - script:
+            tag: extract_status_fields
+            lang: painless
+            if: ctx.proofpoint?.email?.status instanceof Map
+            source: |
+                if (ctx.proofpoint.email.status.containsKey('text')) {
+                    ctx.proofpoint.email.status_text = ctx.proofpoint.email.status.text;
+                    ctx.proofpoint.email.status_id = ctx.proofpoint.email.status.id;
+                }
+            ignore_failure: true
+
+    - script:
+            tag: set_direction_text
+            lang: painless
+            if: ctx.proofpoint?.email?.direction != null
+            source: |
+                def dir = ctx.proofpoint.email.direction;
+                // Set direction text based on integer value
+                if (dir == 1) {
+                    ctx.proofpoint.email.direction_text = 'inbound';
+                } else if (dir == 2) {
+                    ctx.proofpoint.email.direction_text = 'outbound';
+                } else {
+                    ctx.proofpoint.email.direction_text = 'unknown';
+                }
+            ignore_failure: true
+
+    - script:
+            tag: extract_incoming_encryption
+            lang: painless
+            if: ctx.proofpoint?.email?.crypt_type_in instanceof Map
+            source: |
+                if (ctx.proofpoint.email.crypt_type_in.containsKey('text')) {
+                    ctx.proofpoint.email.incoming_encryption = ctx.proofpoint.email.crypt_type_in.text;
+                }
+            ignore_failure: true
+
+    - script:
+            tag: extract_outgoing_encryption
+            lang: painless
+            if: ctx.proofpoint?.email?.crypt_type_out instanceof Map
+            source: |
+                if (ctx.proofpoint.email.crypt_type_out.containsKey('text')) {
+                    ctx.proofpoint.email.outgoing_encryption = ctx.proofpoint.email.crypt_type_out.text;
+                }
+            ignore_failure: true
+
+    - script:
+            tag: map_email_addresses
+            lang: painless
+            if: ctx.proofpoint?.email?.owner != null
+            source: |
+                def direction = ctx.proofpoint.email.containsKey('direction') ? ctx.proofpoint.email.direction : null;
+                if (direction != null && direction == 1) {
+                    // Inbound: owner is recipient, comm_partner is sender
+                    ctx.proofpoint.email.to = ctx.proofpoint.email.owner;
+                    if (ctx.proofpoint.email.containsKey('comm_partner') && ctx.proofpoint.email.comm_partner != null) {
+                        ctx.proofpoint.email.from = ctx.proofpoint.email.comm_partner;
+                    }
+                } else if (direction != null && direction == 2) {
+                    // Outbound: owner is sender, comm_partner is recipient
+                    ctx.proofpoint.email.from = ctx.proofpoint.email.owner;
+                    if (ctx.proofpoint.email.containsKey('comm_partner') && ctx.proofpoint.email.comm_partner != null) {
+                        ctx.proofpoint.email.to = ctx.proofpoint.email.comm_partner;
+                    }
+                }
+            ignore_failure: true
+
+    - append:
+        tag: append_email_from_address
+        field: email.from.address
+        value: "{{{proofpoint.email.from}}}"
+        if: ctx.proofpoint?.email?.from != null
+        allow_duplicates: false
+    - append:
+        tag: append_email_to_address
+        field: email.to.address
+        value: "{{{proofpoint.email.to}}}"
+        if: ctx.proofpoint?.email?.to != null
+        allow_duplicates: false
+    - set:
+        tag: set_email_subject
+        field: email.subject
+        copy_from: proofpoint.email.subject
+        ignore_empty_value: true
+    - set:
+        tag: set_email_message_id
+        field: email.message_id
+        copy_from: proofpoint.email.message_id
+        ignore_empty_value: true
+    - set:
+        tag: set_email_direction
+        field: email.direction
+        copy_from: proofpoint.email.direction_text
+        ignore_empty_value: true
+    - convert:
+        tag: convert_source_ip_proofpoint
+        field: proofpoint.email.source_ip
+        type: ip
+        ignore_missing: true
+        on_failure:
+          - remove:
+              tag: remove_invalid_source_ip_proofpoint
+              field: proofpoint.email.source_ip
+    - convert:
+        tag: convert_destination_ip_proofpoint
+        field: proofpoint.email.destination_ip
+        type: ip
+        ignore_missing: true
+        on_failure:
+          - remove:
+              tag: remove_invalid_destination_ip_proofpoint
+              field: proofpoint.email.destination_ip
+    - set:
+        tag: set_source_ip
+        field: source.ip
+        copy_from: proofpoint.email.source_ip
+        ignore_empty_value: true
+    - set:
+        tag: set_destination_ip
+        field: destination.ip
+        copy_from: proofpoint.email.destination_ip
+        ignore_empty_value: true
+    - geoip:
+        tag: geoip_source_ip
+        field: source.ip
+        target_field: source.geo
+        ignore_missing: true
+    - geoip:
+        tag: geoip_destination_ip
+        field: destination.ip
+        target_field: destination.geo
+        ignore_missing: true
+    - set:
+        tag: set_event_kind
+        field: event.kind
+        value: event
+    - set:
+        tag: set_event_category
+        field: event.category
+        value: ["email"]
+    - set:
+        tag: set_event_type
+        field: event.type
+        value: ["info"]
+    - append:
+        tag: append_related_ip_source
+        field: related.ip
+        value: "{{{proofpoint.email.source_ip}}}"
+        if: ctx.proofpoint?.email?.source_ip != null
+        allow_duplicates: false
+    - append:
+        tag: append_related_ip_destination
+        field: related.ip
+        value: "{{{proofpoint.email.destination_ip}}}"
+        if: ctx.proofpoint?.email?.destination_ip != null
+        allow_duplicates: false
+    - append:
+        tag: append_related_user_from
+        field: related.user
+        value: "{{{proofpoint.email.from}}}"
+        if: ctx.proofpoint?.email?.from != null
+        allow_duplicates: false
+    - append:
+        tag: append_related_user_to
+        field: related.user
+        value: "{{{proofpoint.email.to}}}"
+        if: ctx.proofpoint?.email?.to != null
+        allow_duplicates: false
+    - remove:
+        tag: remove_null_smtp_dialog
+        field: proofpoint.email.smtp_dialog
+        ignore_missing: true
+        if: ctx.proofpoint?.email?.smtp_dialog == null
+    - remove:
+        tag: remove_null_smtp_status
+        field: proofpoint.email.smtp_status
+        ignore_missing: true
+        if: ctx.proofpoint?.email?.smtp_status == null
+    - remove:
+        tag: remove_null_smtp_status_code
+        field: proofpoint.email.smtp_status_code
+        ignore_missing: true
+        if: ctx.proofpoint?.email?.smtp_status_code == null
+    - remove:
+        tag: remove_message_field
+        field: message
+        ignore_missing: true
+    - remove:
+        tag: remove_event_original
+        field: event.original
+        if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
+        ignore_missing: true
+on_failure:
+  - set:
+      tag: set_pipeline_error_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: preserve_original_event_tag
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

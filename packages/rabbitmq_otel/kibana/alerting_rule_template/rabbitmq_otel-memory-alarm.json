@@ -1,0 +1,39 @@
+{
+  "id": "rabbitmq_otel-memory-alarm",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[RabbitMQ OTel] Memory alarm triggered",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "rabbitmq"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-rabbitmqreceiver.otel-default\n// Memory alarm: when triggered (1), producers are blocked\n// Requires node-level metrics enabled in receiver config\n| WHERE metrics.rabbitmq.node.mem_alarm IS NOT NULL\n  AND metrics.rabbitmq.node.mem_alarm > 0\n| STATS alarm_count = COUNT(*)\n  BY resource.attributes.rabbitmq.node.name\n| WHERE alarm_count > 0"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.rabbitmq.node.name",
+      "termSize": 10
+    }
+  }
+}

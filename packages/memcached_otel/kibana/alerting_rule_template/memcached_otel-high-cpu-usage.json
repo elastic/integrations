@@ -1,0 +1,40 @@
+{
+    "id": "memcached_otel-high-cpu-usage",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Memcached OTel] High CPU usage",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "memcached"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 6,
+            "statusChangeThreshold": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-memcachedreceiver.otel-*\n| WHERE memcached.cpu.usage IS NOT NULL\n// CPU usage is cumulative seconds (system + user) — RATE gives cores in use\n| STATS cpu_cores = SUM(RATE(memcached.cpu.usage))\n  BY host.name, COALESCE(service.instance.id, host.name)\n// Alert when CPU exceeds 0.8 cores — memcached is typically CPU-light\n| WHERE cpu_cores > 0.8\n| SORT cpu_cores DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

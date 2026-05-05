@@ -1,0 +1,37 @@
+{
+  "id": "haproxy_otel-requests-queued",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[HAProxy OTel] Requests queued at backend",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "haproxy"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-haproxyreceiver.otel-*\n// Queued requests (waiting for server) \u2014 use LAST_OVER_TIME for current value\n| WHERE haproxy.requests.queued IS NOT NULL\n| STATS max_queued = MAX(LAST_OVER_TIME(haproxy.requests.queued))\n  BY haproxy.proxy_name, haproxy.service_name, haproxy.addr\n// Any sustained queue indicates capacity saturation\n| WHERE max_queued > 0\n| EVAL alert_key = CONCAT(TO_STRING(haproxy.proxy_name), \"::\", TO_STRING(haproxy.service_name), \"::\", COALESCE(TO_STRING(haproxy.addr), \"\"))\n| SORT max_queued DESC\n| LIMIT 50"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "alert_key",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

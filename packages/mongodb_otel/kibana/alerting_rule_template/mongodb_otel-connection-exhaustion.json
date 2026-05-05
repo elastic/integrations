@@ -1,0 +1,35 @@
+{
+  "id": "mongodb_otel-connection-exhaustion",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[MongoDB OTel] Connection exhaustion",
+    "tags": [
+      "observability",
+      "mongodb"
+    ],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "TS metrics-mongodbreceiver.otel-default\n// Scope to MongoDB OTel metrics\n| WHERE data_stream.dataset == \"mongodbreceiver.otel\"\n| WHERE metrics.mongodb.connection.count IS NOT NULL AND attributes.type == \"available\"\n// Minimum available connections per (server, database); then worst per server\n| STATS avail = MIN(LAST_OVER_TIME(metrics.mongodb.connection.count)) BY resource.attributes.server.address, attributes.db.namespace\n| STATS min_avail = MIN(avail) BY resource.attributes.server.address\n// Alert when available connections drop below threshold (adjust 10 for your pool size)\n| WHERE min_avail < 10\n| SORT min_avail ASC\n| LIMIT 20"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

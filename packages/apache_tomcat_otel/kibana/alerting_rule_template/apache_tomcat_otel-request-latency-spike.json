@@ -1,0 +1,38 @@
+{
+    "id": "apache_tomcat_otel-request-latency-spike",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Tomcat OTel] Request latency spike",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "tomcat"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_processingTime IS NOT NULL\n    AND Catalina_GlobalRequestProcessor_requestCount IS NOT NULL\n| STATS\n    max_time = MAX(Catalina_GlobalRequestProcessor_processingTime),\n    min_time = MIN(Catalina_GlobalRequestProcessor_processingTime),\n    max_requests = MAX(Catalina_GlobalRequestProcessor_requestCount),\n    min_requests = MIN(Catalina_GlobalRequestProcessor_requestCount)\n  BY host.name, attributes.name\n| EVAL\n    delta_time_ms = max_time - min_time,\n    delta_requests = max_requests - min_requests\n// Minimum request volume to compute a meaningful average\n| WHERE delta_requests > 10\n| EVAL avg_latency_ms = ROUND(delta_time_ms / delta_requests, 2)\n// Latency threshold in milliseconds \u2014 adjust based on your SLA\n// Consider that this is average latency; tail latency will be higher\n| WHERE avg_latency_ms > 500.0\n| SORT avg_latency_ms DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 100,
+            "excludeHitsFromPreviousRun": true
+            
+        }
+    }
+}

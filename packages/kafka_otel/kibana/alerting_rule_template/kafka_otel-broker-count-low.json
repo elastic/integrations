@@ -1,0 +1,40 @@
+{
+    "id": "kafka_otel-broker-count-low",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Kafka OTel] Broker count below threshold",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "kafka"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 6,
+            "statusChangeThreshold": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-kafkametricsreceiver.otel-*\n// Cluster-level broker count (no attributes)\n| WHERE kafka.brokers IS NOT NULL\n| STATS latest_brokers = MAX(kafka.brokers)\n// Threshold: alert when broker count < expected minimum.\n// Customise the value below for your cluster (e.g. 2 for HA, 1 for any loss)\n| WHERE latest_brokers < 2"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "all",
+            "excludeHitsFromPreviousRun": false
+        }
+    }
+}

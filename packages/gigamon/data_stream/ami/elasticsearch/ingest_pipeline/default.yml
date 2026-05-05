@@ -860,7 +860,19 @@ processors:
         }
         // ssl_cipher_suite_id
         if (ctx.gigamon.ami.ssl_cipher_suite_id != null) {
-            ctx.gigamon.ami.ssl_cipher_suite_id_value = params['ssl_cipher_suite_id'][ctx.gigamon.ami.ssl_cipher_suite_id];
+          String s = ctx.gigamon.ami.ssl_cipher_suite_id;
+          if (Character.isDigit(s.charAt(0))) {
+            def mapping = params['ssl_cipher_suite_id'][s];
+            if (mapping != null && mapping.size() > 0) {
+              ctx.gigamon.ami.ssl_cipher_suite_id_value = mapping[0];
+              if (mapping.size() > 1) {
+                ctx.gigamon.ami.ssl_cipher_suite_id_protocol = mapping[1];
+                }
+              }
+            }
+            else {
+                ctx.gigamon.ami.ssl_cipher_suite_id_value = s;
+            }
         }
         // ssl_protocol_version
         if (ctx.gigamon.ami.ssl_protocol_version != null) {
@@ -869,13 +881,6 @@ processors:
         // ssl_ext_sig_algorithm_hash
         if (ctx.gigamon.ami.ssl_ext_sig_algorithm_hash != null) {
             ctx.gigamon.ami.ssl_ext_sig_algorithm_hash_value = params['ssl_ext_sig_algorithm_hash'][ctx.gigamon.ami.ssl_ext_sig_algorithm_hash];
-        }
-        // ssl_cipher_suite_id
-        if (ctx.gigamon.ami.ssl_cipher_suite_id != null) {
-            ctx.gigamon.ami.ssl_cipher_suite_id_value = params['ssl_cipher_suite_id'][ctx.gigamon.ami.ssl_cipher_suite_id][0];
-            if (params['ssl_cipher_suite_id'][ctx.gigamon.ami.ssl_cipher_suite_id].size() > 1) {
-                ctx.gigamon.ami.ssl_cipher_suite_id_protocol = params['ssl_cipher_suite_id'][ctx.gigamon.ami.ssl_cipher_suite_id][1];
-            }
         }
         // ssl_ext_sig_algorithm_scheme
         if (ctx.gigamon.ami.ssl_ext_sig_algorithm_scheme != null) {

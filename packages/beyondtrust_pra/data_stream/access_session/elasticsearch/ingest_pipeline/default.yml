@@ -121,6 +121,12 @@ processors:
       tag: rename_destination_os
       target_field: beyondtrust_pra.access_session.destination.os
       ignore_missing: true
+  - grok:
+      field: json.destination.private_ip
+      tag: grok_destination_private_ip
+      patterns:
+        - ^%{IP:json.destination.private_ip}:%{POSINT:json.destination.private_port}$
+      ignore_failure: true
   - convert:
       field: json.destination.private_ip
       tag: convert_destination_private_ip_to_ip
@@ -137,6 +143,27 @@ processors:
       tag: set_destination_nat_ip_from_access_session_destination_private_ip
       copy_from: beyondtrust_pra.access_session.destination.private_ip
       ignore_empty_value: true
+  - convert:
+      field: json.destination.private_port
+      tag: convert_destination_private_port_to_long
+      target_field: beyondtrust_pra.access_session.destination.private_port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.nat.port
+      tag: set_destination_nat_port_from_destination_private_port
+      copy_from: beyondtrust_pra.access_session.destination.private_port
+      ignore_empty_value: true
+  - grok:
+      field: json.destination.public_ip
+      tag: grok_destination_public_ip
+      patterns:
+        - ^%{IP:json.destination.public_ip}:%{POSINT:json.destination.public_port}$
+      ignore_failure: true
   - convert:
       field: json.destination.public_ip
       tag: convert_destination_public_ip_to_ip
@@ -158,6 +185,21 @@ processors:
       tag: geoip_destination_ip
       target_field: destination.geo
       ignore_missing: true
+  - convert:
+      field: json.destination.public_port
+      tag: convert_destination_public_port_to_long
+      target_field: beyondtrust_pra.access_session.destination.public_port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_destination_public_port
+      copy_from: beyondtrust_pra.access_session.destination.public_port
+      ignore_empty_value: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
@@ -512,6 +554,12 @@ processors:
       tag: rename_performed_by_os
       target_field: beyondtrust_pra.access_session.performed_by.os
       ignore_missing: true
+  - grok:
+      field: json.performed_by.private_ip
+      tag: grok_performed_by_private_ip
+      patterns:
+        - ^%{IP:json.performed_by.private_ip}:%{POSINT:json.performed_by.private_port}$
+      ignore_failure: true
   - convert:
       field: json.performed_by.private_ip
       tag: convert_performed_by_private_ip_to_ip
@@ -529,6 +577,27 @@ processors:
       copy_from: beyondtrust_pra.access_session.performed_by.private_ip
       ignore_empty_value: true
   - convert:
+      field: json.performed_by.private_port
+      tag: convert_performed_by_private_port_to_long
+      target_field: beyondtrust_pra.access_session.performed_by.private_port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.nat.port
+      tag: set_source_nat_port_from_performed_by_private_port
+      copy_from: beyondtrust_pra.access_session.performed_by.private_port
+      ignore_empty_value: true
+  - grok:
+      field: json.performed_by.public_ip
+      tag: grok_performed_by_public_ip
+      patterns:
+        - ^%{IP:json.performed_by.public_ip}:%{POSINT:json.performed_by.public_port}$
+      ignore_failure: true
+  - convert:
       field: json.performed_by.public_ip
       tag: convert_performed_by_public_ip_to_ip
       target_field: beyondtrust_pra.access_session.performed_by.public_ip
@@ -543,6 +612,21 @@ processors:
       field: source.ip
       tag: set_source_ip_from_access_session_performed_by_public_ip
       copy_from: beyondtrust_pra.access_session.performed_by.public_ip
+      ignore_empty_value: true
+  - convert:
+      field: json.performed_by.public_port
+      tag: convert_performed_by_public_port_to_long
+      target_field: beyondtrust_pra.access_session.performed_by.public_port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      tag: set_source_port_from_performed_by_public_port
+      copy_from: beyondtrust_pra.access_session.performed_by.public_port
       ignore_empty_value: true
   - geoip:
       field: source.ip
@@ -616,7 +700,7 @@ processors:
       ignore_missing: true
   - foreach:
       field: json.session.custom_attributes.custom_attribute
-      if: ctx.json?.session?.custom_attributes?.custom_attribute instanceof List
+      if: ctx.json?.session?.custom_attributes instanceof Map && ctx.json.session.custom_attributes.custom_attribute instanceof List
       ignore_failure: true
       processor:
         rename:
@@ -628,6 +712,7 @@ processors:
       field: json.session.custom_attributes
       tag: rename_session_custom_attributes
       target_field: beyondtrust_pra.access_session.session.custom_attributes
+      if: ctx.json?.session?.custom_attributes != null && ctx.json.session.custom_attributes instanceof Map
       ignore_missing: true
   - rename:
       field: json.session.duration
@@ -916,14 +1001,18 @@ processors:
         - beyondtrust_pra.access_session.destination.hostname
         - beyondtrust_pra.access_session.destination.id
         - beyondtrust_pra.access_session.destination.private_ip
+        - beyondtrust_pra.access_session.destination.private_port
         - beyondtrust_pra.access_session.destination.public_ip
+        - beyondtrust_pra.access_session.destination.public_port
         - beyondtrust_pra.access_session.destination.username
         - beyondtrust_pra.access_session.filename
         - beyondtrust_pra.access_session.filesize
         - beyondtrust_pra.access_session.performed_by.hostname
         - beyondtrust_pra.access_session.performed_by.id
         - beyondtrust_pra.access_session.performed_by.private_ip
+        - beyondtrust_pra.access_session.performed_by.private_port
         - beyondtrust_pra.access_session.performed_by.public_ip
+        - beyondtrust_pra.access_session.performed_by.public_port
         - beyondtrust_pra.access_session.performed_by.username
         - beyondtrust_pra.access_session.timestamp
       tag: remove_custom_duplicate_fields

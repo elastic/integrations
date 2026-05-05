@@ -1,0 +1,40 @@
+{
+    "id": "influxdb_otel-shard-write-errors",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[InfluxDB OTel] Shard write errors",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "influxdb",
+            "storage"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 8,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-influxdb.otel-*\n// Shard write error counters (cumulative)\n| WHERE COALESCE(metrics.storage_shard_write_err_count, storage_shard_write_err_count) IS NOT NULL\n    OR COALESCE(metrics.storage_shard_write_err_sum, storage_shard_write_err_sum) IS NOT NULL\n// Detect increase in errors over the window, by host and shard\n| STATS min_count = MIN(COALESCE(metrics.storage_shard_write_err_count, storage_shard_write_err_count)),\n    max_count = MAX(COALESCE(metrics.storage_shard_write_err_count, storage_shard_write_err_count)),\n    min_sum = MIN(COALESCE(metrics.storage_shard_write_err_sum, storage_shard_write_err_sum)),\n    max_sum = MAX(COALESCE(metrics.storage_shard_write_err_sum, storage_shard_write_err_sum))\n  BY host.name, COALESCE(attributes.id, attributes.bucket, \"default\")\n| EVAL count_increase = max_count - min_count,\n    sum_increase = max_sum - min_sum\n// Alert when any new shard write errors occurred\n| WHERE count_increase > 0 OR sum_increase > 0"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

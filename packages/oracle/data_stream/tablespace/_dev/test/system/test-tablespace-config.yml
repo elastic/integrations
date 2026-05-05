@@ -42,4 +42,33 @@ agent:
     contents: |
       export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-""}:/opt/oracle/instantclient_21_4"
       export PATH="${PATH}:/opt/oracle/instantclient_21_7:/opt/oracle/instantclient_21_4"
+      ORACLE_DSN="sys/Oradoc_db1@{{Hostname}}:{{Port}}/ORCLCDB.localdomain as sysdba"
+      MAX_RETRIES=30
+      INITIAL_SLEEP_SECONDS=1
+      MAX_SLEEP_SECONDS=30
+      SLEEP_SECONDS="${INITIAL_SLEEP_SECONDS}"
+
+      # Wait for Oracle listener/service registration to avoid transient ORA-12514 on startup.
+      echo "Waiting for Oracle listener/service..."
+      for i in $(seq 1 "${MAX_RETRIES}"); do
+        if OUTPUT=$(echo "select 1 from dual;" | sqlplus -s "${ORACLE_DSN}" 2>&1); then
+          echo "Oracle is ready (attempt ${i})"
+          break
+        fi
+
+        echo "Attempt ${i}/${MAX_RETRIES} failed: ${OUTPUT}"
+
+        if [ "${i}" -eq "${MAX_RETRIES}" ]; then
+          echo "Oracle service is not ready after retries: ${ORACLE_DSN}"
+          exit 1
+        fi
+
+        sleep "${SLEEP_SECONDS}"
+        if [ "${SLEEP_SECONDS}" -lt "${MAX_SLEEP_SECONDS}" ]; then
+          SLEEP_SECONDS=$((SLEEP_SECONDS * 2))
+          if [ "${SLEEP_SECONDS}" -gt "${MAX_SLEEP_SECONDS}" ]; then
+            SLEEP_SECONDS="${MAX_SLEEP_SECONDS}"
+          fi
+        fi
+      done
       cd /opt/oracle/instantclient_21_4

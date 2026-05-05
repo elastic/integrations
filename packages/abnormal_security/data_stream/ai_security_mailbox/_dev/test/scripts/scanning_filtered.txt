@@ -1,0 +1,159 @@
+# Test that campaigns with judgementStatus "Scanning" are deferred and not
+# indexed. The mock returns two campaigns: one Safe (published) and one
+# Scanning (deferred). Only the Safe campaign should appear as a document.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} scanning-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Expect exactly 1 document: the Safe campaign. The Scanning campaign
+# should be deferred (retry placeholder dropped by the drop_event
+# processor). Confirm for 30s to verify no extra documents arrive.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 30s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# Verify exactly 1 document was indexed.
+exec jq '.hits.total.value' got_docs.json
+stdout '^1$'
+
+# Verify the indexed document is the Safe campaign.
+exec jq -r '.hits.hits[0]._source.abnormal_security.ai_security_mailbox.campaign_id' got_docs.json
+stdout '^safe-1$'
+
+exec jq -r '.hits.hits[0]._source.abnormal_security.ai_security_mailbox.judgement_status' got_docs.json
+stdout '^Safe$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down scanning-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://scanning-mock:8080
+  access_token: xxxx
+data_stream:
+  vars:
+    interval: 30s
+    initial_interval: 1h
+    page_size: 10
+    scanning_timeout: 168h
+    preserve_original_event: true
+
+-- scanning-mock/docker-compose.yml --
+version: '2.3'
+services:
+  scanning-mock:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: scanning-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+
+-- scanning-mock/config.yml --
+rules:
+  # Listing page 1: two campaigns.
+  - path: /v1/abusecampaigns
+    methods: ['GET']
+    query_params:
+      filter: "{filter:.*}"
+      pageNumber: 1
+      pageSize: 10
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"campaigns":[{"campaignId":"safe-1"},{"campaignId":"scanning-1"}],"pageNumber":1,"nextPageNumber":2}
+
+  # Listing page 2: empty (end of results).
+  - path: /v1/abusecampaigns
+    methods: ['GET']
+    query_params:
+      filter: "{filter:.*}"
+      pageNumber: 2
+      pageSize: 10
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"campaigns":[],"pageNumber":2}
+
+  # Detail: safe-1 has judgementStatus "Safe" — should be published.
+  - path: /v1/abusecampaigns/safe-1
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "campaignId": "safe-1",
+            "firstReported": "2024-07-26T10:30:06Z",
+            "lastReported": "2024-07-26T10:30:06Z",
+            "messageId": "7063250485337877109",
+            "subject": "Safe Email",
+            "fromName": "sender@example.com",
+            "fromAddress": "sender@example.com",
+            "recipientName": "recipient",
+            "recipientAddress": "recipient@example.com",
+            "judgementStatus": "Safe",
+            "overallStatus": "No Action Needed",
+            "attackType": "Attack Type: Graymail"
+          }
+          `}}
+
+  # Detail: scanning-1 has judgementStatus "Scanning" — should be deferred.
+  - path: /v1/abusecampaigns/scanning-1
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "campaignId": "scanning-1",
+            "firstReported": "2024-07-26T11:00:00Z",
+            "lastReported": "2024-07-26T11:00:00Z",
+            "messageId": "8888888888888888888",
+            "subject": "Scanning Email",
+            "fromName": "unknown@example.com",
+            "fromAddress": "unknown@example.com",
+            "recipientName": "recipient",
+            "recipientAddress": "recipient@example.com",
+            "judgementStatus": "Scanning",
+            "overallStatus": "",
+            "attackType": ""
+          }
+          `}}

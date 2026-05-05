@@ -1,0 +1,35 @@
+{
+  "id": "mongodb_otel-high-cache-miss-rate",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[MongoDB OTel] High cache miss rate",
+    "tags": [
+      "observability",
+      "mongodb"
+    ],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "TS metrics-mongodbreceiver.otel-default\n// Scope to MongoDB OTel metrics\n| WHERE data_stream.dataset == \"mongodbreceiver.otel\"\n| WHERE metrics.mongodb.cache.operations IS NOT NULL\n// Split hit vs miss for cache operations (counter); both branches output same schema\n| FORK (\n    WHERE attributes.type == \"hit\"\n    | STATS hits = SUM(RATE(metrics.mongodb.cache.operations)) BY resource.attributes.server.address\n    | EVAL server = resource.attributes.server.address, misses = 0.0\n  )\n  (\n    WHERE attributes.type == \"miss\"\n    | STATS misses = SUM(RATE(metrics.mongodb.cache.operations)) BY resource.attributes.server.address\n    | EVAL server = resource.attributes.server.address, hits = 0.0\n  )\n| STATS hits = SUM(hits), misses = SUM(misses) BY server\n| WHERE hits IS NOT NULL AND misses IS NOT NULL AND (hits + misses) > 0\n| EVAL miss_rate = ROUND(misses / (hits + misses) * 100.0, 2)\n// Alert when cache miss rate exceeds 5% (working set may exceed WiredTiger cache)\n| WHERE miss_rate > 5.0\n| SORT miss_rate DESC\n| LIMIT 20"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

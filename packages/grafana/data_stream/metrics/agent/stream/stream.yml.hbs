@@ -1,0 +1,74 @@
+metricsets: ["collector"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+period: {{period}}
+metrics_path: {{metrics_path}}
+metrics_filters:
+  include:
+    # Instance stats (all simple gauges)
+    - "grafana_stat_.*"
+    # Alerting
+    - "grafana_alerting_.*"
+    # API (summaries produce _count/_sum plus quantile docs)
+    - "grafana_api_.*"
+    # HTTP (specific _count/_sum to avoid histogram bucket explosion)
+    - "grafana_http_request_duration_seconds_count"
+    - "grafana_http_request_duration_seconds_sum"
+    - "grafana_http_request_in_flight"
+    - "grafana_http_response_size_bytes_count"
+    - "grafana_http_response_size_bytes_sum"
+    - "grafana_page_response_status_total"
+    - "grafana_proxy_response_status_total"
+    # Database
+    - "grafana_database_.*"
+    # Datasource
+    - "grafana_datasource_.*"
+    - "grafana_db_datasource_query_by_id_total"
+    # Build and environment
+    - "grafana_build_.*"
+    - "grafana_environment_info"
+    - "grafana_instance_start_total"
+    # Process
+    - "grafana_process_.*"
+    - "process_.*"
+    # Authentication
+    - "grafana_authentication_.*"
+    - "grafana_authn_.*"
+    - "grafana_authenticated_user_requests"
+    # Email
+    - "grafana_emails_.*"
+    # Live / websocket
+    - "grafana_live_node_num_.*"
+    # Frontend (specific _count/_sum to avoid histogram bucket explosion)
+    - "grafana_frontend_boot_load_time_seconds_count"
+    - "grafana_frontend_boot_load_time_seconds_sum"
+    - "grafana_frontend_boot_first_contentful_paint_time_seconds_count"
+    - "grafana_frontend_boot_first_contentful_paint_time_seconds_sum"
+    # Other application metrics
+    - "grafana_public_dashboard_request_count"
+    - "grafana_rendering_queue_size"
+    # Go runtime
+    - "go_goroutines"
+    - "go_threads"
+    - "go_memstats_.*"
+    - "go_gc_duration_seconds_count"
+    - "go_gc_duration_seconds_sum"
+    - "go_info"
+{{#if username}}
+username: {{username}}
+{{/if}}
+{{#if password}}
+password: {{password}}
+{{/if}}
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

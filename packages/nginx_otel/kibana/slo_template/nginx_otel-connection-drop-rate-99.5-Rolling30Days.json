@@ -1,0 +1,58 @@
+{
+    "id": "nginx_otel-connection-drop-rate-99.5-Rolling30Days",
+    "type": "slo_template",
+    "attributes": {
+        "name": "[Nginx OTel] Connection handling rate 99.5% rolling 30 days",
+        "description": "This SLO tracks the connection handling success rate of NGINX via OTel metrics, ensuring that 99.5% of 1-minute time intervals show all accepted connections being successfully handled (no drops) over a rolling 30-day period to maintain reliable connection processing.",
+        "indicator": {
+            "type": "sli.metric.timeslice",
+            "params": {
+                "index": "metrics-*",
+                "filter": "data_stream.dataset: \"nginxreceiver.otel\" AND NOT attributes.state: *",
+                "metric": {
+                    "metrics": [
+                        {
+                            "name": "A",
+                            "aggregation": "max",
+                            "field": "nginx.connections_handled"
+                        },
+                        {
+                            "name": "B",
+                            "aggregation": "min",
+                            "field": "nginx.connections_handled"
+                        },
+                        {
+                            "name": "C",
+                            "aggregation": "max",
+                            "field": "nginx.connections_accepted"
+                        },
+                        {
+                            "name": "D",
+                            "aggregation": "min",
+                            "field": "nginx.connections_accepted"
+                        }
+                    ],
+                    "equation": "(A-B)/(C-D)",
+                    "comparator": "GTE",
+                    "threshold": 1.0
+                },
+                "timestampField": "@timestamp"
+            }
+        },
+        "budgetingMethod": "timeslices",
+        "timeWindow": {
+            "duration": "30d",
+            "type": "rolling"
+        },
+        "objective": {
+            "target": 0.995,
+            "timesliceTarget": 0.95,
+            "timesliceWindow": "1m"
+        },
+        "tags": [
+            "nginx",
+            "otel"
+        ],
+        "groupBy": "host.name"
+    }
+}

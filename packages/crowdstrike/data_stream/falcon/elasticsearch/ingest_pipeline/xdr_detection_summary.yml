@@ -13,6 +13,7 @@ processors:
       value: info
       tag: append_info_type
   - set:
+      tag: set_event_action_2bbdf18c
       field: event.action
       value: xdr-detection
   - append:
@@ -21,6 +22,7 @@ processors:
       tag: append_author
       if: ctx.crowdstrike?.event?.Author != null
   - rename:
+      tag: rename_crowdstrike_event_Name_to_rule_name_fcf360bf
       field: crowdstrike.event.Name
       target_field: rule.name
       ignore_missing: true
@@ -134,7 +136,7 @@ processors:
       allow_duplicates: false
       tag: append_users
       if: ctx.crowdstrike?.event?.Users != null && !ctx.crowdstrike?.event?.Users.contains(",")
-  - set: 
+  - set:
       field: rule.description
       copy_from: message
       tag: set_rule_description
@@ -200,6 +202,8 @@ processors:
         - UNIX
       tag: date_event_end_time_epoch
       if: "ctx.crowdstrike?.event?.EndTimeEpoch != null && String.valueOf(ctx.crowdstrike.event.EndTimeEpoch).length() <= 11"
+
+# Threat fields: the default pipeline sets threat.framework from the threat.* fields.
   - split:
       field: crowdstrike.event.Techniques
       separator: ","
@@ -224,46 +228,6 @@ processors:
       target_field: threat.tactic.id
       tag: split_tactic_ids
       if: ctx.crowdstrike?.event?.TacticIds != null
-  - script:
-      description: For tactics that are prefixed with "CS" or "TA".
-      lang: painless
-      tag: script_threat_framework
-      source: |
-        Set list = new HashSet();
-        String f_cs = "CrowdStrike Falcon Detections Framework";
-        String f_ma = "MITRE ATT&CK";
-        // Handling tactics prefixed with "CS" or "TA".
-        if (ctx.threat?.tactic?.id != null && ctx.threat.tactic.id.size() > 0){
-          for (String t: ctx.threat.tactic.id) {
-            if (t.startsWith("CS")) {
-              list.add(f_cs);
-            }
-            else if (t.startsWith("TA")) {
-              list.add(f_ma);
-            }
-          }
-        }
-        // Handling techniques prefixed with "CS".
-        if (ctx.threat?.technique?.id != null && ctx.threat.technique.id.size() > 0){
-          for (String t: ctx.threat.technique.id) {
-            if (t.startsWith("CS")) {
-              list.add(f_cs);
-            }
-          }
-        }
-        // Handling falcon specific tactics.
-        if (ctx.threat?.tactic?.name != null && ctx.threat.tactic.name.size() > 0) {
-          for (String t: ctx.threat.tactic.name) {
-            if (['malware','exploit','post-exploit','machine learning','custom intelligence','falcon overwatch','falcon intel','ai powered ioa','insecure security posture'].contains(t.toLowerCase())) {
-              list.add(f_cs);
-            }
-          }
-        }
-        
-        if (ctx.threat == null) {
-          ctx.threat = new HashMap();
-        }
-        ctx.threat.framework = list;
 
 on_failure:
   - append:
@@ -273,3 +237,7 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

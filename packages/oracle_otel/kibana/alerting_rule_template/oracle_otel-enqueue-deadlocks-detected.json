@@ -1,0 +1,38 @@
+{
+  "id": "oracle_otel-enqueue-deadlocks-detected",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Oracle OTel] Enqueue deadlocks detected",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "oracle"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-oracledbreceiver.otel-*\n// enqueue_deadlocks is a cumulative counter; INCREASE gives new deadlocks in window\n| WHERE oracledb.enqueue_deadlocks IS NOT NULL\n| STATS delta = SUM(INCREASE(oracledb.enqueue_deadlocks))\n        BY oracledb.instance.name, host.name\n// Alert on any increase — deadlocks cause ORA-00060 and rolled-back transactions\n// INCREASE handles counter resets on instance restart\n| WHERE delta > 0\n| SORT delta DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "oracledb.instance.name",
+      "termSize": 50
+    }
+  }
+}

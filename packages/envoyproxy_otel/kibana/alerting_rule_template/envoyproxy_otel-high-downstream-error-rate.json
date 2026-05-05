@@ -1,0 +1,36 @@
+{
+  "id": "envoyproxy_otel-high-downstream-error-rate",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Envoy OTel] High downstream error rate",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "envoy",
+      "errors"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n// Aggregate across HTTP stat_prefixes (ingress_http, admin) — add more COALESCE terms as needed\n| EVAL total_rq = COALESCE(envoy.http.ingress_http.downstream_rq_completed, 0::long)\n    + COALESCE(envoy.http.admin.downstream_rq_completed, 0::long)\n| EVAL success_rq = COALESCE(envoy.http.ingress_http.downstream_rq_2xx, 0::long)\n    + COALESCE(envoy.http.admin.downstream_rq_2xx, 0::long)\n| WHERE total_rq > 50\n| EVAL error_rate = TO_DOUBLE(total_rq - success_rq) / TO_DOUBLE(total_rq) * 100.0\n| STATS max_error_rate = MAX(error_rate)\n// Healthy: < 1%; Unhealthy: > 5%. Adjust threshold for your SLO.\n| WHERE max_error_rate > 5.0"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m"
+    }
+  }
+}

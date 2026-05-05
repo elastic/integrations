@@ -1,0 +1,25 @@
+---
+description: Benchmark 100000 threatstream events ingested.
+input: http_endpoint
+vars: ~
+data_stream:
+  name: threatstream
+  vars:
+    listen_address: 0.0.0.0
+    listen_port: 9080
+    ioc_expiration_duration: 5d
+    preserve_original_event: true
+warmup_time_period: 10s
+corpora:
+  input_service:
+    name: threatstream
+    signal: SIGHUP
+  generator:
+    total_events: 100000
+    template:
+      path: ./threatstream-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./threatstream-benchmark/config.yml
+    fields:
+      path: ./threatstream-benchmark/fields.yml

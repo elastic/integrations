@@ -1,0 +1,40 @@
+{
+  "id": "cockroachdb_otel-l0-files-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[CockroachDB OTel] L0 file count high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cockroachdb",
+      "storage"
+    ],
+    "schedule": {
+      "interval": "15m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND storage_l0_num_files IS NOT NULL\n  AND storage_l0_num_files > 1000\n// > 1000 indicates compaction falling behind\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NOT NULL\n| STATS l0_files = MAX(storage_l0_num_files) BY attributes.node_id, attributes.store, host.name\n| SORT l0_files DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.node_id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

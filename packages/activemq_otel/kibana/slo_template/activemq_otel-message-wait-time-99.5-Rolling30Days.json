@@ -1,0 +1,51 @@
+{
+  "attributes": {
+    "name": "[ActiveMQ OTel] Message wait time 99.5% rolling 30 days",
+    "description": "This SLO tracks the average message wait time (time messages sit in a destination before consumption) via OTel metrics, ensuring that 99.5% of 1-minute time intervals show average wait time below 1 second over a rolling period of 30 days. Rising wait times indicate consumer lag or capacity issues.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"activemq.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "avg",
+              "field": "activemq.message.wait_time.avg"
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 1000
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "activemq",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.activemq.broker.name"
+    ]
+  },
+  "id": "activemq_otel-message-wait-time-99.5-Rolling30Days",
+  "type": "slo_template",
+  "artifacts": {
+    "dashboards": [
+      { "id": "activemq_otel-destinations" },
+      { "id": "activemq_otel-overview" }
+    ]
+  }
+}

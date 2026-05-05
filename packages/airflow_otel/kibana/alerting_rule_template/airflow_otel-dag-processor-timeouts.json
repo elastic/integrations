@@ -1,0 +1,36 @@
+{
+  "id": "airflow_otel-dag-processor-timeouts",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Airflow OTel] DAG processor timeouts",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "airflow",
+      "dag-processing"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-airflow.otel-default*\n| WHERE airflow.dag_processing.processor_timeouts IS NOT NULL\n// Counter: detect new processor timeouts in the window\n| STATS timeout_count = SUM(INCREASE(airflow.dag_processing.processor_timeouts))\n| WHERE timeout_count > 0"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+    "id": "influxdb_otel-cache-write-errors",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[InfluxDB OTel] Cache write errors",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "influxdb",
+            "storage"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 8,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-influxdb.otel-*\n// Cache write errors counter (cumulative)\n| WHERE COALESCE(metrics.storage_cache_writes_err, storage_cache_writes_err) IS NOT NULL\n// Detect increase in errors over the window\n| STATS min_err = MIN(COALESCE(metrics.storage_cache_writes_err, storage_cache_writes_err)),\n    max_err = MAX(COALESCE(metrics.storage_cache_writes_err, storage_cache_writes_err))\n  BY host.name\n| EVAL error_increase = max_err - min_err\n// Alert when any new cache write errors occurred\n| WHERE error_increase > 0"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

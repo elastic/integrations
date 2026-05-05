@@ -846,6 +846,8 @@ An example event for `index` looks as following:
             "name": ".ml-state-000001",
             "tier_preference": "data_content",
             "creation_date": 1731657995821,
+            "mode": "time_series",
+            "codec": "default",
             "version": "8503000",
             "primaries": {
                 "docs": {
@@ -977,8 +979,10 @@ An example event for `index` looks as following:
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |  |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |  |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |  |
+| elasticsearch.index.codec |  | keyword |  |
 | elasticsearch.index.creation_date |  | date |  |
 | elasticsearch.index.hidden |  | boolean |  |
+| elasticsearch.index.mode |  | keyword |  |
 | elasticsearch.index.name | Index name. | keyword |  |
 | elasticsearch.index.primaries.docs.count |  | long | gauge |
 | elasticsearch.index.primaries.docs.deleted |  | long | gauge |

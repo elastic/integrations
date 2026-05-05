@@ -1,0 +1,23 @@
+name: PR Review
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  run:
+    if: >-
+      (contains(fromJSON('["Copilot","dependabot[bot]","github-actions[bot]"]'), github.event.pull_request.user.login)) &&
+      github.event.pull_request.draft == false &&
+      !contains(github.event.pull_request.labels.*.name, 'no-pr-review')
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@v0
+    with:
+      intensity: aggressive
+      minimum_severity: nitpick
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

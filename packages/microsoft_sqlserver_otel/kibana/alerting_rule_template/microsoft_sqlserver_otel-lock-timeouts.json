@@ -1,0 +1,39 @@
+{
+  "id": "microsoft_sqlserver_otel-lock-timeouts",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[SQL Server OTel] Lock timeouts",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "sqlserver"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-sqlserverreceiver.otel-default\n// Lock timeouts: queries giving up waiting for locks\n| WHERE metrics.sqlserver.lock.timeout.rate IS NOT NULL\n| STATS max_timeouts = MAX(metrics.sqlserver.lock.timeout.rate),\n       instance_id = MAX(resource.attributes.service.instance.id)\n  BY COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\")\n| WHERE max_timeouts > 0\n| KEEP instance_id, max_timeouts"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "instance_id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

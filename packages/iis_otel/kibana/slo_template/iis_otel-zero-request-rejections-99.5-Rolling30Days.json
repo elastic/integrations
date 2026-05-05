@@ -1,0 +1,40 @@
+{
+  "attributes": {
+    "name": "[IIS OTel] Zero request rejections 99.5% rolling 30 days",
+    "description": "This SLO tracks the proportion of 1-minute time intervals in which IIS rejected zero requests over a rolling period of 30 days. Non-zero rejections indicate the server failed to serve clients — typically due to queue overflow, connection limits, or bandwidth throttling. Target: 99.5% of timeslices with zero rejections.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"iisreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {"name": "A", "aggregation": "max", "field": "iis.request.rejected"},
+            {"name": "B", "aggregation": "min", "field": "iis.request.rejected"}
+          ],
+          "equation": "A - B",
+          "comparator": "LT",
+          "threshold": 0.5
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {"duration": "30d", "type": "rolling"},
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": ["iis", "otel"],
+    "groupBy": ["resource.attributes.iis.application_pool"],
+    "artifacts": {
+      "dashboards": [
+        {"id": "iis_otel-overview"},
+        {"id": "iis_otel-sites"}
+      ]
+    }
+  },
+  "id": "iis_otel-zero-request-rejections-99.5-Rolling30Days",
+  "type": "slo_template"
+}

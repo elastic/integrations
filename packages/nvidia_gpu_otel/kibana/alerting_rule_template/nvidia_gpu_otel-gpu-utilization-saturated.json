@@ -1,0 +1,40 @@
+{
+    "id": "nvidia_gpu_otel-gpu-utilization-saturated",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[NVIDIA GPU OTel] GPU utilization saturated",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "nvidia_gpu"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-nvidia_gpu.otel-default\n| WHERE DCGM_FI_DEV_GPU_UTIL IS NOT NULL\n| STATS\n    avg_util = AVG(DCGM_FI_DEV_GPU_UTIL),\n    max_util = MAX(DCGM_FI_DEV_GPU_UTIL)\n  BY Hostname, UUID, modelName\n// Sustained high utilization above 95% indicates compute saturation\n// Adjust threshold based on workload expectations\n| WHERE avg_util > 95\n| SORT avg_util DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "UUID",
+            "termSize": 50
+        }
+    }
+}

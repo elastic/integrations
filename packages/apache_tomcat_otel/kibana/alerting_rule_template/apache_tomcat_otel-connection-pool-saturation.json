@@ -1,0 +1,37 @@
+{
+    "id": "apache_tomcat_otel-connection-pool-saturation",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Tomcat OTel] Connection pool saturation",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "tomcat"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_connectionCount IS NOT NULL\n    AND Catalina_ThreadPool_maxConnections IS NOT NULL\n| STATS\n    connections = MAX(Catalina_ThreadPool_connectionCount),\n    max_connections = MAX(Catalina_ThreadPool_maxConnections)\n  BY host.name, attributes.name\n| WHERE max_connections > 0\n| EVAL connection_pct = ROUND(connections / max_connections * 100.0, 2)\n// Connection saturation threshold \u2014 when keep-alive connections accumulate\n// they can starve new connections; adjust based on connector capacity planning\n| WHERE connection_pct > 80.0\n| SORT connection_pct DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 100,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
