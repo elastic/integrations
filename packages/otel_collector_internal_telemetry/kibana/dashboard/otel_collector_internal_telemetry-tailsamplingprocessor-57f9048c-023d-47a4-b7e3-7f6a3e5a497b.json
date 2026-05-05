@@ -1,0 +1,1322 @@
+{
+    "accessControl": {
+        "accessMode": "default",
+        "owner": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    },
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "NONE",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "c0ffee00-0000-4000-8000-000000000001": {
+                    "explicitInput": {
+                        "controlType": "VALUES_FROM_QUERY",
+                        "esqlQuery": "TS metrics-collectortelemetry.otel.otel-*\n| STATS BY service.instance.id, service.name \n| EVAL identifier = CONCAT(service.instance.id, \" (\",service.name,\")\")\n| KEEP identifier\n| STATS BY identifier\n| STATS identifiers = VALUES(identifier)\n| EVAL identifiers = MV_APPEND(identifiers, \"--ALL--\")\n| MV_EXPAND identifiers\n| RENAME identifiers AS identifier\n| SORT identifier\n",
+                        "selectedOptions": [
+                            "--ALL--"
+                        ],
+                        "singleSelect": true,
+                        "title": "instance",
+                        "variableName": "instance",
+                        "variableType": "values"
+                    },
+                    "grow": false,
+                    "order": 0,
+                    "type": "esqlControl",
+                    "width": "medium"
+                }
+            },
+            "showApplySelections": false
+        },
+        "description": "Tail sampling internal metrics  overview.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "collectortelemetry.otel*"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "collectortelemetry.otel*"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                    "managed": false,
+                                    "name": "metrics-collectortelemetry.otel.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-collectortelemetry.otel.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-collectortelemetry.otel.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "993b8a2d-78cb-4894-9080-a0c25330d004": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "traces_on_memory",
+                                                    "customLabel": true,
+                                                    "fieldName": "traces_on_memory",
+                                                    "inMetricDimension": true,
+                                                    "label": "Traces on memory (median)",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                            "query": {
+                                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_sampling_traces_on_memory IS NOT NULL\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_traces_on_memory, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| STATS traces_on_memory = MEDIAN(otelcol_processor_tail_sampling_sampling_traces_on_memory)\n| KEEP traces_on_memory\n"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_sampling_traces_on_memory IS NOT NULL\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_traces_on_memory, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| STATS traces_on_memory = MEDIAN(otelcol_processor_tail_sampling_sampling_traces_on_memory)\n| KEEP traces_on_memory\n"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "color": "#16C5C0",
+                                "layerId": "993b8a2d-78cb-4894-9080-a0c25330d004",
+                                "layerType": "data",
+                                "metricAccessor": "traces_on_memory",
+                                "subtitle": "median"
+                            }
+                        },
+                        "title": "traces_on_memory",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Single-number view of buffered traces (same gauge as time series above).",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_sampling_traces_on_memory IS NOT NULL\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_traces_on_memory, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| STATS traces_on_memory = MEDIAN(otelcol_processor_tail_sampling_sampling_traces_on_memory)\n| KEEP traces_on_memory\n"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Traces on memory (median)"
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "f9e17922-954d-4c1e-9ae9-44ac5b9da050",
+                    "w": 8,
+                    "x": 0,
+                    "y": 2
+                },
+                "panelIndex": "f9e17922-954d-4c1e-9ae9-44ac5b9da050",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                    "managed": false,
+                                    "name": "metrics-collectortelemetry.otel.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-collectortelemetry.otel.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-collectortelemetry.otel.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "59f42cf8-bb9b-446d-8743-959503cae71f": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "new_traces_per_sec",
+                                                    "customLabel": true,
+                                                    "fieldName": "new_traces_per_sec",
+                                                    "inMetricDimension": true,
+                                                    "label": "new traces / s",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "service.instance.id",
+                                                    "customLabel": true,
+                                                    "fieldName": "service.instance.id",
+                                                    "label": "service.instance.id",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                            "query": {
+                                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_new_trace_id_received IS NOT NULL\n| KEEP @timestamp, otelcol_processor_tail_sampling_new_trace_id_received, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| KEEP @timestamp, otelcol_processor_tail_sampling_new_trace_id_received, service.instance.id\n| STATS new_traces_per_sec = SUM(RATE(otelcol_processor_tail_sampling_new_trace_id_received)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_new_trace_id_received IS NOT NULL\n| KEEP @timestamp, otelcol_processor_tail_sampling_new_trace_id_received, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| KEEP @timestamp, otelcol_processor_tail_sampling_new_trace_id_received, service.instance.id\n| STATS new_traces_per_sec = SUM(RATE(otelcol_processor_tail_sampling_new_trace_id_received)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "new_traces_per_sec"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "59f42cf8-bb9b-446d-8743-959503cae71f",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "Time"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "new_traces_per_sec",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "otelcol_processor_tail_sampling_new_trace_id_received — arrival rate of new traces.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_new_trace_id_received IS NOT NULL\n| KEEP @timestamp, otelcol_processor_tail_sampling_new_trace_id_received, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| KEEP @timestamp, otelcol_processor_tail_sampling_new_trace_id_received, service.instance.id\n| STATS new_traces_per_sec = SUM(RATE(otelcol_processor_tail_sampling_new_trace_id_received)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "New trace IDs / sec"
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "2994f9c6-a3a7-41ad-bd10-91bf7ccf8ce7",
+                    "w": 22,
+                    "x": 8,
+                    "y": 2
+                },
+                "panelIndex": "2994f9c6-a3a7-41ad-bd10-91bf7ccf8ce7",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                    "managed": false,
+                                    "name": "metrics-collectortelemetry.otel.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-collectortelemetry.otel.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-collectortelemetry.otel.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "673f24ca-ea18-45b1-ae90-9e7f69d02bbb": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "dropped_too_early_per_sec",
+                                                    "customLabel": true,
+                                                    "fieldName": "dropped_too_early_per_sec",
+                                                    "inMetricDimension": true,
+                                                    "label": "drops / s",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "service.instance.id",
+                                                    "customLabel": true,
+                                                    "fieldName": "service.instance.id",
+                                                    "label": "service.instance.id",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                            "query": {
+                                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_sampling_trace_dropped_too_early IS NOT NULL\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_trace_dropped_too_early, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_trace_dropped_too_early, service.instance.id\n| STATS dropped_too_early_per_sec = SUM(RATE(otelcol_processor_tail_sampling_sampling_trace_dropped_too_early)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_sampling_trace_dropped_too_early IS NOT NULL\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_trace_dropped_too_early, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_trace_dropped_too_early, service.instance.id\n| STATS dropped_too_early_per_sec = SUM(RATE(otelcol_processor_tail_sampling_sampling_trace_dropped_too_early)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "dropped_too_early_per_sec"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "673f24ca-ea18-45b1-ae90-9e7f69d02bbb",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "Time",
+                                        "yConfig": [
+                                            {
+                                                "color": "#f6726a",
+                                                "forAccessor": "dropped_too_early_per_sec"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "dropped_too_early_per_sec",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "otelcol_processor_tail_sampling_sampling_trace_dropped_too_early.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_sampling_trace_dropped_too_early IS NOT NULL\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_trace_dropped_too_early, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_trace_dropped_too_early, service.instance.id\n| STATS dropped_too_early_per_sec = SUM(RATE(otelcol_processor_tail_sampling_sampling_trace_dropped_too_early)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Traces dropped too early / sec"
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "29e9d95e-c57b-41b4-b233-28fc460277fa",
+                    "w": 18,
+                    "x": 30,
+                    "y": 2
+                },
+                "panelIndex": "29e9d95e-c57b-41b4-b233-28fc460277fa",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "layout": "horizontal",
+                    "links": [
+                        {
+                            "destinationRefName": "link_a5fcd781-c395-48db-8aad-44095abeedf6_dashboard",
+                            "id": "a5fcd781-c395-48db-8aad-44095abeedf6",
+                            "label": "Overview",
+                            "order": 0,
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_fd58fe12-16ff-4d53-a215-7b0386347166_dashboard",
+                            "id": "fd58fe12-16ff-4d53-a215-7b0386347166",
+                            "label": "Per policy",
+                            "order": 1,
+                            "type": "dashboardLink"
+                        }
+                    ]
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "1fa1f984-aee2-4210-b4a1-9bd688bc3e3c",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "1fa1f984-aee2-4210-b4a1-9bd688bc3e3c",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                    "managed": false,
+                                    "name": "metrics-collectortelemetry.otel.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-collectortelemetry.otel.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-collectortelemetry.otel.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "c0fd6a2b-04b8-4668-8693-be5528ff8693": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "traces_buffered",
+                                                    "customLabel": true,
+                                                    "fieldName": "traces_buffered",
+                                                    "inMetricDimension": true,
+                                                    "label": "traces",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "service.instance.id",
+                                                    "customLabel": true,
+                                                    "fieldName": "service.instance.id",
+                                                    "label": "service.instance.id",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                            "query": {
+                                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_sampling_traces_on_memory IS NOT NULL\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_traces_on_memory, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_traces_on_memory, service.instance.id\n| STATS traces_buffered = MEDIAN(otelcol_processor_tail_sampling_sampling_traces_on_memory) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_sampling_traces_on_memory IS NOT NULL\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_traces_on_memory, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_traces_on_memory, service.instance.id\n| STATS traces_buffered = MEDIAN(otelcol_processor_tail_sampling_sampling_traces_on_memory) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "traces_buffered"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "c0fd6a2b-04b8-4668-8693-be5528ff8693",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "Time"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "traces_buffered",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Gauge otelcol_processor_tail_sampling_sampling_traces_on_memory (median per bucket).",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_sampling_traces_on_memory IS NOT NULL\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_traces_on_memory, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_traces_on_memory, service.instance.id\n| STATS traces_buffered = MEDIAN(otelcol_processor_tail_sampling_sampling_traces_on_memory) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Traces buffered (median)"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "12f8ad4e-94ba-4206-964e-ff26861606f0",
+                    "w": 24,
+                    "x": 0,
+                    "y": 11
+                },
+                "panelIndex": "12f8ad4e-94ba-4206-964e-ff26861606f0",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                    "managed": false,
+                                    "name": "metrics-collectortelemetry.otel.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-collectortelemetry.otel.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-collectortelemetry.otel.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "13c7978d-acd9-4268-a86c-cfc640c2aeba": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "policy_errors_per_sec",
+                                                    "customLabel": true,
+                                                    "fieldName": "policy_errors_per_sec",
+                                                    "inMetricDimension": true,
+                                                    "label": "errors / s",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "service.instance.id",
+                                                    "customLabel": true,
+                                                    "fieldName": "service.instance.id",
+                                                    "label": "service.instance.id",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                            "query": {
+                                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_sampling_policy_evaluation_error IS NOT NULL\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_policy_evaluation_error, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_policy_evaluation_error, service.instance.id\n| STATS policy_errors_per_sec = SUM(RATE(otelcol_processor_tail_sampling_sampling_policy_evaluation_error)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_sampling_policy_evaluation_error IS NOT NULL\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_policy_evaluation_error, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_policy_evaluation_error, service.instance.id\n| STATS policy_errors_per_sec = SUM(RATE(otelcol_processor_tail_sampling_sampling_policy_evaluation_error)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "policy_errors_per_sec"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "13c7978d-acd9-4268-a86c-cfc640c2aeba",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "Time"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "policy_errors_per_sec",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "otelcol_processor_tail_sampling_sampling_policy_evaluation_error.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_sampling_policy_evaluation_error IS NOT NULL\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_policy_evaluation_error, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| KEEP @timestamp, otelcol_processor_tail_sampling_sampling_policy_evaluation_error, service.instance.id\n| STATS policy_errors_per_sec = SUM(RATE(otelcol_processor_tail_sampling_sampling_policy_evaluation_error)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), service.instance.id\n"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Policy evaluation errors / sec"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "49e4a1ee-142d-4ff8-ba7c-81ceb2042b13",
+                    "w": 24,
+                    "x": 24,
+                    "y": 11
+                },
+                "panelIndex": "49e4a1ee-142d-4ff8-ba7c-81ceb2042b13",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                    "managed": false,
+                                    "name": "metrics-collectortelemetry.otel.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-collectortelemetry.otel.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-collectortelemetry.otel.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "8919db55-357e-49dd-80a5-098527caa76e": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "global_trace_decisions_per_sec",
+                                                    "customLabel": true,
+                                                    "fieldName": "global_trace_decisions_per_sec",
+                                                    "inMetricDimension": true,
+                                                    "label": "global / s",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "series_label",
+                                                    "customLabel": true,
+                                                    "fieldName": "series_label",
+                                                    "label": "collector",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                            "query": {
+                                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_global_count_traces_sampled IS NOT NULL\n| WHERE decision == \"sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_global_count_traces_sampled, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| EVAL series_label = _collector\n| KEEP @timestamp, otelcol_processor_tail_sampling_global_count_traces_sampled, series_label\n| STATS global_trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_global_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_global_count_traces_sampled IS NOT NULL\n| WHERE decision == \"sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_global_count_traces_sampled, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| EVAL series_label = _collector\n| KEEP @timestamp, otelcol_processor_tail_sampling_global_count_traces_sampled, series_label\n| STATS global_trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_global_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "global_trace_decisions_per_sec"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "8919db55-357e-49dd-80a5-098527caa76e",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "Time"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "global_trace_decisions_per_sec",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "SUM(RATE(otelcol_processor_tail_sampling_global_count_traces_sampled)); attributes.decision == sampled. Series = collector.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_global_count_traces_sampled IS NOT NULL\n| WHERE decision == \"sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_global_count_traces_sampled, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| EVAL series_label = _collector\n| KEEP @timestamp, otelcol_processor_tail_sampling_global_count_traces_sampled, series_label\n| STATS global_trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_global_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Global Count Traces Sampled — decision: sampled"
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "aef6a1d1-2f73-4f96-b3b6-70287466a0ff",
+                    "sectionId": "5471a39b-d0d2-40ec-9d5c-22efbe7fb6eb",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "aef6a1d1-2f73-4f96-b3b6-70287466a0ff",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                    "managed": false,
+                                    "name": "metrics-collectortelemetry.otel.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-collectortelemetry.otel.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-collectortelemetry.otel.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "70feb2f8-425a-44ff-8944-3b8658eb9fdf": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "global_trace_decisions_per_sec",
+                                                    "customLabel": true,
+                                                    "fieldName": "global_trace_decisions_per_sec",
+                                                    "inMetricDimension": true,
+                                                    "label": "global / s",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Time",
+                                                    "customLabel": false,
+                                                    "fieldName": "Time",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "series_label",
+                                                    "customLabel": true,
+                                                    "fieldName": "series_label",
+                                                    "label": "collector",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+                                            "query": {
+                                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_global_count_traces_sampled IS NOT NULL\n| WHERE decision == \"not_sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_global_count_traces_sampled, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| EVAL series_label = _collector\n| KEEP @timestamp, otelcol_processor_tail_sampling_global_count_traces_sampled, series_label\n| STATS global_trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_global_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_global_count_traces_sampled IS NOT NULL\n| WHERE decision == \"not_sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_global_count_traces_sampled, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| EVAL series_label = _collector\n| KEEP @timestamp, otelcol_processor_tail_sampling_global_count_traces_sampled, series_label\n| STATS global_trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_global_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "global_trace_decisions_per_sec"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "70feb2f8-425a-44ff-8944-3b8658eb9fdf",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "Time",
+                                        "yConfig": [
+                                            {
+                                                "color": "#eaae01",
+                                                "forAccessor": "global_trace_decisions_per_sec"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "global_trace_decisions_per_sec",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Same global metric; attributes.decision == not_sampled.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_global_count_traces_sampled IS NOT NULL\n| WHERE decision == \"not_sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_global_count_traces_sampled, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| EVAL series_label = _collector\n| KEEP @timestamp, otelcol_processor_tail_sampling_global_count_traces_sampled, series_label\n| STATS global_trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_global_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Global Count Traces Sampled — decision: not_sampled"
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "52e2d806-0186-4067-a56c-603e2070d234",
+                    "sectionId": "5471a39b-d0d2-40ec-9d5c-22efbe7fb6eb",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "52e2d806-0186-4067-a56c-603e2070d234",
+                "type": "lens"
+            }
+        ],
+        "sections": [
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "5471a39b-d0d2-40ec-9d5c-22efbe7fb6eb",
+                    "y": 10
+                },
+                "title": "Global count of traces that were sampled or not by at least one policy"
+            }
+        ],
+        "timeFrom": "now-7d/d",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "OTel Collector — Tail sampling processor overview"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-04-16T13:48:25.904Z",
+    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "id": "otel_collector_internal_telemetry-tailsamplingprocessor-57f9048c-023d-47a4-b7e3-7f6a3e5a497b",
+    "references": [
+        {
+            "id": "otel_collector_internal_telemetry-tailsamplingprocessor-57f9048c-023d-47a4-b7e3-7f6a3e5a497b",
+            "name": "1fa1f984-aee2-4210-b4a1-9bd688bc3e3c:link_a5fcd781-c395-48db-8aad-44095abeedf6_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "otel_collector_internal_telemetry-tail-sampling-processor-otel",
+            "name": "1fa1f984-aee2-4210-b4a1-9bd688bc3e3c:link_fd58fe12-16ff-4d53-a215-7b0386347166_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+}
