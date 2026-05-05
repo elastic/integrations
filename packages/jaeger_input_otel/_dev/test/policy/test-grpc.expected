@@ -1,4 +1,5 @@
 connectors:
+    elasticapm/componentid-0: {}
     forward: {}
 exporters:
     elasticsearch/componentid-0:
@@ -20,14 +21,22 @@ output_permissions:
                     - auto_configure
                     - create_doc
                 - names:
-                    - logs-generic.otel-*
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+                - names:
+                    - metrics-*-*
                   privileges:
                     - auto_configure
                     - create_doc
 processors:
-    resourcedetection/componentid-0:
-        detectors:
-            - system
+    elasticapm/componentid-0: {}
+    transform/componentid-0:
+        metric_statements:
+            - context: datapoint
+              statements:
+                - set(attributes["data_stream.namespace"], "ep")
     transform/componentid-1:
         trace_statements:
             - context: span
@@ -38,6 +47,7 @@ processors:
             - context: spanevent
               statements:
                 - set(attributes["data_stream.type"], "logs")
+                - set(attributes["data_stream.dataset"], "jaegerreceiver")
                 - set(attributes["data_stream.namespace"], "ep")
 receivers:
     jaeger/componentid-0:
@@ -47,6 +57,18 @@ receivers:
 secret_references: []
 service:
     pipelines:
+        metrics:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        metrics/componentid-1:
+            exporters:
+                - forward
+            processors:
+                - transform/componentid-0
+            receivers:
+                - elasticapm/componentid-0
         traces:
             exporters:
                 - elasticsearch/componentid-0
@@ -54,9 +76,10 @@ service:
                 - forward
         traces/componentid-0:
             exporters:
+                - elasticapm/componentid-0
                 - forward
             processors:
-                - resourcedetection/componentid-0
+                - elasticapm/componentid-0
                 - transform/componentid-1
             receivers:
                 - jaeger/componentid-0
