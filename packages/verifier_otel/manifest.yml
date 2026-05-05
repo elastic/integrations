@@ -139,17 +139,62 @@ policy_templates:
         multi: false
         required: false
         show_user: true
+      - name: policy_id
+        type: text
+        title: Policy ID
+        description: The agent policy ID for this set of integrations.
+        multi: false
+        required: false
+        show_user: true
+      - name: policy_name
+        type: text
+        title: Policy Name
+        description: Human-readable name of the policy.
+        multi: false
+        required: false
+        show_user: true
+      - name: package_policy_id
+        type: text
+        title: Package Policy ID
+        description: Unique identifier for the package policy instance.
+        multi: false
+        required: false
+        show_user: true
+      - name: policy_templates
+        type: text
+        title: Policy Templates
+        description: "Policy template names from the integration package (for example, cloudtrail, guardduty, activitylogs). Multiple templates produce one integration entry each, all under the same policy. Combined with package_name to uniquely identify each integration."
+        multi: true
+        required: false
+        show_user: true
+      - name: package_name
+        type: text
+        title: Package Name
+        description: "Integration package name (for example, aws, azure, gcp, okta)."
+        multi: false
+        required: false
+        show_user: true
+      - name: package_title
+        type: text
+        title: Package Title
+        description: "Human-readable title of the integration package (for example, AWS, Azure, GCP)."
+        multi: false
+        required: false
+        show_user: true
+      - name: package_version
+        type: text
+        title: Package Version
+        description: "Semantic version of the integration package (for example, 2.17.0). Different versions might require different permissions. When empty, the latest permission set is used."
+        multi: false
+        required: false
+        show_user: true
       - name: policies
         type: yaml
         title: Policies
-        description: "List of verifier policies to evaluate. Each entry describes one agent policy and the target integrations to verify under it. To get distinct `package_policy_id` per target, emit one entry per target (with a single-element `policy_templates`); `policy_id` may repeat when targets share an agent policy."
+        description: "List of verifier policies to evaluate. Each entry describes one agent policy and the target integrations to verify under it. To get distinct `package_policy_id` per target, emit one entry per target (with a single-element `policy_templates`); `policy_id` may repeat when targets share an agent policy. When set, takes precedence over the per-policy scalar vars."
         multi: false
-        required: true
+        required: false
         show_user: true
-        default: |
-          - policy_id: ""
-            policy_templates: []
-            package_name: ""
 owner:
   github: elastic/cloud-services
   type: elastic
