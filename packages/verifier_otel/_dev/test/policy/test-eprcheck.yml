@@ -9,14 +9,22 @@ vars:
   # Credentials
   credentials_role_arn: arn:aws:iam::123456789012:role/TestRole
   credentials_external_id: test-external-id
-  # Policy
-  policy_id: test-policy-123
-  policy_name: Verifier-Policy-Test-Connector-abc12345
-  # Integrations (one entry per policy template; package metadata is shared)
-  policy_templates:
-    - cloudtrail
-    - guardduty
-  package_policy_id: test-pp-789
-  package_name: aws
-  package_title: AWS
-  package_version: "2.17.0"
+  # Policies — one entry per target integration. policy_id repeats because both
+  # targets live on the same agent policy; package_policy_id distinguishes them.
+  policies: |
+    - policy_id: test-policy-123
+      policy_name: Verifier-Policy-Test-Connector-abc12345
+      policy_templates:
+        - cloudtrail
+      package_name: aws
+      package_policy_id: test-pp-cloudtrail
+      package_title: AWS
+      package_version: "2.17.0"
+    - policy_id: test-policy-123
+      policy_name: Verifier-Policy-Test-Connector-abc12345
+      policy_templates:
+        - guardduty
+      package_name: aws
+      package_policy_id: test-pp-guardduty
+      package_title: AWS
+      package_version: "2.17.0"
