@@ -10,7 +10,7 @@ processors:
   - set:
       tag: set_ecs_version_f5923549
       field: ecs.version
-      value: '8.17.0'
+      value: "8.17.0"
   #
   # Parse the syslog header
   #
@@ -422,7 +422,7 @@ processors:
       field: "message"
       description: "113004"
       patterns:
-      - "AAA user %{DATA:_temp_.cisco.aaa_type} Successful(%{SPACE})?: server =(%{SPACE})?%{IP:destination.address} [:,] [Uu]ser = %{CISCO_USER:source.user.name}"
+        - "AAA user %{DATA:_temp_.cisco.aaa_type} Successful(%{SPACE})?: server =(%{SPACE})?%{IP:destination.address} [:,] [Uu]ser = %{CISCO_USER:source.user.name}"
       pattern_definitions:
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - grok:
@@ -433,7 +433,7 @@ processors:
       patterns:
         - "AAA user (authentication|authorization) Rejected(%{SPACE})?: reason = %{REASON}(%{SPACE})?: server = %{IP:destination.address}(%{SPACE})?: user = ?(%{CISCO_USER:source.user.name}|\\*+)(%{SPACE})?: user IP = %{IP:source.address}"
       pattern_definitions:
-        REASON: (AAA failure|Account has been disabled)
+        REASON: (AAA failure|Account has been disabled|Invalid password|Password has expired|Password is expiring|Password malformed)
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - grok:
       tag: grok_message_9e29df82
@@ -459,7 +459,7 @@ processors:
       field: "message"
       description: "113012"
       patterns:
-      - "AAA user authentication Successful(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}"
+        - "AAA user authentication Successful(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}"
       pattern_definitions:
         CISCO_USER: ((LOCAL\\+)?(%{HOSTNAME}\\+)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - grok:
@@ -468,7 +468,7 @@ processors:
       description: "113014"
       field: "message"
       patterns:
-          - "AAA authentication server not accessible(%{SPACE})?: server =(%{SPACE})?%{IP:destination.address}(%{SPACE})?: [Uu]ser = (%{CISCO_USER:source.user.name}|\\*+)(%{SPACE})?"
+        - "AAA authentication server not accessible(%{SPACE})?: server =(%{SPACE})?%{IP:destination.address}(%{SPACE})?: [Uu]ser = (%{CISCO_USER:source.user.name}|\\*+)(%{SPACE})?"
       pattern_definitions:
         CISCO_USER: ((LOCAL\\+)?(%{HOSTNAME}\\+)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - dissect:
@@ -495,8 +495,8 @@ processors:
       description: "113029, 113030, 113031, 113032, 113033, 113034, 113035, 113036, 113038, 113039"
       tag: "113039_group_user_ip"
       patterns:
-        - '^Group <%{NOTBRACKET:source.user.group.name}> User <%{NOTBRACKET:source.user.name}> IP <%{NOTBRACKET:source.address}>'
-        - '^Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{NOTSPACE:source.address}'
+        - "^Group <%{NOTBRACKET:source.user.group.name}> User <%{NOTBRACKET:source.user.name}> IP <%{NOTBRACKET:source.address}>"
+        - "^Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{NOTSPACE:source.address}"
       pattern_definitions:
         NOTBRACKET: "[^<>]+"
   - grok:
@@ -939,7 +939,7 @@ processors:
       if: '["602101"].contains(ctx._temp_.cisco.message_id)'
       field: "message"
       description: "602101"
-      pattern: 'PMTU-D packet %{source.bytes} bytes greater than effective mtu %{_temp_.cisco.effective_mtu}, dest_addr=%{destination.address}, src_addr=%{source.address}, prot=%{network.protocol}'
+      pattern: "PMTU-D packet %{source.bytes} bytes greater than effective mtu %{_temp_.cisco.effective_mtu}, dest_addr=%{destination.address}, src_addr=%{source.address}, prot=%{network.protocol}"
   - dissect:
       tag: dissect_message_c6abf635
       if: '["605004", "605005"].contains(ctx._temp_.cisco.message_id)'
@@ -981,7 +981,7 @@ processors:
       if: '["611102", "611101"].contains(ctx._temp_.cisco.message_id)'
       field: "message"
       description: "611102, 611101"
-      pattern: 'User authentication %{event.outcome}: IP address: %{source.address}, Uname: %{server.user.name}'
+      pattern: "User authentication %{event.outcome}: IP address: %{source.address}, Uname: %{server.user.name}"
   - dissect:
       tag: dissect_message_276452d8
       if: "ctx._temp_.cisco.message_id == '710003'"
@@ -1896,7 +1896,7 @@ processors:
         - append:
             tag: append_error_message_ee723da2
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - convert:
       if: ctx._temp_?.cisco?.security_event?.http_response != null
       tag: convert-security_event_http_response
@@ -2128,17 +2128,17 @@ processors:
   - gsub:
       tag: strip_extra_escapes_from_source_username
       field: "_temp_.cisco.source_username"
-      if: 'ctx._temp_?.cisco?.source_username != null'
+      if: "ctx._temp_?.cisco?.source_username != null"
       ignore_failure: true
       pattern: '\\{2,}'
       replacement: '\\'
   - grok:
       tag: simplify_source_username
       field: "_temp_.cisco.source_username"
-      if: 'ctx._temp_?.cisco?.source_username != null'
+      if: "ctx._temp_?.cisco?.source_username != null"
       ignore_failure: true
       patterns:
-        - '%{CISCO_DOMAIN_USER:_temp_.cisco.source_username}%{CISCO_SGT}'
+        - "%{CISCO_DOMAIN_USER:_temp_.cisco.source_username}%{CISCO_SGT}"
       pattern_definitions:
         CISCO_DOMAIN_USER: (%{CISCO_DOMAIN})?%{CISCO_USER}
         CISCO_SGT: (, *%{NUMBER:_temp_.cisco.source_user_security_group_tag})?
@@ -2152,10 +2152,10 @@ processors:
   - grok:
       tag: grok__temp__cisco_destination_username_c682dc3d
       field: "_temp_.cisco.destination_username"
-      if: 'ctx._temp_?.cisco?.destination_username != null'
+      if: "ctx._temp_?.cisco?.destination_username != null"
       ignore_failure: true
       patterns:
-        - '%{CISCO_DOMAIN_USER:_temp_.cisco.destination_username}%{CISCO_SGT}'
+        - "%{CISCO_DOMAIN_USER:_temp_.cisco.destination_username}%{CISCO_SGT}"
       pattern_definitions:
         CISCO_DOMAIN_USER: (%{CISCO_DOMAIN})?%{CISCO_USER}
         CISCO_SGT: (, *%{NUMBER:_temp_.cisco.destination_user_security_group_tag})?
@@ -2170,16 +2170,16 @@ processors:
       tag: set_source_user_name_ae86e40f
       field: source.user.name
       value: "{{{ _temp_.cisco.source_username }}}"
-      if: 'ctx.source?.user?.name == null && ctx._temp_?.cisco?.source_username != null'
+      if: "ctx.source?.user?.name == null && ctx._temp_?.cisco?.source_username != null"
   - set:
       tag: set_destination_user_name_bdfbaa4b
       field: destination.user.name
       value: "{{{ _temp_.cisco.destination_username }}}"
-      if: 'ctx.destination?.user?.name == null && ctx._temp_?.cisco?.destination_username != null'
+      if: "ctx.destination?.user?.name == null && ctx._temp_?.cisco?.destination_username != null"
   # Support masked user value
   - grok:
       field: "source.user.name"
-      if: 'ctx.source?.user?.name != null'
+      if: "ctx.source?.user?.name != null"
       tag: "grok_source_user_name"
       patterns:
         - (%{CISCO_DOMAIN})?%{CISCO_USER_EMAIL:source.user.email}
@@ -2201,7 +2201,7 @@ processors:
   - grok:
       field: "destination.user.name"
       tag: "grok_destination_user_name"
-      if: 'ctx.destination?.user?.name != null'
+      if: "ctx.destination?.user?.name != null"
       patterns:
         - (%{CISCO_DOMAIN})?%{CISCO_USER_EMAIL:destination.user.email}
         - (%{CISCO_DOMAIN})?%{CISCO_USER}
@@ -2747,39 +2747,39 @@ processors:
 
   # Define ECS Host and Device fields from Cisco ISE pxGrid Endpoint Profile data
   - remove:
-        tag: remove__temp__host_type_184c15cf
-        field: _temp_.host.type
-        if: "ctx._temp_?.host?.type == 'Invalid ID'"
+      tag: remove__temp__host_type_184c15cf
+      field: _temp_.host.type
+      if: "ctx._temp_?.host?.type == 'Invalid ID'"
   - gsub:
-        tag: gsub__temp__host_type_bdc12a47
-        field: _temp_.host.type
-        pattern: "Device"
-        replacement: " "
-        if: "ctx._temp_?.host?.type != null"
+      tag: gsub__temp__host_type_bdc12a47
+      field: _temp_.host.type
+      pattern: "Device"
+      replacement: " "
+      if: "ctx._temp_?.host?.type != null"
   - gsub:
-        tag: gsub__temp__host_type_e2b660f2
-        field: _temp_.host.type
-        pattern: "^.*Macintosh-Workstation"
-        replacement: "Macintosh:Mac"
-        if: "ctx._temp_?.host?.type != null"
+      tag: gsub__temp__host_type_e2b660f2
+      field: _temp_.host.type
+      pattern: "^.*Macintosh-Workstation"
+      replacement: "Macintosh:Mac"
+      if: "ctx._temp_?.host?.type != null"
   - gsub:
-        tag: gsub__temp__host_type_22a5ec73
-        field: _temp_.host.type
-        pattern: "^.*Microsoft-Workstation"
-        replacement: "Microsoft:Microsoft"
-        if: "ctx._temp_?.host?.type != null"
+      tag: gsub__temp__host_type_22a5ec73
+      field: _temp_.host.type
+      pattern: "^.*Microsoft-Workstation"
+      replacement: "Microsoft:Microsoft"
+      if: "ctx._temp_?.host?.type != null"
   - gsub:
-        tag: gsub__temp__host_type_8d5c7bfa
-        field: _temp_.host.type
-        pattern: "^.*ChromeBook-Workstation"
-        replacement: "ChromeBook:ChromeBook"
-        if: "ctx._temp_?.host?.type != null"
+      tag: gsub__temp__host_type_8d5c7bfa
+      field: _temp_.host.type
+      pattern: "^.*ChromeBook-Workstation"
+      replacement: "ChromeBook:ChromeBook"
+      if: "ctx._temp_?.host?.type != null"
   - gsub:
-        tag: gsub__temp__host_type_f805fb20
-        field: _temp_.host.type
-        pattern: "(?:Workstation|[-_])"
-        replacement: " "
-        if: "ctx._temp_?.host?.type != null"
+      tag: gsub__temp__host_type_f805fb20
+      field: _temp_.host.type
+      pattern: "(?:Workstation|[-_])"
+      replacement: " "
+      if: "ctx._temp_?.host?.type != null"
   - csv:
       tag: csv__temp__host_type_182fc074
       field: _temp_.host.type
@@ -3089,7 +3089,7 @@ processors:
   - append:
       tag: append_related_ip_cfc2aa6f
       field: related.ip
-      value: '{{{cisco.ftd.security_event.encrypt_peer_ip}}}'
+      value: "{{{cisco.ftd.security_event.encrypt_peer_ip}}}"
       if: ctx.cisco?.ftd?.security_event?.encrypt_peer_ip != null
       allow_duplicates: false
   - append:
