@@ -1423,6 +1423,319 @@
                 "panelIndex": "0de2f6a8-95d8-4561-9655-10af58bdd932",
                 "title": "Event rate over time by hostname",
                 "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+                                    "name": "logs-crowdstrike.fdr-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-crowdstrike.fdr-*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "c3d4e5f6-a1b2-c3d4-e5f6-a1b2c3d4e5f6": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "event_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "event_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Events",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "crowdstrike.info.user.name",
+                                                    "customLabel": true,
+                                                    "fieldName": "crowdstrike.info.user.name",
+                                                    "label": "Username",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+                                            "query": {
+                                                "esql": "FROM logs-crowdstrike.fdr-*\n| WHERE aws.s3.object.key LIKE \"*/data/*\" OR log.file.path LIKE \"*/data/*\"\n| EVAL host_user_key = CONCAT(host.id, \"::\", user.id)\n| LOOKUP JOIN logs-crowdstrike_lookup.userinfo ON host_user_key\n| STATS event_count = COUNT(*) BY crowdstrike.info.user.name\n| SORT event_count DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs-crowdstrike.fdr-*\n| WHERE aws.s3.object.key LIKE \"*/data/*\" OR log.file.path LIKE \"*/data/*\"\n| EVAL host_user_key = CONCAT(host.id, \"::\", user.id)\n| LOOKUP JOIN logs-crowdstrike_lookup.userinfo ON host_user_key\n| STATS event_count = COUNT(*) BY crowdstrike.info.user.name\n| SORT event_count DESC\n| LIMIT 10"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "event_count"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "c3d4e5f6-a1b2-c3d4-e5f6-a1b2c3d4e5f6",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "xAccessor": "crowdstrike.info.user.name"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "shouldTruncate": false
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "See which users generate the most FDR activity.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "palette": null,
+                    "query": {
+                        "esql": "FROM logs-crowdstrike.fdr-*\n| WHERE aws.s3.object.key LIKE \"*/data/*\" OR log.file.path LIKE \"*/data/*\"\n| EVAL host_user_key = CONCAT(host.id, \"::\", user.id)\n| LOOKUP JOIN logs-crowdstrike_lookup.userinfo ON host_user_key\n| STATS event_count = COUNT(*) BY crowdstrike.info.user.name\n| SORT event_count DESC\n| LIMIT 10"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "timeRange": {
+                        "from": "now-24h/h",
+                        "to": "now"
+                    }
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "f7a8b9c0-d1e2-f3a4-b5c6-d7e8f9a0b1c2",
+                    "w": 24,
+                    "x": 0,
+                    "y": 72
+                },
+                "panelIndex": "f7a8b9c0-d1e2-f3a4-b5c6-d7e8f9a0b1c2",
+                "title": "Top 10 usernames",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+                                    "name": "logs-crowdstrike.fdr-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-crowdstrike.fdr-*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "d4e5f6a1-b2c3-d4e5-f6a1-b2c3d4e5f6a1": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "event_count",
+                                                    "customLabel": true,
+                                                    "fieldName": "event_count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Events",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "crowdstrike.info.user.name",
+                                                    "customLabel": true,
+                                                    "fieldName": "crowdstrike.info.user.name",
+                                                    "label": "Username",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bucket(@timestamp, 1 hour)",
+                                                    "customLabel": false,
+                                                    "fieldName": "bucket(@timestamp, 1 hour)",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+                                            "query": {
+                                                "esql": "FROM logs-crowdstrike.fdr-*\n| WHERE log.file.path LIKE \"*/data/*\" OR aws.s3.object.key LIKE \"*/data/*\"\n| EVAL host_user_key = CONCAT(host.id, \"::\", user.id)\n| LOOKUP JOIN logs-crowdstrike_lookup.userinfo ON host_user_key\n| STATS event_count = COUNT(*) BY crowdstrike.info.user.name, bucket(@timestamp, 1 hour)\n| WHERE crowdstrike.info.user.name IS NOT NULL\n| SORT `bucket(@timestamp, 1 hour)` ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM logs-crowdstrike.fdr-*\n| WHERE log.file.path LIKE \"*/data/*\" OR aws.s3.object.key LIKE \"*/data/*\"\n| EVAL host_user_key = CONCAT(host.id, \"::\", user.id)\n| LOOKUP JOIN logs-crowdstrike_lookup.userinfo ON host_user_key\n| STATS event_count = COUNT(*) BY crowdstrike.info.user.name, bucket(@timestamp, 1 hour)\n| WHERE crowdstrike.info.user.name IS NOT NULL\n| SORT `bucket(@timestamp, 1 hour)` ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "event_count"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "d4e5f6a1-b2c3-d4e5-f6a1-b2c3d4e5f6a1",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessor": "crowdstrike.info.user.name",
+                                        "xAccessor": "bucket(@timestamp, 1 hour)"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "shouldTruncate": false
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "event_count over bucket(@timestamp, 1 hour)",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Compare activity over time for a few busy users.",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM logs-crowdstrike.fdr-*\n| WHERE log.file.path LIKE \"*/data/*\" OR aws.s3.object.key LIKE \"*/data/*\"\n| EVAL host_user_key = CONCAT(host.id, \"::\", user.id)\n| LOOKUP JOIN logs-crowdstrike_lookup.userinfo ON host_user_key\n| STATS event_count = COUNT(*) BY crowdstrike.info.user.name, bucket(@timestamp, 1 hour)\n| WHERE crowdstrike.info.user.name IS NOT NULL\n| SORT `bucket(@timestamp, 1 hour)` ASC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "timeRange": {
+                        "from": "now-24h/h",
+                        "to": "now"
+                    }
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "e8f9a0b1-c2d3-e4f5-a6b7-c8d9e0f1a2b3",
+                    "w": 24,
+                    "x": 24,
+                    "y": 72
+                },
+                "panelIndex": "e8f9a0b1-c2d3-e4f5-a6b7-c8d9e0f1a2b3",
+                "title": "Event rate over time by username",
+                "type": "lens"
             }
         ],
         "timeRestore": false,
