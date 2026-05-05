@@ -13,21 +13,6 @@
         "query": "FROM metrics-*, .alerts-security.* METADATA _index\n| where not KQL(\"\"\"kibana.alert.rule.tags : \"Rule Type: Higher-Order Rule\" \"\"\")\n| eval\n       // processes with more than 70% total CPU use\n       cpu_metrics_pids = CASE(_index like \".ds-metrics-system.process-*\" and system.process.cpu.total.norm.pct >= 0.7, process.pid, null),\n       // any security alert with process.name and ID populated excluding low severity ones\n       alerts_pids = CASE(_index like \".internal.alerts-security.*\" and kibana.alert.rule.name is not null and process.name is not null and process.pid is not null and host.id is not null and kibana.alert.risk_score > 21, process.pid, null)\n| stats pid_with_cpu_spike = COUNT_DISTINCT(cpu_metrics_pids), pid_with_alerts = COUNT_DISTINCT(alerts_pids),\n        Esql.max_cpu_pct = MAX(system.process.cpu.total.norm.pct),\n        Esql.alerts = VALUES(kibana.alert.rule.name),\n        Esql.process_hash_sha256 = VALUES(process.hash.sha256),\n        process_path = VALUES(process.executable),\n        parent_process_path = VALUES(process.parent.executable),\n        user_name = VALUES(user.name),\n        host_name = VALUES(host.name),\n        cmdline = VALUES(process.command_line) by process.pid, process.name, host.id\n| where pid_with_cpu_spike > 0 and pid_with_alerts > 0\n// populate fields to use in rule exceptions\n| eval process.hash.sha256 = MV_FIRST(Esql.process_hash_sha256),\n       process.executable = MV_FIRST(process_path),\n       process.parent.executable = MV_FIRST(parent_process_path),\n       process.command_line = MV_FIRST(cmdline),\n       user.name = MV_FIRST(user_name),\n       host.name = MV_FIRST(host_name)\n| KEEP user.name, host.id, host.name, process.*, Esql.*\n| where `process.executable` != \"C:\\\\Program Files\\\\ESET\\\\ESET Security\\\\ekrn.exe\" and\n        `process.executable` != \"C:\\\\Windows\\\\System32\\\\CompatTelRunner.exe\" and\n        `process.executable` != \"C:\\\\Program Files\\\\UiPath\\\\Studio\\\\UiPath.ActivityCompiler.CommandLine.exe\"\n",
         "required_fields": [
             {
-                "ecs": false,
-                "name": "Esql.alerts",
-                "type": "keyword"
-            },
-            {
-                "ecs": false,
-                "name": "Esql.max_cpu_pct",
-                "type": "double"
-            },
-            {
-                "ecs": false,
-                "name": "Esql.process_hash_sha256",
-                "type": "keyword"
-            },
-            {
                 "ecs": true,
                 "name": "host.id",
                 "type": "keyword"
