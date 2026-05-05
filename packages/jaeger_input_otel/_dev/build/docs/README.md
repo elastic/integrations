@@ -7,6 +7,8 @@ The Jaeger OpenTelemetry Input Package for Elastic collects traces in [Jaeger](h
 
 **Jaeger vs OTLP:** This input accepts **Jaeger-formatted** traces via the Jaeger receiver, not OTLP. For Jaeger product docs and migration notes, see [Jaeger documentation](https://www.jaegertracing.io/docs/).
 
+**Compatibility / migration:** Many modern tracing SDKs and collectors prefer **OTLP** as the default export protocol, and some Jaeger-native components (especially legacy Thrift/agent-based paths) are being deprecated across the ecosystem. If your apps emit OTLP, use the `otlp_input_otel` package instead. If your apps emit Jaeger-native protocols (Jaeger gRPC or Thrift), this package is the right receiver. For background on the ecosystem shift, see OpenTelemetry’s “Migrating away from the Jaeger exporter in the Collector” post: https://opentelemetry.io/blog/2023/jaeger-exporter-collector-migration/
+
 **Requirements:** Kibana 9.4.0 or later (traces support), Elastic Agent with Elastic Distribution of OpenTelemetry (EDOT).
 
 ### How it works
