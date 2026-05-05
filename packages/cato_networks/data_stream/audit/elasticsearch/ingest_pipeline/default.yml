@@ -42,13 +42,17 @@ processors:
       tag: json_event_original
       target_field: cato_networks.audit
   - set:
+      field: event.category
+      tag: set_event_category
+      value: ['configuration']
+  - set:
       field: event.kind
       tag: set_event_kind
       value: event
   - append:
       field: event.type
       tag: append_info_into_event_type
-      value: info
+      value: ['info','change']
   - dot_expander:
       tag: dot_expander_cato_networks_audit
       field: '*'
@@ -112,7 +116,7 @@ processors:
       if: ctx.cato_networks?.audit?.change?.After?.siteUsage instanceof String
   - rename:
       field: cato_networks.audit.change.After.socketConnectionConfiguration
-      tag: rename_change_After_siteUsage
+      tag: rename_change_After_socketConnectionConfiguration
       target_field: cato_networks.audit.change.After.socketConnectionConfigurationKeyword
       if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration instanceof String
   - convert:
@@ -1669,23 +1673,6 @@ processors:
       if: ctx.cato_networks?.audit?.change?.After?.adminRoles instanceof List
       processor:
         convert:
-          field: _ingest._value.role.isUsedOnExternalAccess
-          tag: convert_change_After_adminRoles_role_isUsedOnExternalAccess_to_boolean
-          type: boolean
-          ignore_missing: true
-          on_failure:
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-            - remove:
-                field: _ingest._value.role.isUsedOnExternalAccess
-                ignore_missing: true
-  - foreach:
-      field: cato_networks.audit.change.After.adminRoles
-      tag: foreach_cato_networks_audit_change_After_adminRoles
-      if: ctx.cato_networks?.audit?.change?.After?.adminRoles instanceof List
-      processor:
-        convert:
           field: _ingest._value.role.newSaveMethod
           tag: convert_change_After_adminRoles_role_newSaveMethod_to_boolean
           type: boolean
@@ -2106,6 +2093,10 @@ processors:
             - MMM d, yyyy h:mm:ss a
             - ISO8601
           on_failure:
+            - remove:
+                field:
+                  - _ingest._value.creationDate
+                ignore_missing: true
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -2349,7 +2340,7 @@ processors:
           on_failure:
             - remove:
                 field:
-                  - _ingest._value.upstreamBandwidthMbpsPrecision
+                  - _ingest._value.upstreamBandwidth
                 ignore_missing: true
             - append:
                 field: error.message
@@ -2851,10 +2842,11 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: |-
-        Processor '{{{_ingest.on_failure_processor_type}}}'
-        {{{_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}}'
-        {{{_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
+      value: >-
+        Processor {{{_ingest.on_failure_processor_type}}}
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message
+        '{{{_ingest.on_failure_message}}}'
   - append:
       field: tags
       tag: append_tags
