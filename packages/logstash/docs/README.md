@@ -461,11 +461,13 @@ This is the `pipeline` dataset, which drives the Pipeline dashboard pages.
 | logstash.pipeline.info.ephemeral_id | Ephemeral Id for the running pipeline | keyword |  |  |
 | logstash.pipeline.info.workers | Number of workers for the running pipeline | long |  | gauge |
 | logstash.pipeline.name | Logstash Pipeline id/name | keyword |  |  |
+| logstash.pipeline.total.batch.byte_size.average.last_1_minute | Average size in bytes of batch by the pipeline (last 1 minute) | long | byte | gauge |
 | logstash.pipeline.total.batch.byte_size.average.lifetime | Average size in bytes of batch by the pipeline (Lifetime) | long | byte | gauge |
 | logstash.pipeline.total.batch.byte_size.current | Size in bytes of batch by the pipeline | long | byte | gauge |
 | logstash.pipeline.total.batch.byte_size.max.last_1_minute | Maximum batch size in bytes for the pipeline (last 1 minute) | long | byte | gauge |
 | logstash.pipeline.total.batch.byte_size.p50.last_1_minute | 50th percentile of batch size in bytes for the pipeline (last 1 minute) | long | byte | gauge |
 | logstash.pipeline.total.batch.byte_size.p90.last_1_minute | 90th percentile of batch size in bytes for the pipeline (last 1 minute) | long | byte | gauge |
+| logstash.pipeline.total.batch.event_count.average.last_1_minute | Number of average events contained in batch by the pipeline (last 1 minute) | long |  | gauge |
 | logstash.pipeline.total.batch.event_count.average.lifetime | Number of average events contained in batch by the pipeline (Lifetime) | long |  | gauge |
 | logstash.pipeline.total.batch.event_count.current | Number of events contained in batch by the pipeline | long |  | gauge |
 | logstash.pipeline.total.batch.event_count.p50.last_1_minute | 50th percentile of events per batch for the pipeline (last 1 minute) | long |  | gauge |
