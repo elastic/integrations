@@ -16,12 +16,12 @@ import (
 	"syscall"
 	"time"
 
+	v1 "github.com/jaegertracing/jaeger-idl/model/v1"
+	"github.com/jaegertracing/jaeger-idl/proto-gen/api_v2"
 	"github.com/opentracing/opentracing-go"
 	otlog "github.com/opentracing/opentracing-go/log"
 	"github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
-	v1 "github.com/jaegertracing/jaeger-idl/model/v1"
-	"github.com/jaegertracing/jaeger-idl/proto-gen/api_v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -304,8 +304,8 @@ func buildSpans(serviceName string) []*v1.Span {
 			TraceID:       traceID,
 			SpanID:        childID,
 			OperationName: "child-span",
-			StartTime:       tChild,
-			Duration:        50 * time.Millisecond,
+			StartTime:     tChild,
+			Duration:      50 * time.Millisecond,
 			References: []v1.SpanRef{
 				v1.NewChildOfRef(traceID, parentID),
 			},
