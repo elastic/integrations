@@ -1,25 +1,13 @@
 # Jaeger OpenTelemetry Input Package
 
 ## Overview
-The Jaeger OpenTelemetry Input Package for Elastic enables collection of trace data in [Jaeger](https://www.jaegertracing.io/) format over **gRPC** using the [jaegerreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/jaegerreceiver).
+The Jaeger OpenTelemetry Input Package for Elastic collects traces in [Jaeger](https://www.jaegertracing.io/) format using the OpenTelemetry [jaegerreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/jaegerreceiver). Package variables map to that receiver’s configuration (which protocols to enable, listen addresses, TLS for gRPC and Thrift HTTP, and UDP tuning); choose settings in Fleet when you add this integration.
 
-**Jaeger and OpenTelemetry:** This input receives traces in **Jaeger format** (legacy Protobuf gRPC, Thrift HTTP), not OTLP. Jaeger and OpenTelemetry serve different roles—Jaeger is a tracing backend while OpenTelemetry provides SDKs for instrumentation; both support compatible trace models. For details on protocols, compatibility, and migration, see the [Jaeger documentation](https://www.jaegertracing.io/docs/2.15/) and the [jaegerreceiver README](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/jaegerreceiver/README.md).
+**Source of truth for behavior:** Protocol support (gRPC, Thrift HTTP, Thrift UDP variants), default endpoints, TLS and UDP options, and how multiple protocols interact are defined upstream—not duplicated here. Read the official **[jaegerreceiver README](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/jaegerreceiver/README.md)** in OpenTelemetry Collector Contrib; for deeper detail use the receiver’s `config.go` in the same repository as described in the Elastic [OTel input packages](https://www.elastic.co/guide/en/integrations-developer/current/otel-input-packages.html) guide.
+
+**Jaeger vs OTLP:** This input accepts **Jaeger-formatted** traces via the Jaeger receiver, not OTLP. For Jaeger product docs and migration notes, see [Jaeger documentation](https://www.jaegertracing.io/docs/).
 
 **Requirements:** Kibana 9.4.0 or later (traces support), Elastic Agent with Elastic Distribution of OpenTelemetry (EDOT).
 
 ### How it works
-This package receives trace data from Jaeger clients and agents by configuring the Jaeger gRPC receiver in the Input Package, which then gets applied to the jaegerreceiver present in the Elastic Distribution of OpenTelemetry (EDOT) collector, which then forwards the data to Elastic Agent. The Elastic Agent processes and enriches the data before sending it to Elasticsearch for indexing and analysis.
-
-### Protocols
-Traces are received over gRPC (required) and optionally Thrift HTTP.
-
-| Setting       | Default          | Description                    |
-|---------------|------------------|--------------------------------|
-| **gRPC endpoint** | localhost:14250 | Listen address for Jaeger gRPC |
-| **Thrift HTTP endpoint** | — | Optional. When set, enables Thrift HTTP (e.g. localhost:14268) for Jaeger agent compatibility |
-| **Enable TLS** | false | Use TLS for secure gRPC connections |
-| **TLS Certificate File** | — | Path to server certificate |
-| **TLS Key File** | — | Path to server private key |
-| **TLS Client CA File** | — | Path to CA for client verification (mTLS) |
-
-For protocol options, TLS/mTLS advanced configuration, and UDP protocols (thrift), refer to the [Jaeger Receiver README](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/jaegerreceiver/README.md) in the upstream OpenTelemetry Collector Contrib repository.
+Fleet applies generated collector configuration so the **jaegerreceiver** in EDOT listens according to your policy and forwards traces through the agent pipeline to Elasticsearch.
