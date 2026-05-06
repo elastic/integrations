@@ -1,0 +1,336 @@
+dashboards:
+- name: '[Azure Activity Logs OTel] Administrative Operations'
+  id: azure_activity_otel-administrative-operations
+  description: 'Administrative Activity Log events: control plane CRUD operations, failures, operation duration, and mutation rates. Identify
+    failed deployments and permission issues.'
+  time_range:
+    from: now-24h
+    to: now
+  settings:
+    sync:
+      tooltips: false
+      colors: false
+  query:
+    kql: ''
+  filters:
+    - field: data_stream.dataset
+      equals: "azure.activity.otel"
+  panels:
+  - id: 91144e9b-fac7-b44d-0b1d-8339201b83cb
+    title: ''
+    size: {w: 48, h: 2}
+    position: {x: 0, y: 0}
+    links:
+      layout: horizontal
+      items:
+      - id: 3af4ba12-6f83-488a-bdc9-0c7216a22d73
+        label: Overview
+        dashboard: azure_activity_otel-overview
+      - id: 8e076427-fd85-ffef-d2a9-2d8549802ca6
+        label: Administrative Operations
+        dashboard: azure_activity_otel-administrative-operations
+      - id: d85a6f5e-c243-4bbe-6823-cd1559ff70d1
+        label: Platform Health
+        dashboard: azure_activity_otel-platform-health
+  - id: fc69666b-014e-4167-d063-22478c958b29
+    title: ''
+    hide_title: true
+    size: {w: 16, h: 12}
+    position: {x: 0, y: 2}
+    markdown:
+      content: |
+        ## [Azure Activity Logs OTel] Administrative Operations
+
+        This dashboard monitors Azure Resource Manager administrative operations:
+        - Administrative event volume and failure rates
+        - Operation duration and ARM latency (p95)
+        - Mutation vs read operation patterns
+        - Top failed operations and error details
+        - Top callers by individual identity and failure count
+        - Recent failed operations drill-down
+      font_size: 12
+      links_in_new_tab: false
+  - id: baa3e78a-af74-aff5-cc52-d8b415a8d273
+    title: ''
+    hide_title: true
+    size: {w: 8, h: 6}
+    position: {x: 16, y: 2}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "Administrative"
+        | STATS total = COUNT(*)
+      time_field: '@timestamp'
+      primary:
+        field: total
+        label: Admin Events
+        format:
+          type: number
+          decimals: 0
+          compact: true
+  - id: a28bedc1-9d21-ea5a-96c0-99c10c26bfa1
+    title: ''
+    hide_title: true
+    size: {w: 8, h: 6}
+    position: {x: 24, y: 2}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "Administrative"
+        | WHERE azure.result.type IN ("Failure", "Failed")
+        | STATS failed = COUNT(*)
+      time_field: '@timestamp'
+      primary:
+        field: failed
+        label: Failed
+        format:
+          type: number
+          decimals: 0
+          compact: true
+  - id: aef0a365-36dd-7a69-69f8-1e3286304b37
+    title: ''
+    hide_title: true
+    size: {w: 8, h: 6}
+    position: {x: 32, y: 2}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "Administrative"
+        | WHERE azure.result.type NOT IN ("Start", "Started")
+        | STATS total = COUNT(*), failed = COUNT(*) WHERE azure.result.type IN ("Failure", "Failed")
+        | EVAL failure_rate = CASE(total > 0, TO_DOUBLE(failed) / total, 0.0)
+      time_field: '@timestamp'
+      primary:
+        field: failure_rate
+        label: Failure Rate
+        format:
+          type: percent
+          decimals: 1
+  - id: ebc0cb32-90a9-a80f-8a16-9a05b06da135
+    title: ''
+    hide_title: true
+    size: {w: 8, h: 6}
+    position: {x: 40, y: 2}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "Administrative"
+        | WHERE azure.operation.duration IS NOT NULL
+        | STATS avg_duration = AVG(azure.operation.duration)
+      time_field: '@timestamp'
+      primary:
+        field: avg_duration
+        label: Avg Duration
+        format:
+          type: number
+          decimals: 0
+          suffix: " ms"
+  - id: e521387d-8a9d-bd71-6dc0-b91251b4d13d
+    title: ''
+    hide_title: true
+    size: {w: 16, h: 6}
+    position: {x: 16, y: 8}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "Administrative"
+        | WHERE azure.operation.name IS NOT NULL
+        | WHERE azure.operation.name LIKE "*WRITE*" OR azure.operation.name LIKE "*DELETE*" OR azure.operation.name LIKE "*ACTION*"
+        | STATS mutations = COUNT(*)
+      time_field: '@timestamp'
+      primary:
+        field: mutations
+        label: Mutations
+        format:
+          type: number
+          decimals: 0
+          compact: true
+  - id: 181ee4e0-b3b7-124b-187d-39729cd2ee7c
+    title: ''
+    hide_title: true
+    size: {w: 16, h: 6}
+    position: {x: 32, y: 8}
+    esql:
+      type: metric
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "Administrative"
+        | WHERE azure.operation.name == "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE"
+        | STATS deployments = COUNT(*)
+      time_field: '@timestamp'
+      primary:
+        field: deployments
+        label: Deployments
+        format:
+          type: number
+          decimals: 0
+          compact: true
+  - id: 09aefba4-962f-8682-e4fe-27de13f6688f
+    title: Administrative Events Over Time
+    size: {w: 48, h: 12}
+    position: {x: 0, y: 14}
+    esql:
+      type: area
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "Administrative"
+        | EVAL result_group = CASE(azure.result.type IN ("Failure", "Failed"), "Failed", azure.result.type IN ("Success", "Succeeded", "Accept", "Activated", "Resolved", "Updated", "Active"), "Success", "InProgress")
+        | STATS event_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), result_group
+        | SORT time_bucket ASC
+      time_field: '@timestamp'
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: event_count
+        label: Events
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: result_group
+      color:
+        assignments:
+        - value: Failed
+          color: '#BD271E'
+        - value: Success
+          color: '#54B399'
+  - id: ae22ca47-31c4-c6b5-b5eb-38b013772a2b
+    title: Operation Duration Over Time (p95)
+    size: {w: 24, h: 12}
+    position: {x: 0, y: 26}
+    esql:
+      type: line
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "Administrative"
+        | WHERE azure.operation.duration IS NOT NULL
+        | STATS p95_duration = PERCENTILE(azure.operation.duration, 95.0) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+        | SORT time_bucket ASC
+      time_field: '@timestamp'
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: p95_duration
+        label: p95 Duration (ms)
+        format:
+          type: number
+          decimals: 0
+  - id: e5893e64-98db-3c5a-90e3-6ad722f6eca2
+    title: Top Failed Operations
+    size: {w: 24, h: 12}
+    position: {x: 24, y: 26}
+    esql:
+      type: pie
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "Administrative"
+        | WHERE azure.result.type IN ("Failure", "Failed")
+        | WHERE azure.operation.name IS NOT NULL
+        | STATS failed_count = COUNT(*) BY azure.operation.name
+        | SORT failed_count DESC
+        | LIMIT 10
+      time_field: '@timestamp'
+      legend:
+        visible: show
+      metrics:
+      - field: failed_count
+      breakdowns:
+      - field: azure.operation.name
+        label: Operation
+      appearance:
+        donut: medium
+        values:
+          format: percent
+  - id: fbffa433-332e-35bd-db11-8555b50ec401
+    title: Top Callers by Operation Count
+    size: {w: 24, h: 12}
+    position: {x: 0, y: 38}
+    esql:
+      type: datatable
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "Administrative"
+        | WHERE azure.correlation_id IS NOT NULL
+        | EVAL caller = COALESCE(user.id, azure.identity.authorization.evidence.principal.id, "unknown")
+        | STATS op_count = COUNT_DISTINCT(azure.correlation_id), failures = COUNT_DISTINCT(azure.correlation_id) WHERE azure.result.type IN ("Failure", "Failed") BY caller, azure.identity.authorization.evidence.principal.type
+        | SORT op_count DESC
+        | LIMIT 20
+      time_field: '@timestamp'
+      breakdowns:
+      - field: caller
+        label: Caller
+      - field: azure.identity.authorization.evidence.principal.type
+        label: Principal Type
+      - field: op_count
+        label: Operations
+      - field: failures
+        label: Failures
+      paging:
+        enabled: true
+        page_size: 10
+  - id: 7bd2e9b8-7c01-f968-33a0-4f8c44f48eb4
+    title: Operations by Result Type
+    size: {w: 24, h: 12}
+    position: {x: 24, y: 38}
+    esql:
+      type: pie
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "Administrative"
+        | WHERE azure.result.type IS NOT NULL
+        | WHERE azure.correlation_id IS NOT NULL
+        | EVAL ts_result = CONCAT(DATE_FORMAT("yyyy-MM-dd HH:mm:ss.SSS", @timestamp), "|", azure.result.type)
+        | STATS latest = MV_LAST(MV_SORT(VALUES(ts_result))) BY azure.correlation_id
+        | EVAL result_type = MV_LAST(SPLIT(latest, "|"))
+        | STATS count = COUNT(*) BY result_type
+        | SORT count DESC
+        | LIMIT 8
+      time_field: '@timestamp'
+      legend:
+        visible: show
+      metrics:
+      - field: count
+      breakdowns:
+      - field: result_type
+        label: Result Type
+      appearance:
+        donut: medium
+        values:
+          format: percent
+  - id: f5e6792c-73d6-0fce-dc39-195bf8b950f9
+    title: Recent Failed Administrative Operations
+    size: {w: 48, h: 15}
+    position: {x: 0, y: 50}
+    esql:
+      type: datatable
+      query: |
+        FROM logs-azure.activity.otel-*
+        | WHERE azure.category == "Administrative"
+        | WHERE azure.result.type IN ("Failure", "Failed")
+        | KEEP @timestamp, azure.operation.name, azure.result.type, azure.result.description, user.id, azure.identity.authorization.evidence.principal.type, network.peer.address, azure.correlation_id
+        | SORT @timestamp DESC
+        | LIMIT 100
+      time_field: '@timestamp'
+      breakdowns:
+      - field: '@timestamp'
+        label: Time
+      - field: azure.operation.name
+        label: Operation
+      - field: azure.result.description
+        label: Error
+      - field: azure.identity.authorization.evidence.principal.type
+        label: Principal Type
+      - field: user.id
+        label: User
+      - field: network.peer.address
+        label: IP
+      paging:
+        enabled: true
+        page_size: 10

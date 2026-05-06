@@ -28,7 +28,7 @@ You can monitor and view logs within the ingested documents for IBM MQ using the
 
 ## Compatibility
 
-This integration has been tested against IBM MQ v9.1 and IBM MQ v9.2. Currently, the `ibmmq qmgr` data stream is only compatible with the containerized versions of IBM MQ, such as those available from [IBM Cloud Container Registry](https://icr.io/) or [Docker Hub](https://hub.docker.com/r/ibmcom/mq). 
+This integration has been tested against IBM MQ v9.1, IBM MQ v9.2 and IBM MQ v9.4. Currently, the `ibmmq qmgr` data stream is only compatible with the containerized versions of IBM MQ, such as those available from [IBM Cloud Container Registry](https://icr.io/) or [Docker Hub](https://hub.docker.com/r/ibmcom/mq). 
 
 ## What do I need to use this integration?
 
@@ -61,32 +61,32 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ### Queue Manager performance metrics
 
-The `qmgr` data stream collects [performance metrics of Queue Manager](https://www.ibm.com/docs/en/ibm-mq/9.2?topic=operator-metrics-published-when-using-mq) like messages, topics, subscriptions and calls.
+The `qmgr` data stream collects [performance metrics of Queue Manager](https://www.ibm.com/docs/en/ibm-mq/9.4.x?topic=operator-metrics-published-by-mq-container) like messages, topics, subscriptions, and calls.
 
 An example event for `qmgr` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-05-28T10:25:41.537Z",
+    "@timestamp": "2026-03-19T22:40:01.042Z",
     "agent": {
-        "ephemeral_id": "2a2b7004-c50a-4ee2-9bc6-78d99713b117",
-        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "d15b5676-526a-4e87-81d3-2a74f42e5a5a",
+        "id": "bcbcbee4-c185-49d6-963d-4df9cd2c5dfa",
+        "name": "elastic-agent-86864",
         "type": "metricbeat",
-        "version": "8.12.0"
+        "version": "9.3.2"
     },
     "data_stream": {
         "dataset": "ibmmq.qmgr",
-        "namespace": "ep",
+        "namespace": "55431",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
-        "snapshot": false,
-        "version": "8.12.0"
+        "id": "bcbcbee4-c185-49d6-963d-4df9cd2c5dfa",
+        "snapshot": true,
+        "version": "9.3.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -94,8 +94,8 @@ An example event for `qmgr` looks as following:
             "web"
         ],
         "dataset": "ibmmq.qmgr",
-        "duration": 15347292,
-        "ingested": "2024-05-28T10:25:53Z",
+        "duration": 12723400,
+        "ingested": "2026-03-19T22:40:04Z",
         "kind": "metric",
         "module": "ibmmq",
         "type": [
@@ -104,24 +104,23 @@ An example event for `qmgr` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "829324aac17946dcace17006fa82a2d2",
+        "containerized": false,
+        "hostname": "elastic-agent-86864",
         "ip": [
-            "192.168.243.9"
+            "172.18.0.7",
+            "172.25.0.2"
         ],
         "mac": [
-            "02-42-AC-1F-00-07"
+            "02-42-AC-12-00-07",
+            "02-42-AC-19-00-02"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-86864",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "3.10.0-1160.102.1.el7.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "kernel": "6.8.0-106-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "ibmmq": {
@@ -142,7 +141,7 @@ An example event for `qmgr` looks as following:
                         "count": 0
                     },
                     "get": {
-                        "count": 2
+                        "count": 6
                     },
                     "inquire": {
                         "count": 0
@@ -162,22 +161,22 @@ An example event for `qmgr` looks as following:
                         "count": 0
                     },
                     "close": {
-                        "count": 0
+                        "count": 19
                     },
                     "connections": {
-                        "count": 0
+                        "count": 11
                     },
                     "control": {
                         "count": 0
                     },
                     "disconnect": {
-                        "count": 0
+                        "count": 1
                     },
                     "inquire": {
-                        "count": 4
+                        "count": 7
                     },
                     "open": {
-                        "count": 0
+                        "count": 30
                     },
                     "set": {
                         "count": 0
@@ -186,34 +185,105 @@ An example event for `qmgr` looks as following:
                         "count": 0
                     },
                     "subscription_request": {
-                        "count": 0
+                        "count": 1
+                    }
+                }
+            },
+            "cpu": {
+                "load": {
+                    "fifteen_minute": {
+                        "average": {
+                            "percentage": 1.86
+                        }
+                    },
+                    "five_minute": {
+                        "average": {
+                            "percentage": 2.18
+                        }
+                    },
+                    "one_minute": {
+                        "average": {
+                            "percentage": 2.67
+                        }
                     }
                 }
             },
             "destructive": {
                 "get": {
-                    "bytes": 4868,
-                    "count": 13
+                    "bytes": 10749,
+                    "count": 27
                 }
             },
+            "errors": {
+                "file_system": {
+                    "free_space": {
+                        "percentage": 49.79
+                    },
+                    "in_use": {
+                        "bytes": 505299337216
+                    }
+                }
+            },
+            "fdc": {
+                "files": 0
+            },
             "log": {
+                "file_system": {
+                    "in_use": {
+                        "bytes": 505299300352
+                    },
+                    "max": {
+                        "bytes": 1006450962432
+                    }
+                },
+                "in_use": {
+                    "bytes": 50331648
+                },
+                "max": {
+                    "bytes": 83886080
+                },
+                "primary_space": {
+                    "in_use": {
+                        "percentage": 1.89
+                    }
+                },
+                "slowest_write": {
+                    "since_restart": {
+                        "seconds": 0.004807
+                    }
+                },
+                "workload": {
+                    "primary_space": {
+                        "utilization": {
+                            "percentage": 1.89
+                        }
+                    }
+                },
+                "write": {
+                    "latency": {
+                        "seconds": 0.002068
+                    },
+                    "size": {
+                        "bytes": 5719
+                    }
+                },
                 "written": {
                     "bytes": {
-                        "logical": 0,
-                        "physical": 0
+                        "logical": 26659,
+                        "physical": 126976
                     }
                 }
             },
             "messages": {
                 "commit": {
-                    "count": 0
+                    "count": 9
                 },
                 "expired": {
                     "count": 0
                 },
                 "failed": {
                     "browse": {
-                        "count": 0
+                        "count": 6
                     },
                     "mq": {
                         "put": {
@@ -226,8 +296,8 @@ An example event for `qmgr` looks as following:
                 },
                 "mq": {
                     "put": {
-                        "bytes": 4868,
-                        "count": 13
+                        "bytes": 7817,
+                        "count": 20
                     }
                 },
                 "non_persistent": {
@@ -237,58 +307,80 @@ An example event for `qmgr` looks as following:
                     },
                     "destructive": {
                         "get": {
-                            "count": 13
+                            "count": 12
                         }
                     },
                     "get": {
-                        "bytes": 4868
+                        "bytes": 4444
                     },
                     "mq": {
                         "put": {
-                            "count": 13
+                            "count": 6
                         },
                         "put1": {
                             "count": 0
                         }
                     },
                     "put": {
-                        "bytes": 4868
+                        "bytes": 1956
                     }
                 },
                 "persistent": {
                     "browse": {
-                        "bytes": 0,
-                        "count": 0
+                        "bytes": 2908,
+                        "count": 5
                     },
                     "destructive": {
                         "get": {
-                            "count": 0
+                            "count": 10
                         }
                     },
                     "get": {
-                        "bytes": 0
+                        "bytes": 3397
                     },
                     "mq": {
                         "put": {
-                            "count": 0
+                            "count": 10
                         },
                         "put1": {
-                            "count": 0
+                            "count": 4
                         }
                     },
                     "put": {
-                        "bytes": 0
+                        "bytes": 5861
                     }
                 },
                 "published": {
                     "subscribers": {
-                        "bytes": 3500,
-                        "count": 13
+                        "bytes": 1320,
+                        "count": 6
                     }
                 },
                 "purged": {
                     "queue": {
                         "count": 0
+                    }
+                }
+            },
+            "queue_manager": {
+                "file_system": {
+                    "free_space": {
+                        "percentage": 49.79
+                    },
+                    "in_use": {
+                        "bytes": 505299337216
+                    }
+                }
+            },
+            "ram": {
+                "free": {
+                    "percentage": 12.97
+                },
+                "usage": {
+                    "estimate": {
+                        "queue_manager": {
+                            "bytes": 197132288
+                        }
                     }
                 }
             },
@@ -301,7 +393,7 @@ An example event for `qmgr` looks as following:
                         "count": 0
                     },
                     "create": {
-                        "count": 0
+                        "count": 1
                     },
                     "delete": {
                         "count": 0
@@ -327,23 +419,57 @@ An example event for `qmgr` looks as following:
                     }
                 }
             },
+            "system": {
+                "cpu": {
+                    "time": {
+                        "estimate": {
+                            "queue_manager": {
+                                "percentage": 0.08
+                            }
+                        },
+                        "percentage": 2.63
+                    }
+                }
+            },
             "topic": {
                 "mq": {
                     "put": {
-                        "count": 13,
+                        "count": 9,
                         "failed": {
                             "count": 0
                         },
                         "non_persistent": {
-                            "count": 13
+                            "count": 6
                         },
                         "persistent": {
-                            "count": 0
+                            "count": 3
                         }
                     }
                 },
                 "put": {
-                    "bytes": 3500
+                    "bytes": 14560
+                }
+            },
+            "trace": {
+                "file_system": {
+                    "free_space": {
+                        "percentage": 49.79
+                    },
+                    "in_use": {
+                        "bytes": 505299337216
+                    }
+                }
+            },
+            "user": {
+                "cpu": {
+                    "time": {
+                        "estimate": {
+                            "queue_manager": {
+                                "percentage": 0.09
+                            }
+                        },
+                        "percentage": 8.2
+                    }
                 }
             }
         }
@@ -353,7 +479,7 @@ An example event for `qmgr` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "http://elastic-package-service-ibmmq-1:9157/metrics",
+        "address": "http://svc-ibmmq:9157/metrics",
         "type": "ibmmq"
     },
     "tags": [
@@ -402,8 +528,29 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | ibmmq.qmgr.calls.succeeded.set.count | MQSET count. | long | counter |
 | ibmmq.qmgr.calls.succeeded.status.count | MQSTAT count. | long | counter |
 | ibmmq.qmgr.calls.succeeded.subscription_request.count | MQSUBRQ count. | long | counter |
+| ibmmq.qmgr.cpu.load.fifteen_minute.average.percentage | CPU load - fifteen minute average. | float | gauge |
+| ibmmq.qmgr.cpu.load.five_minute.average.percentage | CPU load - five minute average. | float | gauge |
+| ibmmq.qmgr.cpu.load.one_minute.average.percentage | CPU load - one minute average. | float | gauge |
 | ibmmq.qmgr.destructive.get.bytes | Interval total destructive get - byte count. | long | counter |
 | ibmmq.qmgr.destructive.get.count | Interval total destructive get - count. | long | counter |
+| ibmmq.qmgr.errors.file_system.free_space.percentage | MQ errors file system - free space. | float | gauge |
+| ibmmq.qmgr.errors.file_system.in_use.bytes | MQ errors file system - bytes in use. | long | gauge |
+| ibmmq.qmgr.fdc.files | MQ FDC file count. | long | gauge |
+| ibmmq.qmgr.log.file_system.free_space.percentage | Log file system - free space. | float | gauge |
+| ibmmq.qmgr.log.file_system.in_use.bytes | Log file system - bytes in use. | long | gauge |
+| ibmmq.qmgr.log.file_system.max.bytes | Log file system - bytes max. | long | gauge |
+| ibmmq.qmgr.log.in_use.bytes | Log - bytes in use. | long | gauge |
+| ibmmq.qmgr.log.max.bytes | Log - bytes max. | long | gauge |
+| ibmmq.qmgr.log.occupied.extents.waiting_to_be_archived.bytes | Log - occupied by extents waiting to be archived. | long | gauge |
+| ibmmq.qmgr.log.occupied.reusable_extents.bytes | Log - bytes occupied by reusable extents. | long | gauge |
+| ibmmq.qmgr.log.primary_space.in_use.percentage | Log - current primary space in use. | float | gauge |
+| ibmmq.qmgr.log.required_for_media_recovery.bytes | Log - bytes required for media recovery. | long | gauge |
+| ibmmq.qmgr.log.sequence_number.disk | Log - disk written log sequence number. | long | gauge |
+| ibmmq.qmgr.log.sequence_number.quorum | Log - quorum log sequence number. | long | gauge |
+| ibmmq.qmgr.log.slowest_write.since_restart.seconds | Log - slowest write since restart. | float | gauge |
+| ibmmq.qmgr.log.workload.primary_space.utilization.percentage | Log - workload primary space utilization. | float | gauge |
+| ibmmq.qmgr.log.write.latency.seconds | Log - write latency. | float | gauge |
+| ibmmq.qmgr.log.write.size.bytes | Log - write size. | long | gauge |
 | ibmmq.qmgr.log.written.bytes.logical | Log - logical bytes written. | long | counter |
 | ibmmq.qmgr.log.written.bytes.physical | Log - physical bytes written. | long | counter |
 | ibmmq.qmgr.messages.commit.count | Commit count. | long | counter |
@@ -430,6 +577,43 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | ibmmq.qmgr.messages.published.subscribers.bytes | Published to subscribers - byte count. | long | counter |
 | ibmmq.qmgr.messages.published.subscribers.count | Published to subscribers - message count. | long | counter |
 | ibmmq.qmgr.messages.purged.queue.count | Purged queue count. | long | counter |
+| ibmmq.qmgr.nha.recovery.average.network_round_trip.time.seconds | Average network round trip time. | float | gauge |
+| ibmmq.qmgr.nha.recovery.backlog.average.bytes | Backlog average bytes. | long | gauge |
+| ibmmq.qmgr.nha.recovery.backlog.bytes | Backlog bytes. | long | gauge |
+| ibmmq.qmgr.nha.recovery.log.data.average.compression.time.seconds | Log data average compression time. | float | gauge |
+| ibmmq.qmgr.nha.recovery.log.data.average.decompression.time.seconds | Log data average decompression time. | float | gauge |
+| ibmmq.qmgr.nha.recovery.log.decompressed.bytes | Log bytes decompressed. | long | gauge |
+| ibmmq.qmgr.nha.recovery.log.sent.bytes | Log bytes sent. | long | counter |
+| ibmmq.qmgr.nha.recovery.log.sent.compressed.bytes | Compressed log bytes sent. | long | gauge |
+| ibmmq.qmgr.nha.recovery.log.sequence_number.recovery | Recovery log sequence number. | long | gauge |
+| ibmmq.qmgr.nha.recovery.rebase.count | Rebase count. | long | gauge |
+| ibmmq.qmgr.nha.replication.average.network_round_trip.time.seconds | Average network round trip time. | float | gauge |
+| ibmmq.qmgr.nha.replication.backlog.average.bytes | Backlog average bytes. | long | gauge |
+| ibmmq.qmgr.nha.replication.backlog.bytes | Backlog bytes. | long | gauge |
+| ibmmq.qmgr.nha.replication.catch_up.log.data.average.compression.time.seconds | Catch-up log data average compression time. | float | gauge |
+| ibmmq.qmgr.nha.replication.catch_up.log.data.average.decompression.time.seconds | Catch-up log data average decompression time. | float | gauge |
+| ibmmq.qmgr.nha.replication.catch_up.log.decompressed.bytes | Catch-up log bytes decompressed. | long | gauge |
+| ibmmq.qmgr.nha.replication.catch_up.log.sent.bytes | Catch-up log bytes sent. | long | counter |
+| ibmmq.qmgr.nha.replication.catch_up.log.sent.compressed.bytes | Catch-up compressed log bytes sent. | long | counter |
+| ibmmq.qmgr.nha.replication.catch_up.log.sent.uncompressed.bytes | Catch-up uncompressed log bytes sent. | long | counter |
+| ibmmq.qmgr.nha.replication.log.file_system.free_space.percentage | Log file system - free space. | float | gauge |
+| ibmmq.qmgr.nha.replication.log.file_system.in_use.bytes | Log file system - bytes in use. | long | gauge |
+| ibmmq.qmgr.nha.replication.log.sequence_number.acknowledged | Acknowledged log sequence number. | long | gauge |
+| ibmmq.qmgr.nha.replication.log.write.average.acknowledgement.latency.seconds | Log write average acknowledgement latency. | float | gauge |
+| ibmmq.qmgr.nha.replication.log.write.average.acknowledgement.size.bytes | Log write average acknowledgement size. | long | gauge |
+| ibmmq.qmgr.nha.replication.mq.fdc.file.count | MQ FDC file count. | long | gauge |
+| ibmmq.qmgr.nha.replication.queue_manager.file_system.free_space.percentage | Queue Manager file system - free space. | float | gauge |
+| ibmmq.qmgr.nha.replication.queue_manager.file_system.in_use.bytes | Queue Manager file system - bytes in use. | long | gauge |
+| ibmmq.qmgr.nha.replication.synchronous.log.data.average.compression.time.seconds | Synchronous log data average compression time. | float | gauge |
+| ibmmq.qmgr.nha.replication.synchronous.log.data.average.decompression.time.seconds | Synchronous log data average decompression time. | float | gauge |
+| ibmmq.qmgr.nha.replication.synchronous.log.decompressed.bytes | Synchronous log bytes decompressed. | long | gauge |
+| ibmmq.qmgr.nha.replication.synchronous.log.sent.bytes | Synchronous log bytes sent. | long | counter |
+| ibmmq.qmgr.nha.replication.synchronous.log.sent.compressed.bytes | Synchronous compressed log bytes sent. | long | counter |
+| ibmmq.qmgr.nha.replication.synchronous.log.sent.uncompressed.bytes | Synchronous uncompressed log bytes sent. | long | counter |
+| ibmmq.qmgr.queue_manager.file_system.free_space.percentage | Queue Manager file system - free space. | float | gauge |
+| ibmmq.qmgr.queue_manager.file_system.in_use.bytes | Queue Manager file system - bytes in use. | long | gauge |
+| ibmmq.qmgr.ram.free.percentage | RAM free percentage. | float | gauge |
+| ibmmq.qmgr.ram.usage.estimate.queue_manager.bytes | RAM total bytes - estimate for queue manager. | long | gauge |
 | ibmmq.qmgr.rollback.count | Rollback count. | long | counter |
 | ibmmq.qmgr.subscription.durable.alter.count | Alter durable subscription count. | long | counter |
 | ibmmq.qmgr.subscription.durable.create.count | Create durable subscription count. | long | counter |
@@ -439,11 +623,17 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | ibmmq.qmgr.subscription.failed.delete.count | Subscription delete failure count. | long | counter |
 | ibmmq.qmgr.subscription.non_durable.create.count | Create non-durable subscription count. | long | counter |
 | ibmmq.qmgr.subscription.non_durable.delete.count | Delete non-durable subscription count. | long | counter |
+| ibmmq.qmgr.system.cpu.time.estimate.queue_manager.percentage | System CPU time - percentage estimate for queue manager. | float | gauge |
+| ibmmq.qmgr.system.cpu.time.percentage | System CPU time percentage. | float | gauge |
 | ibmmq.qmgr.topic.mq.put.count | Topic MQPUT/MQPUT1 interval total. | long | counter |
 | ibmmq.qmgr.topic.mq.put.failed.count | Failed topic MQPUT/MQPUT1 count. | long | counter |
 | ibmmq.qmgr.topic.mq.put.non_persistent.count | Non-persistent - topic MQPUT/MQPUT1 count. | long | counter |
 | ibmmq.qmgr.topic.mq.put.persistent.count | Persistent - topic MQPUT/MQPUT1 count. | long | counter |
 | ibmmq.qmgr.topic.put.bytes | Interval total topic bytes put. | long | counter |
+| ibmmq.qmgr.trace.file_system.free_space.percentage | MQ trace file system - free space. | float | gauge |
+| ibmmq.qmgr.trace.file_system.in_use.bytes | MQ trace file system - bytes in use. | long | gauge |
+| ibmmq.qmgr.user.cpu.time.estimate.queue_manager.percentage | User CPU time - percentage estimate for queue manager. | float | gauge |
+| ibmmq.qmgr.user.cpu.time.percentage | User CPU time percentage. | float | gauge |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
 
@@ -457,32 +647,32 @@ An example event for `errorlog` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-05-28T10:29:59.860Z",
+    "@timestamp": "2026-04-21T15:00:39.503Z",
     "agent": {
-        "ephemeral_id": "cbbb6e1e-c10f-4635-bb3e-b42063268637",
-        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "a2bda129-5568-4c2f-b346-0b37d19e4bdf",
+        "id": "8403f38c-7819-48a6-a78f-c14ab29dd711",
+        "name": "elastic-agent-31767",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "9.3.2"
     },
     "data_stream": {
         "dataset": "ibmmq.errorlog",
-        "namespace": "ep",
+        "namespace": "68766",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
-        "snapshot": false,
-        "version": "8.12.0"
+        "id": "8403f38c-7819-48a6-a78f-c14ab29dd711",
+        "snapshot": true,
+        "version": "9.3.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2024-05-28T10:30:26.219Z",
+        "created": "2026-04-21T15:01:06.194Z",
         "dataset": "ibmmq.errorlog",
-        "ingested": "2024-05-28T10:30:38Z",
+        "ingested": "2026-04-21T15:01:09Z",
         "kind": "event",
         "module": "ibmmq",
         "type": [
@@ -490,22 +680,22 @@ An example event for `errorlog` looks as following:
         ]
     },
     "host": {
-        "hostname": "99726abecb7d",
-        "name": "docker-fleet-agent"
+        "hostname": "8aecb22657e3",
+        "name": "elastic-agent-31767"
     },
     "ibmmq": {
         "errorlog": {
             "error": {
-                "action": "Host Info :- Linux 3.10.0-1160.102.1.el7.x86_64 (MQ Linux (x86-64 platform) 64-bit) Installation :- /opt/mqm (Installation1) Version :- 9.2.4.0 (p924-L211105.DE) ACTION: None.",
+                "action": "None.",
                 "code": "AMQ6287I",
-                "description": "IBM MQ V9.2.4.0 (p924-L211105.DE).",
-                "explanation": "IBM MQ system"
+                "description": "IBM MQ V9.4.0.20 (p940-020-260211).",
+                "explanation": "IBM MQ system information: Host Info :- Linux 6.8.0-110-generic (MQ Linux (x86-64 platform) 64-bit) Installation :- /opt/mqm (Installation1) Version :- 9.4.0.20 (p940-020-260211)"
             },
             "insert": {
                 "comment": [
-                    "Linux 3.10.0-1160.102.1.el7.x86_64 (MQ Linux (x86-64 platform) 64-bit)",
+                    "Linux 6.8.0-110-generic (MQ Linux (x86-64 platform) 64-bit)",
                     "/opt/mqm (Installation1)",
-                    "9.2.4.0 (p924-L211105.DE)"
+                    "9.4.0.20 (p940-020-260211)"
                 ]
             },
             "installation": "Installation1"
@@ -518,17 +708,15 @@ An example event for `errorlog` looks as following:
         "file": {
             "path": "/tmp/service_logs/AMQERR01.LOG"
         },
-        "flags": [
-            "multiline"
-        ],
+        "flags": "multiline",
         "offset": 0
     },
     "process": {
-        "pid": 58.1,
+        "pid": 457.1,
         "title": "crtmqm"
     },
     "service": {
-        "version": "9.2.4.0"
+        "version": "9.4.0.20"
     },
     "tags": [
         "forwarded",
