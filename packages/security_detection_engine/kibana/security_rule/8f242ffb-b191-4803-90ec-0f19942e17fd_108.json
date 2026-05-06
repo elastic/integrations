@@ -1,0 +1,100 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Active Directory Integrated DNS (ADIDNS) is one of the core components of AD DS, leveraging AD's access control and replication to maintain domain consistency. It stores DNS zones as AD objects, a feature that, while robust, introduces some security issues, such as wildcard records, mainly because of the default permission (Any authenticated users) to create DNS-named records. Attackers can create wildcard records to redirect traffic for names that do not explicitly match records in the zone, positioning themselves as an adversary-in-the-middle and enabling credential interception or relay through ADIDNS manipulation similar in outcome to LLMNR/NBNS spoofing.",
+        "from": "now-9m",
+        "index": [
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.id",
+                "winlog.event_data.SubjectLogonId",
+                "winlog.event_data.OpCorrelationID",
+                "winlog.event_data.ObjectDN",
+                "winlog.event_data.ObjectGUID",
+                "winlog.event_data.DSName",
+                "winlog.computer_name",
+                "host.id"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential ADIDNS Poisoning via Wildcard Record Creation",
+        "note": "## Triage and analysis\n\n### Investigating Potential ADIDNS Poisoning via Wildcard Record Creation\n\n#### Possible investigation steps\n\n- What wildcard object did the alert create, and which ADIDNS scope can it affect?\n  - Why: a leading `DC=*` object can answer otherwise unresolved names across that ADIDNS zone, so the zone and partition define the first impact boundary.\n  - Focus: `winlog.event_data.ObjectDN`, `winlog.event_data.ObjectGUID`, `winlog.event_data.DSName`, and `winlog.computer_name`.\n  - Hint: parse `winlog.event_data.ObjectDN` from left to right. In `DC=*,DC=example.com,CN=MicrosoftDNS,DC=DomainDnsZones,DC=example,DC=com`, `DC=*` is the wildcard node, `DC=example.com` is the DNS zone, and `DC=DomainDnsZones,...` identifies the AD DNS partition.\n  - Implication: escalate faster when the object is a wildcard dnsNode in a production domain or forest DNS partition; lower concern only when the same object, zone, and domain controller align with a defensive sinkhole or contained test candidate, then continue to session and change evidence before closure.\n\n- Which account created the wildcard?\n  - Focus: `user.name`, `user.id`, and `winlog.event_data.SubjectLogonId`.\n  - Implication: escalate when the creator is not a recognized zone-management, defensive sinkhole, or test identity for this object and zone; keep investigating when the account fits a known role because identity alone does not clear wildcard creation.\n\n- Where did the creating session originate?\n  - Focus: 4624 events on the same `host.id` where `winlog.event_data.TargetLogonId` matches `winlog.event_data.SubjectLogonId`; review `source.ip`, `winlog.logon.type`, and `winlog.event_data.AuthenticationPackageName`.\n    - !{investigate{\"description\":\"\",\"label\":\"Session origin (4624) for the wildcard-creating logon\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.TargetLogonId\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.SubjectLogonId}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4624\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the source, logon type, or authentication method is unexpected for DC-side ADIDNS changes; missing 4624 origin data is unresolved, not benign.\n\n- What DNS attributes or neighboring objects changed in the same operation?\n  - Focus: same-session 5136/5137 records keyed by `winlog.event_data.OpCorrelationID` or `winlog.event_data.SubjectLogonId`, then grouped by `winlog.event_data.ObjectGUID`; inspect `winlog.event_data.AttributeLDAPDisplayName` and `winlog.event_data.AttributeValue`.\n  - Hint: query the same domain controller and alert window for matching directory-service changes. Treat `winlog.event_data.AttributeValue` for `dnsRecord` as a lead because Security logs may encode or truncate record data. If the target is unclear, retrieve the current ADIDNS object or DNS record and compare it to `ObjectDN`, `ObjectGUID`, and the event timeline because current state may differ from event-time state. Missing DNS record data is unresolved, not benign. Windows Security alone does not prove tool identity or client redirection.\n    - !{investigate{\"description\":\"\",\"label\":\"Directory service changes from the wildcard-creating session\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.OpCorrelationID\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.OpCorrelationID}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"5136\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.SubjectLogonId\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.SubjectLogonId}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"5136\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.SubjectLogonId\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.SubjectLogonId}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"5137\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h/h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when 5136 data shows a dnsRecord target or adjacent ADIDNS changes not tied to the same verified sinkhole or test object; if `winlog.event_data.AttributeValue` is opaque or absent, the target remains unresolved.\n\n- Did clients use the wildcard or authenticate to the recovered target?\n  - Focus: DNS/client telemetry for names in the affected zone and downstream network or authentication events to the recovered target; compare `dns.question.name`, `dns.resolved_ip`, `source.ip`, and `destination.ip`.\n  - Implication: escalate impact when clients query unresolved names that resolve to the wildcard target, then connect or authenticate to that target; missing DNS, network, or authentication telemetry is unresolved, not benign.\n\n- If object, session, or change-set evidence stays suspicious, do related alerts suggest broader AD abuse?\n  - Focus: related alerts for `user.id` and `host.id` involving repeated directory-service changes, ADIDNS abuse, or credential access.\n    - !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n    - !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the domain controller\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden scope when the same actor or domain controller shows related AD, relay, or credential-access activity; keep scope local only when related alerts are absent and object, session, and change-set evidence fit a recognized sinkhole or test.\n\n- Escalate when production wildcard scope, unrecognized creator/session, suspicious dnsRecord target, client-impact evidence, adjacent ADIDNS changes, or related AD-abuse alerts point to unrecognized wildcard creation; close only when all evidence fits the exact defensive sinkhole or contained test object; if mixed or incomplete, preserve and escalate.\n\n### False positive analysis\n\n- Wildcard records in AD-integrated DNS zones are an anti-pattern because they can replace NXDOMAIN behavior and redirect unresolved names. The plausible benign paths are narrow: an administrator-controlled defensive sinkhole or a contained red-team or penetration test. Confirm by verifying that `winlog.event_data.ObjectDN`, `winlog.event_data.ObjectGUID`, `winlog.event_data.DSName`, `user.id`, `winlog.event_data.SubjectLogonId`, and recovered 5136 attribute evidence all align with that exact object and scope.\n- If independent confirmation of the sinkhole or test is unavailable, do not close as benign even when the Windows Security evidence is internally consistent.\n- Before creating an exception, require the same wildcard object, authorized zone, creator identity, and defensive or test window to recur as one stable workflow. Avoid exceptions on `user.name`, `user.id`, or the domain partition alone because those would suppress lookalike wildcard creation.\n\n### Response and remediation\n\n- If confirmed as an authorized defensive sinkhole or test, reverse any temporary containment, verify the wildcard is removed or retained according to that scope, and document `winlog.event_data.ObjectDN`, `winlog.event_data.ObjectGUID`, `winlog.event_data.DSName`, creating `user.id`, `winlog.event_data.SubjectLogonId`, `winlog.computer_name`, and the confirming scope.\n- If suspicious but unconfirmed, export the AD object state, replication context, and related 5136/5137 Windows Security events before modifying the record or account. Then apply reversible containment tied to the evidence, such as restricting the creating account's ADIDNS write path or temporarily limiting that account while scope is clarified.\n- If confirmed malicious, preserve the exported AD object, 5136 attribute evidence, session-origin evidence, and related alerts before deletion. Remove the wildcard and any unauthorized ADIDNS objects from the same session, then verify removal replicated to all domain controllers.\n- Disable or restrict the creating account after evidence preservation to prevent re-poisoning. Use `winlog.event_data.SubjectLogonId` and recovered `source.ip` to hand off the source system for endpoint investigation of ADIDNS tooling, credential capture, or follow-on authentication.\n- If separate response evidence proves client redirection through the wildcard, treat credentials active on affected systems as exposed. Reset those accounts, prioritizing privileged and service accounts, and investigate for relayed authentication or follow-on access.\n- Review ADIDNS permissions for the affected zone; reduce wildcard-creation opportunities, especially broadly delegated or authenticated-user create-child rights. Search all AD-integrated zones for additional wildcard or suspicious ADIDNS objects and document the final evidence set for future narrow exceptions.\n",
+        "query": "any where host.os.type == \"windows\" and event.code == \"5137\" and\n    startsWith(winlog.event_data.ObjectDN, \"DC=*,\")\n",
+        "references": [
+            "https://www.netspi.com/blog/technical/network-penetration-testing/exploiting-adidns/",
+            "https://www.thehacker.recipes/a-d/movement/mitm-and-coerced-authentications/adidns-spoofing"
+        ],
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.ObjectDN",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "8f242ffb-b191-4803-90ec-0f19942e17fd",
+        "setup": "## Setup\n\nAudit Directory Service Changes must be enabled to generate the events used by this rule.\nSetup instructions: https://ela.st/audit-directory-service-changes\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Active Directory",
+            "Use Case: Active Directory Monitoring",
+            "Data Source: Windows Security Event Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1557",
+                        "name": "Adversary-in-the-Middle",
+                        "reference": "https://attack.mitre.org/techniques/T1557/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 108
+    },
+    "id": "8f242ffb-b191-4803-90ec-0f19942e17fd_108",
+    "type": "security-rule"
+}
