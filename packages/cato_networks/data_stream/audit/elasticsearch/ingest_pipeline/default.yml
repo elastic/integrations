@@ -870,10 +870,13 @@ processors:
       description: Removes fractional value from date type field that is not an array to parse successfully in date processor later.
       source: |
         def removeFractional(def value) {
+          if (value instanceof Number) {
+            return ((Number)value).longValue();
+          }
           if (value == '') {
             return value;
           }
-          return (long)Double.parseDouble(value);
+          return (long)Double.parseDouble(String.valueOf(value));
         }
         if (ctx.cato_networks?.audit?.change?.After?.startDate != null) {
           ctx.cato_networks.audit.change.After.startDate = removeFractional(ctx.cato_networks.audit.change.After.startDate);
@@ -917,12 +920,15 @@ processors:
       lang: painless
       description: Converts an object into an array.
       source: |-
-        def convert_to_array(Map o){
-          def output = [];
-          for (entry in o.entrySet()) {
-            output.add(entry.getValue());
+        def convert_to_array(def o){
+          if (o instanceof Map) {
+            def output = [];
+            for (entry in o.entrySet()) {
+              output.add(entry.getValue());
+            }
+            return output;
           }
-          return output;
+          return o;
         }
         if(ctx.cato_networks?.audit?.change?.After?.adminRoles != null){
           ctx.cato_networks.audit.change.After.adminRoles = convert_to_array(ctx.cato_networks.audit.change.After.adminRoles);
@@ -1044,10 +1050,13 @@ processors:
       lang: painless
       source: |
         def removeFractional(def value) {
+          if (value instanceof Number) {
+            return ((Number)value).longValue();
+          }
           if (value == '') {
             return value;
           }
-          return (long)Double.parseDouble(value);
+          return (long)Double.parseDouble(String.valueOf(value));
         }
         if (ctx.cato_networks?.audit?.change?.After?.allowedUpdatableItems instanceof List) {
           for(def item : ctx.cato_networks.audit.change.After.allowedUpdatableItems){
@@ -1068,12 +1077,39 @@ processors:
             if(item?.lastModified != null){
               item.lastModified = removeFractional(item.lastModified);
             }
+            if(item?.creationDateMilliseconds != null){
+              item.creationDateMilliseconds = removeFractional(item.creationDateMilliseconds);
+            }
           }
         }
         if (ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List) {
           for(def item : ctx.cato_networks.audit.change.After.socketsSettings.primary.links){
             if(item?.lastModified != null){
               item.lastModified = removeFractional(item.lastModified);
+            }
+          }
+        }
+        if (ctx.cato_networks?.audit?.change?.After?.adminRoles instanceof List) {
+          for(def item : ctx.cato_networks.audit.change.After.adminRoles){
+            if(item?.creationDateMilliseconds != null){
+              item.creationDateMilliseconds = removeFractional(item.creationDateMilliseconds);
+            }
+            if(item?.role?.creationDateMilliseconds != null){
+              item.role.creationDateMilliseconds = removeFractional(item.role.creationDateMilliseconds);
+            }
+          }
+        }
+        if (ctx.cato_networks?.audit?.change?.After?.allowedItems instanceof List) {
+          for(def item : ctx.cato_networks.audit.change.After.allowedItems){
+            if(item?.creationDateMilliseconds != null){
+              item.creationDateMilliseconds = removeFractional(item.creationDateMilliseconds);
+            }
+          }
+        }
+        if (ctx.cato_networks?.audit?.change?.After?.from instanceof List) {
+          for(def item : ctx.cato_networks.audit.change.After.from){
+            if(item?.creationDateMilliseconds != null){
+              item.creationDateMilliseconds = removeFractional(item.creationDateMilliseconds);
             }
           }
         }
@@ -2316,7 +2352,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.upstreamBandwidthMbpsPrecision
-          tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_links_upstreamBandwidthMbpsPrecision_to_boolean
+          tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_links_upstreamBandwidthMbpsPrecision_to_double
           type: double
           ignore_missing: true
           on_failure:
@@ -2334,7 +2370,7 @@ processors:
       processor:
         convert:
           field: _ingest._value.upstreamBandwidth
-          tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_links_upstreamBandwidth_to_boolean
+          tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_links_upstreamBandwidth_to_double
           type: double
           ignore_missing: true
           on_failure:
