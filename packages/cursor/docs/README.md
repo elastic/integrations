@@ -247,9 +247,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-05-04T10:00:00.000Z",
     "agent": {
-        "ephemeral_id": "0876fb04-699e-426d-b65d-6d5b4cea5336",
-        "id": "85c35c71-dbd5-4d6a-bbda-91902fa24c25",
-        "name": "elastic-agent-54921",
+        "ephemeral_id": "27ee7903-c550-489c-a3b3-217b82aef7bf",
+        "id": "bf21ba5b-64ea-4854-9a94-8e23d28b0152",
+        "name": "elastic-agent-12174",
         "type": "filebeat",
         "version": "9.3.2"
     },
@@ -261,14 +261,14 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "cursor.audit",
-        "namespace": "95486",
+        "namespace": "77323",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "85c35c71-dbd5-4d6a-bbda-91902fa24c25",
+        "id": "bf21ba5b-64ea-4854-9a94-8e23d28b0152",
         "snapshot": false,
         "version": "9.3.2"
     },
@@ -280,7 +280,7 @@ An example event for `audit` looks as following:
         ],
         "dataset": "cursor.audit",
         "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0001",
-        "ingested": "2026-05-05T11:56:40Z",
+        "ingested": "2026-05-06T16:30:56Z",
         "kind": "event",
         "outcome": "success",
         "provider": "cursor",
