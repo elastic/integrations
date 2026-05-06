@@ -1,0 +1,107 @@
+---
+description: Pipeline for parsing SonicWall SMA session events
+processors:
+  - dissect:
+      field: message
+      pattern: "Session Start: '(%{user.email})@(%{user.domain})', authenticated."
+      if: ctx.message != null && ctx.message.startsWith('Session Start:')
+      ignore_failure: true
+  - set:
+      field: user.name
+      copy_from: user.email
+      if: ctx.user?.email != null && ctx.user?.name == null
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      value: session-start
+      if: ctx.message != null && ctx.message.startsWith('Session Start:')
+  - append:
+      field: event.category
+      value: session
+      allow_duplicates: false
+      if: ctx.message != null && ctx.message.startsWith('Session Start:')
+  - append:
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+      if: ctx.message != null && ctx.message.startsWith('Session Start:')
+  - append:
+      field: event.type
+      value: start
+      allow_duplicates: false
+      if: ctx.message != null && ctx.message.startsWith('Session Start:')
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.message != null && ctx.message.startsWith('Session Start:')
+  - grok:
+      field: message
+      patterns:
+        - '^Inbound ExtraWeb/API SSL connection was rejected because %{GREEDYDATA:event.reason} \(%{IP:source.ip}:%{POSINT:source.port:long}\)$'
+      if: ctx.message != null && ctx.message.startsWith('Inbound ExtraWeb/API SSL connection was rejected')
+      ignore_failure: true
+  - set:
+      field: event.action
+      value: tls-connection-rejected
+      if: ctx.message != null && ctx.message.startsWith('Inbound ExtraWeb/API SSL connection was rejected')
+  - append:
+      field: event.category
+      value: network
+      allow_duplicates: false
+      if: ctx.event?.action == 'tls-connection-rejected'
+  - append:
+      field: event.type
+      value: connection
+      allow_duplicates: false
+      if: ctx.event?.action == 'tls-connection-rejected'
+  - append:
+      field: event.type
+      value: denied
+      allow_duplicates: false
+      if: ctx.event?.action == 'tls-connection-rejected'
+  - set:
+      field: network.protocol
+      value: tls
+      if: ctx.event?.action == 'tls-connection-rejected'
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.event?.action == 'tls-connection-rejected'
+  - grok:
+      field: message
+      patterns:
+        - '^TLS fatal alert -- %{GREEDYDATA:event.reason} \(%{IP:source.ip}:%{POSINT:source.port:long}\)$'
+      if: ctx.message != null && ctx.message.startsWith('TLS fatal alert --')
+      ignore_failure: true
+  - set:
+      field: event.action
+      value: tls-fatal-alert
+      if: ctx.message != null && ctx.message.startsWith('TLS fatal alert --')
+  - append:
+      field: event.category
+      value: network
+      allow_duplicates: false
+      if: ctx.event?.action == 'tls-fatal-alert'
+  - append:
+      field: event.type
+      value: connection
+      allow_duplicates: false
+      if: ctx.event?.action == 'tls-fatal-alert'
+  - set:
+      field: network.protocol
+      value: tls
+      if: ctx.event?.action == 'tls-fatal-alert'
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.event?.action == 'tls-fatal-alert'
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null

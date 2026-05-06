@@ -9,6 +9,37 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - grok:
+      field: event.original
+      patterns:
+        - '^(?:%{NUMBER:_temp.octet_count} )?<%{NONNEGINT:log.syslog.priority:long}>%{NONNEGINT:log.syslog.version} %{TIMESTAMP_ISO8601:_temp.syslog.timestamp} %{NOTSPACE:log.syslog.hostname} %{NOTSPACE:log.syslog.appname} %{NOTSPACE:log.syslog.procid} %{NOTSPACE:log.syslog.msgid} \[meta sequenceId="%{NUMBER:event.sequence:long}"\] \[%{DATA:_temp.sonicwall_sma.event_time}\] %{GREEDYDATA:_temp.sonicwall_sma.payload}$'
+  - dissect:
+      field: _temp.sonicwall_sma.payload
+      pattern: '%{observer.name} %{sonicwall_sma.log.thread_id} %{sonicwall_sma.log.component} %{event.code} %{log.level->} %{sonicwall_sma.log.category->} %{message}'
+  - date:
+      field: _temp.sonicwall_sma.event_time
+      target_field: '@timestamp'
+      formats:
+        - dd/MMM/yyyy:HH:mm:ss.SSSSSS Z
+        - dd/MMM/yyyy:HH:mm:ss Z
+  - lowercase:
+      field: log.level
+      ignore_missing: true
+  - script:
+      lang: painless
+      source: |
+        if (ctx.log?.syslog?.priority != null) {
+          def severity = new HashMap();
+          severity['code'] = ctx.log.syslog.priority & 0x7;
+          ctx.log.syslog['severity'] = severity;
+          def facility = new HashMap();
+          facility['code'] = ctx.log.syslog.priority >> 3;
+          ctx.log.syslog['facility'] = facility;
+        }
+  - set:
+      field: observer.hostname
+      copy_from: log.syslog.hostname
+      ignore_empty_value: true
   - set:
       field: observer.vendor
       value: SonicWall
@@ -18,10 +49,49 @@ processors:
   - set:
       field: observer.type
       value: access-management
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.severity
+      value: 3
+      if: ctx.log?.level == 'error'
+  - set:
+      field: event.severity
+      value: 4
+      if: ctx.log?.level == 'warning'
+  - set:
+      field: event.severity
+      value: 6
+      if: ctx.log?.level == 'info'
+  - pipeline:
+      name: '{{ IngestPipeline "audit" }}'
+      if: ctx.sonicwall_sma?.log?.category == 'Audit'
+  - pipeline:
+      name: '{{ IngestPipeline "auth" }}'
+      if: ctx.sonicwall_sma?.log?.category == 'Auth'
+  - pipeline:
+      name: '{{ IngestPipeline "misc" }}'
+      if: ctx.sonicwall_sma?.log?.category == 'Misc'
+  - pipeline:
+      name: '{{ IngestPipeline "session" }}'
+      if: ctx.sonicwall_sma?.log?.category == 'Session'
+  - pipeline:
+      name: '{{ IngestPipeline "system" }}'
+      if: ctx.sonicwall_sma?.log?.category == 'System'
+  - append:
+      field: related.hosts
+      value: '{{{observer.name}}}'
+      allow_duplicates: false
+      if: ctx.observer?.name != null
+  - append:
+      field: related.hosts
+      value: '{{{observer.hostname}}}'
+      allow_duplicates: false
+      if: ctx.observer?.hostname != null
   - remove:
       field:
-        - _tmp
-        - message
+        - _temp
       ignore_missing: true
 on_failure:
   - set:

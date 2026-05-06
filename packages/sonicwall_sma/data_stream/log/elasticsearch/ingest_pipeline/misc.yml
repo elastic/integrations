@@ -1,0 +1,155 @@
+---
+description: Pipeline for parsing SonicWall SMA miscellaneous events
+processors:
+  - append:
+      field: event.category
+      value: network
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+  - grok:
+      field: message
+      patterns:
+        - '^<KERNEL> PROBE:<%{WORD:sonicwall_sma.log.probe.type}:%{DATA:sonicwall_sma.log.probe.id}:%{DATA:user.name}>:%{GREEDYDATA:sonicwall_sma.log.probe.state}$'
+      ignore_failure: true
+  - set:
+      field: event.action
+      value: probe
+      if: ctx.sonicwall_sma?.log?.probe?.state != null
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.sonicwall_sma?.log?.probe?.state != null && ctx.sonicwall_sma.log.probe.state.contains('FAILED')
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.sonicwall_sma?.log?.probe?.state != null && ctx.sonicwall_sma.log.probe.state.contains('leaving Recovery state')
+  - grok:
+      field: sonicwall_sma.log.probe.state
+      patterns:
+        - '^FAILED:rto=%{NUMBER:sonicwall_sma.log.probe.rto_ms:long}ms retries=%{NUMBER:sonicwall_sma.log.probe.retries:long}$'
+        - '^%{GREEDYDATA:_temp.misc.probe_phase} after %{NUMBER:_temp.misc.probe_duration_seconds:double}s \(rto=%{NUMBER:sonicwall_sma.log.probe.rto_ms:long}ms\)$'
+      if: ctx.sonicwall_sma?.log?.probe?.state != null
+      ignore_failure: true
+  - script:
+      lang: painless
+      if: ctx._temp?.misc?.probe_duration_seconds != null
+      source: |
+        try {
+          def seconds = Double.parseDouble(ctx._temp.misc.probe_duration_seconds.toString());
+          ctx.event = ctx.event != null ? ctx.event : new HashMap();
+          ctx.event.duration = (long)(seconds * 1000000000L);
+        } catch (Exception ignored) {
+        }
+  - grok:
+      field: message
+      patterns:
+        - '^<KERNEL> handler is UP \(v4=%{IP:_temp.misc.related_ip} v6=%{DATA:_temp.misc.related_ip_v6}\) username=%{DATA:user.name} <%{DATA:sonicwall_sma.log.session.id}>$'
+      if: ctx.event?.action == null
+      ignore_failure: true
+  - set:
+      field: event.action
+      value: handler-up
+      if: ctx.sonicwall_sma?.log?.session?.id != null && ctx.message != null && ctx.message.contains('handler is UP')
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'handler-up'
+  - grok:
+      field: message
+      patterns:
+        - '^<KERNEL> SSL:version=%{DATA:sonicwall_sma.log.ssl.version} cipher=%{DATA:tls.cipher} <%{DATA:sonicwall_sma.log.session.id}>$'
+      if: ctx.message != null && ctx.message.contains('SSL:version=')
+      ignore_failure: true
+  - set:
+      field: event.action
+      value: ssl-negotiated
+      if: ctx.tls?.cipher != null
+  - set:
+      field: network.protocol
+      value: tls
+      if: ctx.tls?.cipher != null
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.tls?.cipher != null
+  - grok:
+      field: message
+      patterns:
+        - '^<KERNEL> Client OS Version=%{GREEDYDATA:sonicwall_sma.log.client.os_version} <%{DATA:sonicwall_sma.log.session.id}>$'
+      if: ctx.message != null && ctx.message.contains('Client OS Version=')
+      ignore_failure: true
+  - set:
+      field: event.action
+      value: client-os-version
+      if: ctx.sonicwall_sma?.log?.client?.os_version != null
+  - grok:
+      field: message
+      patterns:
+        - '^<KERNEL> Client Version=%{GREEDYDATA:sonicwall_sma.log.client.version} <%{DATA:sonicwall_sma.log.session.id}>$'
+      if: ctx.message != null && ctx.message.contains('Client Version=')
+      ignore_failure: true
+  - set:
+      field: event.action
+      value: client-version
+      if: ctx.sonicwall_sma?.log?.client?.version != null
+  - grok:
+      field: message
+      patterns:
+        - '^<KERNEL> Tunnel Resumption deleting existing tunnel with same vaddr\(s\): %{IP:_temp.misc.related_ip} <old %{DATA:sonicwall_sma.log.tunnel.old_id}, new %{DATA:sonicwall_sma.log.tunnel.new_id}>$'
+      if: ctx.message != null && ctx.message.contains('Tunnel Resumption deleting existing tunnel')
+      ignore_failure: true
+  - set:
+      field: event.action
+      value: tunnel-resumption
+      if: ctx.sonicwall_sma?.log?.tunnel?.old_id != null && ctx.sonicwall_sma?.log?.tunnel?.new_id != null
+  - grok:
+      field: message
+      patterns:
+        - '^<KERNEL> ESP:tunnelMTUUpdate=%{NUMBER:sonicwall_sma.log.tunnel.mtu.current:long}\(%{NUMBER:sonicwall_sma.log.tunnel.mtu.base:long}\) <%{DATA:sonicwall_sma.log.session.id}>$'
+      if: ctx.message != null && ctx.message.contains('ESP:tunnelMTUUpdate=')
+      ignore_failure: true
+  - set:
+      field: event.action
+      value: mtu-update
+      if: ctx.sonicwall_sma?.log?.tunnel?.mtu?.current != null
+  - grok:
+      field: message
+      patterns:
+        - '^<KERNEL> ESP:%{DATA:sonicwall_sma.log.crypto} <%{DATA:sonicwall_sma.log.session.id}>$'
+      if: ctx.message != null && ctx.message.startsWith('<KERNEL> ESP:')
+      ignore_failure: true
+  - set:
+      field: event.action
+      value: tunnel-crypto
+      if: ctx.sonicwall_sma?.log?.crypto != null
+  - grok:
+      field: message
+      patterns:
+        - '^<KERNEL> Incomplete message \(only %{NUMBER:_temp.misc.incomplete_actual:long} of %{NUMBER:_temp.misc.incomplete_expected:long} bytes\) of type %{DATA:sonicwall_sma.log.message_type}:%{GREEDYDATA:event.reason} <%{DATA:sonicwall_sma.log.session.id}>$'
+      if: ctx.message != null && ctx.message.contains('Incomplete message')
+      ignore_failure: true
+  - set:
+      field: event.action
+      value: incomplete-message
+      if: ctx.sonicwall_sma?.log?.message_type != null
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.event?.action == 'incomplete-message'
+  - append:
+      field: related.ip
+      value: '{{{_temp.misc.related_ip}}}'
+      allow_duplicates: false
+      if: ctx._temp?.misc?.related_ip != null
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - remove:
+      field:
+        - _temp.misc
+      ignore_missing: true
