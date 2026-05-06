@@ -50,6 +50,26 @@ This integration collects log messages of the following type:
     - nat_rules (endpoint: `/api/v2/nat_rules`)
     - network_routes (endpoint: `/api/v2/network_routes`)
 
+- `Identity`: Collect details of all identity assets including:
+    - users (endpoint: `/api/v2/users`)
+    - groups (endpoint: `/api/v2/groups`)
+    - security_roles (endpoint: `/api/v2/security_roles`)
+    - organizational_units (endpoint: `/api/v2/organizational_units`)
+    - accounts (endpoint: `/api/v2/accounts`)
+    - certificates (endpoint: `/api/v2/certificates`)
+    - permissions (endpoint: `/api/v2/permissions`)
+    - latest_rules (endpoint: `/api/v2/latest_rules`)
+    - profiles (endpoint: `/api/v2/profiles`)
+    - job_titles (endpoint: `/api/v2/job_titles`)
+    - access_review_campaign_instances (endpoint: `/api/v2/access_review_campaign_instances`)
+    - access_review_approval_items (endpoint: `/api/v2/access_review_approval_items`)
+
+### Supported use cases
+
+Integrating the Axonius Identity Datastream with Elastic SIEM provides a unified view of users, groups, roles, organizational units, accounts, permissions, certificates, profiles, and access review activity. Metrics and breakdowns help teams quickly assess identity posture by highlighting active, inactive, suspended, and external users, as well as patterns across user types and departments.
+
+Tables showing top email addresses and cloud providers add context into frequently used identities and their sources. These insights help security and IAM teams detect identity anomalies, validate account hygiene, and maintain strong visibility into access across the organization.
+
 ### Supported use cases
 
 Integrating the Axonius Adapter, User, Gateway, Exposure, Alert, Incident, Storage, Ticket, and Network data streams with Elastic SIEM provides centralized, end-to-end visibility across data ingestion, identity posture, network configuration, vulnerability exposure, security events, storage assets, ticketing, and network activity. Together, these data streams help analysts understand how data flows into the platform, how it maps to users and access, how gateways and network assets operate, where risks and exposures exist, and how alerts evolve into incidents and tracked issues.
@@ -136,12 +156,14 @@ Destinations indices are aliased to `logs-axonius_latest.<data_stream_name>`.
 | `logs-axonius.gateway-*`           | `logs-axonius_latest.dest_gateway-*`             | `logs-axonius_latest.gateway`           |
 | `logs-axonius.incident-*`          | `logs-axonius_latest.dest_incident-*`            | `logs-axonius_latest.incident`          |
 | `logs-axonius.user-*`              | `logs-axonius_latest.dest_user-*`                | `logs-axonius_latest.user`              |
-| `logs-axonius.storage-*`              | `logs-axonius_latest.dest_storage-*`                | `logs-axonius_latest.storage`              |
-| `logs-axonius.ticket-*`              | `logs-axonius_latest.dest_ticket-*`                | `logs-axonius_latest.ticket`
-| `logs-axonius.network-*`              | `logs-axonius_latest.dest_network-*`                | `logs-axonius_latest.network`
+| `logs-axonius.storage-*`           | `logs-axonius_latest.dest_storage-*`             | `logs-axonius_latest.storage`           |
+| `logs-axonius.ticket-*`            | `logs-axonius_latest.dest_ticket-*`              | `logs-axonius_latest.ticket`            |
+| `logs-axonius.network-*`           | `logs-axonius_latest.dest_network-*`             | `logs-axonius_latest.network`           |
+| `logs-axonius.identity-*`          | `logs-axonius_latest.dest_identity-*`            | `logs-axonius_latest.identity`          |
+
 
 **Note:** Assets deleted from Axonius may reappear in a future discovery cycle if they are still present in connected data sources and get re-detected. Because the exact duration for which a deleted asset may remain dormant before being rediscovered is unknown, the transform retention period is set to **90 days** to reduce the risk of data loss for such assets. This means deleted assets will continue to appear in dashboards for up to 90 days after deletion.
-The network destination index is a content-based deduplicated view, not an entity-level latest-state view like the other data streams (for example `user` and `gateway`), which rely on a unique entity identifier and reflect the latest state of each entity.
+The network and identity destination indices are a content-based deduplicated view, not an entity-level latest-state view like the other data streams (for example `user` and `gateway`), which rely on a unique entity identifier and reflect the latest state of each entity.
 
 ## Troubleshooting
 
@@ -243,6 +265,16 @@ The `network` data stream provides network events from axonius.
 
 {{ event "network" }}
 
+### Identity
+
+The `identity` data stream provides identity asset logs from axonius.
+
+#### identity fields
+
+{{ fields "identity" }}
+
+{{event "identity"}}
+
 ### Inputs used
 {{/* All inputs used by this package will be automatically listed here. */}}
 {{ inputDocs }}
@@ -277,7 +309,20 @@ These APIs are used with this integration:
     * firewalls (endpoint: `/api/v2/firewalls`)
     * nat_rules (endpoint: `/api/v2/nat_rules`)
     * network_routes (endpoint: `/api/v2/network_routes`)
+* Identity:
+    * users (endpoint: `/api/v2/users`)
+    * groups (endpoint: `/api/v2/groups`)
+    * security_roles (endpoint: `/api/v2/security_roles`)
+    * organizational_units (endpoint: `/api/v2/organizational_units`)
+    * accounts (endpoint: `/api/v2/accounts`)
+    * certificates (endpoint: `/api/v2/certificates`)
+    * permissions (endpoint: `/api/v2/permissions`)
+    * latest_rules (endpoint: `/api/v2/latest_rules`)
+    * profiles (endpoint: `/api/v2/profiles`)
+    * job_titles (endpoint: `/api/v2/job_titles`)
+    * access_review_campaign_instances (endpoint: `/api/v2/access_review_campaign_instances`)
+    * access_review_approval_items (endpoint: `/api/v2/access_review_approval_items`)
 
 ### ILM Policy
 
-To facilitate adapter, user, gateway and assets data including exposures, alert findings, incidents, storage and ticket source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*`, `.ds-logs-axonius.gateway-*`, `.ds-logs-axonius.exposure-*`, `.ds-logs-axonius.alert_finding-*`, `.ds-logs-axonius.incident-*`, `.ds-logs-axonius.storage-*` and `.ds-logs-axonius.ticket-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy`, `logs-axonius.gateway-default_policy`, `logs-axonius.exposure-default_policy`,  `logs-axonius.alert_finding-default_policy`, `logs-axonius.incident-default_policy`, `logs-axonius.storage-default_policy` and `logs-axonius.ticket-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+To facilitate adapter, user, gateway and assets data including exposures, alert findings, incidents, storage and ticket, network and identity source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*`, `.ds-logs-axonius.gateway-*`, `.ds-logs-axonius.exposure-*`, `.ds-logs-axonius.alert_finding-*`, `.ds-logs-axonius.incident-*`, `.ds-logs-axonius.storage-*`, `.ds-logs-axonius.ticket-*`, `.ds-logs-axonius.network-*` and `.ds-logs-axonius.identity-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy`, `logs-axonius.gateway-default_policy`, `logs-axonius.exposure-default_policy`,  `logs-axonius.alert_finding-default_policy`, `logs-axonius.incident-default_policy`, `logs-axonius.storage-default_policy`, `logs-axonius.ticket-default_policy`, `logs-axonius.network-default_policy` and `logs-axonius.identity-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.

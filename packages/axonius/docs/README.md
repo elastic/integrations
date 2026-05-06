@@ -50,6 +50,26 @@ This integration collects log messages of the following type:
     - nat_rules (endpoint: `/api/v2/nat_rules`)
     - network_routes (endpoint: `/api/v2/network_routes`)
 
+- `Identity`: Collect details of all identity assets including:
+    - users (endpoint: `/api/v2/users`)
+    - groups (endpoint: `/api/v2/groups`)
+    - security_roles (endpoint: `/api/v2/security_roles`)
+    - organizational_units (endpoint: `/api/v2/organizational_units`)
+    - accounts (endpoint: `/api/v2/accounts`)
+    - certificates (endpoint: `/api/v2/certificates`)
+    - permissions (endpoint: `/api/v2/permissions`)
+    - latest_rules (endpoint: `/api/v2/latest_rules`)
+    - profiles (endpoint: `/api/v2/profiles`)
+    - job_titles (endpoint: `/api/v2/job_titles`)
+    - access_review_campaign_instances (endpoint: `/api/v2/access_review_campaign_instances`)
+    - access_review_approval_items (endpoint: `/api/v2/access_review_approval_items`)
+
+### Supported use cases
+
+Integrating the Axonius Identity Datastream with Elastic SIEM provides a unified view of users, groups, roles, organizational units, accounts, permissions, certificates, profiles, and access review activity. Metrics and breakdowns help teams quickly assess identity posture by highlighting active, inactive, suspended, and external users, as well as patterns across user types and departments.
+
+Tables showing top email addresses and cloud providers add context into frequently used identities and their sources. These insights help security and IAM teams detect identity anomalies, validate account hygiene, and maintain strong visibility into access across the organization.
+
 ### Supported use cases
 
 Integrating the Axonius Adapter, User, Gateway, Exposure, Alert, Incident, Storage, Ticket, and Network data streams with Elastic SIEM provides centralized, end-to-end visibility across data ingestion, identity posture, network configuration, vulnerability exposure, security events, storage assets, ticketing, and network activity. Together, these data streams help analysts understand how data flows into the platform, how it maps to users and access, how gateways and network assets operate, where risks and exposures exist, and how alerts evolve into incidents and tracked issues.
@@ -136,12 +156,14 @@ Destinations indices are aliased to `logs-axonius_latest.<data_stream_name>`.
 | `logs-axonius.gateway-*`           | `logs-axonius_latest.dest_gateway-*`             | `logs-axonius_latest.gateway`           |
 | `logs-axonius.incident-*`          | `logs-axonius_latest.dest_incident-*`            | `logs-axonius_latest.incident`          |
 | `logs-axonius.user-*`              | `logs-axonius_latest.dest_user-*`                | `logs-axonius_latest.user`              |
-| `logs-axonius.storage-*`              | `logs-axonius_latest.dest_storage-*`                | `logs-axonius_latest.storage`              |
-| `logs-axonius.ticket-*`              | `logs-axonius_latest.dest_ticket-*`                | `logs-axonius_latest.ticket`
-| `logs-axonius.network-*`              | `logs-axonius_latest.dest_network-*`                | `logs-axonius_latest.network`
+| `logs-axonius.storage-*`           | `logs-axonius_latest.dest_storage-*`             | `logs-axonius_latest.storage`           |
+| `logs-axonius.ticket-*`            | `logs-axonius_latest.dest_ticket-*`              | `logs-axonius_latest.ticket`            |
+| `logs-axonius.network-*`           | `logs-axonius_latest.dest_network-*`             | `logs-axonius_latest.network`           |
+| `logs-axonius.identity-*`          | `logs-axonius_latest.dest_identity-*`            | `logs-axonius_latest.identity`          |
+
 
 **Note:** Assets deleted from Axonius may reappear in a future discovery cycle if they are still present in connected data sources and get re-detected. Because the exact duration for which a deleted asset may remain dormant before being rediscovered is unknown, the transform retention period is set to **90 days** to reduce the risk of data loss for such assets. This means deleted assets will continue to appear in dashboards for up to 90 days after deletion.
-The network destination index is a content-based deduplicated view, not an entity-level latest-state view like the other data streams (for example `user` and `gateway`), which rely on a unique entity identifier and reflect the latest state of each entity.
+The network and identity destination indices are a content-based deduplicated view, not an entity-level latest-state view like the other data streams (for example `user` and `gateway`), which rely on a unique entity identifier and reflect the latest state of each entity.
 
 ## Troubleshooting
 
@@ -2046,6 +2068,621 @@ An example event for `network` looks as following:
 }
 ```
 
+### Identity
+
+The `identity` data stream provides identity asset logs from axonius.
+
+#### identity fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| axonius.identity.account_disabled | Indicates whether the user account is disabled. | boolean |
+| axonius.identity.accurate_for_datetime | Timestamp indicating when this asset information was accurate. | date |
+| axonius.identity.active | The active status of the identity. | keyword |
+| axonius.identity.active_users | Number of active users in the account. | long |
+| axonius.identity.active_users_saved_query_id | Saved query ID for the active users metric. | keyword |
+| axonius.identity.adapter_list_length | How many adapters contributed to this asset. | long |
+| axonius.identity.adapters | List of adapters that created this asset. | keyword |
+| axonius.identity.admin_non_operational_users | Number of admin users that are non-operational. | long |
+| axonius.identity.admin_non_operational_users_saved_query_id | Saved query ID for the admin non-operational users metric. | keyword |
+| axonius.identity.admin_operational_active_users | Number of admin users that are both operational and active. | long |
+| axonius.identity.admin_operational_active_users_saved_query_id | Saved query ID for the admin operational active users metric. | keyword |
+| axonius.identity.admin_operational_inactive_users | Number of admin users that are operational but inactive. | long |
+| axonius.identity.admin_operational_inactive_users_saved_query_id | Saved query ID for the admin operational inactive users metric. | keyword |
+| axonius.identity.admin_operational_users | Number of admin users that are operational. | long |
+| axonius.identity.admin_operational_users_saved_query_id | Saved query ID for the admin operational users metric. | keyword |
+| axonius.identity.admin_roles.display_name | Display name of the admin role. | keyword |
+| axonius.identity.admin_roles.id | Unique identifier of the admin role. | keyword |
+| axonius.identity.admins | Total number of administrators in the account. | long |
+| axonius.identity.admins_saved_query_id | Saved query ID for the admins metric. | keyword |
+| axonius.identity.alt_names.name | The alternative name value. | keyword |
+| axonius.identity.alt_names.name_type | The type of alternative name (e.g., DNS, IP). | keyword |
+| axonius.identity.application_and_account_name | The application and account name associated with the asset. | keyword |
+| axonius.identity.application_id | Unique identifier of the application. | keyword |
+| axonius.identity.application_name | Name of the application associated with this identity. | keyword |
+| axonius.identity.asset_entity_info | Information about the asset entity and its properties. | keyword |
+| axonius.identity.asset_type | The type of asset. | keyword |
+| axonius.identity.associated_devices.device_associated_saas_apps_names | Names of SaaS applications associated with the device. | keyword |
+| axonius.identity.associated_devices.device_caption | Caption or display name of the associated device. | keyword |
+| axonius.identity.associated_devices.device_id | Unique identifier of the associated device. | keyword |
+| axonius.identity.associated_devices.device_labels | Labels or tags assigned to the associated device. | keyword |
+| axonius.identity.associated_devices.device_model | Model name of the associated device. | keyword |
+| axonius.identity.associated_devices.device_os_distribution | Operating system distribution of the associated device. | keyword |
+| axonius.identity.associated_devices.device_os_edition | Operating system edition of the associated device. | keyword |
+| axonius.identity.associated_devices.device_os_end_of_life | End-of-life date of the device operating system. | keyword |
+| axonius.identity.associated_devices.device_os_type | Operating system type of the associated device. | keyword |
+| axonius.identity.associated_devices.device_os_version | Operating system version of the associated device. | keyword |
+| axonius.identity.associated_devices.device_preferred_mac_address | Preferred MAC address of the associated device. | keyword |
+| axonius.identity.associated_devices.device_serial | Serial number of the associated device. | keyword |
+| axonius.identity.associated_devices.internal_axon_id | Internal Axonius ID of the associated device. | keyword |
+| axonius.identity.associated_employees.internal_axon_id | Internal Axonius ID of the associated employee. | keyword |
+| axonius.identity.associated_employees.username | Username of the associated employee. | keyword |
+| axonius.identity.associated_groups.display_name | Display name of the associated group. | keyword |
+| axonius.identity.associated_groups.remote_id | Remote identifier of the associated group. | keyword |
+| axonius.identity.associated_licenses.adapter_connection_label | Label of the adapter connection for the license. | keyword |
+| axonius.identity.associated_licenses.internal_axon_id | Internal Axonius ID of the license. | keyword |
+| axonius.identity.associated_licenses.license_name | Name of the license. | keyword |
+| axonius.identity.associated_licenses.pricing_unit | Pricing unit of the license. | keyword |
+| axonius.identity.associated_licenses.related_vendor_name | Vendor name associated with the license. | keyword |
+| axonius.identity.associated_licenses.unit_price | Unit price of the license. | keyword |
+| axonius.identity.aws_arn | Amazon Web Services ARN (Amazon Resource Name) for this identity. | keyword |
+| axonius.identity.aws_iam_identity_type | AWS IAM identity type (e.g., user, role, group). | keyword |
+| axonius.identity.azure_account_id | Azure account identifier associated with this identity. | keyword |
+| axonius.identity.begins_on | Start date of the certificate validity period. | date |
+| axonius.identity.bit_size | Key bit size of the certificate. | long |
+| axonius.identity.breaches_data.added_date | Date when the breach was added to the database. | date |
+| axonius.identity.breaches_data.breach_date | Date when the breach occurred. | date |
+| axonius.identity.breaches_data.data_classes | Types of data exposed in the breach. | keyword |
+| axonius.identity.breaches_data.domain | Domain affected by the breach. | keyword |
+| axonius.identity.breaches_data.is_fabricated | Indicates if the breach data is fabricated. | boolean |
+| axonius.identity.breaches_data.is_retired | Indicates if the breach record has been retired. | boolean |
+| axonius.identity.breaches_data.is_sensitive | Indicates if the breach contains sensitive data. | boolean |
+| axonius.identity.breaches_data.is_spam_list | Indicates if the breach is from a spam list. | boolean |
+| axonius.identity.breaches_data.is_verified | Indicates if the breach has been verified. | boolean |
+| axonius.identity.breaches_data.logo_path | Path to the logo of the breached service. | keyword |
+| axonius.identity.breaches_data.modified_date | Date when the breach record was last modified. | date |
+| axonius.identity.breaches_data.name | Name of the breach. | keyword |
+| axonius.identity.breaches_data.pwn_count | Number of accounts affected by the breach. | long |
+| axonius.identity.breaches_data.title | Title of the breach. | keyword |
+| axonius.identity.class_name | The class name or system classification of this asset. | keyword |
+| axonius.identity.cloud_provider | The cloud provider associated with this identity. | keyword |
+| axonius.identity.connected_assets | Other assets connected to or associated with this identity asset. | keyword |
+| axonius.identity.connection_label | Label of the adapter connection used to collect this identity data. | keyword |
+| axonius.identity.created_date | Date when this identity record was created. | date |
+| axonius.identity.data_asset_type | The asset type from identity event data, distinguishing from root asset_type. | keyword |
+| axonius.identity.deleted_users | Number of deleted users in the account. | long |
+| axonius.identity.deleted_users_saved_query_id | Saved query ID for the deleted users metric. | keyword |
+| axonius.identity.description | The description of the asset. | text |
+| axonius.identity.direct_not_sso_users | Number of users with direct access who are not using SSO. | long |
+| axonius.identity.direct_not_sso_users_saved_query_id | Saved query ID for the direct non-SSO users metric. | keyword |
+| axonius.identity.display_name | Display name of the identity. | keyword |
+| axonius.identity.distinct_associated_devices_count | Number of distinct devices associated with this identity. | long |
+| axonius.identity.domains.name | Name of the domain. | keyword |
+| axonius.identity.email | Email address of the identity. | keyword |
+| axonius.identity.email_activity.is_deleted | Indicates if the email activity record has been deleted. | boolean |
+| axonius.identity.email_activity.product_license | Product license associated with email activity. | keyword |
+| axonius.identity.email_activity.read_count | Number of emails read during the report period. | long |
+| axonius.identity.email_activity.receive_count | Number of emails received during the report period. | long |
+| axonius.identity.email_activity.report_date | Date of the email activity report. | date |
+| axonius.identity.email_activity.report_period | Reporting period in days for the email activity. | long |
+| axonius.identity.email_activity.send_count | Number of emails sent during the report period. | long |
+| axonius.identity.email_notification.alternative_host_reminder | Indicates if alternative host reminder emails are enabled. | boolean |
+| axonius.identity.email_notification.cancel_meeting_reminder | Indicates if meeting cancellation reminder emails are enabled. | boolean |
+| axonius.identity.email_notification.jbh_reminder | Indicates if join-before-host reminder emails are enabled. | boolean |
+| axonius.identity.employee_id | Employee identifier assigned to this identity. | keyword |
+| axonius.identity.employee_number | Employee number assigned to this identity. | keyword |
+| axonius.identity.employee_type | Type of employee (e.g., full-time, contractor). | keyword |
+| axonius.identity.event.accurate_for_datetime | Timestamp indicating when the event data was accurate. | date |
+| axonius.identity.event.action_if_exists | Action associated with the identity event, if it exists. | keyword |
+| axonius.identity.event.adapter_categories | List of adapter categories that this event belongs to. | keyword |
+| axonius.identity.event.associated_adapter_plugin_name | The associated plugin name that created or processed the event. | keyword |
+| axonius.identity.event.association_type | The type of association between the event and related entities. | keyword |
+| axonius.identity.event.client_used | The client identifier that was used to process the event. | keyword |
+| axonius.identity.event.entity | The entity type or category this event relates to. | keyword |
+| axonius.identity.event.hidden_for_gui | Indicates if this event should be hidden in the GUI. | boolean |
+| axonius.identity.event.initial_plugin_unique_name | The initial plugin name that created or processed the event. | keyword |
+| axonius.identity.event.name | The name of the event. | keyword |
+| axonius.identity.event.plugin_name | The name of the plugin that processed the event. | keyword |
+| axonius.identity.event.plugin_type | The type or category of the plugin that processed the event. | keyword |
+| axonius.identity.event.plugin_unique_name | The unique identifier of the plugin instance that processed the event. | keyword |
+| axonius.identity.event.quick_id | A quick reference identifier combining plugin and entity information. | keyword |
+| axonius.identity.event.type | The type or classification of the event data. | keyword |
+| axonius.identity.expires_on | Expiration date of the certificate validity period. | date |
+| axonius.identity.external_users | Number of external users in the account. | long |
+| axonius.identity.external_users_saved_query_id | Saved query ID for the external users metric. | keyword |
+| axonius.identity.feature.cn_meeting | Indicates if China meeting feature is enabled. | boolean |
+| axonius.identity.feature.in_meeting | Indicates if in-meeting feature is enabled. | boolean |
+| axonius.identity.feature.large_meeting | Indicates if large meeting feature is enabled. | boolean |
+| axonius.identity.feature.meeting_capacity | Maximum meeting capacity for this identity. | long |
+| axonius.identity.feature.webinar | Indicates if webinar feature is enabled. | boolean |
+| axonius.identity.feature.zoom_phone | Indicates if Zoom Phone feature is enabled. | boolean |
+| axonius.identity.fetch_time | The date and time when the identity data was last fetched. | date |
+| axonius.identity.first_fetch_time | The date and time when this identity asset was first fetched. | date |
+| axonius.identity.first_name | First name of the identity. | keyword |
+| axonius.identity.first_seen | The date and time when this identity was first observed. | date |
+| axonius.identity.from_last_fetch | Indicates whether this identity asset was modified since the last fetch. | boolean |
+| axonius.identity.gce_account_id | Google Cloud Engine account ID associated with this identity. | keyword |
+| axonius.identity.groups.display_name | Display name of the group. | keyword |
+| axonius.identity.groups.name | Name of the group. | keyword |
+| axonius.identity.groups.remote_id | Remote identifier of the group. | keyword |
+| axonius.identity.has_administrative_permissions | Indicates whether this identity has administrative permissions. | boolean |
+| axonius.identity.hire_date | Date when the employee was hired. | date |
+| axonius.identity.hr_employment_status | Human resources employment status of the identity. | keyword |
+| axonius.identity.id | Unique identifier for the identity asset. | keyword |
+| axonius.identity.id_raw | Raw unique identifier for the identity asset. | keyword |
+| axonius.identity.in_meeting.allow_live_streaming | Indicates if live streaming is allowed during meetings. | boolean |
+| axonius.identity.in_meeting.annotation | Indicates if annotation is enabled during meetings. | boolean |
+| axonius.identity.in_meeting.attendee_on_hold | Indicates if attendee-on-hold feature is enabled. | boolean |
+| axonius.identity.in_meeting.auto_saving_chat | Indicates if auto-saving chat is enabled. | boolean |
+| axonius.identity.in_meeting.breakout_room | Indicates if breakout rooms are enabled. | boolean |
+| axonius.identity.in_meeting.chat | Indicates if chat is enabled during meetings. | boolean |
+| axonius.identity.in_meeting.closed_caption | Indicates if closed captions are enabled. | boolean |
+| axonius.identity.in_meeting.co_host | Indicates if co-host feature is enabled. | boolean |
+| axonius.identity.in_meeting.data_center_regions | Data center regions configured for meetings. | keyword |
+| axonius.identity.in_meeting.e2e_encryption | Indicates if end-to-end encryption is enabled. | boolean |
+| axonius.identity.in_meeting.entry_exit_chime | Indicates if entry/exit chime is enabled. | boolean |
+| axonius.identity.in_meeting.far_end_camera_control | Indicates if far-end camera control is enabled. | boolean |
+| axonius.identity.in_meeting.feedback | Indicates if feedback feature is enabled. | boolean |
+| axonius.identity.in_meeting.group_hd | Indicates if group HD video is enabled. | boolean |
+| axonius.identity.in_meeting.non_verbal_feedback | Indicates if non-verbal feedback is enabled. | boolean |
+| axonius.identity.in_meeting.polling | Indicates if polling is enabled during meetings. | boolean |
+| axonius.identity.in_meeting.private_chat | Indicates if private chat is enabled during meetings. | boolean |
+| axonius.identity.in_meeting.record_play_voice | Indicates if record and play voice is enabled. | boolean |
+| axonius.identity.in_meeting.remote_control | Indicates if remote control is enabled. | boolean |
+| axonius.identity.in_meeting.remote_support | Indicates if remote support is enabled. | boolean |
+| axonius.identity.in_meeting.share_dual_camera | Indicates if dual camera sharing is enabled. | boolean |
+| axonius.identity.in_meeting.show_meeting_control_toolbar | Indicates if meeting control toolbar is shown. | boolean |
+| axonius.identity.in_meeting.virtual_background | Indicates if virtual background is enabled. | boolean |
+| axonius.identity.in_meeting.waiting_room | Indicates if waiting room is enabled. | boolean |
+| axonius.identity.in_meeting.workplace_by_facebook | Indicates if Workplace by Facebook integration is enabled. | boolean |
+| axonius.identity.inactive_users | Number of inactive users in the account. | long |
+| axonius.identity.inactive_users_saved_query_id | Saved query ID for the inactive users metric. | keyword |
+| axonius.identity.internal_axon_id | Internal ID of this asset. This ID may change in the future. | keyword |
+| axonius.identity.internal_is_admin | Internal flag indicating if this identity has admin privileges. | boolean |
+| axonius.identity.is_active | Indicates whether this identity is currently active. | boolean |
+| axonius.identity.is_admin | Indicates whether this identity has administrator privileges. | boolean |
+| axonius.identity.is_built_in | Indicates whether this is a built-in system account. | boolean |
+| axonius.identity.is_delegated_admin | Indicates whether this identity is a delegated administrator. | boolean |
+| axonius.identity.is_fetched_from_adapter | Indicates whether this identity data was fetched from an adapter. | boolean |
+| axonius.identity.is_from_sso_provider | Indicates whether this identity originates from a Single Sign-On provider. | boolean |
+| axonius.identity.is_latest_last_seen | Indicates if this is the latest recorded last-seen timestamp. | boolean |
+| axonius.identity.is_managed_by_application | Indicates whether this identity is managed by an application. | boolean |
+| axonius.identity.is_managed_by_direct_app | Indicates whether this identity is managed by a direct application. | boolean |
+| axonius.identity.is_managed_by_sso | Indicates whether this identity is managed through SSO. | boolean |
+| axonius.identity.is_mfa_enforced | Indicates whether multi-factor authentication is enforced. | boolean |
+| axonius.identity.is_mfa_enrolled | Indicates whether this identity is enrolled in multi-factor authentication. | boolean |
+| axonius.identity.is_non_editable | Indicates whether this identity record is non-editable. | boolean |
+| axonius.identity.is_paid | Indicates whether this identity has a paid license or account. | boolean |
+| axonius.identity.is_permission_adapter | Indicates whether this identity was collected by a permission adapter. | boolean |
+| axonius.identity.is_privileged | Indicates whether this identity has privileged access. | boolean |
+| axonius.identity.is_saas_user | Indicates whether this identity is a SaaS application user. | boolean |
+| axonius.identity.is_user_active | Indicates whether the user account is active. | boolean |
+| axonius.identity.is_user_deleted | Indicates whether the user account has been deleted. | boolean |
+| axonius.identity.is_user_external | Indicates whether this is an external user. | boolean |
+| axonius.identity.is_user_inactive | Indicates whether the user account is inactive. | boolean |
+| axonius.identity.is_user_suspended | Indicates whether the user account is suspended. | boolean |
+| axonius.identity.issuer.common_name | Common name of the certificate issuer. | keyword |
+| axonius.identity.issuer.country_name | Country name of the certificate issuer. | keyword |
+| axonius.identity.issuer.organization | Organization name of the certificate issuer. | keyword |
+| axonius.identity.last_client_version | Version of the last client used by this identity. | keyword |
+| axonius.identity.last_enrichment_run | Date of the last enrichment run for this identity. | date |
+| axonius.identity.last_fetch_connection_id | The connection ID of the adapter that last fetched this data. | keyword |
+| axonius.identity.last_fetch_connection_label | The label of the connection that last fetched this identity data. | keyword |
+| axonius.identity.last_login_attempt | Date and time of the last login attempt. | date |
+| axonius.identity.last_logon | Date and time of the last successful logon. | date |
+| axonius.identity.last_name | Last name of the identity. | keyword |
+| axonius.identity.last_password_change | Date and time when the password was last changed. | date |
+| axonius.identity.last_seen | The date and time when this identity was last observed. | date |
+| axonius.identity.mail | Email address (mail attribute) of the identity. | keyword |
+| axonius.identity.managed_non_operational_users | Number of managed users that are non-operational. | long |
+| axonius.identity.managed_non_operational_users_saved_query_id | Saved query ID for the managed non-operational users metric. | keyword |
+| axonius.identity.managed_operational_users | Number of managed users that are operational. | long |
+| axonius.identity.managed_operational_users_saved_query_id | Saved query ID for the managed operational users metric. | keyword |
+| axonius.identity.managed_users | Total number of managed users in the account. | long |
+| axonius.identity.managed_users_by_app | Number of users managed by a direct application. | long |
+| axonius.identity.managed_users_by_app_saved_query_id | Saved query ID for the managed-by-app users metric. | keyword |
+| axonius.identity.managed_users_by_sso | Number of users managed through SSO. | long |
+| axonius.identity.managed_users_by_sso_saved_query_id | Saved query ID for the managed-by-SSO users metric. | keyword |
+| axonius.identity.managed_users_saved_query_id | Saved query ID for the managed users metric. | keyword |
+| axonius.identity.manager_id | Identifier of the manager of this identity. | keyword |
+| axonius.identity.max_added_date | Most recent date a breach was added across all breaches for this identity. | date |
+| axonius.identity.max_breach_date | Most recent breach date across all breaches for this identity. | date |
+| axonius.identity.max_modified_date | Most recent modified date across all breaches for this identity. | date |
+| axonius.identity.name | The name or identifier of the identity asset. | keyword |
+| axonius.identity.nested_applications.active_from_direct_adapter | Indicates if active status is from a direct adapter. | boolean |
+| axonius.identity.nested_applications.app_accounts.name | Name of the application account. | keyword |
+| axonius.identity.nested_applications.app_display_name | Display name of the application. | keyword |
+| axonius.identity.nested_applications.app_links | Links or URLs associated with the application. | keyword |
+| axonius.identity.nested_applications.assignment_type | How the application was assigned (e.g., direct, group). | keyword |
+| axonius.identity.nested_applications.extension_type | Type of extension for the application. | keyword |
+| axonius.identity.nested_applications.has_administrative_permissions | Indicates if the identity has admin permissions in this application. | boolean |
+| axonius.identity.nested_applications.is_deleted | Indicates if the application assignment has been deleted. | boolean |
+| axonius.identity.nested_applications.is_from_direct_adapter | Indicates if the data is from a direct adapter. | boolean |
+| axonius.identity.nested_applications.is_managed | Indicates if the application is managed. | boolean |
+| axonius.identity.nested_applications.is_suspended | Indicates if the application access is suspended. | boolean |
+| axonius.identity.nested_applications.is_unmanaged_extension | Indicates if this is an unmanaged browser extension. | boolean |
+| axonius.identity.nested_applications.is_user_external | Indicates if the user is external in this application. | boolean |
+| axonius.identity.nested_applications.is_user_paid | Indicates if the user has a paid license in this application. | boolean |
+| axonius.identity.nested_applications.last_access | Date and time of the last access to the application. | date |
+| axonius.identity.nested_applications.last_access_count | Total number of accesses to the application. | long |
+| axonius.identity.nested_applications.last_access_count_60_days | Number of accesses to the application in the last 60 days. | long |
+| axonius.identity.nested_applications.last_access_count_90_days | Number of accesses to the application in the last 90 days. | long |
+| axonius.identity.nested_applications.name | Name of the application. | keyword |
+| axonius.identity.nested_applications.parents.name | Name of the parent entity. | keyword |
+| axonius.identity.nested_applications.parents.value | Value or identifier of the parent entity. | keyword |
+| axonius.identity.nested_applications.permissions.name | Name of the permission. | keyword |
+| axonius.identity.nested_applications.relation_direct_name | Name of the direct relationship to the application. | keyword |
+| axonius.identity.nested_applications.relation_discovery_name | Name of the discovered relationship to the application. | keyword |
+| axonius.identity.nested_applications.relation_extension_name | Name of the extension-based relationship to the application. | keyword |
+| axonius.identity.nested_applications.relation_sso_name | Name of the SSO-based relationship to the application. | keyword |
+| axonius.identity.nested_applications.source_application | Source application that provided this data. | keyword |
+| axonius.identity.nested_applications.value | Value or identifier of the application. | keyword |
+| axonius.identity.nested_applications.vendor_category | Vendor category of the application. | keyword |
+| axonius.identity.nested_associated_devices | Flattened list of nested associated device identifiers. | keyword |
+| axonius.identity.nested_grants_last_updated | Date when nested grants were last updated. | date |
+| axonius.identity.nested_grants_managers_last_updated | Date when nested grants managers were last updated. | date |
+| axonius.identity.nested_groups.assignment_type | How the group was assigned (e.g., direct, inherited). | keyword |
+| axonius.identity.nested_groups.group_name | Name of the group. | keyword |
+| axonius.identity.nested_groups.name | Display name of the group entry. | keyword |
+| axonius.identity.nested_groups.parents.name | Name of the parent entity. | keyword |
+| axonius.identity.nested_groups.parents.parent_type | Type of the parent entity. | keyword |
+| axonius.identity.nested_groups.parents.value | Value or identifier of the parent entity. | keyword |
+| axonius.identity.nested_groups.value | Value or identifier of the group. | keyword |
+| axonius.identity.nested_managers.assignment_type | How the manager was assigned. | keyword |
+| axonius.identity.nested_managers.parents.name | Name of the parent entity. | keyword |
+| axonius.identity.nested_managers.parents.parent_type | Type of the parent entity. | keyword |
+| axonius.identity.nested_managers.parents.value | Value or identifier of the parent entity. | keyword |
+| axonius.identity.nested_managers.value | Value or identifier of the manager. | keyword |
+| axonius.identity.nested_permissions.assignment_type | How the permission was assigned (e.g., direct, inherited). | keyword |
+| axonius.identity.nested_permissions.has_administrative_permissions | Indicates if the identity has administrative permissions. | boolean |
+| axonius.identity.nested_permissions.is_admin | Indicates if the identity has admin privileges. | boolean |
+| axonius.identity.nested_permissions.parents.name | Name of the parent entity. | keyword |
+| axonius.identity.nested_permissions.parents.parent_type | Type of the parent entity. | keyword |
+| axonius.identity.nested_permissions.parents.value | Value or identifier of the parent entity. | keyword |
+| axonius.identity.nested_permissions.value | Value or identifier of the permission. | keyword |
+| axonius.identity.nested_resources.assignment_type | How the resource was assigned. | keyword |
+| axonius.identity.nested_resources.name | Name of the resource. | keyword |
+| axonius.identity.nested_resources.parents.name | Name of the parent entity. | keyword |
+| axonius.identity.nested_resources.parents.value | Value or identifier of the parent entity. | keyword |
+| axonius.identity.nested_resources.value | Value or identifier of the resource. | keyword |
+| axonius.identity.nested_roles.assignment_type | How the role was assigned (e.g., direct, inherited). | keyword |
+| axonius.identity.nested_roles.name | Name of the role. | keyword |
+| axonius.identity.nested_roles.parents.name | Name of the parent entity. | keyword |
+| axonius.identity.nested_roles.parents.parent_type | Type of the parent entity. | keyword |
+| axonius.identity.nested_roles.parents.value | Value or identifier of the parent entity. | keyword |
+| axonius.identity.nested_roles.value | Value or identifier of the role. | keyword |
+| axonius.identity.not_fetched_count | The number of times this identity asset failed to be fetched. | long |
+| axonius.identity.operational_users_count | Total number of operational users in the account. | long |
+| axonius.identity.oracle_cloud_cis_incompliant.rule_cis_version | CIS benchmark version of the incompliant rule. | float |
+| axonius.identity.oracle_cloud_cis_incompliant.rule_section | Section number of the incompliant CIS rule. | keyword |
+| axonius.identity.orphaned_users | Number of orphaned users in the account. | long |
+| axonius.identity.orphaned_users_saved_query_id | Saved query ID for the orphaned users metric. | keyword |
+| axonius.identity.paid_users | Number of paid users in the account. | long |
+| axonius.identity.paid_users_saved_query_id | Saved query ID for the paid users metric. | keyword |
+| axonius.identity.password_never_expires | Indicates whether the password is set to never expire. | boolean |
+| axonius.identity.password_not_required | Indicates whether a password is not required for this account. | boolean |
+| axonius.identity.permissions | Total number of permissions assigned to the identity. | long |
+| axonius.identity.permissions_list.name | Name of the permission. | keyword |
+| axonius.identity.pmi | Personal Meeting ID (Zoom). | keyword |
+| axonius.identity.pretty_id | A human-readable identifier for the identity asset. | keyword |
+| axonius.identity.project_ids | Cloud project IDs associated with this identity. | keyword |
+| axonius.identity.project_tags.inherited | Indicates if the tag is inherited from a parent resource. | keyword |
+| axonius.identity.project_tags.key | Tag key. | keyword |
+| axonius.identity.project_tags.namespaced_tag_key | Namespaced version of the tag key. | keyword |
+| axonius.identity.project_tags.namespaced_tag_value | Namespaced version of the tag value. | keyword |
+| axonius.identity.project_tags.value | Tag value. | keyword |
+| axonius.identity.projects_roles.project_id | Identifier of the project. | keyword |
+| axonius.identity.projects_roles.role_name | Name of the role in the project. | keyword |
+| axonius.identity.provider_name | Name of the identity provider. | keyword |
+| axonius.identity.provider_type | Type of the identity provider. | keyword |
+| axonius.identity.recording.auto_delete_cmr | Indicates if cloud meeting recordings are auto-deleted. | boolean |
+| axonius.identity.recording.auto_delete_cmr_days | Indicates if auto-delete days for cloud recordings is configured. | boolean |
+| axonius.identity.recording.auto_recording | Indicates if auto-recording is enabled. | boolean |
+| axonius.identity.recording.cloud_recording | Indicates if cloud recording is enabled. | boolean |
+| axonius.identity.recording.host_pause_stop_recording | Indicates if host can pause or stop recording. | boolean |
+| axonius.identity.recording.local_recording | Indicates if local recording is enabled. | boolean |
+| axonius.identity.recording.record_audio_file | Indicates if a separate audio file is recorded. | boolean |
+| axonius.identity.recording.record_gallery_view | Indicates if gallery view is recorded. | boolean |
+| axonius.identity.recording.record_speaker_view | Indicates if speaker view is recorded. | boolean |
+| axonius.identity.recording.recording_audio_transcript | Indicates if audio transcript is generated for recordings. | boolean |
+| axonius.identity.recording.save_chat_text | Indicates if chat text is saved with recordings. | boolean |
+| axonius.identity.recording.show_timestamp | Indicates if timestamp is shown in recordings. | boolean |
+| axonius.identity.recovery_question_set | Indicates whether a recovery question has been set for this identity. | boolean |
+| axonius.identity.relatable_ids | IDs used to relate this identity to other assets. | keyword |
+| axonius.identity.remote_account_id | Remote account identifier for this identity. | keyword |
+| axonius.identity.remote_id | Remote identifier for this identity in the source system. | keyword |
+| axonius.identity.roles.display_name | Display Name of the role. | keyword |
+| axonius.identity.roles.remote_id | Remote ID of the role. | keyword |
+| axonius.identity.roles_accounts | Account roles. | keyword |
+| axonius.identity.schedule_meeting.audio_type | Audio type configured for scheduled meetings. | keyword |
+| axonius.identity.schedule_meeting.force_pmi_jbh_password | Indicates if PMI join-before-host password is forced. | boolean |
+| axonius.identity.schedule_meeting.host_video | Indicates if host video is on when joining a meeting. | boolean |
+| axonius.identity.schedule_meeting.join_before_host | Indicates if participants can join before the host. | boolean |
+| axonius.identity.schedule_meeting.participants_video | Indicates if participant video is on when joining a meeting. | boolean |
+| axonius.identity.schedule_meeting.pstn_password_protected | Indicates if PSTN dial-in is password protected. | boolean |
+| axonius.identity.schedule_meeting.require_password_for_instant_meetings | Indicates if password is required for instant meetings. | boolean |
+| axonius.identity.schedule_meeting.require_password_for_pmi_meetings | Indicates if password is required for PMI meetings. | boolean |
+| axonius.identity.schedule_meeting.require_password_for_scheduled_meetings | Indicates if password is required for scheduled meetings. | boolean |
+| axonius.identity.schedule_meeting.require_password_for_scheduling_new_meetings | Indicates if password is required when scheduling new meetings. | boolean |
+| axonius.identity.schedule_meeting.use_pmi_for_instant_meetings | Indicates if PMI is used for instant meetings. | boolean |
+| axonius.identity.schedule_meeting.use_pmi_for_scheduled_meetings | Indicates if PMI is used for scheduled meetings. | boolean |
+| axonius.identity.serial_number | Serial number of the certificate. | keyword |
+| axonius.identity.shirt_size | Shirt size of the employee (HR attribute). | keyword |
+| axonius.identity.sm_entity_type | SaaS management entity type for this identity. | keyword |
+| axonius.identity.snow_full_name | Full name of the identity from ServiceNow. | keyword |
+| axonius.identity.snow_location | Location of the identity from ServiceNow. | keyword |
+| axonius.identity.source_application | The source application that provided this identity data. | keyword |
+| axonius.identity.status | Current status of the identity account. | keyword |
+| axonius.identity.status_changed | Date and time when the account status was last changed. | date |
+| axonius.identity.subject.common_name | Common name of the certificate subject. | keyword |
+| axonius.identity.subject.country_name | Country name of the certificate subject. | keyword |
+| axonius.identity.subject.locality | Locality (city) of the certificate subject. | keyword |
+| axonius.identity.subject.organization | Organization name of the certificate subject. | keyword |
+| axonius.identity.subject.state | State or province of the certificate subject. | keyword |
+| axonius.identity.suspended_users | Number of suspended users in the account. | long |
+| axonius.identity.suspended_users_saved_query_id | Saved query ID for the suspended users metric. | keyword |
+| axonius.identity.telephony.show_international_numbers_link | Indicates if international numbers link is shown. | boolean |
+| axonius.identity.telephony.third_party_audio | Indicates if third-party audio is enabled. | boolean |
+| axonius.identity.tenant_number | Tenant number associated with this identity. | long |
+| axonius.identity.timezone | Timezone configured for this identity. | keyword |
+| axonius.identity.total_users_count | Total number of users in the account. | long |
+| axonius.identity.transform_unique_id | Unique identifier for this asset in the transformation process. | keyword |
+| axonius.identity.tsp.call_out | Indicates if TSP call-out is enabled. | boolean |
+| axonius.identity.tsp.show_international_numbers_link | Indicates if international numbers link is shown for TSP. | boolean |
+| axonius.identity.type | The type or classification of the identity entity. | keyword |
+| axonius.identity.u_department | Department of the identity from ServiceNow. | keyword |
+| axonius.identity.u_vip | Indicates whether this identity is flagged as a VIP in ServiceNow. | boolean |
+| axonius.identity.unlinked_users | Number of unlinked users in the account. | long |
+| axonius.identity.unlinked_users_saved_query_id | Saved query ID for the unlinked users metric. | keyword |
+| axonius.identity.updated_on | Date and time when this identity record was last updated. | date |
+| axonius.identity.user_apps.active_from_direct_adapter | Indicates if active status is from a direct adapter. | boolean |
+| axonius.identity.user_apps.app_accounts.name | Name of the application account. | keyword |
+| axonius.identity.user_apps.app_display_name | Display name of the application. | keyword |
+| axonius.identity.user_apps.app_id | Unique identifier of the application. | keyword |
+| axonius.identity.user_apps.app_links | Links or URLs associated with the application. | keyword |
+| axonius.identity.user_apps.app_name | Name of the application. | keyword |
+| axonius.identity.user_apps.extension_type | Type of extension for the application. | keyword |
+| axonius.identity.user_apps.is_from_direct_adapter | Indicates if the data is from a direct adapter. | boolean |
+| axonius.identity.user_apps.is_managed | Indicates if the application is managed. | boolean |
+| axonius.identity.user_apps.is_saas_application | Indicates if this is a SaaS application. | boolean |
+| axonius.identity.user_apps.is_unmanaged_extension | Indicates if this is an unmanaged browser extension. | boolean |
+| axonius.identity.user_apps.is_user_deleted | Indicates if the user has been deleted in the application. | boolean |
+| axonius.identity.user_apps.is_user_external | Indicates if the user is external in the application. | boolean |
+| axonius.identity.user_apps.is_user_paid | Indicates if the user has a paid license in the application. | boolean |
+| axonius.identity.user_apps.is_user_suspended | Indicates if the user is suspended in the application. | boolean |
+| axonius.identity.user_apps.last_access | Date and time of the last access to the application. | date |
+| axonius.identity.user_apps.permissions.name | Name of the permission. | keyword |
+| axonius.identity.user_apps.relation_direct_name | Name of the direct relationship to the application. | keyword |
+| axonius.identity.user_apps.relation_discovery_name | Name of the discovered relationship to the application. | keyword |
+| axonius.identity.user_apps.relation_extension_name | Name of the extension-based relationship to the application. | keyword |
+| axonius.identity.user_apps.relation_sso_name | Name of the SSO-based relationship to the application. | keyword |
+| axonius.identity.user_apps.source_application | Source application that provided this data. | keyword |
+| axonius.identity.user_apps.vendor_category | Vendor category of the application. | keyword |
+| axonius.identity.user_count | Number of users in the application. | long |
+| axonius.identity.user_count_link.bracketWeight | Weight of the bracket in the query expression. | double |
+| axonius.identity.user_count_link.compOp | Comparison operator used in the query. | keyword |
+| axonius.identity.user_count_link.field | Field name used in the query filter. | keyword |
+| axonius.identity.user_count_link.leftBracket | Left bracket position in the query expression. | double |
+| axonius.identity.user_count_link.logicOp | Logical operator (e.g., AND, OR) in the query. | keyword |
+| axonius.identity.user_count_link.not | Indicates if the query condition is negated. | boolean |
+| axonius.identity.user_count_link.rightBracket | Right bracket position in the query expression. | double |
+| axonius.identity.user_count_link.value | Value used in the query filter. | keyword |
+| axonius.identity.user_country | Country of the user. | keyword |
+| axonius.identity.user_created | Date and time when the user account was created. | date |
+| axonius.identity.user_department | Department the user belongs to. | keyword |
+| axonius.identity.user_factors.created | Date when the MFA factor was created. | date |
+| axonius.identity.user_factors.factor_status | Current status of the MFA factor. | keyword |
+| axonius.identity.user_factors.factor_type | Type of the MFA factor (e.g., push, TOTP, SMS). | keyword |
+| axonius.identity.user_factors.is_enabled | Indicates if the MFA factor is enabled. | boolean |
+| axonius.identity.user_factors.last_updated | Date when the MFA factor was last updated. | date |
+| axonius.identity.user_factors.name | Name of the MFA factor. | keyword |
+| axonius.identity.user_factors.provider | Provider of the MFA factor. | keyword |
+| axonius.identity.user_factors.strength | Strength rating of the MFA factor. | keyword |
+| axonius.identity.user_factors.vendor_name | Vendor name of the MFA factor. | keyword |
+| axonius.identity.user_full_name | Full name of the user. | keyword |
+| axonius.identity.user_is_password_enabled | Indicates whether password authentication is enabled for this user. | boolean |
+| axonius.identity.user_manager | Name or identifier of the user's manager. | keyword |
+| axonius.identity.user_manager_mail | Email address of the user's manager. | keyword |
+| axonius.identity.user_pass_last_used | Date or timestamp when the user's password was last used. | date |
+| axonius.identity.user_path | Path of the user in the directory (e.g., AWS IAM path). | keyword |
+| axonius.identity.user_permissions.is_admin | Indicates if the user has admin privileges for this permission. | boolean |
+| axonius.identity.user_permissions.name | Name of the permission. | keyword |
+| axonius.identity.user_related_resources.id | Identifier of the related resource. | keyword |
+| axonius.identity.user_related_resources.name | Name of the related resource. | keyword |
+| axonius.identity.user_related_resources.type | Type of the related resource. | keyword |
+| axonius.identity.user_remote_id | Remote identifier of the user in the source system. | keyword |
+| axonius.identity.user_sid | Security Identifier (SID) of the user (Windows/AD). | keyword |
+| axonius.identity.user_status | Current status of the user account. | keyword |
+| axonius.identity.user_telephone_number | Telephone number of the user. | keyword |
+| axonius.identity.user_title | Job title of the user. | keyword |
+| axonius.identity.user_type | Type of user account (e.g., member, guest, service). | keyword |
+| axonius.identity.username | Username of the identity. | keyword |
+| axonius.identity.verified | Indicates whether this identity has been verified. | boolean |
+| axonius.identity.version | Version of the certificate or identity record. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
+| log.offset | Log offset. | long |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+
+
+An example event for `identity` looks as following:
+
+```json
+{
+    "@timestamp": "2025-12-09T12:02:11.000Z",
+    "agent": {
+        "ephemeral_id": "6c2ee39f-525e-43d8-944a-47612be02d1b",
+        "id": "496b1f94-3c28-464e-9240-4b419904e269",
+        "name": "elastic-agent-61091",
+        "type": "filebeat",
+        "version": "9.3.0"
+    },
+    "axonius": {
+        "identity": {
+            "account_disabled": true,
+            "accurate_for_datetime": "2025-12-09T12:02:11.000Z",
+            "adapter_list_length": 12,
+            "adapters": [
+                "aws_adapter",
+                "zoom_adapter"
+            ],
+            "application_and_account_name": "microsoft/azure_ad-demo",
+            "asset_type": "users",
+            "associated_groups": {
+                "display_name": "developers-group",
+                "remote_id": "a3e70162"
+            },
+            "azure_account_id": "c8103abe-eda9-472b-894a-6260bb2ba8cc",
+            "cloud_provider": "Azure",
+            "email_activity": {
+                "is_deleted": false,
+                "product_license": "MICROSOFT FABRIC (FREE)+MICROSOFT TEAMS PHONE STANDARD+MICROSOFT DEFENDER FOR OFFICE365 (PLAN 2)+MICROSOFT 365 AUDIO CONFERENCING+ENTERPRISE MOBILITY + SECURITY E3+OFFICE365 E3+MICROSOFT 365 E3 EXTRA FEATURES",
+                "read_count": 2321,
+                "receive_count": 6965,
+                "report_date": "2025-01-10T20:34:43.000Z",
+                "report_period": 90,
+                "send_count": 3030
+            },
+            "event": {
+                "accurate_for_datetime": "2025-12-09T12:02:11.000Z",
+                "adapter_categories": [
+                    "Directory",
+                    "IAM",
+                    "SaaS Management"
+                ],
+                "client_used": "67fd09bbfe1c8e812a176bb5",
+                "initial_plugin_unique_name": "azure_ad_adapter_0",
+                "plugin_name": "azure_ad_adapter",
+                "plugin_type": "Adapter",
+                "plugin_unique_name": "azure_ad_adapter_0",
+                "quick_id": "azure_ad_adapter_0!c8103abe-eda9-472b-894a-6260bb2ba8cc",
+                "type": "entitydata"
+            },
+            "fetch_time": "2025-12-09T12:02:03.000Z",
+            "first_fetch_time": "2025-04-14T13:27:00.000Z",
+            "from_last_fetch": true,
+            "has_administrative_permissions": true,
+            "id": "c8103abe-eda9-472b-894a-6260bb2ba8cc",
+            "internal_axon_id": "bc11b2989fc0f69708b6865d172a49fe",
+            "internal_is_admin": false,
+            "is_admin": false,
+            "is_fetched_from_adapter": true,
+            "is_latest_last_seen": true,
+            "is_managed_by_application": true,
+            "is_permission_adapter": true,
+            "is_saas_user": true,
+            "is_user_external": false,
+            "last_fetch_connection_id": "67fd09bbfe1c8e812a176bb5",
+            "last_fetch_connection_label": "azure_ad-demo",
+            "last_logon": "2025-11-30T18:50:39.000Z",
+            "last_seen": "2025-11-10T22:18:25.000Z",
+            "mail": "helen.jordan@demo.local",
+            "nested_applications": {
+                "app_display_name": "Calendly",
+                "assignment_type": "Direct",
+                "extension_type": "User Consent",
+                "is_managed": false,
+                "is_unmanaged_extension": true,
+                "name": "Calendly",
+                "permissions": {
+                    "name": "openid"
+                },
+                "relation_extension_name": "Calendly",
+                "source_application": "Microsoft",
+                "value": "2E2a2e7c9f758BDcC0E2",
+                "vendor_category": "Productivity"
+            },
+            "nested_grants_last_updated": "2025-12-09T12:10:06.000Z",
+            "nested_grants_managers_last_updated": "2025-12-09T12:10:10.000Z",
+            "nested_groups": {
+                "assignment_type": "Direct",
+                "name": "Office365 Users",
+                "value": "d8e66837"
+            },
+            "not_fetched_count": 0,
+            "sm_entity_type": "saas_user",
+            "source_application": "Microsoft",
+            "tenant_number": 2,
+            "transform_unique_id": "N8G3qDAOmSElCdviQ3d6FpD76pE=",
+            "user_created": "2024-06-28T08:49:28.000Z",
+            "user_permissions": {
+                "is_admin": false,
+                "name": "OnlineMeetings.ReadWrite"
+            },
+            "user_remote_id": "63d52bb0-7ce0-4467-9004-2b19c06b86ae",
+            "user_type": "Member",
+            "username": "helen.jordan@demo.local"
+        }
+    },
+    "cloud": {
+        "account": {
+            "id": "c8103abe-eda9-472b-894a-6260bb2ba8cc"
+        },
+        "provider": "Azure"
+    },
+    "data_stream": {
+        "dataset": "axonius.identity",
+        "namespace": "28372",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.2.0"
+    },
+    "elastic_agent": {
+        "id": "496b1f94-3c28-464e-9240-4b419904e269",
+        "snapshot": false,
+        "version": "9.3.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "created": "2024-06-28T08:49:28.000Z",
+        "dataset": "axonius.identity",
+        "ingested": "2026-05-04T12:35:33Z",
+        "kind": "event",
+        "module": "axonius",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "labels": {
+        "is_transform_source": "true"
+    },
+    "observer": {
+        "vendor": "Axonius"
+    },
+    "related": {
+        "user": [
+            "developers-group",
+            "helen.jordan@demo.local"
+        ]
+    },
+    "tags": [
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "axonius-identity"
+    ],
+    "user": {
+        "domain": "demo.local",
+        "email": "helen.jordan@demo.local",
+        "name": "helen.jordan@demo.local"
+    }
+}
+```
+
 ### Inputs used
 
 These inputs can be used with this integration:
@@ -2105,7 +2742,20 @@ These APIs are used with this integration:
     * firewalls (endpoint: `/api/v2/firewalls`)
     * nat_rules (endpoint: `/api/v2/nat_rules`)
     * network_routes (endpoint: `/api/v2/network_routes`)
+* Identity:
+    * users (endpoint: `/api/v2/users`)
+    * groups (endpoint: `/api/v2/groups`)
+    * security_roles (endpoint: `/api/v2/security_roles`)
+    * organizational_units (endpoint: `/api/v2/organizational_units`)
+    * accounts (endpoint: `/api/v2/accounts`)
+    * certificates (endpoint: `/api/v2/certificates`)
+    * permissions (endpoint: `/api/v2/permissions`)
+    * latest_rules (endpoint: `/api/v2/latest_rules`)
+    * profiles (endpoint: `/api/v2/profiles`)
+    * job_titles (endpoint: `/api/v2/job_titles`)
+    * access_review_campaign_instances (endpoint: `/api/v2/access_review_campaign_instances`)
+    * access_review_approval_items (endpoint: `/api/v2/access_review_approval_items`)
 
 ### ILM Policy
 
-To facilitate adapter, user, gateway and assets data including exposures, alert findings, incidents, storage and ticket source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*`, `.ds-logs-axonius.gateway-*`, `.ds-logs-axonius.exposure-*`, `.ds-logs-axonius.alert_finding-*`, `.ds-logs-axonius.incident-*`, `.ds-logs-axonius.storage-*` and `.ds-logs-axonius.ticket-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy`, `logs-axonius.gateway-default_policy`, `logs-axonius.exposure-default_policy`,  `logs-axonius.alert_finding-default_policy`, `logs-axonius.incident-default_policy`, `logs-axonius.storage-default_policy` and `logs-axonius.ticket-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+To facilitate adapter, user, gateway and assets data including exposures, alert findings, incidents, storage and ticket, network and identity source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*`, `.ds-logs-axonius.gateway-*`, `.ds-logs-axonius.exposure-*`, `.ds-logs-axonius.alert_finding-*`, `.ds-logs-axonius.incident-*`, `.ds-logs-axonius.storage-*`, `.ds-logs-axonius.ticket-*`, `.ds-logs-axonius.network-*` and `.ds-logs-axonius.identity-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy`, `logs-axonius.gateway-default_policy`, `logs-axonius.exposure-default_policy`,  `logs-axonius.alert_finding-default_policy`, `logs-axonius.incident-default_policy`, `logs-axonius.storage-default_policy`, `logs-axonius.ticket-default_policy`, `logs-axonius.network-default_policy` and `logs-axonius.identity-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
