@@ -1,0 +1,215 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects potentially dangerous commands spawned by the GitHub Actions Runner.Worker process or by shell interpreters launched via a runner entrypoint script on self-hosted runner machines. Adversaries who gain the ability to modify or trigger workflows in a linked GitHub repository can execute arbitrary commands on the runner host. This behavior may indicate malicious or unexpected workflow activity, including code execution, reconnaissance, credential harvesting, or network exfiltration initiated through a compromised repository or unauthorized workflow.",
+        "false_positives": [
+            "Authorized GitHub actions runner with no malicious workflow actions."
+        ],
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*",
+            "auditbeat-*",
+            "logs-auditd_manager.auditd-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Execution via GitHub Actions Runner",
+        "note": "## Triage and analysis\n\n### Investigating Execution via GitHub Actions Runner\n\nAdversaries who gain the ability to modify or trigger workflows in a linked GitHub repository can execute arbitrary\ncommands on the runner host. This rule covers two parent process paths:\n- **Direct execution**: process spawned directly by `Runner.Worker` / `Runner.Worker.exe`.\n- **Entrypoint script execution**: process spawned by a shell (`sh`, `bash`, `zsh`) whose command line references\n  a runner `entrypoint.sh` script, a common pattern when the runner bootstraps workflow steps via a shell script.\n\n### Possible investigation steps\n\n- Review `process.command_line` and `process.parent.command_line` to determine whether the activity matches a known,\n  authorized workflow step.\n- For `grep`, `find`, `pgrep`, `printenv`, and `env` hits, assess whether the command targets sensitive paths, environment\n  variables (e.g. secrets, tokens), or process listings inconsistent with the declared workflow.\n- For `openssl` and `base64` hits, inspect arguments for encoding/decoding operations that may indicate credential\n  harvesting, data staging, or a C2 channel.\n- For `tr` and `cat` hits, assess whether they are chained with other suspicious commands (e.g. `cat /etc/passwd | base64`,\n  `cat ~/.ssh/id_rsa`) to read and encode sensitive files for exfiltration.\n- For `nc`, `ncat`, `netcat`, and `socat` hits, check arguments for reverse shell patterns or port-forwarding to\n  attacker-controlled infrastructure.\n- For `wg` and `wg-quick` hits, inspect arguments for tunnel configuration that may establish a covert egress channel.\n- For `ssh` hits, review arguments for reverse tunnel flags (`-R`) or connections to unexpected remote hosts.\n- For `kubectl` and `helm` hits, assess whether commands target sensitive namespaces, extract secrets, or deploy\n  workloads inconsistent with the declared workflow.\n- For `vault` hits, inspect arguments for secret reads (`vault kv get`) or token operations that may indicate\n  credential harvesting from a HashiCorp Vault instance.\n- For `gh` hits, review arguments for repository cloning, secret access (`gh secret`), or actions that escalate\n  access via the runner's GitHub token.\n- For `nmap` hits, assess whether the command performs host or port discovery against internal network ranges,\n  indicating lateral movement preparation.\n- Examine associated network activity for unexpected outbound connections, especially following `curl`, `wget`, or\n  `openssl s_client` invocations.\n- Verify whether the triggering workflow run was initiated by an authorized actor and matches the repository's\n  expected workflow definitions.\n- Correlate with file-write and file-access events to identify any sensitive file staging or collection activity.\n- Correlate with other alerts to determine if this activity is part of a broader supply chain or CI/CD compromise.\n\n### False positive analysis\n\n- Authorized GitHub workflow actions that legitimately use discovery utilities (`find`, `grep`, `env`, `nmap`), data\n  manipulation tools (`cat`, `tr`), encoding tools (`openssl`, `base64`), remote access tools (`ssh`), or\n  infrastructure CLIs (`kubectl`, `helm`, `vault`, `gh`) as part of their build, test, or deploy steps may trigger\n  this rule. Validate against known workflow definitions and consider adding workflow-specific exclusions if the\n  volume is high.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized command execution and potential lateral movement.\n- Terminate any suspicious child processes that were initiated by the Github actions runner.\n- Conduct a thorough review of the affected system's logs and configurations to identify any unauthorized changes or additional indicators of compromise.\n- Restore the system from a known good backup if any unauthorized changes or malicious activities are confirmed.\n- Implement application whitelisting to prevent unauthorized execution.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to assess the potential impact on the broader network.",
+        "query": "process where event.type == \"start\" and event.action in (\"exec\", \"exec_event\", \"start\", \"ProcessRollup2\", \"executed\", \"process_started\") and\n (\n   /* Direct child of the GitHub Actions Runner.Worker process */\n   process.parent.name in (\"Runner.Worker\", \"Runner.Worker.exe\") or\n\n   /* Child of a shell interpreter launched via a runner entrypoint script\n      (e.g. /home/runner/runners/<ver>/run/entrypoint.sh or similar paths) */\n   (\n     process.parent.name in (\"sh\", \"bash\", \"zsh\") and\n     process.parent.command_line like \"*runner*entrypoint.sh\"\n   )\n ) and\n (\n   process.name : (\n     /* Network / download utilities */\n     \"curl\", \"curl.exe\", \"wget\", \"wget.exe\",\n     /* Windows scripting & LOLBins */\n     \"powershell.exe\", \"cmd.exe\", \"pwsh.exe\", \"certutil.exe\", \"rundll32.exe\",\n     /* Unix shells */\n     \"bash\", \"sh\", \"zsh\", \"dash\", \"ash\", \"tcsh\", \"csh\", \"ksh\", \"fish\", \"mksh\", \"busybox\", \"pwsh\",\n     /* File / archive manipulation */\n     \"tar\", \"gzip\", \"rm\", \"sed\", \"chmod\",\n     /* macOS-specific */\n     \"osascript\",\n     /* Process persistence helpers */\n     \"nohup\", \"setsid\",\n     /* Scripting runtimes */\n     \"python*\", \"perl*\", \"ruby*\", \"lua*\", \"php*\", \"node\", \"nodejs\", \"node.exe\",\n     /* Discovery & reconnaissance */\n     \"pgrep\", \"grep\", \"find\", \"printenv\", \"env\", \"nmap\",\n     /* Crypto / encoding (potential exfiltration or C2 channel) */\n     \"openssl\", \"base64\", \"basez\", \"base64plain\", \"base64url\", \"base64mime\", \"base64pem\", \"basenc\", \"base32\", \"base16\", \"xxd\",\n     /* Data manipulation / inspection */\n     \"tr\", \"cat\",\n     /* Network relay / tunneling */\n     \"nc\", \"ncat\", \"netcat\", \"nc.traditional\", \"nc.openbsd\", \"socat\", \"wg\", \"wg-quick\",\n     /* Remote access */\n     \"ssh\", \"ssh.exe\", \"ftp\", \"tftp\", \"scp\", \"sftp\",\n     /* Kubernetes / infrastructure */\n     \"kubectl\", \"helm\", \"docker\", \"ctr\", \"crictl\",\n     /* Secret management */\n     \"vault\",\n     /* GitHub CLI */\n     \"gh\",\n     /* AWS CLI */\n     \"aws\",\n     /*Azure CLI */\n     \"az\",\n     /*GCP CLI */\n     \"gcloud\",\n     /* Google Workspace CLI */\n     \"gws\"\n   ) or\n   process.executable : (\"/tmp/*\", \"/private/tmp/*\", \"/var/tmp/*\", \"/dev/shm/*\", \"/run/*\", \"/var/run/*\", \"?:\\\\Users\\\\*\")\n )\n",
+        "references": [
+            "https://www.elastic.co/blog/shai-hulud-worm-npm-supply-chain-compromise",
+            "https://socket.dev/blog/shai-hulud-strikes-again-v2"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "a640ef5b-e1da-4b17-8391-468fdbd1b517",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: Windows",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Tactic: Initial Access",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Data Source: Auditd Manager",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            },
+                            {
+                                "id": "T1059.002",
+                                "name": "AppleScript",
+                                "reference": "https://attack.mitre.org/techniques/T1059/002/"
+                            },
+                            {
+                                "id": "T1059.003",
+                                "name": "Windows Command Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/003/"
+                            },
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            },
+                            {
+                                "id": "T1059.006",
+                                "name": "Python",
+                                "reference": "https://attack.mitre.org/techniques/T1059/006/"
+                            },
+                            {
+                                "id": "T1059.007",
+                                "name": "JavaScript",
+                                "reference": "https://attack.mitre.org/techniques/T1059/007/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1195",
+                        "name": "Supply Chain Compromise",
+                        "reference": "https://attack.mitre.org/techniques/T1195/",
+                        "subtechnique": [
+                            {
+                                "id": "T1195.002",
+                                "name": "Compromise Software Supply Chain",
+                                "reference": "https://attack.mitre.org/techniques/T1195/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/",
+                        "subtechnique": [
+                            {
+                                "id": "T1218.011",
+                                "name": "Rundll32",
+                                "reference": "https://attack.mitre.org/techniques/T1218/011/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 3
+    },
+    "id": "a640ef5b-e1da-4b17-8391-468fdbd1b517_3",
+    "type": "security-rule"
+}

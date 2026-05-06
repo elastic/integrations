@@ -1,0 +1,115 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies suspicious access to an LSASS handle via PssCaptureSnapShot where two successive process accesses are performed by the same process and target two different instances of LSASS. This may indicate an attempt to evade detection and dump LSASS memory for credential access.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "process.entity_id",
+                "kibana.alert.threshold_result.count"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Potential LSASS Memory Dump via PssCaptureSnapShot",
+        "note": "## Triage and analysis\n\n### Investigating Potential LSASS Memory Dump via PssCaptureSnapShot\n\n#### Possible investigation steps\n\n- What do the threshold summary and recovered members prove about the LSASS access pattern?\n  - Why: grouped threshold alerts require member recovery before the count proves a snapshot or repeated-access pattern.\n  - Focus: `process.entity_id`, `kibana.alert.threshold_result.count`, and Sysmon Event 10 members for `winlog.event_data.TargetProcessId`, `winlog.event_data.GrantedAccess`, and `winlog.event_data.CallTrace`. !{investigate{\"description\":\"\",\"label\":\"Sysmon process access events for the grouped process entity\",\"providers\":[[{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"10\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.TargetImage\",\"queryType\":\"phrase\",\"value\":\"C:\\\\Windows\\\\system32\\\\lsass.exe\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"10\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.TargetImage\",\"queryType\":\"phrase\",\"value\":\"c:\\\\Windows\\\\system32\\\\lsass.exe\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"10\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.TargetImage\",\"queryType\":\"phrase\",\"value\":\"C:\\\\Windows\\\\System32\\\\lsass.exe\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when one process entity touched two distinct LSASS target PIDs and access or call-trace evidence fits snapshot or dump collection; lower concern only when members form one recognized debugger, EDR, or IR memory-acquisition pattern. If members cannot be recovered, the grouped alert stays unresolved, not benign.\n\n- Which caller and stack evidence identify the snapshot or dump path?\n  - Focus: caller path, access mask, and call trace from recovered members on the same `host.id`.\n  - Implication: escalate when the caller is user-writable, renamed, unrelated to endpoint security, or the stack shows PssCaptureSnapshot, PssNtCaptureSnapshot, dbghelp, or MiniDumpWriteDump-style dumping; lower concern when caller, access mask, and stack match a recognized EDR, debugger, or forensic collector.\n\n- Does the user-host context fit deliberate LSASS memory acquisition?\n  - Focus: `host.id`, `user.id`, `user.name`, and recovered caller.\n  - Implication: escalate when activity runs under a normal user, service account, workstation, domain controller, or jump host with no matching IR or security-collection purpose; lower concern only when the same host, user, and caller map to one recognized memory-acquisition workflow.\n\n- If Windows Security logs are available, did authentication or source evidence show credential use after the LSASS access?\n  - Why: PssCaptureSnapshot-based LSASS access commonly precedes credential dumping, so post-access identity use changes urgency.\n  - Focus: `host.id` and `user.id`; if Windows Security logs exist for this host/window, recover authentication records before interpretation and use `source.*` only from those records, especially `event.code`, `winlog.event_data.TargetLogonId`, and `source.ip`.\n  - Implication: escalate when the same user or host shows new 4624 logons, 4648 explicit-credential use, rare `source.ip`, or remote access after LSASS events; use `winlog.event_data.TargetLogonId` to group logon records, not claim process-session continuity. Missing authentication telemetry is unresolved, not benign.\n\n- If local evidence remains suspicious or unresolved, do related alerts change scope?\n  - Focus: credential-access, archive, lateral-movement, or clone-related alerts for the same `process.entity_id`, `user.id`, or `host.id`. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the grouped process entity\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}} !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}} !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden response when the same process entity also shows dumping, archive staging, suspicious authentication, lateral movement, or clone-related alerts; keep scope local when related alerts are absent, but do not use alert absence to clear recovered LSASS access evidence.\n\n- Escalate when member pattern, caller or stack evidence, user-host context, authentication/source evidence, or related-alert scope supports unauthorized LSASS access or credential use; close only when member events and host/user context bind the alert to one recognized debugger, EDR, forensic, IR, or lab workflow with no contradictory evidence; preserve evidence and escalate when recovery is incomplete or findings conflict.\n\n### False positive analysis\n\n- Authorized debugger, EDR, forensic, IR memory-acquisition, or lab validation tooling can trigger this rule. Confirm from telemetry first: member-event pattern, caller or stack, `host.id`, and `user.id` must converge on the same workflow. Use case records or tool inventory only to corroborate that telemetry-bound workflow. If members are unavailable or any anchor contradicts it, do not close as benign.\n- Before creating an exception, validate that the same stable caller, recovered target-PID/access/call-trace pattern, `host.id`, and `user.id` recur across prior alerts from this rule. Build the exception from that minimum confirmed workflow pattern. Avoid exceptions on `process.entity_id`, `kibana.alert.threshold_result.count`, or LSASS targeting alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and document the alert summary, grouped `process.entity_id`, recovered member-event pattern, caller or stack evidence, `host.id`, `user.id`, and the corroborating case, tool, or lab record. Create an exception only for the recurring workflow pattern.\n- If suspicious but unconfirmed, preserve the alert, Timeline member records, target-PID/access/call-trace evidence, recovered caller, `process.entity_id`, `host.id`, `user.id`, and any recovered authentication or source records before containment.\n- If suspicious but unconfirmed, apply reversible containment first, such as heightened monitoring or temporary network isolation for the affected `host.id`; weigh host criticality before isolating domain controllers, jump hosts, or production servers.\n- If confirmed malicious, isolate the affected host when recovered member events and caller or stack evidence confirm unauthorized LSASS access. Disable or reset accounts only when recovered authentication or source evidence indicates credential use or likely exposure.\n- If confirmed malicious, collect the suspicious binary, dump outputs, scripts, archives, and memory-acquisition tooling identified during investigation before terminating processes or deleting files.\n- If confirmed malicious, block confirmed remote sources or transfer paths identified during investigation, then eradicate the collected dump tooling and remediate the execution or privilege path that enabled LSASS access.\n- Post-incident hardening: restrict LSASS snapshot and dump tooling to controlled security workflows, enable LSASS protection controls where compatible, retain Sysmon Event 10 and Windows Security logs, and document PssCaptureSnapshot or clone-based variants surfaced during triage.\n",
+        "query": "event.category:process and host.os.type:windows and event.code:10 and\n winlog.event_data.TargetImage:(\"C:\\\\Windows\\\\system32\\\\lsass.exe\" or\n                                 \"c:\\\\Windows\\\\system32\\\\lsass.exe\" or\n                                 \"c:\\\\Windows\\\\System32\\\\lsass.exe\")\n",
+        "references": [
+            "https://www.matteomalvica.com/blog/2019/12/02/win-defender-atp-cred-bypass/",
+            "https://twitter.com/sbousseaden/status/1280619931516747777?lang=en"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.TargetImage",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "0f93cb9a-1931-48c2-8cd0-f173fd3e5283",
+        "setup": "## Setup\n\nThis rule requires Sysmon telemetry to be enabled and ingested.\n\nSetup instructions: https://ela.st/sysmon-event-10-setup\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.001",
+                                "name": "LSASS Memory",
+                                "reference": "https://attack.mitre.org/techniques/T1003/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "threshold": {
+            "cardinality": [
+                {
+                    "field": "winlog.event_data.TargetProcessId",
+                    "value": 2
+                }
+            ],
+            "field": [
+                "process.entity_id"
+            ],
+            "value": 2
+        },
+        "timestamp_override": "event.ingested",
+        "type": "threshold",
+        "version": 314
+    },
+    "id": "0f93cb9a-1931-48c2-8cd0-f173fd3e5283_314",
+    "type": "security-rule"
+}

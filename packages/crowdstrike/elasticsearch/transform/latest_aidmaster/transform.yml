@@ -9,6 +9,8 @@ source:
             _tier:
               - data_frozen
               - data_cold
+        - term:
+            event.kind: pipeline_error
       minimum_should_match: 1
       should:
         - wildcard:
@@ -40,11 +42,11 @@ sync:
     delay: 120s
 retention_policy:
   time:
-    field: "@timestamp"
+    field: "crowdstrike.info.host._last_seen"
     max_age: 30d
 _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during
   # package installation.
-  fleet_transform_version: 0.2.0
+  fleet_transform_version: 0.3.0
   run_as_kibana_system: false

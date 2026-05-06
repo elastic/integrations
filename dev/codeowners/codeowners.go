@@ -8,11 +8,12 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/elastic/integrations/dev/citools"
 )
 
 const DefaultCodeownersPath = ".github/CODEOWNERS"
@@ -63,34 +64,26 @@ type githubOwners struct {
 // data_streams, it checks that all data_streams are explicitly owned by a single owner. Such ownership
 // sharing packages are identified by having at least one data_stream with explicit ownership in codeowners.
 func validatePackages(codeowners *githubOwners, packagesDir string) error {
-	packageDirEntries, err := os.ReadDir(packagesDir)
+	paths, err := citools.ListPackages(packagesDir)
 	if err != nil {
-		return fmt.Errorf("error reading directory '%s': %w", packagesDir, err)
+		return fmt.Errorf("error listing packages in %s: %w", packagesDir, err)
+	}
+	for _, path := range paths {
+		err = codeowners.checkManifest(filepath.Join(path, citools.ManifestFileName))
+		if err != nil {
+			return fmt.Errorf("error checking manifest '%s': %w", path, err)
+		}
+		err = codeowners.checkDataStreams(path)
+		if err != nil {
+			return fmt.Errorf("error checking data streams from '%s': %w", path, err)
+		}
 	}
 
-	if len(packageDirEntries) == 0 {
+	if len(paths) == 0 {
 		if len(codeowners.owners) == 0 {
 			return nil
 		}
 		return fmt.Errorf("no packages found in %q", packagesDir)
-	}
-
-	for _, packageDirEntry := range packageDirEntries {
-		packageName := packageDirEntry.Name()
-
-		packagePath := path.Join(packagesDir, packageName)
-
-		packageManifestPath := path.Join(packagePath, "manifest.yml")
-		err = codeowners.checkManifest(packageManifestPath)
-		if err != nil {
-			return fmt.Errorf("error checking manifest '%s': %w", packageManifestPath, err)
-		}
-
-		err = codeowners.checkDataStreams(packagePath)
-		if err != nil {
-			return fmt.Errorf("error checking data streams from '%s': %w", packagePath, err)
-		}
-
 	}
 
 	return nil
@@ -170,10 +163,9 @@ func (codeowners *githubOwners) checkSingleField(field string) error {
 }
 
 func (codeowners *githubOwners) checkManifest(path string) error {
-	pkgDir := filepath.Dir(path)
-	owners, found := codeowners.owners["/"+pkgDir]
+	owners, found := codeowners.findOwnerForFile(path)
 	if !found {
-		return fmt.Errorf("there is no owner for %q in %q", pkgDir, codeowners.path)
+		return fmt.Errorf("there is no owner for %q in %q", filepath.Dir(path), codeowners.path)
 	}
 
 	content, err := os.ReadFile(path)
@@ -208,8 +200,32 @@ func (codeowners *githubOwners) checkManifest(path string) error {
 	return nil
 }
 
+func (codeowners *githubOwners) findOwnerForFile(path string) ([]string, bool) {
+	// Usually paths are related to the root of the repository. Examples:
+	// - "packages/package-name/manifest.yml"
+	// - "packages/technology/package-name/manifest.yml"
+	// Just in case, if an absolute path is provided, we remove the leading separator.
+	if filepath.IsAbs(path) {
+		path = strings.TrimPrefix(path, string(filepath.Separator))
+	}
+	ownerDir := filepath.Dir(path)
+	for {
+		owners, found := codeowners.owners["/"+filepath.ToSlash(ownerDir)]
+		if found {
+			return owners, found
+		}
+
+		ownerDir = filepath.Dir(ownerDir)
+		if ownerDir == "." {
+			break
+		}
+	}
+
+	return nil, false
+}
+
 func (codeowners *githubOwners) checkDataStreams(packagePath string) error {
-	packageDataStreamsPath := path.Join(packagePath, "data_stream")
+	packageDataStreamsPath := filepath.Join(packagePath, "data_stream")
 	if _, err := os.Stat(packageDataStreamsPath); os.IsNotExist(err) {
 		// package doesn't have data_streams
 		return nil
@@ -229,8 +245,8 @@ func (codeowners *githubOwners) checkDataStreams(packagePath string) error {
 	var dataStreamsWithoutOwner []string
 	for _, dataStreamDirEntry := range dataStreamDirEntries {
 		dataStreamName := dataStreamDirEntry.Name()
-		dataStreamDir := path.Join(packageDataStreamsPath, dataStreamName)
-		dataStreamOwners, found := codeowners.owners["/"+dataStreamDir]
+		dataStreamDir := filepath.Join(packageDataStreamsPath, dataStreamName)
+		dataStreamOwners, found := codeowners.owners["/"+filepath.ToSlash(dataStreamDir)]
 		if !found {
 			dataStreamsWithoutOwner = append(dataStreamsWithoutOwner, dataStreamDir)
 			continue

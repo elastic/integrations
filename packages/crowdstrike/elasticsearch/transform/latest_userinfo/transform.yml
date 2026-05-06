@@ -1,0 +1,53 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "logs-crowdstrike.fdr-*"
+  query:
+    bool:
+      must_not:
+        - terms:
+            _tier:
+              - data_frozen
+              - data_cold
+        - term:
+            event.kind: pipeline_error
+      minimum_should_match: 1
+      should:
+        - term:
+            event.action: UserIdentity
+        - term:
+            event.action: UserLogon
+dest:
+  index: "logs-crowdstrike_lookup.dest_userinfo-1"
+  pipeline: '{{ ingestPipelineName "userinfo_lookup_namespaced" }}'
+  aliases:
+    - alias: "logs-crowdstrike_lookup.userinfo"
+      move_on_creation: true
+latest:
+  unique_key:
+    - host.id
+    - user.id
+  sort: "@timestamp"
+description: >-
+  Latest user metadata from CrowdStrike FDR UserIdentity and UserLogon sensor events for lookup joins.
+frequency: 1h
+settings:
+  # This is required to prevent the transform from clobbering Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "event.ingested"
+    # Updated to 120s because of refresh delay in Serverless. With default 60s,
+    # sometimes transform wouldn't process all documents.
+    delay: 120s
+retention_policy:
+  time:
+    field: "crowdstrike.info.user._last_seen"
+    max_age: 30d
+_meta:
+  managed: true
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation.
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false
