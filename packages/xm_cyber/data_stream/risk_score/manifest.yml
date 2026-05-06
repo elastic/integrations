@@ -1,0 +1,85 @@
+title: Risk Score
+type: logs
+streams:
+  - input: cel
+    title: Risk Score
+    description: Collect Risk Score logs from XM Cyber.
+    template_path: cel.yml.hbs
+    vars:
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: >-
+          Defines which time period to fetch risk score data for. Two formats are accepted:
+
+          - **Number of days** (e.g. `30`, `90`, `200`): fetches a rolling window going that many days back from today.
+            The API will receive `timeAgo_days_<N>` (e.g. entering `30` sends `timeAgo_days_30`).
+
+          - **Year and month** (e.g. `2025_12`, `2026_04`): fetches data for that specific calendar month.
+            The API will receive `monthly_<YYYY_MM>` (e.g. entering `2025_12` sends `monthly_2025_12`).
+
+          Note: do not include the `timeAgo_days_` or `monthly_` prefix — it is added automatically.
+        required: true
+        show_user: true
+        default: "30"
+      - name: interval
+        type: text
+        title: Polling interval
+        description: 'How often to poll the XM Cyber API. Supported time units: s, m, h.'
+        required: true
+        show_user: true
+        default: 24h
+      - name: resolution
+        type: integer
+        title: Resolution (days)
+        description: 'Number of days used to aggregate the risk score results. Must be a positive integer (e.g. 5).'
+        required: true
+        show_user: true
+        default: 5
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: 'Duration before the HTTP client request times out (e.g. 60s).'
+        required: true
+        show_user: false
+        default: 60s
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        description: 'Log HTTP request/response traces to the agent for debugging. Do not enable in production.'
+        required: false
+        show_user: false
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: 'Tags to add to every collected event.'
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+          - xm_cyber-risk_score
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: 'Keep a copy of the raw event in `event.original`.'
+        required: true
+        show_user: true
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: false
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve xm_cyber.risk_score fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

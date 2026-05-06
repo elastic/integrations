@@ -1,0 +1,192 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  initial_interval: "{{initial_interval}}"
+  resolution: {{resolution}}
+  api_key: {{api_key}}
+redact:
+  fields:
+    - api_key
+    - access_token
+    - refresh_token
+program: |
+  state.with(
+    state.url.trim_right("/").as(base,
+      (
+        (
+          state.?cursor.access_token.orValue("") == "" || state.?cursor.refresh_token.orValue("") == "" ||
+          state.?cursor.need_reauth.orValue(false)
+        ) ?
+          post_request(base + "/api/auth", "application/json", "{}").with(
+            {
+              "Header": {
+                "X-Api-Key": [state.api_key],
+                "Content-Type": ["application/json"],
+              },
+            }
+          ).do_request().as(authResp,
+            (authResp.StatusCode == 200) ?
+              authResp.Body.decode_json().as(ao,
+                {
+                  "ok": true,
+                  "access": string(ao.accessToken),
+                  "refresh": string(ao.refreshToken),
+                }
+              )
+            :
+              {
+                "ok": false,
+                "err_code": string(authResp.StatusCode),
+                "err_status": string(authResp.Status),
+                "err_body": (size(authResp.Body) != 0) ? string(authResp.Body) : string(authResp.Status),
+              }
+          )
+        :
+          {
+            "ok": true,
+            "access": string(state.?cursor.access_token.orValue("")),
+            "refresh": string(state.?cursor.refresh_token.orValue("")),
+          }
+      ).as(tok,
+        (tok.ok == false) ?
+          {
+            "events": {
+              "error": {
+                "code": tok.err_code,
+                "id": tok.err_status,
+                "message": "POST " + base + "/api/auth: " + tok.err_body,
+              },
+            },
+            "want_more": false,
+          }
+        :
+          (
+            string(state.initial_interval).contains("_") ?
+              ("monthly_" + string(state.initial_interval))
+            :
+              "timeAgo_days_" + string(state.initial_interval)
+          ).as(time_id,
+            // Phase 2: Fetch the risk score report — called exactly once per run.
+            // Token expiry is handled by refreshing/re-authing and re-running via want_more.
+            request(
+              "GET",
+              base + "/api/systemReport/riskScoreV2?" + {
+                "timeId": [time_id],
+                "resolution": [string(state.resolution)],
+              }.format_query()
+            ).with(
+              {
+                "Header": {
+                  "Authorization": ["Bearer " + tok.access],
+                  "Content-Type": ["application/json"],
+                },
+              }
+            ).do_request().as(scoreResp,
+              (scoreResp.StatusCode == 200) ?
+                scoreResp.Body.decode_json().as(body,
+                  {
+                    "events": body.?data.?scenarios.orValue([]).map(d,
+                      {
+                        "message": {
+                          ?"stats": body.?data.?stats,
+                          ?"avgGraphData": body.?data.?avgGraphData,
+                          ?"resolution": body.?data.?resolution,
+                          ?"timeId": body.?data.?timeId,
+                          "scenario": d,
+                        }.encode_json(),
+                      }
+                    ).flatten(),
+                    "cursor": {
+                      "access_token": tok.access,
+                      "refresh_token": tok.refresh,
+                      "need_reauth": false,
+                    },
+                    "want_more": false,
+                  }
+                )
+              : (scoreResp.StatusCode == 401 || scoreResp.StatusCode == 419) ?
+                // Access token expired — attempt a refresh.
+                // On success, store the new tokens and immediately re-run (want_more: true)
+                // so Phase 1 picks them up and Phase 2 retries without duplicating this call.
+                post_request(
+                  base + "/api/refresh-token",
+                  "application/json",
+                  {"refreshToken": tok.refresh}.encode_json()
+                ).with(
+                  {
+                    "Header": {"Content-Type": ["application/json"]},
+                  }
+                ).do_request().as(refResp,
+                  (refResp.StatusCode == 200) ?
+                    refResp.Body.decode_json().as(ro,
+                      {
+                        "events": [{"message": "Refresh token successful"}],
+                        "cursor": {
+                          "access_token": string(ro.accessToken),
+                          "refresh_token": string(ro.refreshToken),
+                          "need_reauth": false,
+                        },
+                        "want_more": true,
+                      }
+                    )
+                  :
+                    // Refresh token exhausted (24 h window passed) — force a full
+                    // re-auth on the immediate re-run triggered by want_more.
+                    {
+                      "events": [{"message": "Refresh token expired, forcing re-auth"}],
+                      "cursor": {
+                        "access_token": "",
+                        "refresh_token": "",
+                        "need_reauth": true,
+                      },
+                      "want_more": true,
+                    }
+                )
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(scoreResp.StatusCode),
+                      "id": string(scoreResp.Status),
+                      "message": "GET " + base + "/api/systemReport/riskScoreV2: " + ((size(scoreResp.Body) != 0) ? string(scoreResp.Body) : string(scoreResp.Status)),
+                    },
+                  },
+                  "want_more": false,
+                }
+            )
+          )
+      )
+    )
+  )
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

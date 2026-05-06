@@ -1,0 +1,112 @@
+rules:
+  # Phase 1 — authenticate with X-Api-Key, return access + refresh tokens
+  - path: /api/auth
+    methods: ['POST']
+    request_headers:
+      X-Api-Key: "mock-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"accessToken":"mock-access-token","refreshToken":"mock-refresh-token"}
+
+  # Phase 2 — fetch risk score report, return 4 scenarios
+  - path: /api/systemReport/riskScoreV2
+    methods: ['GET']
+    request_headers:
+      Authorization: "Bearer mock-access-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "resolution": 5,
+            "timeId": "timeAgo_days_30",
+            "data": {
+              "stats": {"score": 90, "grade": "A", "trend": 1},
+              "avgGraphData": [
+                {"date": "2025-12-03T00:00:00.000Z", "grade": "A", "score": 95}
+              ],
+              "scenarios": [
+                {
+                  "id": "02D8",
+                  "name": "(LG) Workstation to Servers",
+                  "grade": "B",
+                  "score": 82,
+                  "graphData": [
+                    {
+                      "campaigns": null,
+                      "fromDate": "2025-12-02T00:00:00.000Z",
+                      "grade": "A",
+                      "score": 95,
+                      "toDate": "2025-12-03T00:00:00.000Z"
+                    }
+                  ]
+                },
+                {
+                  "id": "02F0",
+                  "name": "(bm)pj-test",
+                  "grade": "C",
+                  "score": 75,
+                  "graphData": [
+                    {
+                      "campaigns": ["camp-001", "camp-002"],
+                      "fromDate": "2026-01-04T00:00:00.000Z",
+                      "grade": "C",
+                      "score": 72,
+                      "toDate": "2026-01-05T00:00:00.000Z"
+                    },
+                    {
+                      "campaigns": null,
+                      "fromDate": "2026-01-09T00:00:00.000Z",
+                      "grade": "C",
+                      "score": 74,
+                      "toDate": "2026-01-10T00:00:00.000Z"
+                    }
+                  ]
+                },
+                {
+                  "id": "03A1",
+                  "name": "DMZ to Internal Crown Jewels",
+                  "grade": "F",
+                  "score": 35,
+                  "graphData": []
+                },
+                {
+                  "id": "05C3",
+                  "name": "Cloud Admin > Production",
+                  "grade": "B",
+                  "score": 88,
+                  "graphData": [
+                    {
+                      "campaigns": ["camp-cloud-01"],
+                      "fromDate": "2026-03-31T00:00:00.000Z",
+                      "grade": "B",
+                      "score": 85,
+                      "toDate": "2026-04-01T00:00:00.000Z"
+                    },
+                    {
+                      "campaigns": null,
+                      "fromDate": "2026-04-07T00:00:00.000Z",
+                      "grade": "B",
+                      "score": 87,
+                      "toDate": "2026-04-08T00:00:00.000Z"
+                    },
+                    {
+                      "campaigns": null,
+                      "fromDate": "2026-04-14T00:00:00.000Z",
+                      "grade": "A",
+                      "score": 91,
+                      "toDate": "2026-04-15T00:00:00.000Z"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+          ` }}
