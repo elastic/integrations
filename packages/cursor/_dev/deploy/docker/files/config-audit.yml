@@ -1,53 +1,5 @@
 rules:
-  # Round 2 / cursor-resume: first page when startTime equals running max from round 1
-  - path: /teams/audit-logs
-    methods: ["GET"]
-    query_params:
-      page: "1"
-      startTime: "2026-05-04T15:30:00.000Z"
-      endTime: "{endTime:.*}"
-      pageSize: "{pageSize:.*}"
-    request_headers:
-      Authorization:
-        - "Basic a2V5X3Rlc3QxMjM6"
-      Accept:
-        - "application/json"
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - "application/json"
-        body: |-
-          {
-            "events": [
-              {
-                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0007",
-                "timestamp": "2026-05-04T16:00:00.000Z",
-                "ip_address": "198.51.100.22",
-                "user_email": "admin@example.com",
-                "event_type": "add_user",
-                "event_data": { "user_email": "newuser@example.com" }
-              },
-              {
-                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0008",
-                "timestamp": "2026-05-04T17:00:00.000Z",
-                "ip_address": "198.51.100.23",
-                "user_email": "admin2@example.com",
-                "event_type": "team_settings",
-                "event_data": { "setting": "allow_invites", "enabled": true }
-              }
-            ],
-            "pagination": {
-              "page": 1,
-              "pageSize": 100,
-              "totalCount": 2,
-              "totalPages": 1,
-              "hasNextPage": false,
-              "hasPreviousPage": false
-            },
-            "params": { "teamId": 9990001, "startDate": 0, "endDate": 0 }
-          }
-  # Round 1 — page 2 (terminal page for first poll)
+  # Page 2 — only fetched in Round 1 (final page of round 1). Catchall startTime/endTime.
   - path: /teams/audit-logs
     methods: ["GET"]
     query_params:
@@ -103,7 +55,11 @@ rules:
             },
             "params": { "teamId": 9990001, "startDate": 0, "endDate": 0 }
           }
-  # Round 1 — page 1 (has next page)
+
+  # Page 1 — response varies by polling round (per-rule req_num):
+  #   req_num=1 → Round 1: 3 events, hasNextPage=true (drives Round 1 to fetch page 2)
+  #   req_num=2 → Round 2: 2 newer events, hasNextPage=false (validates cursor advancement)
+  #   req_num>=3 → Round 3+: 0 events, hasNextPage=false (steady state, prevents looping)
   - path: /teams/audit-logs
     methods: ["GET"]
     query_params:
@@ -122,6 +78,7 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
+          {{ if eq .req_num 1 }}
           {
             "events": [
               {
@@ -159,3 +116,47 @@ rules:
             },
             "params": { "teamId": 9990001, "startDate": 0, "endDate": 0 }
           }
+          {{ else if eq .req_num 2 }}
+          {
+            "events": [
+              {
+                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0007",
+                "timestamp": "2026-05-04T16:00:00.000Z",
+                "ip_address": "198.51.100.22",
+                "user_email": "admin@example.com",
+                "event_type": "add_user",
+                "event_data": { "user_email": "newuser@example.com" }
+              },
+              {
+                "event_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0008",
+                "timestamp": "2026-05-04T17:00:00.000Z",
+                "ip_address": "198.51.100.23",
+                "user_email": "admin2@example.com",
+                "event_type": "team_settings",
+                "event_data": { "setting": "allow_invites", "enabled": true }
+              }
+            ],
+            "pagination": {
+              "page": 1,
+              "pageSize": 100,
+              "totalCount": 2,
+              "totalPages": 1,
+              "hasNextPage": false,
+              "hasPreviousPage": false
+            },
+            "params": { "teamId": 9990001, "startDate": 0, "endDate": 0 }
+          }
+          {{ else }}
+          {
+            "events": [],
+            "pagination": {
+              "page": 1,
+              "pageSize": 100,
+              "totalCount": 0,
+              "totalPages": 0,
+              "hasNextPage": false,
+              "hasPreviousPage": false
+            },
+            "params": { "teamId": 9990001, "startDate": 0, "endDate": 0 }
+          }
+          {{ end }}
