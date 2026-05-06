@@ -249,11 +249,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-05-04T10:00:00.000Z",
     "agent": {
-        "ephemeral_id": "27ee7903-c550-489c-a3b3-217b82aef7bf",
-        "id": "bf21ba5b-64ea-4854-9a94-8e23d28b0152",
-        "name": "elastic-agent-12174",
+        "ephemeral_id": "26ee43e7-86a0-481f-bbf5-366d8b9a4f68",
+        "id": "b24bc813-db38-4922-997f-bc8921a442ad",
+        "name": "elastic-agent-52014",
         "type": "filebeat",
-        "version": "9.3.2"
+        "version": "8.19.0"
     },
     "cursor": {
         "audit": {
@@ -263,16 +263,16 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "cursor.audit",
-        "namespace": "77323",
+        "namespace": "81196",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "bf21ba5b-64ea-4854-9a94-8e23d28b0152",
+        "id": "b24bc813-db38-4922-997f-bc8921a442ad",
         "snapshot": false,
-        "version": "9.3.2"
+        "version": "8.19.0"
     },
     "event": {
         "action": "login",
@@ -282,7 +282,7 @@ An example event for `audit` looks as following:
         ],
         "dataset": "cursor.audit",
         "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0001",
-        "ingested": "2026-05-06T16:30:56Z",
+        "ingested": "2026-05-06T18:22:54Z",
         "kind": "event",
         "outcome": "success",
         "provider": "cursor",
@@ -314,11 +314,8 @@ An example event for `audit` looks as following:
             "country_iso_code": "NL",
             "country_name": "Netherlands",
             "location": {
-                "coordinates": [
-                    4.889689916744828,
-                    52.37403995823115
-                ],
-                "type": "Point"
+                "lat": 52.37404,
+                "lon": 4.88969
             },
             "region_iso_code": "NL-NH",
             "region_name": "North Holland"
