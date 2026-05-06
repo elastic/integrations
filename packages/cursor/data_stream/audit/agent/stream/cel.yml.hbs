@@ -64,7 +64,12 @@ program: |-
                       "next": {"page": page + 1, "window_end": end_time},
                     }
                   :
-                    {"last_timestamp": end_time},
+                    {
+                      "last_timestamp": (size(body.?events.orValue([])) > 0) ?
+                        body.events[size(body.events) - 1].?timestamp.orValue(end_time)
+                      :
+                        end_time,
+                    },
                 }
               )
             :
