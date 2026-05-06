@@ -35,7 +35,24 @@ receivers:
           service_account_email: "{{credentials_service_account_email}}"
 {{/if}}
     policies:
-{{policies}}
+{{#each policy_id}}
+      - policy_id: "{{this}}"
+{{#if (lookup ../policy_name @index)}}
+        policy_name: "{{lookup ../policy_name @index}}"
+{{/if}}
+        integrations:
+          - policy_template: "{{lookup ../policy_templates @index}}"
+            package_name: "{{lookup ../package_name @index}}"
+{{#if (lookup ../package_policy_id @index)}}
+            package_policy_id: "{{lookup ../package_policy_id @index}}"
+{{/if}}
+{{#if (lookup ../package_title @index)}}
+            package_title: "{{lookup ../package_title @index}}"
+{{/if}}
+{{#if (lookup ../package_version @index)}}
+            package_version: "{{lookup ../package_version @index}}"
+{{/if}}
+{{/each}}
 
 service:
   pipelines:
