@@ -10,22 +10,26 @@ state:
 program: |
   request("GET", state.url)
     .do_request()
-    .as(resp, {
-        "events": [{
-            "http": {
-              "response": {
-                "status_code": resp.StatusCode
-              }
-            },
+    .as(resp,
+      now.as(collected_at,
+        (int(state.cursor.request_count) + 1).as(new_count, {
+            "events": [{
+                "http": {
+                  "response": {
+                    "status_code": resp.StatusCode
+                  }
+                },
+                "cursor": {
+                  "request_count": new_count,
+                  "last_collected": collected_at
+                }
+            }],
             "cursor": {
-              "request_count": int(state.cursor.request_count) + 1,
-              "last_collected": now
+              "request_count": new_count,
+              "last_collected": collected_at
             }
-        }],
-        "cursor": {
-          "request_count": int(state.cursor.request_count) + 1,
-          "last_collected": now
-        }
-    })
+        })
+      )
+    )
 tags:
   - agentless-hello-world
