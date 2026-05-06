@@ -12,6 +12,7 @@ processors:
   - grok:
       field: event.original
       patterns:
+        - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+%{WORD:efficient_ip.log.service_name}\\[%{NUMBER:process.pid:long}\\]:\\s+%{GREEDYDATA:message}$"
         - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+%{DATA:host.name}\\s+%{DATA:efficient_ip.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
         - "^<%{NUMBER:log.syslog.priority:long}>(?:%{SYSLOGTIMESTAMP:event.created}|%{TIMESTAMP_ISO8601:event.created})\\s+%{DATA:host.name}\\s+%{GREEDYDATA:message}$"
         - "^%{GREEDYDATA:message}$"
