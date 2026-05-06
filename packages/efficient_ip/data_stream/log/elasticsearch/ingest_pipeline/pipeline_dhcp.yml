@@ -9,22 +9,19 @@ processors:
       field: message
       if: ctx.message != null && ctx.message.contains('DHCPDISCOVER')
       patterns:
-        - '^%{WORD:event.action} from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{DATA:efficient_ip.log.dhcp.trans_id} uid %{GREEDYDATA:efficient_ip.log.dhcp.uid}$'
-        - '^%{WORD:event.action} from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{DATA:efficient_ip.log.dhcp.trans_id}: network %{DATA:efficient_ip.log.dhcp.network}: %{GREEDYDATA:efficient_ip.log.dhcp.discover.message}$'
-        - '^%{WORD:event.action} from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{GREEDYDATA:efficient_ip.log.dhcp.trans_id}$'
-        - '^%{WORD:event.action} from %{MAC:client.mac} \(%{DATA:efficient_ip.log.dhcp.client_hostname}\) via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{DATA:efficient_ip.log.dhcp.trans_id} uid %{GREEDYDATA:efficient_ip.log.dhcp.uid}$'
-        - '^%{WORD:event.action} from %{MAC:client.mac} \(%{DATA:efficient_ip.log.dhcp.client_hostname}\) via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{GREEDYDATA:efficient_ip.log.dhcp.trans_id}$'
+        - '^%{WORD:event.action} from %{MAC:client.mac} \(%{DATA:efficient_ip.log.dhcp.client_hostname}\) via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}): %{GREEDYDATA:efficient_ip.log.dhcp.discover.message}$'
+        - '^%{WORD:event.action} from %{MAC:client.mac} \(%{DATA:efficient_ip.log.dhcp.client_hostname}\) via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name})$'
+        - '^%{WORD:event.action} from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}): %{GREEDYDATA:efficient_ip.log.dhcp.discover.message}$'
+        - '^%{WORD:event.action} from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name})$'
         - '^%{GREEDYDATA:efficient_ip.log.dhcp.message}$'
   - grok:
       tag: grok_DHCPOFFER_message
       field: message
       if: ctx.message != null && ctx.message.contains('DHCPOFFER')
       patterns:
-        - '^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac} \(%{DATA:efficient_ip.log.dhcp.client_hostname}\) via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) relay (%{IP:efficient_ip.log.dhcp.relay.interface.ip}|%{WORD:efficient_ip.log.dhcp.relay.interface.name}) lease-duration %{NUMBER:efficient_ip.log.dhcp.lease.duration:long} offered-duration %{NUMBER:efficient_ip.log.dhcp.offered.duration:long} uid %{GREEDYDATA:efficient_ip.log.dhcp.uid}$'
         - '^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac} \(%{DATA:efficient_ip.log.dhcp.client_hostname}\) via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) relay (%{IP:efficient_ip.log.dhcp.relay.interface.ip}|%{WORD:efficient_ip.log.dhcp.relay.interface.name}) lease-duration %{NUMBER:efficient_ip.log.dhcp.lease.duration:long} offered-duration %{GREEDYDATA:efficient_ip.log.dhcp.offered.duration:long}$'
-        - '^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) relay (%{IP:efficient_ip.log.dhcp.relay.interface.ip}|%{WORD:efficient_ip.log.dhcp.relay.interface.name}) lease-duration %{NUMBER:efficient_ip.log.dhcp.lease.duration:long} offered-duration %{GREEDYDATA:efficient_ip.log.dhcp.offered.duration:long} uid %{GREEDYDATA:efficient_ip.log.dhcp.uid}$'
         - '^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) relay (%{IP:efficient_ip.log.dhcp.relay.interface.ip}|%{WORD:efficient_ip.log.dhcp.relay.interface.name}) lease-duration %{NUMBER:efficient_ip.log.dhcp.lease.duration:long} offered-duration %{GREEDYDATA:efficient_ip.log.dhcp.offered.duration:long}$'
-        - '^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) relay (%{IP:efficient_ip.log.dhcp.relay.interface.ip}|%{WORD:efficient_ip.log.dhcp.relay.interface.name}) lease-duration %{NUMBER:efficient_ip.log.dhcp.lease.duration:long} uid %{GREEDYDATA:efficient_ip.log.dhcp.uid}$'
+        - '^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) relay (%{IP:efficient_ip.log.dhcp.relay.interface.ip}|%{WORD:efficient_ip.log.dhcp.relay.interface.name}) lease-duration %{NUMBER:efficient_ip.log.dhcp.lease.duration:long}$'
         - '^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) relay (%{IP:efficient_ip.log.dhcp.relay.interface.ip}|%{WORD:efficient_ip.log.dhcp.relay.interface.name}) lease-duration %{GREEDYDATA:efficient_ip.log.dhcp.lease.duration:long}$'
         - '^%{GREEDYDATA:efficient_ip.log.dhcp.message}$'
   - grok:
@@ -32,17 +29,9 @@ processors:
       field: message
       if: ctx.message != null && ctx.message.contains('DHCPREQUEST')
       patterns:
-        - '^%{WORD:event.action} for %{IP:client.ip} \(%{IP:efficient_ip.log.dhcp.router.ip}\) from %{MAC:client.mac} \(%{DATA:efficient_ip.log.dhcp.client_hostname}\) via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{DATA:efficient_ip.log.dhcp.trans_id} uid %{DATA:efficient_ip.log.dhcp.uid} \(%{GREEDYDATA:efficient_ip.log.dhcp.lease.message}\)$'
-        - '^%{WORD:event.action} for %{IP:client.ip} from %{MAC:client.mac} \(%{DATA:efficient_ip.log.dhcp.client_hostname}\) via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{DATA:efficient_ip.log.dhcp.trans_id} uid %{DATA:efficient_ip.log.dhcp.uid} \(%{GREEDYDATA:efficient_ip.log.dhcp.lease.message}\)$'
-        - '^%{WORD:event.action} for %{IP:client.ip} from %{MAC:client.mac} \(%{DATA:efficient_ip.log.dhcp.client_hostname}\) via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{DATA:efficient_ip.log.dhcp.trans_id} uid %{DATA:efficient_ip.log.dhcp.uid}: %{GREEDYDATA:efficient_ip.log.dhcp.request.message}$'
-        - '^%{WORD:event.action} for %{IP:client.ip} \(%{IP:efficient_ip.log.dhcp.router.ip}\) from %{MAC:client.mac} \(%{DATA:efficient_ip.log.dhcp.client_hostname}\) via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{DATA:efficient_ip.log.dhcp.trans_id} uid %{GREEDYDATA:efficient_ip.log.dhcp.uid}$'
-        - '^%{WORD:event.action} for %{IP:client.ip} \(%{IP:efficient_ip.log.dhcp.router.ip}\) from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{DATA:efficient_ip.log.dhcp.trans_id} \(%{GREEDYDATA:efficient_ip.log.dhcp.lease.message}\)$'
-        - '^%{WORD:event.action} for %{IP:client.ip} from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{DATA:efficient_ip.log.dhcp.trans_id} uid %{DATA:efficient_ip.log.dhcp.uid} \(%{GREEDYDATA:efficient_ip.log.dhcp.lease.message}\)$'
-        - '^%{WORD:event.action} for %{IP:client.ip} \(%{IP:efficient_ip.log.dhcp.router.ip}\) from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{DATA:efficient_ip.log.dhcp.trans_id}: %{GREEDYDATA:efficient_ip.log.dhcp.request.message}$'
-        - '^%{WORD:event.action} for %{IP:client.ip} from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{DATA:efficient_ip.log.dhcp.trans_id}: %{GREEDYDATA:efficient_ip.log.dhcp.request.message}$'
-        - '^%{WORD:event.action} for %{IP:client.ip} \(%{IP:efficient_ip.log.dhcp.router.ip}\) from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{GREEDYDATA:efficient_ip.log.dhcp.trans_id}$'
-        - '^%{WORD:event.action} for %{IP:client.ip} from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{DATA:efficient_ip.log.dhcp.trans_id} uid %{GREEDYDATA:efficient_ip.log.dhcp.uid}$'
-        - '^%{WORD:event.action} for %{IP:client.ip} from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{GREEDYDATA:efficient_ip.log.dhcp.trans_id}$'
+        - '^%{WORD:event.action} for %{IP:client.ip} \(%{IP:efficient_ip.log.dhcp.router.ip}\) from %{MAC:client.mac} \(%{DATA:efficient_ip.log.dhcp.client_hostname}\) via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name})$'
+        - '^%{WORD:event.action} for %{IP:client.ip} from %{MAC:client.mac} \(%{DATA:efficient_ip.log.dhcp.client_hostname}\) via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name})$'
+        - '^%{WORD:event.action} for %{IP:client.ip} \(%{IP:efficient_ip.log.dhcp.router.ip}\) from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name})$'
         - '^%{WORD:event.action} for %{IP:client.ip} from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name})$'
         - '^%{GREEDYDATA:efficient_ip.log.dhcp.message}$'
   - grok:
@@ -68,8 +57,8 @@ processors:
       field: message
       if: ctx.message != null && ctx.message.contains('RELEASE')
       patterns:
-        - '^%{WORD:event.action} of %{IP:client.ip} from %{MAC:client.mac} \(%{DATA:efficient_ip.log.dhcp.client_hostname}\) via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) \(%{DATA:efficient_ip.log.dhcp.release.info}\) TransID %{DATA:efficient_ip.log.dhcp.trans_id} uid %{GREEDYDATA:efficient_ip.log.dhcp.uid}$'
-        - '^%{WORD:event.action} of %{IP:client.ip} from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) \(%{DATA:efficient_ip.log.dhcp.release.info}\) TransID %{GREEDYDATA:efficient_ip.log.dhcp.trans_id}$'
+        - '^%{WORD:event.action} of %{IP:client.ip} from %{MAC:client.mac} \(%{DATA:efficient_ip.log.dhcp.client_hostname}\) via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name})$'
+        - '^%{WORD:event.action} of %{IP:client.ip} from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name})$'
         - '^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac}$'
         - '^%{GREEDYDATA:efficient_ip.log.dhcp.message}$'
   - grok:
@@ -84,15 +73,14 @@ processors:
       field: message
       if: ctx.message != null && ctx.message.contains('DHCPINFORM')
       patterns:
-        - '^%{WORD:event.action} from %{IP:client.ip} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{DATA:efficient_ip.log.dhcp.trans_id}: %{GREEDYDATA:efficient_ip.log.dhcp.inform.message}$'
-        - '^%{WORD:event.action} from %{IP:client.ip} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{GREEDYDATA:efficient_ip.log.dhcp.trans_id}$'
+        - '^%{WORD:event.action} from %{IP:client.ip} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name})$'
         - '^%{GREEDYDATA:efficient_ip.log.dhcp.message}$'
   - grok:
       tag: grok_DHCPDECLINE_message
       field: message
       if: ctx.message != null && ctx.message.contains('DHCPDECLINE')
       patterns:
-        - '^%{WORD:event.action} of %{IP:client.ip} from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}) TransID %{DATA:efficient_ip.log.dhcp.trans_id}: %{GREEDYDATA:efficient_ip.log.dhcp.decline.message}$'
+        - '^%{WORD:event.action} of %{IP:client.ip} from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}): %{GREEDYDATA:efficient_ip.log.dhcp.decline.message}$'
         - '^%{WORD:event.action} of %{IP:client.ip} from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name}): %{GREEDYDATA:efficient_ip.log.dhcp.decline.message}$'
         - '^%{GREEDYDATA:efficient_ip.log.dhcp.message}$'
   - grok:
