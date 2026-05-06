@@ -3,12 +3,12 @@ name: cel
 title: Custom API using Common Expression Language
 description: Collect custom events from an API with Elastic agent
 type: input
-version: "1.19.0"
+version: "1.20.0"
 categories:
   - custom
 conditions:
   kibana:
-    version: "^8.19.0 || ^9.1.0"
+    version: "^8.19.17 || ^9.3.6 || ^9.4.2"
   elastic:
     subscription: "basic"
 policy_templates:
@@ -81,10 +81,23 @@ policy_templates:
         title: Initial CEL evaluation state
         description: |
           State is the initial state to be provided to the program. If it has a cursor field, that field will be overwritten by any stored cursor, but will be available if no stored cursor exists.
+          The state must not contain a `secret` key; use the Secret State field instead.
           More information can be found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#input-state-cel).
         show_user: true
         multi: false
         required: false
+      - name: secret_state
+        type: textarea
+        title: Secret CEL evaluation state
+        description: |
+          Secret state holds key-value pairs that are stored encrypted by Fleet and made available to the CEL program at `state.secret`.
+          Use this for API keys, tokens, and other credentials that should not be visible in the integration configuration.
+          Values are automatically redacted in debug logs.
+          More information can be found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#secret-state-cel).
+        show_user: true
+        multi: false
+        required: false
+        secret: true
       - name: allowed_environment
         type: text
         title: Allowed environment variables
