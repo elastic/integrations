@@ -61,7 +61,7 @@ program: |
     :
     // Stage 1: Check if we have existing config rules to process
     // If we have worklist with ConfigRules, we already fetched rules and now need to get compliance details
-    has(state.?worklist.ConfigRules) && size(state.worklist.ConfigRules) > 0 ?
+    has(state.?worklist.ConfigRules) && state.worklist.ConfigRules != null && size(state.worklist.ConfigRules) > 0 ?
       {
         // State management: preserve existing state from previous iteration
         "worklist": state.worklist,
@@ -274,7 +274,7 @@ program: |
     // Stage 3: Process results - either exit early on failure or fetch compliance details
     !has(config_rules.worklist) ? // Exit early due to POST failure.
       config_rules
-    : has(config_rules.worklist.ConfigRules) && size(config_rules.worklist.ConfigRules) > 0 ?
+    : has(config_rules.worklist.ConfigRules) && config_rules.worklist.ConfigRules != null && size(config_rules.worklist.ConfigRules) > 0 ?
       // API Call: Execute GetComplianceDetailsByConfigRule for specific config rule
       post_request(
         state.url.trim_right("/"),
@@ -311,8 +311,8 @@ program: |
         // Response Processing: Successfully got compliance details
         bytes(resp.Body).decode_json().as(body,
           {
-            "events": (has(body.EvaluationResults) && size(body.EvaluationResults) > 0) ?
-              body.EvaluationResults.orValue([]).map(evt,
+            "events": (has(body.EvaluationResults) && body.EvaluationResults != null && size(body.EvaluationResults) > 0) ?
+              body.EvaluationResults.map(evt,
                 {
                   "message": evt.with(
                     {
