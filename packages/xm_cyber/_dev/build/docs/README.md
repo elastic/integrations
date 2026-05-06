@@ -59,7 +59,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
    - **API Key**: Your XM Cyber API key.
    - **Resolution**: Number of days used to aggregate the risk score results.
    - **Interval**: How often to poll for new data (default: `24h`).
-   - **Initial interval**: The time window for the first poll (default: `30`).
+   - **Initial interval**: Time period to fetch risk score data for. Accepts a number of days (e.g. `30`) for a rolling window, or `YYYY_MM` (e.g. `2025_12`) for a specific month (default: `30`).
 4. Select **Save and continue** to save the integration.
 
 ### Validation
