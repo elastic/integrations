@@ -156,13 +156,25 @@ processors:
   - set:
       field: process.entity_id
       tag: set_process_entity_id
-      value: '{{{process.pid}}}'
-      ignore_empty_value: true
+      value: '{{{process.pid}}}|{{{process.start}}}|{{{m365_defender.event.device.id}}}'
+      if: ctx.process?.pid != null && ctx.process?.start != null && ctx.m365_defender?.event?.device?.id != null
+  - fingerprint:
+      fields:
+        - process.entity_id
+      tag: fingerprint_process_entity_id
+      target_field: process.entity_id
+      ignore_missing: true
   - set:
       field: process.parent.entity_id
       tag: set_process_parent_entity_id
-      value: '{{{process.parent.pid}}}'
-      ignore_empty_value: true
+      value: '{{{process.parent.pid}}}|{{{process.parent.start}}}|{{{m365_defender.event.device.id}}}'
+      if: ctx.process?.parent?.pid != null && ctx.process?.parent?.start != null && ctx.m365_defender?.event?.device?.id != null
+  - fingerprint:
+      fields:
+        - process.parent.entity_id
+      tag: fingerprint_process_parent_entity_id
+      target_field: process.parent.entity_id
+      ignore_missing: true
   - set:
       field: process.name
       tag: set_process_name_from_executable
