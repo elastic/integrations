@@ -1,0 +1,373 @@
+# ECS fields
+- name: host.name
+  external: ecs
+  dimension: true
+
+- name: host.os.kernel
+  external: ecs
+
+# Session and eBPF metrics
+- name: gamepulse
+  type: group
+  fields:
+    - name: session
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          dimension: true
+          description: "Unique session identifier (UUID)"
+
+    - name: ebpf
+      type: group
+      fields:
+        - name: probe
+          type: keyword
+          description: "Probe name discriminant (e.g. schedlatency)"
+
+        # Scheduler probe: runqueue latency
+        - name: runqueue
+          type: group
+          fields:
+            - name: latency_histogram
+              type: histogram
+              description: >
+                Runqueue wait-time distribution per 1-second window.
+                values: log2 upper-bound buckets in μs (16 values);
+                counts: observations per bucket.
+            - name: latency_min_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "Minimum runqueue latency observed this second (μs)"
+            - name: latency_max_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "Maximum runqueue latency observed this second (μs)"
+            - name: latency_avg_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "Mean runqueue latency observed this second (μs)"
+            - name: event_count
+              type: long
+              metric_type: gauge
+              description: "Context-switch events observed this second"
+
+        # Scheduler probe: CPU migrations
+        - name: migration
+          type: group
+          fields:
+            - name: total_count
+              type: long
+              metric_type: gauge
+              description: "CPU migrations for game threads observed this second"
+            - name: ccx_cross_count
+              type: long
+              metric_type: gauge
+              description: "CCX-boundary migrations (always 0 on single-CCX chips like 9800X3D)"
+
+        # Per-thread breakdown (top 8 threads by switch count)
+        - name: thread_breakdown
+          type: nested
+          description: "Per-thread scheduler stats for the top-8 most-active game threads"
+          fields:
+            - name: comm
+              type: keyword
+              description: "Thread name (comm, max 15 chars)"
+            - name: tid
+              type: long
+              description: "Thread ID"
+            - name: runqueue_avg_us
+              type: double
+              description: "Mean runqueue latency for this thread this second (μs)"
+            - name: switch_count
+              type: long
+              description: "Context switches for this thread this second"
+            - name: migration_count
+              type: long
+              description: "CPU migrations for this thread this second"
+
+        # Bio probe: block I/O latency
+        - name: bio
+          type: group
+          fields:
+            - name: latency_histogram
+              type: histogram
+              description: >
+                Block I/O completion latency distribution per 1-second window.
+                values: log2 upper-bound buckets in μs (16 values);
+                counts: observations per bucket.
+            - name: latency_min_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "Minimum block I/O latency observed this second (μs)"
+            - name: latency_max_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "Maximum block I/O latency observed this second (μs)"
+            - name: latency_avg_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "Mean block I/O latency observed this second (μs)"
+            - name: event_count
+              type: long
+              metric_type: gauge
+              description: "Block I/O completions observed this second"
+            - name: bytes_total
+              type: long
+              metric_type: gauge
+              unit: byte
+              description: "Total bytes transferred across all observed I/O operations"
+
+        # GPU scheduler probe: DRM job scheduling latency
+        - name: gpu_sched
+          type: group
+          fields:
+            - name: latency_histogram
+              type: histogram
+              description: >
+                GPU job scheduling latency distribution per 1-second window.
+                values: log2 upper-bound buckets in μs (16 values);
+                counts: observations per bucket.
+            - name: latency_min_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "Minimum GPU scheduling latency observed this second (μs)"
+            - name: latency_max_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "Maximum GPU scheduling latency observed this second (μs)"
+            - name: latency_avg_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "Mean GPU scheduling latency observed this second (μs)"
+            - name: event_count
+              type: long
+              metric_type: gauge
+              description: "GPU jobs observed this second (all rings: gfx, comp, sdma)"
+
+        # Memory pressure probe
+        - name: mem
+          type: group
+          fields:
+            - name: page_fault_count
+              type: long
+              metric_type: gauge
+              description: "User-space page faults from game threads this second"
+            - name: page_fault_write
+              type: long
+              metric_type: gauge
+              description: "Write (COW/allocation) faults — subset of page_fault_count"
+            - name: direct_reclaim_count
+              type: long
+              metric_type: gauge
+              description: >
+                Direct reclaim events (system-wide) this second.
+                Non-zero indicates memory pressure; game threads stalled waiting for memory.
+
+        # Futex contention probe
+        - name: futex
+          type: group
+          fields:
+            - name: latency_histogram
+              type: histogram
+              description: >
+                Futex wait-time distribution per 1-second window.
+                values: log2 upper-bound buckets in μs (16 values);
+                counts: observations per bucket.
+            - name: latency_min_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "Minimum futex operation latency observed this second (μs)"
+            - name: latency_max_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "Maximum futex operation latency observed this second (μs)"
+            - name: latency_avg_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "Mean futex operation latency observed this second (μs)"
+            - name: event_count
+              type: long
+              metric_type: gauge
+              description: "Futex operations observed this second (game threads)"
+            - name: contended_count
+              type: long
+              metric_type: gauge
+              description: "Futex operations with latency > 1ms (contended acquisitions)"
+
+        # IRQ and softirq latency probe
+        - name: irq
+          type: group
+          fields:
+            - name: hard_irq
+              type: group
+              fields:
+                - name: latency_histogram
+                  type: histogram
+                  description: >
+                    Hard-IRQ handler latency distribution per 1-second window.
+                    values: log2 upper-bound buckets in μs (16 values);
+                    counts: observations per bucket.
+                - name: latency_avg_us
+                  type: double
+                  metric_type: gauge
+                  unit: micros
+                  description: "Mean hard-IRQ handler latency this second (μs)"
+                - name: event_count
+                  type: long
+                  metric_type: gauge
+                  description: "Hard-IRQ handler invocations observed this second"
+            - name: softirq
+              type: group
+              fields:
+                - name: latency_histogram
+                  type: histogram
+                  description: >
+                    Softirq handler latency distribution per 1-second window.
+                    values: log2 upper-bound buckets in μs (16 values);
+                    counts: observations per bucket.
+                - name: latency_avg_us
+                  type: double
+                  metric_type: gauge
+                  unit: micros
+                  description: "Mean softirq handler latency this second (μs)"
+                - name: event_count
+                  type: long
+                  metric_type: gauge
+                  description: "Softirq handler invocations observed this second"
+
+        # VFS read/write latency probe
+        - name: vfs
+          type: group
+          fields:
+            - name: read
+              type: group
+              fields:
+                - name: latency_histogram
+                  type: histogram
+                  description: >
+                    VFS read latency distribution per 1-second window.
+                    values: log2 upper-bound buckets in μs (16 values);
+                    counts: observations per bucket.
+                - name: latency_avg_us
+                  type: double
+                  metric_type: gauge
+                  unit: micros
+                  description: "Mean VFS read latency this second (μs)"
+                - name: event_count
+                  type: long
+                  metric_type: gauge
+                  description: "VFS read operations observed this second (game threads)"
+                - name: bytes_total
+                  type: long
+                  metric_type: gauge
+                  unit: byte
+                  description: "Total bytes read (reserved for future use)"
+            - name: write
+              type: group
+              fields:
+                - name: latency_histogram
+                  type: histogram
+                  description: >
+                    VFS write latency distribution per 1-second window.
+                    values: log2 upper-bound buckets in μs (16 values);
+                    counts: observations per bucket.
+                - name: latency_avg_us
+                  type: double
+                  metric_type: gauge
+                  unit: micros
+                  description: "Mean VFS write latency this second (μs)"
+                - name: event_count
+                  type: long
+                  metric_type: gauge
+                  description: "VFS write operations observed this second (game threads)"
+                - name: bytes_total
+                  type: long
+                  metric_type: gauge
+                  unit: byte
+                  description: "Total bytes written (reserved for future use)"
+
+        # DMA fence wait probe (GPU blocking wait latency)
+        - name: gpu_fence
+          type: group
+          fields:
+            - name: latency_histogram
+              type: histogram
+              description: >
+                DMA fence wait latency distribution per 1-second window.
+                values: log2 upper-bound buckets in μs (16 values);
+                counts: observations per bucket.
+            - name: latency_min_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "Minimum fence wait latency observed this second (μs)"
+            - name: latency_max_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "Maximum fence wait latency observed this second (μs)"
+            - name: latency_avg_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "Mean fence wait latency observed this second (μs)"
+            - name: event_count
+              type: long
+              metric_type: gauge
+              description: "DMA fence waits observed this second"
+            - name: blocked_count
+              type: long
+              metric_type: gauge
+              description: "Fence waits that blocked for > 1ms (frame-impacting)"
+
+        # GPU command submission probe (AMD only)
+        - name: gpu_submit
+          type: group
+          fields:
+            - name: event_count
+              type: long
+              metric_type: gauge
+              description: "amdgpu_cs_ioctl calls (GPU command submissions) observed this second"
+
+        # Cross-probe stutter correlation
+        - name: stutter
+          type: group
+          fields:
+            - name: contributing_probes
+              type: keyword
+              description: "Probes that detected a spike this second (e.g. schedlatency, bio)"
+            - name: sched_max_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "Runqueue max latency this window (μs); 0 if sched probe not active"
+            - name: bio_max_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "Block I/O max latency this window (μs); 0 if bio probe not active"
+            - name: gpu_sched_max_us
+              type: double
+              metric_type: gauge
+              unit: micros
+              description: "GPU scheduling max latency this window (μs); 0 if gpu_sched probe not active"
+            - name: mem_pressure
+              type: boolean
+              description: "True if direct memory reclaim was observed this window"
+            - name: severity_score
+              type: byte
+              metric_type: gauge
+              description: "Number of contributing probes: 2=low, 3=medium, 4=high"

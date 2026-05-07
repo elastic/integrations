@@ -1,0 +1,93 @@
+# ECS fields used in this data stream
+- name: host.name
+  external: ecs
+  dimension: true
+
+# Session context
+- name: gamepulse
+  type: group
+  fields:
+    - name: session
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          dimension: true
+          description: "Unique session identifier (UUID)"
+        - name: agent_version
+          type: keyword
+          description: "Version of the GamePulse collector agent"
+        - name: label
+          type: keyword
+          description: "Optional user-supplied annotation for this session (e.g. 'after-driver-update')"
+
+    - name: game
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: "Game title"
+        - name: steam_app_id
+          type: long
+          description: "Steam application ID (present only when source == steam)"
+
+    # GPU-specific metrics
+    - name: gpu
+      type: group
+      fields:
+        - name: utilisation_pct
+          type: float
+          metric_type: gauge
+          unit: percent
+          description: "GPU shader engine utilisation percentage (0–100)"
+        - name: clock_mhz
+          type: integer
+          metric_type: gauge
+          description: "Current GPU core clock speed in MHz"
+        - name: memory_used_mb
+          type: integer
+          metric_type: gauge
+          description: "VRAM currently in use, in megabytes"
+        - name: memory_total_mb
+          type: integer
+          metric_type: gauge
+          description: "Total VRAM capacity in megabytes"
+        - name: temperature_c
+          type: float
+          metric_type: gauge
+          description: "GPU edge (die) temperature in Celsius"
+        - name: hotspot_c
+          type: float
+          metric_type: gauge
+          description: "GPU hotspot (junction) temperature in Celsius"
+        - name: memory_temperature_c
+          type: float
+          metric_type: gauge
+          description: "GDDR/HBM memory temperature in Celsius"
+        - name: power_w
+          type: float
+          metric_type: gauge
+          description: "GPU package power draw in watts"
+        - name: fan_pct
+          type: float
+          metric_type: gauge
+          unit: percent
+          description: "GPU fan speed as a percentage of maximum"
+        - name: fan_speed_rpm
+          type: integer
+          metric_type: gauge
+          description: "GPU fan speed in RPM"
+        - name: voltage
+          type: float
+          metric_type: gauge
+          description: "GPU core voltage in volts"
+        - name: thermal_throttle_warning
+          type: boolean
+          description: "True when hotspot or edge temperature exceeds 95°C (derived by ingest pipeline)"
+        - name: temp_source
+          type: keyword
+          description: >
+            Data source for temperature_c. 'hwmon' on Linux (amdgpu sysfs,
+            precise GPU die temperature). 'wmi_acpi' on Windows (ACPI thermal
+            zone — may report ambient, chassis, or GPU die depending on OEM
+            firmware). Present only when temperature_c is present.

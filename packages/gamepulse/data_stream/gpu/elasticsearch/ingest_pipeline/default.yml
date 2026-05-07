@@ -1,0 +1,49 @@
+---
+description: >
+  Ingest pipeline for GamePulse GPU metrics.
+  Sets @timestamp, validates temperature and utilisation ranges,
+  and derives the thermal_throttle_warning flag.
+processors:
+  # --- Shared enrichment (inlined) ---
+  - set:
+      field: "@timestamp"
+      value: "{{{_ingest.timestamp}}}"
+      if: "ctx['@timestamp'] == null"
+      description: "Set @timestamp to ingest time if not provided by the collector"
+
+  - trim:
+      field: gamepulse.game.name
+      ignore_missing: true
+
+  # --- GPU-specific validation and derivation ---
+  - script:
+      description: "Validate GPU utilisation is 0–100% and temperature is in a plausible range"
+      lang: painless
+      source: |
+        def util = ctx.gamepulse?.gpu?.utilisation_pct;
+        if (util != null && (util < 0 || util > 100)) {
+          throw new Exception('gamepulse.gpu.utilisation_pct must be 0-100, got: ' + util);
+        }
+        def temp = ctx.gamepulse?.gpu?.temperature_c;
+        if (temp != null && (temp < -10 || temp > 150)) {
+          throw new Exception('gamepulse.gpu.temperature_c out of plausible range: ' + temp);
+        }
+
+  - script:
+      description: "Derive thermal_throttle_warning when hotspot or edge temp exceeds 95°C"
+      lang: painless
+      source: |
+        if (ctx.gamepulse == null) ctx.gamepulse = [:];
+        if (ctx.gamepulse.gpu == null) ctx.gamepulse.gpu = [:];
+        def hotspot = ctx.gamepulse?.gpu?.hotspot_c;
+        def edge = ctx.gamepulse?.gpu?.temperature_c;
+        def temp = (hotspot != null) ? hotspot : edge;
+        ctx.gamepulse.gpu.thermal_throttle_warning = (temp != null && temp > 95.0);
+
+on_failure:
+  - set:
+      field: _ingest.pipeline_error
+      value: "{{_ingest.on_failure_message}}"
+  - set:
+      field: _ingest.failed_pipeline
+      value: "gamepulse-gpu"

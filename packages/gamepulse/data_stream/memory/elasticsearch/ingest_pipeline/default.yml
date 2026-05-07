@@ -1,0 +1,30 @@
+---
+description: >
+  Ingest pipeline for GamePulse memory metrics.
+  Sets @timestamp and validates memory values are non-negative.
+processors:
+  - set:
+      field: "@timestamp"
+      value: "{{{_ingest.timestamp}}}"
+      if: "ctx['@timestamp'] == null"
+
+  - trim:
+      field: gamepulse.game.name
+      ignore_missing: true
+
+  - script:
+      description: "Validate memory values are non-negative"
+      lang: painless
+      source: |
+        def rss = ctx.gamepulse?.memory?.game_rss_mb;
+        if (rss != null && rss < 0) {
+          throw new Exception('gamepulse.memory.game_rss_mb must be >= 0');
+        }
+
+on_failure:
+  - set:
+      field: _ingest.pipeline_error
+      value: "{{_ingest.on_failure_message}}"
+  - set:
+      field: _ingest.failed_pipeline
+      value: "gamepulse-memory"

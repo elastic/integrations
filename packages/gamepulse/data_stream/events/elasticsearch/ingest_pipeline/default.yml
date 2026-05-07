@@ -1,0 +1,49 @@
+---
+description: >
+  Ingest pipeline for GamePulse discrete events (logs type).
+  Sets @timestamp, validates required event fields, and maps to ECS event fields.
+  This is a logs data stream — events are not periodic measurements.
+processors:
+  - set:
+      field: "@timestamp"
+      value: "{{{_ingest.timestamp}}}"
+      if: "ctx['@timestamp'] == null"
+
+  - trim:
+      field: gamepulse.game.name
+      ignore_missing: true
+
+  - script:
+      description: "Validate required event fields and set ECS event.kind"
+      lang: painless
+      source: |
+        def kind = ctx.gamepulse?.event?.kind;
+        if (kind == null || kind.isEmpty()) {
+          throw new Exception('gamepulse.event.kind is required');
+        }
+        // Map to ECS event.kind
+        if (ctx.event == null) ctx.event = [:];
+        ctx.event.kind = 'event';
+        // Map severity to ECS
+        def severity = ctx.gamepulse?.event?.severity;
+        if (severity == 'error' || severity == 'critical') {
+          ctx.event.type = ['error'];
+        } else {
+          ctx.event.type = ['info'];
+        }
+
+  - lowercase:
+      field: gamepulse.event.kind
+      ignore_missing: true
+
+  - lowercase:
+      field: gamepulse.event.severity
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: _ingest.pipeline_error
+      value: "{{_ingest.on_failure_message}}"
+  - set:
+      field: _ingest.failed_pipeline
+      value: "gamepulse-events"
