@@ -1,0 +1,130 @@
+# Validate the userinfo destination pipeline, lookup index, and LOOKUP JOIN.
+#
+# Indexes pre-processed FDR documents (as they would appear after the default
+# ingest pipeline) directly into the data stream, then pushes the
+# UserIdentity doc through the destination pipeline into the lookup index,
+# and verifies the lookup is populated and queryable via ES|QL LOOKUP JOIN.
+#
+# The transform checkpoint is non-deterministic across re-runs (Fleet
+# preserves it when fleet_transform_version is unchanged), so instead of
+# waiting for the continuous transform we manually exercise the destination
+# pipeline. The transform's source query and scheduling are validated by
+# the system tests.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+[!exec:curl] skip 'Skipping test requiring absent curl command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install the package so transforms, pipelines, and index templates are created.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Index a UserIdentity event into the FDR data stream. pipeline=_none
+# bypasses the FDR ingest pipeline (already tested by pipeline tests).
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X POST 'https://localhost:9200/logs-crowdstrike.fdr-default/_doc?refresh=true&pipeline=_none' -H 'Content-Type: application/json' -d @useridentity_event.json
+stdout '"result":"created"'
+
+# Index a data event (ProcessRollup2) for the same host+user.
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X POST 'https://localhost:9200/logs-crowdstrike.fdr-default/_doc?refresh=true&pipeline=_none' -H 'Content-Type: application/json' -d @data_event.json
+stdout '"result":"created"'
+
+# Push the UserIdentity doc through the destination pipeline directly
+# into the lookup index. This exercises the field renames, composite key
+# construction, and keep logic without depending on transform checkpoints.
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X POST 'https://localhost:9200/logs-crowdstrike_lookup.dest_userinfo-1/_doc?refresh=true&pipeline='${CURRENT_VERSION}'-userinfo_lookup_namespaced' -H 'Content-Type: application/json' -d @useridentity_event.json
+stdout '"result":"created"'
+
+# Verify the lookup index is populated.
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X GET 'https://localhost:9200/logs-crowdstrike_lookup.userinfo/_count'
+cp stdout count.json
+exec jq -r '.count' count.json
+stdout '^[1-9]'
+
+# Verify the lookup document has the expected fields.
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X GET 'https://localhost:9200/logs-crowdstrike_lookup.userinfo/_search?size=10'
+cp stdout lookup_docs.json
+
+# Check the synthetic composite key.
+exec jq -r '.hits.hits[]._source.host_user_key' lookup_docs.json
+stdout '443de0bbc349316f0d394439c57beaba::S-63628-61824-76998-75961-49681-10653-90491'
+
+# Check the username was renamed into the crowdstrike.info.user namespace.
+exec jq -r '.hits.hits[]._source.crowdstrike.info.user.name' lookup_docs.json
+stdout 'jane.doe'
+
+# Check _last_seen was populated (retention field).
+exec jq -r '.hits.hits[]._source.crowdstrike.info.user._last_seen' lookup_docs.json
+stdout '2025-04-01'
+
+# Run an ES|QL LOOKUP JOIN query to verify end-to-end enrichment.
+# LOOKUP JOIN requires ES 8.16+; alias resolution in LOOKUP JOIN
+# requires 8.19+. If the stack is too old the query returns an error
+# instead of a values array.
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X POST 'https://localhost:9200/_query' -H 'Content-Type: application/json' -d @esql_query.json
+cp stdout esql_result.json
+stdout '"values"'
+
+# The LOOKUP JOIN result should contain the enriched username.
+exec jq -r '[.values[][]] | map(select(. == "jane.doe")) | first' esql_result.json
+stdout 'jane.doe'
+
+-- useridentity_event.json --
+{
+  "@timestamp": "2025-04-01T12:00:00.000Z",
+  "event": {
+    "action": "UserIdentity",
+    "category": ["authentication", "iam"],
+    "kind": "event",
+    "outcome": "success",
+    "type": ["info", "user"],
+    "ingested": "2025-04-01T12:01:00.000Z"
+  },
+  "host": {
+    "id": "443de0bbc349316f0d394439c57beaba",
+    "domain": "TESTDOMAIN",
+    "os": { "type": "windows" }
+  },
+  "user": {
+    "id": "S-63628-61824-76998-75961-49681-10653-90491",
+    "name": "jane.doe"
+  },
+  "crowdstrike": {
+    "AuthenticationPackage": "Negotiate",
+    "LogonType": "3",
+    "LogonTime": "2025-04-01T12:00:00.000Z",
+    "RemoteAccount": "0",
+    "UserFlags": "0",
+    "UserLogonFlags": "0",
+    "UserCanonical": "TESTDOMAIN\\jane.doe",
+    "cid": "test-cid-000000000000000000000000",
+    "event_simpleName": "UserIdentity"
+  }
+}
+-- data_event.json --
+{
+  "@timestamp": "2025-04-01T12:05:00.000Z",
+  "event": {
+    "action": "ProcessRollup2",
+    "category": ["process"],
+    "kind": "event",
+    "type": ["start"],
+    "ingested": "2025-04-01T12:06:00.000Z"
+  },
+  "host": {
+    "id": "443de0bbc349316f0d394439c57beaba",
+    "os": { "type": "windows" }
+  },
+  "user": {
+    "id": "S-63628-61824-76998-75961-49681-10653-90491",
+    "name": "jane.doe"
+  },
+  "crowdstrike": {
+    "cid": "test-cid-000000000000000000000000",
+    "event_simpleName": "ProcessRollup2"
+  }
+}
+-- esql_query.json --
+{
+  "query": "FROM logs-crowdstrike.fdr-default | WHERE event.action == \"ProcessRollup2\" | EVAL host_user_key = CONCAT(host.id, \"::\", user.id) | LOOKUP JOIN logs-crowdstrike_lookup.userinfo ON host_user_key | KEEP event.action, user.id, crowdstrike.info.user.name | LIMIT 10"
+}
