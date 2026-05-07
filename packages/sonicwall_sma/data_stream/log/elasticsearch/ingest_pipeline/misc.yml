@@ -12,7 +12,7 @@ processors:
   - grok:
       field: message
       patterns:
-        - '^<KERNEL> PROBE:<%{WORD:sonicwall_sma.log.probe.type}:%{DATA:sonicwall_sma.log.probe.id}:%{DATA:user.name}>:%{GREEDYDATA:sonicwall_sma.log.probe.state}$'
+        - '^<KERNEL> PROBE:<%{WORD:sonicwall_sma.log.probe.type}:%{DATA:sonicwall_sma.log.session.id}:%{DATA:user.name}>:%{GREEDYDATA:sonicwall_sma.log.probe.state}$'
       ignore_failure: true
   - set:
       field: event.action
@@ -98,13 +98,13 @@ processors:
   - grok:
       field: message
       patterns:
-        - '^<KERNEL> Tunnel Resumption deleting existing tunnel with same vaddr\(s\): %{IP:_temp.misc.related_ip} <old %{DATA:sonicwall_sma.log.tunnel.old_id}, new %{DATA:sonicwall_sma.log.tunnel.new_id}>$'
+        - '^<KERNEL> Tunnel Resumption deleting existing tunnel with same vaddr\(s\): %{IP:_temp.misc.related_ip} <old %{DATA:sonicwall_sma.log.tunnel.old_id}, new %{DATA:sonicwall_sma.log.session.id}>$'
       if: ctx.message != null && ctx.message.contains('Tunnel Resumption deleting existing tunnel')
       ignore_failure: true
   - set:
       field: event.action
       value: tunnel-resumption
-      if: ctx.sonicwall_sma?.log?.tunnel?.old_id != null && ctx.sonicwall_sma?.log?.tunnel?.new_id != null
+      if: ctx.sonicwall_sma?.log?.tunnel?.old_id != null && ctx.sonicwall_sma?.log?.session?.id != null
   - grok:
       field: message
       patterns:

@@ -182,19 +182,17 @@ The `log` data stream provides SonicWall Secure Mobile Access audit, authenticat
 | sonicwall_sma.log.http.version_hex | SonicWall SMA hexadecimal HTTP version identifier. | keyword |
 | sonicwall_sma.log.message_type | Kernel message type reported in incomplete-message events. | keyword |
 | sonicwall_sma.log.platform_prefix | Platform prefix reported by the SonicWall SMA appliance. | keyword |
-| sonicwall_sma.log.probe.id | Probe identifier reported by the SonicWall SMA kernel. | keyword |
 | sonicwall_sma.log.probe.retries | Probe retry count reported by the SonicWall SMA kernel. | long |
 | sonicwall_sma.log.probe.rto_ms | Probe retransmission timeout in milliseconds. | long |
 | sonicwall_sma.log.probe.state | Probe status or transition state. | keyword |
 | sonicwall_sma.log.probe.type | Probe transport type. | keyword |
 | sonicwall_sma.log.realm | Realm referenced by the SonicWall SMA authentication message. | keyword |
-| sonicwall_sma.log.session.id | Short-lived SonicWall SMA tunnel session identifier. | keyword |
+| sonicwall_sma.log.session.id | SonicWall SMA tunnel probe session identifier. | keyword |
 | sonicwall_sma.log.session_key | SonicWall SMA session key. | keyword |
 | sonicwall_sma.log.ssl.version | SonicWall SMA SSL version reported by the tunnel kernel message. | keyword |
 | sonicwall_sma.log.thread_id | SonicWall SMA thread or worker identifier from the log header. | keyword |
 | sonicwall_sma.log.tunnel.mtu.base | Base MTU reported by the SonicWall SMA tunnel. | long |
 | sonicwall_sma.log.tunnel.mtu.current | Current MTU reported by the SonicWall SMA tunnel. | long |
-| sonicwall_sma.log.tunnel.new_id | New tunnel identifier reported during tunnel resumption. | keyword |
 | sonicwall_sma.log.tunnel.old_id | Previous tunnel identifier reported during tunnel resumption. | keyword |
 | sonicwall_sma.log.tunnel.version | Tunnel protocol version reported by SonicWall SMA. | keyword |
 | sonicwall_sma.log.user_identity | Raw SonicWall SMA user identity string before ECS normalization. | keyword |
