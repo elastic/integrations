@@ -8,6 +8,10 @@
           type: keyword
           description: |
             Application name reported by the SonicWall SMA audit event.
+        - name: context_id
+          type: keyword
+          description: |
+            SonicWall SMA context identifier used to correlate related log entries.
         - name: assigned_domain
           type: keyword
           description: |
@@ -20,6 +24,10 @@
           type: keyword
           description: |
             SonicWall SMA component code from the log header.
+        - name: component_name
+          type: keyword
+          description: |
+            Human-readable SonicWall SMA application name derived from the component code.
         - name: crypto
           type: keyword
           description: |
@@ -36,17 +44,59 @@
           type: keyword
           description: |
             Platform prefix reported by the SonicWall SMA appliance.
+        - name: realm
+          type: keyword
+          description: |
+            Realm referenced by the SonicWall SMA authentication message.
         - name: thread_id
           type: keyword
           description: |
             SonicWall SMA thread or worker identifier from the log header.
+        - name: user_identity
+          type: keyword
+          description: |
+            Raw SonicWall SMA user identity string before ECS normalization.
+        - name: zone
+          type: keyword
+          description: |
+            Zone classification assigned by the SonicWall SMA EPC process.
+        - name: api
+          type: group
+          fields:
+            - name: session_id
+              type: keyword
+              description: |
+                API correlation identifier reported in verbose EPC log entries.
         - name: auth
           type: group
           fields:
+            - name: cert_status
+              type: long
+              description: |
+                Certificate verification status reported by SonicWall SMA.
             - name: mechanism
               type: keyword
               description: |
                 Authentication mechanism extracted from the SonicWall SMA message.
+        - name: epc
+          type: group
+          fields:
+            - name: details
+              type: keyword
+              description: |
+                EPC evaluation details reported by SonicWall SMA.
+            - name: id
+              type: keyword
+              description: |
+                EPC evaluation identifier.
+            - name: result
+              type: keyword
+              description: |
+                EPC evaluation result.
+            - name: type
+              type: keyword
+              description: |
+                EPC evaluation type.
         - name: client
           type: group
           fields:

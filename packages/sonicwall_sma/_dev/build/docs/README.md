@@ -54,9 +54,22 @@ To set up the integration:
 1. Install the SonicWall Secure Mobile Access integration in Fleet.
 2. Choose the input you want to use. Use TCP for reliable delivery, with optional TLS, or UDP for lightweight syslog forwarding.
 3. Configure the listening host and port in the integration policy.
-4. On the SonicWall SMA appliance, configure an external syslog destination that points to the Elastic Agent host and port.
-5. Select which SMA logs you want to export, including audit, authentication, session, system, and tunnel or kernel messages.
-6. Enable the `Preserve original event` option if you want to keep the raw SMA log in `event.original` for troubleshooting.
+4. Enable the `Preserve original event` option if you want to keep the raw SMA log in `event.original` for troubleshooting.
+
+#### SonicWall SMA syslog configuration
+To send log files from the SonicWall SMA appliance to Elastic, you need to [configure a syslog export policy in the SMA](https://www.sonicwall.com/support/technical-documentation/docs/sma_1000-12-4-admin_guide/Content/Administration/sending-log-files-to-a-syslog-server.htm) management interface.
+
+Depending of your appliance model and software version, the exact navigation may differ.
+
+**For older SMA software versions:**
+1. In SMA management interface, go to **Log > Settings**
+2. Under **Log & Alert levels** section, define the severity level of log messages you want to receive in Elastic.
+3. In the **Syslog settings**, type the IP address and the port of your Elastic Agent listener as **Primary syslog server**.
+
+**For newer SMA software versions:**
+1. In the AMC, navigate to **Monitoring > Logging**. The **View Logs** page displays.
+2. Click the **Configure Logging** tab.
+3. Under **Syslog configuration**, type the IP address and port numbers for the Elastic Agent listener.
 
 ### Validation
 After the integration is configured:

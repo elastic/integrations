@@ -13,9 +13,12 @@ processors:
       field: event.original
       patterns:
         - '^(?:%{NUMBER:_temp.octet_count} )?<%{NONNEGINT:log.syslog.priority:long}>%{NONNEGINT:log.syslog.version} %{TIMESTAMP_ISO8601:_temp.syslog.timestamp} %{NOTSPACE:log.syslog.hostname} %{NOTSPACE:log.syslog.appname} %{NOTSPACE:log.syslog.procid} %{NOTSPACE:log.syslog.msgid} \[meta sequenceId="%{NUMBER:event.sequence:long}"\] \[%{DATA:_temp.sonicwall_sma.event_time}\] %{GREEDYDATA:_temp.sonicwall_sma.payload}$'
-  - dissect:
+        - '^\[%{DATA:_temp.sonicwall_sma.event_time}\] %{GREEDYDATA:_temp.sonicwall_sma.payload}$'
+  - grok:
       field: _temp.sonicwall_sma.payload
-      pattern: '%{observer.name} %{sonicwall_sma.log.thread_id} %{sonicwall_sma.log.component} %{event.code} %{log.level->} %{sonicwall_sma.log.category->} %{message}'
+      patterns:
+        - '^\[%{DATA:_temp.sonicwall_sma.event_time}\] %{DATA:observer.name} %{NONNEGINT:sonicwall_sma.log.thread_id} %{WORD:sonicwall_sma.log.component} %{NOTSPACE:event.code} %{WORD:log.level} +%{WORD:sonicwall_sma.log.category} +%{GREEDYDATA:message}$'
+        - '^%{DATA:observer.name} %{NONNEGINT:sonicwall_sma.log.thread_id} %{WORD:sonicwall_sma.log.component} %{NOTSPACE:event.code} %{WORD:log.level} +%{WORD:sonicwall_sma.log.category} +%{GREEDYDATA:message}$'
   - date:
       field: _temp.sonicwall_sma.event_time
       target_field: '@timestamp'
@@ -50,6 +53,36 @@ processors:
       field: observer.type
       value: access-management
   - set:
+      field: sonicwall_sma.log.context_id
+      copy_from: event.code
+      if: ctx.event?.code != null
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      if: ctx.sonicwall_sma?.log?.component != null
+      source: |
+        def componentNames = [
+          'ap': 'API server',
+          'cp': 'SMA distributed cache client',
+          'dc': 'SMA distributed cache server',
+          'ev': 'network tunnel service',
+          'ew': 'Web proxy service',
+          'fm': 'failover monitor',
+          'kp': 'network tunnel kernel mode policy server interface',
+          'ks': 'network tunnel kernel mode interface to SSL daemon',
+          'kt': 'kernel tunnel component',
+          'ls': 'log server',
+          'ps': 'policy service',
+          'pt': 'ping/traceroute tools',
+          'uk': 'unknown',
+          'up': 'network tunnel policy server daemon',
+          'us': 'network tunnel user space SSL daemon'
+        ];
+        def componentName = componentNames[ctx.sonicwall_sma.log.component];
+        if (componentName != null) {
+          ctx.sonicwall_sma.log.component_name = componentName;
+        }
+  - set:
       field: event.kind
       value: event
   - set:
@@ -64,6 +97,10 @@ processors:
       field: event.severity
       value: 6
       if: ctx.log?.level == 'info'
+  - set:
+      field: event.severity
+      value: 7
+      if: ctx.log?.level == 'verbose'
   - pipeline:
       name: '{{ IngestPipeline "audit" }}'
       if: ctx.sonicwall_sma?.log?.category == 'Audit'
@@ -74,11 +111,31 @@ processors:
       name: '{{ IngestPipeline "misc" }}'
       if: ctx.sonicwall_sma?.log?.category == 'Misc'
   - pipeline:
+      name: '{{ IngestPipeline "policy" }}'
+      if: "['EWACL', 'WPACL', 'CSACL', 'NEACL'].contains(ctx.sonicwall_sma?.log?.category)"
+  - pipeline:
       name: '{{ IngestPipeline "session" }}'
       if: ctx.sonicwall_sma?.log?.category == 'Session'
   - pipeline:
       name: '{{ IngestPipeline "system" }}'
       if: ctx.sonicwall_sma?.log?.category == 'System'
+  - grok:
+      field: sonicwall_sma.log.user_identity
+      patterns:
+        - '^\(%{IP:_temp.identity.source_ip} \(%{DATA:user.full_name}\)\)@\(%{DATA:user.group.name}\)$'
+        - '^\(%{DATA:user.name}\)@\(%{DATA:user.group.name}\)$'
+      ignore_failure: true
+      ignore_missing: true
+  - set:
+      field: user.name
+      copy_from: user.full_name
+      if: ctx.user?.name == null && ctx.user?.full_name != null
+      ignore_empty_value: true
+  - set:
+      field: source.ip
+      copy_from: _temp.identity.source_ip
+      if: ctx.source?.ip == null && ctx._temp?.identity?.source_ip != null
+      ignore_empty_value: true
   - append:
       field: related.hosts
       value: '{{{observer.name}}}'
@@ -89,9 +146,15 @@ processors:
       value: '{{{observer.hostname}}}'
       allow_duplicates: false
       if: ctx.observer?.hostname != null
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
   - remove:
       field:
         - _temp
+        - message
       ignore_missing: true
 on_failure:
   - set:

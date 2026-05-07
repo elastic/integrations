@@ -3,7 +3,7 @@ description: Pipeline for parsing SonicWall SMA session events
 processors:
   - dissect:
       field: message
-      pattern: "Session Start: '(%{user.email})@(%{user.domain})', authenticated."
+      pattern: "Session Start: '(%{user.email})@(%{user.group.name})', authenticated."
       if: ctx.message != null && ctx.message.startsWith('Session Start:')
       ignore_failure: true
   - set:
@@ -34,6 +34,39 @@ processors:
       field: event.outcome
       value: success
       if: ctx.message != null && ctx.message.startsWith('Session Start:')
+  - grok:
+      field: message
+      patterns:
+        - "^Authentication for user '%{GREEDYDATA:sonicwall_sma.log.user_identity}' %{WORD:_temp.session.auth_result} for realm '%{DATA:sonicwall_sma.log.realm}'$"
+      if: ctx.message != null && ctx.message.startsWith('Authentication for user ')
+      ignore_failure: true
+  - set:
+      field: event.action
+      value: authentication
+      if: ctx._temp?.session?.auth_result != null
+  - append:
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+      if: ctx._temp?.session?.auth_result != null
+  - append:
+      field: event.category
+      value: session
+      allow_duplicates: false
+      if: ctx._temp?.session?.auth_result != null
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+      if: ctx._temp?.session?.auth_result != null
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx._temp?.session?.auth_result == 'SUCCESS'
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx._temp?.session?.auth_result != null && ctx._temp.session.auth_result != 'SUCCESS'
   - grok:
       field: message
       patterns:
@@ -105,3 +138,7 @@ processors:
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
+  - remove:
+      field:
+        - _temp.session
+      ignore_missing: true

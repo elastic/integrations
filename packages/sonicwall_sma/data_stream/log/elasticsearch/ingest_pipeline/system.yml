@@ -1,6 +1,20 @@
 ---
 description: Pipeline for parsing SonicWall SMA system events
 processors:
+  - set:
+      field: event.action
+      value: cfg-pool-init
+      if: ctx.message != null && ctx.message.startsWith('CFG Pool Init ')
+  - append:
+      field: event.category
+      value: configuration
+      allow_duplicates: false
+      if: ctx.event?.action == 'cfg-pool-init'
+  - append:
+      field: event.type
+      value: creation
+      allow_duplicates: false
+      if: ctx.event?.action == 'cfg-pool-init'
   - dissect:
       field: message
       pattern: "Session End: '(%{user.email})@(%{user.domain})'"
@@ -65,6 +79,34 @@ processors:
   - grok:
       field: message
       patterns:
+                - "^Auth: CRL-CERT: Cert verification status = %{NUMBER:sonicwall_sma.log.auth.cert_status:long}, err = %{NUMBER:error.code} '%{DATA:event.reason}'$"
+      if: "ctx.message != null && ctx.message.startsWith('Auth: CRL-CERT:')"
+      ignore_failure: true
+  - set:
+      field: event.action
+      value: client-certificate-verification
+      if: ctx.sonicwall_sma?.log?.auth?.cert_status != null
+  - append:
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+      if: ctx.event?.action == 'client-certificate-verification'
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+      if: ctx.event?.action == 'client-certificate-verification'
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.event?.action == 'client-certificate-verification' && ctx.error?.code == '0'
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.event?.action == 'client-certificate-verification' && ctx.error?.code != null && ctx.error.code != '0'
+  - grok:
+      field: message
+      patterns:
         - '^RPC: %{GREEDYDATA:event.reason}$'
       if: ctx.message != null && ctx.message.startsWith('RPC:')
       ignore_failure: true
@@ -90,6 +132,46 @@ processors:
       field: event.outcome
       value: failure
       if: ctx.event?.action == 'rpc' && ctx.log?.level != 'info'
+  - grok:
+      field: message
+      patterns:
+        - '^::API::%{DATA:sonicwall_sma.log.api.session_id}::%{GREEDYDATA:sonicwall_sma.log.user_identity}::CLIENT:: Interrogation: Evaluation of %{WORD:sonicwall_sma.log.epc.type} %{NOTSPACE:sonicwall_sma.log.epc.id} \[%{GREEDYDATA:sonicwall_sma.log.epc.details}\] results: %{WORD:sonicwall_sma.log.epc.result}$'
+      if: "ctx.message != null && ctx.message.contains('::CLIENT:: Interrogation: Evaluation of ')"
+      ignore_failure: true
+  - set:
+      field: event.action
+      value: epc-interrogation
+      if: ctx.sonicwall_sma?.log?.epc?.id != null
+  - append:
+      field: event.category
+      value: host
+      allow_duplicates: false
+      if: ctx.event?.action == 'epc-interrogation'
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+      if: ctx.event?.action == 'epc-interrogation'
+  - grok:
+      field: message
+      patterns:
+        - '^::API::%{DATA:sonicwall_sma.log.api.session_id}::%{GREEDYDATA:sonicwall_sma.log.user_identity}:: Classified into zone: %{GREEDYDATA:sonicwall_sma.log.zone}$'
+      if: "ctx.message != null && ctx.message.contains(':: Classified into zone: ')"
+      ignore_failure: true
+  - set:
+      field: event.action
+      value: epc-zone-classification
+      if: ctx.sonicwall_sma?.log?.zone != null
+  - append:
+      field: event.category
+      value: host
+      allow_duplicates: false
+      if: ctx.event?.action == 'epc-zone-classification'
+  - append:
+      field: event.type
+      value: change
+      allow_duplicates: false
+      if: ctx.event?.action == 'epc-zone-classification'
   - append:
       field: related.ip
       value: '{{{source.ip}}}'

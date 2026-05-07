@@ -1,0 +1,90 @@
+---
+description: Pipeline for parsing SonicWall SMA access policy decisions
+processors:
+  - set:
+      field: rule.ruleset
+      copy_from: sonicwall_sma.log.category
+      if: ctx.sonicwall_sma?.log?.category != null
+      ignore_empty_value: true
+  - grok:
+      field: message
+      patterns:
+        - "^User '%{GREEDYDATA:sonicwall_sma.log.user_identity}' connecting from '%{DATA:source.address}' matched rule '%{DATA:_temp.policy.rule}', access to '%{DATA:destination.address}' is %{WORD:_temp.policy.decision}\\.?$"
+        - "^User '%{GREEDYDATA:sonicwall_sma.log.user_identity}' connecting from '%{DATA:source.address}' found no matching access rule, access to '%{DATA:destination.address}' is %{WORD:_temp.policy.decision}\\.?$"
+      ignore_failure: true
+  - set:
+      field: event.action
+      value: policy-match
+      if: ctx._temp?.policy?.rule != null
+  - set:
+      field: event.action
+      value: policy-no-match
+      if: ctx.event?.action == null && ctx.message != null && ctx.message.contains('found no matching access rule')
+  - set:
+      field: event.reason
+      value: no matching access rule
+      if: ctx.event?.action == 'policy-no-match'
+  - grok:
+      field: _temp.policy.rule
+      patterns:
+        - '^accessRule\(%{DATA:rule.id}:%{DATA:rule.name}\)$'
+      if: ctx._temp?.policy?.rule != null
+      ignore_failure: true
+  - grok:
+      field: source.address
+      patterns:
+        - '^%{IP:source.ip}:%{POSINT:source.port:long}$'
+        - '^%{IP:source.ip}$'
+      ignore_failure: true
+      ignore_missing: true
+  - grok:
+      field: destination.address
+      patterns:
+        - '^%{IP:destination.ip}:%{POSINT:destination.port:long}$'
+        - '^%{HOSTNAME:destination.domain}:%{POSINT:destination.port:long}$'
+        - '^%{IP:destination.ip}$'
+        - '^%{HOSTNAME:destination.domain}$'
+      ignore_failure: true
+      ignore_missing: true
+  - append:
+      field: event.category
+      value: network
+      allow_duplicates: false
+      if: ctx.event?.action != null
+  - append:
+      field: event.type
+      value: access
+      allow_duplicates: false
+      if: ctx.event?.action != null
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx._temp?.policy?.decision != null && ctx._temp.policy.decision.toLowerCase() == 'permitted'
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx._temp?.policy?.decision != null && ctx._temp.policy.decision.toLowerCase() == 'denied'
+  - append:
+      field: event.type
+      value: allowed
+      allow_duplicates: false
+      if: ctx.event?.outcome == 'success'
+  - append:
+      field: event.type
+      value: denied
+      allow_duplicates: false
+      if: ctx.event?.outcome == 'failure'
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - remove:
+      field:
+        - _temp.policy
+      ignore_missing: true
