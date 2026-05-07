@@ -183,7 +183,7 @@ spec:
       schedules:
         main_daily:
           branch: "main"
-          cronline: "30 0 * * *"
+          cronline: "30 0 * 1-5"
           message: "Run the daily jobs"
           env:
             TEST_PACKAGES_7_BRANCH: "true"
@@ -191,19 +191,19 @@ spec:
             REPUBLISH_PACKAGES: "true"
         main_daily_8_version:
           branch: "main"
-          cronline: "30 1 * * *"
+          cronline: "30 1 * 1-5"
           message: "Run the daily jobs for 8.x"
           env:
             TEST_PACKAGES_8_BRANCH: "true"
         main_daily_9_version:
           branch: "main"
-          cronline: "30 3 * * *"
+          cronline: "30 3 * 1-5"
           message: "Run the daily jobs for 9.x"
           env:
             TEST_PACKAGES_9_BRANCH: "true"
         main_daily_basic_subscription:
           branch: "main"
-          cronline: "30 4 * * *"
+          cronline: "30 4 * 1-5"
           message: "Run the daily jobs for basic subscription"
           env:
             TEST_PACKAGES_BASIC_SUBSCRIPTION: "true"
@@ -256,19 +256,15 @@ spec:
       description: 'Weekly pipeline for the Integrations project'
     spec:
       pipeline_file: ".buildkite/pipeline.schedule-weekly.yml"
-      schedules:
-        main_weekly:
-          branch: "main"
-          cronline: "00 5 * * 1"
-          message: "Run the weekly jobs"
+      # NOTE: Stop running weekly for now
+      #       see https://github.com/elastic/integrations/issues/18868
+      #schedules:
+      #  main_weekly:
+      #    branch: "main"
+      #    cronline: "00 5 * * 1"
+      #    message: "Run the weekly jobs"
       provider_settings:
         trigger_mode: none # don't trigger jobs from github activity
-        build_pull_request_forks: false
-        build_pull_requests: true
-        build_tags: false
-        filter_enabled: true
-        filter_condition: >-
-          build.pull_request.id == null || (build.creator.name == 'elasticmachine' && build.pull_request.id != null && build.source == 'api')
       repository: elastic/integrations
       cancel_intermediate_builds: true
       cancel_intermediate_builds_branch_filter: '!main'
