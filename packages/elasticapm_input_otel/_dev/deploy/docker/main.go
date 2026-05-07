@@ -17,9 +17,9 @@ import (
 	"syscall"
 	"time"
 
-	"go.elastic.co/apm"
-	"go.elastic.co/apm/module/apmhttp"
-	"go.elastic.co/apm/module/apmzap"
+	"go.elastic.co/apm/module/apmhttp/v2"
+	"go.elastic.co/apm/module/apmzap/v2"
+	"go.elastic.co/apm/v2"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -31,7 +31,7 @@ func main() {
 
 	// Register custom metrics gatherer for explicit metrics.
 	var requestCount atomic.Uint64
-	tracer := apm.DefaultTracer
+	tracer := apm.DefaultTracer()
 	tracer.RegisterMetricsGatherer(apm.GatherMetricsFunc(func(ctx context.Context, m *apm.Metrics) error {
 		c := requestCount.Load()
 		m.Add("apm-app.test.counter", nil, float64(c))
