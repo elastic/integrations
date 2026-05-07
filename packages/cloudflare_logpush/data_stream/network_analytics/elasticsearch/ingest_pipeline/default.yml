@@ -1028,19 +1028,28 @@ processors:
       field: json.DNSQueryName
       target_field: cloudflare_logpush.network_analytics.dns.query.name
       ignore_missing: true
+  - set:
+      field: dns.question.name
+      copy_from: cloudflare_logpush.network_analytics.dns.query.name
+      ignore_empty_value: true
   - rename:
       field: json.DNSQueryType
       target_field: cloudflare_logpush.network_analytics.dns.query.type
       ignore_missing: true
+  - set:
+      field: dns.question.type
+      copy_from: cloudflare_logpush.network_analytics.dns.query.type
+      ignore_empty_value: true
   - convert:
       field: json.PFPCustomTag
       target_field: cloudflare_logpush.network_analytics.pfp_custom_tag
-      type: long
+      type: string
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hosts
+      value: '{{{cloudflare_logpush.network_analytics.dns.query.name}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.dns?.query?.name != null
+      allow_duplicates: false
   - append:
       field: related.hash
       value: '{{{cloudflare_logpush.network_analytics.source.geo_hash}}}'
@@ -1093,6 +1102,8 @@ processors:
         - cloudflare_logpush.network_analytics.source.asn
         - cloudflare_logpush.network_analytics.source.port
         - cloudflare_logpush.network_analytics.rule.id
+        - cloudflare_logpush.network_analytics.dns.query.name
+        - cloudflare_logpush.network_analytics.dns.query.type
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_failure: true
       ignore_missing: true
