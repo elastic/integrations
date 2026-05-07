@@ -95,6 +95,31 @@ func TestValidatePackages(t *testing.T) {
 			packageDir:     "testdata/test_packages",
 			valid:          true,
 		},
+		{
+			codeownersPath: "testdata/CODEOWNERS-nested-valid",
+			packageDir:     "testdata/nested_packages",
+			valid:          true,
+		},
+		{
+			codeownersPath: "testdata/CODEOWNERS-nested-missing-owner",
+			packageDir:     "testdata/nested_packages",
+			valid:          false,
+		},
+		{
+			codeownersPath: "testdata/CODEOWNERS-nested-category-owner",
+			packageDir:     "testdata/nested_packages",
+			valid:          true,
+		},
+		{
+			codeownersPath: "testdata/CODEOWNERS-nested-streams-valid",
+			packageDir:     "testdata/nested_packages",
+			valid:          true,
+		},
+		{
+			codeownersPath: "testdata/CODEOWNERS-nested-streams-missing-owners",
+			packageDir:     "testdata/nested_packages",
+			valid:          false,
+		},
 	}
 
 	for _, c := range cases {

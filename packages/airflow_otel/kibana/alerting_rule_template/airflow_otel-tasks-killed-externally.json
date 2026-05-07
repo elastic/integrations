@@ -1,0 +1,36 @@
+{
+  "id": "airflow_otel-tasks-killed-externally",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Airflow OTel] Tasks killed externally",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "airflow",
+      "tasks"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.scheduler.tasks.killed_externally IS NOT NULL\n// Counter: tasks killed by OOM, node eviction, etc.\n| STATS killed_count = SUM(airflow.scheduler.tasks.killed_externally)\n| WHERE killed_count > 0"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m"
+    }
+  }
+}

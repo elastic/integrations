@@ -28,7 +28,7 @@ You can monitor and view logs within the ingested documents for IBM MQ using the
 
 ## Compatibility
 
-This integration has been tested against IBM MQ v9.1 and IBM MQ v9.2. Currently, the `ibmmq qmgr` data stream is only compatible with the containerized versions of IBM MQ, such as those available from [IBM Cloud Container Registry](https://icr.io/) or [Docker Hub](https://hub.docker.com/r/ibmcom/mq). 
+This integration has been tested against IBM MQ v9.1, IBM MQ v9.2 and IBM MQ v9.4. Currently, the `ibmmq qmgr` data stream is only compatible with the containerized versions of IBM MQ, such as those available from [IBM Cloud Container Registry](https://icr.io/) or [Docker Hub](https://hub.docker.com/r/ibmcom/mq). 
 
 ## What do I need to use this integration?
 
@@ -61,7 +61,7 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ### Queue Manager performance metrics
 
-The `qmgr` data stream collects [performance metrics of Queue Manager](https://www.ibm.com/docs/en/ibm-mq/9.2?topic=operator-metrics-published-when-using-mq) like messages, topics, subscriptions and calls.
+The `qmgr` data stream collects [performance metrics of Queue Manager](https://www.ibm.com/docs/en/ibm-mq/9.4.x?topic=operator-metrics-published-by-mq-container) like messages, topics, subscriptions, and calls.
 
 {{event "qmgr"}}
 

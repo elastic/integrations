@@ -77,11 +77,31 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - rename:
-      tag: rename_cisco_ise_log_log_details_UserName_to_user_name_e8c2288b
-      field: cisco_ise.log.log_details.UserName
+      tag: rename_cisco_ise_log_log_details_GuestUserName_to_user_name_d4081d8d
+      field: cisco_ise.log.log_details.GuestUserName
       target_field: user.name
       ignore_failure: true
       ignore_missing: true
+  - set:
+      tag: set_cisco_ise_log_guest_user_name_2c4d490b
+      field: cisco_ise.log.guest.user.name
+      copy_from: user.name
+      ignore_failure: true
+      ignore_empty_value: true
+  - rename:
+      tag: rename_cisco_ise_log_log_details_UserName_to_user_name_d9fe4749
+      field: cisco_ise.log.log_details.UserName
+      target_field: user.name
+      if: ctx.user?.name == null
+      ignore_failure: true
+      ignore_missing: true
+  - set:
+      tag: set_cisco_ise_log_guest_user_name_from_username_fallback
+      field: cisco_ise.log.guest.user.name
+      copy_from: user.name
+      if: ctx.cisco_ise?.log?.guest?.user?.name == null
+      ignore_failure: true
+      ignore_empty_value: true
   - append:
       tag: append_related_user_3b423052
       field: related.user
@@ -151,24 +171,11 @@ processors:
       field: cisco_ise.log.log_details.ResponseTime
       ignore_missing: true
   - rename:
-      tag: rename_cisco_ise_log_log_details_GuestUserName_to_cisco_ise_log_guest_user_name_af4fb284
-      field: cisco_ise.log.log_details.GuestUserName
-      target_field: cisco_ise.log.guest.user.name
-      ignore_failure: true
-      ignore_missing: true
-  - rename:
       tag: rename_cisco_ise_log_log_details_FailureReason_to_cisco_ise_log_failure_reason_083fef50
       field: cisco_ise.log.log_details.FailureReason
       target_field: cisco_ise.log.failure.reason
       ignore_failure: true
       ignore_missing: true
-  - append:
-      tag: append_related_user_name_1b495cae
-      field: related.user.name
-      value: '{{{cisco_ise.log.guest.user.name}}}'
-      if: ctx.cisco_ise?.log?.guest?.user?.name != null
-      allow_duplicates: false
-      ignore_failure: true
 on_failure:
   - set:
       field: event.kind

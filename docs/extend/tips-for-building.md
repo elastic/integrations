@@ -577,6 +577,31 @@ elastic-package test [pipeline|static|asset|policy|system] -v -g
     The package version with such condition as above will be only available in Kibana version >=8.7.0
     ::::
 
+6. If a package relies on features available only in a specific Elastic Agent version, use an agent version condition. There are two approaches depending on your needs:
+
+    **Package-level** — restricts all inputs; requires Kibana 9.4 or later:
+
+    ```yaml
+    conditions:
+      kibana
+        version: '^9.4.0'
+      agent:
+        version: '^9.3.0'
+    ```
+
+    **Input template-level** — conditionally renders a configuration block for agents that satisfy the version constraint (in a `.hbs` stream template):
+
+    ```handlebars
+    {{#semverSatisfies _meta.agent.version "^9.3.0"}}
+    program: |
+      ...
+    {{/semverSatisfies}}
+    ```
+
+    Use the package-level approach when all inputs require the newer agent. Use the template-level approach when only part of the configuration uses newer agent capabilities and you want the package to remain usable with older agents.
+
+    See [Agent version conditions](agent-version-conditions.md) for full details.
+
 
     ::::{note}
     Changing dashboards and visualizations using an unreleased version of Kibana might be unsafe since the Kibana Team might make changes to the Kibana code and potentially the data models. There is no guarantee that your changes won't be broken by the time new Kibana version is released.

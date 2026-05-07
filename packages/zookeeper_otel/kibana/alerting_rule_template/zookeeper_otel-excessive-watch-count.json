@@ -1,0 +1,40 @@
+{
+    "id": "zookeeper_otel-excessive-watch-count",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[ZooKeeper OTel] Excessive watch count",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "zookeeper"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-generic.otel-default\n| WHERE metrics.zookeeper.watch.count IS NOT NULL\n// Peak watch count per node in the time window\n| STATS max_watches = MAX(metrics.zookeeper.watch.count) BY host.name\n// Official docs recommend alerting above 10,000 watches\n// High watch counts risk notification storms during topology changes\n// Adjust based on your client workload and Kafka topology size\n| WHERE max_watches > 10000"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 10
+        }
+    }
+}

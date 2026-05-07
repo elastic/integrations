@@ -1,0 +1,35 @@
+{
+  "id": "mongodb_otel-high-memory-usage",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[MongoDB OTel] High memory usage",
+    "tags": [
+      "observability",
+      "mongodb"
+    ],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "TS metrics-mongodbreceiver.otel-default\n// Scope to MongoDB OTel metrics\n| WHERE data_stream.dataset == \"mongodbreceiver.otel\"\n| WHERE metrics.mongodb.memory.usage IS NOT NULL AND attributes.type == \"resident\"\n// Resident memory is server-wide but emitted per database; use MAX to avoid double-counting\n| STATS resident_bytes = MAX(LAST_OVER_TIME(metrics.mongodb.memory.usage)) BY resource.attributes.server.address\n// Alert when resident memory exceeds 4GB (adjust for your host RAM)\n| WHERE resident_bytes > 4294967296\n| SORT resident_bytes DESC\n| LIMIT 20"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

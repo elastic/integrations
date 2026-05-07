@@ -1,0 +1,35 @@
+{
+  "id": "mongodb_otel-cursor-timeouts",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[MongoDB OTel] Cursor timeouts",
+    "tags": [
+      "observability",
+      "mongodb"
+    ],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "FROM metrics-mongodbreceiver.otel-default\n// Scope to MongoDB OTel metrics\n| WHERE data_stream.dataset == \"mongodbreceiver.otel\"\n| WHERE metrics.mongodb.cursor.timeout.count IS NOT NULL\n// Delta over time window (metric is non-monotonic sum; increase indicates new timeouts)\n| STATS min_val = MIN(metrics.mongodb.cursor.timeout.count), max_val = MAX(metrics.mongodb.cursor.timeout.count) BY resource.attributes.server.address\n| EVAL new_timeouts = max_val - min_val\n// Alert on any new cursor timeouts (clients unable to consume results in time)\n| WHERE new_timeouts > 0\n| SORT new_timeouts DESC\n| LIMIT 20"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

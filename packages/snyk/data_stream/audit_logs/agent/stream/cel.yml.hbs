@@ -98,7 +98,7 @@ program: |-
       auth_header
     :
       (
-        has(state.work_list) ?
+        (has(state.work_list) && size(state.work_list) > 0) ?
           // We have a work-list, do that first.
           // Work-lists do not allow partial requests on a work-list.
           // I think this needs to allow head()/tail() approach. This
@@ -157,8 +157,8 @@ program: |-
               "last_created": state.cursor.last_created,
             },
           ]
-        : (has(state.cursor) && state.end_point_type == "/rest/orgs/") ?
-          // ... a multi-org cursor, ...
+        : (has(state.cursor) && state.end_point_type in ["/rest/orgs/", "/rest/groups/"]) ?
+          // ... an id-keyed cursor, ...
           state.cursor.map(audit_id, state.cursor[audit_id].with({"id": audit_id}))
         :
           // ... or a new collection.

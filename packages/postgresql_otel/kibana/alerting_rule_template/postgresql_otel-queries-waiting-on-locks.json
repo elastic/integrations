@@ -1,0 +1,42 @@
+{
+  "id": "postgresql_otel-queries-waiting-on-locks",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[PostgreSQL OTel] Queries waiting on locks",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "postgresql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 4,
+      "statusChangeThreshold": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM logs-postgresqlreceiver.otel-*\n// Query samples with Lock wait event type indicate blocked queries\n| WHERE event_name == \"db.server.query_sample\"\n| WHERE attributes.postgresql.wait_event_type == \"Lock\"\n| WHERE attributes.postgresql.wait_event != \"\" AND attributes.postgresql.wait_event IS NOT NULL\n| STATS blocked_count = COUNT(*) BY service.instance.id, attributes.db.namespace\n| WHERE blocked_count > 0"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "service.instance.id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

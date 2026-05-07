@@ -1,0 +1,104 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies PowerShell script block content containing known offensive-tool author handles or attribution strings (for example, public tool author names). Attackers often run public PowerShell tooling with minimal changes, leaving author artifacts in comments or headers.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-windows.powershell*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "powershell.file.script_block_text",
+                "powershell.file.script_block_id",
+                "powershell.sequence",
+                "powershell.total",
+                "file.path",
+                "file.directory",
+                "file.name",
+                "process.pid",
+                "host.name",
+                "host.id",
+                "powershell.file.script_block_length"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Potential PowerShell HackTool Script by Author",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This guide was created by humans with the assistance of generative AI. While its contents have been manually curated to include the most valuable information, always validate assumptions and adjust procedures to match your internal runbooks and incident triage and response policies.\n\n### Investigating Potential PowerShell HackTool Script by Author\n\nThis rule Detects PowerShell scripts that contains attribution strings commonly found in publicly available offensive PowerShell tooling. These artifacts are often present in headers or comment blocks but may also appear within embedded modules or minimally modified scripts. Use the script block content and metadata to reconstruct what ran, determine the likely source, and scope related activity across hosts and users.\n\n#### Key alert fields to review\n\n- `user.name`, `user.domain`, `user.id`: Account execution context for correlation, prioritization, and scoping.\n- `host.name`, `host.id`: Host execution context for correlation, prioritization, and scoping.\n- `powershell.file.script_block_text`: Script block content that matched the detection logic.\n- `powershell.file.script_block_id`, `powershell.sequence`, `powershell.total`: Script block metadata to pivot to other fragments or reconstruct full script content when split across multiple events.\n- `file.path`, `file.directory`, `file.name`: File-origin context when the script block is sourced from an on-disk file.\n- `powershell.file.script_block_length`: Script block length (size) context.\n\n#### Possible investigation steps\n\n- Capture basic context and triage priority:\n  - Record `@timestamp`, `host.name`/`host.id`, and `user.name`/`user.domain`/`user.id`.\n  - Use host and identity context (asset owner, role, and expected admin activity) to determine whether this execution is likely authorized for the alerted user and endpoint.\n\n- Reconstruct the complete script block before making an assessment:\n  - Review `powershell.file.script_block_text` and identify the specific author handle or attribution string and its surrounding lines.\n  - If the content appears truncated or the event indicates multiple parts, use `powershell.file.script_block_id` together with `powershell.sequence` and `powershell.total` to assemble the full script in the correct order. Confirm all sequence parts are present.\n  - Use `powershell.file.script_block_length` as additional context (for example, to distinguish short snippets from large modules) and preserve the reconstructed content for evidence and hunting.\n\n- Determine the likely source of the script content:\n  - If `file.path`/`file.name` (and `file.directory`) are present, treat this as file-backed execution and note whether the location and filename align with approved script storage or deployment paths for that host.\n  - If `file.path` is a network share (UNC) or otherwise unusual for the host, treat it as higher risk until validated.\n  - If file fields are absent, treat the script block as inline, interactive, or dynamically generated content. Prioritize review for scripts that fetch, decode, or build additional code at runtime.\n  - If a file path is present, pivot on `file.path` and `file.name` to identify other executions or duplicates of the same script across users and hosts.\n\n- Assess intent from the content and extract observables:\n  - Determine whether the match is limited to comments/metadata or is accompanied by functional code.\n  - Look for behaviors that commonly accompany offensive PowerShell tooling, such as broad host or domain discovery, credential access helpers, privilege manipulation, remote execution primitives, persistence logic, or payload delivery mechanisms.\n  - Extract and record observables embedded in `powershell.file.script_block_text` (for example, domains, IPs, URLs, hostnames, usernames, file paths, or registry paths) and use them to pivot for additional activity.\n\n- Scope and correlate related activity:\n  - Search for additional script block events containing the same author handle within `powershell.file.script_block_text` across the environment. Start with the same `user.id` and `host.id`, then expand to other users and hosts.\n  - On the same `host.name`, review other script block events from the same `user.name` in the minutes before and after the alert to identify setup actions (module imports, function definitions) and follow-on execution.\n  - If other endpoint telemetry is available, correlate around `@timestamp` on the same host to identify:\n    - The PowerShell host process and any parent process responsible for launching it.\n    - Network connections, file writes, or registry changes consistent with the script content and extracted observables.\n    - Authentication activity for `user.name` that could explain the session context (interactive use vs remote access).\n\n### False positive analysis\n\n- Legitimate administrative scripts may incorporate third-party modules that include author headers; these are typically file-backed and executed from expected locations or managed repositories.\n- False positives are more likely when the author string is isolated within comments and there is minimal additional script functionality; they are less likely when the script implements operational capabilities aligned with offensive tooling.\n\n### Response and remediation\n\n- If activity is unauthorized or suspicious:\n  - Preserve the full reconstructed script content (all parts) and retain supporting context: `powershell.file.script_block_id`, `host.id`, `host.name`, `user.id`, `user.name`, `user.domain`, and `@timestamp`.\n  - Scope impact by searching for the same author handle and extracted observables across PowerShell script block logs to identify additional affected hosts and accounts.\n  - If `file.path` is present, locate and quarantine the referenced script per your procedures and review the endpoint for other copies that share the same `file.name`.\n  - Apply containment measures appropriate to the risk (for example, isolate the endpoint from the network) if the content indicates credential access, remote execution, or payload delivery.\n  - Review the initiating account for compromise and take credential and access control actions consistent with your incident response process.\n\n- If activity is authorized:\n  - Document the activity (owner, timeframe, intended hosts) and validate alignment with change management or testing approvals.\n  - Ensure the SOC has an up-to-date list of approved users and endpoints for testing. Consider environment-specific tuning to reduce recurring noise while preserving coverage elsewhere.\n\n- Post-incident hardening:\n  - Verify PowerShell logging coverage and retention are sufficient to reconstruct multi-part scripts during future investigations.\n  - Use observed handles and extracted observables to perform retrospective searches for earlier executions and related activity patterns in historical script block logs.\n",
+        "query": "host.os.type:windows and event.category:process and\n  powershell.file.script_block_text : (\n      \"mattifestation\" or \"JosephBialek\" or\n      \"harmj0y\" or \"ukstufus\" or\n      \"SecureThisShit\" or \"Matthew Graeber\" or\n      \"secabstraction\" or \"mgeeky\" or\n      \"oddvarmoe\" or \"am0nsec\" or\n      \"obscuresec\" or \"sixdub\" or\n      \"darkoperator\" or \"funoverip\" or\n      \"rvrsh3ll\" or \"kevin_robertson\" or\n      \"dafthack\" or \"r4wd3r\" or\n      \"danielhbohannon\" or \"OneLogicalMyth\" or\n      \"cobbr_io\" or \"xorrior\" or\n      \"PetrMedonos\" or \"citronneur\" or\n      \"eladshamir\" or \"RastaMouse\" or\n      \"enigma0x3\" or \"FuzzySec\" or\n      \"424f424f\" or \"jaredhaight\" or\n      \"fullmetalcache\" or \"Hubbl3\" or\n      \"curi0usJack\" or \"Cx01N\" or\n      \"itm4n\" or \"nurfed1\" or\n      \"cfalta\" or \"Scott Sutherland\" or\n      \"_nullbind\" or \"_tmenochet\" or\n      \"jaredcatkinson\" or \"ChrisTruncer\" or\n      \"monoxgas\" or \"TheRealWover\" or\n      \"splinter_code\"\n  ) and\n  not powershell.file.script_block_text : (\"Get-UEFIDatabaseSigner\" or \"Posh-SSH\")\n",
+        "references": [
+            "https://github.com/atc-project/atc-data/blob/master/docs/Logging_Policies/LP_0109_windows_powershell_script_block_log.md"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_text",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "2553a9af-52a4-4a05-bb03-85b2a479a0a0",
+        "setup": "## Setup\n\nPowerShell Script Block Logging must be enabled to generate the events used by this rule (e.g., 4104).\nSetup instructions: https://ela.st/powershell-logging-setup\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: PowerShell Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 109
+    },
+    "id": "2553a9af-52a4-4a05-bb03-85b2a479a0a0_109",
+    "type": "security-rule"
+}

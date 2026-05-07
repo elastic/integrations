@@ -1,11 +1,15 @@
 ---
-description: Pipeline for processing Trend Micro Vision One Alert logs.
+description: Pipeline for processing alert logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.11.0'
+      tag: set_ecs_version
+      value: '9.3.0'
+
+  # parse the event JSON
   - rename:
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
@@ -15,307 +19,496 @@ processors:
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
-  - set:
-      field: event.kind
-      value: alert
   - json:
       field: event.original
+      tag: json_event_original
       target_field: json
-      ignore_failure: true
   - drop:
+      tag: drop_json_items_if_empty
       if: ctx.json?.items != null && ctx.json.items.isEmpty()
-  - script:
-      description: Set the value of event.category and event.type.
-      lang: painless
-      source: >
-        def eventCategory = new HashSet();
-        def eventType = new HashSet();
-        if (ctx.json?.description != null && ctx.json.description != '') {
-          def description = ctx.json.description.toLowerCase();
-          if (description.contains('logon')) {
-            eventCategory.add('authentication');
-            eventCategory.add('host');
-            eventType.add('info');
-          } else if (description.contains('email')) {
-            eventCategory.add('email');
-            eventType.add('info');
-          } else if (description.contains('network')) {
-            eventCategory.add('network');
-            eventType.add('info');
-          } else {
-            eventCategory.add('malware');
-            eventType.add('info');
-          }
-        }
-        if (!eventCategory.isEmpty()) {
-          ctx.event.category = eventCategory;
-        }
-        if (!eventType.isEmpty()) {
-          ctx.event.type = eventType;
-        }
   - fingerprint:
       fields:
         - json.updatedDateTime
         - json.createdDateTime
         - json.id
       target_field: _id
+      tag: fingerprint_alert
       ignore_missing: true
-  - date:
-      field: json.updatedDateTime
-      if: ctx.json?.updatedDateTime != null && ctx.json.updatedDateTime != ''
-      formats:
-        - ISO8601
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.id
-      target_field: trend_micro_vision_one.alert.id
-      ignore_missing: true
-  - set:
-      field: event.id
-      copy_from: trend_micro_vision_one.alert.id
-      ignore_failure: true
-  - convert:
-      field: json.score
-      target_field: trend_micro_vision_one.alert.score
-      if: ctx.json?.score != ''
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - set:
-      field: event.severity
-      copy_from: trend_micro_vision_one.alert.score
-      ignore_failure: true
-  - rename:
-      field: json.severity
-      target_field: trend_micro_vision_one.alert.severity
-      ignore_missing: true
-  - set:
-      field: log.level
-      copy_from: trend_micro_vision_one.alert.severity
-      ignore_failure: true
-  - lowercase:
-      field: log.level
-      ignore_missing: true
-  - rename:
-      field: json.schemaVersion
-      target_field: trend_micro_vision_one.alert.schema_version
-      ignore_missing: true
-  - rename:
-      field: json.investigationStatus
-      target_field: trend_micro_vision_one.alert.investigation_status
-      ignore_missing: true
-  - rename:
-      field: json.workbenchLink
-      target_field: trend_micro_vision_one.alert.workbench_link
-      ignore_missing: true
-  - uri_parts:
-      field: trend_micro_vision_one.alert.workbench_link
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.alertProvider
-      target_field: trend_micro_vision_one.alert.alert_provider
-      ignore_missing: true
-  - rename:
-      field: json.model
-      target_field: trend_micro_vision_one.alert.model
-      ignore_missing: true
-  - convert:
-      field: json.impactScope.desktopCount
-      target_field: trend_micro_vision_one.alert.impact_scope.desktop_count
-      if: ctx.json?.impactScope?.desktopCount != ''
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - convert:
-      field: json.impactScope.serverCount
-      target_field: trend_micro_vision_one.alert.impact_scope.server_count
-      if: ctx.json?.impactScope?.serverCount != ''
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - convert:
-      field: json.impactScope.accountCount
-      target_field: trend_micro_vision_one.alert.impact_scope.account_count
-      if: ctx.json?.impactScope?.accountCount != ''
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - convert:
-      field: json.impactScope.emailAddressCount
-      target_field: trend_micro_vision_one.alert.impact_scope.email_address_count
-      if: ctx.json?.impactScope?.emailAddressCount != ''
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.impactScope.entities
-      processor:
-        foreach:
-          field: _ingest._value.entityValue.ips
-          processor:
-            append:
-              field: related.ip
-              value: '{{{_ingest._value}}}'
-              allow_duplicates: false
-              ignore_failure: true
-          ignore_missing: true
-          ignore_failure: true
-      ignore_missing: true
-      ignore_failure: true
+
+  # rename to snake case
   - script:
-      description: Mapped value object field of impactScope.
+      tag: script_convert_camelcase_to_snake_case
       lang: painless
-      if: ctx.json?.impactScope?.entities instanceof List
-      source: >
-        def impactscope_entities = ctx.json.impactScope.entities;
-        for (entity_object in impactscope_entities) {
-          if (!(entity_object.entityValue instanceof HashMap)) {
-            def entityValue = entity_object.entityValue;
-            entity_object.value = new HashMap();
-            entity_object.value.account_value = entityValue;
-            entity_object.remove("entityValue");
+      description: Convert camelCase to snake_case.
+      if: ctx.json != null
+      source: |
+        String camelToSnake(String str) {
+          def result = "";
+          def lastCharWasUpperCase = false;
+          for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isUpperCase(c)) {
+              if (i > 0 && !lastCharWasUpperCase) {
+                result += "_";
+              }
+              result += Character.toLowerCase(c);
+              lastCharWasUpperCase = true;
+            } else {
+              result += c;
+              lastCharWasUpperCase = false;
+            }
+          }
+          return result;
+        }
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              newObj[camelToSnake(entry.getKey())] = convertToSnakeCase(entry.getValue());
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            if (obj == "") {
+              return null;
+            }
+            return obj;
           }
         }
+        ctx.trend_micro_vision_one = ctx.trend_micro_vision_one ?: [:];
+        ctx.trend_micro_vision_one.alert = convertToSnakeCase(ctx.json);
+
+  # restructure impact_scope.entities to match previous schema
   - foreach:
-      field: json.impactScope.entities
+      field: trend_micro_vision_one.alert.impact_scope.entities
+      tag: foreach_entities_rename_entity_type
+      if: ctx.trend_micro_vision_one?.alert?.impact_scope?.entities instanceof List
       processor:
         rename:
-          field: _ingest._value.entityValue
-          target_field: _ingest._value.value
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
-  - foreach:
-      field: json.impactScope.entities
-      processor:
-        convert:
-          field: _ingest._value.entityValue.ips
-          type: ip
-          ignore_missing: true
-          on_failure:
-            - append:
-                field: error.message
-                value: '{{{_ingest.on_failure_message}}}'
-      ignore_missing: true
-      ignore_failure: true
-  - foreach:
-      field: json.impactScope.entities
-      processor:
-        rename:
-          field: _ingest._value.entityType
+          field: _ingest._value.entity_type
+          tag: rename_entity_type_to_type
           target_field: _ingest._value.type
           ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
   - foreach:
-      field: json.impactScope.entities
+      field: trend_micro_vision_one.alert.impact_scope.entities
+      tag: foreach_entities_rename_entity_id
+      if: ctx.trend_micro_vision_one?.alert?.impact_scope?.entities instanceof List
       processor:
         rename:
-          field: _ingest._value.entityId
+          field: _ingest._value.entity_id
+          tag: rename_entity_id_to_id
           target_field: _ingest._value.id
           ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
-  - foreach:
-      field: json.impactScope.entities
-      processor:
-        rename:
-          field: _ingest._value.relatedEntities
-          target_field: _ingest._value.related_entities
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
-  - foreach:
-      field: json.impactScope.entities
-      processor:
-        convert:
-          field: _ingest._value.relatedIndicatorIds
-          target_field: _ingest._value.related_indicator_id
-          type: long
-          ignore_missing: true
-          on_failure:
-            - append:
-                field: error.message
-                value: '{{{_ingest.on_failure_message}}}'
-      ignore_missing: true
-      ignore_failure: true
-  - foreach:
-      field: json.impactScope.entities
-      processor:
-        remove:
-          field: _ingest._value.relatedIndicatorIds
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.impactScope.entities
-      target_field: trend_micro_vision_one.alert.impact_scope.entities
-      ignore_missing: true
-  - date:
-      field: json.createdDateTime
-      target_field: trend_micro_vision_one.alert.created_date
-      if: ctx.json?.createdDateTime != null && ctx.json.createdDateTime != ''
-      formats:
-        - ISO8601
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.description
-      target_field: trend_micro_vision_one.alert.description
-      ignore_missing: true
-  - foreach:
-      field: json.indicators
-      processor:
-        rename:
-          field: _ingest._value.relatedEntities
-          target_field: _ingest._value.related_entities
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
   - script:
-      description: Map value to value_object when value is a map.
-      tag: script_indicators_value
+      tag: script_handle_entity_value
       lang: painless
-      if: ctx.json?.indicators instanceof List
+      description: Map entity_value to value object, handling both Map and non-Map values.
+      if: ctx.trend_micro_vision_one?.alert?.impact_scope?.entities instanceof List
       source: |
-        for (def indicator : ctx.json.indicators) {
-          if (indicator.value instanceof Map) {
-            indicator.value_object = indicator.value;
-            indicator.remove('value');
+        for (def entity : ctx.trend_micro_vision_one.alert.impact_scope.entities) {
+          if (entity.containsKey('entity_value')) {
+            def ev = entity.remove('entity_value');
+            if (ev instanceof Map) {
+              entity.put('value', ev);
+            } else {
+              entity.put('value', ['account_value': ev]);
+            }
           }
         }
       on_failure:
         - append:
+            tag: append_error_message_b9fc3e58
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.indicators
-      tag: foreach_indicators_value_object
-      if: ctx.json?.indicators instanceof List
+      field: trend_micro_vision_one.alert.impact_scope.entities
+      tag: foreach_entities_rename_related_indicator_ids
+      if: ctx.trend_micro_vision_one?.alert?.impact_scope?.entities instanceof List
+      processor:
+        rename:
+          field: _ingest._value.related_indicator_ids
+          tag: rename_related_indicator_ids_to_related_indicator_id
+          target_field: _ingest._value.related_indicator_id
+          ignore_missing: true
+
+  # restructure indicators to match previous schema
+  - script:
+      tag: script_handle_indicator_value
+      lang: painless
+      description: Map indicator value to value_object when value is a Map.
+      if: ctx.trend_micro_vision_one?.alert?.indicators instanceof List
+      source: |
+        for (def indicator : ctx.trend_micro_vision_one.alert.indicators) {
+          if (indicator.containsKey('value') && indicator.get('value') instanceof Map) {
+            indicator.put('value_object', indicator.remove('value'));
+          }
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_bc5d901d
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: trend_micro_vision_one.alert.indicators
+      tag: foreach_indicators_rename_filter_ids
+      if: ctx.trend_micro_vision_one?.alert?.indicators instanceof List
+      processor:
+        rename:
+          field: _ingest._value.filter_ids
+          tag: rename_filter_ids_to_filter_id
+          target_field: _ingest._value.filter_id
+          ignore_missing: true
+  - foreach:
+      field: trend_micro_vision_one.alert.indicators
+      tag: foreach_indicators_rename_matched_indicator_pattern_ids
+      if: ctx.trend_micro_vision_one?.alert?.indicators instanceof List
+      processor:
+        rename:
+          field: _ingest._value.matched_indicator_pattern_ids
+          tag: rename_matched_indicator_pattern_ids
+          target_field: _ingest._value.matched_indicator.pattern_id
+          ignore_missing: true
+  - foreach:
+      field: trend_micro_vision_one.alert.indicators
+      tag: foreach_indicators_rename_first_seen_date_times
+      if: ctx.trend_micro_vision_one?.alert?.indicators instanceof List
+      processor:
+        rename:
+          field: _ingest._value.first_seen_date_times
+          tag: rename_first_seen_date_times_to_first_seen_date
+          target_field: _ingest._value.first_seen_date
+          ignore_missing: true
+  - foreach:
+      field: trend_micro_vision_one.alert.indicators
+      tag: foreach_indicators_rename_last_seen_date_times
+      if: ctx.trend_micro_vision_one?.alert?.indicators instanceof List
+      processor:
+        rename:
+          field: _ingest._value.last_seen_date_times
+          tag: rename_last_seen_date_times_to_last_seen_date
+          target_field: _ingest._value.last_seen_date
+          ignore_missing: true
+  - script:
+      tag: script_flatten_indicator_fields
+      lang: painless
+      description: Flatten arrays of arrays in indicator fields.
+      if: ctx.trend_micro_vision_one?.alert?.indicators instanceof List
+      source: |
+        for (def indicator : ctx.trend_micro_vision_one.alert.indicators) {
+          if (indicator.fields == null) {
+            continue;
+          }
+          def fields = indicator.get('fields');
+          if (fields instanceof String) {
+            continue;
+          }
+          if (!(fields instanceof List)) {
+            indicator.fields = null;
+            continue;
+          }
+          if (fields.size() > 0 && fields[0] instanceof List) {
+            if (fields.size() == 1) {
+              Collections.sort(fields[0]);
+              indicator.put('fields', fields[0]);
+            } else {
+              def set = new HashSet();
+              for (def a : fields) {
+                if (a instanceof List) {
+                  for (def e : a) {
+                    set.add(e);
+                  }
+                }
+              }
+              def list = new ArrayList(set);
+              Collections.sort(list);
+              indicator.put('fields', list);
+            }
+          }
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_7aaeded1
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # restructure matched_rules to match previous schema
+  - rename:
+      field: trend_micro_vision_one.alert.matched_rules
+      tag: rename_matched_rules_to_matched_rule
+      target_field: trend_micro_vision_one.alert.matched_rule
       ignore_missing: true
+  - foreach:
+      field: trend_micro_vision_one.alert.matched_rule
+      tag: foreach_matched_rule_rename_matched_filters
+      if: ctx.trend_micro_vision_one?.alert?.matched_rule instanceof List
+      processor:
+        rename:
+          field: _ingest._value.matched_filters
+          tag: rename_matched_filters_to_filter
+          target_field: _ingest._value.filter
+          ignore_missing: true
+  - foreach:
+      field: trend_micro_vision_one.alert.matched_rule
+      tag: foreach_matched_rule_filter_rename_mitre_technique_ids
+      if: ctx.trend_micro_vision_one?.alert?.matched_rule instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.filter
+          tag: foreach_filter_rename_mitre_technique_ids
+          ignore_missing: true
+          processor:
+            rename:
+              field: _ingest._value.mitre_technique_ids
+              tag: rename_mitre_technique_ids_to_mitre_technique_id
+              target_field: _ingest._value.mitre_technique_id
+              ignore_missing: true
+  - foreach:
+      field: trend_micro_vision_one.alert.matched_rule
+      tag: foreach_matched_rule_filter_rename_matched_date_time_to_date
+      if: ctx.trend_micro_vision_one?.alert?.matched_rule instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.filter
+          tag: foreach_filter_rename_matched_date_time_to_date
+          ignore_missing: true
+          processor:
+            rename:
+              field: _ingest._value.matched_date_time
+              tag: rename_matched_date_time_to_date
+              target_field: _ingest._value.date
+              ignore_missing: true
+  - foreach:
+      field: trend_micro_vision_one.alert.matched_rule
+      tag: foreach_matched_rule_filter_rename_matched_events
+      if: ctx.trend_micro_vision_one?.alert?.matched_rule instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.filter
+          tag: foreach_filter_rename_matched_events
+          ignore_missing: true
+          processor:
+            rename:
+              field: _ingest._value.matched_events
+              tag: rename_matched_events_to_events
+              target_field: _ingest._value.events
+              ignore_missing: true
+  - foreach:
+      field: trend_micro_vision_one.alert.matched_rule
+      tag: foreach_matched_rule_filter_events_rename_matched_date_time_to_date
+      if: ctx.trend_micro_vision_one?.alert?.matched_rule instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.filter
+          tag: foreach_filter_event_rename_matched_date_time_to_date
+          ignore_missing: true
+          processor:
+            foreach:
+              field: _ingest._value.events
+              tag: foreach_events_rename_matched_date_time_to_date
+              ignore_missing: true
+              processor:
+                rename:
+                  field: _ingest._value.matched_date_time
+                  tag: rename_matched_date_time_to_date_1
+                  target_field: _ingest._value.date
+                  ignore_missing: true
+
+  # restructure matched_indicator_patterns to match previous schema
+  - rename:
+      field: trend_micro_vision_one.alert.matched_indicator_patterns
+      tag: rename_matched_indicator_patterns_to_matched_indicators_pattern
+      target_field: trend_micro_vision_one.alert.matched_indicators_pattern
+      ignore_missing: true
+  - foreach:
+      field: trend_micro_vision_one.alert.matched_indicators_pattern
+      tag: foreach_matched_indicators_pattern_rename_matched_logs
+      if: ctx.trend_micro_vision_one?.alert?.matched_indicators_pattern instanceof List
+      processor:
+        rename:
+          field: _ingest._value.matched_logs
+          tag: rename_matched_logs_to_matched_log
+          target_field: _ingest._value.matched_log
+          ignore_missing: true
+
+  # convert values
+  - convert:
+      field: trend_micro_vision_one.alert.score
+      tag: convert_score_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_alert_score_c2c02e3a
+            field: trend_micro_vision_one.alert.score
+        - append:
+            tag: append_error_message_1a1d590a
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trend_micro_vision_one.alert.impact_scope.desktop_count
+      tag: convert_impact_scope_desktop_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_alert_impact_scope_desktop_count_6dbaecf1
+            field: trend_micro_vision_one.alert.impact_scope.desktop_count
+        - append:
+            tag: append_error_message_a541ff0a
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trend_micro_vision_one.alert.impact_scope.server_count
+      tag: convert_impact_scope_server_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_alert_impact_scope_server_count_66079963
+            field: trend_micro_vision_one.alert.impact_scope.server_count
+        - append:
+            tag: append_error_message_29d69bf7
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trend_micro_vision_one.alert.impact_scope.account_count
+      tag: convert_impact_scope_account_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_alert_impact_scope_account_count_aef6bbf1
+            field: trend_micro_vision_one.alert.impact_scope.account_count
+        - append:
+            tag: append_error_message_1ddc10ad
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trend_micro_vision_one.alert.impact_scope.cloud_identity_count
+      tag: convert_impact_scope_cloud_identity_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_alert_impact_scope_cloud_identity_count_2f574953
+            field: trend_micro_vision_one.alert.impact_scope.cloud_identity_count
+        - append:
+            tag: append_error_message_dfa47a92
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trend_micro_vision_one.alert.impact_scope.cloud_workload_count
+      tag: convert_impact_scope_cloud_workload_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_alert_impact_scope_cloud_workload_count_91d755b3
+            field: trend_micro_vision_one.alert.impact_scope.cloud_workload_count
+        - append:
+            tag: append_error_message_dc12568b
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trend_micro_vision_one.alert.impact_scope.container_count
+      tag: convert_impact_scope_container_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_alert_impact_scope_container_count_d52d3bc5
+            field: trend_micro_vision_one.alert.impact_scope.container_count
+        - append:
+            tag: append_error_message_abfb6115
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trend_micro_vision_one.alert.impact_scope.email_address_count
+      tag: convert_impact_scope_email_address_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_alert_impact_scope_email_address_count_d0d95969
+            field: trend_micro_vision_one.alert.impact_scope.email_address_count
+        - append:
+            tag: append_error_message_c1de0009
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trend_micro_vision_one.alert.total_indicator_count
+      tag: convert_total_indicator_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_alert_total_indicator_count_1f9feafe
+            field: trend_micro_vision_one.alert.total_indicator_count
+        - append:
+            tag: append_error_message_c7cf23d8
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trend_micro_vision_one.alert.matched_indicator_count
+      tag: convert_matched_indicator_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_alert_matched_indicator_count_7fd52b72
+            field: trend_micro_vision_one.alert.matched_indicator_count
+        - append:
+            tag: append_error_message_1b97ec7e
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: trend_micro_vision_one.alert.impact_scope.entities
+      tag: foreach_entities_convert_related_indicator_id
+      if: ctx.trend_micro_vision_one?.alert?.impact_scope?.entities instanceof List
+      processor:
+        convert:
+          field: _ingest._value.related_indicator_id
+          tag: convert_related_indicator_id_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.related_indicator_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: trend_micro_vision_one.alert.impact_scope.entities
+      tag: foreach_entities_convert_value_ips
+      if: ctx.trend_micro_vision_one?.alert?.impact_scope?.entities instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.value.ips
+          tag: foreach_entity_value_ips_convert
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_entity_value_ips_to_ip
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: trend_micro_vision_one.alert.indicators
+      tag: foreach_indicators_value_object_ips
+      if: ctx.trend_micro_vision_one?.alert?.indicators instanceof List
       processor:
         foreach:
           field: _ingest._value.value_object.ips
@@ -324,327 +517,384 @@ processors:
           processor:
             convert:
               field: _ingest._value
-              tag: covert_value_object_ips
+              tag: convert_value_object_ips_to_ip
               type: ip
               ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # parse dates
+  - date:
+      field: trend_micro_vision_one.alert.first_investigated_date_time
+      tag: date_first_investigated_date_time
+      target_field: trend_micro_vision_one.alert.first_investigated_date
+      formats:
+        - ISO8601
+      if: ctx.trend_micro_vision_one?.alert?.first_investigated_date_time != null && ctx.trend_micro_vision_one.alert.first_investigated_date_time != ''
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_alert_first_investigated_date_time_294a5e65
+            field: trend_micro_vision_one.alert.first_investigated_date_time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_57ce28b1
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: trend_micro_vision_one.alert.updated_date_time
+      tag: date_updated_date_time
+      target_field: trend_micro_vision_one.alert.updated_date
+      formats:
+        - ISO8601
+      if: ctx.trend_micro_vision_one?.alert?.updated_date_time != null && ctx.trend_micro_vision_one.alert.updated_date_time != ''
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_alert_updated_date_time_97c36c3a
+            field: trend_micro_vision_one.alert.updated_date_time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_e29860ad
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: trend_micro_vision_one.alert.created_date_time
+      tag: date_created_date_time
+      target_field: trend_micro_vision_one.alert.created_date
+      formats:
+        - ISO8601
+      if: ctx.trend_micro_vision_one?.alert?.created_date_time != null && ctx.trend_micro_vision_one.alert.created_date_time != ''
+      on_failure:
+        - remove:
+            tag: remove_trend_micro_vision_one_alert_created_date_time_d496eeb1
+            field: trend_micro_vision_one.alert.created_date_time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_6d799931
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: trend_micro_vision_one.alert.indicators
+      tag: foreach_indicators_first_seen_date
+      if: ctx.trend_micro_vision_one?.alert?.indicators instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.first_seen_date
+          tag: foreach_first_seen_date
+          ignore_missing: true
+          processor:
+            date:
+              field: _ingest._value
+              tag: date_first_seen_date
+              target_field: _ingest._value
+              formats:
+                - ISO8601
               on_failure:
                 - append:
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-                - remove:
-                    field: _ingest._value
-                    ignore_missing: true
   - foreach:
-      field: json.indicators
-      processor:
-        rename:
-          field: _ingest._value.matchedIndicatorPatternIds
-          target_field: _ingest._value.matched_indicator.pattern_id
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
-  - foreach:
-      field: json.indicators
+      field: trend_micro_vision_one.alert.indicators
+      tag: foreach_indicators_last_seen_date
+      if: ctx.trend_micro_vision_one?.alert?.indicators instanceof List
       processor:
         foreach:
-          field: _ingest._value.firstSeenDateTimes
+          field: _ingest._value.last_seen_date
+          tag: foreach_last_seen_date
+          ignore_missing: true
           processor:
             date:
               field: _ingest._value
+              tag: date_last_seen_date
               target_field: _ingest._value
               formats:
                 - ISO8601
-              ignore_failure: true
-          ignore_missing: true
-          ignore_failure: true
-      ignore_missing: true
-      ignore_failure: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.indicators
-      processor:
-        rename:
-          field: _ingest._value.firstSeenDateTimes
-          target_field: _ingest._value.first_seen_date
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
-  - foreach:
-      field: json.indicators
-      processor:
-        rename:
-          field: _ingest._value.filterIds
-          target_field: _ingest._value.filter_id
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
-  - foreach:
-      field: json.indicators
+      field: trend_micro_vision_one.alert.matched_rule
+      tag: foreach_matched_rule_filter_date
+      if: ctx.trend_micro_vision_one?.alert?.matched_rule instanceof List
       processor:
         foreach:
-          field: _ingest._value.lastSeenDateTimes
+          field: _ingest._value.filter
+          tag: foreach_filter_date
+          ignore_missing: true
           processor:
             date:
-              field: _ingest._value
-              target_field: _ingest._value
-              formats:
-                - ISO8601
-              ignore_failure: true
-          ignore_missing: true
-          ignore_failure: true
-      ignore_missing: true
-      ignore_failure: true
-  - foreach:
-      field: json.indicators
-      processor:
-        rename:
-          field: _ingest._value.lastSeenDateTimes
-          target_field: _ingest._value.last_seen_date
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
-
-  - script:
-      description: Flatten arrays of arrays.
-      tag: flatten_array
-      lang: painless
-      source: |
-        def flatten(def aa) {
-          if (!(aa instanceof List)) {
-            if (aa instanceof String) {
-              return aa;
-            }
-            return null;
-          }
-          if (aa.length == 1) {
-            // Ensure lexical ordering is consistent between single array optimisation and full set extraction.
-            Collections.sort(aa[0]);
-            return aa[0];
-          }
-          def set = new HashSet();
-          for (def a: aa) {
-            for (def e: a) {
-              set.add(e);
-            }
-          }
-          def list = new ArrayList();
-          for (def e: set) {
-            list.add(e);
-          }
-          Collections.sort(list);
-          return list;
-        }
-
-        if (ctx.json?.indicators != null) {
-          for (int i; i < ctx.json.indicators.length; i++) {
-            if (ctx.json.indicators[i].fields == null) {
-              continue;
-            } 
-            ctx.json.indicators[i].fields = flatten(ctx.json.indicators[i].fields);
-          }
-        }
-
-  - rename:
-      field: json.indicators
-      target_field: trend_micro_vision_one.alert.indicators
-      ignore_missing: true
-  - foreach:
-      field: json.matchedIndicatorPatterns
-      processor:
-        rename:
-          field: _ingest._value.matchedLogs
-          target_field: _ingest._value.matched_log
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.matchedIndicatorPatterns
-      target_field: trend_micro_vision_one.alert.matched_indicators_pattern
-      ignore_missing: true
-  - foreach:
-      field: json.matchedRules
-      processor:
-        foreach:
-          field: _ingest._value.matchedFilters
-          processor:
-            date:
-              field: _ingest._value.matchedDateTime
+              field: _ingest._value.date
+              tag: date_filter_date
               target_field: _ingest._value.date
               formats:
                 - ISO8601
-              ignore_failure: true
-          ignore_missing: true
-          ignore_failure: true
-      ignore_missing: true
-      ignore_failure: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.matchedRules
+      field: trend_micro_vision_one.alert.matched_rule
+      tag: foreach_matched_rule_events_date
+      if: ctx.trend_micro_vision_one?.alert?.matched_rule instanceof List
       processor:
         foreach:
-          field: _ingest._value.matchedFilters
-          processor:
-            remove:
-              field: _ingest._value.matchedDateTime
-              ignore_missing: true
+          field: _ingest._value.filter
+          tag: foreach_filter_events_date
           ignore_missing: true
-          ignore_failure: true
-      ignore_missing: true
-      ignore_failure: true
-  - foreach:
-      field: json.matchedRules
-      processor:
-        foreach:
-          field: _ingest._value.matchedFilters
-          processor:
-            rename:
-              field: _ingest._value.mitreTechniqueIds
-              target_field: _ingest._value.mitre_technique_id
-              ignore_missing: true
-          ignore_missing: true
-          ignore_failure: true
-      ignore_missing: true
-      ignore_failure: true
-  - foreach:
-      field: json.matchedRules
-      processor:
-        foreach:
-          field: _ingest._value.matchedFilters
           processor:
             foreach:
-              field: _ingest._value.matchedEvents
+              field: _ingest._value.events
+              tag: foreach_events_date
+              ignore_missing: true
               processor:
                 date:
-                  field: _ingest._value.matchedDateTime
+                  field: _ingest._value.date
+                  tag: date_event_date
                   target_field: _ingest._value.date
                   formats:
                     - ISO8601
-                  ignore_failure: true
-              ignore_missing: true
-              ignore_failure: true
-          ignore_missing: true
-          ignore_failure: true
+                  on_failure:
+                    - append:
+                        field: error.message
+                        value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # parse URI
+  - uri_parts:
+      field: trend_micro_vision_one.alert.workbench_link
+      tag: uri_parts_workbench_link
       ignore_missing: true
-      ignore_failure: true
+      on_failure:
+        - append:
+            tag: append_error_message_4b13c5a5
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # populate ECS fields
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_updated_date
+      copy_from: trend_micro_vision_one.alert.updated_date
+      ignore_empty_value: true
+  - set:
+      field: message
+      tag: set_message_from_model
+      copy_from: trend_micro_vision_one.alert.model
+      ignore_empty_value: true
+
+  # event.*
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: alert
+  - script:
+      tag: script_set_event_category_and_type
+      lang: painless
+      description: Set event.category and event.type based on description.
+      if: ctx.trend_micro_vision_one?.alert?.description != null && ctx.trend_micro_vision_one.alert.description != ''
+      source: |
+        def eventCategory = new HashSet();
+        def eventType = new HashSet();
+        def description = ctx.trend_micro_vision_one.alert.description.toLowerCase();
+        if (description.contains('logon')) {
+          eventCategory.add('authentication');
+          eventCategory.add('host');
+          eventType.add('info');
+        } else if (description.contains('email')) {
+          eventCategory.add('email');
+          eventType.add('info');
+        } else if (description.contains('network')) {
+          eventCategory.add('network');
+          eventType.add('info');
+        } else {
+          eventCategory.add('malware');
+          eventType.add('info');
+        }
+        if (!eventCategory.isEmpty()) {
+          ctx.event.category = eventCategory;
+        }
+        if (!eventType.isEmpty()) {
+          ctx.event.type = eventType;
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_a708ad59
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.id
+      tag: set_event_id
+      copy_from: trend_micro_vision_one.alert.id
+      ignore_empty_value: true
+  - set:
+      field: event.created
+      tag: set_event_created
+      copy_from: trend_micro_vision_one.alert.created_date
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      description: Set event.severity from alert severity.
+      tag: set_event_severity
+      if: ctx.trend_micro_vision_one?.alert?.severity != null
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String severity_value = ctx.trend_micro_vision_one.alert.severity;
+        if (severity_value.equalsIgnoreCase("low")) {
+          ctx.event.severity = 21;
+        } else if (severity_value.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (severity_value.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (severity_value.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_17103309
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # log.*
+  - set:
+      field: log.level
+      tag: set_log_level
+      copy_from: trend_micro_vision_one.alert.severity
+      ignore_empty_value: true
+  - lowercase:
+      field: log.level
+      tag: lowercase_log_level
+      ignore_missing: true
+
+  # threat.*
   - foreach:
-      field: json.matchedRules
+      field: trend_micro_vision_one.alert.matched_rule
+      tag: foreach_matched_rule_collect_technique_id
+      if: ctx.trend_micro_vision_one?.alert?.matched_rule instanceof List
       processor:
         foreach:
-          field: _ingest._value.matchedFilters
+          field: _ingest._value.filter
+          tag: foreach_filter_collect_technique_id
+          ignore_missing: true
           processor:
             foreach:
-              field: _ingest._value.matchedEvents
-              processor:
-                remove:
-                  field: _ingest._value.matchedDateTime
-                  ignore_missing: true
+              field: _ingest._value.mitre_technique_id
+              tag: foreach_mitre_technique_id
               ignore_missing: true
-              ignore_failure: true
-          ignore_missing: true
-          ignore_failure: true
-      ignore_missing: true
-      ignore_failure: true
+              processor:
+                append:
+                  field: threat.technique.id
+                  tag: append_threat_technique_id
+                  value: '{{{_ingest._value}}}'
+                  allow_duplicates: false
+  - set:
+      field: threat.framework
+      tag: set_threat_framework
+      value: MITRE ATT&CK
+      if: ctx.threat?.technique?.id != null
+
+  # related.*
   - foreach:
-      field: json.matchedRules
+      field: trend_micro_vision_one.alert.impact_scope.entities
+      tag: foreach_entities_collect_related_ip
+      if: ctx.trend_micro_vision_one?.alert?.impact_scope?.entities instanceof List
       processor:
         foreach:
-          field: _ingest._value.matchedFilters
+          field: _ingest._value.value.ips
+          tag: foreach_entity_value_ips
+          ignore_missing: true
           processor:
-            rename:
-              field: _ingest._value.matchedEvents
-              target_field: _ingest._value.events
-              ignore_missing: true
-          ignore_missing: true
-          ignore_failure: true
-      ignore_missing: true
-      ignore_failure: true
+            append:
+              field: related.ip
+              tag: append_related_ip
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
   - foreach:
-      field: json.matchedRules
+      field: trend_micro_vision_one.alert.indicators
+      tag: foreach_trend_micro_vision_one_alert_indicators_bc9487ee
+      if: ctx.trend_micro_vision_one?.alert?.indicators instanceof List
       processor:
-        rename:
-          field: _ingest._value.matchedFilters
-          target_field: _ingest._value.filter
+        foreach:
+          field: _ingest._value.value_object.ips
+          tag: foreach_value_object_ips
           ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.matchedRules
-      target_field: trend_micro_vision_one.alert.matched_rule
-      ignore_missing: true
-  - rename:
-      field: json.campaign
-      target_field: trend_micro_vision_one.alert.campaign
-      ignore_missing: true
-  - rename:
-      field: json.industry
-      target_field: trend_micro_vision_one.alert.industry
-      ignore_missing: true
-  - rename:
-      field: json.regionAndCountry
-      target_field: trend_micro_vision_one.alert.region_and_country
-      ignore_missing: true
-  - rename:
-      field: json.createdBy
-      target_field: trend_micro_vision_one.alert.created_by
-      ignore_missing: true
-  - convert:
-      field: json.totalIndicatorCount
-      target_field: trend_micro_vision_one.alert.total_indicator_count
-      if: ctx.json?.totalIndicatorCount != ''
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - convert:
-      field: json.matchedIndicatorCount
-      target_field: trend_micro_vision_one.alert.matched_indicator_count
-      if: ctx.json?.matchedIndicatorCount != ''
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.reportLink
-      target_field: trend_micro_vision_one.alert.report_link
-      ignore_missing: true
-  - remove:
-      field: json
-      ignore_missing: true
+          processor:
+            append:
+              field: related.ip
+              tag: append_indicators_value_object_ips_to_related_ip
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+
+  # cleanup
   - remove:
       field:
         - trend_micro_vision_one.alert.id
-        - trend_micro_vision_one.alert.score
         - trend_micro_vision_one.alert.severity
+        - trend_micro_vision_one.alert.created_date
+        - trend_micro_vision_one.alert.updated_date
+        - trend_micro_vision_one.alert.first_investigated_date_time
+      tag: remove_custom_duplicate_fields
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field:
+        - json
+        - trend_micro_vision_one.alert.created_date_time
+        - trend_micro_vision_one.alert.updated_date_time
+      tag: remove_json
       ignore_missing: true
   - script:
-      description: Drops null/empty values recursively.
+      tag: script_to_drop_null_values
       lang: painless
-      source: |
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == '') {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
-        dropEmptyFields(ctx);
-on_failure:
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
   - set:
       field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_tags_9fe66b2c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
       field: tags
       value: preserve_original_event
       allow_duplicates: false
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'

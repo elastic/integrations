@@ -1,0 +1,40 @@
+{
+    "id": "couchdb_otel-file-descriptor-exhaustion",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[CouchDB OTel] File descriptor exhaustion risk",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "couchdb"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 6,
+            "statusChangeThreshold": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-couchdbreceiver.otel-default\n// Open file descriptors is a gauge — use LAST_OVER_TIME for current state\n| WHERE couchdb.file_descriptor.open IS NOT NULL\n| STATS open_fds = MAX(LAST_OVER_TIME(couchdb.file_descriptor.open))\n  BY couchdb.node.name\n// Typical ulimit is 1024–65536 — adjust threshold for your environment\n| WHERE open_fds > 1000\n| SORT open_fds DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "couchdb.node.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

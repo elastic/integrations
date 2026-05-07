@@ -1,0 +1,40 @@
+{
+    "id": "zookeeper_otel-high-average-latency",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[ZooKeeper OTel] High request latency",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "zookeeper"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-generic.otel-default\n| WHERE metrics.zookeeper.latency.max IS NOT NULL\n// Average the peak-latency gauge readings per node across the time window\n// latency.max reports the highest request latency since the last collection\n| STATS avg_peak_latency = AVG(metrics.zookeeper.latency.max) BY host.name\n// Threshold: sustained peak latency above 500 ms signals degradation\n// Sustained high latency risks Kafka broker session timeouts\n// Adjust based on your ensemble's baseline and SLA requirements\n| WHERE avg_peak_latency > 500"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 10
+        }
+    }
+}

@@ -1,0 +1,40 @@
+{
+    "id": "nvidia_gpu_otel-framebuffer-memory-high",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[NVIDIA GPU OTel] Framebuffer memory utilization high",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "nvidia_gpu"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-nvidia_gpu.otel-default\n| WHERE DCGM_FI_DEV_FB_USED IS NOT NULL AND DCGM_FI_DEV_FB_FREE IS NOT NULL\n| EVAL total_fb = DCGM_FI_DEV_FB_USED + DCGM_FI_DEV_FB_FREE\n| EVAL fb_used_pct = ROUND(DCGM_FI_DEV_FB_USED / total_fb * 100.0, 2)\n// Alert when framebuffer usage exceeds 90%\n// Adjust threshold based on workload — ML training may routinely use 85-95%\n| WHERE fb_used_pct > 90\n| STATS\n    max_used_pct = MAX(fb_used_pct),\n    avg_used_pct = AVG(fb_used_pct),\n    min_free_mb = MIN(DCGM_FI_DEV_FB_FREE)\n  BY Hostname, UUID, modelName\n| SORT max_used_pct DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "UUID",
+            "termSize": 50
+        }
+    }
+}

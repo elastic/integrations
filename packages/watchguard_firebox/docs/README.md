@@ -322,6 +322,7 @@ The `log` data stream provides events from WatchGuard Firebox of the following t
 | watchguard_firebox.log.gateway |  | keyword |
 | watchguard_firebox.log.gateway_endpoint |  | keyword |
 | watchguard_firebox.log.geo_destination |  | keyword |
+| watchguard_firebox.log.geo_src |  | keyword |
 | watchguard_firebox.log.group_name |  | keyword |
 | watchguard_firebox.log.header |  | keyword |
 | watchguard_firebox.log.headers_size |  | long |

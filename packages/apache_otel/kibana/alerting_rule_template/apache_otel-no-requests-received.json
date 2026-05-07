@@ -1,0 +1,41 @@
+{
+    "id": "apache_otel-no-requests-received",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Apache OTel] No requests received",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "apache"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-apachereceiver.otel-*\n| WHERE apache.requests IS NOT NULL\n| STATS request_rate = SUM(RATE(apache.requests))\n    BY resource.attributes.apache.server.name\n| WHERE request_rate == 0.0 OR request_rate IS NULL\n| SORT resource.attributes.apache.server.name ASC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.apache.server.name",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

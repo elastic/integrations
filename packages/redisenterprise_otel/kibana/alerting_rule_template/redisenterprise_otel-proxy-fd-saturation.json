@@ -1,0 +1,40 @@
+{
+    "id": "redisenterprise_otel-proxy-fd-saturation",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Redis Enterprise OTel] Proxy file descriptor saturation",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "redisenterprise"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE dmcproxy_process_open_fds IS NOT NULL\n    AND dmcproxy_process_max_fds IS NOT NULL\n    AND dmcproxy_process_max_fds > 0\n| STATS\n    avg_open = AVG(dmcproxy_process_open_fds),\n    avg_max = AVG(dmcproxy_process_max_fds)\n  BY proxy, node, cluster\n| EVAL fd_util_pct = ROUND(avg_open / avg_max * 100, 2)\n// Alert when file descriptor utilization exceeds 80%\n// The DMC proxy uses one FD per client connection; exhaustion rejects new connections\n// Investigate connection leaks, increase system ulimits, or add connection pooling\n| WHERE fd_util_pct > 80\n| SORT fd_util_pct DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "proxy",
+            "termSize": 100
+        }
+    }
+}

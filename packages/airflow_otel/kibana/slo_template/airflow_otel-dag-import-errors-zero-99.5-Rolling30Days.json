@@ -1,0 +1,52 @@
+{
+  "attributes": {
+    "name": "[Airflow OTel] DAG import errors zero 99.5% rolling 30 days",
+    "description": "Ensures 99.5% of 1-minute timeslices have zero DAG import errors over a rolling 30-day period. Import errors prevent DAGs from being scheduled; any non-zero count indicates broken DAG files that block workflow execution.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"airflow.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "airflow.dag_processing.import_errors"
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 1
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "airflow",
+      "otel"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "airflow_otel-overview"
+        },
+        {
+          "id": "airflow_otel-dag-processing"
+        }
+      ]
+    }
+  },
+  "id": "airflow_otel-dag-import-errors-zero-99.5-Rolling30Days",
+  "type": "slo_template"
+}

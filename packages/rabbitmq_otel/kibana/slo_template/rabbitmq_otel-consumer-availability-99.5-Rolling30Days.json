@@ -1,0 +1,57 @@
+{
+  "attributes": {
+    "name": "[RabbitMQ OTel] Consumer availability 99.5% rolling 30 days",
+    "description": "This SLO tracks the proportion of queue metric samples where at least one consumer is connected. Queues without consumers cannot deliver messages, causing backlog and delayed processing. Target: 99.5% of observations show consumer presence over a rolling 30-day period.",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"rabbitmqreceiver.otel\" and resource.attributes.rabbitmq.queue.name: *",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "doc_count",
+              "filter": "rabbitmq.consumer.count >= 1"
+            }
+          ],
+          "equation": "A"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "B",
+              "aggregation": "doc_count"
+            }
+          ],
+          "equation": "B"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995
+    },
+    "tags": [
+      "rabbitmq",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.rabbitmq.queue.name",
+      "resource.attributes.rabbitmq.vhost.name"
+    ]
+  },
+  "id": "rabbitmq_otel-consumer-availability-99.5-Rolling30Days",
+  "type": "slo_template",
+  "artifacts": {
+    "dashboards": [
+      { "id": "rabbitmq_otel-overview" },
+      { "id": "rabbitmq_otel-queues" }
+    ]
+  }
+}

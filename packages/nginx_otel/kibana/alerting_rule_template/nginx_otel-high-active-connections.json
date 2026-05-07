@@ -1,0 +1,37 @@
+{
+    "id": "nginx_otel-high-active-connections",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Nginx OTel] High active connections",
+        "tags": [
+            "Nginx OTel"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "FROM metrics-nginxreceiver.otel-*\n// Filter to active connection state gauges\n| WHERE state == \"active\"\n// Aggregate active connections per host\n| STATS avg_active = AVG(nginx.connections_current), max_active = MAX(nginx.connections_current), sample_count = COUNT(*) BY host.name\n// Require minimum samples to avoid false positives during startup\n| WHERE sample_count >= 3\n// Alert when average active connections exceed capacity threshold\n// Adjust threshold based on your NGINX worker_connections setting\n| WHERE avg_active > 256\n| SORT avg_active DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 10
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

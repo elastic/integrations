@@ -1,0 +1,1745 @@
+{
+    "attributes": {
+        "title": "[Envoy Proxy] Upstream & Proxy Health",
+        "description": "Server health, memory, listener manager, and cluster lifecycle.",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "69bb569b-97e5-3a2d-03d0-a828b8edf3b1",
+                                "order": 1,
+                                "label": "Downstream & HTTP",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_69bb569b-97e5-3a2d-03d0-a828b8edf3b1_dashboard"
+                            },
+                            {
+                                "id": "2d183e06-a931-a1fc-661a-a0cfc9f9cc10",
+                                "order": 2,
+                                "label": "Upstream & Proxy Health",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_2d183e06-a931-a1fc-661a-a0cfc9f9cc10_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "fc69666b-014e-4167-d063-22478c958b29",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 8,
+                    "i": "fc69666b-014e-4167-d063-22478c958b29"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [Envoy Proxy] Upstream & Proxy Health\n\nProxy and cluster health:\n- Server liveness and memory usage\n- Listener manager status\n- Cluster manager lifecycle\n- Per-cluster metrics (when available)\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "82415c0c-575a-a8a2-1628-5929279a7bfb",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "82415c0c-575a-a8a2-1628-5929279a7bfb"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Server Live",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "fce69657-7c50-42dd-1843-20e97ac6d259",
+                                "layerType": "data",
+                                "metricAccessor": "45f770e6-3ecd-3ddf-c967-ad44feef07a1",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.live IS NOT NULL\n| STATS live = MAX(envoy.server.live)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "fce69657-7c50-42dd-1843-20e97ac6d259": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.live IS NOT NULL\n| STATS live = MAX(envoy.server.live)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "live",
+                                                    "columnId": "45f770e6-3ecd-3ddf-c967-ad44feef07a1",
+                                                    "label": "Live (1=yes)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "live",
+                                                    "columnId": "45f770e6-3ecd-3ddf-c967-ad44feef07a1",
+                                                    "label": "Live (1=yes)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "44d4cdf6-272c-91c8-c225-f8db78172a79",
+                "gridData": {
+                    "x": 24,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "44d4cdf6-272c-91c8-c225-f8db78172a79"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Server State",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "e3be03d1-9446-8506-d443-776cfae57801",
+                                "layerType": "data",
+                                "metricAccessor": "2da9dee1-3b47-89a9-69b0-84df84275d30",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.state IS NOT NULL\n| STATS state = MAX(envoy.server.state)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "e3be03d1-9446-8506-d443-776cfae57801": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.state IS NOT NULL\n| STATS state = MAX(envoy.server.state)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "state",
+                                                    "columnId": "2da9dee1-3b47-89a9-69b0-84df84275d30",
+                                                    "label": "State (0=LIVE)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "state",
+                                                    "columnId": "2da9dee1-3b47-89a9-69b0-84df84275d30",
+                                                    "label": "State (0=LIVE)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "13ab24ed-5a01-1e85-76da-536290098505",
+                "gridData": {
+                    "x": 32,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "13ab24ed-5a01-1e85-76da-536290098505"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Memory Allocated",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "515b835e-9e92-f0a6-167d-4c18856c9e26",
+                                "layerType": "data",
+                                "metricAccessor": "2058bf8b-7dcd-b774-ca6f-fef918aa6245",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.memory_allocated IS NOT NULL\n| STATS mem = MAX(envoy.server.memory_allocated)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "515b835e-9e92-f0a6-167d-4c18856c9e26": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.memory_allocated IS NOT NULL\n| STATS mem = MAX(envoy.server.memory_allocated)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "mem",
+                                                    "columnId": "2058bf8b-7dcd-b774-ca6f-fef918aa6245",
+                                                    "label": "Allocated (bytes)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "mem",
+                                                    "columnId": "2058bf8b-7dcd-b774-ca6f-fef918aa6245",
+                                                    "label": "Allocated (bytes)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "e287328f-fbad-7fdb-add9-82fe77b99c5e",
+                "gridData": {
+                    "x": 40,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "e287328f-fbad-7fdb-add9-82fe77b99c5e"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Memory Heap Size",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "d42f4e69-7be4-0094-8ce0-340458520332",
+                                "layerType": "data",
+                                "metricAccessor": "0768c009-5766-bf0a-a204-38e2afb36a4c",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.memory_heap_size IS NOT NULL\n| STATS heap = MAX(envoy.server.memory_heap_size)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "d42f4e69-7be4-0094-8ce0-340458520332": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.memory_heap_size IS NOT NULL\n| STATS heap = MAX(envoy.server.memory_heap_size)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "heap",
+                                                    "columnId": "0768c009-5766-bf0a-a204-38e2afb36a4c",
+                                                    "label": "Heap size (bytes)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "heap",
+                                                    "columnId": "0768c009-5766-bf0a-a204-38e2afb36a4c",
+                                                    "label": "Heap size (bytes)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "806002c8-1dc5-9935-7eda-d0a015dde253",
+                "gridData": {
+                    "x": 16,
+                    "y": 6,
+                    "w": 8,
+                    "h": 4,
+                    "i": "806002c8-1dc5-9935-7eda-d0a015dde253"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Workers Started",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "94423eb9-eff0-8f56-f74e-c57dbe8995b1",
+                                "layerType": "data",
+                                "metricAccessor": "19168b73-d42b-968e-ae88-155bf9251d41",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.listener_manager.workers_started IS NOT NULL\n| STATS workers = MAX(envoy.listener_manager.workers_started)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "94423eb9-eff0-8f56-f74e-c57dbe8995b1": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.listener_manager.workers_started IS NOT NULL\n| STATS workers = MAX(envoy.listener_manager.workers_started)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "workers",
+                                                    "columnId": "19168b73-d42b-968e-ae88-155bf9251d41",
+                                                    "label": "Workers started",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "workers",
+                                                    "columnId": "19168b73-d42b-968e-ae88-155bf9251d41",
+                                                    "label": "Workers started",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "847ec284-736a-1c0e-2a66-2612c1efe09b",
+                "gridData": {
+                    "x": 24,
+                    "y": 6,
+                    "w": 8,
+                    "h": 4,
+                    "i": "847ec284-736a-1c0e-2a66-2612c1efe09b"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Concurrency",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "43de3b05-5053-ea5e-250a-73c5245eb616",
+                                "layerType": "data",
+                                "metricAccessor": "fcdbe810-f1b3-f933-5753-a77db50191f3",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.concurrency IS NOT NULL\n| STATS concurrency = MAX(envoy.server.concurrency)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "43de3b05-5053-ea5e-250a-73c5245eb616": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.concurrency IS NOT NULL\n| STATS concurrency = MAX(envoy.server.concurrency)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "concurrency",
+                                                    "columnId": "fcdbe810-f1b3-f933-5753-a77db50191f3",
+                                                    "label": "Worker threads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "concurrency",
+                                                    "columnId": "fcdbe810-f1b3-f933-5753-a77db50191f3",
+                                                    "label": "Worker threads",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "833d7101-86ac-249f-88cd-cfa37da2fc30",
+                "gridData": {
+                    "x": 32,
+                    "y": 6,
+                    "w": 8,
+                    "h": 4,
+                    "i": "833d7101-86ac-249f-88cd-cfa37da2fc30"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Memory Utilization",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "426f9e72-63f3-193b-1fef-a3e2a59802d2",
+                                "layerType": "data",
+                                "metricAccessor": "4fdad995-355f-4727-1f9b-c4482b06f9ea",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.memory_allocated IS NOT NULL AND envoy.server.memory_heap_size IS NOT NULL AND envoy.server.memory_heap_size > 0\n| STATS allocated = MAX(envoy.server.memory_allocated), heap = MAX(envoy.server.memory_heap_size)\n| EVAL pct = allocated / heap"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "426f9e72-63f3-193b-1fef-a3e2a59802d2": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.memory_allocated IS NOT NULL AND envoy.server.memory_heap_size IS NOT NULL AND envoy.server.memory_heap_size > 0\n| STATS allocated = MAX(envoy.server.memory_allocated), heap = MAX(envoy.server.memory_heap_size)\n| EVAL pct = allocated / heap"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "pct",
+                                                    "columnId": "4fdad995-355f-4727-1f9b-c4482b06f9ea",
+                                                    "label": "Memory %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "pct",
+                                                    "columnId": "4fdad995-355f-4727-1f9b-c4482b06f9ea",
+                                                    "label": "Memory %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "f514e5ab-29c2-97eb-efa6-4e4c71e4b13b",
+                "gridData": {
+                    "x": 40,
+                    "y": 6,
+                    "w": 8,
+                    "h": 4,
+                    "i": "f514e5ab-29c2-97eb-efa6-4e4c71e4b13b"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "TLS Certificate Expiry",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "c1bbc074-335e-fed0-90c5-7fe97121d77e",
+                                "layerType": "data",
+                                "metricAccessor": "42132975-8e4b-ec67-b428-cf9563b7b1c9",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.days_until_first_cert_expiring IS NOT NULL\n| STATS days = MAX(envoy.server.days_until_first_cert_expiring)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "c1bbc074-335e-fed0-90c5-7fe97121d77e": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.days_until_first_cert_expiring IS NOT NULL\n| STATS days = MAX(envoy.server.days_until_first_cert_expiring)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "days",
+                                                    "columnId": "42132975-8e4b-ec67-b428-cf9563b7b1c9",
+                                                    "label": "Days until first cert expires",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "days",
+                                                    "columnId": "42132975-8e4b-ec67-b428-cf9563b7b1c9",
+                                                    "label": "Days until first cert expires",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "098af7d5-fe1f-22b2-f58e-55620c19b25d",
+                "gridData": {
+                    "x": 0,
+                    "y": 10,
+                    "w": 24,
+                    "h": 12,
+                    "i": "098af7d5-fe1f-22b2-f58e-55620c19b25d"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Memory Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "e8d13886-0729-b827-c8c8-358b53f9b843",
+                                        "accessors": [
+                                            "6dd4d08f-f49d-37ca-679b-29a3e871f7bb",
+                                            "800a64a0-bd7c-eba7-c47e-239368d4d45d",
+                                            "03bada71-eb05-4bda-f438-88a7801510a7"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.memory_allocated IS NOT NULL OR envoy.server.memory_heap_size IS NOT NULL OR envoy.server.memory_physical_size IS NOT NULL\n| STATS allocated = MAX(envoy.server.memory_allocated), heap = MAX(envoy.server.memory_heap_size), physical = MAX(envoy.server.memory_physical_size) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "e8d13886-0729-b827-c8c8-358b53f9b843": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.memory_allocated IS NOT NULL OR envoy.server.memory_heap_size IS NOT NULL OR envoy.server.memory_physical_size IS NOT NULL\n| STATS allocated = MAX(envoy.server.memory_allocated), heap = MAX(envoy.server.memory_heap_size), physical = MAX(envoy.server.memory_physical_size) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "allocated",
+                                                    "columnId": "6dd4d08f-f49d-37ca-679b-29a3e871f7bb",
+                                                    "label": "Allocated",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "heap",
+                                                    "columnId": "800a64a0-bd7c-eba7-c47e-239368d4d45d",
+                                                    "label": "Heap size",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "physical",
+                                                    "columnId": "03bada71-eb05-4bda-f438-88a7801510a7",
+                                                    "label": "Physical",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "allocated",
+                                                    "columnId": "6dd4d08f-f49d-37ca-679b-29a3e871f7bb",
+                                                    "label": "Allocated",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "heap",
+                                                    "columnId": "800a64a0-bd7c-eba7-c47e-239368d4d45d",
+                                                    "label": "Heap size",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "physical",
+                                                    "columnId": "03bada71-eb05-4bda-f438-88a7801510a7",
+                                                    "label": "Physical",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "552122af-4ec3-9e59-d427-065f92dd02e0",
+                "gridData": {
+                    "x": 24,
+                    "y": 10,
+                    "w": 24,
+                    "h": 12,
+                    "i": "552122af-4ec3-9e59-d427-065f92dd02e0"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Runtime Config Loads",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "aa9785ef-523e-98ad-36df-f429e6505a1a",
+                                        "accessors": [
+                                            "a5bff2e5-d41b-6f8e-271b-37161ba904bb",
+                                            "49d821f7-46d1-1f5f-dfd1-f509491b1ef5"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.runtime.load_success IS NOT NULL OR envoy.runtime.override_dir_not_exists IS NOT NULL\n| STATS load_success = MAX(envoy.runtime.load_success), override_missing = MAX(envoy.runtime.override_dir_not_exists) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "aa9785ef-523e-98ad-36df-f429e6505a1a": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.runtime.load_success IS NOT NULL OR envoy.runtime.override_dir_not_exists IS NOT NULL\n| STATS load_success = MAX(envoy.runtime.load_success), override_missing = MAX(envoy.runtime.override_dir_not_exists) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "load_success",
+                                                    "columnId": "a5bff2e5-d41b-6f8e-271b-37161ba904bb",
+                                                    "label": "Load success",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "override_missing",
+                                                    "columnId": "49d821f7-46d1-1f5f-dfd1-f509491b1ef5",
+                                                    "label": "Override dir missing",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "load_success",
+                                                    "columnId": "a5bff2e5-d41b-6f8e-271b-37161ba904bb",
+                                                    "label": "Load success",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "override_missing",
+                                                    "columnId": "49d821f7-46d1-1f5f-dfd1-f509491b1ef5",
+                                                    "label": "Override dir missing",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "714d7326-edaa-e376-4eea-7fa4832c2aa1",
+                "gridData": {
+                    "x": 0,
+                    "y": 22,
+                    "w": 48,
+                    "h": 12,
+                    "i": "714d7326-edaa-e376-4eea-7fa4832c2aa1"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Listener Manager Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "ab89fd0b-e59e-7d2b-b307-83a454eaef9d",
+                                        "accessors": [
+                                            "a8847867-a67d-838d-b798-74845f3828f7",
+                                            "5a7d1a4b-bed4-d6b1-763d-a2b509b3d5a0"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.listener_manager.total_listeners_active IS NOT NULL OR envoy.listener_manager.total_listeners_warming IS NOT NULL\n| STATS active = MAX(envoy.listener_manager.total_listeners_active), warming = MAX(envoy.listener_manager.total_listeners_warming) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "ab89fd0b-e59e-7d2b-b307-83a454eaef9d": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.listener_manager.total_listeners_active IS NOT NULL OR envoy.listener_manager.total_listeners_warming IS NOT NULL\n| STATS active = MAX(envoy.listener_manager.total_listeners_active), warming = MAX(envoy.listener_manager.total_listeners_warming) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "active",
+                                                    "columnId": "a8847867-a67d-838d-b798-74845f3828f7",
+                                                    "label": "Active listeners",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "warming",
+                                                    "columnId": "5a7d1a4b-bed4-d6b1-763d-a2b509b3d5a0",
+                                                    "label": "Warming listeners",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "active",
+                                                    "columnId": "a8847867-a67d-838d-b798-74845f3828f7",
+                                                    "label": "Active listeners",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "warming",
+                                                    "columnId": "5a7d1a4b-bed4-d6b1-763d-a2b509b3d5a0",
+                                                    "label": "Warming listeners",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "faec659e-2257-5e2c-8eb2-dac6f067d41a",
+                "gridData": {
+                    "x": 0,
+                    "y": 34,
+                    "w": 48,
+                    "h": 12,
+                    "i": "faec659e-2257-5e2c-8eb2-dac6f067d41a"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Cluster Manager Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "e5002d70-0d4e-1427-1ee8-681dcc7fd411",
+                                        "accessors": [
+                                            "02257e7b-c65c-ee52-59fe-fa26cdbb74b6",
+                                            "2c1267fb-8122-dbd3-b2e5-74b53530e445",
+                                            "a4b7ed02-6ccd-7672-ea3f-a23869fe39f8"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.cluster_manager.active_clusters IS NOT NULL OR envoy.cluster_manager.warming_clusters IS NOT NULL OR envoy.cluster_manager.cluster_added IS NOT NULL\n| STATS active = MAX(envoy.cluster_manager.active_clusters), warming = MAX(envoy.cluster_manager.warming_clusters), added = MAX(envoy.cluster_manager.cluster_added) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "e5002d70-0d4e-1427-1ee8-681dcc7fd411": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.cluster_manager.active_clusters IS NOT NULL OR envoy.cluster_manager.warming_clusters IS NOT NULL OR envoy.cluster_manager.cluster_added IS NOT NULL\n| STATS active = MAX(envoy.cluster_manager.active_clusters), warming = MAX(envoy.cluster_manager.warming_clusters), added = MAX(envoy.cluster_manager.cluster_added) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "active",
+                                                    "columnId": "02257e7b-c65c-ee52-59fe-fa26cdbb74b6",
+                                                    "label": "Active clusters",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "warming",
+                                                    "columnId": "2c1267fb-8122-dbd3-b2e5-74b53530e445",
+                                                    "label": "Warming clusters",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "added",
+                                                    "columnId": "a4b7ed02-6ccd-7672-ea3f-a23869fe39f8",
+                                                    "label": "Clusters added (cumulative)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "active",
+                                                    "columnId": "02257e7b-c65c-ee52-59fe-fa26cdbb74b6",
+                                                    "label": "Active clusters",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "warming",
+                                                    "columnId": "2c1267fb-8122-dbd3-b2e5-74b53530e445",
+                                                    "label": "Warming clusters",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "added",
+                                                    "columnId": "a4b7ed02-6ccd-7672-ea3f-a23869fe39f8",
+                                                    "label": "Clusters added (cumulative)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "statsdreceiver"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "statsdreceiver"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": true,
+        "timeFrom": "now-1h",
+        "timeTo": "now",
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "fe98772b-264a-3eea-cada-9bdcfb1bffa9": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "fe98772b-264a-3eea-cada-9bdcfb1bffa9",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "host.name",
+                        "title": "Host",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "envoyproxy_otel-envoy-upstream-proxy",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "envoyproxy_otel-envoy-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "envoyproxy_otel-envoy-downstream",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_69bb569b-97e5-3a2d-03d0-a828b8edf3b1_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "envoyproxy_otel-envoy-upstream-proxy",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_2d183e06-a931-a1fc-661a-a0cfc9f9cc10_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_fe98772b-264a-3eea-cada-9bdcfb1bffa9:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}

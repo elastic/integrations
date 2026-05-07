@@ -1,0 +1,35 @@
+{
+  "id": "mongodb_otel-global-lock-contention",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "name": "[MongoDB OTel] Global lock contention",
+    "tags": [
+      "observability",
+      "mongodb"
+    ],
+    "ruleTypeId": ".es-query",
+    "schedule": {
+      "interval": "5m"
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "TS metrics-mongodbreceiver.otel-default\n// Scope to MongoDB OTel metrics\n| WHERE data_stream.dataset == \"mongodbreceiver.otel\"\n| WHERE metrics.mongodb.global_lock.time IS NOT NULL\n// Rate of global lock time held (ms/sec); high rate indicates contention\n| STATS lock_time_rate = SUM(RATE(metrics.mongodb.global_lock.time)) BY resource.attributes.server.address\n// Alert when lock held >500ms/sec on average (adjust for your workload)\n| WHERE lock_time_rate > 500\n| SORT lock_time_rate DESC\n| LIMIT 20"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

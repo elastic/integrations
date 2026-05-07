@@ -1,0 +1,38 @@
+{
+  "id": "oracle_otel-buffer-cache-hit-ratio-low",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Oracle OTel] Buffer cache hit ratio low",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "oracle"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 8,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-oracledbreceiver.otel-*\n// logical_reads and physical_reads are co-located in Reads TSDB group; INCREASE for counter deltas\n| WHERE oracledb.logical_reads IS NOT NULL\n        AND oracledb.physical_reads IS NOT NULL\n| STATS delta_physical = SUM(INCREASE(oracledb.physical_reads)),\n        delta_logical = SUM(INCREASE(oracledb.logical_reads))\n        BY oracledb.instance.name, host.name\n| WHERE delta_logical > 0\n// Hit ratio = 1 - (physical / logical); < 90% indicates buffer cache thrashing\n// Adjust threshold (e.g. 0.95 for 95%) to tune sensitivity\n| EVAL hit_ratio_pct = ROUND((1.0 - delta_physical / delta_logical) * 100.0, 1)\n| WHERE hit_ratio_pct < 90\n| SORT hit_ratio_pct ASC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "oracledb.instance.name",
+      "termSize": 50
+    }
+  }
+}

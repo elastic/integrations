@@ -1,0 +1,42 @@
+{
+    "id": "kafka_otel-empty-consumer-groups",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Kafka OTel] Empty consumer groups",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "kafka"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 6,
+            "statusChangeThreshold": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-kafkametricsreceiver.otel-*\n// Consumer group member count per group\n| WHERE kafka.consumer_group.members IS NOT NULL\n| STATS members = MAX(kafka.consumer_group.members) BY attributes.group\n// Groups with zero members: no active consumers, consumption paused\n| WHERE members == 0\n| SORT attributes.group ASC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "attributes.group",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": false
+        }
+    }
+}

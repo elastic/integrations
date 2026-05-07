@@ -1,0 +1,42 @@
+{
+  "id": "postgresql_otel-bgwriter-maxwritten",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[PostgreSQL OTel] Bgwriter maxwritten stops",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "postgresql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 4,
+      "statusChangeThreshold": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-postgresqlreceiver.otel-*\n// Bgwriter stopped because it wrote too many buffers; indicates write pressure\n| WHERE postgresql.bgwriter.maxwritten IS NOT NULL\n| EVAL maxwritten_val = TO_DOUBLE(postgresql.bgwriter.maxwritten)\n| WHERE maxwritten_val > 0\n| STATS maxwritten_count = SUM(maxwritten_val) BY service.instance.id\n| WHERE maxwritten_count > 0"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "service.instance.id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

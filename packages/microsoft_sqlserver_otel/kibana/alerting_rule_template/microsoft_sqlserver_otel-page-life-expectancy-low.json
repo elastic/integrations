@@ -1,0 +1,39 @@
+{
+  "id": "microsoft_sqlserver_otel-page-life-expectancy-low",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[SQL Server OTel] Page life expectancy low",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "sqlserver"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-sqlserverreceiver.otel-default\n// Instance-level metric: buffer pool page lifetime in seconds\n| WHERE metrics.sqlserver.page.life_expectancy IS NOT NULL\n| STATS min_ple = MIN(metrics.sqlserver.page.life_expectancy),\n       instance_id = MAX(resource.attributes.service.instance.id)\n  BY COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\")\n// PLE below 300s indicates severe memory pressure; adjust threshold for your environment\n| WHERE min_ple < 300\n| KEEP instance_id, min_ple"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "instance_id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

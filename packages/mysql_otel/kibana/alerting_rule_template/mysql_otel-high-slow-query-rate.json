@@ -1,0 +1,39 @@
+{
+    "id": "mysql_otel-high-slow-query-rate",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[MySQL OTel] High slow query rate",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "mysql"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-mysqlreceiver.otel-*\n// Slow query count is a monotonic counter; use INCREASE for delta over the time window\n| WHERE metrics.mysql.query.slow.count IS NOT NULL\n| STATS increase = SUM(INCREASE(metrics.mysql.query.slow.count))\n  BY resource.attributes.mysql.instance.endpoint\n// Alert when more than 10 slow queries in the window; tune based on long_query_time and traffic\n| WHERE increase > 10\n| SORT increase DESC"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.mysql.instance.endpoint",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

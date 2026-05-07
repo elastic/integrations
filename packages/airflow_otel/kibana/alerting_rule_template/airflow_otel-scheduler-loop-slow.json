@@ -1,0 +1,37 @@
+{
+  "id": "airflow_otel-scheduler-loop-slow",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Airflow OTel] Scheduler loop duration excessive",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "airflow",
+      "scheduler",
+      "latency"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.scheduler.scheduler_loop_duration IS NOT NULL\n// Timer values are in SECONDS (OTel statsd receiver convention)\n// Threshold 60 = 60 seconds; adjust for your environment\n| STATS max_loop_sec = MAX(airflow.scheduler.scheduler_loop_duration)\n| WHERE max_loop_sec > 60"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m"
+    }
+  }
+}

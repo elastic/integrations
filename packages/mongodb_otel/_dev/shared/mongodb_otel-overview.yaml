@@ -1,0 +1,247 @@
+# MongoDB OTel dashboards — metrics-mongodbreceiver.otel-default
+# Data stream: metrics-mongodbreceiver.otel-default
+# Filter: data_stream.dataset == "mongodbreceiver.otel"
+
+dashboards:
+  # ─── Overview ─────────────────────────────────────────────────────────
+- id: mongodb_otel-overview
+  name: '[MongoDB OTel] Overview'
+  description: At-a-glance MongoDB health, throughput, cache efficiency, and connection status.
+  time_range:
+    from: "now-1h"
+    to: "now"
+  settings:
+    margins: true
+    layout_algorithm: blocked
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+  filters:
+  - field: data_stream.dataset
+    equals: mongodbreceiver.otel
+  controls:
+  - type: options
+    label: Server
+    data_view: metrics-*
+    field: attributes.mongodb.instance
+  panels:
+  - hide_title: true
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: mongodb_otel-overview
+      - label: Operations
+        dashboard: mongodb_otel-operations
+      - label: Capacity
+        dashboard: mongodb_otel-capacity
+  - hide_title: true
+    size: {w: 48, h: 12}
+    markdown:
+      content: |
+        ## [MongoDB OTel] Overview
+
+        This dashboard provides at-a-glance MongoDB health and performance:
+        - Operation throughput (ops/sec) and average latency
+        - WiredTiger cache hit ratio (working set fit)
+        - Active and available connections
+        - Quick links to Operations and Capacity dashboards
+  - title: Operations/sec
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.operation.count IS NOT NULL
+        | STATS ops_rate = SUM(RATE(metrics.mongodb.operation.count))
+      primary:
+        field: ops_rate
+        label: Operations/sec
+        format:
+          type: number
+          decimals: 1
+          suffix: "/sec"
+  - title: Avg Operation Latency (ms)
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | FORK (
+            WHERE metrics.mongodb.operation.time IS NOT NULL
+            | STATS op_time_rate = SUM(RATE(metrics.mongodb.operation.time))
+          )
+          (
+            WHERE metrics.mongodb.operation.count IS NOT NULL
+            | STATS op_count_rate = SUM(RATE(metrics.mongodb.operation.count))
+          )
+        | STATS op_time_rate = SUM(op_time_rate), op_count_rate = SUM(op_count_rate)
+        | EVAL avg_latency_ms = CASE(op_count_rate > 0, op_time_rate / op_count_rate, 0)
+      primary:
+        field: avg_latency_ms
+        label: Avg Latency
+        format:
+          type: number
+          decimals: 1
+  - title: Cache Hit Ratio
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.cache.operations IS NOT NULL
+        | STATS hit_rate = SUM(RATE(metrics.mongodb.cache.operations)) WHERE attributes.type == "hit",
+               miss_rate = SUM(RATE(metrics.mongodb.cache.operations)) WHERE attributes.type == "miss"
+        | EVAL hit_ratio = CASE((hit_rate + miss_rate) > 0, hit_rate / (hit_rate + miss_rate), 0)
+      primary:
+        field: hit_ratio
+        label: Cache Hit Ratio
+        format:
+          type: percent
+          decimals: 1
+  - title: Active Connections
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.connection.count IS NOT NULL
+        | WHERE attributes.type == "active"
+        | STATS active_per_server = MAX(LAST_OVER_TIME(metrics.mongodb.connection.count))
+          BY resource.attributes.server.address
+        | STATS active = SUM(active_per_server)
+      primary:
+        field: active
+        label: Active Connections
+        format:
+          type: number
+          decimals: 0
+  - title: Available Connections
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.connection.count IS NOT NULL
+        | WHERE attributes.type == "available"
+        | STATS avail_per_server = MAX(LAST_OVER_TIME(metrics.mongodb.connection.count))
+          BY resource.attributes.server.address
+        | STATS avail = SUM(avail_per_server)
+      primary:
+        field: avail
+        label: Available Connections
+        format:
+          type: number
+          decimals: 0
+  - title: Cursor Timeouts
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.cursor.timeout.count IS NOT NULL
+        | STATS timeouts = MAX(LAST_OVER_TIME(metrics.mongodb.cursor.timeout.count))
+      primary:
+        field: timeouts
+        label: Cursor Timeouts
+        format:
+          type: number
+          decimals: 0
+  - title: Cache Hit Ratio
+    size: {w: 24, h: 10}
+    esql:
+      type: gauge
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.cache.operations IS NOT NULL
+        | STATS hit_rate = SUM(RATE(metrics.mongodb.cache.operations)) WHERE attributes.type == "hit",
+               miss_rate = SUM(RATE(metrics.mongodb.cache.operations)) WHERE attributes.type == "miss"
+        | EVAL hit_ratio = CASE((hit_rate + miss_rate) > 0, hit_rate / (hit_rate + miss_rate), 0),
+               gauge_min = 0.0, gauge_max = 1.0, gauge_goal = 0.95
+        | STATS ratio = MAX(hit_ratio), gauge_min = MAX(gauge_min), gauge_max = MAX(gauge_max), gauge_goal = MAX(gauge_goal)
+      metric:
+        field: ratio
+        label: Cache Hit %
+        format:
+          type: percent
+          decimals: 1
+      minimum:
+        field: gauge_min
+      maximum:
+        field: gauge_max
+      goal:
+        field: gauge_goal
+      appearance:
+        shape: arc
+        ticks_position: auto
+      color:
+        range_type: number
+        range_min: 0
+        range_max: 1
+        thresholds:
+        - color: "#cc5642"
+          up_to: 0.9
+        - color: "#d6bf57"
+          up_to: 0.95
+        - color: "#54b399"
+          up_to: 1
+  - title: Operations by Type
+    size: {w: 24, h: 10}
+    esql:
+      type: pie
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.operation.count IS NOT NULL
+        | STATS ops = SUM(RATE(metrics.mongodb.operation.count)) BY attributes.operation
+        | SORT ops DESC
+        | LIMIT 8
+      metrics:
+      - field: ops
+      breakdowns:
+      - field: attributes.operation
+        label: Operation
+      appearance:
+        donut: medium
+  - title: Operation Rate Over Time
+    size: {w: 48, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query: |
+        TS metrics-mongodbreceiver.otel-default
+        | WHERE data_stream.dataset == "mongodbreceiver.otel"
+        | WHERE metrics.mongodb.operation.count IS NOT NULL
+        | STATS ops_rate = SUM(RATE(metrics.mongodb.operation.count))
+          BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
+             attributes.operation
+        | SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: ops_rate
+        label: Operations per second
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: attributes.operation
+      legend:
+        visible: show
+        position: right

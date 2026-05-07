@@ -1,0 +1,40 @@
+{
+    "id": "redisenterprise_otel-database-down",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Redis Enterprise OTel] Database down",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "redisenterprise"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE bdb_up IS NOT NULL\n| STATS min_up = MIN(bdb_up) BY bdb, cluster\n// Alert when any database reports as down (bdb_up < 1)\n// This is a critical alert — a down database means clients cannot read or write\n| WHERE min_up < 1"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "bdb",
+            "termSize": 100
+        }
+    }
+}
