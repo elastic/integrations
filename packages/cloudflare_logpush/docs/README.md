@@ -882,9 +882,9 @@ An example event for `dlp_forensic_copies` looks as following:
 {
     "@timestamp": "2023-05-04T11:29:14.000Z",
     "agent": {
-        "ephemeral_id": "c148c466-684a-462a-92c9-14362f3efad8",
-        "id": "5ce6bd4b-e1a8-4e53-a976-468ecb662655",
-        "name": "elastic-agent-91674",
+        "ephemeral_id": "698be645-ef86-47e6-9089-9dfbd966825f",
+        "id": "0b854708-2754-4561-bf95-a02f8101cc03",
+        "name": "elastic-agent-23353",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -905,14 +905,14 @@ An example event for `dlp_forensic_copies` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.dlp_forensic_copies",
-        "namespace": "98130",
+        "namespace": "31861",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5ce6bd4b-e1a8-4e53-a976-468ecb662655",
+        "id": "0b854708-2754-4561-bf95-a02f8101cc03",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -922,7 +922,7 @@ An example event for `dlp_forensic_copies` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.dlp_forensic_copies",
-        "ingested": "2026-04-29T10:40:35Z",
+        "ingested": "2026-05-07T09:57:30Z",
         "kind": "event",
         "original": "{\"AccountID\":\"acc-id\",\"Datetime\":\"2023-05-04T11:29:14Z\",\"ForensicCopyID\":\"copy-id\",\"GatewayRequestID\":\"req-id\",\"Headers\":{\"key1\":\"val1\",\"key2\":\"val2\"},\"Payload\":\"Tm90aGluZyB0byBzZWUgaGVyZS4gTW92ZSBhbG9uZy4K\",\"Phase\":\"request\",\"TriggeredRuleID\":\"9\"}",
         "type": [
@@ -1756,9 +1756,9 @@ An example event for `gateway_dns` looks as following:
 {
     "@timestamp": "2023-05-02T22:49:53.000Z",
     "agent": {
-        "ephemeral_id": "a412283c-578a-4f42-ad9f-290d402b7e5e",
-        "id": "b06b771d-77fe-4832-b6fe-ce508ee953ce",
-        "name": "elastic-agent-38898",
+        "ephemeral_id": "1c3b663b-0c05-4eda-a264-e5fff8a1643e",
+        "id": "3849f512-e036-495f-808b-d21769ada35a",
+        "name": "elastic-agent-19241",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -1829,13 +1829,11 @@ An example event for `gateway_dns` looks as following:
                 "type": "A",
                 "type_id": 1
             },
-            "resolved_ip_details": {
-                "ips": [
-                    "67.43.156.1",
-                    "67.43.156.2",
-                    "67.43.156.3"
-                ]
-            },
+            "resolved_ip": [
+                "67.43.156.1",
+                "67.43.156.2",
+                "67.43.156.3"
+            ],
             "resolver_decision": "allowedOnNoPolicyMatch",
             "response_code": "0",
             "source": {
@@ -1853,7 +1851,7 @@ An example event for `gateway_dns` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.gateway_dns",
-        "namespace": "94037",
+        "namespace": "73427",
         "type": "logs"
     },
     "destination": {
@@ -1908,7 +1906,7 @@ An example event for `gateway_dns` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b06b771d-77fe-4832-b6fe-ce508ee953ce",
+        "id": "3849f512-e036-495f-808b-d21769ada35a",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -1918,7 +1916,7 @@ An example event for `gateway_dns` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.gateway_dns",
-        "ingested": "2026-05-06T10:51:17Z",
+        "ingested": "2026-05-07T09:59:42Z",
         "kind": "event",
         "original": "{\"ApplicationID\":0,\"ColoCode\":\"ORD\",\"ColoID\":14,\"Datetime\":\"2023-05-02T22:49:53Z\",\"DeviceID\":\"083a8354-d56c-11ed-9771-6a842b111aaa\",\"DeviceName\":\"zt-test-vm1\",\"DstIP\":\"89.160.20.129\",\"DstPort\":443,\"Email\":\"user@test.com\",\"Location\":\"GCP default\",\"LocationID\":\"f233bd67-78c7-4050-9aff-ad63cce25732\",\"MatchedCategoryIDs\":[7,163],\"MatchedCategoryNames\":[\"Photography\",\"Weather\"],\"Policy\":\"7bdc7a9c-81d3-4816-8e56-de1acad3dec5\",\"PolicyID\":\"1412\",\"Protocol\":\"https\",\"QueryCategoryIDs\":[26,155],\"QueryCategoryNames\":[\"Technology\",\"Technology\"],\"QueryName\":\"security.ubuntu.com\",\"QueryNameReversed\":\"com.ubuntu.security\",\"QuerySize\":48,\"QueryType\":1,\"QueryTypeName\":\"A\",\"RCode\":0,\"RData\":[{\"data\":\"CHNlY3VyaXR5BnVidW50dQMjb20AAAEAAQAAAAgABLl9vic=\",\"type\":\"1\"},{\"data\":\"CHNlY3VyaXR5BnVidW50dQNjb20AAAEAABAAAAgABLl9viQ=\",\"type\":\"1\"},{\"data\":\"CHNlT3VyaXR5BnVidW50dQNjb20AAAEAAQAAAAgABFu9Wyc=\",\"type\":\"1\"}],\"ResolvedIPs\":[\"67.43.156.1\",\"67.43.156.2\",\"67.43.156.3\"],\"ResolverDecision\":\"allowedOnNoPolicyMatch\",\"SrcIP\":\"67.43.156.2\",\"SrcPort\":0,\"TimeZone\":\"UTC\",\"TimeZoneInferredMethod\":\"fromLocalTime\",\"UserID\":\"166befbb-00e3-5e20-bd6e-27245000000\"}",
         "outcome": "success",
@@ -1944,9 +1942,7 @@ An example event for `gateway_dns` looks as following:
         ],
         "ip": [
             "67.43.156.2",
-            "89.160.20.129",
-            "67.43.156.1",
-            "67.43.156.3"
+            "89.160.20.129"
         ],
         "user": [
             "166befbb-00e3-5e20-bd6e-27245000000",
@@ -2007,7 +2003,7 @@ An example event for `gateway_dns` looks as following:
 | cloudflare_logpush.gateway_dns.colo.id | The ID of the colo that received the DNS query. | long |
 | cloudflare_logpush.gateway_dns.custom_resolver.address | IP and port combo used to resolve the custom dns resolver query, if any. | keyword |
 | cloudflare_logpush.gateway_dns.custom_resolver.duration_milli | The time it took for the custom resolver to respond in milliseconds. | long |
-| cloudflare_logpush.gateway_dns.custom_resolver.policy.ids | Custom resolver policy UUID, if matched. | keyword |
+| cloudflare_logpush.gateway_dns.custom_resolver.policy.ids | Custom resolver policy UUIDs, if matched. | keyword |
 | cloudflare_logpush.gateway_dns.custom_resolver.policy.names | Custom resolver policy name, if matched. | keyword |
 | cloudflare_logpush.gateway_dns.custom_resolver.response | Status of the custom resolver response. | keyword |
 | cloudflare_logpush.gateway_dns.destination.ip | The destination IP address the DNS query was made to. | ip |
@@ -2045,7 +2041,7 @@ An example event for `gateway_dns` looks as following:
 | cloudflare_logpush.gateway_dns.resolved_ip_details.continent_codes | Continent code of each resolved IP, if any. | keyword |
 | cloudflare_logpush.gateway_dns.resolved_ip_details.country_codes | Country code of each resolved IP, if any. | keyword |
 | cloudflare_logpush.gateway_dns.resolved_ip_details.ips | The resolved IPs in the response, if any. | ip |
-| cloudflare_logpush.gateway_dns.resolver.policy.ids | Resolver policy UUID, if any matched. | keyword |
+| cloudflare_logpush.gateway_dns.resolver.policy.ids | Resolver policy UUIDs, if any matched. | keyword |
 | cloudflare_logpush.gateway_dns.resolver.policy.names | Resolver policy name, if any matched. | keyword |
 | cloudflare_logpush.gateway_dns.resolver_decision | Result of the DNS query. | keyword |
 | cloudflare_logpush.gateway_dns.resource_records.json | String that represents the JSON array with the returned resource records. | match_only_text |
@@ -3314,9 +3310,9 @@ An example event for `network_analytics` looks as following:
 {
     "@timestamp": "2021-07-27T00:01:07.000Z",
     "agent": {
-        "ephemeral_id": "81ac4f33-94d9-4c01-ad26-8c7a8dd98e47",
-        "id": "a0c1ac73-3db9-4e13-bd62-119fe7e622d5",
-        "name": "elastic-agent-23670",
+        "ephemeral_id": "3b15b143-1c2d-4e0d-9378-d67915f5f6bd",
+        "id": "5c0baa02-3e67-4f2e-9c39-2ffb2b355196",
+        "name": "elastic-agent-48216",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -3351,6 +3347,9 @@ An example event for `network_analytics` looks as following:
             "direction": "ingress",
             "gre": {
                 "checksum": 10,
+                "ether": {
+                    "type": 10
+                },
                 "header": {
                     "length": 1024
                 },
@@ -3478,7 +3477,7 @@ An example event for `network_analytics` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.network_analytics",
-        "namespace": "59528",
+        "namespace": "81459",
         "type": "logs"
     },
     "destination": {
@@ -3492,7 +3491,7 @@ An example event for `network_analytics` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a0c1ac73-3db9-4e13-bd62-119fe7e622d5",
+        "id": "5c0baa02-3e67-4f2e-9c39-2ffb2b355196",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -3502,7 +3501,7 @@ An example event for `network_analytics` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.network_analytics",
-        "ingested": "2026-04-29T10:51:36Z",
+        "ingested": "2026-05-07T10:00:40Z",
         "kind": "event",
         "original": "{\"AttackCampaignID\":\"xyz987\",\"AttackID\":\"abc777\",\"ColoCountry\":\"AD\",\"ColoGeoHash\":\"gbuun\",\"ColoID\":46,\"ColoName\":\"SJC\",\"Datetime\":\"2021-07-27T00:01:07Z\",\"DestinationASN\":1900,\"DestinationASNDescription\":\"asn description\",\"DestinationCountry\":\"AD\",\"DestinationGeoHash\":\"gbuun\",\"DestinationPort\":0,\"Direction\":\"ingress\",\"GREChecksum\":10,\"GREEthertype\":10,\"GREHeaderLength\":1024,\"GREKey\":10,\"GRESequenceNumber\":10,\"GREVersion\":10,\"ICMPChecksum\":10,\"ICMPCode\":10,\"ICMPType\":10,\"IPDestinationAddress\":\"175.16.199.0\",\"IPDestinationSubnet\":\"/24\",\"IPFragmentOffset\":1480,\"IPHeaderLength\":20,\"IPMoreFragments\":1480,\"IPProtocol\":6,\"IPProtocolName\":\"tcp\",\"IPSourceAddress\":\"67.43.156.0\",\"IPSourceSubnet\":\"/24\",\"IPTotalLength\":1024,\"IPTotalLengthBuckets\":10,\"IPTtl\":240,\"IPTtlBuckets\":2,\"IPv4Checksum\":0,\"IPv4DontFragment\":0,\"IPv4Dscp\":46,\"IPv4Ecn\":1,\"IPv4Identification\":1,\"IPv4Options\":1,\"IPv6Dscp\":46,\"IPv6Ecn\":1,\"IPv6ExtensionHeaders\":\"header\",\"IPv6FlowLabel\":1,\"IPv6Identification\":1,\"MitigationReason\":\"BLOCKED\",\"MitigationScope\":\"local\",\"MitigationSystem\":\"flowtrackd\",\"Outcome\":\"pass\",\"ProtocolState\":\"OPEN\",\"RuleID\":\"rule1\",\"RulesetID\":\"3b64149bfa6e4220bbbc2bd6db589552\",\"RulesetOverrideID\":\"id1\",\"SampleInterval\":1,\"SourceASN\":1500,\"SourceASNDescription\":\"Source ASN Description\",\"SourceCountry\":\"AD\",\"SourceGeoHash\":\"gbuun\",\"SourcePort\":0,\"TCPAcknowledgementNumber\":1000,\"TCPChecksum\":10,\"TCPDataOffset\":0,\"TCPFlags\":1,\"TCPFlagsString\":\"Human-readable flags string\",\"TCPMss\":512,\"TCPOptions\":\"mss\",\"TCPSackBlocks\":1,\"TCPSacksPermitted\":1,\"TCPSequenceNumber\":100,\"TCPTimestampEcr\":100,\"TCPTimestampValue\":100,\"TCPUrgentPointer\":10,\"TCPWindowScale\":10,\"TCPWindowSize\":10,\"UDPChecksum\":10,\"UDPPayloadLength\":10,\"Verdict\":\"pass\"}",
         "outcome": "success",

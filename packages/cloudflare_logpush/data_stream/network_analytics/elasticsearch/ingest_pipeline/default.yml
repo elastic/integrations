@@ -287,6 +287,18 @@ processors:
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - convert:
       tag: convert_json_gre_ethertype
+      field: json.GREEthertype
+      target_field: cloudflare_logpush.network_analytics.gre.ether.type
+      if: ctx.json?.GREEthertype != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: |-
+              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - convert:
+      tag: convert_json_gre_etherType
       field: json.GREEtherType
       target_field: cloudflare_logpush.network_analytics.gre.ether.type
       if: ctx.json?.GREEtherType != ''
