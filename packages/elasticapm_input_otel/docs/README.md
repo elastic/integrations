@@ -28,7 +28,7 @@ This integration collects APM telemetry data from Elastic APM agents:
 
 - **Elastic Stack version 9.4.0 or later is required**
 - Only the APM Intake V2 protocol is supported
-- RUM (Real User Monitoring) intake and older protocols are not supported
+- RUM (Real User Monitoring) intake and earlier protocols are not supported
 - Compatible with Elastic APM agents that support the Intake V2 protocol
 
 ## How do I deploy this integration?
@@ -76,7 +76,7 @@ ELASTIC_APM_SERVER_CERT=/path/to/server.crt
 Once configured, you can verify data is being received by checking for APM documents in Elasticsearch:
 
 1. Navigate to Kibana > Discover
-2. Search for APM-related indices (e.g., `traces-*`, `metrics-*`, `logs-*`)
+2. Search for APM-related indices (for example, `traces-*`, `metrics-*`, `logs-*`)
 3. Verify that documents from your instrumented applications appear
 
 ## Troubleshooting
