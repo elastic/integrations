@@ -47,9 +47,10 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 Configure the following settings:
 
-1. **Endpoint**: The address where the receiver listens for APM agent connections (default: `localhost:8200`)
-2. **TLS Settings** (optional): Enable TLS for encrypted connections between APM agents and the receiver
-3. **API key authentication** (optional): Validate APM API keys via the apikeyauth extension
+1. **Endpoint**: The address where the receiver listens for APM agent connections (default: `localhost:8200`). The default only accepts connections from the same host. To accept traffic from remote APM agents, set this to `0.0.0.0:8200` or a specific bind IP/port reachable by your agents.
+2. **TLS Settings** (optional): Enable TLS for encrypted connections between APM agents and the receiver. When `Enable TLS` is on, both the TLS Certificate File and TLS Key File must be provided; the TLS Client CA File enables mutual TLS.
+3. **API key authentication** (optional): Validate APM API keys via the apikeyauth extension. Requires the Elasticsearch endpoint used for API key validation; if missing, the receiver fails to start.
+4. **Data Stream Dataset** (optional): Override the dataset used to route APM data into Elasticsearch. Defaults to `elasticapmintakereceiver`.
 
 ### Known limitations
 
@@ -96,18 +97,6 @@ For more information on architectures that can be used for scaling this integrat
 
 ### Inputs used
 
-This package uses the [Elastic APM Intake Receiver](https://github.com/elastic/opentelemetry-collector-components/tree/main/receiver/elasticapmintakereceiver) from the Elastic OpenTelemetry Collector Components.
-
-### Traces reference
-
-For trace data (spans, transactions), refer to the [elasticapmintakereceiver documentation](https://github.com/elastic/opentelemetry-collector-components/tree/main/receiver/elasticapmintakereceiver).
-
-### Metrics reference
-
-For APM application metrics, refer to the [elasticapmintakereceiver documentation](https://github.com/elastic/opentelemetry-collector-components/tree/main/receiver/elasticapmintakereceiver).
-
-### Logs reference
-
-For application logs correlated with traces, refer to the [elasticapmintakereceiver documentation](https://github.com/elastic/opentelemetry-collector-components/tree/main/receiver/elasticapmintakereceiver).
+This package uses the [Elastic APM Intake Receiver](https://github.com/elastic/opentelemetry-collector-components/tree/main/receiver/elasticapmintakereceiver) from the Elastic OpenTelemetry Collector Components. For the supported signal types (traces, metrics, logs) and field mappings, see the receiver's [`metadata.yaml`](https://github.com/elastic/opentelemetry-collector-components/blob/main/receiver/elasticapmintakereceiver/metadata.yaml) and `README.md`.
 
 
