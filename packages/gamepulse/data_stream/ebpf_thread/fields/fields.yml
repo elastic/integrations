@@ -1,0 +1,61 @@
+# ECS fields
+- name: host.name
+  external: ecs
+  dimension: true
+
+- name: host.os.kernel
+  external: ecs
+
+# Per-thread eBPF scheduler metrics
+- name: gamepulse
+  type: group
+  fields:
+    - name: session
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          dimension: true
+          description: "Unique session identifier (UUID)"
+
+    - name: ebpf_thread
+      type: group
+      fields:
+        - name: probe
+          type: keyword
+          dimension: true
+          description: "Probe name that produced this thread metric"
+        - name: rank
+          type: integer
+          description: "Rank within the 1-second scheduler window by switch count"
+        - name: comm
+          type: keyword
+          dimension: true
+          description: "Thread name (Linux comm, max 15 chars)"
+        - name: tid
+          type: long
+          dimension: true
+          description: "Thread ID"
+        - name: runqueue_min_us
+          type: double
+          metric_type: gauge
+          unit: micros
+          description: "Minimum runqueue latency for this thread in the window"
+        - name: runqueue_max_us
+          type: double
+          metric_type: gauge
+          unit: micros
+          description: "Maximum runqueue latency for this thread in the window"
+        - name: runqueue_avg_us
+          type: double
+          metric_type: gauge
+          unit: micros
+          description: "Mean runqueue latency for this thread in the window"
+        - name: switch_count
+          type: long
+          metric_type: gauge
+          description: "Context switches for this thread in the window"
+        - name: migration_count
+          type: long
+          metric_type: gauge
+          description: "CPU migrations for this thread in the window"

@@ -28,6 +28,7 @@ Real-time gaming telemetry for Elasticsearch. Captures FPS, frame timing percent
 | `metrics-gamepulse.audio` | Latency, buffer size, xrun count |
 | `metrics-gamepulse.power` | Battery %, charge rate, AC state, TDP |
 | `metrics-gamepulse.ebpf` | Kernel scheduler migrations, GPU fence latency, futex waits |
+| `metrics-gamepulse.ebpf_thread` | Per-thread runqueue latency, switches, and migrations |
 | `metrics-gamepulse.session` | Per-session aggregates, game metadata, settings |
 | `logs-gamepulse.events` | Game start/end events, settings changes |
 

@@ -47,6 +47,7 @@ The ingest API key needs `create_doc` + `auto_configure` on `metrics-gamepulse.*
 | `metrics-gamepulse.audio-*` | metrics | Latency, buffer size, xruns |
 | `metrics-gamepulse.power-*` | metrics | Battery, AC state, TDP |
 | `metrics-gamepulse.ebpf-*` | metrics | Scheduler migrations, GPU fence latency, futex wait |
+| `metrics-gamepulse.ebpf_thread-*` | metrics | Per-thread runqueue latency, switches, and migrations |
 | `metrics-gamepulse.session-*` | metrics | Per-session aggregates, game metadata |
 | `logs-gamepulse.events-*` | logs | Game start/end, settings changes |
 
