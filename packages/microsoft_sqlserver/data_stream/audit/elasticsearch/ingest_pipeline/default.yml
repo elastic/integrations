@@ -1127,6 +1127,34 @@ processors:
           type:
             - access
           action: unsafe-assembly
+        # SQL Server 2022+ action groups
+        "LDGR":
+          # https://learn.microsoft.com/en-us/sql/relational-databases/security/ledger/ledger-overview
+          # Fires when a CREATE/ALTER/DROP LEDGER TABLE or VERIFY LEDGER operation occurs.
+          value: "LEDGER_OPERATION_GROUP"
+          type:
+            - change
+          action: ledger-operation
+        "EXPO":
+          # Azure Purview external authorization policy operations (SQL Server 2022+)
+          # Fires when an external policy is checked or applied.
+          value: "EXTERNAL_POLICY_OPERATION_GROUP"
+          type:
+            - info
+          action: external-policy-operation
+        # SQL Server 2025+ action groups
+        "VECT":
+          # Vector index CRUD operations (SQL Server 2025+)
+          value: "VECTOR_OPERATION_GROUP"
+          type:
+            - change
+          action: vector-operation
+        "ERRE":
+          # Calls to sp_invoke_external_rest_endpoint and native AI functions (SQL Server 2025+)
+          value: "EXTERNAL_REST_ENDPOINT_GROUP"
+          type:
+            - info
+          action: external-rest-endpoint-invoked
     source: |-
          def actionIdKey = ctx.sqlserver.audit.action_id;
          def actions = params.get('actions');

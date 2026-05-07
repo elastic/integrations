@@ -43,6 +43,10 @@ sql_queries:
     response_format: table
   - query: "SELECT cntr_value As 're_compilations_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'SQL Re-Compilations/sec'"
     response_format: table
+  # SQL Server 2025+ External REST Endpoint counter (SQLServer:External REST Endpoint object).
+  # Tracks cumulative calls to sp_invoke_external_rest_endpoint. Returns 0 rows on SQL Server 2022 and earlier.
+  - query: "SELECT cntr_value AS 'external_rest_endpoint_total_executions' FROM sys.dm_os_performance_counters WHERE counter_name = 'Total executions' AND object_name LIKE '%External REST Endpoint%'"
+    response_format: table
   - query: "SELECT counter_name, cntr_value FROM sys.dm_os_performance_counters WHERE counter_name like '{{dynamic_counter_name}}'"
     response_format: variables
 {{#if processors}}
