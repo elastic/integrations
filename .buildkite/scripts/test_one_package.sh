@@ -26,6 +26,11 @@ with_kubernetes
 
 use_elastic_package
 
+echo "--- [${package_name}] Check TLS certificate expiry"
+if ! .buildkite/scripts/check_certificates.sh "${package_path}" ; then
+    exit 1
+fi
+
 exit_code=0
 if ! process_package "${package_path}" ; then
     # keep this message as a collapsed group in Buildkite, so it
