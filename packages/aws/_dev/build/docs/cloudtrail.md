@@ -61,6 +61,21 @@ The `number_of_workers` setting defines the number of workers assigned to readin
 
 **Recommendation:** Set `number_of_workers` to **5 or less** and `scan_frequency` to **5m or more**, regardless of how many log groups match `log_group_name_prefix`. Workers will iterate through the matching log groups within each scan interval. The default value is `1`.
 
+#### S3 polling mode considerations
+
+When using the "Collect logs via S3 Bucket" option in polling mode, the integration lists and processes all objects in the bucket. For buckets containing large volumes of historical logs, this can cause high memory usage and potential out-of-memory (OOM) errors.
+
+> **Important:** If you provide both a bucket ARN and an SQS Queue URL, the integration ignores the SQS URL and operates in polling mode, attempting to process the entire bucket. To use SQS mode, disable "Collect logs via S3 Bucket" and provide only the SQS Queue URL.
+
+**Recommendation:** Use SQS mode when possible to avoid scanning the entire bucket. 
+
+If you must use polling mode, configure these advanced options to limit which S3 objects are processed:
+
+- **Ignore Older Timespan** (`ignore_older`): Skip S3 objects older than the specified duration (for example, `48h`, `30d`).
+- **Start Timestamp** (`start_timestamp`): Only process objects newer than the specified time (`YYYY-MM-DDTHH:MM:SSZ`).
+
+If you experience timeouts (`ListObjectsV2, context canceled`), also consider increasing `bucket_list_interval` to reduce listing frequency.
+
 ## Logs reference
 
 The `cloudtrail` data stream collects AWS CloudTrail logs. CloudTrail monitors events like
