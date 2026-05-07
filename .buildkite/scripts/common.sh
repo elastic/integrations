@@ -758,28 +758,41 @@ is_pr_affected() {
 
     commit_merge=$(git merge-base "${from}" "${to}")
     echoerr "[${package_name}] git-diff: check non-package files (${commit_merge}..${to})"
+    
+    # .github/CODEOWNERS must not be added to "skip_ci_on_only_changed" in ".buildkite/pull-requests.json".
+    # When this file is updated, the Buildkite build must be triggered to run the "mage check" step.
+    # Same for ".buildkite/scripts/packages/.+.sh": this pattern must not be added to "skip_ci_on_only_changed" to allow triggering the tests of the given package.
+    local non_package_patterns=(
+        'packages/'
+        '\.buildkite/pipeline\.backport\.yml'
+        '\.buildkite/pipeline\.publish\.yml'
+        '\.buildkite/pipeline\.serverless\.yml'
+        '\.buildkite/pipeline\.schedule-daily\.yml'
+        '\.buildkite/pipeline\.schedule-weekly\.yml'
+        '\.buildkite/pull-requests\.json'
+        '\.buildkite/scripts/backport_branch\.sh'
+        '\.buildkite/scripts/build_packages\.sh'
+        '\.buildkite/scripts/packages/.+\.sh'
+        '\.github/dependabot\.yml'
+        '\.github/workflows/'
+        '\.github/stale\.yml'
+        '\.github/CODEOWNERS'
+        '\.github/ISSUE_TEMPLATE/'
+        '\.github/PULL_REQUEST_TEMPLATE\.md'
+        '\.mergify\.yml'
+        'catalog-info\.yaml'
+        'docs/'
+        'CODE_OF_CONDUCT\.md'
+        'CONTRIBUTING\.md'
+        'README\.md'
+    )
+    local non_package_regex
+    non_package_regex="^($(IFS='|'; echo "${non_package_patterns[*]}"))"
+    
     # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
     # Example:
     # https://buildkite.com/elastic/integrations/builds/25606
     # https://github.com/elastic/integrations/pull/13810
-    local non_package_patterns=(
-        'packages/'
-        '\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE|workflows/)'
-        'CODE_OF_CONDUCT\.md'
-        'README\.md'
-        'docs/'
-        'catalog-info\.yaml'
-        '\.buildkite/pull-requests\.json'
-        '\.buildkite/pipeline\.schedule-daily\.yml'
-        '\.buildkite/pipeline\.schedule-weekly\.yml'
-        '\.buildkite/pipeline\.backport\.yml'
-        '\.buildkite/pipeline\.publish\.yml'
-        '\.buildkite/scripts/packages/.+\.sh'
-        '\.buildkite/scripts/backport_branch\.sh'
-        '\.buildkite/scripts/build_packages\.sh'
-    )
-    local non_package_regex
-    non_package_regex="^($(IFS='|'; echo "${non_package_patterns[*]}"))"
     if git diff --name-only "${commit_merge}" "${to}" | grep -E -v "${non_package_regex}" > /dev/null; then
         echo "[${package_name}] PR is affected: found non-package files"
         return 0
