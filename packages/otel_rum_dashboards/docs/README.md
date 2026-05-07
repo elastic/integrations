@@ -6,8 +6,9 @@ Use this package to get a dashboard which displays metrics from your web applica
 
 - page load and visits: these metrics are calculated from the telemetry captured by [`@opentelemetry/instrumentation-document-load`](https://www.npmjs.com/package/@opentelemetry/instrumentation-document-load) instrumentation.
 - errors: the top errors are calculated from the telemetry captured by [`@opentelemetry/instrumentation-web-exception`](https://www.npmjs.com/package/@opentelemetry/instrumentation-web-exception) instrumentation.
+- web vitals: the web vitals are calculated from the telemetry captured by `WebVitalsInstrumentation` within [`@opentelemetry/browser-instrumentation`](https://www.npmjs.com/package/@opentelemetry/browser-instrumentation) package.
 
-You should have both instrumentations enabled in your web application to get the metrics populated in this dashboard.
+You should have all instrumentations enabled in your web application to get the metrics populated in this dashboard.
 
 ### Compatibility
 
@@ -30,5 +31,8 @@ This package will show metrics only if you are monitoring web applications with 
 
 If you do not see data in the dashboard make sure that:
 
-- Elastic search has recevied the documents. You can search for the in discover with the filter `telemetry.sdk.language : "webjs"`
-- The `APM` data view is present. You can check for it in Stack Management -> Data Views
+- Elastic search has recevied the documents from Opentelemetry JS SDK. You can search for them in discover with the filter `telemetry.sdk.language : "webjs"`
+- You can run more detailed searches to ensure the data is available for specific sections of the dashboard:
+  - use the filter `scope.name : "@opentelemetry/instrumentation-document-load"` to check if the data for page load metrics is present.
+  - use the filter `scope.name : "@opentelemetry/instrumentation-web-exception"` to check if the data for error metrics is present.
+  - use the filter `scope.name : "@opentelemetry/instrumentation-web-vitals"` to check if the data for web vitals metrics is present.

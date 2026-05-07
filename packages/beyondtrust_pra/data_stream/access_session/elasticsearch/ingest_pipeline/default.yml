@@ -229,12 +229,16 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: json.destination.session_owner
-      tag: convert_destination_session_owner_to_string
-      target_field: beyondtrust_pra.access_session.destination.session_owner
-      type: string
-      ignore_missing: true
+  - set:
+      field: beyondtrust_pra.access_session.destination.session_owner
+      tag: set_destination_session_owner_true
+      value: true
+      if: ctx.json?.destination?.session_owner == 1
+  - set:
+      field: beyondtrust_pra.access_session.destination.session_owner
+      tag: set_destination_session_owner_false
+      value: false
+      if: ctx.json?.destination?.session_owner == 0
   - rename:
       field: json.destination.type
       tag: rename_destination_type
@@ -672,12 +676,16 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: json.performed_by.session_owner
-      tag: convert_performed_by_session_owner_to_string
-      target_field: beyondtrust_pra.access_session.performed_by.session_owner
-      type: string
-      ignore_missing: true
+  - set:
+      field: beyondtrust_pra.access_session.performed_by.session_owner
+      tag: set_performed_by_session_owner_true
+      value: true
+      if: ctx.json?.performed_by?.session_owner == 1
+  - set:
+      field: beyondtrust_pra.access_session.performed_by.session_owner
+      tag: set_performed_by_session_owner_false
+      value: false
+      if: ctx.json?.performed_by?.session_owner == 0
   - rename:
       field: json.performed_by.type
       tag: rename_performed_by_type
