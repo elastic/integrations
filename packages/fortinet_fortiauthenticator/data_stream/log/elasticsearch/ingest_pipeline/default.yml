@@ -92,6 +92,9 @@ processors:
           char quote = (char)"\"";
           for (def currentPosition = 0; currentPosition < input.length(); currentPosition++) {
             if (input.charAt(currentPosition) == quote) {
+              if (!isInQuotes && currentPosition > 0 && input.charAt(currentPosition - 1) == quote) {
+                continue;
+              }
               isInQuotes = !isInQuotes;
             } else if (input.charAt(currentPosition) == (char)sep && !isInQuotes) {
               def token = input.substring(startPosition, currentPosition).trim();
@@ -119,7 +122,7 @@ processors:
         if (ctx._tmp?.body == null || ctx._tmp.body == '') return;
         def arr = splitUnquoted(ctx._tmp.body, ' ');
         Map kvMap = new HashMap();
-        Pattern pattern = /^\"|\"$/;
+        Pattern pattern = /^\"+|\"+$/;
         for (def i = 0; i < arr.size(); i++) {
           def kv = splitOnceByToken(arr[i], '=');
           if (kv[0].length() > 0 && kv[1].length() > 0) {
@@ -160,7 +163,7 @@ processors:
   - gsub:
       tag: gsub_strip_kv_from_body
       field: _tmp.body
-      pattern: '(?:\S+="[^"]*"|\S+=\S+)'
+      pattern: '(?:\S+="[^"]*"+|\S+=\S+)'
       replacement: ''
       ignore_missing: true
       ignore_failure: true
