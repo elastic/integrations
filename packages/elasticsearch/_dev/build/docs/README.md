@@ -30,6 +30,12 @@ NOTE: Configure the `var.paths` setting to point to JSON logs.
 
 {{fields "slowlog"}}
 
+### Querylog
+
+Collects query logs emitted as NDJSON (`*_querylog.json`), aligned with the Filebeat `elasticsearch` module `querylog` fileset ([Filebeat change](https://github.com/elastic/beats/pull/49914)). Requires an Elasticsearch version that supports query logging.
+
+{{fields "querylog"}}
+
 ## Metrics
 
 ### Usage for Stack Monitoring
