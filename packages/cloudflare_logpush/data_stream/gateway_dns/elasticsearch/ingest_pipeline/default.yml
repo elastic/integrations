@@ -185,14 +185,6 @@ processors:
       copy_from: cloudflare_logpush.gateway_dns.answers
       ignore_empty_value: true
   - rename:
-      field: json.ResolvedIPs
-      target_field: cloudflare_logpush.gateway_dns.resolved_ip
-      ignore_missing: true
-  - set:
-      field: dns.resolved_ip
-      copy_from: cloudflare_logpush.gateway_dns.resolved_ip
-      ignore_empty_value: true
-  - rename:
       field: json.SrcIP
       target_field: cloudflare_logpush.gateway_dns.source.ip
       ignore_missing: true
@@ -446,6 +438,10 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: dns.resolved_ip
+      copy_from: cloudflare_logpush.gateway_dns.resolved_ip_details.ips
+      ignore_empty_value: true
   - rename:
       field: json.ResolverPolicyID
       target_field: cloudflare_logpush.gateway_dns.resolver.policy.ids
@@ -509,6 +505,14 @@ processors:
       value: '{{{user.email}}}'
       if: ctx.user?.email != null
       allow_duplicates: false
+  - foreach:
+      field: cloudflare_logpush.gateway_dns.resolved_ip_details.ips
+      if: ctx.cloudflare_logpush?.gateway_dns?.resolved_ip_details?.ips instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
 # Clean resulting event
   - remove:
       tag: remove_json_conf
@@ -528,7 +532,7 @@ processors:
         - cloudflare_logpush.gateway_dns.question.type
         - cloudflare_logpush.gateway_dns.response_code
         - cloudflare_logpush.gateway_dns.answers
-        - cloudflare_logpush.gateway_dns.resolved_ip
+        - cloudflare_logpush.gateway_dns.resolved_ip_details.ips
         - cloudflare_logpush.gateway_dns.source.ip
         - cloudflare_logpush.gateway_dns.source.port
         - cloudflare_logpush.gateway_dns.timezone
