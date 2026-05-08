@@ -154,6 +154,7 @@ processors:
       tag: pipeline_app_and_identity
       if: ctx.m365_defender?.event?.category != null && (ctx.m365_defender.event.category.toLowerCase().contains('identity') || ctx.m365_defender.event.category.toLowerCase().contains('cloudappevents') || ctx.m365_defender.event.category.toLowerCase().contains('cloudauditevents') || ctx.m365_defender.event.category.toLowerCase().contains('cloudstorageaggregatedevents'))
   - set:
+      description: Build a joined string for fingerprinting, so it matches other data streams
       field: process.entity_id
       tag: set_process_entity_id
       value: '{{{process.pid}}}|{{{process.start}}}|{{{m365_defender.event.device.id}}}'
@@ -165,6 +166,7 @@ processors:
       target_field: process.entity_id
       ignore_missing: true
   - set:
+      description: Build a joined string for fingerprinting, so it matches other data streams
       field: process.parent.entity_id
       tag: set_process_parent_entity_id
       value: '{{{process.parent.pid}}}|{{{process.parent.start}}}|{{{m365_defender.event.device.id}}}'
