@@ -65,7 +65,7 @@ The `number_of_workers` setting defines the number of workers assigned to readin
 
 When using the "Collect logs via S3 Bucket" option in polling mode, the integration lists and processes all objects in the bucket. For buckets containing large volumes of historical logs, this can cause high memory usage and potential out-of-memory (OOM) errors.
 
-> **Important:** If you provide both a bucket ARN and an SQS Queue URL, the integration ignores the SQS URL and operates in polling mode, attempting to process the entire bucket. To use SQS mode, disable "Collect logs via S3 Bucket" and provide only the SQS Queue URL.
+**Important:** If you provide both a bucket ARN and an SQS Queue URL, the integration ignores the SQS URL and operates in polling mode, attempting to process the entire bucket. To use SQS mode, disable "Collect logs via S3 Bucket" and provide only the SQS Queue URL.
 
 **Recommendation:** Use SQS mode when possible to avoid scanning the entire bucket. 
 
