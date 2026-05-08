@@ -38,7 +38,7 @@ search_root="${1:-.}"
 
 error_count=0
 warning_count=0
-junit_errors=()  # accumulates error messages passed to write_junit_cert_report.py
+junit_errors=()  # accumulates (cert_path, message) pairs passed to write_junit_cert_report.py
 
 echo "--- Checking TLS certificate expiry under ${search_root}"
 echo ""
@@ -86,12 +86,12 @@ for cert_file in "${cert_files[@]}"; do
         printf "ERROR   [EXPIRED %s days ago] %s\n" "${days#-}" "$short"
         printf "        subject: %s\n\n" "$subject"
         error_count=$((error_count + 1))
-        junit_errors+=("expired certificate (${days#-} day(s) ago): ${short}")
+        junit_errors+=("$short" "expired certificate (${days#-} day(s) ago): ${short}")
     elif ! openssl x509 -in "$cert_file" -noout -checkend "$SECS_6_MONTHS" >/dev/null 2>&1; then
         printf "ERROR   [expires in %s days — within 6 months] %s\n" "$days" "$short"
         printf "        subject: %s  |  expiry: %s\n\n" "$subject" "$expiry"
         error_count=$((error_count + 1))
-        junit_errors+=("certificate expires in ${days} day(s) — renew now: ${short}")
+        junit_errors+=("$short" "certificate expires in ${days} day(s) — renew now: ${short}")
     elif ! openssl x509 -in "$cert_file" -noout -checkend "$SECS_1_YEAR" >/dev/null 2>&1; then
         printf "WARNING [expires in %s days — within 1 year] %s\n" "$days" "$short"
         printf "        subject: %s  |  expiry: %s\n\n" "$subject" "$expiry"
