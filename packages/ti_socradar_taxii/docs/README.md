@@ -20,33 +20,47 @@ This integration collects threat intelligence indicators via a single data strea
 
 1. Contact SOCRadar support to enable TAXII 2.1 access for your account.
 2. Obtain your TAXII credentials (username and password).
-3. Identify the collection URL you want to ingest from.
+3. Identify the API root(s) and collection ID(s) you want to ingest from. SOCRadar provides three API roots: `radar_alpha`, `radar_gamma`, `radar_premium` — see the [SOCRadar API roots](#socradar-api-roots) table below.
 
 ### Configuration
 
 1. In Kibana, navigate to **Management > Integrations** and search for "SOCRadar TAXII".
 2. Click **Add SOCRadar TAXII**.
 3. Configure the following settings:
-   - **TAXII 2.1 Collection URL**: The full URL of the SOCRadar TAXII collection objects endpoint, e.g., `https://taxii2.socradar.com/radar_alpha/collections/{collection_id}/objects/`
-   - **Username**: Your SOCRadar TAXII username.
-   - **Password**: Your SOCRadar TAXII password.
+   - **SOCRadar TAXII Base URL**: Default `https://taxii2.socradar.com`. Change only if SOCRadar provides a different host.
+   - **Collections Configuration**: YAML list of `{api_root, collection_id}` pairs. The agent polls one collection per `Interval` tick in round-robin fashion. You can mix collections from different API roots in a single integration policy. Example:
+     ```yaml
+     - api_root: "radar_alpha"
+       collection_id: "fd3fec42-efee-4353-85b2-cb87f9acc4ef"
+     - api_root: "radar_gamma"
+       collection_id: "00000000-0000-0000-0000-000000000010"
+     - api_root: "radar_premium"
+       collection_id: "00000000-0000-0000-0000-000000000050"
+     ```
+     If a `collection_id` or `api_root` is invalid, that tick is skipped (the input does not stall) and polling continues with the next collection on the next tick. The error is recorded as an event with `error.code` and `error.message`.
+   - **Username**: Your SOCRadar TAXII username (Basic HTTP authentication).
+   - **Password**: Your SOCRadar TAXII password (stored as a policy secret, masked in the UI).
+   - **Interval**: Time between polling cycles (default `5m`). With N collections, each individual collection is refreshed roughly every `N × Interval`.
+   - **Initial Interval**: How far back to look on first start (default `10h`).
+   - **IOC Expiration Duration**: How long indicators remain valid after their last seen timestamp (default `90d`).
+   - **Limit**: Max STIX objects per TAXII request (default `1000`). The agent paginates automatically using the TAXII `next` cursor; pagination of a single collection completes before round-robin advances to the next collection.
    - **Proxy URL** (optional): If you need to connect through a proxy.
    - **SSL Configuration** (optional): Custom SSL settings if needed.
 4. Click **Save and continue** to deploy the integration.
 
 ### SOCRadar API roots
 
-SOCRadar provides the following TAXII API roots:
+SOCRadar provides the following TAXII API roots. Collection IDs can be discovered via the SOCRadar Platform UI under **Threat Intelligence → TAXII Collections**.
 
 | API Root | Collections | Description |
 |----------|-------------|-------------|
-| `radar_alpha` | 14 | Alpha threat intelligence feed (collection0000-0013) |
-| `radar_gamma` | 100+ | Gamma threat intelligence feed |
-| `radar_premium` | 300+ | Premium threat intelligence feed |
+| `radar_alpha` | ~15 | Alpha threat intelligence feed (curated indicators) |
+| `radar_gamma` | ~150 | Gamma threat intelligence feed (broader coverage) |
+| `radar_premium` | ~600 | Premium threat intelligence feed (full SOCRadar feeds catalog) |
 
-Example collection URL format:
+Endpoint format (constructed automatically from base URL + api_root + collection_id):
 ```
-https://taxii2.socradar.com/radar_alpha/collections/collection0001/objects/
+https://taxii2.socradar.com/{api_root}/collections/{collection_id}/objects/
 ```
 
 ## STIX to ECS Mapping
@@ -64,7 +78,13 @@ The following STIX indicator types are supported and mapped to ECS fields:
 | `file` (MD5) | `[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']` | `threat.indicator.file.hash.md5`, `related.hash` |
 | `file` (SHA-1) | `[file:hashes.'SHA-1' = '...']` | `threat.indicator.file.hash.sha1`, `related.hash` |
 | `file` (SHA-256) | `[file:hashes.'SHA-256' = '...']` | `threat.indicator.file.hash.sha256`, `related.hash` |
+| `file` (SHA-384) | `[file:hashes.'SHA-384' = '...']` | `threat.indicator.file.hash.sha384`, `related.hash` |
+| `file` (SHA-512) | `[file:hashes.'SHA-512' = '...']` | `threat.indicator.file.hash.sha512`, `related.hash` |
 | `email-addr` | `[email-addr:value = 'bad@actor.com']` | `threat.indicator.email.address` |
+| `email-message` | `[email-message:from_ref.value = '...']` | `threat.indicator.email.address` |
+| `autonomous-system` | `[autonomous-system:number = 12345]` | `threat.indicator.as.number` |
+| `windows-registry-key` | `[windows-registry-key:key = 'HKLM\\...']` | `threat.indicator.registry.key` |
+| `x509-certificate` | `[x509-certificate:hashes.'SHA-256' = '...']` | `threat.indicator.x509.serial_number`, `threat.indicator.x509.subject.common_name` |
 
 ### Common Field Mappings
 
@@ -122,14 +142,21 @@ The integration includes the following dashboards:
 
 ### [SOCRadar TAXII] IOC Overview
 
-Provides a comprehensive view of threat intelligence indicators:
-- **Total IOCs**: Total count of indicators
-- **IOC Types**: Number of unique indicator types
-- **High Confidence**: Count of high-confidence indicators
-- **IOC Type Distribution**: Pie chart breakdown by type
-- **IOCs Over Time**: Time series of indicator ingestion
-- **Top Threats by Confidence**: Horizontal bar chart of confidence levels
-- **Indicator Table**: Sortable table of recent indicators
+Provides a comprehensive view of threat intelligence indicators (10 panels):
+
+KPI metrics:
+- **Total Indicators**: Total count of indicators in the selected time range
+- **Unique STIX IDs**: Number of distinct STIX object IDs
+- **IOC Types**: Number of distinct indicator types
+- **Feed Sources**: Number of distinct upstream threat feeds
+
+Visualizations:
+- **Indicators by Type**: Donut chart breakdown (ipv4-addr, file, url, domain-name, etc.)
+- **Indicators by Feed Source**: Donut chart breakdown by `stix.threat_feed_source_name`
+- **Indicators by Confidence**: Donut chart breakdown by ECS confidence (Low/Medium/High)
+- **Indicators Over Time**: Area chart, time series of indicator ingestion split by type
+- **Feed Source Breakdown**: Top 20 feed sources table with document counts
+- **Recent Indicators**: Sortable table of latest indicators (timestamp, STIX ID, type, feed, confidence)
 
 ## Troubleshooting
 
@@ -177,6 +204,7 @@ elastic-agent diagnostics collect
 - [Elastic Threat Intelligence Integration Guide](https://www.elastic.co/guide/en/security/current/threat-intelligence.html)
 
 ## Logs reference
+
 
 ### Indicator
 
@@ -240,6 +268,8 @@ elastic-agent diagnostics collect
 | threat.indicator.file.hash.md5 | MD5 hash. | keyword |
 | threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
 | threat.indicator.file.hash.sha256 | SHA256 hash. | keyword |
+| threat.indicator.file.hash.sha384 | SHA384 hash. | keyword |
+| threat.indicator.file.hash.sha512 | SHA512 hash. | keyword |
 | threat.indicator.file.name | File name. | keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.ip | Indicator IP address. | ip |
@@ -252,6 +282,7 @@ elastic-agent diagnostics collect
 | threat.indicator.registry.path | Windows registry path. | keyword |
 | threat.indicator.registry.value | Windows registry value. | keyword |
 | threat.indicator.type | Type of indicator. | keyword |
+| threat.indicator.url.domain | Domain extracted from a domain-name indicator. | keyword |
 | threat.indicator.url.full | Full URL. | keyword |
 | threat.indicator.url.original | Original URL. | wildcard |
 | threat.indicator.x509.issuer.common_name | X.509 issuer common name. | keyword |

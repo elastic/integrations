@@ -437,30 +437,34 @@ processors:
   - script:
       tag: script_unescape_values
       lang: painless
-      description: Unescape values recursively.
+      description: Unescape backslash-escaped values across all string fields, preserving event.original.
       source: >
         String saved_original = ctx.event?.original;
         if (ctx.event != null) ctx.event.remove('original');
-        void unescape(Object obj) {
+        ArrayList stack = new ArrayList();
+        stack.add(ctx);
+        while (!stack.isEmpty()) {
+          Object obj = stack.remove(stack.size() - 1);
           if (obj instanceof Map) {
             for (entry in ((Map)obj).entrySet()) {
               Object value = entry.getValue();
-              unescape(value);
               if (value instanceof String) {
                 entry.setValue(((String)value).replace('\\\\', '\\'));
+              } else if (value instanceof Map || value instanceof List) {
+                stack.add(value);
               }
             }
           } else if (obj instanceof List) {
             for (int i = 0; i < ((List)obj).size(); i++) {
               Object value = ((List)obj).get(i);
-              unescape(value);
               if (value instanceof String) {
                 ((List)obj).set(i, ((String)value).replace('\\\\', '\\'));
+              } else if (value instanceof Map || value instanceof List) {
+                stack.add(value);
               }
             }
           }
         }
-        unescape(ctx);
         if (ctx.event != null && saved_original != null) ctx.event['original'] = saved_original;
 
   - script:

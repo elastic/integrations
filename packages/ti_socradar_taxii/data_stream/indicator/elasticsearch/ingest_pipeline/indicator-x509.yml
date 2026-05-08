@@ -7,6 +7,8 @@ processors:
         - "(?i:^\\[?x509-certificate:hashes\\.'?MD5'?%{SPACE}=%{SPACE}'%{DATA:_tmp.md5}'\\]?)"
         - "(?i:^\\[?x509-certificate:hashes\\.'?SHA-?1'?%{SPACE}=%{SPACE}'%{DATA:_tmp.sha1}'\\]?)"
         - "(?i:^\\[?x509-certificate:hashes\\.'?SHA-?256'?%{SPACE}=%{SPACE}'%{DATA:_tmp.sha256}'\\]?)"
+        - "(?i:^\\[?x509-certificate:hashes\\.'?SHA-?384'?%{SPACE}=%{SPACE}'%{DATA:_tmp.sha384}'\\]?)"
+        - "(?i:^\\[?x509-certificate:hashes\\.'?SHA-?512'?%{SPACE}=%{SPACE}'%{DATA:_tmp.sha512}'\\]?)"
         - "^\\[?x509-certificate:serial_number%{SPACE}=%{SPACE}'%{DATA:_tmp.serial_number}'\\]?"
         - "^\\[?x509-certificate:signature_algorithm%{SPACE}=%{SPACE}'%{DATA:_tmp.signature_algorithm}'\\]?"
         - "^\\[?x509-certificate:version%{SPACE}=%{SPACE}'%{DATA:_tmp.version_number}'\\]?"
@@ -21,34 +23,52 @@ processors:
       field: threat.indicator.file.hash.md5
       value: "{{{ _tmp.md5 }}}"
       if: ctx._tmp?.md5 != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.file.hash.sha1
       value: "{{{ _tmp.sha1 }}}"
       if: ctx._tmp?.sha1 != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.file.hash.sha256
       value: "{{{ _tmp.sha256 }}}"
       if: ctx._tmp?.sha256 != null
+      allow_duplicates: false
+  - append:
+      field: threat.indicator.file.hash.sha384
+      value: "{{{ _tmp.sha384 }}}"
+      if: ctx._tmp?.sha384 != null
+      allow_duplicates: false
+  - append:
+      field: threat.indicator.file.hash.sha512
+      value: "{{{ _tmp.sha512 }}}"
+      if: ctx._tmp?.sha512 != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.serial_number
       value: "{{{ _tmp.serial_number }}}"
       if: ctx._tmp?.serial_number != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.signature_algorithm
       value: "{{{ _tmp.signature_algorithm }}}"
       if: ctx._tmp?.signature_algorithm != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.version_number
       value: "{{{ _tmp.version_number }}}"
       if: ctx._tmp?.version_number != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.issuer.distinguished_name
       value: "{{{ _tmp.issuer }}}"
       if: ctx._tmp?.issuer != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.subject.distinguished_name
       value: "{{{ _tmp.subject }}}"
       if: ctx._tmp?.subject != null
+      allow_duplicates: false
 
   - kv:
       field: _tmp.issuer
@@ -63,34 +83,42 @@ processors:
       field: threat.indicator.x509.issuer.common_name
       value: "{{{ _tmp.issuer_fields.CN }}}"
       if: ctx._tmp?.issuer_fields?.CN != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.issuer.country
       value: "{{{ _tmp.issuer_fields.C }}}"
       if: ctx._tmp?.issuer_fields?.C != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.issuer.locality
       value: "{{{ _tmp.issuer_fields.L }}}"
       if: ctx._tmp?.issuer_fields?.L != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.issuer.organization
       value: "{{{ _tmp.issuer_fields.O }}}"
       if: ctx._tmp?.issuer_fields?.O != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.issuer.organizational_unit
       value: "{{{ _tmp.issuer_fields.OU }}}"
       if: ctx._tmp?.issuer_fields?.OU != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.issuer.state_or_province
       value: "{{{ _tmp.issuer_fields.S }}}"
       if: ctx._tmp?.issuer_fields?.S != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.issuer.state_or_province
       value: "{{{ _tmp.issuer_fields.ST }}}"
       if: ctx._tmp?.issuer_fields?.ST != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.issuer.state_or_province
       value: "{{{ _tmp.issuer_fields.P }}}"
       if: ctx._tmp?.issuer_fields?.P != null
+      allow_duplicates: false
 
   - kv:
       field: _tmp.subject
@@ -105,34 +133,42 @@ processors:
       field: threat.indicator.x509.subject.common_name
       value: "{{{ _tmp.subject_fields.CN }}}"
       if: ctx._tmp?.subject_fields?.CN != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.subject.country
       value: "{{{ _tmp.subject_fields.C }}}"
       if: ctx._tmp?.subject_fields?.C != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.subject.locality
       value: "{{{ _tmp.subject_fields.L }}}"
       if: ctx._tmp?.subject_fields?.L != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.subject.organization
       value: "{{{ _tmp.subject_fields.O }}}"
       if: ctx._tmp?.subject_fields?.O != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.subject.organizational_unit
       value: "{{{ _tmp.subject_fields.OU }}}"
       if: ctx._tmp?.subject_fields?.OU != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.subject.state_or_province
       value: "{{{ _tmp.subject_fields.S }}}"
       if: ctx._tmp?.subject_fields?.S != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.subject.state_or_province
       value: "{{{ _tmp.subject_fields.ST }}}"
       if: ctx._tmp?.subject_fields?.ST != null
+      allow_duplicates: false
   - append:
       field: threat.indicator.x509.subject.state_or_province
       value: "{{{ _tmp.subject_fields.P }}}"
       if: ctx._tmp?.subject_fields?.P != null
+      allow_duplicates: false
 
   - append:
       field: related.hash
@@ -148,6 +184,16 @@ processors:
       field: related.hash
       value: "{{{ _tmp.sha256 }}}"
       if: ctx._tmp?.sha256 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: "{{{ _tmp.sha384 }}}"
+      if: ctx._tmp?.sha384 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: "{{{ _tmp.sha512 }}}"
+      if: ctx._tmp?.sha512 != null
       allow_duplicates: false
 
   - date:
