@@ -3,12 +3,20 @@ description: Pipeline for parsing Cloudflare Zero Trust Network Session logs.
 processors:
   - set:
       field: ecs.version
-      value: 8.11.0
+      value: '9.3.0'
   - rename:
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
       field: event.original
       target_field: json
@@ -363,6 +371,32 @@ processors:
       field: json.OriginTLSVersion
       target_field: cloudflare_logpush.network_session.tls.server.version
       ignore_missing: true
+  - convert:
+      field: json.InitialOriginIP
+      target_field: cloudflare_logpush.network_session.initial_origin_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.InitialOriginIP != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.RegistrationID
+      target_field: cloudflare_logpush.network_session.registration_id
+      ignore_missing: true
+  - rename:
+      field: json.ResolvedFQDN
+      target_field: cloudflare_logpush.network_session.resolved_fqdn
+      ignore_missing: true
+  - rename:
+      field: json.SNI
+      target_field: cloudflare_logpush.network_session.sni
+      ignore_missing: true
+  - set:
+      field: tls.client.server_name
+      copy_from: cloudflare_logpush.network_session.sni
+      ignore_empty_value: true
 # Create related fields
   - append:
       field: related.ip
@@ -399,6 +433,21 @@ processors:
       value: "{{{user.email}}}"
       if: ctx.user?.email != null
       allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{cloudflare_logpush.network_session.initial_origin_ip}}}'
+      if: ctx.cloudflare_logpush?.network_session?.initial_origin_ip != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: '{{{cloudflare_logpush.network_session.resolved_fqdn}}}'
+      if: ctx.cloudflare_logpush?.network_session?.resolved_fqdn != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: '{{{cloudflare_logpush.network_session.sni}}}'
+      if: ctx.cloudflare_logpush?.network_session?.sni != null
+      allow_duplicates: false
   - remove:
       tag: remove_json_conf
       field:
@@ -415,6 +464,7 @@ processors:
         - cloudflare_logpush.network_session.host.id
         - cloudflare_logpush.network_session.host.name
         - cloudflare_logpush.network_session.tls.server.certificate.issuer
+        - cloudflare_logpush.network_session.sni
         - cloudflare_logpush.network_session.transport
         - cloudflare_logpush.network_session.session.id
         - cloudflare_logpush.network_session.session.start

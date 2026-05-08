@@ -3,12 +3,20 @@ description: Pipeline for parsing Cloudflare HTTP Request logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.11.0'
+      value: '9.3.0'
   - rename:
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
       field: event.original
       target_field: json
@@ -923,6 +931,56 @@ processors:
       field: json.ZoneName
       target_field: cloudflare_logpush.http_request.zone.name
       ignore_missing: true
+  - rename:
+      field: json.FraudAttack
+      target_field: cloudflare_logpush.http_request.fraud.attack
+      ignore_missing: true
+  - convert:
+      field: json.FraudDetectionIDs
+      target_field: cloudflare_logpush.http_request.fraud.detection_ids
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.FraudDetectionTags
+      target_field: cloudflare_logpush.http_request.fraud.detection_tags
+      ignore_missing: true
+  - rename:
+      field: json.FraudEmailRisk
+      target_field: cloudflare_logpush.http_request.fraud.email_risk
+      ignore_missing: true
+  - rename:
+      field: json.FraudUserID
+      target_field: cloudflare_logpush.http_request.fraud.user_id
+      ignore_missing: true
+  - rename:
+      field: json.JSDetectionPassed
+      target_field: cloudflare_logpush.http_request.js_detection_passed
+      ignore_missing: true
+  - rename:
+      field: json.PayPerCrawlStatus
+      target_field: cloudflare_logpush.http_request.pay_per_crawl_status
+      ignore_missing: true
+  - rename:
+      field: json.VerifiedBotCategory
+      target_field: cloudflare_logpush.http_request.verified_bot_category
+      ignore_missing: true
+  - rename:
+      field: json.WebAssetsLabelsManaged
+      target_field: cloudflare_logpush.http_request.web_assets.labels_managed
+      ignore_missing: true
+  - rename:
+      field: json.WebAssetsOperationID
+      target_field: cloudflare_logpush.http_request.web_assets.operation_id
+      ignore_missing: true
+  - rename:
+      field: json.WorkerScriptName
+      target_field: cloudflare_logpush.http_request.worker.script_name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{cloudflare_logpush.http_request.fraud.user_id}}}'
+      if: ctx.cloudflare_logpush?.http_request?.fraud?.user_id != null
+      allow_duplicates: false
   - append:
       field: related.hash
       value: '{{{cloudflare_logpush.http_request.ja3_hash}}}'

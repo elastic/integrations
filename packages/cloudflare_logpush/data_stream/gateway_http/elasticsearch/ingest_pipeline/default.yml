@@ -3,12 +3,20 @@ description: Pipeline for parsing Cloudflare Gateway HTTP logs.
 processors:
   - set:
       field: ecs.version
-      value: 8.11.0
+      value: '9.3.0'
   - rename:
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
       field: event.original
       target_field: json
@@ -391,6 +399,22 @@ processors:
   - rename:
       field: json.VirtualNetworkName
       target_field: cloudflare_logpush.gateway_http.virtual_network.name
+      ignore_missing: true
+  - rename:
+      field: json.AppControlInfo
+      target_field: cloudflare_logpush.gateway_http.app_control_info
+      ignore_missing: true
+  - rename:
+      field: json.ApplicationStatuses
+      target_field: cloudflare_logpush.gateway_http.application.statuses
+      ignore_missing: true
+  - rename:
+      field: json.RedirectTargetURI
+      target_field: cloudflare_logpush.gateway_http.redirect_target_uri
+      ignore_missing: true
+  - rename:
+      field: json.RegistrationID
+      target_field: cloudflare_logpush.gateway_http.registration_id
       ignore_missing: true
 # Create related fields
   - append:

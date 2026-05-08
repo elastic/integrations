@@ -3,14 +3,21 @@ description: Pipeline for parsing Cloudflare Workers Trace Event logs.
 processors:
   - set:
       field: ecs.version
-      value: 8.11.0
+      value: '9.3.0'
       tag: set_ecs_version
   - rename:
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
-      tag: rename_event_original
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
       field: event.original
       target_field: json
@@ -134,6 +141,24 @@ processors:
       target_field: cloudflare_logpush.workers_trace.script.version
       ignore_missing: true
       tag: rename_script_version
+  - convert:
+      field: json.CPUTimeMs
+      target_field: cloudflare_logpush.workers_trace.cpu_time_ms
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.WallTimeMs
+      target_field: cloudflare_logpush.workers_trace.wall_time_ms
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - script:
       description: Convert Workers Trace Events keys to snake case recursively.

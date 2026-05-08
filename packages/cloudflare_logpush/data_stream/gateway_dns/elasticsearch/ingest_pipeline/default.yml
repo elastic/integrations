@@ -3,12 +3,20 @@ description: Pipeline for parsing Cloudflare Gateway DNS logs.
 processors:
   - set:
       field: ecs.version
-      value: 8.11.0
+      value: '9.3.0'
   - rename:
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
       field: event.original
       target_field: json
@@ -473,6 +481,72 @@ processors:
       field: json.TimeZoneInferredMethod
       target_field: cloudflare_logpush.gateway_dns.timezone_inferred_method
       ignore_missing: true
+  - convert:
+      field: json.InitialResolvedIPs
+      target_field: cloudflare_logpush.gateway_dns.initial_resolved_ips
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.InitialResolvedIPs != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.InternalDNSDurationMs
+      target_field: cloudflare_logpush.gateway_dns.internal_dns.duration_ms
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.InternalDNSFallbackStrategy
+      target_field: cloudflare_logpush.gateway_dns.internal_dns.fallback_strategy
+      ignore_missing: true
+  - convert:
+      field: json.InternalDNSRCode
+      target_field: cloudflare_logpush.gateway_dns.internal_dns.rcode
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.InternalDNSViewID
+      target_field: cloudflare_logpush.gateway_dns.internal_dns.view_id
+      ignore_missing: true
+  - rename:
+      field: json.InternalDNSZoneID
+      target_field: cloudflare_logpush.gateway_dns.internal_dns.zone_id
+      ignore_missing: true
+  - convert:
+      field: json.QueryApplicationIDs
+      target_field: cloudflare_logpush.gateway_dns.question.application.ids
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.QueryApplicationNames
+      target_field: cloudflare_logpush.gateway_dns.question.application.names
+      ignore_missing: true
+  - rename:
+      field: json.RedirectTargetURI
+      target_field: cloudflare_logpush.gateway_dns.redirect_target_uri
+      ignore_missing: true
+  - rename:
+      field: json.RegistrationID
+      target_field: cloudflare_logpush.gateway_dns.registration_id
+      ignore_missing: true
+  - convert:
+      field: json.RequestContextCategoryIDs
+      target_field: cloudflare_logpush.gateway_dns.request_context_category.ids
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.RequestContextCategoryNames
+      target_field: cloudflare_logpush.gateway_dns.request_context_category.names
+      ignore_missing: true
 # Create related fields
   - append:
       field: related.ip
@@ -504,6 +578,14 @@ processors:
       value: '{{{user.email}}}'
       if: ctx.user?.email != null
       allow_duplicates: false
+  - foreach:
+      field: cloudflare_logpush.gateway_dns.initial_resolved_ips
+      if: ctx.cloudflare_logpush?.gateway_dns?.initial_resolved_ips instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
 # Clean resulting event
   - remove:
       tag: remove_json_conf
