@@ -1,0 +1,40 @@
+{
+    "id": "redisenterprise_otel-shard-high-memory-fragmentation",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Redis Enterprise OTel] Shard high memory fragmentation",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "redisenterprise"
+        ],
+        "schedule": {
+            "interval": "15m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE redis_mem_fragmentation_ratio IS NOT NULL\n    AND redis_used_memory IS NOT NULL\n| STATS\n    avg_frag = AVG(redis_mem_fragmentation_ratio),\n    avg_used = AVG(redis_used_memory)\n  BY redis, bdb, node, cluster\n// Only evaluate shards with meaningful memory usage (>10 MB)\n// Small shards naturally exhibit high fragmentation ratios\n| WHERE avg_used > 10485760\n// Alert when fragmentation ratio exceeds 1.5\n// ratio = RSS / used_memory; values >> 1.0 indicate wasted memory\n// Consider enabling active defragmentation or scheduling a restart\n    AND avg_frag > 1.5\n| SORT avg_frag DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 30,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "redis",
+            "termSize": 100
+        }
+    }
+}

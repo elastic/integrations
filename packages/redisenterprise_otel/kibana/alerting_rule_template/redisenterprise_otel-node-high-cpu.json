@@ -1,0 +1,40 @@
+{
+    "id": "redisenterprise_otel-node-high-cpu",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Redis Enterprise OTel] Node CPU saturation",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "redisenterprise"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE node_cpu_user IS NOT NULL\n    AND node_cpu_system IS NOT NULL\n    AND node_cpu_idle IS NOT NULL\n| STATS\n    avg_user = AVG(node_cpu_user),\n    avg_system = AVG(node_cpu_system),\n    avg_idle = AVG(node_cpu_idle)\n  BY node, cluster\n| EVAL total = avg_user + avg_system + avg_idle\n| EVAL cpu_util_pct = ROUND((avg_user + avg_system) / total * 100, 2)\n// Alert when CPU utilization exceeds 85%\n// CPU is computed as (user + system) / (user + system + idle)\n// Sustained high CPU may indicate the node needs scaling or workload rebalancing\n// Adjust threshold based on your capacity planning targets\n| WHERE total > 0 AND cpu_util_pct > 85\n| SORT cpu_util_pct DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "node",
+            "termSize": 100
+        }
+    }
+}

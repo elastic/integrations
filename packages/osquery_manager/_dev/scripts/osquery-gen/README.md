@@ -2,10 +2,10 @@
 
 Config-driven generator for osquery_manager field/schema generation.
 
-This tool reads `osquery` and `beats` versions from `config.yml`, reads the ECS
-git ref from `packages/osquery_manager/_dev/build/build.yml`
+This tool reads `osquery` version and `beats` git selection from `config.yml`,
+reads the ECS git ref from `packages/osquery_manager/_dev/build/build.yml`
 (`dependencies.ecs.reference`, e.g. `git@v9.3.0`), resolves the latest matching
-patch where applicable, and generates:
+patch for osquery/beats when using semver config, and generates:
 
 - `packages/osquery_manager/data_stream/result/fields/osquery.yml`
 - `packages/osquery_manager/data_stream/result/fields/ecs.yml`
@@ -29,7 +29,15 @@ beats:
   version: "9.3"
 ```
 
-Version values can be:
+**Beats** (extension specs under `elastic/beats`): set **either** an explicit git ref **or** a semver-style `version`. Precedence is **tag > branch > version**:
+
+- `tag`: exact ref (for example `v9.4.2`); must contain the osquery extension specs path.
+- `branch`: branch name (for example `main`); same validation as `tag`.
+- `version`: exact patch or major/minor prefix (for example `9.3`) to auto-select a release tag, then the same ref probing as before.
+
+If both `tag` and `branch` are set, `tag` wins.
+
+**Osquery** `version` values can be:
 
 - exact patch (for example `5.18.1`)
 - major/minor prefix (for example `5.18`) to auto-select latest patch

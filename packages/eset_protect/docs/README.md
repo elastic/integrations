@@ -431,7 +431,7 @@ An example event for `event` looks as following:
             "is_handled": false,
             "name": "An attempt to connect to URL",
             "object_uri": "https://test.com",
-            "occured": "2021-06-21T03:56:20.000Z",
+            "occurred": "2021-06-21T03:56:20.000Z",
             "os_name": "Microsoft Windows 11 Pro",
             "processname": "C:\\Program Files\\Web browser\\brwser.exe",
             "rule_id": "Blocked by PUA blacklist",
@@ -544,6 +544,10 @@ An example event for `event` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.subject.text | Multi-field of `email.subject`. | match_only_text |
 | eset_protect.event.account | Name of the user account associated with the event. | keyword |
 | eset_protect.event.action | Action taken. | keyword |
 | eset_protect.event.action_error | Error message if the "action" was not successful. | keyword |
@@ -576,7 +580,7 @@ An example event for `event` looks as following:
 | eset_protect.event.need_restart | Whether or not the restart is needed. | boolean |
 | eset_protect.event.object_type | Type of object related to this event. | keyword |
 | eset_protect.event.object_uri | Object URI associated with the event. | keyword |
-| eset_protect.event.occured | UTC time of occurrence of the event. Format is %d-%b-%Y %H:%M:%S. | date |
+| eset_protect.event.occurred | UTC time of occurrence of the event. Format is %d-%b-%Y %H:%M:%S. | date |
 | eset_protect.event.operation | Operation associated with the event. | keyword |
 | eset_protect.event.os_name | Information about the computer´s operating system. | keyword |
 | eset_protect.event.processname | Name of the process associated with the event. | keyword |

@@ -1,0 +1,40 @@
+{
+    "id": "redisenterprise_otel-shard-persistence-failures",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Redis Enterprise OTel] Shard persistence failures",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "redisenterprise"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE redis_rdb_saves_consecutive_failures IS NOT NULL\n    OR redis_aof_rewrites_consecutive_failures IS NOT NULL\n| STATS\n    max_rdb_failures = MAX(redis_rdb_saves_consecutive_failures),\n    max_aof_failures = MAX(redis_aof_rewrites_consecutive_failures)\n  BY redis, bdb, node, cluster\n// Alert when consecutive RDB or AOF persistence failures are detected\n// Persistence failures risk data loss during shard restarts or failovers\n// Investigate disk space, I/O throughput, and memory for copy-on-write overhead\n| WHERE COALESCE(max_rdb_failures, 0) > 0\n    OR COALESCE(max_aof_failures, 0) > 0\n| SORT COALESCE(max_rdb_failures, 0) DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "redis",
+            "termSize": 100
+        }
+    }
+}

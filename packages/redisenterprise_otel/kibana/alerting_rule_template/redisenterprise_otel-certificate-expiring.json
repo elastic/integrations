@@ -1,0 +1,40 @@
+{
+    "id": "redisenterprise_otel-certificate-expiring",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Redis Enterprise OTel] TLS certificate expiring soon",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "redisenterprise"
+        ],
+        "schedule": {
+            "interval": "1h"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 5,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE node_cert_expiration_seconds IS NOT NULL\n| STATS min_expiry_s = MIN(node_cert_expiration_seconds) BY node, path, cluster\n| EVAL days_until_expiry = ROUND(min_expiry_s / 86400, 1)\n// Alert when any certificate expires within 30 days\n// Expired certificates break intra-cluster communication and client TLS\n// Adjust threshold: 30 days for early warning, 7 days is critical\n// The 'path' dimension identifies which certificate file is expiring\n| WHERE days_until_expiry < 30\n| SORT days_until_expiry ASC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 6,
+            "timeWindowUnit": "h",
+            "groupBy": "row",
+            "termField": "node",
+            "termSize": 100
+        }
+    }
+}
