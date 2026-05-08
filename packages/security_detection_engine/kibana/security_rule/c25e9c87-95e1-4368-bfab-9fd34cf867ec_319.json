@@ -1,0 +1,154 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies use of aspnet_regiis to decrypt Microsoft IIS connection strings. An attacker with Microsoft IIS web server access via a webshell or similar access can decrypt and dump any hardcoded connection strings, such as the MSSQL service account password using the aspnet_regiis command.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.name",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.command_line",
+                "process.working_directory",
+                "process.pe.original_file_name",
+                "process.parent.entity_id",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.code_signature.subject_name",
+                "process.Ext.session_info.logon_type"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "max_signals": 33,
+        "name": "Microsoft IIS Connection Strings Decryption",
+        "note": "## Triage and analysis\n\n### Investigating Microsoft IIS Connection Strings Decryption\n\n#### Possible investigation steps\n\n- Which protected IIS configuration section and application path did the command expose?\n  - Focus: `process.command_line` and `process.working_directory` for the protected-section decrypt operation (\"connectionStrings\" with \"-pdf\" or \"-pd\") and the target application path.\n  - Implication: escalate faster when the target is a production web root, shared IIS configuration path, copied temp tree, or folder unrelated to the named IIS site; lower concern at this step only for a staging or development target path. Path context alone never closes the alert.\n\n- Is the aspnet_regiis instance the expected signed .NET utility in the expected launch context?\n  - Focus: `process.executable`, `process.code_signature.subject_name`, `process.code_signature.trusted`, and `process.parent.command_line`.\n  - Implication: escalate when the binary is renamed, unsigned, user-writable, or launched from a shell, script host, IIS worker lineage, or remote-admin chain that does not fit the workflow. Expected Microsoft identity reduces masquerade concern, but never clears the decrypt action by itself.\n\n- Do the user, parent chain, and session type fit IIS administration on this host?\n  - Focus: `user.id`, `process.parent.command_line`, and `process.Ext.session_info.logon_type`.\n  - Hint: If parent lineage remains unclear, expand ancestry before accepting an IIS administration explanation.\n  - Implication: escalate when an unusual user, web-content lineage, remote-interactive session, service context, or unusual admin context performs the decrypt; lower concern when the same user/host pair and parent workflow recur for IIS administration on this server.\n\n- Did follow-on process activity expose, stage, or reuse the recovered secrets?\n  - Focus: child and same-parent process starts, reading `process.executable` and `process.command_line` for shells, PowerShell, archive utilities, SQL clients, config copies, or output commands. !{investigate{\"description\":\"\",\"label\":\"Child and sibling processes near aspnet_regiis\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.pid}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: use sibling command lines to look for \"aspnet_regiis -pdf appSettings\", \"aspnet_regiis -px\", or direct IIS config-copy commands; if `process.entity_id` is absent, use the `host.id` + `process.parent.pid` or `process.pid` fallback branches in a tight alert-time window.\n  - Implication: escalate when decryption is followed by shell output, copied configs, archive creation, SQL tooling such as sqlcmd/osql/isql, PowerShell database testing, or additional protected-section access.\n\n- If available, do process-scoped file records corroborate config staging?\n  - Focus: file activity scoped by `host.id` and `process.entity_id`, or direct children through `process.parent.entity_id`, for config copies, temp staging, and archives. !{investigate{\"description\":\"\",\"label\":\"File activity for aspnet_regiis and children\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when available records show copied \"web.config\", \"applicationHost.config\", or \"machine.config\" material, temp staging, or archive output. If `process.entity_id` is absent, use `host.id` + `process.pid` in a tight alert window; missing endpoint file telemetry is unresolved, not benign.\n\n- If available, do process-scoped network records corroborate SQL access or transfer?\n  - Focus: network activity scoped by `host.id` and `process.entity_id`, or direct children through `process.parent.entity_id`, for database, proxy, external, or share destinations. !{investigate{\"description\":\"\",\"label\":\"Network activity for aspnet_regiis and children\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when available records show database connectivity, proxy use, external egress, or remote staging after the decrypt. If `process.entity_id` is absent, use `host.id` + `process.pid` in a tight alert window. Missing network telemetry is unresolved, not benign.\n\n- If local findings remain suspicious or incomplete, do related alerts show broader credential-access activity?\n  - Focus: related alerts for `user.id`, especially webshell execution, privilege escalation, lateral movement, SQL testing, archive/exfiltration, or repeated credential access. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: compare `host.id` alerts for webshell, staging, exfiltration, persistence, or repeated aspnet_regiis activity on the IIS asset. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden response when either scope shows complementary webshell, staging, SQL access, or credential-access activity. No related alerts only limits scope; it does not close the decrypt activity.\n\n- Based on the evidence gathered, what disposition is supported?\n  - Focus: `process.command_line`, `process.executable`, `process.code_signature.subject_name`, `process.parent.command_line`, `process.Ext.session_info.logon_type`, optional file/network corroboration, and related-alert scope.\n  - Implication: escalate when those categories show unrecognized decryption, config staging, SQL testing, or secret reuse; close only when telemetry from the same categories aligns with one exact IIS maintenance, deployment, migration, or recovery workflow, using outside confirmation only to corroborate that exact activity; preserve and escalate if evidence is mixed or incomplete.\n\n### False positive analysis\n\n- Recognized IIS maintenance, deployment, or migration can legitimately run aspnet_regiis against connection strings. Confirm only when telemetry shows the utility path and signer, parent workflow, command target, `user.id`, `host.id`, and follow-on process activity all align with the same change.\n- IR/recovery can also be legitimate when responders decrypt a known application path to restore service or rotate secrets. Confirm that config copies, SQL testing, transfer evidence, and credential rotation stay inside the recovery scope; if external records are unavailable, close only when this alert's telemetry is complete and non-contradictory.\n- Build exceptions from the minimum confirmed workflow: `process.executable`, `process.code_signature.subject_name`, parent workflow, exact target path, `user.id`, and `host.id`. Avoid exceptions on aspnet_regiis alone, \"connectionStrings\" alone, or host alone.\n\n### Response and remediation\n\n- If confirmed benign, document the recognized utility path, target path, operator, session type, parent lineage, and follow-on activity before reversing temporary containment. Create an exception only if that same pattern recurs across prior alerts from this rule.\n- If suspicious but unconfirmed, preserve the recovered `process.entity_id`, `process.command_line`, target application path, child-process lineage, copied config material, archive names, and any confirmed destinations before destructive changes. Apply reversible containment first, such as temporarily restricting outbound connectivity or share access for the affected `host.id`; escalate to host isolation or account action only if follow-on commands, copied configs, or related alerts show broader compromise and the IIS host can tolerate it.\n- If confirmed malicious, preserve the same artifacts, then use endpoint response to isolate the host or terminate the responsible process. If direct response is unavailable, escalate with the preserved artifact set to the team that can act.\n- Rotate the credentials exposed by the targeted connection strings, including database passwords, service-account secrets, and any downstream application credentials discovered during the investigation. Prioritize credentials tied to production databases or shared service accounts.\n- Before deleting or restoring anything, review related `host.id` and `user.id` activity for the same aspnet_regiis arguments, targeted config paths, copied config filenames, database destinations, and adjacent protected-section abuse such as \"aspnet_regiis -pdf appSettings\" or \"aspnet_regiis -px\". Then eradicate the webshells, scripts, copied configuration files, archives, and persistence mechanisms uncovered during the investigation, and remediate the initial access or privilege path that allowed the decrypt action.\n- After containment, scope other hosts for the same aspnet_regiis arguments, targeted config paths, follow-on database or archive activity, and adjacent protected-section abuse (\"aspnet_regiis -pdf appSettings\", \"aspnet_regiis -px\", or direct IIS config copies).\n- Post-incident hardening: restrict aspnet_regiis use against production IIS paths to recognized administration workflows and document the recognized target-path and destination patterns that justified any exception.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  (process.name : \"aspnet_regiis.exe\" or ?process.pe.original_file_name == \"aspnet_regiis.exe\") and\n  process.args : \"connectionStrings\" and process.args : (\"-pdf\", \"-pd\")\n",
+        "references": [
+            "https://www.netspi.com/blog/technical-blog/network-pentesting/decrypting-iis-passwords-to-break-out-of-the-dmz-part-1/",
+            "https://symantec-enterprise-blogs.security.com/blog-post/greenbug-espionage-telco-south-asia"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "c25e9c87-95e1-4368-bfab-9fd34cf867ec",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/"
+                    },
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.001",
+                                "name": "Credentials In Files",
+                                "reference": "https://attack.mitre.org/techniques/T1552/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 319
+    },
+    "id": "c25e9c87-95e1-4368-bfab-9fd34cf867ec_319",
+    "type": "security-rule"
+}

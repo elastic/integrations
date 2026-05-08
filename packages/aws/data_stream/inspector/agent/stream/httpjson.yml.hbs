@@ -27,10 +27,14 @@ request.transforms:
       target: body.sortCriteria
       value: '{"field":"LAST_OBSERVED_AT","sortOrder":"ASC"}'
       value_type: json
+{{!-- The upper time bound (endInclusive) has been removed from lastObservedAt because
+      httpjson re-evaluates (now) on every pagination page. When the value changes, AWS
+      rejects the nextToken. A CEL rewrite can reintroduce the upper bound safely since
+      it can pin the value once per collection interval. --}}
   - set:
       target: body.filterCriteria.lastObservedAt
-      value: '[{ "startInclusive": [[mul (div (toInt .cursor.last_observe_datetime) 1000) 1000]], "endInclusive": [[mul (div (toInt (now).Unix) 1000) 1000]] }]'
-      default: '[{ "startInclusive": [[mul (div (toInt (now (parseDuration "-{{initial_interval}}")).Unix) 1000) 1000]], "endInclusive": [[mul (div (toInt (now).Unix) 1000) 1000]] }]'
+      value: '[{ "startInclusive": [[mul (div (toInt .cursor.last_observe_datetime) 1000) 1000]] }]'
+      default: '[{ "startInclusive": [[mul (div (toInt (now (parseDuration "-{{initial_interval}}")).Unix) 1000) 1000]] }]'
       value_type: json
   - set:
       target: header.Authorization

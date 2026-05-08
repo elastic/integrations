@@ -181,6 +181,7 @@ The `firewall` data stream provides events from Check Point devices, including f
 | checkpoint.analyzed_on | Check Point ThreatCloud / emulator name. | keyword |
 | checkpoint.answer_rdata | List of answer resource records to the questioned domains. | keyword |
 | checkpoint.anti_virus_type | Anti virus type. | keyword |
+| checkpoint.app_category | Application category. | keyword |
 | checkpoint.app_desc | Application description. | keyword |
 | checkpoint.app_id | Application ID. | integer |
 | checkpoint.app_package | Unique identifier of the application on the protected mobile device. | keyword |
