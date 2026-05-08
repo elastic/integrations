@@ -306,6 +306,18 @@ processors:
             value: |-
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - convert:
+      tag: convert_json_gre_etherType
+      field: json.GREEtherType
+      target_field: cloudflare_logpush.network_analytics.gre.ether.type
+      if: ctx.json?.GREEtherType != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: |-
+              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - convert:
       tag: convert_json_gre_header_length
       field: json.GREHeaderLength
       target_field: cloudflare_logpush.network_analytics.gre.header.length
@@ -847,25 +859,29 @@ processors:
       field: json.TCPSACKBlocks
       separator: ', *'
       if: ctx.json?.TCPSACKBlocks instanceof String && ctx.json.TCPSACKBlocks != ''
+  - split:
+      field: json.TCPSackBlocks
+      separator: ', *'
+      if: ctx.json?.TCPSackBlocks instanceof String && ctx.json.TCPSackBlocks != ''
+  - script:
+      tag: script_raise_non_string_tcp_sack_blocks_to_array
+      source: |-
+        if (ctx.json?.TCPSACKBlocks != null && ctx.json.TCPSACKBlocks != '' && !(ctx.json.TCPSACKBlocks instanceof List)) {
+          ctx.json.TCPSACKBlocks = [ctx.json.TCPSACKBlocks];
+        }
+        if (ctx.json?.TCPSackBlocks != null && ctx.json.TCPSackBlocks != '' && !(ctx.json.TCPSackBlocks instanceof List)) {
+          ctx.json.TCPSackBlocks = [ctx.json.TCPSackBlocks];
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.TCPSACKBlocks
       target_field: cloudflare_logpush.network_analytics.tcp.sack.blocks
       ignore_missing: true
-  - split:
-      field: json.TCPSackBlocks
-      separator: ', *'
-      if: ctx.json?.TCPSackBlocks instanceof String && ctx.json.TCPSACKBlocks != ''
-  - script:
-      tag: script_raise_non_string_tcp_sack_blocks_to_array
-      source: |-
-        if (ctx.json?.TCPSACKBlocks != null && !(ctx.json.TCPSACKBlocks instanceof List)) {
-          ctx.json.TCPSACKBlocks = [ctx.json.TCPSACKBlocks];
-        }
-        if (ctx.json?.TCPSackBlocks != null && !(ctx.json.TCPSackBlocks instanceof List)) {
-          ctx.json.TCPSackBlocks = [ctx.json.TCPSackBlocks];
-        }
   - foreach:
-      tag: 
+      tag: foreach_json_TCPSackBlocks_to_cloudflare_logpush_network_analytics_tcp_sack_blocks
       field: json.TCPSackBlocks
       if: ctx.json?.TCPSackBlocks instanceof List
       processor:

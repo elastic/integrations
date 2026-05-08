@@ -1038,6 +1038,9 @@ An example event for `dns` looks as following:
         "type": "http_endpoint"
     },
     "related": {
+        "hosts": [
+            "example.com"
+        ],
         "ip": [
             "175.16.199.0",
             "1.128.0.0"
@@ -1684,8 +1687,8 @@ An example event for `firewall_event` looks as following:
 | cloudflare_logpush.firewall_event.leaked_credential_check | Result of the check for leaked credentials. Possible results are: password_leaked | username_and_password_leaked | username_password_similar | username_leaked | clean. | keyword |
 | cloudflare_logpush.firewall_event.match_index | Rules match index in the chain. | long |
 | cloudflare_logpush.firewall_event.meta_data | Additional product-specific information. | flattened |
-| cloudflare_logpush.firewall_event.origin.ray.id | HTTP origin response status code returned to browser. | keyword |
-| cloudflare_logpush.firewall_event.origin.response.status | The RayID of the request that issued the challenge/jschallenge. | long |
+| cloudflare_logpush.firewall_event.origin.ray.id | The RayID of the request that issued the challenge/jschallenge. | keyword |
+| cloudflare_logpush.firewall_event.origin.response.status | HTTP origin response status code returned to browser. | long |
 | cloudflare_logpush.firewall_event.ray.id | The RayID of the request. | keyword |
 | cloudflare_logpush.firewall_event.ref | The user-defined identifier for the rule triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.rule.description | The Cloudflare security product-specific Description of the rule triggered by this request. | keyword |
@@ -1965,7 +1968,7 @@ An example event for `gateway_dns` looks as following:
 | cloudflare_logpush.gateway_dns.colo.id | The ID of the colo that received the DNS query. | long |
 | cloudflare_logpush.gateway_dns.custom_resolver.address | IP and port combo used to resolve the custom dns resolver query, if any. | keyword |
 | cloudflare_logpush.gateway_dns.custom_resolver.duration_milli | The time it took for the custom resolver to respond in milliseconds. | long |
-| cloudflare_logpush.gateway_dns.custom_resolver.policy.ids | Custom resolver policy UUID, if matched. | keyword |
+| cloudflare_logpush.gateway_dns.custom_resolver.policy.ids | Custom resolver policy UUIDs, if matched. | keyword |
 | cloudflare_logpush.gateway_dns.custom_resolver.policy.names | Custom resolver policy name, if matched. | keyword |
 | cloudflare_logpush.gateway_dns.custom_resolver.response | Status of the custom resolver response. | keyword |
 | cloudflare_logpush.gateway_dns.destination.ip | The destination IP address the DNS query was made to. | ip |
@@ -2015,7 +2018,7 @@ An example event for `gateway_dns` looks as following:
 | cloudflare_logpush.gateway_dns.resolved_ip_details.continent_codes | Continent code of each resolved IP, if any. | keyword |
 | cloudflare_logpush.gateway_dns.resolved_ip_details.country_codes | Country code of each resolved IP, if any. | keyword |
 | cloudflare_logpush.gateway_dns.resolved_ip_details.ips | The resolved IPs in the response, if any. | ip |
-| cloudflare_logpush.gateway_dns.resolver.policy.id | Resolver policy UUID, if any matched. | keyword |
+| cloudflare_logpush.gateway_dns.resolver.policy.ids | Resolver policy UUIDs, if any matched. | keyword |
 | cloudflare_logpush.gateway_dns.resolver.policy.names | Resolver policy name, if any matched. | keyword |
 | cloudflare_logpush.gateway_dns.resolver_decision | Result of the DNS query. | keyword |
 | cloudflare_logpush.gateway_dns.resource_records.json | String that represents the JSON array with the returned resource records. | match_only_text |
@@ -2864,8 +2867,8 @@ An example event for `http_request` looks as following:
 | cloudflare_logpush.http_request.bot.tag | Type of bot traffic (if available). Available in Logpush v2 only. | text |
 | cloudflare_logpush.http_request.cache.reserve_used | Cache Reserve was used to serve this request. | boolean |
 | cloudflare_logpush.http_request.cache.response.bytes | Number of bytes returned by the cache. | long |
-| cloudflare_logpush.http_request.cache.response.status | Cache status. | long |
-| cloudflare_logpush.http_request.cache.status | HTTP status code returned by the cache to the edge. | keyword |
+| cloudflare_logpush.http_request.cache.response.status | HTTP status code returned by the cache to the edge. | long |
+| cloudflare_logpush.http_request.cache.status | Cache status. | keyword |
 | cloudflare_logpush.http_request.cache.tiered_fill | Tiered Cache was used to serve this request. | boolean |
 | cloudflare_logpush.http_request.client.asn | Client AS number. | long |
 | cloudflare_logpush.http_request.client.city | Approximate city of the client. | keyword |
@@ -4005,7 +4008,6 @@ An example event for `page_shield_events` looks as following:
 | cloudflare_logpush.page_shield_events.action | The action which was taken against the violation. Possible values are (log, allow). | keyword |
 | cloudflare_logpush.page_shield_events.csp_directive | The violated directive in the report. | keyword |
 | cloudflare_logpush.page_shield_events.host | The host where the resource was seen. | keyword |
-| cloudflare_logpush.page_shield_events.page | The page URL the violation was seen on. | keyword |
 | cloudflare_logpush.page_shield_events.page_url | The page URL the violation was seen on. | keyword |
 | cloudflare_logpush.page_shield_events.policy_id | The ID of the policy which was violated. | keyword |
 | cloudflare_logpush.page_shield_events.resource_type | The resource type of the violated directive. Possible values are 'script', 'connection' or 'other' for unmonitored resource types. | keyword |
