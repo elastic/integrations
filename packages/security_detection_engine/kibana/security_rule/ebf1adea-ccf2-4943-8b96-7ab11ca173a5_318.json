@@ -1,0 +1,149 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when Internet Information Services (IIS) HTTP Logging is disabled on a server. An attacker with IIS server access via a webshell or other mechanism can disable HTTP Logging as an effective anti-forensics measure.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.name",
+                "user.id",
+                "process.entity_id",
+                "process.executable",
+                "process.command_line",
+                "process.parent.entity_id",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.pe.original_file_name",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "process.Ext.session_info.logon_type"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "IIS HTTP Logging Disabled",
+        "note": "## Triage and analysis\n\n### Investigating IIS HTTP Logging Disabled\n\n#### Possible investigation steps\n\n- What IIS HTTP logging scope did AppCmd disable?\n  - Focus: `process.command_line`: \"dontLog\" value, site/application target, \"system.webServer/httpLogging\", and apphost commit.\n  - Implication: escalate when production-site or server-wide successful-request logging is disabled, because webshell traffic may leave no IIS log trail; lower suspicion when scope and timing fit a narrow non-production logging test, migration, or recovery action.\n- Is this the expected IIS AppCmd utility?\n  - Focus: `process.executable`, `process.pe.original_file_name`, `process.code_signature.subject_name`, `process.code_signature.trusted`.\n  - Implication: escalate when AppCmd is renamed, unsigned, or outside the IIS administration path; lower suspicion when trusted Microsoft AppCmd runs from that path. Identity alone never clears disablement.\n- Does the operator and session context fit IIS administration on this host?\n  - Focus: `user.id`, `user.name`, `user.domain`, `process.Ext.session_info.logon_type`.\n  - Hint: if session enrichment is absent, keep session unresolved and rely on operator plus parent-lineage evidence; absence is not benign.\n  - Implication: escalate when a rare operator, service-account misuse, unexpected remote-interactive/network session, or newly elevated token made the change; lower suspicion when the operator/session pattern is recognized for this IIS host.\n- What launched AppCmd?\n  - Focus: `process.parent.executable`, `process.parent.command_line`, `process.parent.entity_id`.\n  - Implication: escalate when the launcher includes web workers, shells, script hosts, archive tools, or web-content chains; lower suspicion when lineage stays inside one recognized IIS management/deployment workflow.\n- Do surrounding process commands show cleanup or adjacent IIS anti-forensics?\n  - Focus: process starts from the same AppCmd parent on the same `host.id`, reading `process.command_line`. !{investigate{\"description\":\"\",\"label\":\"Process starts from the same AppCmd parent\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: prefer `process.entity_id` or `process.parent.entity_id`; if unavailable, use `host.id` + `process.pid` + a tight alert window and treat the join as weaker.\n  - Implication: escalate for log deletion, \"applicationHost.config\"/\"web.config\" rewrites, PowerShell IIS configuration changes, or no re-enable command after a temporary-change explanation; lower suspicion when commands only re-enable logging or stay inside the same recognized IIS workflow.\n- If local evidence remains suspicious or unresolved, do related alerts change scope or urgency?\n  - Focus: related alerts for the same `user.id`, emphasizing webshell, archive, persistence, anti-forensics, or suspicious IIS tooling. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: the host-scoped alert view for the same `host.id` separates one operator's history from server activity. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden response when either scope shows precursor webshell access, staging, persistence, or repeated anti-forensics; keep the case local only when related alerts stay limited to the same recognized maintenance window.\n\n- Escalate on unauthorized logging disablement, suspicious lineage, missing re-enable evidence, or adjacent IIS compromise; close only when scope, identity, operator/session, lineage, surrounding activity, and related alerts match one recognized workflow and external confirmation verifies exact activity telemetry cannot prove; preserve evidence and escalate when evidence is mixed or incomplete.\n\n### False positive analysis\n\n- IIS migration, recovery, short troubleshooting, or controlled logging tests can trigger this rule. Confirm trusted Microsoft AppCmd from the IIS administration path, intended site/application scope in `process.command_line`, recognized `user.id`, matching parent workflow, and re-enable process evidence for temporary changes. Use change records or owner confirmation only after process evidence matches; conflicting process evidence blocks benign closure. If records are unavailable, require the same AppCmd path, signer, parent workflow, targeted IIS scope, operator, session type, and `host.id` to recur across prior alerts. A different target, operator, lineage, or missing re-enable command keeps the alert unresolved.\n- Before creating an exception, validate the same AppCmd identity (`process.executable` plus `process.code_signature.subject_name`), parent executable, command scope, `user.id`, and `host.id` across prior alerts. Avoid exceptions on AppCmd alone, \"/dontLog\" alone, or the host alone.\n\n### Response and remediation\n\n- If suspicious but unconfirmed, preserve the alert record, `process.entity_id`, `process.command_line`, targeted IIS scope, parent lineage, operator/session fields, related-alert context, remaining IIS logs, and current IIS configuration before containment. Apply reversible containment first, and weigh host criticality before isolating internet-facing or revenue-bearing IIS servers.\n- If confirmed benign, reverse temporary containment and document the AppCmd path, targeted IIS scope, operator, session type, parent lineage, re-enable evidence, and external confirmation that justified closure. Create an exception only after the same pattern recurs.\n- If confirmed malicious, contain the host or administrative session when command scope, lineage, operator context, or related alerts show unauthorized anti-forensics. Record the same evidence set before terminating processes, killing sessions, deleting artifacts, or changing IIS configuration.\n- Re-enable IIS HTTP logging at the affected site or server scope, export remaining IIS logs before rotation, restore deleted logs from backups or snapshots when possible, and compare \"applicationHost.config\" or \"web.config\" changes tied to the same activity.\n- Eradicate only the webshells, scripts, archives, persistence artifacts, and configuration changes uncovered during the investigation. Rotate credentials when the operator/session evidence suggests account compromise, then remediate the initial access or administrative-control failure that allowed logging to be disabled.\n- After containment, scope other hosts for the same AppCmd arguments, IIS configuration-edit commands, log-cleanup commands, and adjacent IIS anti-forensics variants. Retain the process and case-export evidence that supported the final disposition.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  (process.name : \"appcmd.exe\" or ?process.pe.original_file_name == \"appcmd.exe\") and\n  process.args : \"/dontLog*:*True\" and\n  not process.parent.name : \"iissetup.exe\"\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "ebf1adea-ccf2-4943-8b96-7ab11ca173a5",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Endgame",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.002",
+                                "name": "Disable Windows Event Logging",
+                                "reference": "https://attack.mitre.org/techniques/T1562/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 318
+    },
+    "id": "ebf1adea-ccf2-4943-8b96-7ab11ca173a5_318",
+    "type": "security-rule"
+}

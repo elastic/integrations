@@ -844,6 +844,11 @@ processors:
       field: checkpoint.last_detection
       target_field: event.end
       ignore_missing: true
+  - convert:
+      type: float
+      tag: convert_risk_score
+      field: checkpoint.app_risk
+      if: ctx.checkpoint?.app_risk != null
   - rename:
       tag: rename_checkpoint_app_risk_to_event_risk_score_75222087
       field: checkpoint.app_risk
@@ -1363,17 +1368,17 @@ processors:
       target_field: "@timestamp"
       ignore_missing: true
   - date:
-      tag: date_checkpoint_lastupdatetime_to_event_end_869e28e8
-      field: checkpoint.lastupdatetime
-      formats: ["ISO8601", "UNIX"]
-      target_field: event.end
-      if: "ctx.checkpoint?.lastupdatetime != null"
-  - date:
       tag: date_checkpoint_last_hit_time_to_event_end_6aeafa0a
       field: checkpoint.last_hit_time
-      formats: ["ISO8601", "UNIX"]
+      formats: ["UNIX"]
       target_field: event.end
       if: "ctx.checkpoint?.last_hit_time != null"
+  - date:
+      tag: date_checkpoint_lastupdatetime_to_event_end_869e28e8
+      field: checkpoint.lastupdatetime
+      formats: ["UNIX"]
+      target_field: event.end
+      if: "ctx.checkpoint?.lastupdatetime != null"
   - date:
       tag: date_checkpoint_creation_time_to_event_start_f2bceb79
       field: checkpoint.creation_time
