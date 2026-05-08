@@ -360,6 +360,28 @@ processors:
       copy_from: fortinet.firewall.hostname
       ignore_empty_value: true
       override: true
+  - set:
+      tag: set_url_scheme_from_network_protocol_1f2ca950
+      field: url.scheme
+      copy_from: network.protocol
+      ignore_empty_value: true
+      if: ctx.url?.scheme == null && ['http', 'https'].contains(ctx.network?.protocol) && (ctx.url?.domain != null || ctx.fortinet?.firewall?.url != null)
+  - set:
+      tag: set_url_full_from_original_8ef44009
+      field: url.full
+      copy_from: fortinet.firewall.url
+      ignore_empty_value: true
+      if: ctx.url?.full == null && ctx.fortinet?.firewall?.url instanceof String && (ctx.fortinet.firewall.url.startsWith('http://') || ctx.fortinet.firewall.url.startsWith('https://'))
+  - set:
+      tag: set_url_full_with_query_ff61f80b
+      field: url.full
+      value: "{{{url.scheme}}}://{{{url.domain}}}{{{url.path}}}?{{{url.query}}}"
+      if: ctx.url?.scheme != null && ctx.url.domain != null && ctx.url.path != null && ctx.url.full == null && ctx.url.query != null
+  - set:
+      tag: set_url_full_without_query_0a3eb6ad
+      field: url.full
+      value: "{{{url.scheme}}}://{{{url.domain}}}{{{url.path}}}"
+      if: ctx.url?.scheme != null && ctx.url.domain != null && ctx.url.path != null && ctx.url.full == null && ctx.url.query == null
   - remove:
       tag: remove_fortinet_firewall_hostname_161ef624
       field: fortinet.firewall.hostname

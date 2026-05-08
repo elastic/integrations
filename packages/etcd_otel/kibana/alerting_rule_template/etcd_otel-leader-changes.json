@@ -1,0 +1,40 @@
+{
+  "id": "etcd_otel-leader-changes",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[etcd OTel] Frequent leader elections",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "etcd",
+      "consensus"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-etcd.otel-default*\n// Counter: leader changes observed; frequent elections suggest disk I/O, network, or resource issues\n| WHERE etcd_server_leader_changes_seen_total IS NOT NULL\n| STATS changes = SUM(INCREASE(etcd_server_leader_changes_seen_total))\n    BY resource.attributes.service.instance.id\n// Alert when more than 1 leader change in window; adjust threshold for sensitivity\n| WHERE changes > 1\n| SORT changes DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.service.instance.id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

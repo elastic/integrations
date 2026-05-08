@@ -218,26 +218,50 @@ processors:
         - yyyy-MM-dd H:mm:ss
         - yyyy-MM-dd HH:mm:ss
         - yyyy-MM-dd
-        - MM-dd-yyyy H:mm:ss
-        - MM-dd-yyyy HH:mm:ss
-        - MM-dd-yyyy
+        - ISO8601
+        - yyyy-MM-dd hh:mm:ss a
         - dd-MM-yyyy H:mm:ss
         - dd-MM-yyyy HH:mm:ss
         - dd-MM-yyyy
-        - MM/dd/yyyy H:mm:ss
-        - MM/dd/yyyy HH:mm:ss
-        - MM/dd/yyyy
         - dd/MM/yyyy H:mm:ss
         - dd/MM/yyyy HH:mm:ss
         - dd/MM/yyyy
+        - dd/MM/yy H:mm:ss
+        - dd/MM/yy HH:mm:ss
+        - dd/MM/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.published?.display_value != null && ctx.servicenow.event.published.display_value != '' && ctx._conf?.date_format_preference == "ddMM"
+      on_failure:
+        - remove:
+            field: servicenow.event.published.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.published.display_value
+      tag: date_published_display_value
+      target_field: servicenow.event.published.display_value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - ISO8601
+        - yyyy-MM-dd hh:mm:ss a
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
         - MM/dd/yy H:mm:ss
         - MM/dd/yy HH:mm:ss
         - MM/dd/yy
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
-        - yyyy-MM-dd hh:mm:ss a
-      if: ctx.servicenow?.event?.published?.display_value != null && ctx.servicenow.event.published.display_value != ''
+      if: ctx.servicenow?.event?.published?.display_value != null && ctx.servicenow.event.published.display_value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
             field: servicenow.event.published.display_value
@@ -252,25 +276,49 @@ processors:
         - yyyy-MM-dd H:mm:ss
         - yyyy-MM-dd HH:mm:ss
         - yyyy-MM-dd
-        - MM-dd-yyyy H:mm:ss
-        - MM-dd-yyyy HH:mm:ss
-        - MM-dd-yyyy
+        - ISO8601
         - dd-MM-yyyy H:mm:ss
         - dd-MM-yyyy HH:mm:ss
         - dd-MM-yyyy
-        - MM/dd/yyyy H:mm:ss
-        - MM/dd/yyyy HH:mm:ss
-        - MM/dd/yyyy
         - dd/MM/yyyy H:mm:ss
         - dd/MM/yyyy HH:mm:ss
         - dd/MM/yyyy
+        - dd/MM/yy H:mm:ss
+        - dd/MM/yy HH:mm:ss
+        - dd/MM/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+        - yyyy-MM-dd hh:mm:ss a
+      if: ctx.servicenow?.event?.published?.value != null && ctx.servicenow.event.published.value != '' && ctx._conf?.date_format_preference == "ddMM"
+      on_failure:
+        - remove:
+            field: servicenow.event.published.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.published.value
+      tag: date_published_value
+      target_field: servicenow.event.published.value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - ISO8601
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
         - MM/dd/yy H:mm:ss
         - MM/dd/yy HH:mm:ss
         - MM/dd/yy
         - dd.MM.yyyy H:mm:ss
         - dd.MM.yyyy HH:mm:ss
         - dd.MM.yyyy
-      if: ctx.servicenow?.event?.published?.value != null && ctx.servicenow.event.published.value != ''
+      if: ctx.servicenow?.event?.published?.value != null && ctx.servicenow.event.published.value != '' && ctx._conf?.date_format_preference == "MMdd"
       on_failure:
         - remove:
             field: servicenow.event.published.value
@@ -298,8 +346,10 @@ on_failure:
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag
+        }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message
+        }}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind

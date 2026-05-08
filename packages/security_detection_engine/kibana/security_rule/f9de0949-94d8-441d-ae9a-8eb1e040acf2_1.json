@@ -1,0 +1,112 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule alerts on processes exhibiting high CPU usage and that are observed for the first time in the previous 5 days. A previously unseen process consuming sustained CPU resources may indicate suspicious activity such as cryptomining, exploit payload execution, or other forms of resource abuse following host compromise. In some cases, this may also surface legitimate but unexpected software causing performance degradation.",
+        "from": "now-7205m",
+        "interval": "5m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Newly Observed Process Exhibiting High CPU Usage",
+        "note": "## Triage and analysis\n\n### Investigating Newly Observed Process Exhibiting High CPU Usage\n\nThis rule alerts on processes exhibiting high CPU usage and that are observed for the first time in the previous 5 days.\n\n### Possible investigation steps\n- Examine the process name, command line, and SHA-256 hash to determine whether the process is expected or known to be malicious.\n- Validate the observed CPU usage and duration to determine whether the spike is abnormal for this process and host.\n- Check for related process activity such as parent/child processes, suspicious process spawning, or privilege escalation attempts.\n- Review additional host telemetry including:\n  - Network connections initiated by the process\n  - File creation or modification events\n  - Persistence mechanisms (services, scheduled tasks, registry keys)\n- Determine whether similar activity is observed on other hosts, which may indicate a broader compromise.\n\n### False positive analysis\n- Legitimate high-CPU processes such as software updates, backup agents, security scans, or system maintenance tasks.\n- Resource-intensive but benign applications (e.g., compilers, video encoding, data processing jobs).\n- Security tools or monitoring agents temporarily consuming high CPU.\n\n### Related Rules\n\n- Detection Alert on a Process Exhibiting CPU Spike - df9c0e92-5dee-4f1d-a760-3a5c039e4382\n- Multiple Alerts on a Host Exhibiting CPU Spike - b7f77c3c-1bcb-4afc-9ace-49357007947b\n\n### Response and remediation\n- If malicious activity is confirmed, isolate the affected host to prevent further impact.\n- Terminate the offending process if safe to do so.\n- Remove any identified malicious binaries or artifacts and eliminate persistence mechanisms.\n- Apply relevant patches or configuration changes to remediate the root cause.\n- Monitor the environment for recurrence of similar high-CPU processes combined with security alerts.\n- Escalate the incident if multiple hosts or indicators suggest coordinated or widespread activity.",
+        "query": "FROM metrics-*\n// more than 90% CPU use\n| WHERE system.process.cpu.total.norm.pct >= 0.9 and process.name is not null\n| STATS Esql.total_count = count(*),\n        Esql.first_time_seen = MIN(@timestamp),\n        Esql.agent_id_values = COUNT_DISTINCT(agent.id),\n        Esql.system_process_cpu_total_norm_pct_values = MAX(system.process.cpu.total.norm.pct),\n        Esql.process_command_line_values = VALUES(process.command_line),\n        Esql.host_id_values = values(host.id), \n        Esql.user_name_values = VALUES(user.name) by process.name\n| eval Esql.recent = DATE_DIFF(\"minute\", Esql.first_time_seen, now())\n// first time seen is within 6m of the rule execution time and first seen in the last 5 days as per the rule from schedule and limited to 1 unique hostg\n| where Esql.recent <= 6 and Esql.agent_id_values == 1\n// populate fields for rule exception\n| eval host.id = MV_FIRST(Esql.host_id_values), \n       process.command_line = MV_FIRST(Esql.process_command_line_values)\n| keep host.id, process.name, process.command_line, Esql.*\n",
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.agent_id_values",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.first_time_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.host_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_command_line_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.recent",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.system_process_cpu_total_norm_pct_values",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.total_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "f9de0949-94d8-441d-ae9a-8eb1e040acf2",
+        "setup": "## Setup\n\nThis rule requires host CPU metrics collected via the Elastic Agent **System** integration.\n\n### System Metrics Integration Setup\nThe System integration collects host-level metrics such as CPU usage, load, memory, and process statistics and sends them to Elasticsearch using Elastic Agent.\n\n#### Prerequisite Requirements:\n- Elastic Agent managed by Fleet\n- A Fleet Server configured and reachable\n  Refer to the Fleet Server setup guide:\n  https://www.elastic.co/guide/en/fleet/current/fleet-server.html\n\n#### The following steps should be executed in order to enable CPU metrics collection:\n- Go to the Kibana home page and click **Add integrations**.\n- In the search bar, enter **System** and select the **System** integration.\n- Click **Add System**.\n- Configure an integration name and optionally add a description.\n- Under **Metrics**, ensure the following datasets are enabled:\n  - `system.cpu`\n  - `system.load` (optional but recommended)\n  - `system.process` (optional, if process-level CPU is required)\n- Review optional and advanced settings as needed.\n- Add the integration to an existing agent policy or create a new agent policy.\n- Deploy the Elastic Agent to the hosts from which CPU metrics should be collected.\n- Click **Save and Continue** to finalize the setup.\n\n#### Validation\nAfter deployment, verify CPU metrics ingestion by confirming the presence of documents in:\n- `metrics-system.cpu-*`\n- `metrics-system.load-*` (if enabled)\n\nFor more details on the System integration and available metrics, refer to the documentation:\nhttps://docs.elastic.co/integrations/system\n",
+        "severity": "high",
+        "tags": [
+            "Use Case: Threat Detection",
+            "Use Case: Observavility",
+            "Resources: Investigation Guide",
+            "Domain: Endpoint",
+            "Tactic: Impact"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1496",
+                        "name": "Resource Hijacking",
+                        "reference": "https://attack.mitre.org/techniques/T1496/",
+                        "subtechnique": [
+                            {
+                                "id": "T1496.001",
+                                "name": "Compute Hijacking",
+                                "reference": "https://attack.mitre.org/techniques/T1496/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "f9de0949-94d8-441d-ae9a-8eb1e040acf2_1",
+    "type": "security-rule"
+}

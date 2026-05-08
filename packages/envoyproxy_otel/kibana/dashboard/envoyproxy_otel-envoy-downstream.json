@@ -1,0 +1,1870 @@
+{
+    "attributes": {
+        "title": "[Envoy Proxy] Downstream & HTTP",
+        "description": "Downstream traffic, latency, HTTP metrics, and connection handling.",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "69bb569b-97e5-3a2d-03d0-a828b8edf3b1",
+                                "order": 1,
+                                "label": "Downstream & HTTP",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_69bb569b-97e5-3a2d-03d0-a828b8edf3b1_dashboard"
+                            },
+                            {
+                                "id": "2d183e06-a931-a1fc-661a-a0cfc9f9cc10",
+                                "order": 2,
+                                "label": "Upstream & Proxy Health",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_2d183e06-a931-a1fc-661a-a0cfc9f9cc10_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 12,
+                    "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [Envoy Proxy] Downstream & HTTP\n\nDownstream (client-facing) metrics:\n- Request rate and completed requests\n- Active connections and bytes transferred\n- Request latency (downstream_rq_time)\n- HTTP response code distribution\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "c8e55808-ab8d-92a7-ee7a-fe3396a0888f",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "c8e55808-ab8d-92a7-ee7a-fe3396a0888f"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Downstream Requests Completed",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "43999c4a-777b-0057-1a23-f37e2a2b8bef",
+                                "layerType": "data",
+                                "metricAccessor": "4f2416a6-51b7-45f7-bdf3-1f1a494c9f3d",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_rq_completed IS NOT NULL\n| STATS completed = MAX(envoy.http.ingress_http.downstream_rq_completed)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "43999c4a-777b-0057-1a23-f37e2a2b8bef": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_rq_completed IS NOT NULL\n| STATS completed = MAX(envoy.http.ingress_http.downstream_rq_completed)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "completed",
+                                                    "columnId": "4f2416a6-51b7-45f7-bdf3-1f1a494c9f3d",
+                                                    "label": "Completed requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "completed",
+                                                    "columnId": "4f2416a6-51b7-45f7-bdf3-1f1a494c9f3d",
+                                                    "label": "Completed requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "0d52b893-eae2-361c-66f4-308ced40664b",
+                "gridData": {
+                    "x": 24,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "0d52b893-eae2-361c-66f4-308ced40664b"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Downstream 2xx Responses",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "ed2d8ca3-7d66-ebf3-1448-78d6ce1d597f",
+                                "layerType": "data",
+                                "metricAccessor": "66aae450-9555-683d-3879-65bb14a23ec2",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_rq_2xx IS NOT NULL\n| STATS rq_2xx = MAX(envoy.http.ingress_http.downstream_rq_2xx)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "ed2d8ca3-7d66-ebf3-1448-78d6ce1d597f": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_rq_2xx IS NOT NULL\n| STATS rq_2xx = MAX(envoy.http.ingress_http.downstream_rq_2xx)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rq_2xx",
+                                                    "columnId": "66aae450-9555-683d-3879-65bb14a23ec2",
+                                                    "label": "2xx responses",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rq_2xx",
+                                                    "columnId": "66aae450-9555-683d-3879-65bb14a23ec2",
+                                                    "label": "2xx responses",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "ad461b56-5730-9724-511f-9cb2091191a7",
+                "gridData": {
+                    "x": 32,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "ad461b56-5730-9724-511f-9cb2091191a7"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Downstream Connections Total",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "ebb25fb4-431e-066a-6fe5-766662fae70f",
+                                "layerType": "data",
+                                "metricAccessor": "8e7b0cc0-018f-c7ff-61fa-d7d368c2b81e",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_cx_total IS NOT NULL\n| STATS total = MAX(envoy.http.ingress_http.downstream_cx_total)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "ebb25fb4-431e-066a-6fe5-766662fae70f": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_cx_total IS NOT NULL\n| STATS total = MAX(envoy.http.ingress_http.downstream_cx_total)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total",
+                                                    "columnId": "8e7b0cc0-018f-c7ff-61fa-d7d368c2b81e",
+                                                    "label": "Connections total",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total",
+                                                    "columnId": "8e7b0cc0-018f-c7ff-61fa-d7d368c2b81e",
+                                                    "label": "Connections total",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "8cad75f8-4c2b-bb0c-b4dc-ab2c559b8d3f",
+                "gridData": {
+                    "x": 40,
+                    "y": 2,
+                    "w": 8,
+                    "h": 4,
+                    "i": "8cad75f8-4c2b-bb0c-b4dc-ab2c559b8d3f"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Bytes Transmitted",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "13ab79e0-cb8b-a3b8-b3dd-5ba0e7b8bc33",
+                                "layerType": "data",
+                                "metricAccessor": "86170046-6483-f4c8-a6a8-7a9f4838f370",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_cx_tx_bytes_total IS NOT NULL\n| STATS bytes = MAX(envoy.http.ingress_http.downstream_cx_tx_bytes_total)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "13ab79e0-cb8b-a3b8-b3dd-5ba0e7b8bc33": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_cx_tx_bytes_total IS NOT NULL\n| STATS bytes = MAX(envoy.http.ingress_http.downstream_cx_tx_bytes_total)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "bytes",
+                                                    "columnId": "86170046-6483-f4c8-a6a8-7a9f4838f370",
+                                                    "label": "Bytes TX (cumulative)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "bytes",
+                                                    "columnId": "86170046-6483-f4c8-a6a8-7a9f4838f370",
+                                                    "label": "Bytes TX (cumulative)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "9de35c30-9e39-4a1e-fee1-25de35e52809",
+                "gridData": {
+                    "x": 16,
+                    "y": 6,
+                    "w": 8,
+                    "h": 4,
+                    "i": "9de35c30-9e39-4a1e-fee1-25de35e52809"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Bytes Received",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "3a77df7d-0fca-0504-2c60-40f765c02a3d",
+                                "layerType": "data",
+                                "metricAccessor": "b577b6ac-ff17-59f6-b6e5-b48fb2f3a445",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_cx_rx_bytes_total IS NOT NULL\n| STATS bytes = MAX(envoy.http.ingress_http.downstream_cx_rx_bytes_total)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "3a77df7d-0fca-0504-2c60-40f765c02a3d": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_cx_rx_bytes_total IS NOT NULL\n| STATS bytes = MAX(envoy.http.ingress_http.downstream_cx_rx_bytes_total)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "bytes",
+                                                    "columnId": "b577b6ac-ff17-59f6-b6e5-b48fb2f3a445",
+                                                    "label": "Bytes RX (cumulative)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "bytes",
+                                                    "columnId": "b577b6ac-ff17-59f6-b6e5-b48fb2f3a445",
+                                                    "label": "Bytes RX (cumulative)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "e570830c-1de6-6504-5796-c902e20ec6df",
+                "gridData": {
+                    "x": 24,
+                    "y": 6,
+                    "w": 8,
+                    "h": 4,
+                    "i": "e570830c-1de6-6504-5796-c902e20ec6df"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Request Latency (p50)",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "4c066384-37ae-592d-4388-55f0335ca064",
+                                "layerType": "data",
+                                "metricAccessor": "306a0c17-94a7-27b0-dc8c-9cfc0a3d27ca",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_rq_time IS NOT NULL\n| STATS p50 = PERCENTILE(envoy.http.ingress_http.downstream_rq_time, 50)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "4c066384-37ae-592d-4388-55f0335ca064": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_rq_time IS NOT NULL\n| STATS p50 = PERCENTILE(envoy.http.ingress_http.downstream_rq_time, 50)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "p50",
+                                                    "columnId": "306a0c17-94a7-27b0-dc8c-9cfc0a3d27ca",
+                                                    "label": "Latency p50 (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "p50",
+                                                    "columnId": "306a0c17-94a7-27b0-dc8c-9cfc0a3d27ca",
+                                                    "label": "Latency p50 (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": " ms"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "ef2aed44-b4d2-07f1-ebf5-2031f31f34fe",
+                "gridData": {
+                    "x": 0,
+                    "y": 14,
+                    "w": 48,
+                    "h": 12,
+                    "i": "ef2aed44-b4d2-07f1-ebf5-2031f31f34fe"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Downstream Requests Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "27638922-2111-4878-6e03-5940765813ec",
+                                        "accessors": [
+                                            "ee12baeb-c7e8-f267-8d98-5f84f5ac3a0c"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_rq_total IS NOT NULL\n| STATS requests = MAX(envoy.http.ingress_http.downstream_rq_total) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "27638922-2111-4878-6e03-5940765813ec": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_rq_total IS NOT NULL\n| STATS requests = MAX(envoy.http.ingress_http.downstream_rq_total) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "ee12baeb-c7e8-f267-8d98-5f84f5ac3a0c",
+                                                    "label": "Total requests (cumulative)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "requests",
+                                                    "columnId": "ee12baeb-c7e8-f267-8d98-5f84f5ac3a0c",
+                                                    "label": "Total requests (cumulative)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "531d929b-c6ec-ac57-9bee-abe7153a87b2",
+                "gridData": {
+                    "x": 0,
+                    "y": 26,
+                    "w": 24,
+                    "h": 12,
+                    "i": "531d929b-c6ec-ac57-9bee-abe7153a87b2"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Request Latency Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "58916345-0e6c-303c-f00e-f4aa9c5b4911",
+                                        "accessors": [
+                                            "3e3b0ea7-89ad-0742-0e06-5caa9dd4f1f4",
+                                            "48d377b8-5677-bc3a-f352-a6eecbff48d0",
+                                            "2746806f-8552-ad52-ccfd-80289584bbf4"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_rq_time IS NOT NULL\n| STATS p50 = PERCENTILE(envoy.http.ingress_http.downstream_rq_time, 50), p95 = PERCENTILE(envoy.http.ingress_http.downstream_rq_time, 95), p99 = PERCENTILE(envoy.http.ingress_http.downstream_rq_time, 99) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "58916345-0e6c-303c-f00e-f4aa9c5b4911": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_rq_time IS NOT NULL\n| STATS p50 = PERCENTILE(envoy.http.ingress_http.downstream_rq_time, 50), p95 = PERCENTILE(envoy.http.ingress_http.downstream_rq_time, 95), p99 = PERCENTILE(envoy.http.ingress_http.downstream_rq_time, 99) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "p50",
+                                                    "columnId": "3e3b0ea7-89ad-0742-0e06-5caa9dd4f1f4",
+                                                    "label": "p50 (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "p95",
+                                                    "columnId": "48d377b8-5677-bc3a-f352-a6eecbff48d0",
+                                                    "label": "p95 (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "p99",
+                                                    "columnId": "2746806f-8552-ad52-ccfd-80289584bbf4",
+                                                    "label": "p99 (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "p50",
+                                                    "columnId": "3e3b0ea7-89ad-0742-0e06-5caa9dd4f1f4",
+                                                    "label": "p50 (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "p95",
+                                                    "columnId": "48d377b8-5677-bc3a-f352-a6eecbff48d0",
+                                                    "label": "p95 (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "p99",
+                                                    "columnId": "2746806f-8552-ad52-ccfd-80289584bbf4",
+                                                    "label": "p99 (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "6beee7cb-423c-9c6d-8753-b82a5e7f776e",
+                "gridData": {
+                    "x": 24,
+                    "y": 26,
+                    "w": 24,
+                    "h": 12,
+                    "i": "6beee7cb-423c-9c6d-8753-b82a5e7f776e"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Connection Duration (downstream_cx_length_ms)",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "93754f97-aad4-9c15-00f2-e362811fbe66",
+                                        "accessors": [
+                                            "57c61695-063e-32d2-23d4-7aae6828042e",
+                                            "48d377b8-5677-bc3a-f352-a6eecbff48d0"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_cx_length_ms IS NOT NULL\n| STATS avg_length = AVG(envoy.http.ingress_http.downstream_cx_length_ms), p95 = PERCENTILE(envoy.http.ingress_http.downstream_cx_length_ms, 95) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "93754f97-aad4-9c15-00f2-e362811fbe66": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_cx_length_ms IS NOT NULL\n| STATS avg_length = AVG(envoy.http.ingress_http.downstream_cx_length_ms), p95 = PERCENTILE(envoy.http.ingress_http.downstream_cx_length_ms, 95) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "avg_length",
+                                                    "columnId": "57c61695-063e-32d2-23d4-7aae6828042e",
+                                                    "label": "Avg length (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "p95",
+                                                    "columnId": "48d377b8-5677-bc3a-f352-a6eecbff48d0",
+                                                    "label": "p95 (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "avg_length",
+                                                    "columnId": "57c61695-063e-32d2-23d4-7aae6828042e",
+                                                    "label": "Avg length (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "p95",
+                                                    "columnId": "48d377b8-5677-bc3a-f352-a6eecbff48d0",
+                                                    "label": "p95 (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "1b7814f3-5210-54fd-2c3f-8c36a6206416",
+                "gridData": {
+                    "x": 0,
+                    "y": 38,
+                    "w": 24,
+                    "h": 12,
+                    "i": "1b7814f3-5210-54fd-2c3f-8c36a6206416"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Response Code Ratio (2xx / Completed)",
+                        "visualizationType": "lnsGauge",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "f73021ca-8adf-ab90-0fdf-295063337883",
+                                "layerType": "data",
+                                "metricAccessor": "4232564e-fa05-f18e-ba86-d8809422dabd",
+                                "minAccessor": "f8918670-9ead-11b5-dc1c-68b08812c5c3",
+                                "maxAccessor": "df43a52e-1915-7d84-6051-97401e28e414",
+                                "goalAccessor": "43a16f29-69fe-b71e-14f7-cd1cf19f6441",
+                                "shape": "arc",
+                                "ticksPosition": "auto",
+                                "labelMajorMode": "auto"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_rq_2xx IS NOT NULL AND envoy.http.ingress_http.downstream_rq_completed IS NOT NULL AND envoy.http.ingress_http.downstream_rq_completed > 0\n| EVAL ratio = 100 * (envoy.http.ingress_http.downstream_rq_2xx / envoy.http.ingress_http.downstream_rq_completed)\n| STATS pct = AVG(ratio) | EVAL _gauge_min = 0, _gauge_max = 100, _gauge_goal = 95"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "f73021ca-8adf-ab90-0fdf-295063337883": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_rq_2xx IS NOT NULL AND envoy.http.ingress_http.downstream_rq_completed IS NOT NULL AND envoy.http.ingress_http.downstream_rq_completed > 0\n| EVAL ratio = 100 * (envoy.http.ingress_http.downstream_rq_2xx / envoy.http.ingress_http.downstream_rq_completed)\n| STATS pct = AVG(ratio) | EVAL _gauge_min = 0, _gauge_max = 100, _gauge_goal = 95"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "pct",
+                                                    "columnId": "4232564e-fa05-f18e-ba86-d8809422dabd",
+                                                    "label": "2xx / Completed (%)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "_gauge_min",
+                                                    "columnId": "f8918670-9ead-11b5-dc1c-68b08812c5c3",
+                                                    "label": "_gauge_min",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "_gauge_max",
+                                                    "columnId": "df43a52e-1915-7d84-6051-97401e28e414",
+                                                    "label": "_gauge_max",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "_gauge_goal",
+                                                    "columnId": "43a16f29-69fe-b71e-14f7-cd1cf19f6441",
+                                                    "label": "_gauge_goal",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "pct",
+                                                    "columnId": "4232564e-fa05-f18e-ba86-d8809422dabd",
+                                                    "label": "2xx / Completed (%)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "_gauge_min",
+                                                    "columnId": "f8918670-9ead-11b5-dc1c-68b08812c5c3",
+                                                    "label": "_gauge_min",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "_gauge_max",
+                                                    "columnId": "df43a52e-1915-7d84-6051-97401e28e414",
+                                                    "label": "_gauge_max",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "_gauge_goal",
+                                                    "columnId": "43a16f29-69fe-b71e-14f7-cd1cf19f6441",
+                                                    "label": "_gauge_goal",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "03cfda2e-6179-168d-2f72-1cd19f12638f",
+                "gridData": {
+                    "x": 24,
+                    "y": 38,
+                    "w": 24,
+                    "h": 12,
+                    "i": "03cfda2e-6179-168d-2f72-1cd19f12638f"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Bytes Transferred Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "8ebe7702-4480-1628-3415-2d1acaf14ccd",
+                                        "accessors": [
+                                            "11f78d3a-8743-20ff-8e0d-d059cb953e2a",
+                                            "791105d8-8848-e40e-9caa-63bb7a00e7b8"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_cx_rx_bytes_total IS NOT NULL OR envoy.http.ingress_http.downstream_cx_tx_bytes_total IS NOT NULL\n| STATS rx = MAX(envoy.http.ingress_http.downstream_cx_rx_bytes_total), tx = MAX(envoy.http.ingress_http.downstream_cx_tx_bytes_total) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "8ebe7702-4480-1628-3415-2d1acaf14ccd": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_cx_rx_bytes_total IS NOT NULL OR envoy.http.ingress_http.downstream_cx_tx_bytes_total IS NOT NULL\n| STATS rx = MAX(envoy.http.ingress_http.downstream_cx_rx_bytes_total), tx = MAX(envoy.http.ingress_http.downstream_cx_tx_bytes_total) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rx",
+                                                    "columnId": "11f78d3a-8743-20ff-8e0d-d059cb953e2a",
+                                                    "label": "Bytes RX",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "tx",
+                                                    "columnId": "791105d8-8848-e40e-9caa-63bb7a00e7b8",
+                                                    "label": "Bytes TX",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rx",
+                                                    "columnId": "11f78d3a-8743-20ff-8e0d-d059cb953e2a",
+                                                    "label": "Bytes RX",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "tx",
+                                                    "columnId": "791105d8-8848-e40e-9caa-63bb7a00e7b8",
+                                                    "label": "Bytes TX",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "9795dee3-5c42-ad05-da3c-4398f12cd887",
+                "gridData": {
+                    "x": 0,
+                    "y": 50,
+                    "w": 48,
+                    "h": 12,
+                    "i": "9795dee3-5c42-ad05-da3c-4398f12cd887"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Downstream HTTP Summary",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "b1891b97-0082-02a1-ac3c-a4abf4fde23e",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "e18bef54-5255-23b1-88a4-48602657b266",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "6c162a06-ff85-37e5-8fac-cd053f875725",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "c4f67f1d-d154-1d2b-a3b9-76a68e711afa",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    },
+                                    {
+                                        "columnId": "fcf37920-0874-042f-9d9c-3a5b3bc3321c",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "ed617343-84ce-4710-bd76-ccfd1ca33d30",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_cx_total IS NOT NULL\n| STATS cx_total = MAX(envoy.http.ingress_http.downstream_cx_total), cx_active = MAX(envoy.http.ingress_http.downstream_cx_active), rq_total = MAX(envoy.http.ingress_http.downstream_rq_total), rq_completed = MAX(envoy.http.ingress_http.downstream_rq_completed), rq_2xx = MAX(envoy.http.ingress_http.downstream_rq_2xx)\n| LIMIT 20"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "ed617343-84ce-4710-bd76-ccfd1ca33d30": {
+                                            "query": {
+                                                "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.http.ingress_http.downstream_cx_total IS NOT NULL\n| STATS cx_total = MAX(envoy.http.ingress_http.downstream_cx_total), cx_active = MAX(envoy.http.ingress_http.downstream_cx_active), rq_total = MAX(envoy.http.ingress_http.downstream_rq_total), rq_completed = MAX(envoy.http.ingress_http.downstream_rq_completed), rq_2xx = MAX(envoy.http.ingress_http.downstream_rq_2xx)\n| LIMIT 20"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "cx_total",
+                                                    "columnId": "b1891b97-0082-02a1-ac3c-a4abf4fde23e",
+                                                    "label": "Connections total",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "cx_active",
+                                                    "columnId": "e18bef54-5255-23b1-88a4-48602657b266",
+                                                    "label": "Connections active",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "rq_total",
+                                                    "columnId": "6c162a06-ff85-37e5-8fac-cd053f875725",
+                                                    "label": "Requests total",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "rq_completed",
+                                                    "columnId": "c4f67f1d-d154-1d2b-a3b9-76a68e711afa",
+                                                    "label": "Requests completed",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "rq_2xx",
+                                                    "columnId": "fcf37920-0874-042f-9d9c-3a5b3bc3321c",
+                                                    "label": "2xx responses",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "cx_total",
+                                                    "columnId": "b1891b97-0082-02a1-ac3c-a4abf4fde23e",
+                                                    "label": "Connections total",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "cx_active",
+                                                    "columnId": "e18bef54-5255-23b1-88a4-48602657b266",
+                                                    "label": "Connections active",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "rq_total",
+                                                    "columnId": "6c162a06-ff85-37e5-8fac-cd053f875725",
+                                                    "label": "Requests total",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "rq_completed",
+                                                    "columnId": "c4f67f1d-d154-1d2b-a3b9-76a68e711afa",
+                                                    "label": "Requests completed",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "rq_2xx",
+                                                    "columnId": "fcf37920-0874-042f-9d9c-3a5b3bc3321c",
+                                                    "label": "2xx responses",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "statsdreceiver"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "statsdreceiver"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": true,
+        "timeFrom": "now-1h",
+        "timeTo": "now",
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "fe98772b-264a-3eea-cada-9bdcfb1bffa9": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "fe98772b-264a-3eea-cada-9bdcfb1bffa9",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "host.name",
+                        "title": "Host",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "envoyproxy_otel-envoy-downstream",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "envoyproxy_otel-envoy-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "envoyproxy_otel-envoy-downstream",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_69bb569b-97e5-3a2d-03d0-a828b8edf3b1_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "envoyproxy_otel-envoy-upstream-proxy",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_2d183e06-a931-a1fc-661a-a0cfc9f9cc10_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_fe98772b-264a-3eea-cada-9bdcfb1bffa9:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}

@@ -17,11 +17,11 @@ resource.url: {{url}}
 state:
   batch_size : {{batch_size}}
   client_id: {{client_id}}
-  secret: {{client_secret}}
+  client_secret: {{client_secret}}
 redact:
   fields:
     - client_id
-    - secret
+    - client_secret
 program: |-
   state.with(
     has(state.?next.expiry) && timestamp(state.next.expiry) > now ?
@@ -35,7 +35,7 @@ program: |-
         "",
         {
           "clientId": state.client_id,
-          "secret": state.secret,
+          "secret": state.client_secret,
         }.encode_json()
       ).with(
         {

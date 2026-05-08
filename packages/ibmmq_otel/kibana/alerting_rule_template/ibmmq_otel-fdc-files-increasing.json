@@ -1,0 +1,36 @@
+{
+    "id": "ibmmq_otel-fdc-files-increasing",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[IBM MQ OTel] FDC files increasing",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "ibmmq"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-ibmmq.otel-*\n| STATS fdc_change = SUM(DELTA(ibmmq_qmgr_fdc_files))\n    BY attributes.qmgr\n// Alert when new FDC (First Failure Data Capture) files are generated\n// FDC files indicate internal queue manager errors\n// Any increase is significant and requires immediate investigation\n| WHERE fdc_change IS NOT NULL AND fdc_change > 0"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "attributes.qmgr",
+            "termSize": 10
+        }
+    }
+}

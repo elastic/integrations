@@ -1,0 +1,42 @@
+{
+  "id": "postgresql_otel-slow-top-queries",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[PostgreSQL OTel] Slow top queries",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "postgresql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM logs-postgresqlreceiver.otel-*\n// Top query stats from pg_stat_statements; total_exec_time is delta per scrape\n| WHERE event_name == \"db.server.top_query\"\n| WHERE attributes.postgresql.total_exec_time IS NOT NULL AND attributes.postgresql.total_exec_time > 0\n// Threshold: total exec time > 10 seconds in window (delta); tune for scrape interval\n| WHERE attributes.postgresql.total_exec_time > 10000\n| KEEP service.instance.id, attributes.db.namespace, attributes.db.query.text, attributes.postgresql.total_exec_time, attributes.postgresql.calls\n| SORT attributes.postgresql.total_exec_time DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "service.instance.id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

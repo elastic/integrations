@@ -1,0 +1,39 @@
+{
+    "id": "mysql_otel-replication-lag",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[MySQL OTel] Replication lag",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "mysql"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-mysqlreceiver.otel-*\n// Replica lag is a gauge (seconds behind source); only present on replica instances\n| WHERE metrics.mysql.replica.time_behind_source IS NOT NULL\n| STATS lag_seconds = MAX(metrics.mysql.replica.time_behind_source)\n  BY resource.attributes.mysql.instance.endpoint\n// Alert when lag exceeds 60 seconds; adjust for your RPO requirements\n| WHERE lag_seconds > 60\n| SORT lag_seconds DESC"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.mysql.instance.endpoint",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

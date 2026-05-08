@@ -1,0 +1,203 @@
+fields:
+# metadata
+  - name: metadata.eventType
+    enum:
+      - DetectionSummaryEvent
+      - EppDetectionSummaryEvent
+      - MobileDetectionSummaryEvent
+      - IncidentSummaryEvent
+      - XdrDetectionSummaryEvent
+      - IdpDetectionSummaryEvent
+      - ReconNotificationSummaryEvent
+      - IdentityProtectionEvent
+      - CSPMIOAStreamingEvent
+      - CSPMSearchStreamingEvent
+      - UserActivityAuditEvent
+      - AuthActivityAuditEvent
+      - FirewallMatchEvent
+      - RemoteResponseSessionStartEvent
+      - ScheduledReportNotificationEvent
+  - name: metadata.customerIDString
+    cardinality: 100000
+  - name: metadata.offset
+    cardinality: 100000
+  - name: timestamp
+    period: -24h
+
+# XdrDetectionSummaryEvent
+  - name: XdrType
+    enum:
+      - xdr
+      - xdr-scheduled-search
+
+# ReconNotificationSummaryEvent
+  - name: ItemType
+    enum:
+      - CS
+      - 6G
+      - 6G_EXTERNAL
+      - LEGACY_TI
+      - BREACH_6G
+      - SCRAPPY
+      - TYPOSQUATTING
+
+# MobileDetectionSummaryEvent
+  - name: DetectId
+    cardinality: 100000
+
+# CSPM
+  - name: Region
+    enum:
+      - us-west-1
+      - us-west-2
+      - us-east-1
+      - us-east-2
+  - name: Disposition
+    enum:
+      - Failed
+      - Passed
+
+# IncidentSummaryEvent
+  - name: IncidentState
+    enum:
+      - open
+      - closed
+  - name: FineScore
+    range:
+      min: 0.1
+      max: 10
+  - name: LateralMovement
+    range:
+      min: 0
+      max: 1
+  - name: IncidentType
+    range:
+      min: 1
+      max: 2
+# AuthActivityAuditEvent
+  - name: OperationName
+    enum:
+      - activateUser
+      - changePassword
+      - confirmResetPassword
+      - createUser
+      - deactivateUser
+      - deleteUser
+      - grantUserRoles
+      - grantCustomerSubscriptions
+      - requestResetPassword
+      - resetAuthSecret
+      - revokeUserRoles
+      - revokeCustomerSubscriptions
+      - selfAcceptEula
+      - twoFactorAuthenticate
+      - updateUser
+      - updateUserRoles
+      - userAuthenticate
+  - name: ServiceName
+    enum:
+      - Crowdstrike Streaming API
+      - detections
+# IdentityProtectionEvent
+  - name: Category
+    enum:
+      - Detections
+      - Incidents
+  - name: State
+    enum:
+      - NEW
+      - IN_PROGRESS
+      - DISMISS
+      - RESOLVED
+      - AUTO_RESOLVED
+
+# FirewallMatchEvent
+  - name: DeviceId
+    cardinality: 100000
+  - name: EventType
+    enum: 
+      - FirewallRuleIP4Matched
+      - FirewallRuleIP6Matched
+      - FirewallRuleApplicationFailed
+
+# DetectionSummaryEvent
+  - name: ComputerName
+    cardinality: 10000
+  - name: IOCType
+    enum:
+      - domain
+      - filename
+      - hash_md5
+      - hash_sha256
+      - registry_key
+      - command_line
+      - behavior
+
+# EppDetectionSummaryEvent
+  - name: AgentId
+    cardinality: 100000
+  - name: AggregateId
+    value: xxxxxx:529fb8e5xxxxxxxx5d577e3f:38655211725
+  - name: CompositeId
+    value: xxxxxxxx:ind:529fb8e5xxxxxxxx5d577e3f:41104
+  - name: DataDomains
+    enum:
+      - Identity
+      - Web
+      - Network
+      - Email
+      - Endpoint
+      - Cloud
+      - IoT
+  - name: FileName
+    cardinality: 100000
+  - name: HostGroups
+    cardinality: 10000
+  - name: Hostname
+    cardinality: 100000
+  - name: MACAddress
+    value: ba-xx-00-xx-d0-00
+  - name: MD5String
+    cardinality: 100000
+  - name: NetworkAccesses.ConnectionDirection
+    range:
+      min: 0
+      max: 2
+  - name: NetworkAccesses.LocalPort
+    range:
+      min: 10
+      max: 90000
+  - name: NetworkAccesses.RemotePort
+    range:
+      min: 10
+      max: 90000
+  - name: NetworkAccesses.Protocol
+    enum:
+      - TCP
+      - UDP
+  - name: PlatformName
+    enum:
+      - Windows
+      - Linux
+      - Mac
+  - name: Severity
+    range:
+      min: 0
+      max: 100
+  - name: DetectionSeverity
+    range:
+      min: 0
+      max: 5
+  - name: SeverityName
+    enum:
+      - Informational
+      - Low
+      - Medium
+      - High
+      - Critical
+  - name: Type
+    enum:
+      - ldt
+      - ofp
+  - name: UserName
+    cardinality: 10000

@@ -1,0 +1,40 @@
+{
+    "id": "couchdb_otel-open-databases-high",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[CouchDB OTel] Open databases count high",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "couchdb"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 6,
+            "statusChangeThreshold": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-couchdbreceiver.otel-default\n// Open databases is a gauge — use LAST_OVER_TIME for current state\n| WHERE couchdb.database.open IS NOT NULL\n| STATS open_databases = MAX(LAST_OVER_TIME(couchdb.database.open))\n  BY couchdb.node.name\n// Unbounded growth indicates DB proliferation or leak — tune threshold\n| WHERE open_databases > 100\n| SORT open_databases DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "couchdb.node.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

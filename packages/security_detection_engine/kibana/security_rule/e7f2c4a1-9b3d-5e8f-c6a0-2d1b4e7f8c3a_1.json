@@ -1,0 +1,121 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies execution of Yuze, a lightweight open-source tunneling tool used for intranet penetration. Yuze supports forward and reverse SOCKS5 proxy tunneling and is typically executed via rundll32 loading yuze.dll with the RunYuze export. Threat actors may use it to proxy C2 or pivot traffic.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Protocol Tunneling via Yuze",
+        "note": "## Triage and analysis\n\n### Investigating Potential Protocol Tunneling via Yuze\n\nYuze is a C-based tunneling tool used for intranet penetration and supports forward and reverse SOCKS5 proxy tunneling. It is commonly executed as `rundll32 yuze.dll,RunYuze reverse -c <ip>:<port>` and has been observed in threat actor campaigns.\n\n### Possible investigation steps\n\n- Confirm the command line contains `yuze.dll` and `RunYuze`; typical form is `rundll32 yuze.dll,RunYuze reverse -c <ip>:<port>`.\n- Extract the remote endpoint from the `-c` argument (C2 or relay) and look up the IP/domain in threat intelligence.\n- Locate where yuze.dll was loaded from; check file creation time to see if it was recently dropped.\n- Identify the parent process that started rundll32 (script, scheduled task, exploit, etc.) to understand the execution chain.\n- Correlate with network events for outbound connections from this host to the IP/port in the command line.\n\n### False positive analysis\n\n- Legitimate use of Yuze is rare; most hits are likely malicious or red-team. If you use Yuze for authorized testing, consider an exception by host or user.\n\n### Response and remediation\n\n- Isolate the host and terminate the rundll32 process.\n- Remove yuze.dll from disk and hunt for other copies or related artifacts.\n- Block the C2/relay IP or domain at DNS/firewall; rotate credentials if the tunnel was used for access.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  ( \n    (process.args : \"reverse\" and process.args : (\"-c\", \"-s\")) or \n    (process.args : (\"proxy\", \"fwd\") and process.args : \"-l\") \n   ) and \n  (?process.code_signature.exists == false or process.name : \"rundll32.exe\")\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1572/",
+            "https://github.com/P001water/yuze",
+            "https://www.trendmicro.com/tr_tr/research/26/c/dissecting-a-warlock-attack.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "e7f2c4a1-9b3d-5e8f-c6a0-2d1b4e7f8c3a",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Crowdstrike",
+            "Data Source: Elastic Endgame",
+            "Data Source: Windows Security Event Logs"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1572",
+                        "name": "Protocol Tunneling",
+                        "reference": "https://attack.mitre.org/techniques/T1572/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "e7f2c4a1-9b3d-5e8f-c6a0-2d1b4e7f8c3a_1",
+    "type": "security-rule"
+}

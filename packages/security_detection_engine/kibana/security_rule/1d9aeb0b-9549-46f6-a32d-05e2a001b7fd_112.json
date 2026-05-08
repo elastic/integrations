@@ -1,0 +1,111 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies PowerShell script block content that uses .NET cryptography APIs for file encryption or decryption. Attackers abuse these routines to encrypt data for impact or decrypt staged payloads to evade defenses.",
+        "false_positives": [
+            "Legitimate PowerShell Scripts which makes use of encryption."
+        ],
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-windows.powershell*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "powershell.file.script_block_text",
+                "powershell.file.script_block_id",
+                "powershell.sequence",
+                "powershell.total",
+                "file.path",
+                "file.directory",
+                "file.name",
+                "process.pid",
+                "host.name",
+                "host.id",
+                "powershell.file.script_block_length"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "PowerShell Script with Encryption/Decryption Capabilities",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This guide was created by humans with the assistance of generative AI. While its contents have been manually curated to include the most valuable information, always validate assumptions and adjust procedures to match your internal runbooks and incident triage and response policies.\n\n### Investigating PowerShell Script with Encryption/Decryption Capabilities\n\nThis rule identifies PowerShell script block content that implements cryptographic encryption or decryption using .NET APIs. Matching script blocks commonly include symmetric cryptography classes (for example, AES/Rijndael or the SymmetricAlgorithm base type), key derivation helpers (for example, PasswordDeriveBytes or Rfc2898DeriveBytes), explicit cipher configuration (CipherMode and PaddingMode), and calls that create an encryptor or decryptor.\n\nThis behavior can be legitimate (protecting configuration values, packaging content, or controlled encryption for business workflows). It can also indicate malicious activity such as encrypting local data for impact or decrypting staged content to reduce static visibility before follow-on execution. Prioritize determining what data is being transformed, where outputs are written, and whether the user/host/script origin aligns with expected activity.\n\n#### Key alert fields to review\n\n- `user.name`, `user.domain`, `user.id`: Account execution context for correlation, prioritization, and scoping.\n- `host.name`, `host.id`: Host execution context for correlation, prioritization, and scoping.\n- `powershell.file.script_block_text`: Script block content that matched the detection logic.\n- `powershell.file.script_block_id`, `powershell.sequence`, `powershell.total`: Script block metadata to pivot to other fragments or reconstruct full script content when split across multiple events.\n- `file.path`, `file.directory`, `file.name`: File-origin context when the script block is sourced from an on-disk file.\n- `powershell.file.script_block_length`: Script block length (size) context.\n\n#### Possible investigation steps\n\n- Review `powershell.file.script_block_text` to understand the cryptographic intent and data flow:\n  - Identify whether the logic is primarily encrypting, decrypting, or doing both.\n  - Note which cryptographic primitives are used (for example, AES/Rijndael, hashing helpers, and key derivation routines) and how keys/IVs are produced (hard-coded values, derived from passwords, generated randomly, or passed in).\n  - Identify the transformed data source and destination:\n    - File-oriented operations: look for path construction, directory traversal patterns, repeated read/write loops, file extension changes, renames, or deletion of originals.\n    - In-memory operations: look for large embedded blobs, byte arrays, stream usage, or logic that converts decrypted content into executable form or writes it to a new artifact.\n  - Extract and preserve any embedded secrets or deterministic derivation parameters (password strings, salts, iteration counts, static IVs, or key material), as these can be critical for impact assessment and recovery.\n\n- Determine whether the alert contains the full implementation or only a fragment:\n  - Use `powershell.file.script_block_length` to gauge whether this is a complete routine (larger blocks) versus a wrapper or function invocation (smaller blocks).\n  - If the script appears incomplete, pivot on `powershell.file.script_block_id` and use `powershell.sequence` / `powershell.total` to retrieve and order all fragments before concluding intent.\n\n- Validate execution context and provenance:\n  - Review `user.name`, `user.domain`, and `user.id` to determine whether this account typically performs encryption/decryption tasks and whether the account scope matches the host role.\n  - Review `host.name` and `host.id` to determine asset criticality and whether similar activity is expected on this system (for example, administrative hosts may have more automation than standard endpoints).\n  - If `file.path` / `file.name` is present, evaluate whether the script origin is expected:\n    - Compare the path and name to approved automation locations and naming conventions.\n    - Treat unexpected paths, user-writable directories, or newly observed script locations as higher risk.\n\n- Scope the activity using alert fields:\n  - On the same host, search for additional script blocks tied to the same `powershell.file.script_block_id` to find related functions or setup code not visible in the initial alert fragment.\n  - Search across hosts for repeating patterns in `powershell.file.script_block_text` and for the same `file.name` to determine whether this is a widely deployed administrative script or isolated activity.\n  - Pivot on `user.id` to identify whether similar script blocks appear on multiple hosts, which may indicate coordinated activity.\n\n- Correlate with adjacent telemetry around `@timestamp` for the same `host.id` and `user.id` (if available in your environment):\n  - Process execution telemetry to identify the PowerShell host process and what initiated it, helping distinguish interactive use from automation or remotely initiated activity.\n  - File activity telemetry to identify bursts of file modifications/creations consistent with bulk encryption/decryption and to determine which directories and file types were affected.\n  - Network telemetry to identify connections that could support retrieval of encrypted content, exchange of key material, or staging/downloading of additional payloads.\n  - Authentication telemetry to identify unusual logons or session types for the user preceding execution.\n\n- Determine disposition and urgency:\n  - Treat as higher severity if the script indicates broad file processing, writes many outputs, modifies user data locations, or includes embedded key material/blobs associated with staged content.\n  - Treat as lower severity if the script is clearly tied to approved operations, originates from a known `file.path`, is executed by expected accounts, and shows consistent recurrence patterns with expected scope.\n\n### False positive analysis\n\n- Legitimate PowerShell automation may implement encryption/decryption for secure configuration handling, packaging, data protection, or interoperability with other systems.\n- Benign activity is more likely to have consistent `file.path` / `file.name` values, execute under expected administrative accounts, and recur on appropriate hosts with stable script content.\n- If the script is determined to be benign, document what data it protects, where it is expected to run, which accounts execute it, and what normal recurrence looks like to reduce future triage time.\n\n### Response and remediation\n\n- If the activity is suspicious or malicious:\n  - Contain the host to prevent further encryption/decryption activity and reduce the risk of spread or data impact.\n  - Preserve evidence from the alert, including the full `powershell.file.script_block_text` and any reconstructed fragments correlated via `powershell.file.script_block_id`.\n  - If `file.path` is present, collect the referenced script from disk and preserve it for forensic review and scoping.\n  - Identify impacted systems and data:\n    - If file-impact is suspected, prioritize backup protection, incident response escalation, and recovery planning.\n    - If payload staging is suspected, prioritize identifying the decrypted output or follow-on execution artifacts.\n  - Scope and hunt across the environment for related activity using `user.id`, `host.id`, recurring `file.name`, and distinctive fragments of `powershell.file.script_block_text`.\n  - Remediate the associated account and access path: validate legitimacy, reset credentials if compromise is suspected, and apply least-privilege controls where appropriate.\n  - Remove or block the identified script and any related artifacts discovered during analysis, and monitor for recurrence.\n\n- If the activity is confirmed benign:\n  - Record the expected `file.path` / `file.name`, the responsible `user.id`, and normal execution patterns to support consistent future triage and tuning decisions.\n",
+        "query": "event.category:process and host.os.type:windows and\n  powershell.file.script_block_text : (\n    (\n      \"Cryptography.AESManaged\" or\n      \"Cryptography.RijndaelManaged\" or\n      \"Cryptography.SHA1Managed\" or\n      \"Cryptography.SHA256Managed\" or\n      \"Cryptography.SHA384Managed\" or\n      \"Cryptography.SHA512Managed\" or\n      \"Cryptography.SymmetricAlgorithm\" or\n      \"PasswordDeriveBytes\" or\n      \"Rfc2898DeriveBytes\"\n    ) and\n    (\n      CipherMode and PaddingMode\n    ) and\n    (\n      \".CreateEncryptor\" or\n      \".CreateDecryptor\"\n    )\n  ) and\n  not user.id : \"S-1-5-18\" and\n  not (\n    file.name : \"Bootstrap.Octopus.FunctionAppenderContext.ps1\" and\n    powershell.file.script_block_text : (\"function Decrypt-Variables\" or \"github.com/OctopusDeploy\")\n  )\n",
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_text",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "1d9aeb0b-9549-46f6-a32d-05e2a001b7fd",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: PowerShell Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1027",
+                        "name": "Obfuscated Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1027/"
+                    },
+                    {
+                        "id": "T1140",
+                        "name": "Deobfuscate/Decode Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1140/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 112
+    },
+    "id": "1d9aeb0b-9549-46f6-a32d-05e2a001b7fd_112",
+    "type": "security-rule"
+}

@@ -1,0 +1,125 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies abuse of rclone (or a renamed copy, e.g. disguised as a security or backup utility) to exfiltrate data to cloud storage or remote endpoints. Rclone is a legitimate file sync tool; threat actors rename it to blend with administrative traffic and use copy/sync with cloud backends (e.g. :s3:) and include filters to exfiltrate specific file types.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Data Exfiltration via Rclone",
+        "note": "## Triage and analysis\n\n### Investigating Potential Data Exfiltration via Rclone\n\nRclone is a legitimate file synchronization tool. Threat actors abuse it (often renamed, e.g. to TrendFileSecurityCheck.exe) to exfiltrate data to S3, HTTP endpoints, or other cloud backends, using `copy`/`sync` with `--include` filters and high `--transfers` to move specific file types at scale.\n\n### Possible investigation steps\n\n- Confirm the command line for `copy`/`sync`, cloud backend (e.g. `:s3:`, `:http`), and options like `--include`, `--transfers`, `-P`.\n- If the process name is not `rclone.exe`, compare with `process.pe.original_file_name`; a mismatch indicates a renamed copy used to evade name-based detection.\n- From the command line, identify the source path (e.g. UNC or local) and the remote backend (S3 bucket, HTTP endpoint) as the exfil destination.\n- Review `--include`/`--exclude` and `--max-age`/`--max-size` to understand what data was targeted (documents, CAD, archives, etc.).\n- Correlate with the process executable path (recently dropped?), parent process, and user; look for outbound network to the same backend.\n\n### False positive analysis\n\n- Legitimate backup or sync jobs using rclone from a known path and config may trigger; allowlist by process path or `--config` path for approved rclone usage.\n\n### Response and remediation\n\n- Terminate the rclone process and isolate the host if exfiltration is confirmed.\n- Identify and revoke access to the destination (S3 bucket, API keys, etc.); preserve logs for the exfil session.\n- Determine scope of data exposed and notify stakeholders; rotate credentials and secrets that may have been in exfiltrated paths.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n (process.name : \"rclone.exe\" or ?process.pe.original_file_name == \"rclone.exe\") and process.args : (\"copy\", \"sync\") and\n  not process.args : (\"--config=?:\\\\Program Files\\\\rclone\\\\config\\\\rclone\\\\rclone.conf\", \"--config=?:\\\\Program Files (x86)\\\\rclone\\\\config\\\\rclone\\\\rclone.conf\") and \n  not process.executable : (\"?:\\\\Program Files*\", \"\\\\Device\\\\HarddiskVolume*\\\\Program Files*\")\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1048/",
+            "https://rclone.org/commands/rclone_copy/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "3f4c2b18-9d2e-4b7a-a3c1-8e6d9f2b5c7e",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Exfiltration",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Crowdstrike",
+            "Data Source: Elastic Endgame",
+            "Data Source: Windows Security Event Logs"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1048",
+                        "name": "Exfiltration Over Alternative Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1048/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "3f4c2b18-9d2e-4b7a-a3c1-8e6d9f2b5c7e_1",
+    "type": "security-rule"
+}

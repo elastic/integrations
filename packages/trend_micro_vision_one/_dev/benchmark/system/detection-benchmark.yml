@@ -1,0 +1,23 @@
+---
+description: Benchmark 10000 detection events ingested
+input: httpjson
+vars:
+  hostname: http://{{Hostname}}:{{Port}}
+  api_token: xxxx
+data_stream:
+  name: detection
+  vars:
+    preserve_original_event: true
+warmup_time_period: 2s
+corpora:
+  input_service:
+    name: trend_micro_vision_one
+  generator:
+    total_events: 10000
+    template:
+      path: ./detection-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./detection-benchmark/config.yml
+    fields:
+      path: ./detection-benchmark/fields.yml

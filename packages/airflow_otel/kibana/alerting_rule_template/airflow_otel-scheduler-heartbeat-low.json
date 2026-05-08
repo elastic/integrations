@@ -1,0 +1,36 @@
+{
+  "id": "airflow_otel-scheduler-heartbeat-low",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Airflow OTel] Scheduler heartbeats critically low",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "airflow",
+      "scheduler"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n// Count scheduler heartbeats in the rule's time window\n| STATS hb_count = COUNT(airflow.scheduler_heartbeat), total_docs = COUNT(*)\n// Alert when we have Airflow activity but fewer than 5 heartbeats\n// Adjust threshold (5) for your scheduler heartbeat cadence\n| WHERE total_docs > 10 AND hb_count < 5"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m"
+    }
+  }
+}

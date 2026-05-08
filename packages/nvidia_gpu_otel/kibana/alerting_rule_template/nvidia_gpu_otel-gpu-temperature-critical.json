@@ -1,0 +1,40 @@
+{
+    "id": "nvidia_gpu_otel-gpu-temperature-critical",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[NVIDIA GPU OTel] GPU temperature critical",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "nvidia_gpu"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-nvidia_gpu.otel-default\n| WHERE DCGM_FI_DEV_GPU_TEMP IS NOT NULL\n// Threshold in Celsius — adjust based on your GPU model and data center cooling\n// Most data center GPUs throttle at 83-90°C\n| WHERE DCGM_FI_DEV_GPU_TEMP > 83\n| STATS\n    max_temp = MAX(DCGM_FI_DEV_GPU_TEMP),\n    avg_temp = AVG(DCGM_FI_DEV_GPU_TEMP)\n  BY Hostname, UUID, modelName\n| SORT max_temp DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "UUID",
+            "termSize": 50
+        }
+    }
+}

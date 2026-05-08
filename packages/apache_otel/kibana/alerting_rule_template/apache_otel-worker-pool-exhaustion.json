@@ -1,0 +1,41 @@
+{
+    "id": "apache_otel-worker-pool-exhaustion",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Apache OTel] Worker pool exhaustion",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "apache"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-apachereceiver.otel-*\n| WHERE apache.workers IS NOT NULL\n| STATS total = SUM(apache.workers),\n        busy = SUM(apache.workers) WHERE attributes.state == \"busy\"\n    BY resource.attributes.apache.server.name\n| WHERE total > 0\n| EVAL utilization_pct = ROUND(TO_DOUBLE(busy) / TO_DOUBLE(total) * 100.0, 2)\n| WHERE utilization_pct > 80.0\n| SORT utilization_pct DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.apache.server.name",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

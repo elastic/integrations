@@ -1,0 +1,150 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when secrets or configmaps are accessed, created, modified, or deleted in a Kubernetes cluster by the Azure Arc AAD proxy service account. When operations are routed through the Azure Arc Cluster Connect proxy, the Kubernetes audit log records the acting user as `system:serviceaccount:azure-arc:azure-arc-kube-aad-proxy-sa` with the actual caller identity in the `impersonatedUser` field. This pattern indicates that someone is accessing the cluster through the Azure ARM API rather than directly via kubectl against the API server. While legitimate for Arc-managed workflows, adversaries with stolen service principal credentials can abuse Arc Cluster Connect to read, exfiltrate, or modify secrets and configmaps while appearing as the Arc proxy service account in K8s audit logs.",
+        "false_positives": [
+            "Azure Arc system components may create or update secrets and configmaps in the azure-arc and azure-arc-release namespaces during normal cluster management. Filter by namespace to exclude these.",
+            "Helm operations managed through Arc may create release secrets (prefixed with sh.helm.release.v1). These are normal Arc lifecycle operations."
+        ],
+        "from": "now-5d",
+        "interval": "9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Kubernetes Secret or ConfigMap Access via Azure Arc Proxy",
+        "note": "## Triage and analysis\n\n### Investigating Kubernetes Secret or ConfigMap Access via Azure Arc Proxy\n\nWhen Kubernetes operations are performed through Azure Arc Cluster Connect, the K8s audit log shows the Arc AAD proxy\nservice account as the authenticated user, with the actual Azure AD identity in the `impersonatedUser` field. This\nrule detects non-system secret and configmap access \u2014 including reads, writes, and deletions \u2014 routed through this\nproxy path. Read operations (`get`, `list`) are particularly important to detect as they represent the most common\nadversary action: exfiltrating secrets without leaving obvious modification traces.\n\n### Possible investigation steps\n\n- Check the `kubernetes.audit.impersonatedUser.username` field \u2014 this contains the Azure AD object ID of the actual\n  caller. Cross-reference with Azure AD to identify the service principal or user.\n- Review the `kubernetes.audit.impersonatedUser.extra.oid` field for the Azure AD object ID.\n- Examine the namespace \u2014 operations in `default` or application namespaces are more suspicious than `azure-arc` or\n  `kube-system`.\n- Check the `kubernetes.audit.objectRef.name` \u2014 look for suspicious secret/configmap names that don't match known\n  application resources.\n- Correlate with Azure Activity Logs for the same time window to find the `LISTCLUSTERUSERCREDENTIAL` operation that\n  initiated the Arc proxy session.\n- Review Azure Sign-In Logs for the impersonated identity's authentication source IP and geolocation.\n\n### Response and remediation\n\n- If the impersonated identity is not recognized, revoke its Azure AD credentials immediately.\n- Remove the ClusterRoleBinding or RoleBinding that grants the identity access to secrets/configmaps.\n- Rotate any Kubernetes secrets that may have been read or exfiltrated.\n- Review the Arc connection and consider disconnecting it if compromised.\n",
+        "query": "FROM logs-kubernetes.audit_logs-* metadata _id, _version, _index\n| WHERE STARTS_WITH(kubernetes.audit.user.username, \"system:serviceaccount:azure-arc:\")\n    AND kubernetes.audit.objectRef.resource IN (\"secrets\", \"configmaps\")\n    AND kubernetes.audit.verb IN (\"get\", \"list\", \"create\", \"update\", \"patch\", \"delete\")\n    AND kubernetes.audit.objectRef.namespace NOT IN (\"azure-arc\", \"azure-arc-release\", \"kube-system\")\n    AND NOT STARTS_WITH(kubernetes.audit.objectRef.name, \"sh.helm.release.v1\")\n\n| STATS\n    Esql.verb_values = VALUES(kubernetes.audit.verb),\n    Esql.resource_type_values = VALUES(kubernetes.audit.objectRef.resource),\n    Esql.resource_name_values = VALUES(kubernetes.audit.objectRef.name),\n    Esql.namespace_values = VALUES(kubernetes.audit.objectRef.namespace),\n    Esql.acting_user_values = VALUES(kubernetes.audit.user.username),\n    Esql.user_agent_values = VALUES(kubernetes.audit.userAgent),\n    Esql.source_ips_values = VALUES(kubernetes.audit.sourceIPs),\n    Esql.response_code_values = VALUES(kubernetes.audit.responseStatus.code),\n    Esql.timestamp_first_seen = MIN(@timestamp),\n    Esql.timestamp_last_seen = MAX(@timestamp),\n    Esql.event_count = COUNT(*)\n    BY kubernetes.audit.impersonatedUser.username\n\n| WHERE Esql.timestamp_first_seen >= NOW() - 9 minutes\n| KEEP *\n",
+        "references": [
+            "https://learn.microsoft.com/en-us/azure/azure-arc/kubernetes/cluster-connect",
+            "https://microsoft.github.io/Threat-Matrix-for-Kubernetes/",
+            "https://www.ibm.com/think/x-force/identifying-abusing-azure-arc-for-hybrid-escalation-persistence",
+            "https://cloud.google.com/blog/topics/threat-intelligence/escalating-privileges-azure-kubernetes-services",
+            "https://www.wiz.io/blog/lateral-movement-risks-in-the-cloud-and-how-to-prevent-them-part-3-from-compromis"
+        ],
+        "related_integrations": [
+            {
+                "package": "kubernetes",
+                "version": "^1.80.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.acting_user_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.event_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.namespace_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.resource_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.resource_type_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.response_code_values",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_ips_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.timestamp_first_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.timestamp_last_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_agent_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.verb_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.impersonatedUser.username",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "220d92c6-479d-4a49-9cc0-3a29756dad0c",
+        "severity": "medium",
+        "tags": [
+            "Data Source: Kubernetes",
+            "Domain: Kubernetes",
+            "Domain: Cloud",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Collection",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.007",
+                                "name": "Container API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/007/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1530",
+                        "name": "Data from Cloud Storage",
+                        "reference": "https://attack.mitre.org/techniques/T1530/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "220d92c6-479d-4a49-9cc0-3a29756dad0c_1",
+    "type": "security-rule"
+}

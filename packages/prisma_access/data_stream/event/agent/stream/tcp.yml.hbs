@@ -25,24 +25,17 @@ processors:
         to: event.original
     fail_on_error: true
     ignore_missing: false
-# The decode_cef processor encounters parsing errors with fields containing hyphen '-' in the log.
-# As a temporary solution, the replace processor is used to substitute these fields.
-# Link to the issue: https://github.com/elastic/beats/issues/40348
-# The replace processor will be phased out once the issue mentioned above is resolved.
+
+# The decode_cef processor treats '\=' as a CEF escape sequence inside
+# values, and is implemented in decode_cef processor. There was a bugfix ( v1.6.1 of this package )
+# where user had `\\=` in values, which is not a valid CEF escape sequence.
+# This replace processor is a workaround to replace `\\=` with `\=` in the message field.
 - replace:
+    when.contains.message: '\\='
     fields:
       - field: "message"
-        pattern: "PanOSX-Forwarded-ForIP="
-        replacement: "PanOSXForwardedForIP="
-      - field: "message"
-        pattern: "PanOSX-Forwarded-For="
-        replacement: "PanOSXForwardedFor="
-      - field: "message"
-        pattern: "PanOSSplit-tunnelconfiguration="
-        replacement: "PanOSSplitTunnelconfiguration="
-      - field: "message"
-        pattern: "\\\\="
-        replacement: "="
+        pattern: '\\\\='
+        replacement: '\='
     ignore_missing: false
     fail_on_error: true
 - decode_cef:

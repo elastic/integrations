@@ -1,0 +1,40 @@
+{
+  "id": "etcd_otel-proposals-failed",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[etcd OTel] Proposal failures",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "etcd",
+      "consensus"
+    ],
+    "schedule": {
+      "interval": "1m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-etcd.otel-default*\n// Counter: failed Raft proposals indicate lost quorum or severe network issues\n| WHERE etcd_server_proposals_failed_total IS NOT NULL\n// INCREASE: any increase in the window indicates failures\n| STATS increase = SUM(INCREASE(etcd_server_proposals_failed_total))\n    BY resource.attributes.service.instance.id\n| WHERE increase > 0\n| SORT increase DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.service.instance.id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

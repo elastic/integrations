@@ -1,0 +1,46 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: entityanalytics_entra_id
+      name: test-default-entityanalytics_entra_id
+      streams:
+        - api_endpoint: https://graph.microsoft.com/v1.0
+          client_id: test-client-id
+          data_stream:
+            dataset: entityanalytics_entra_id.entity
+          dataset: all
+          login_endpoint: https://login.microsoftonline.com
+          login_scopes:
+            - https://graph.microsoft.com/.default
+          provider: azure-ad
+          publisher_pipeline.disable_host: true
+          secret: ${SECRET_0}
+          ssl: null
+          sync_interval: 24h
+          tags:
+            - all-entities
+            - forwarded
+            - entityanalytics_entra_id-entity
+          tenant_id: test-tenant-id
+          timeout: 30s
+          update_interval: 15m
+      type: entity-analytics
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}

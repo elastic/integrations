@@ -1,0 +1,39 @@
+{
+  "id": "microsoft_sqlserver_otel-buffer-cache-hit-ratio-low",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[SQL Server OTel] Buffer cache hit ratio low",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "sqlserver"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-sqlserverreceiver.otel-default\n// Instance-level metric: buffer cache hit ratio as percentage (0-100)\n| WHERE metrics.sqlserver.page.buffer_cache.hit_ratio IS NOT NULL\n| STATS min_ratio = MIN(metrics.sqlserver.page.buffer_cache.hit_ratio),\n       instance_id = MAX(resource.attributes.service.instance.id)\n  BY COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\")\n// Ideally > 95%; drops mean disk reads replacing cache hits\n| WHERE min_ratio < 95.0\n| KEEP instance_id, min_ratio"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "instance_id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

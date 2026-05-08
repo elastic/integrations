@@ -1,0 +1,36 @@
+{
+    "id": "ibmmq_otel-high-rollback-ratio",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[IBM MQ OTel] High transaction rollback ratio",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "ibmmq"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-ibmmq.otel-*\n| STATS\n    commit_rate = SUM(RATE(ibmmq_qmgr_commit_total)),\n    rollback_rate = SUM(RATE(ibmmq_qmgr_rollback_total))\n    BY attributes.qmgr\n// Require a minimum commit rate to avoid false positives on idle queue managers\n| WHERE commit_rate IS NOT NULL AND commit_rate > 0\n    AND rollback_rate IS NOT NULL\n| EVAL rollback_pct = ROUND(rollback_rate / (commit_rate + rollback_rate) * 100.0, 2)\n// Alert when rollback rate exceeds 5% of total transactions\n// < 1% is healthy; 1-5% is warning; > 5% is critical\n// High rollback ratios indicate poison messages, processing failures,\n// or resource contention causing transaction failures\n// Adjust threshold and minimum commit rate for your workload\n| WHERE rollback_pct > 5.0"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "attributes.qmgr",
+            "termSize": 10
+        }
+    }
+}

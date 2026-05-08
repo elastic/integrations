@@ -1,0 +1,40 @@
+{
+    "id": "influxdb_otel-writer-timeouts",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[InfluxDB OTel] Storage writer timeouts",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "influxdb",
+            "storage"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 8,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-influxdb.otel-*\n// Storage writer timeout counter (cumulative)\n| WHERE COALESCE(metrics.storage_writer_timeouts, storage_writer_timeouts) IS NOT NULL\n// Detect increase in timeouts over the window\n| STATS min_timeout = MIN(COALESCE(metrics.storage_writer_timeouts, storage_writer_timeouts)),\n    max_timeout = MAX(COALESCE(metrics.storage_writer_timeouts, storage_writer_timeouts))\n  BY host.name\n| EVAL timeout_increase = max_timeout - min_timeout\n// Alert when any new writer timeouts occurred\n| WHERE timeout_increase > 0"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

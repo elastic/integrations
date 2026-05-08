@@ -61,7 +61,7 @@
         ],
         "id": "shellbags_windows_elastic",
         "interval": "3600",
-        "query": "SELECT\n  sid AS user_sid,\n  source,\n  path,\n  datetime(modified_time, 'unixepoch') AS modified_time,\n  datetime(created_time, 'unixepoch') AS created_time,\n  datetime(accessed_time, 'unixepoch') AS accessed_time,\n  mft_entry,\n  mft_sequence\nFROM shellbags\nWHERE path != '' AND path IS NOT NULL\nORDER BY modified_time DESC;",
+        "query": "-- Windows Shellbags Forensic Analysis\n-- Source: Native osquery table (shellbags)\n-- Extracts registry-based folder access history from Windows Explorer\n-- Focus: User activity investigation — directories navigated via Explorer, even if since deleted\n-- Note: Some entries may contain Windows Known Folder GUIDs instead of decoded paths (osquery limitation)\n-- Registry locations: NTUSER.DAT\\Software\\Microsoft\\Windows\\Shell\\BagMRU and Bags\nSELECT\n  sid AS user_sid,\n  source,\n  path,\n  datetime(modified_time, 'unixepoch') AS modified_time,\n  datetime(created_time, 'unixepoch') AS created_time,\n  datetime(accessed_time, 'unixepoch') AS accessed_time,\n  mft_entry,\n  mft_sequence\nFROM shellbags\nWHERE path != '' AND path IS NOT NULL\nORDER BY modified_time DESC;",
         "platform": "windows",
         "updated_at": "2026-01-27T00:00:00.000Z",
         "updated_by": "elastic"

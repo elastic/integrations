@@ -1,0 +1,40 @@
+{
+    "id": "redisenterprise_otel-listener-auth-errors",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Redis Enterprise OTel] Authentication failures detected",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "redisenterprise"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE listener_auth_errors IS NOT NULL\n| STATS max_auth_errors = MAX(listener_auth_errors) BY bdb, endpoint, node, cluster\n// Alert when authentication failures are detected at any listener endpoint\n// Possible causes: credential rotation issues, misconfigured clients,\n// or unauthorized access attempts\n// Adjust threshold if your environment has expected auth retries\n| WHERE max_auth_errors > 0\n| SORT max_auth_errors DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "bdb",
+            "termSize": 100
+        }
+    }
+}

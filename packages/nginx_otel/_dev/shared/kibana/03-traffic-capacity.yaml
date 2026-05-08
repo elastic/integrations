@@ -1,0 +1,286 @@
+---
+dashboards:
+  - name: "[Nginx OTel] Traffic & Capacity"
+    id: nginx_otel-c3d4e5f6-a7b8-9012-cdef-123456789012
+    description: "Traffic analysis, request patterns, and capacity planning for Nginx."
+    settings:
+      sync:
+        colors: true
+    controls:
+      - type: options
+        label: Nginx instance
+        data_view: logs-*
+        field: host.name
+        fill_width: true
+        multiple: false
+    filters:
+      - field: data_stream.dataset
+        in:
+          - nginx.access.otel
+          - nginxreceiver.otel
+    panels:
+      # Navigation bar
+      - markdown:
+          content: |
+            **[Request Health](/app/dashboards#/view/nginx_otel-a1b2c3d4-e5f6-7890-abcd-ef1234567890)** | **[Server Internals](/app/dashboards#/view/nginx_otel-b2c3d4e5-f6a7-8901-bcde-f12345678901)** | **[Traffic & Capacity](/app/dashboards#/view/nginx_otel-c3d4e5f6-a7b8-9012-cdef-123456789012)**
+        hide_title: true
+        size: {w: whole, h: 3}
+
+      # Description
+      - markdown:
+          content: |
+            ## Traffic & Capacity
+
+            Analyze NGINX traffic patterns and plan for capacity.
+
+            - **Status codes**: Response code distribution over time
+            - **Top URLs**: Busiest endpoints with error counts
+            - **Top clients**: Highest-volume source IPs
+            - **HTTP methods & versions**: Request method and protocol mix
+            - **Capacity metrics**: Active connections, requests, and throughput trends
+        hide_title: true
+        size: {w: third, h: 15}
+
+      # Requests by Status Code Over Time
+      - title: Requests by Status Code Over Time
+        size: {w: 20, h: 14}
+        lens:
+          type: bar
+          mode: stacked
+          data_view: logs-*
+          query:
+            kql: "data_stream.dataset: nginx.access.otel"
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+          metrics:
+            - formula: "count(kql='attributes.http.response.status_code >= 200 AND attributes.http.response.status_code < 300')"
+              label: 2xx
+              color: "#54B399"
+            - formula: "count(kql='attributes.http.response.status_code >= 300 AND attributes.http.response.status_code < 400')"
+              label: 3xx
+              color: "#6092C0"
+            - formula: "count(kql='attributes.http.response.status_code >= 400 AND attributes.http.response.status_code < 500')"
+              label: 4xx
+              color: "#F1D86F"
+            - formula: "count(kql='attributes.http.response.status_code >= 500')"
+              label: 5xx
+              color: "#E7664C"
+          legend:
+            visible: show
+            position: right
+            show_single_series: true
+          appearance:
+            y_left_axis:
+              title: Requests
+
+      # Status Code Distribution
+      - title: Status Code Distribution
+        size: {w: quarter, h: 14}
+        lens:
+          type: pie
+          data_view: logs-*
+          query:
+            kql: "data_stream.dataset: nginx.access.otel"
+          dimensions:
+            - field: attributes.http.response.status_code
+              type: values
+              size: 10
+              label: Status Code
+          metrics:
+            - aggregation: count
+              label: Requests
+          appearance:
+            donut: medium
+
+      # Top URLs by Request Count
+      - title: Top URLs by Request Count
+        size: {w: whole, h: 14}
+        lens:
+          type: datatable
+          data_view: logs-*
+          query:
+            kql: "data_stream.dataset: nginx.access.otel"
+          dimensions:
+            - field: attributes.url.original
+              type: values
+              size: 20
+              label: URL Path
+          metrics:
+            - aggregation: count
+              label: Requests
+            - formula: "count(kql='attributes.http.response.status_code >= 500')"
+              label: 5xx Errors
+          paging:
+            enabled: true
+            page_size: 10
+
+      # Top Clients by Request Count (originally bar_horizontal)
+      - title: Top Clients by Request Count
+        size: {w: half, h: 12}
+        lens:
+          type: bar
+          data_view: logs-*
+          query:
+            kql: "data_stream.dataset: nginx.access.otel"
+          dimension:
+            type: values
+            field: attributes.source.address
+            size: 10
+            label: Client IP
+          metrics:
+            - aggregation: count
+              label: Requests
+              color: "#6092C0"
+          legend:
+            visible: hide
+          appearance:
+            y_left_axis:
+              title: Requests
+
+      # Requests by HTTP Method (originally bar_horizontal)
+      - title: Requests by HTTP Method
+        size: {w: half, h: 12}
+        lens:
+          type: bar
+          data_view: logs-*
+          query:
+            kql: "data_stream.dataset: nginx.access.otel"
+          dimension:
+            type: values
+            field: attributes.http.request.method
+            size: 10
+            label: HTTP Method
+          metrics:
+            - aggregation: count
+              label: Requests
+              color: "#54B399"
+          legend:
+            visible: hide
+          appearance:
+            y_left_axis:
+              title: Requests
+
+      # Top User Agents (originally bar_horizontal)
+      - title: Top User Agents
+        size: {w: half, h: 12}
+        lens:
+          type: bar
+          data_view: logs-*
+          query:
+            kql: "data_stream.dataset: nginx.access.otel"
+          dimension:
+            type: values
+            field: attributes.user_agent.name
+            size: 10
+            label: User Agent
+          metrics:
+            - aggregation: count
+              label: Requests
+              color: "#D36086"
+          legend:
+            visible: hide
+          appearance:
+            y_left_axis:
+              title: Requests
+
+      # Requests by HTTP Version (originally bar_horizontal)
+      - title: Requests by HTTP Version
+        size: {w: half, h: 12}
+        lens:
+          type: bar
+          data_view: logs-*
+          query:
+            kql: "data_stream.dataset: nginx.access.otel"
+          dimension:
+            type: values
+            field: attributes.http.version
+            size: 5
+            label: HTTP Version
+          metrics:
+            - aggregation: count
+              label: Requests
+              color: "#B9A888"
+          legend:
+            visible: hide
+          appearance:
+            y_left_axis:
+              title: Requests
+
+      # Capacity metric cards
+      - title: Active Connections
+        hide_title: true
+        size: {w: quarter, h: 6}
+        lens:
+          type: metric
+          data_view: metrics-*
+          query:
+            kql: "data_stream.dataset: nginxreceiver.otel"
+          primary:
+            formula: "average(nginx.connections_current, kql='state: active')"
+            label: Active Connections
+            format:
+              type: number
+              decimals: 0
+
+      - title: Total Requests
+        hide_title: true
+        size: {w: quarter, h: 6}
+        lens:
+          type: metric
+          data_view: metrics-*
+          query:
+            kql: "data_stream.dataset: nginxreceiver.otel"
+          primary:
+            aggregation: max
+            field: nginx.requests
+            label: Total Requests
+
+      - title: Total Accepted
+        hide_title: true
+        size: {w: quarter, h: 6}
+        lens:
+          type: metric
+          data_view: metrics-*
+          query:
+            kql: "data_stream.dataset: nginxreceiver.otel"
+          primary:
+            aggregation: max
+            field: nginx.connections_accepted
+            label: Total Accepted
+
+      - title: Total Handled
+        hide_title: true
+        size: {w: quarter, h: 6}
+        lens:
+          type: metric
+          data_view: metrics-*
+          query:
+            kql: "data_stream.dataset: nginxreceiver.otel"
+          primary:
+            aggregation: max
+            field: nginx.connections_handled
+            label: Total Handled
+
+      # Request Rate Trend
+      - title: Request Rate Trend
+        size: {w: whole, h: 14}
+        lens:
+          type: area
+          data_view: metrics-*
+          query:
+            kql: "data_stream.dataset: nginxreceiver.otel"
+          dimension:
+            type: date_histogram
+            field: "@timestamp"
+          metrics:
+            - formula: "differences(max(nginx.requests))"
+              label: Request rate
+              color: "#54B399"
+          legend:
+            visible: show
+            position: bottom
+            show_single_series: true
+          appearance:
+            y_left_axis:
+              title: Requests / interval

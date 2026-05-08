@@ -156,7 +156,7 @@ processors:
   - set:
       field: dns.response_code
       copy_from: cloudflare_logpush.dns_firewall.upstream.response_code
-      if: ctx.cloudflare_logpush?.dns_firewall?.response_code == null && ctx.cloudflare_logpush?.dns_firewall?.upstream?.response_code != null
+      if: ctx.cloudflare_logpush?.dns_firewall?.response?.code == null && ctx.cloudflare_logpush?.dns_firewall?.upstream?.response_code != null
       tag: set_dns_upstream_response_code
 
 # Custom fields
@@ -300,7 +300,7 @@ on_failure:
   - append:
       field: error.message
       value: |-
-        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error

@@ -1,0 +1,419 @@
+dashboards:
+- id: etcd_otel-overview
+  name: '[etcd OTel] Overview'
+  description: >-
+    Overview of etcd cluster health: Raft consensus, storage saturation, proposal rates, error indicators, and resource usage.
+  time_range:
+    from: "now-1h"
+    to: "now"
+  filters:
+  - field: data_stream.dataset
+    equals: etcd.otel
+  controls:
+  - type: options
+    label: Instance
+    data_view: metrics-*
+    field: resource.attributes.service.instance.id
+  panels:
+      # ─── Navigation ─────────────────────────────────────────────────────
+  - size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: etcd_otel-overview
+      - label: Raft Consensus
+        dashboard: etcd_otel-raft-consensus
+      - label: Storage & MVCC
+        dashboard: etcd_otel-storage
+      - label: gRPC Traffic
+        dashboard: etcd_otel-grpc
+
+      # ─── Dashboard Overview Panel ───────────────────────────────────────
+  - hide_title: true
+    size: {w: 16, h: 12}
+    markdown:
+      content: |
+        ## [etcd OTel] Overview
+
+        This dashboard provides an overview of etcd cluster health:
+        - Raft consensus status (leader, proposals)
+        - Storage saturation (DB size vs quota)
+        - Error indicators (failed proposals, heartbeat failures)
+        - Resource usage (memory, file descriptors, goroutines)
+
+      # ─── KPI Metric Row (top) ───────────────────────────────────────────
+  - title: Members with Leader
+    hide_title: true
+    size: {w: eighth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_has_leader IS NOT NULL
+      - STATS with_leader = COUNT(etcd_server_has_leader) WHERE etcd_server_has_leader == 1, total = COUNT(etcd_server_has_leader)
+      - EVAL pct = CASE(total > 0, with_leader * 1.0 / total, 0.0)
+      primary:
+        field: pct
+        label: With Leader %
+        format:
+          type: percent
+          decimals: 0
+
+  - title: Pending Proposals
+    hide_title: true
+    size: {w: eighth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_proposals_pending IS NOT NULL
+      - STATS pending = MAX(LAST_OVER_TIME(etcd_server_proposals_pending))
+      primary:
+        field: pending
+        label: Pending
+        format:
+          type: number
+          decimals: 0
+
+  - title: Proposal Failures (rate)
+    hide_title: true
+    size: {w: eighth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_proposals_failed_total IS NOT NULL
+      - STATS failed_rate = SUM(RATE(etcd_server_proposals_failed_total))
+      primary:
+        field: failed_rate
+        label: Failed/sec
+        format:
+          type: number
+          decimals: 2
+
+  - title: DB Size vs Quota
+    hide_title: true
+    size: {w: eighth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_mvcc_db_total_size_in_bytes IS NOT NULL AND etcd_server_quota_backend_bytes IS NOT
+        NULL AND etcd_server_quota_backend_bytes > 0
+      - STATS db_size = MAX(LAST_OVER_TIME(etcd_mvcc_db_total_size_in_bytes)), quota = MAX(LAST_OVER_TIME(etcd_server_quota_backend_bytes))
+      - EVAL pct = db_size * 1.0 / quota
+      primary:
+        field: pct
+        label: DB % of Quota
+        format:
+          type: percent
+          decimals: 1
+
+      # ─── KPI Metric Row (bottom) ────────────────────────────────────────
+  - title: Slow Apply Rate
+    hide_title: true
+    size: {w: eighth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_slow_apply_total IS NOT NULL
+      - STATS slow_rate = SUM(RATE(etcd_server_slow_apply_total))
+      primary:
+        field: slow_rate
+        label: Slow/sec
+        format:
+          type: number
+          decimals: 2
+
+  - title: Heartbeat Failures (rate)
+    hide_title: true
+    size: {w: eighth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_heartbeat_send_failures_total IS NOT NULL
+      - STATS hb_fail_rate = SUM(RATE(etcd_server_heartbeat_send_failures_total))
+      primary:
+        field: hb_fail_rate
+        label: HB Fail/sec
+        format:
+          type: number
+          decimals: 2
+
+      # ─── Section: Raft Consensus ────────────────────────────────────────
+  - hide_title: true
+    size: {w: 48, h: 3}
+    markdown:
+      content: '## Raft Consensus'
+
+  - title: Leader by Instance
+    size: {w: 24, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_has_leader IS NOT NULL
+      - STATS has_leader = MAX(LAST_OVER_TIME(etcd_server_has_leader)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance =
+        resource.attributes.service.instance.id
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: has_leader
+        label: Leader
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: instance
+      appearance:
+        y_left_axis:
+          extent:
+            mode: custom
+            min: 0
+            max: 1
+
+  - title: Proposals Pending by Instance
+    size: {w: 24, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_proposals_pending IS NOT NULL
+      - STATS pending = MAX(LAST_OVER_TIME(etcd_server_proposals_pending)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        instance = resource.attributes.service.instance.id
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: pending
+        label: Pending
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: instance
+
+  - title: Proposal Failures Rate Over Time
+    size: {w: 24, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_proposals_failed_total IS NOT NULL
+      - STATS failed_rate = SUM(RATE(etcd_server_proposals_failed_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: failed_rate
+        label: Failed/sec
+        format:
+          type: number
+          decimals: 1
+      appearance:
+        y_left_axis:
+          extent:
+            mode: custom
+            min: 0
+            max: 1
+
+  - title: Leader Changes Seen
+    size: {w: 24, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_server_leader_changes_seen_total IS NOT NULL
+      - STATS changes = SUM(RATE(etcd_server_leader_changes_seen_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance
+        = resource.attributes.service.instance.id
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: changes
+        label: Changes/sec
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: instance
+      appearance:
+        y_left_axis:
+          extent:
+            mode: custom
+            min: 0
+            max: 1
+
+      # ─── Section: Storage & Saturation ──────────────────────────────────
+  - hide_title: true
+    size: {w: 48, h: 3}
+    markdown:
+      content: '## Storage & Saturation'
+
+  - title: DB Size vs Quota by Instance
+    size: {w: 48, h: 10}
+    esql:
+      type: datatable
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_mvcc_db_total_size_in_bytes IS NOT NULL AND etcd_server_quota_backend_bytes IS NOT
+        NULL AND etcd_server_quota_backend_bytes > 0
+      - STATS db_size = MAX(LAST_OVER_TIME(etcd_mvcc_db_total_size_in_bytes)), quota = MAX(LAST_OVER_TIME(etcd_server_quota_backend_bytes)) 
+        BY instance = resource.attributes.service.instance.id
+      - EVAL pct = db_size * 1.0 / quota
+      - SORT pct DESC
+      breakdowns:
+      - field: instance
+        label: Instance
+      metrics:
+      - field: pct
+        label: DB % of Quota
+        format:
+          type: percent
+          decimals: 1
+
+  - title: Database Size (bytes) by Instance
+    size: {w: 24, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND etcd_mvcc_db_total_size_in_bytes IS NOT NULL
+      - STATS db_size = MAX(LAST_OVER_TIME(etcd_mvcc_db_total_size_in_bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), 
+        instance = resource.attributes.service.instance.id
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: db_size
+        label: DB Size
+        format:
+          type: bytes
+          decimals: 2
+      breakdown:
+        field: instance
+
+  - title: MVCC Operations Rate
+    size: {w: 24, h: 10}
+    esql:
+      type: area
+      query:
+      - TS metrics-etcd.otel-*
+      - |
+        WHERE data_stream.dataset == "etcd.otel"
+        | FORK ( WHERE etcd_mvcc_put_total IS NOT NULL | STATS rate = SUM(RATE(etcd_mvcc_put_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL op = "put" ) ( WHERE etcd_mvcc_range_total IS NOT NULL | STATS rate = SUM(RATE(etcd_mvcc_range_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL op = "range" ) ( WHERE etcd_mvcc_delete_total IS NOT NULL | STATS rate = SUM(RATE(etcd_mvcc_delete_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL op = "delete" ) ( WHERE etcd_mvcc_txn_total IS NOT NULL | STATS rate = SUM(RATE(etcd_mvcc_txn_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL op = "txn" )
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: rate
+        label: Ops/sec
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: op
+
+      # ─── Section: Process & Runtime ─────────────────────────────────────
+  - hide_title: true
+    size: {w: 48, h: 3}
+    markdown:
+      content: '## Process & Runtime'
+
+  - title: Resident Memory by Instance
+    size: {w: 24, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND process_resident_memory_bytes IS NOT NULL
+      - STATS mem = MAX(LAST_OVER_TIME(process_resident_memory_bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance =
+        resource.attributes.service.instance.id
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: mem
+        label: Resident Memory
+        format:
+          type: bytes
+          decimals: 2
+      breakdown:
+        field: instance
+
+  - title: Open File Descriptors by Instance
+    size: {w: 24, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND process_open_fds IS NOT NULL
+      - STATS fds = MAX(LAST_OVER_TIME(process_open_fds)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = 
+        resource.attributes.service.instance.id
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: fds
+        label: Open FDs
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: instance
+
+  - title: Goroutines by Instance
+    size: {w: 24, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-etcd.otel-*
+      - WHERE data_stream.dataset == "etcd.otel" AND go_goroutines IS NOT NULL
+      - STATS goroutines = MAX(LAST_OVER_TIME(go_goroutines)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = 
+        resource.attributes.service.instance.id
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: goroutines
+        label: Goroutines
+        format:
+          type: number
+          decimals: 1
+      breakdown:
+        field: instance
+
+  - title: Network Bytes (gRPC client)
+    size: {w: 24, h: 10}
+    esql:
+      type: line
+      query:
+      - TS metrics-etcd.otel-*
+      - |
+        WHERE data_stream.dataset == "etcd.otel"
+        | FORK ( WHERE etcd_network_client_grpc_received_bytes_total IS NOT NULL | STATS rate = SUM(RATE(etcd_network_client_grpc_received_bytes_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL direction = "received" ) ( WHERE etcd_network_client_grpc_sent_bytes_total IS NOT NULL | STATS rate = SUM(RATE(etcd_network_client_grpc_sent_bytes_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL direction = "sent" )
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: rate
+        label: Bytes/sec
+        format:
+          type: bytes
+          decimals: 2
+      breakdown:
+        field: direction

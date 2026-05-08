@@ -11,25 +11,58 @@ processors:
       ignore_missing: true
       if: ctx.event?.original == null
   - grok:
-      tag: grok_audit_original
+      tag: grok_audit_old_auid
+      if: ctx.event?.original != null && ctx.event.original.contains(' old auid=')
+      ignore_failure: true
       field: event.original
       pattern_definitions:
         AUDIT_TYPE: 'type=%{NOTSPACE:auditd.log.record_type}'
         AUDIT_NODE: 'node=%{IPORHOST:auditd.log.node} '
-        AUDIT_PREFIX: '^(?:%{AUDIT_NODE})?%{AUDIT_TYPE} msg=audit\(%{NUMBER:auditd.log.epoch}:%{NUMBER:auditd.log.sequence}\):(%{DATA})?'
-        AUDIT_KEY_VALUES: '%{WORD}=%{GREEDYDATA}'
-        AVC_PREFIX: 'avc:%{SPACE}%{WORD:auditd.log.avc.action}%{SPACE}{%{SPACE}%{WORD:auditd.log.avc.request}%{SPACE}}%{SPACE}for%{SPACE}'
-        MESSAGE: "(?:'(?:%{AVC_PREFIX}|[^=]*\\s)?%{ANY:auditd.log.sub_kv}'|\"([^=]*\\s)?%{ANY:auditd.log.sub_kv}\")"
-        GS: '\x1d'
-        ENRICHED_FIELDS: '((?:%{GS})%{AUDIT_KEY_VALUES:auditd.log.sub_kv_enriched})?'
-        ANY: ".*"
+        AUDIT_PREFIX: '^(?:%{AUDIT_NODE})?%{AUDIT_TYPE} msg=audit\(%{NUMBER:auditd.log.epoch}:%{NUMBER:auditd.log.sequence}\):'
       patterns:
-        - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} old auid=%{NUMBER:auditd.log.old_auid} new auid=%{NUMBER:auditd.log.new_auid} old ses=%{NUMBER:auditd.log.old_ses} new ses=%{NUMBER:auditd.log.new_ses}'
-        - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} msg=%{MESSAGE}%{ENRICHED_FIELDS}'
-        - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv}%{GS}%{WORD:auditd.log.original_field}={ %{AUDIT_KEY_VALUES:auditd.log.sub_kv} }'
-        - '%{AUDIT_PREFIX} %{AVC_PREFIX}?%{AUDIT_KEY_VALUES:auditd.log.kv}'
-        - '%{AUDIT_PREFIX}'
-        - '%{AUDIT_TYPE} %{AUDIT_KEY_VALUES:auditd.log.kv}'
+        - '%{AUDIT_PREFIX}\s*(?<auditd.log.kv>.*?)(?= old auid=) old auid=%{NUMBER:auditd.log.old_auid} new auid=%{NUMBER:auditd.log.new_auid} old ses=%{NUMBER:auditd.log.old_ses} new ses=%{NUMBER:auditd.log.new_ses}$'
+  - grok:
+      tag: grok_audit_msg
+      if: ctx.event?.original != null && (ctx.event.original.contains(" msg='") || ctx.event.original.contains(' msg="'))
+      ignore_failure: true
+      field: event.original
+      pattern_definitions:
+        AUDIT_TYPE: 'type=%{NOTSPACE:auditd.log.record_type}'
+        AUDIT_NODE: 'node=%{IPORHOST:auditd.log.node} '
+        AUDIT_PREFIX: '^(?:%{AUDIT_NODE})?%{AUDIT_TYPE} msg=audit\(%{NUMBER:auditd.log.epoch}:%{NUMBER:auditd.log.sequence}\):'
+        AVC_PREFIX: 'avc:%{SPACE}%{WORD:auditd.log.avc.action}%{SPACE}{%{SPACE}%{WORD:auditd.log.avc.request}%{SPACE}}%{SPACE}for%{SPACE}'
+        SINGLE_QUOTED_CONTENT: "[^']*"
+        DOUBLE_QUOTED_CONTENT: '[^"]*'
+        MESSAGE: "(?:'(?:%{AVC_PREFIX}|[^=]*\\s)?%{SINGLE_QUOTED_CONTENT:auditd.log.sub_kv}'|\"([^=]*\\s)?%{DOUBLE_QUOTED_CONTENT:auditd.log.sub_kv}\")"
+        GS: '\x1d'
+      patterns:
+        - '%{AUDIT_PREFIX}\s*(?:user )?(?<auditd.log.kv>.*?)(?= msg=) msg=%{MESSAGE}(?:%{GS}(?<auditd.log.sub_kv_enriched>.*))?$'
+  - grok:
+      tag: grok_audit_enriched_field
+      if: ctx.event?.original != null && ctx.event.original.contains('={ ')
+      ignore_failure: true
+      field: event.original
+      pattern_definitions:
+        AUDIT_TYPE: 'type=%{NOTSPACE:auditd.log.record_type}'
+        AUDIT_NODE: 'node=%{IPORHOST:auditd.log.node} '
+        AUDIT_PREFIX: '^(?:%{AUDIT_NODE})?%{AUDIT_TYPE} msg=audit\(%{NUMBER:auditd.log.epoch}:%{NUMBER:auditd.log.sequence}\):'
+      patterns:
+        - '%{AUDIT_PREFIX}\s*(?<auditd.log.kv>.*?)(?=\x1d%{WORD}=\{ )\x1d%{WORD:auditd.log.original_field}={ (?<auditd.log.sub_kv>.*) }$'
+  - grok:
+      tag: grok_audit_original
+      if: ctx.auditd?.log?.kv == null
+      field: event.original
+      pattern_definitions:
+        AUDIT_TYPE: 'type=%{NOTSPACE:auditd.log.record_type}'
+        AUDIT_NODE: 'node=%{IPORHOST:auditd.log.node} '
+        AUDIT_PREFIX: '^(?:%{AUDIT_NODE})?%{AUDIT_TYPE} msg=audit\(%{NUMBER:auditd.log.epoch}:%{NUMBER:auditd.log.sequence}\):'
+        AUDIT_KEY_VALUES: '(?:.*?)(?<auditd.log.kv>[A-Za-z0-9_]+=[\s\S]*)'
+        AVC_PREFIX: 'avc:%{SPACE}%{WORD:auditd.log.avc.action}%{SPACE}{%{SPACE}%{WORD:auditd.log.avc.request}%{SPACE}}%{SPACE}for%{SPACE}'
+      patterns:
+        - '%{AUDIT_PREFIX}\s*(?:user )?%{AVC_PREFIX}?%{AUDIT_KEY_VALUES}'
+        - '%{AUDIT_PREFIX}\s*.*$'
+        - '%{AUDIT_PREFIX}\s*$'
+        - '%{AUDIT_TYPE} %{AUDIT_KEY_VALUES}'
   - kv:
       field: auditd.log.kv
       field_split: '(?:\s+|\x1d)(?=[^\s\x1d]+=)'

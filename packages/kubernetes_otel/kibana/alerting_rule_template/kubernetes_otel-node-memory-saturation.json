@@ -1,0 +1,46 @@
+{
+    "id": "kubernetes_otel-node-memory-saturation",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when a node's memory working set exceeds a configurable threshold. High memory usage triggers OOM kills and pod evictions. Threshold should be calibrated to your node's allocatable memory.",
+        "name": "[K8s OTel] Node memory saturation",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "Kubernetes"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## Node Memory Saturation\n\n### Triage Steps\n1. Identify the affected node(s) from the alert results.\n2. Open the Node Performance dashboard to view memory usage trends (working_set, rss, available).\n3. Navigate to Pod & Container Detail filtered by the affected node to find the top memory consumers.\n4. Check for pods without memory limits or with very generous limits.\n5. Run `kubectl top pods --sort-by=memory -A` on the affected node.\n\n### Common Causes\n- Memory leaks in application containers\n- Workloads without proper memory limits\n- Too many pods scheduled on the node\n- Large in-memory caches or datasets\n\n### Tuning\n- The default threshold is 85% of allocatable memory. Adjust based on your tolerance.\n- For heterogeneous clusters, consider creating separate rules per node pool.\n\n### Escalation\nSustained memory saturation will cause OOM kills and pod evictions. Consider scaling the node pool or optimising workload memory usage."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n    AND (k8s.node.memory.working_set IS NOT NULL OR k8s.node.allocatable_memory IS NOT NULL)\n| STATS avg_memory = AVG(k8s.node.memory.working_set),\n    allocatable_memory = MAX(k8s.node.allocatable_memory)\n    BY k8s.node.name\n| EVAL memory_utilization = avg_memory / allocatable_memory\n// Alert when average memory working set exceeds 85% of allocatable.\n// Adjust the threshold to suit your environment.\n//\n// Requires k8s.node.allocatable_memory from k8sclusterreceiver.\n// This metric is controlled by allocatable_types_to_report config\n// option, which must include \"memory\". Not enabled by default.\n// If unavailable, replace the utilization check with a static\n// threshold on avg_memory, e.g.: WHERE avg_memory > 13743895347\n| WHERE memory_utilization > 0.85\n| EVAL avg_memory_gib = ROUND(avg_memory / 1073741824, 2)\n| KEEP k8s.node.name, avg_memory_gib, allocatable_memory, memory_utilization"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "k8s.node.name",
+            "termSize": 20
+        }
+    }
+}

@@ -1,0 +1,40 @@
+{
+  "id": "cockroachdb_otel-underreplicated-ranges",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[CockroachDB OTel] Under-replicated ranges detected",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cockroachdb",
+      "replication"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND ranges_underreplicated IS NOT NULL\n  AND ranges_underreplicated > 0\n// Store-level metric\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NOT NULL\n| STATS underreplicated = MAX(ranges_underreplicated) BY attributes.node_id, attributes.store, host.name\n| SORT underreplicated DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.node_id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

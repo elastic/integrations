@@ -1,0 +1,40 @@
+{
+    "id": "zookeeper_otel-unsynced-followers",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[ZooKeeper OTel] Unsynced followers detected",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "zookeeper"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-generic.otel-default\n| WHERE metrics.zookeeper.follower.count IS NOT NULL\n  AND resource.attributes.server.state == \"leader\"\n  AND attributes.state == \"unsynced\"\n// Peak unsynced follower count reported by the leader\n| STATS max_unsynced = MAX(metrics.zookeeper.follower.count) BY host.name\n// Any unsynced followers risk data loss during failover\n// and indicate replication lag or network issues between ensemble members\n| WHERE max_unsynced > 0"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "host.name",
+            "termSize": 10
+        }
+    }
+}

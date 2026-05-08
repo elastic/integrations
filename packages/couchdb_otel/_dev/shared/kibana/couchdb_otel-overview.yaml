@@ -1,0 +1,443 @@
+# CouchDB OTel Overview Dashboard
+# Monitors Apache CouchDB via the OTel couchdbreceiver: latency, traffic, errors, saturation.
+# Index: metrics-couchdbreceiver.otel-*
+
+dashboards:
+  - id: couchdb_otel-overview
+    name: '[CouchDB OTel] Overview'
+    description: >-
+      Overview of Apache CouchDB health and performance: request latency, HTTP traffic, error rates, database operations, view reads, and resource saturation (file descriptors, open databases).
+    time_range:
+      from: "now-1h"
+      to: "now"
+    settings:
+      margins: true
+      titles: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+    filters:
+      - field: data_stream.dataset
+        equals: couchdbreceiver.otel
+    controls:
+      - type: options
+        label: CouchDB Node
+        data_view: metrics-*
+        field: couchdb.node.name
+    panels:
+      # ─── Navigation ─────────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: couchdb_otel-overview
+              # ─── Overview Panel + KPIs ─────────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [CouchDB OTel] Overview
+
+            This dashboard provides an overview of Apache CouchDB health and performance:
+            - **Latency** — average request time (ms)
+            - **Traffic** — HTTP request rate, database operations, view reads
+            - **Errors** — HTTP 4xx and 5xx response rates
+            - **Saturation** — open file descriptors and databases
+            - **Bulk requests** — batch write volume
+      - title: Avg Request Time
+        hide_title: true
+        size: {w: 16, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-couchdbreceiver.otel-*
+            - WHERE data_stream.dataset == "couchdbreceiver.otel"
+            - WHERE couchdb.average_request_time IS NOT NULL
+            - STATS avg_ms = AVG(AVG_OVER_TIME(couchdb.average_request_time))
+          primary:
+            field: avg_ms
+            label: Avg Request Time
+            format:
+              type: number
+              decimals: 1
+              suffix: " ms"
+      - title: HTTP Request Rate
+        hide_title: true
+        size: {w: 16, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-couchdbreceiver.otel-*
+            - WHERE data_stream.dataset == "couchdbreceiver.otel"
+            - WHERE couchdb.httpd.requests IS NOT NULL
+            - STATS req_rate = SUM(RATE(couchdb.httpd.requests))
+          primary:
+            field: req_rate
+            label: Requests/sec
+            format:
+              type: number
+              decimals: 1
+              suffix: "/sec"
+      - title: Error Rate
+        hide_title: true
+        size: {w: 16, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-couchdbreceiver.otel-*
+            - WHERE data_stream.dataset == "couchdbreceiver.otel"
+            - WHERE couchdb.httpd.responses IS NOT NULL
+            - STATS total = SUM(RATE(couchdb.httpd.responses)), errors = SUM(RATE(couchdb.httpd.responses)) WHERE attributes.http.status_code >= "400"
+            - EVAL error_pct = CASE(total > 0, errors / total, 0.0)
+          primary:
+            field: error_pct
+            label: Error Rate
+            format:
+              type: percent
+              decimals: 1
+      - title: Open File Descriptors
+        hide_title: true
+        size: {w: 16, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-couchdbreceiver.otel-*
+            - WHERE data_stream.dataset == "couchdbreceiver.otel"
+            - WHERE couchdb.file_descriptor.open IS NOT NULL
+            - STATS open_fds = MAX(LAST_OVER_TIME(couchdb.file_descriptor.open))
+          primary:
+            field: open_fds
+            label: Open FDs
+            format:
+              type: number
+              decimals: 0
+              # ─── Section: Traffic & Latency ──────────────────────────────────────
+      - title: Traffic & Latency
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Traffic & Latency'
+      - title: Average Request Time over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-couchdbreceiver.otel-*
+            - WHERE data_stream.dataset == "couchdbreceiver.otel"
+            - WHERE couchdb.average_request_time IS NOT NULL
+            - STATS avg_ms = AVG(AVG_OVER_TIME(couchdb.average_request_time)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: avg_ms
+              label: Avg Request Time (ms)
+              format:
+                type: number
+                decimals: 1
+          legend:
+            visible: show
+            position: right
+      - title: HTTP Requests by Method
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          query:
+            - TS metrics-couchdbreceiver.otel-*
+            - WHERE data_stream.dataset == "couchdbreceiver.otel"
+            - WHERE couchdb.httpd.requests IS NOT NULL
+            - STATS requests = SUM(RATE(couchdb.httpd.requests)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.http.method
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: requests
+              label: Requests/sec
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: attributes.http.method
+          legend:
+            visible: show
+            position: right
+      - title: HTTP Responses by Status Code
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - TS metrics-couchdbreceiver.otel-*
+            - WHERE data_stream.dataset == "couchdbreceiver.otel"
+            - WHERE couchdb.httpd.responses IS NOT NULL
+            - STATS responses = SUM(RATE(couchdb.httpd.responses)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.http.status_code
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: responses
+              label: Responses/sec
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: attributes.http.status_code
+          legend:
+            visible: show
+            position: right
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: "200"
+                color: '#54B399'
+              - value: "201"
+                color: '#54B399'
+              - value: "204"
+                color: '#54B399'
+              - values: ['400', '401', '403', '404', '409']
+                color: '#D6BF57'
+              - values: ['500', '501', '503']
+                color: '#CC5642'
+      - title: Database Operations by Type
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          query:
+            - TS metrics-couchdbreceiver.otel-*
+            - WHERE data_stream.dataset == "couchdbreceiver.otel"
+            - WHERE couchdb.database.operations IS NOT NULL
+            - STATS ops = SUM(RATE(couchdb.database.operations)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.operation
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: ops
+              label: Ops/sec
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: attributes.operation
+          legend:
+            visible: show
+            position: right
+            # ─── Section: Saturation & Resources ─────────────────────────────────
+      - title: Saturation & Resources
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Saturation & Resources'
+      - title: Open File Descriptors and Databases
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-couchdbreceiver.otel-*
+            - WHERE data_stream.dataset == "couchdbreceiver.otel"
+            - WHERE couchdb.file_descriptor.open IS NOT NULL OR couchdb.database.open IS NOT NULL
+            - STATS open_fds = MAX(LAST_OVER_TIME(couchdb.file_descriptor.open)), open_dbs = MAX(LAST_OVER_TIME(couchdb.database.open)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: open_fds
+              label: Open File Descriptors
+              format:
+                type: number
+                decimals: 0
+            - field: open_dbs
+              label: Open Databases
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+            position: right
+      - title: View Reads
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          query:
+            - TS metrics-couchdbreceiver.otel-*
+            - WHERE data_stream.dataset == "couchdbreceiver.otel"
+            - WHERE couchdb.httpd.views IS NOT NULL
+            - STATS views = SUM(RATE(couchdb.httpd.views)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.view
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: views
+              label: View Reads/sec
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: attributes.view
+          legend:
+            visible: show
+            position: right
+            # ─── Section: Per-Node Analysis ──────────────────────────────────────
+      - title: Per-Node Analysis
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Per-Node Analysis'
+      - title: Average Request Time by Node
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-couchdbreceiver.otel-*
+            - WHERE data_stream.dataset == "couchdbreceiver.otel"
+            - WHERE couchdb.average_request_time IS NOT NULL
+            - STATS val = AVG(AVG_OVER_TIME(couchdb.average_request_time)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchdb.node.name
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: val
+              label: Avg Request Time (ms)
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: couchdb.node.name
+          legend:
+            visible: show
+            position: right
+      - title: Error Rate by Node
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-couchdbreceiver.otel-*
+            - WHERE data_stream.dataset == "couchdbreceiver.otel"
+            - WHERE couchdb.httpd.responses IS NOT NULL
+            - STATS total = SUM(RATE(couchdb.httpd.responses)), errors = SUM(RATE(couchdb.httpd.responses)) WHERE attributes.http.status_code >= "400" BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchdb.node.name
+            - EVAL val = CASE(total > 0, errors / total, 0.0)
+            - KEEP time_bucket, couchdb.node.name, val
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: val
+              label: Error Rate
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: couchdb.node.name
+          legend:
+            visible: show
+            position: right
+      - title: 409 Conflict Rate by Node
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          query:
+            - TS metrics-couchdbreceiver.otel-*
+            - WHERE data_stream.dataset == "couchdbreceiver.otel"
+            - WHERE couchdb.httpd.responses IS NOT NULL AND attributes.http.status_code == "409"
+            - STATS val = SUM(RATE(couchdb.httpd.responses)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchdb.node.name
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: val
+              label: 409/sec
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: couchdb.node.name
+          legend:
+            visible: show
+            position: right
+      - title: Bulk Request Rate
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          query:
+            - TS metrics-couchdbreceiver.otel-*
+            - WHERE data_stream.dataset == "couchdbreceiver.otel"
+            - WHERE couchdb.httpd.bulk_requests IS NOT NULL
+            - STATS val = SUM(RATE(couchdb.httpd.bulk_requests)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchdb.node.name
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: val
+              label: Bulk Requests/sec
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: couchdb.node.name
+          legend:
+            visible: show
+            position: right
+            # ─── Section: Detail ─────────────────────────────────────────────────
+      - title: Detail
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Detail'
+      - title: Response Codes (Top 15)
+        size: {w: 24, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-couchdbreceiver.otel-*
+            - WHERE data_stream.dataset == "couchdbreceiver.otel"
+            - WHERE couchdb.httpd.responses IS NOT NULL
+            - STATS responses_per_sec = SUM(RATE(couchdb.httpd.responses)) BY attributes.http.status_code
+            - SORT responses_per_sec DESC
+            - LIMIT 15
+          breakdowns:
+            - field: attributes.http.status_code
+              label: Status Code
+          metrics:
+            - field: responses_per_sec
+              label: Rate (/sec)
+              format:
+                type: number
+                decimals: 2
+          paging:
+            enabled: true
+            page_size: 15
+      - title: HTTP Methods (Top 10)
+        size: {w: 24, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-couchdbreceiver.otel-*
+            - WHERE data_stream.dataset == "couchdbreceiver.otel"
+            - WHERE couchdb.httpd.requests IS NOT NULL
+            - STATS requests_per_sec = SUM(RATE(couchdb.httpd.requests)) BY attributes.http.method
+            - SORT requests_per_sec DESC
+            - LIMIT 10
+          breakdowns:
+            - field: attributes.http.method
+              label: HTTP Method
+          metrics:
+            - field: requests_per_sec
+              label: Rate (/sec)
+              format:
+                type: number
+                decimals: 2
+          paging:
+            enabled: true
+            page_size: 10

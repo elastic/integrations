@@ -1,0 +1,40 @@
+{
+  "id": "etcd_otel-file-descriptor-exhaustion",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[etcd OTel] File descriptor exhaustion",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "etcd",
+      "saturation"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-etcd.otel-default*\n// Gauge: open FDs vs max; exhaustion causes connection failures\n| WHERE process_open_fds IS NOT NULL\n  AND process_max_fds IS NOT NULL\n  AND process_max_fds > 0\n| EVAL fd_ratio = process_open_fds * 1.0 / process_max_fds\n// Alert when usage exceeds 90%; adjust for earlier warning\n| WHERE fd_ratio > 0.9\n| STATS fd_ratio = MAX(fd_ratio),\n    open_fds = MAX(process_open_fds),\n    max_fds = MAX(process_max_fds)\n    BY resource.attributes.service.instance.id\n| SORT fd_ratio DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.service.instance.id",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

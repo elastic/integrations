@@ -1,0 +1,40 @@
+{
+  "id": "redis_otel-rejected-connections",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Redis OTel] Rejected connections",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "redis"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-redisreceiver.otel-*\n| WHERE redis.connections.rejected IS NOT NULL\n// Counter: use INCREASE to get rejections over the time window\n| STATS rejected = SUM(INCREASE(redis.connections.rejected))\n  BY server.address, server.port\n// Alert when any instance rejected at least one connection (maxclients reached)\n| WHERE rejected > 0\n| SORT rejected DESC"
+      },
+      "size": 0,
+      "threshold": [0],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "server.address",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

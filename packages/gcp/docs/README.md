@@ -264,6 +264,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.audit.logentry_operation.producer | Optional. An arbitrary producer identifier. The combination of id and producer must be globally unique. | keyword |
 | gcp.audit.metadata | Service-specific data about the request, response, and other information associated with the current audited event. | flattened |
 | gcp.audit.method_name | The name of the service method or operation. For API calls, this  should be the name of the API method.  For example, 'google.datastore.v1.Datastore.RunQuery'. | keyword |
+| gcp.audit.notification | Plain-text GKE cluster notification message (for example, upgrade notifications). | keyword |
 | gcp.audit.num_response_items | The number of items returned from a List or Query API method, if applicable. | long |
 | gcp.audit.policy_violation_info.payload | Resource payload that is currently in scope and is subjected to orgpolicy conditions. | flattened |
 | gcp.audit.policy_violation_info.resource_tags | Tags referenced on the resource at the time of evaluation. | flattened |
@@ -282,6 +283,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.audit.resource_location.current_locations | Current locations of the resource. | keyword |
 | gcp.audit.resource_name | The resource or collection that is the target of the operation.  The name is a scheme-less URI, not including the API service name.  For example, 'shelves/SHELF_ID/books'. | keyword |
 | gcp.audit.response |  | flattened |
+| gcp.audit.service_data.policy_delta.binding_deltas.action | The action that was performed on a Binding. Allowed values are `ADD`, `REMOVE` and `ACTION_UNSPECIFIED` | keyword |
+| gcp.audit.service_data.policy_delta.binding_deltas.condition.description | Optional. Description of the expression. This is a longer text which describes the expression, e.g. when hovered over it in a UI. | text |
+| gcp.audit.service_data.policy_delta.binding_deltas.condition.expression | Textual representation of an expression in Common Expression Language syntax. | text |
+| gcp.audit.service_data.policy_delta.binding_deltas.condition.location | Optional. String indicating the location of the expression for error reporting, e.g. a file name and a position in the file. | keyword |
+| gcp.audit.service_data.policy_delta.binding_deltas.condition.title | Optional. Title for the expression, i.e. a short string describing its purpose. This can be used e.g. in UIs which allow to enter the expression. | keyword |
+| gcp.audit.service_data.policy_delta.binding_deltas.member | A single identity requesting access for a Google Cloud resource. Follows the same format of Binding.members. | keyword |
+| gcp.audit.service_data.policy_delta.binding_deltas.role | Role that is assigned to members. For example, roles/viewer, roles/editor, or roles/owner. | keyword |
 | gcp.audit.service_name | The name of the API service performing the operation.  For example, datastore.googleapis.com. | keyword |
 | gcp.audit.source_log_ids.insert_id |  | keyword |
 | gcp.audit.source_log_ids.log_time |  | date |
@@ -309,6 +317,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.codename | OS codename, if any. | keyword |
 | host.target.entity.id | Unique identifier for compute resources targeted by GCP audit events. Includes Compute Engine instance IDs and resource paths. | keyword |
 | input.type | Input type | keyword |
+| labels.cluster_location |  | keyword |
+| labels.cluster_name |  | keyword |
+| labels.payload.currentVersion |  | keyword |
+| labels.payload.operation |  | keyword |
+| labels.payload.resource |  | keyword |
+| labels.payload.resourceType |  | keyword |
+| labels.payload.targetVersion |  | keyword |
+| labels.project_id |  | keyword |
+| labels.type_url |  | keyword |
 | log.offset | Log offset | long |
 | related.entity | A collection of all entity identifiers associated with the document. If the document  contains multiple entities, identifiers for each will be included. Example identifiers include (but not limited to) cloud resource IDs, email addresses, and hostnames. | keyword |
 | service.entity.id | Unique identifier for service accounts and GCP services acting as principals. Contains serviceAccount: prefixed values, \*.iam.gserviceaccount.com addresses, and \*.googleapis.com services. | keyword |
@@ -331,11 +348,11 @@ An example event for `audit` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "c12ff10d-c028-4d1b-80b1-a8151b80a275",
-        "id": "5bce43a4-737b-4c53-9db0-a4bff79e32d1",
-        "name": "elastic-agent-10901",
+        "ephemeral_id": "d3d085d3-8938-4909-9bcb-9a9ec8bc1665",
+        "id": "7fc8d2fb-f718-4f96-9c78-1118e4203336",
+        "name": "elastic-agent-81621",
         "type": "filebeat",
-        "version": "8.18.7"
+        "version": "8.18.0"
     },
     "client": {
         "user": {
@@ -351,16 +368,16 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "gcp.audit",
-        "namespace": "84187",
+        "namespace": "55990",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5bce43a4-737b-4c53-9db0-a4bff79e32d1",
+        "id": "7fc8d2fb-f718-4f96-9c78-1118e4203336",
         "snapshot": false,
-        "version": "8.18.7"
+        "version": "8.18.0"
     },
     "event": {
         "action": "beta.compute.instances.aggregatedList",
@@ -369,10 +386,10 @@ An example event for `audit` looks as following:
             "network",
             "configuration"
         ],
-        "created": "2025-10-09T12:32:26.254Z",
+        "created": "2026-03-19T05:40:34.897Z",
         "dataset": "gcp.audit",
         "id": "yonau2dg2zi",
-        "ingested": "2025-10-09T12:32:29Z",
+        "ingested": "2026-03-19T05:40:37Z",
         "kind": "event",
         "outcome": "success",
         "provider": "data_access",
@@ -423,6 +440,15 @@ An example event for `audit` looks as following:
             "type": "type.googleapis.com/google.cloud.audit.AuditLog"
         }
     },
+    "host": {
+        "target": {
+            "entity": {
+                "id": [
+                    "projects/elastic-beats/global/instances"
+                ]
+            }
+        }
+    },
     "input": {
         "type": "gcp-pubsub"
     },
@@ -456,6 +482,14 @@ An example event for `audit` looks as following:
         "entity": {
             "id": [
                 "projects/elastic-beats/global/instances"
+            ]
+        }
+    },
+    "user": {
+        "email": "xxx@xxx.xxx",
+        "entity": {
+            "id": [
+                "xxx@xxx.xxx"
             ]
         }
     },
@@ -531,11 +565,11 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2019-10-30T13:52:42.191Z",
     "agent": {
-        "ephemeral_id": "175ae0b3-355c-4ca7-87ea-d5f1ee34102e",
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "cd1c89d8-2d1f-4675-8db5-21f626346e8c",
+        "id": "c99413b7-5945-4236-afee-9db819890b2e",
+        "name": "elastic-agent-71045",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.18.0"
     },
     "cloud": {
         "availability_zone": "us-east1-b",
@@ -547,7 +581,7 @@ An example event for `firewall` looks as following:
     },
     "data_stream": {
         "dataset": "gcp.firewall",
-        "namespace": "ep",
+        "namespace": "72710",
         "type": "logs"
     },
     "destination": {
@@ -560,9 +594,9 @@ An example event for `firewall` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
+        "id": "c99413b7-5945-4236-afee-9db819890b2e",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.18.0"
     },
     "event": {
         "action": "firewall-rule",
@@ -570,10 +604,10 @@ An example event for `firewall` looks as following:
         "category": [
             "network"
         ],
-        "created": "2023-10-25T04:20:37.182Z",
+        "created": "2026-03-18T10:19:42.129Z",
         "dataset": "gcp.firewall",
         "id": "1f21ciqfpfssuo",
-        "ingested": "2023-10-25T04:20:41Z",
+        "ingested": "2026-03-18T10:19:45Z",
         "kind": "event",
         "type": [
             "allowed",
@@ -701,71 +735,62 @@ An example event for `vpcflow` looks as following:
 {
     "@timestamp": "2019-06-14T03:50:10.845Z",
     "agent": {
-        "ephemeral_id": "0b8165a2-0e25-4e9a-bb68-271697e0993f",
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "0cd9c2ae-9bc2-4b4b-89ee-a9c84cf58543",
+        "id": "85d6d011-dc32-421f-88b4-d5a601e0b4d9",
+        "name": "elastic-agent-30695",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.18.0"
     },
     "cloud": {
-        "availability_zone": "us-east1-b",
-        "instance": {
-            "name": "kibana"
-        },
-        "project": {
-            "id": "my-sample-project"
-        },
-        "provider": "gcp",
-        "region": "us-east1"
+        "provider": "gcp"
     },
     "data_stream": {
         "dataset": "gcp.vpcflow",
-        "namespace": "ep",
+        "namespace": "70287",
         "type": "logs"
     },
     "destination": {
-        "address": "10.139.99.242",
-        "domain": "elasticsearch",
-        "ip": "10.139.99.242",
-        "port": 9200
+        "address": "67.43.156.13",
+        "as": {
+            "number": 35908
+        },
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.13",
+        "port": 65320
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
+        "id": "85d6d011-dc32-421f-88b4-d5a601e0b4d9",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "created": "2023-10-25T04:21:42.006Z",
+        "created": "2026-03-18T10:21:18.456Z",
         "dataset": "gcp.vpcflow",
-        "end": "2019-06-14T03:49:51.821056075Z",
-        "id": "ut8lbrffooxz5",
-        "ingested": "2023-10-25T04:21:43Z",
+        "end": "2019-06-14T03:49:56.220714119Z",
+        "id": "ut8lbrffooxyv",
+        "ingested": "2026-03-18T10:21:20Z",
         "kind": "event",
-        "start": "2019-06-14T03:40:20.510622432Z",
+        "start": "2019-06-14T03:40:00.560917237Z",
         "type": [
             "connection"
         ]
     },
     "gcp": {
-        "destination": {
-            "instance": {
-                "project_id": "my-sample-project",
-                "region": "us-east1",
-                "zone": "us-east1-b"
-            },
-            "vpc": {
-                "project_id": "my-sample-project",
-                "subnetwork_name": "default",
-                "vpc_name": "default"
-            }
-        },
         "source": {
             "instance": {
                 "project_id": "my-sample-project",
@@ -779,9 +804,9 @@ An example event for `vpcflow` looks as following:
             }
         },
         "vpcflow": {
-            "reporter": "DEST",
+            "reporter": "SRC",
             "rtt": {
-                "ms": 201
+                "ms": 220
             }
         }
     },
@@ -792,40 +817,27 @@ An example event for `vpcflow` looks as following:
         "logger": "projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows"
     },
     "network": {
-        "bytes": 11773,
-        "community_id": "1:FYaJFSEAKLcBCMFoT6sR5TMHf/s=",
-        "direction": "internal",
+        "bytes": 51075,
+        "community_id": "1:35LvCkME5lZSqhiM4O+MxjttWtA=",
+        "direction": "outbound",
         "iana_number": "6",
-        "name": "default",
-        "packets": 94,
+        "packets": 608,
         "transport": "tcp",
         "type": "ipv4"
     },
     "related": {
         "ip": [
-            "67.43.156.13",
-            "10.139.99.242"
+            "10.139.99.242",
+            "67.43.156.13"
         ]
     },
     "source": {
-        "address": "67.43.156.13",
-        "as": {
-            "number": 35908
-        },
-        "bytes": 11773,
-        "domain": "kibana",
-        "geo": {
-            "continent_name": "Asia",
-            "country_iso_code": "BT",
-            "country_name": "Bhutan",
-            "location": {
-                "lat": 27.5,
-                "lon": 90.5
-            }
-        },
-        "ip": "67.43.156.13",
-        "packets": 94,
-        "port": 33576
+        "address": "10.139.99.242",
+        "bytes": 51075,
+        "domain": "elasticsearch",
+        "ip": "10.139.99.242",
+        "packets": 608,
+        "port": 9200
     },
     "tags": [
         "forwarded",
@@ -884,11 +896,11 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2021-12-12T15:59:40.446Z",
     "agent": {
-        "ephemeral_id": "fd6c4189-cbc6-493a-acfb-c9e7b2b7588c",
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "9d33c655-9785-483e-b6bc-cb22ba116cea",
+        "id": "625702bb-3e9e-48b3-825a-5c6b6c33f75b",
+        "name": "elastic-agent-42938",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.18.0"
     },
     "cloud": {
         "project": {
@@ -899,7 +911,7 @@ An example event for `dns` looks as following:
     },
     "data_stream": {
         "dataset": "gcp.dns",
-        "namespace": "ep",
+        "namespace": "49808",
         "type": "logs"
     },
     "destination": {
@@ -932,9 +944,9 @@ An example event for `dns` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
+        "id": "625702bb-3e9e-48b3-825a-5c6b6c33f75b",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.18.0"
     },
     "event": {
         "action": "dns-query",
@@ -942,10 +954,10 @@ An example event for `dns` looks as following:
         "category": [
             "network"
         ],
-        "created": "2023-10-25T04:19:40.300Z",
+        "created": "2026-03-18T10:19:00.183Z",
         "dataset": "gcp.dns",
         "id": "zir4wud11tm",
-        "ingested": "2023-10-25T04:19:41Z",
+        "ingested": "2026-03-18T10:19:03Z",
         "kind": "event",
         "outcome": "success"
     },
@@ -1030,11 +1042,11 @@ An example event for `loadbalancing` looks as following:
 {
     "@timestamp": "2020-06-08T23:41:30.078Z",
     "agent": {
-        "ephemeral_id": "f4dde373-2ff7-464b-afdb-da94763f219b",
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "33aed168-6d97-4912-ab3b-1a396ca824bf",
+        "id": "969be203-c3f2-46e4-a107-78e7b3810687",
+        "name": "elastic-agent-10908",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.18.0"
     },
     "cloud": {
         "project": {
@@ -1044,7 +1056,7 @@ An example event for `loadbalancing` looks as following:
     },
     "data_stream": {
         "dataset": "gcp.loadbalancing_logs",
-        "namespace": "ep",
+        "namespace": "28532",
         "type": "logs"
     },
     "destination": {
@@ -1060,9 +1072,9 @@ An example event for `loadbalancing` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5d3eee86-91a9-4afa-af92-c6b79bd866c0",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "969be203-c3f2-46e4-a107-78e7b3810687",
+        "snapshot": false,
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1072,7 +1084,7 @@ An example event for `loadbalancing` looks as following:
         "created": "2020-06-08T23:41:30.588Z",
         "dataset": "gcp.loadbalancing_logs",
         "id": "1oek5rg3l3fxj7",
-        "ingested": "2023-01-13T15:02:22Z",
+        "ingested": "2026-03-18T10:20:32Z",
         "kind": "event",
         "type": [
             "info"

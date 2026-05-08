@@ -1,0 +1,39 @@
+{
+    "id": "cassandra_otel-compaction-pending",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Cassandra OTel] Compaction falling behind (pending tasks)",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "cassandra"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-cassandra.otel-default\n// Gauge: pending compaction tasks; > 0 means compaction is falling behind\n| WHERE cassandra.compaction.tasks.pending IS NOT NULL\n| STATS pending = MAX(MAX_OVER_TIME(cassandra.compaction.tasks.pending)) BY server.address\n// Any persistent backlog degrades read performance\n| WHERE pending > 0\n| SORT pending DESC"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "server.address",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

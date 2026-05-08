@@ -1,0 +1,25 @@
+services:
+  dockerd:
+    image: docker:24-dind
+    privileged: true
+    command: ["--tls=false", "--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock"]
+    environment:
+      DOCKER_TLS_CERTDIR: ""
+    ports:
+      - 2375
+    healthcheck:
+      test: ["CMD", "docker", "info"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  workload:
+    image: docker:24-cli
+    environment:
+      - DOCKER_HOST=tcp://dockerd:2375
+    depends_on:
+      dockerd:
+        condition: service_healthy
+    volumes:
+      - ./scripts/entrypoint.sh:/scripts/entrypoint.sh:ro
+    entrypoint: ["/bin/sh", "/scripts/entrypoint.sh"]
