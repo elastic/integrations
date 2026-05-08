@@ -38,6 +38,7 @@ search_root="${1:-.}"
 
 error_count=0
 warning_count=0
+junit_errors=()  # accumulates error messages passed to write_junit_cert_report.py
 
 echo "--- Checking TLS certificate expiry under ${search_root}"
 echo ""
@@ -80,16 +81,18 @@ for cert_file in "${cert_files[@]}"; do
     # Evaluate in order from most severe to least. `openssl x509 -checkend <secs>`
     # exits 1 if the certificate will have expired within the given seconds window,
     # making it the cleanest way to test thresholds without manual date arithmetic.
-    if ! openssl x509 -in "$cert_file" -noout -checkend 0 2>/dev/null; then
+    if ! openssl x509 -in "$cert_file" -noout -checkend 0 >/dev/null 2>&1; then
         # checkend 0 means "has it already expired?" — a negative days value confirms it.
         printf "ERROR   [EXPIRED %s days ago] %s\n" "${days#-}" "$short"
         printf "        subject: %s\n\n" "$subject"
         error_count=$((error_count + 1))
-    elif ! openssl x509 -in "$cert_file" -noout -checkend "$SECS_6_MONTHS" 2>/dev/null; then
+        junit_errors+=("expired certificate (${days#-} day(s) ago): ${short}")
+    elif ! openssl x509 -in "$cert_file" -noout -checkend "$SECS_6_MONTHS" >/dev/null 2>&1; then
         printf "ERROR   [expires in %s days — within 6 months] %s\n" "$days" "$short"
         printf "        subject: %s  |  expiry: %s\n\n" "$subject" "$expiry"
         error_count=$((error_count + 1))
-    elif ! openssl x509 -in "$cert_file" -noout -checkend "$SECS_1_YEAR" 2>/dev/null; then
+        junit_errors+=("certificate expires in ${days} day(s) — renew now: ${short}")
+    elif ! openssl x509 -in "$cert_file" -noout -checkend "$SECS_1_YEAR" >/dev/null 2>&1; then
         printf "WARNING [expires in %s days — within 1 year] %s\n" "$days" "$short"
         printf "        subject: %s  |  expiry: %s\n\n" "$subject" "$expiry"
         warning_count=$((warning_count + 1))
@@ -102,9 +105,28 @@ echo "Summary: ${error_count} error(s), ${warning_count} warning(s)"
 
 if [ "$error_count" -gt 0 ]; then
     echo ""
-    echo "Renew the certificates above, then sync test configs:"
-    echo "  openssl req -x509 -newkey rsa:2048 -keyout <key> -out <cert> \\"
-    echo "    -subj '<subject>' [-addext 'subjectAltName=DNS:<hostname>'] -days 3650 -noenc"
-    echo "  .buildkite/scripts/update-test-cert.sh <cert>"
+    echo "To fix, renew each certificate and propagate the new PEM to the test config files:"
+    echo ""
+    echo "  1. Regenerate the certificate:"
+    echo "       openssl req -x509 -newkey rsa:2048 -keyout <key> -out <cert> \\"
+    echo "         -subj '<subject>' [-addext 'subjectAltName=DNS:<hostname>'] -days 3650 -noenc"
+    echo ""
+    echo "  2. Find the test config files in the package that embed the old PEM:"
+    echo "       find ${search_root} -name 'test-*-config.yml' | xargs grep -l 'certificate_authorities'"
+    echo ""
+    echo "  3. In each file, replace the PEM block under 'certificate_authorities' with"
+    echo "     the contents of the new .crt file."
+
+    junit_dir="build/test-results"
+    mkdir -p "$junit_dir"
+    timestamp=$(date +%s%N 2>/dev/null || date +%s)
+    package_name="$(basename "$search_root")"
+
+    export _CERT_CHECK_CALLER="check_certificates.sh"
+    python3 "$(dirname "$0")/write_junit_cert_report.py" \
+        "$package_name" \
+        "${junit_dir}/${package_name}-certcheck-${timestamp}.xml" \
+        "${junit_errors[@]}"
+
     exit 1
 fi
