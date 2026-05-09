@@ -308,6 +308,28 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
+# RPD_IFD_NOTIFICATION
+# Extract interface address (e.g. "address #0 175.16.199.0") into host.ip and related.ip
+- grok:
+    tag: grok_rpd_ifd_notification_address
+    if: "ctx.juniper?.srx?.tag == 'RPD_IFD_NOTIFICATION' && ctx.juniper?.srx?.message != null"
+    field: juniper.srx.message
+    patterns:
+    - 'address #%{NONNEGINT} %{IP:_temp_.rpd_ifd.address}'
+    ignore_failure: true
+- append:
+    tag: append_rpd_ifd_address_to_host_ip
+    if: "ctx._temp_?.rpd_ifd?.address != null"
+    field: host.ip
+    value: '{{{_temp_.rpd_ifd.address}}}'
+    allow_duplicates: false
+- append:
+    tag: append_rpd_ifd_address_to_related_ip
+    if: "ctx._temp_?.rpd_ifd?.address != null"
+    field: related.ip
+    value: '{{{_temp_.rpd_ifd.address}}}'
+    allow_duplicates: false
+
 # After System Structured, Structured-Brief, and Unstructured messages: there are optional key-value pairs seperated by ", ". These should now be in `message` field
 # split k-v fields inside message field.
 - kv:
@@ -901,7 +923,7 @@ processors:
     field: juniper.srx.message
     target_field: message
     ignore_missing: true
-    if: "ctx.juniper?.srx?.message != null"
+    if: "ctx.juniper?.srx?.message != null && ctx.message == null"
 
 - remove:
     tag: remove_juniper_srx_process_f8fae6df
