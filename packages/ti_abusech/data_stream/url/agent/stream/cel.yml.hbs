@@ -25,30 +25,23 @@ program: |
   state.with(
     request("GET", state.url).with({
       "Header":{
-        "Content-Type": ["application/zip"],
+        "Content-Type": ["application/json"],
         ?"Auth-Key": has(state.auth_key) ?
           optional.of([state.auth_key])
         :
           optional.none(),
       }
-    })
-    .do_request()
-    .as(resp, resp.StatusCode == 200 ?
-      resp.Body.mime("application/zip").File.as(file, file.size() > 0 ?
-        file[0].Data.as(data, bytes(data).decode_json().as(body, {
-          "events": body.map(id, body[id].size() > 0 ?
-            {"message": body[id][0].with({"id": id}).encode_json()}
-          :
-            {"message": ""}
-          ),
-          "url": state.url
-        }))
-      :
-        {
-          "events": [],
-          "url": state.url
-        }
-      )
+    }).as(req, req.do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+        "events": (has(body.urls) ?
+          body.urls.map(u, {
+            "message": u.encode_json()
+          })
+        :
+          []
+        ),
+        "url": state.url
+      })
     :
       {
         "events": {
@@ -65,13 +58,15 @@ program: |
         },
         "want_more": false,
       }
-    )
+    ))
   )
 
+{{#if ioc_expiration_duration}}
 fields_under_root: true
 fields:
   _conf:
-    interval: "{{interval}}"
+    ioc_expiration_duration: {{ioc_expiration_duration}}
+{{/if}}
 
 tags:
 {{#if preserve_original_event}}
