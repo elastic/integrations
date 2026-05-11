@@ -1,4 +1,16 @@
 ---
+# Canonical schema reference for Azure AD Graph activity logs:
+#   https://learn.microsoft.com/en-us/azure/azure-monitor/reference/tables/aadgraphactivitylogs
+#
+# Note: the event-hub envelope shape differs from the Log Analytics column
+# projection documented at the URL above. Event-hub payloads use `httpMethod`
+# / `httpStatusCode` / `issuedAt` (and nest `callerIpAddress` under
+# `properties`), while the Log Analytics view exposes `RequestMethod` /
+# `ResponseStatusCode` / `TokenIssuedAt` and adds projection-only columns
+# like `AADTenantId`, `_SubscriptionId`, `SourceSystem`, `Type`, `Level`,
+# `Location` (envelope-level), `ResultSignature`, etc. This pipeline targets
+# the event-hub shape; projection-only columns are not handled because they
+# never appear in events streamed via diagnostic settings.
 description: Pipeline for parsing azure AAD Graph activity logs.
 processors:
   - set:
