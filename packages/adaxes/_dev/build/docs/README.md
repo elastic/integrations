@@ -48,16 +48,7 @@ Elastic Agent receives Adaxes syslog and ships it to Elasticsearch where this in
 4. Leave **Parse Syslog** enabled. Override **Syslog Format** only if you need to force `rfc3164` or `rfc5424` instead of `auto`.
 5. In the Adaxes admin console: Logging → Properties → Syslog → enable, set host and port to match the agent.
 
-### Validation
-
-Send a test message from any host with `logger`:
-
-```bash
-logger -n <agent-host> -P 9514 -d -t Adaxes \
-  "Operation: Reset password for user. Target: CN=Bob,OU=Staff,DC=corp,DC=local. Initiator: corp\\helpdesk1. Initiator Host: HELPDESK-02. Result: Success"
-```
-
-Then in Kibana → Discover, query `data_stream.dataset : "adaxes.operations"`.
+After Adaxes performs an operation, the event appears in Kibana → Discover under `data_stream.dataset : "adaxes.operations"` within seconds.
 
 ## Troubleshooting
 
