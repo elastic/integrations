@@ -89,14 +89,14 @@ An example event for `aadgraphactivitylogs` looks as following:
         "aadgraphactivitylogs": {
             "category": "AzureADGraphActivityLogs",
             "operation_name": "AAD Graph Activity",
-            "operation_version": "1.6",
             "properties": {
                 "actor_type": "User",
                 "api_version": "1.6",
                 "app_id": "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
                 "client_auth_method": 0,
+                "direct_access_source": "Gateway",
+                "env_cloud_role": "restdirectoryservice",
                 "identity_provider": "https://sts.windows.net/ab30785b-417f-42a4-b5dc-8f9051718acb/",
-                "operation_id": "00000001-0001-0001-0001-000000000001",
                 "scopes": [
                     "62e90394-69f5-4237-9190-012177145e10"
                 ],
@@ -104,13 +104,7 @@ An example event for `aadgraphactivitylogs` looks as following:
                 "sign_in_activity_id": "AAAAAAAAAAAAAAAAAAAAAA==",
                 "time_generated": "2026-05-07T15:19:33.536Z",
                 "token_issued_at": "2026-05-07T13:50:39.000Z"
-            },
-            "result_signature": "200"
-        },
-        "correlation_id": "00000001-0001-0001-0001-000000000001",
-        "resource": {
-            "id": "/TENANTS/AB30785B-417F-42A4-B5DC-8F9051718ACB/PROVIDERS/MICROSOFT.AADIAM",
-            "provider": "MICROSOFT.AADIAM"
+            }
         },
         "tenant_id": "ab30785b-417f-42a4-b5dc-8f9051718acb"
     },
@@ -137,8 +131,14 @@ An example event for `aadgraphactivitylogs` looks as following:
             "id": "ab30785b-417f-42a4-b5dc-8f9051718acb"
         },
         "provider": "azure",
+        "region": "WestUS",
         "service": {
             "name": "Azure AD Graph"
+        }
+    },
+    "destination": {
+        "geo": {
+            "region_name": "WestUS"
         }
     },
     "ecs": {
@@ -153,7 +153,7 @@ An example event for `aadgraphactivitylogs` looks as following:
         "duration": 59000000,
         "id": "00000001-0001-0001-0001-000000000001",
         "kind": "event",
-        "original": "{\"Level\":4,\"callerIpAddress\":\"81.2.69.143\",\"category\":\"AzureADGraphActivityLogs\",\"correlationId\":\"00000001-0001-0001-0001-000000000001\",\"durationMs\":59,\"operationName\":\"AAD Graph Activity\",\"operationVersion\":\"1.6\",\"properties\":{\"actorType\":\"User\",\"apiVersion\":\"1.6\",\"appId\":\"04b07795-8ddb-461a-bbee-02f9e1bf7b46\",\"clientAuthMethod\":\"0\",\"durationMs\":59,\"identityProvider\":\"https://sts.windows.net/ab30785b-417f-42a4-b5dc-8f9051718acb/\",\"ipAddress\":\"81.2.69.143\",\"operationId\":\"00000001-0001-0001-0001-000000000001\",\"requestId\":\"00000001-0001-0001-0001-000000000001\",\"requestMethod\":\"GET\",\"requestUri\":\"/v2/ab30785b-417f-42a4-b5dc-8f9051718acb/users\",\"responseSizeBytes\":54662,\"responseStatusCode\":200,\"roles\":\"\",\"scopes\":\"62e90394-69f5-4237-9190-012177145e10\",\"servicePrincipalId\":\"\",\"sessionId\":\"5a5a5a5a-5a5a-5a5a-5a5a-5a5a5a5a5a5a\",\"signInActivityId\":\"AAAAAAAAAAAAAAAAAAAAAA==\",\"tenantId\":\"ab30785b-417f-42a4-b5dc-8f9051718acb\",\"timeGenerated\":\"2026-05-07T15:19:33.5368860Z\",\"tokenIssuedAt\":\"2026-05-07T13:50:39Z\",\"userAgent\":\"azure-graph-test-client/1.0\",\"userId\":\"b37ec517-0a34-4266-b627-f7bb0d679d70\",\"wids\":\"\"},\"resourceId\":\"/TENANTS/AB30785B-417F-42A4-B5DC-8F9051718ACB/PROVIDERS/MICROSOFT.AADIAM\",\"resultSignature\":\"200\",\"tenantId\":\"ab30785b-417f-42a4-b5dc-8f9051718acb\",\"time\":\"2026-05-07T15:19:33.5368860Z\"}",
+        "original": "{\"category\":\"AzureADGraphActivityLogs\",\"location\":\"WestUS\",\"operationName\":\"AAD Graph Activity\",\"properties\":{\"__UDI_RequiredFields_EventTime\":639140000000000000,\"__UDI_RequiredFields_RegionScope\":\"NA\",\"__UDI_RequiredFields_TenantId\":\"ab30785b-417f-42a4-b5dc-8f9051718acb\",\"__UDI_RequiredFields_UniqueId\":\"00000001-0001-0001-0001-000000000001\",\"actorType\":\"User\",\"apiVersion\":\"1.6\",\"appId\":\"04b07795-8ddb-461a-bbee-02f9e1bf7b46\",\"callerIpAddress\":\"81.2.69.143\",\"clientAuthMethod\":0,\"deviceId\":\"\",\"directAccessSource\":\"Gateway\",\"durationMs\":59,\"env_cloud_role\":\"restdirectoryservice\",\"httpMethod\":\"GET\",\"httpStatusCode\":200,\"identityProvider\":\"https://sts.windows.net/ab30785b-417f-42a4-b5dc-8f9051718acb/\",\"issuedAt\":\"5/7/2026 1:50:39 PM\",\"location\":\"WestUS\",\"requestId\":\"00000001-0001-0001-0001-000000000001\",\"requestUri\":\"/v2/ab30785b-417f-42a4-b5dc-8f9051718acb/users\",\"responseSizeBytes\":54662,\"roles\":\"\",\"scopes\":\"62e90394-69f5-4237-9190-012177145e10\",\"servicePrincipalId\":\"\",\"sessionId\":\"5a5a5a5a-5a5a-5a5a-5a5a-5a5a5a5a5a5a\",\"signInActivityId\":\"AAAAAAAAAAAAAAAAAAAAAA==\",\"tenantId\":\"ab30785b-417f-42a4-b5dc-8f9051718acb\",\"timeGenerated\":\"2026-05-07T15:19:33.5368860Z\",\"userAgent\":\"azure-graph-test-client/1.0\",\"userId\":\"b37ec517-0a34-4266-b627-f7bb0d679d70\",\"wids\":\"\"},\"tenantId\":\"ab30785b-417f-42a4-b5dc-8f9051718acb\"}",
         "outcome": "success",
         "type": [
             "access",
@@ -169,9 +169,6 @@ An example event for `aadgraphactivitylogs` looks as following:
             "bytes": 54662,
             "status_code": 200
         }
-    },
-    "log": {
-        "level": "4"
     },
     "related": {
         "ip": [
@@ -203,9 +200,6 @@ An example event for `aadgraphactivitylogs` looks as following:
     "tags": [
         "preserve_original_event"
     ],
-    "token": {
-        "id": "AAAAAAAAAAAAAAAAAAAAAA=="
-    },
     "url": {
         "original": "/v2/ab30785b-417f-42a4-b5dc-8f9051718acb/users",
         "path": "/v2/ab30785b-417f-42a4-b5dc-8f9051718acb/users"
