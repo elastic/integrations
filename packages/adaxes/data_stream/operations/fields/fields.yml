@@ -1,0 +1,59 @@
+- name: adaxes
+  type: group
+  description: Adaxes-specific operation fields parsed from the syslog body.
+  fields:
+    - name: operation
+      type: group
+      fields:
+        - name: description
+          type: keyword
+          ignore_above: 1024
+          multi_fields:
+            - name: text
+              type: match_only_text
+          description: Free-text description of the operation Adaxes performed.
+        - name: type
+          type: keyword
+          description: Adaxes operation type, when explicitly present in the message body.
+    - name: target
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          ignore_above: 1024
+          multi_fields:
+            - name: text
+              type: match_only_text
+          description: DN or display name of the directory object that was modified.
+        - name: type
+          type: keyword
+          description: Object class (user, group, computer, …) when present.
+        - name: dn
+          type: keyword
+          ignore_above: 2048
+          description: Distinguished name of the target object.
+    - name: initiator
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Identity that triggered the operation (user account or service).
+        - name: host
+          type: keyword
+          description: Host the operation was initiated from.
+        - name: type
+          type: keyword
+          description: Either an Adaxes service or a user account.
+    - name: result
+      type: group
+      fields:
+        - name: status
+          type: keyword
+          description: One of Success, Pending, Error, Unknown.
+        - name: reason
+          type: keyword
+          ignore_above: 1024
+          multi_fields:
+            - name: text
+              type: match_only_text
+          description: Failure detail when the operation did not succeed.
