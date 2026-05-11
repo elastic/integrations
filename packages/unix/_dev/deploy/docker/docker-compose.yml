@@ -8,7 +8,7 @@ services:
     command:
       - sh
       - -c
-      - apk add --quiet socat && echo "Added socat" && until [ -S /tmp/test.sock ]; do sleep 1 && echo "Sleeping"; done; socat - UNIX-CONNECT:/tmp/test.sock < /sample_logs/test-unix.log && echo "socat done"
+      - apk add --quiet socat && echo "Added socat" && trap 'socat - UNIX-CONNECT:/tmp/test.sock < /sample_logs/test-unix.log; echo "socat done"; exit 0' HUP && echo "Waiting for SIGHUP" && while true; do sleep 1 & wait $!; done
   test-syslog:
     image: alpine:latest
     volumes:
@@ -17,4 +17,4 @@ services:
     command:
       - sh
       - -c
-      - apk add --quiet socat && echo "Added socat" && until [ -S /tmp/test-syslog.sock ]; do sleep 1 && echo "Sleeping"; done; socat - UNIX-CONNECT:/tmp/test-syslog.sock < /sample_logs/test-unix.log && echo "socat done"
+      - apk add --quiet socat && echo "Added socat" && trap 'socat - UNIX-CONNECT:/tmp/test-syslog.sock < /sample_logs/test-unix.log; echo "socat done"; exit 0' HUP && echo "Waiting for SIGHUP" && while true; do sleep 1 & wait $!; done
