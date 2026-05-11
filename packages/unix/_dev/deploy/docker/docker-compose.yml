@@ -1,0 +1,20 @@
+version: '2.3'
+services:
+  test-unix:
+    image: alpine:latest
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/tmp
+    command:
+      - sh
+      - -c
+      - apk add --quiet socat && echo "Added socat" && until [ -S /tmp/test.sock ]; do sleep 1 && echo "Sleeping"; done; socat - UNIX-CONNECT:/tmp/test.sock < /sample_logs/test-unix.log && echo "socat done"
+  test-syslog:
+    image: alpine:latest
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/tmp
+    command:
+      - sh
+      - -c
+      - apk add --quiet socat && echo "Added socat" && until [ -S /tmp/test-syslog.sock ]; do sleep 1 && echo "Sleeping"; done; socat - UNIX-CONNECT:/tmp/test-syslog.sock < /sample_logs/test-unix.log && echo "socat done"
