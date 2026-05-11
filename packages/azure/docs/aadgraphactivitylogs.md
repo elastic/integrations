@@ -26,7 +26,7 @@ Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for m
 
 `eventhub` :
   _string_
-It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You _can_ use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
+It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You _can_ use existing Event Hubs having underscores (_) in the Event Hub name. In this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (for example, the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
 Default value `insights-operational-logs`.
 
 `consumer_group` :
@@ -38,7 +38,7 @@ Default value: `$Default`
 _string_
 The connection string required to communicate with Event Hubs, steps [here](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string).
 
-A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping the filebeat azure module it can start back up at the spot that it stopped processing messages.
+A Blob Storage account is required to store, retrieve, and update the offset or state of the eventhub messages. This means that after stopping the filebeat azure module it can start back up at the spot that it stopped processing messages.
 
 `storage_account` :
 _string_
@@ -54,7 +54,7 @@ The storage account container where the integration stores the checkpoint data f
 
 `resource_manager_endpoint` :
 _string_
-Optional, by default we are using the azure public environment, to override, users can provide a specific resource manager endpoint in order to use a different Azure environment.
+Optional. By default the integration uses the Azure public environment. To override, provide a specific resource manager endpoint to use a different Azure environment.
 
 Resource manager endpoints:
 
@@ -76,9 +76,9 @@ https://management.usgovcloudapi.net/
 
 ### aadgraphactivitylogs
 
-The `aadgraphactivitylogs` data stream of the Azure Logs package collects Azure AD Graph activity events that have been streamed through an Azure event hub. The events ingest pipeline matches `category == "AzureADGraphActivityLogs"` and sets `event.dataset = azure.aadgraphactivitylogs`; the events data stream's routing rules then reroute the document from `logs-azure.events-*` directly to `logs-azure.aadgraphactivitylogs-*`, where this data stream's pipeline applies full ECS field extraction.
+The `aadgraphactivitylogs` data stream of the Azure Logs package collects Azure AD Graph activity events that have been streamed through an Azure event hub. The events ingest pipeline matches `category == "AzureADGraphActivityLogs"` and sets `event.dataset = azure.aadgraphactivitylogs`. The events data stream's routing rules then reroute the document from `logs-azure.events-*` directly to `logs-azure.aadgraphactivitylogs-*`, where this data stream's pipeline applies full ECS field extraction.
 
-Before this data stream existed, AAD Graph events had no specific override in the events router and fell through to the `azure.platformlogs` catch-all, landing in `logs-azure.platformlogs-default` with only generic platform-log parsing. Those previously-indexed events are not backfilled; only new events are routed to the dedicated dataset.
+Before this data stream existed, AAD Graph events had no specific override in the events router and fell through to the `azure.platformlogs` catch-all, landing in `logs-azure.platformlogs-default` with only generic platform-log parsing. Those previously-indexed events are not backfilled. Only new events are routed to the dedicated dataset.
 
 An example event for `aadgraphactivitylogs` looks as following:
 
@@ -225,7 +225,7 @@ An example event for `aadgraphactivitylogs` looks as following:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -234,14 +234,14 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | @timestamp | Event timestamp. | date |
 | azure.aadgraphactivitylogs.category | Azure Event Category. For Azure AD Graph Activity Logs, this is `AzureADGraphActivityLogs`. | keyword |
 | azure.aadgraphactivitylogs.operation_name | Operation name. For this category the value is always the literal string `AAD Graph Activity`; rely on the derived `event.action` (HTTP method + directory collection from `requestUri`) for detection. | keyword |
-| azure.aadgraphactivitylogs.properties.actor_type | Type of identity that issued the request, e.g. `User`, `ServicePrincipal`. | keyword |
+| azure.aadgraphactivitylogs.properties.actor_type | Type of identity that issued the request, for example `User`, `ServicePrincipal`. | keyword |
 | azure.aadgraphactivitylogs.properties.api_version | The API version of the event. | keyword |
 | azure.aadgraphactivitylogs.properties.app_id | The identifier for the application. | keyword |
 | azure.aadgraphactivitylogs.properties.billed_size | The record size in bytes. | double |
 | azure.aadgraphactivitylogs.properties.client_auth_method | Indicates how the client was authenticated. For a public client, the value is 0. If client ID and client secret are used, the value is 1. If a client certificate was used for authentication, the value is 2. | integer |
 | azure.aadgraphactivitylogs.properties.device_id | The identifier of the device from which the authentication request originated. | keyword |
-| azure.aadgraphactivitylogs.properties.direct_access_source | The path through which the request reached the AAD Graph service (e.g. `Gateway`). | keyword |
-| azure.aadgraphactivitylogs.properties.env_cloud_role | The Microsoft cloud role identifier for the service handling the request (e.g. `restdirectoryservice`). Useful for distinguishing first-party Microsoft service traffic from third-party callers. | keyword |
+| azure.aadgraphactivitylogs.properties.direct_access_source | The path through which the request reached the AAD Graph service (for example, `Gateway`). | keyword |
+| azure.aadgraphactivitylogs.properties.env_cloud_role | The Microsoft cloud role identifier for the service handling the request (for example, `restdirectoryservice`). Useful for distinguishing first-party Microsoft service traffic from third-party callers. | keyword |
 | azure.aadgraphactivitylogs.properties.identity_provider | The identity provider that authenticated the subject of the token. | keyword |
 | azure.aadgraphactivitylogs.properties.is_billable | Specifies whether ingesting the data is billable. When _IsBillable is false ingestion isn't billed to your Azure account. | boolean |
 | azure.aadgraphactivitylogs.properties.request_uri | The URI of the request. | keyword |
