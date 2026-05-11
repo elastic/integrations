@@ -1,0 +1,424 @@
+---
+description: "Adaxes operation log enrichment. Strips the syslog header (Adaxes emits RFC3164 without a tag — body starts immediately after the hostname), decodes PRI into facility/severity, parses the pipe-delimited operation body that Adaxes uses by default, and maps to ECS."
+processors:
+
+  # ---- Bookkeeping ---------------------------------------------------------
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: "8.11.0"
+  - set:
+      tag: set_event_ingested
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      override: true
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: adaxes.operations
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: adaxes
+  - set:
+      tag: set_observer_vendor
+      field: observer.vendor
+      value: Softerra
+  - set:
+      tag: set_observer_product
+      field: observer.product
+      value: Adaxes
+  - set:
+      tag: set_observer_type
+      field: observer.type
+      value: iam
+
+  - set:
+      tag: set_event_original
+      field: event.original
+      copy_from: message
+      ignore_empty_value: true
+
+  - trim:
+      tag: trim_message
+      field: message
+      ignore_missing: true
+
+  # ---- Strip syslog header --------------------------------------------------
+  # Real Adaxes samples emit RFC3164 *without* a tag — the body starts
+  # immediately after the hostname:
+  #   <14>May 11 06:55:31 SV-INF-ADAXES UserB (2) (userb@example.com)|Add '...'|Success
+  # We also accept RFC5424, RFC3164 with tag (PROGRAM[PID]:), and bare PRI.
+  - grok:
+      tag: split_syslog_header
+      field: message
+      patterns:
+        - '^<%{POSINT:_tmp.pri:int}>%{NONNEGINT:log.syslog.version:int} %{TIMESTAMP_ISO8601:_tmp.ts} %{IPORHOST:host.hostname} %{DATA:process.name} %{DATA:process.pid} %{DATA:event.code} (?:-|\[%{DATA:log.syslog.structured_data}\]) %{GREEDYDATA:_tmp.body}$'
+        # RFC3164 with tag — restrict tag to alphanumerics/dot/dash/underscore so we
+        # do NOT swallow Adaxes operation bodies that happen to contain a colon.
+        - '^<%{POSINT:_tmp.pri:int}>%{SYSLOGTIMESTAMP:_tmp.ts} %{IPORHOST:host.hostname} (?<process.name>[A-Za-z0-9._\-/]+)(?:\[%{POSINT:process.pid:int}\])?: %{GREEDYDATA:_tmp.body}$'
+        # Adaxes default — RFC3164 without a tag, body starts immediately after host.
+        - '^<%{POSINT:_tmp.pri:int}>%{SYSLOGTIMESTAMP:_tmp.ts} %{IPORHOST:host.hostname} %{GREEDYDATA:_tmp.body}$'
+        - '^<%{POSINT:_tmp.pri:int}>%{GREEDYDATA:_tmp.body}$'
+        - '%{GREEDYDATA:_tmp.body}'
+      ignore_failure: true
+
+  - script:
+      tag: decode_pri
+      if: "ctx._tmp != null && ctx._tmp.pri != null"
+      lang: painless
+      source: |
+        int pri = (int) ctx._tmp.pri;
+        if (ctx.log == null) { ctx.log = new HashMap(); }
+        if (ctx.log.syslog == null) { ctx.log.syslog = new HashMap(); }
+        ctx.log.syslog.priority = pri;
+        if (ctx.log.syslog.facility == null) { ctx.log.syslog.facility = new HashMap(); }
+        if (ctx.log.syslog.severity == null) { ctx.log.syslog.severity = new HashMap(); }
+        if (ctx.log.syslog.facility.code == null) { ctx.log.syslog.facility.code = pri / 8; }
+        if (ctx.log.syslog.severity.code == null) { ctx.log.syslog.severity.code = pri % 8; }
+
+  - script:
+      tag: name_severity_facility
+      if: "ctx.log?.syslog?.severity?.code != null"
+      lang: painless
+      source: |
+        String[] sev = new String[] {"Emergency","Alert","Critical","Error","Warning","Notice","Informational","Debug"};
+        int s = (int) ctx.log.syslog.severity.code;
+        if (s >= 0 && s < 8 && ctx.log.syslog.severity.name == null) {
+          ctx.log.syslog.severity.name = sev[s];
+        }
+        if (ctx.log.syslog.facility?.code != null && ctx.log.syslog.facility.name == null) {
+          int f = (int) ctx.log.syslog.facility.code;
+          def fac = new HashMap();
+          fac[0]="kernel"; fac[1]="user-level"; fac[2]="mail"; fac[3]="system";
+          fac[4]="security/authorization"; fac[5]="syslogd"; fac[6]="line printer";
+          fac[7]="network news"; fac[8]="UUCP"; fac[9]="clock"; fac[10]="security/authorization";
+          fac[11]="FTP"; fac[12]="NTP"; fac[13]="log audit"; fac[14]="log alert"; fac[15]="clock";
+          fac[16]="local0"; fac[17]="local1"; fac[18]="local2"; fac[19]="local3";
+          fac[20]="local4"; fac[21]="local5"; fac[22]="local6"; fac[23]="local7";
+          if (fac.containsKey(f)) { ctx.log.syslog.facility.name = (String) fac[f]; }
+        }
+
+  # Parse @timestamp from the syslog header timestamp (year-less RFC3164 will
+  # be assumed current year, which matches Filebeat's default behavior).
+  - date:
+      tag: set_timestamp_from_syslog
+      if: "ctx._tmp?.ts != null"
+      field: _tmp.ts
+      formats:
+        - ISO8601
+        - "MMM  d HH:mm:ss"
+        - "MMM dd HH:mm:ss"
+      target_field: "@timestamp"
+      ignore_failure: true
+
+  - set:
+      tag: set_message_to_body
+      field: message
+      copy_from: _tmp.body
+      ignore_empty_value: true
+
+  # ---- Parse the Adaxes operation body -------------------------------------
+  # Real Adaxes default: pipe-delimited body, 2 or 3 fields.
+  #   3 fields (user / scheduled-task initiated):
+  #     <initiator>|<operation>|<result>
+  #   2 fields (system-initiated, no initiator):
+  #     <operation>|<result>
+  #
+  # Result is "Success" or the failure message itself (e.g. "Access is denied.").
+  # Severity from PRI is the authoritative success/failure flag.
+  #
+  # Customized templates we also handle (lower priority):
+  #   "Operation: ... Target: ... Initiator: ... [Initiator Host: ...] Result: ..."
+  #   "Initiator=...|Initiator Host=...|Operation=...|Target=...|Result=..."
+  #   "<description>. Result: <token>"
+  - grok:
+      tag: parse_adaxes_body
+      field: message
+      patterns:
+        # 1. Customized labeled template
+        - 'Operation:\s*%{DATA:adaxes.operation.description}\.\s*Target:\s*%{DATA:adaxes.target.name}\.\s*Initiator:\s*%{DATA:adaxes.initiator.name}\.\s*(?:Initiator Host:\s*%{DATA:adaxes.initiator.host}\.\s*)?Result:\s*%{GREEDYDATA:adaxes.result.raw}'
+        # 2. Customized key=value pipe template
+        - 'Initiator=%{DATA:adaxes.initiator.name}\|Initiator Host=%{DATA:adaxes.initiator.host}\|Operation=%{DATA:adaxes.operation.description}\|Target=%{DATA:adaxes.target.name}\|Result=%{GREEDYDATA:adaxes.result.raw}'
+        # 3. Customized positional pipe — initiator|host|operation|target|result
+        - '(?<adaxes.initiator.name>[^|]+)\|(?<adaxes.initiator.host>[^|]+)\|(?<adaxes.operation.description>[^|]+)\|(?<adaxes.target.name>[^|]+)\|(?<adaxes.result.raw>[^|]+)$'
+        # 4. Real Adaxes default — 3-field pipe (initiator|operation|result)
+        - '(?<adaxes.initiator.name>[^|]+)\|(?<adaxes.operation.description>[^|]+)\|(?<adaxes.result.raw>[^|]+)$'
+        # 5. Real Adaxes default — 2-field pipe (operation|result), no initiator
+        - '(?<adaxes.operation.description>[^|]+)\|(?<adaxes.result.raw>[^|]+)$'
+        # 6. Default sparse — "<description>. Result: <token>"
+        - '%{GREEDYDATA:adaxes.operation.description}\.\s*Result:\s*%{GREEDYDATA:adaxes.result.raw}'
+        # 7. Just description, no result
+        - '%{GREEDYDATA:adaxes.operation.description}'
+      on_failure:
+        - append:
+            tag: tag_body_unparsed
+            field: tags
+            value: _adaxes_body_unparsed
+        - set:
+            tag: copy_message_to_description
+            field: adaxes.operation.description
+            value: "{{{message}}}"
+
+  # ---- Sub-parse the initiator field ---------------------------------------
+  # Real shape: "UserB (2) (userb@example.com)" — extract user.name (bare),
+  # adaxes.initiator.sequence (the (N) suffix Adaxes adds when the same
+  # display name exists in multiple OUs), and user.email.
+  # Scheduled-task initiators ("Weekly - Mon 9.00") are left as-is in
+  # adaxes.initiator.name and produce no user.* fields.
+  - grok:
+      tag: parse_initiator_user
+      field: adaxes.initiator.name
+      ignore_missing: true
+      ignore_failure: true
+      if: "ctx.adaxes?.initiator?.name != null && ctx.adaxes.initiator.name.contains('@')"
+      patterns:
+        - '^(?<_tmp.iname>[^(]+?)\s*\((?<adaxes.initiator.sequence>\d+)\)\s*\((?<user.email>[^@\s]+@[^)]+)\)$'
+        - '^(?<_tmp.iname>[^(]+?)\s*\((?<user.email>[^@\s]+@[^)]+)\)$'
+
+  - convert:
+      tag: convert_initiator_sequence
+      field: adaxes.initiator.sequence
+      type: long
+      ignore_missing: true
+  - trim:
+      tag: trim_iname
+      field: _tmp.iname
+      ignore_missing: true
+  - set:
+      tag: set_user_name_from_iname
+      field: user.name
+      copy_from: _tmp.iname
+      if: "ctx._tmp?.iname != null"
+  - lowercase:
+      tag: lowercase_user_name
+      field: user.name
+      ignore_missing: true
+  - lowercase:
+      tag: lowercase_user_email
+      field: user.email
+      ignore_missing: true
+
+  # ---- Result token -> structured status + reason --------------------------
+  # In real samples the result field is either "Success" or a verbatim error
+  # message (e.g. "Access is denied."). PRI severity 3 (Error) is the
+  # authoritative failure signal — when severity says Error, treat any
+  # non-Success result text as the failure reason.
+  - grok:
+      tag: parse_adaxes_result_token
+      field: adaxes.result.raw
+      patterns:
+        - '^(?<adaxes.result.status>Success|Pending|Suspended)\.?$'
+        - '^(?<adaxes.result.status>Error|Failed|Failure)\s*[-:]?\s*%{GREEDYDATA:adaxes.result.reason}'
+      ignore_missing: true
+      ignore_failure: true
+
+  # If we have a raw result that didn't match any token AND severity says
+  # Error, treat the whole raw result as the failure reason.
+  - script:
+      tag: derive_result_from_severity
+      if: "ctx.adaxes?.result?.raw != null && ctx.adaxes?.result?.status == null"
+      lang: painless
+      source: |
+        if (ctx.adaxes.result == null) { ctx.adaxes.result = new HashMap(); }
+        def sev = ctx.log?.syslog?.severity?.code;
+        String raw = ctx.adaxes.result.raw;
+        int sevCode = (sev == null) ? -1 : ((Number) sev).intValue();
+        if (sevCode >= 0 && sevCode <= 4) {
+          ctx.adaxes.result.status = "Error";
+          ctx.adaxes.result.reason = raw;
+        } else if (raw.toLowerCase().startsWith("success")) {
+          ctx.adaxes.result.status = "Success";
+        } else {
+          ctx.adaxes.result.status = "Unknown";
+          ctx.adaxes.result.reason = raw;
+        }
+
+  - set:
+      tag: normalize_suspended_to_pending
+      field: adaxes.result.status
+      value: Pending
+      if: "ctx.adaxes?.result?.status == 'Suspended'"
+
+  - set:
+      tag: outcome_success
+      field: event.outcome
+      value: success
+      if: "ctx.adaxes?.result?.status == 'Success'"
+  - set:
+      tag: outcome_unknown
+      field: event.outcome
+      value: unknown
+      if: "ctx.adaxes?.result?.status == 'Pending'"
+  - set:
+      tag: outcome_failure
+      field: event.outcome
+      value: failure
+      if: "ctx.adaxes?.result?.status != null && ctx.adaxes.result.status != 'Success' && ctx.adaxes.result.status != 'Pending'"
+
+  # ---- Trim the reason of trailing periods ---------------------------------
+  - gsub:
+      tag: trim_reason_period
+      field: adaxes.result.reason
+      pattern: '\.$'
+      replacement: ''
+      ignore_missing: true
+
+  # ---- Extract target object from quoted strings in description ------------
+  # Operation descriptions reference objects in single quotes:
+  #   Add 'UserA (...)' to 'GroupB (...)'
+  #   Modify 'UserA (...)': set 'Office' to 'XYZ'
+  #   Run PowerShell script 'Foo' for 'UserA (...)'
+  # We pick the FIRST DN-shaped quoted string (CN=... / OU=... / DC=...) if
+  # present, otherwise the first quoted token. For "Run PowerShell script"
+  # and "Send e-mail notification", the first quoted token is the script /
+  # subject name — for those operations we prefer the second quoted token
+  # which is the directory object being acted on.
+  - grok:
+      tag: extract_target_dn
+      field: adaxes.operation.description
+      patterns:
+        - "'(?<adaxes.target.name>(?:CN|OU|DC)=[^']+)'"
+      ignore_missing: true
+      ignore_failure: true
+      if: "ctx.adaxes?.target?.name == null"
+
+  - script:
+      tag: extract_target_for_script_or_notify
+      if: "ctx.adaxes?.target?.name == null && ctx.adaxes?.operation?.description != null && (ctx.adaxes.operation.description.startsWith('Run PowerShell script') || ctx.adaxes.operation.description.startsWith('Send e-mail notification') || ctx.adaxes.operation.description.startsWith('Run scheduled task') || ctx.adaxes.operation.description.startsWith('Execute custom command'))"
+      lang: painless
+      source: |
+        java.util.regex.Matcher m = /'([^']+)'/.matcher(ctx.adaxes.operation.description);
+        java.util.ArrayList quoted = new java.util.ArrayList();
+        while (m.find()) { quoted.add(m.group(1)); }
+        String pick = null;
+        if (quoted.size() >= 2) { pick = (String) quoted.get(1); }
+        else if (quoted.size() == 1) { pick = (String) quoted.get(0); }
+        if (pick != null) {
+          if (ctx.adaxes.target == null) { ctx.adaxes.target = new HashMap(); }
+          ctx.adaxes.target.name = pick;
+        }
+
+  - grok:
+      tag: extract_target_quoted_fallback
+      field: adaxes.operation.description
+      patterns:
+        - "'%{DATA:adaxes.target.name}'"
+      ignore_missing: true
+      ignore_failure: true
+      if: "ctx.adaxes?.target?.name == null"
+
+  # ---- event.action / event.category from operation description ------------
+  - script:
+      tag: derive_event_action
+      lang: painless
+      source: |
+        if (ctx.adaxes?.operation?.description == null) { return; }
+        String d = ctx.adaxes.operation.description;
+        String dl = d.toLowerCase();
+        String action;
+        if      (dl.startsWith('run powershell script') || dl.startsWith('execute powershell'))                        { action = 'powershell_executed'; }
+        else if (dl.startsWith('send e-mail notification') || dl.startsWith('send email notification') || dl.startsWith('send e‑mail notification') || dl.startsWith('send notification')) { action = 'notification_sent'; }
+        else if (dl.startsWith('create exchange mailbox'))                                                              { action = 'mailbox_created'; }
+        else if (dl.startsWith('disable exchange mailbox') || dl.startsWith('disconnect mailbox'))                      { action = 'mailbox_disabled'; }
+        else if (dl.startsWith('request generation'))                                                                   { action = 'report_requested'; }
+        else if (dl.startsWith('build report overview') || dl.startsWith('build report'))                               { action = 'report_overview_built'; }
+        else if (dl.startsWith('generate report') || dl.startsWith('generate '))                                        { action = 'report_generated'; }
+        else if (dl.startsWith('deliver xlsx document') || dl.startsWith('deliver pdf document') || dl.startsWith('deliver document') || dl.startsWith('deliver csv document') || dl.startsWith('deliver html document')) { action = 'report_delivered'; }
+        else if (dl.startsWith('create xlsx document') || dl.startsWith('create pdf document') || dl.startsWith('create csv document') || dl.startsWith('create html document'))                                       { action = 'report_document_created'; }
+        else if (dl.startsWith('reset password') || dl.contains('password reset'))                                      { action = 'password_reset'; }
+        else if (dl.startsWith('change password'))                                                                      { action = 'password_changed'; }
+        else if (dl.startsWith('add ') && dl.contains(' to '))                                                          { action = 'membership_added'; }
+        else if (dl.startsWith('remove ') && dl.contains(' from '))                                                     { action = 'membership_removed'; }
+        else if (dl.contains('add member') || dl.contains('add members'))                                               { action = 'membership_added'; }
+        else if (dl.contains('remove member'))                                                                          { action = 'membership_removed'; }
+        else if (dl.startsWith('unlock'))                                                                               { action = 'object_unlocked'; }
+        else if (dl.startsWith('disable'))                                                                              { action = 'object_disabled'; }
+        else if (dl.startsWith('enable'))                                                                               { action = 'object_enabled'; }
+        else if (dl.startsWith('move'))                                                                                 { action = 'object_moved'; }
+        else if (dl.startsWith('rename'))                                                                               { action = 'object_renamed'; }
+        else if (dl.startsWith('copy'))                                                                                 { action = 'object_copied'; }
+        else if (dl.startsWith('create'))                                                                               { action = 'object_created'; }
+        else if (dl.startsWith('delete'))                                                                               { action = 'object_deleted'; }
+        else if (dl.startsWith('execute custom command'))                                                               { action = 'custom_command_executed'; }
+        else if (dl.startsWith('run scheduled task') || dl.startsWith('run '))                                          { action = 'scheduled_task_executed'; }
+        else if (dl.startsWith('approve'))                                                                              { action = 'request_approved'; }
+        else if (dl.startsWith('deny') || dl.startsWith('reject'))                                                      { action = 'request_denied'; }
+        else if (dl.startsWith('view'))                                                                                 { action = 'object_viewed'; }
+        else if (dl.contains('logon') || dl.contains('login') || dl.contains('sign in'))                                { action = 'authentication'; }
+        else if (dl.startsWith('modify') || dl.startsWith('update') || dl.startsWith('change') || dl.startsWith('edit') || dl.startsWith('set ')) { action = 'object_modified'; }
+        else                                                                                                            { action = 'other'; }
+        if (ctx.event == null) { ctx.event = new HashMap(); }
+        ctx.event.action = action;
+        if (ctx.event.category == null) { ctx.event.category = new ArrayList(); }
+        ctx.event.category.add('iam');
+        if (action == 'authentication') { ctx.event.category.add('authentication'); }
+        if (action == 'object_created' || action == 'mailbox_created' || action == 'report_document_created') { ctx.event.type = ['creation']; }
+        else if (action == 'object_deleted') { ctx.event.type = ['deletion']; }
+        else if (action == 'authentication') { ctx.event.type = ['start']; }
+        else if (action == 'object_viewed' || action == 'other') { ctx.event.type = ['info']; }
+        else if (action == 'scheduled_task_executed' || action == 'custom_command_executed' || action == 'powershell_executed' || action == 'notification_sent' || action == 'report_requested' || action == 'report_generated' || action == 'report_overview_built' || action == 'report_delivered') { ctx.event.type = ['info']; }
+        else { ctx.event.type = ['change']; }
+
+  # ---- Trim everything ---------------------------------------------------
+  - trim:
+      tag: trim_operation_description
+      field: adaxes.operation.description
+      ignore_missing: true
+  - trim:
+      tag: trim_target_name
+      field: adaxes.target.name
+      ignore_missing: true
+  - trim:
+      tag: trim_initiator_name
+      field: adaxes.initiator.name
+      ignore_missing: true
+  - trim:
+      tag: trim_initiator_host
+      field: adaxes.initiator.host
+      ignore_missing: true
+
+  # source.address from initiator host (only present in custom labeled templates)
+  - set:
+      tag: set_source_address_from_initiator_host
+      field: source.address
+      copy_from: adaxes.initiator.host
+      if: "ctx.adaxes?.initiator?.host != null"
+
+  - fingerprint:
+      tag: fingerprint_event_id
+      fields:
+        - "@timestamp"
+        - adaxes.operation.description
+        - adaxes.target.name
+        - adaxes.initiator.name
+      target_field: event.id
+      method: SHA-256
+      ignore_missing: true
+
+  - remove:
+      tag: remove_result_raw
+      field: adaxes.result.raw
+      ignore_missing: true
+  - remove:
+      tag: remove_tmp
+      field: _tmp
+      ignore_missing: true
+
+on_failure:
+  - set:
+      tag: set_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error

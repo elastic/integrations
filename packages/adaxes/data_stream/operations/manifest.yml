@@ -1,0 +1,180 @@
+title: "Adaxes operations"
+type: logs
+streams:
+  - input: udp
+    title: "Adaxes operations via UDP syslog"
+    description: |-
+      Receive Adaxes operation logs over UDP. Adaxes ships syslog on UDP/514 by default; the agent listens on a non-privileged port unless you remap.
+    template_path: udp.yml.hbs
+    vars:
+      - name: listen_address
+        type: text
+        title: "Listen Address"
+        description: "Bind address. Use 0.0.0.0 to listen on all interfaces."
+        required: true
+        show_user: true
+        default: 0.0.0.0
+      - name: listen_port
+        type: text
+        title: "Listen Port"
+        description: "UDP port to bind. Adaxes default is 514, but the agent process usually cannot bind privileged ports — use 9514 and remap externally if needed."
+        required: true
+        show_user: true
+        default: "9514"
+      - name: max_message_size
+        type: text
+        title: "Max Message Size"
+        description: "Maximum size of a single UDP datagram. Default 10KiB."
+        default: 10KiB
+      - name: read_buffer_size
+        type: text
+        title: "Read Buffer Size"
+        description: "Size of the kernel read buffer on the UDP socket (e.g. 1MiB). Useful under bursty load."
+      - name: timeout
+        type: text
+        title: "Timeout"
+        description: "Read/write timeout for socket operations. Valid units: ns, us, ms, s, m, h."
+      - name: keep_null
+        type: bool
+        title: "Keep Null Values"
+        description: "If true, fields with null values are published."
+        default: false
+      - name: tags
+        type: text
+        title: "Tags"
+        description: "Tags added to every event."
+        multi: true
+        show_user: true
+        default:
+          - adaxes
+          - forwarded
+      - name: syslog_parsing
+        type: bool
+        title: "Parse Syslog"
+        description: "Run Filebeat's syslog parser on the incoming bytes (RFC3164 by default; Adaxes emits BSD/RFC3164 framing). Disable only if you are forwarding pre-parsed JSON."
+        show_user: true
+        default: true
+      - name: syslog_format
+        type: text
+        title: "Syslog Format"
+        description: "Syslog format hint: auto, rfc3164, or rfc5424."
+        show_user: true
+        default: auto
+      - name: syslog_timezone
+        type: text
+        title: "Syslog Time Zone"
+        description: "Time zone of timestamps in syslog headers (e.g. Local, UTC, Europe/Berlin). Used when the header omits offset information (RFC3164)."
+        default: Local
+      - name: preserve_original_event
+        type: bool
+        title: "Preserve original event"
+        description: "Store a verbatim copy of the original event under event.original."
+        required: true
+        show_user: true
+        default: true
+      - name: processors
+        type: yaml
+        title: "Processors"
+        description: |-
+          Filebeat processors applied before ingest. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html).
+      - name: custom
+        type: yaml
+        title: "Custom configurations"
+        description: "Extra YAML merged into the input config."
+        default: ""
+  - input: tcp
+    title: "Adaxes operations via TCP syslog"
+    description: |-
+      Receive Adaxes operation logs over TCP. Use this transport when you need delivery confirmation or messages larger than typical UDP datagrams.
+    template_path: tcp.yml.hbs
+    vars:
+      - name: listen_address
+        type: text
+        title: "Listen Address"
+        description: "Bind address. Use 0.0.0.0 to listen on all interfaces."
+        required: true
+        show_user: true
+        default: 0.0.0.0
+      - name: listen_port
+        type: text
+        title: "Listen Port"
+        description: "TCP port to bind. Adaxes default is 514; remap externally to a privileged port if you need it."
+        required: true
+        show_user: true
+        default: "9514"
+      - name: max_message_size
+        type: text
+        title: "Max Message Size"
+        description: "Maximum size of a single TCP message. Default 20MiB."
+      - name: framing
+        type: text
+        title: "Framing"
+        description: "How to split incoming events: delimiter or rfc6587. Default delimiter."
+      - name: line_delimiter
+        type: text
+        title: "Line Delimiter"
+        description: "Delimiter when framing=delimiter. Default \\n."
+      - name: max_connections
+        type: text
+        title: "Max Connections"
+        description: "Maximum simultaneous client connections."
+      - name: timeout
+        type: text
+        title: "Timeout"
+        description: "Inactivity timeout before a remote connection is closed (default 300s)."
+      - name: keep_null
+        type: bool
+        title: "Keep Null Values"
+        description: "If true, fields with null values are published."
+      - name: tags
+        type: text
+        title: "Tags"
+        description: "Tags added to every event."
+        multi: true
+        show_user: true
+        default:
+          - adaxes
+          - forwarded
+      - name: syslog_parsing
+        type: bool
+        title: "Parse Syslog"
+        description: "Run Filebeat's syslog parser on the incoming bytes."
+        show_user: true
+        default: true
+      - name: syslog_format
+        type: text
+        title: "Syslog Format"
+        description: "Syslog format hint: auto, rfc3164, or rfc5424."
+        show_user: true
+        default: auto
+      - name: syslog_timezone
+        type: text
+        title: "Syslog Time Zone"
+        description: "Time zone applied to syslog headers without offset (RFC3164)."
+        default: Local
+      - name: preserve_original_event
+        type: bool
+        title: "Preserve original event"
+        description: "Store a verbatim copy of the original event under event.original."
+        required: true
+        show_user: true
+        default: true
+      - name: ssl
+        type: yaml
+        title: "SSL Configuration"
+        description: |-
+          Optional SSL/TLS settings. See [Filebeat SSL options](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config).
+        default: ""
+      - name: processors
+        type: yaml
+        title: "Processors"
+        description: "Filebeat processors applied before ingest."
+      - name: custom
+        type: yaml
+        title: "Custom configurations"
+        description: "Extra YAML merged into the input config."
+        default: ""
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false
