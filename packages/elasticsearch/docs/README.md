@@ -299,24 +299,24 @@ Collects [query logs](https://www.elastic.co/docs/deploy-manage/monitor/logging-
 | elasticsearch.querylog.clusters.failed | Failed cluster count when present in the cluster map | long |
 | elasticsearch.querylog.clusters.partial | Partial cluster count when present in the cluster map | long |
 | elasticsearch.querylog.clusters.remote_count | Number of remote clusters or distinct remote aliases | long |
-| elasticsearch.querylog.clusters.remotes | Remote cluster aliases when remotes exist (DSL/ES|QL/EQL) | keyword |
+| elasticsearch.querylog.clusters.remotes | Remote cluster aliases when remotes exist (DSL/ES&#124;QL/EQL) | keyword |
 | elasticsearch.querylog.clusters.running | Running cluster count when present in the cluster map | long |
 | elasticsearch.querylog.clusters.skipped | Skipped cluster count when present in the cluster map | long |
 | elasticsearch.querylog.clusters.successful | Successful cluster count when present in the cluster map | long |
-| elasticsearch.querylog.clusters.total | Total cluster entries in the map (DSL and ES|QL only; not EQL) | long |
+| elasticsearch.querylog.clusters.total | Total cluster entries in the map (DSL and ES&#124;QL only; not EQL) | long |
 | elasticsearch.querylog.dsl.total_count | Total hits from TotalHits (DSL only, SearchLogProducer) | long |
 | elasticsearch.querylog.dsl.total_count_partial | True when total hit relation is not EQUAL_TO | boolean |
-| elasticsearch.querylog.esql.profile.analysis.took | ES|QL profile analysis phase duration in nanoseconds | long |
-| elasticsearch.querylog.esql.profile.dependency_resolution.took | ES|QL profile dependency resolution phase duration in nanoseconds | long |
-| elasticsearch.querylog.esql.profile.parsing.took | ES|QL profile parsing phase duration in nanoseconds | long |
-| elasticsearch.querylog.esql.profile.planning.took | ES|QL profile planning phase duration in nanoseconds | long |
-| elasticsearch.querylog.esql.profile.preanalysis.took | ES|QL profile preanalysis phase duration in nanoseconds | long |
-| elasticsearch.querylog.esql.profile.query.took | ES|QL profile query phase duration in nanoseconds | long |
+| elasticsearch.querylog.esql.profile.analysis.took | ES&#124;QL profile analysis phase duration in nanoseconds | long |
+| elasticsearch.querylog.esql.profile.dependency_resolution.took | ES&#124;QL profile dependency resolution phase duration in nanoseconds | long |
+| elasticsearch.querylog.esql.profile.parsing.took | ES&#124;QL profile parsing phase duration in nanoseconds | long |
+| elasticsearch.querylog.esql.profile.planning.took | ES&#124;QL profile planning phase duration in nanoseconds | long |
+| elasticsearch.querylog.esql.profile.preanalysis.took | ES&#124;QL profile preanalysis phase duration in nanoseconds | long |
+| elasticsearch.querylog.esql.profile.query.took | ES&#124;QL profile query phase duration in nanoseconds | long |
 | elasticsearch.querylog.has_aggregations | True if the search response has aggregations (DSL) | boolean |
-| elasticsearch.querylog.indices | Indices involved (DSL, ES|QL when response present, EQL). Not emitted by SqlLogProducer. | keyword |
+| elasticsearch.querylog.indices | Indices involved (DSL, ES&#124;QL when response present, EQL). Not emitted by SqlLogProducer. | keyword |
 | elasticsearch.querylog.is_remote | True when SearchRequest#getLocalClusterAlias() is set (DSL remote-cluster request) | boolean |
 | elasticsearch.querylog.is_system | True if all resolved indices match the system-index predicate (QueryLogger); omitted when SQL has no indices | boolean |
-| elasticsearch.querylog.query | Query text (DSL JSON, ES|QL, SQL, or EQL) | keyword |
+| elasticsearch.querylog.query | Query text (DSL JSON, ES&#124;QL, SQL, or EQL) | keyword |
 | elasticsearch.querylog.result_count | Number of rows or hits returned (clamped to int where applicable) | long |
 | elasticsearch.querylog.shards.failed | Failed shards (only emitted if count \> 0) | long |
 | elasticsearch.querylog.shards.skipped | Skipped shards (only emitted if count \> 0) | long |
