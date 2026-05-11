@@ -5,18 +5,10 @@
       type: keyword
       description: |
         Azure Event Category. For Azure AD Graph Activity Logs, this is `AzureADGraphActivityLogs`.
-    - name: operation_version
-      type: keyword
-      description: |
-        The legacy Azure AD Graph API version of the event (e.g. `1.6`).
     - name: operation_name
       type: keyword
       description: |
-        Operation name.
-    - name: result_signature
-      type: keyword
-      description: |
-        Result signature.
+        Operation name. For this category the value is always the literal string `AAD Graph Activity`; rely on the derived `event.action` (HTTP method + directory collection from `requestUri`) for detection.
     - name: properties
       type: group
       description: |
@@ -30,10 +22,6 @@
           type: keyword
           description: |
             The identifier for the application.
-        - name: at_content
-          type: keyword
-          description: |
-            Reserved for future use.
         - name: billed_size
           type: double
           description: |
@@ -54,10 +42,14 @@
           type: integer
           description: |
             Indicates how the client was authenticated. For a public client, the value is 0. If client ID and client secret are used, the value is 1. If a client certificate was used for authentication, the value is 2.
-        - name: client_request_id
+        - name: direct_access_source
           type: keyword
           description: |
-            The client request identifier when sent. If no client request identifier is sent, the value will be equal to the operation identifier.
+            The path through which the request reached the AAD Graph service (e.g. `Gateway`).
+        - name: env_cloud_role
+          type: keyword
+          description: |
+            The Microsoft cloud role identifier for the service handling the request (e.g. `restdirectoryservice`). Useful for distinguishing first-party Microsoft service traffic from third-party callers.
         - name: identity_provider
           type: keyword
           description: |
@@ -66,10 +58,6 @@
           type: boolean
           description: |
             Specifies whether ingesting the data is billable. When _IsBillable is false ingestion isn't billed to your Azure account.
-        - name: operation_id
-          type: keyword
-          description: |
-            The identifier for the batch. For non-batched requests, this will be unique per request. For batched requests, this will be the same for all requests in the batch.
         - name: request_uri
           type: keyword
           description: |
@@ -89,7 +77,7 @@
         - name: sign_in_activity_id
           type: keyword
           description: |
-            The identifier representing the sign-in activitys.
+            Identifier of the Microsoft Entra ID sign-in event that established the authentication context for this AAD Graph request. Correlates this request with an entry in Entra ID Sign-In Logs.
         - name: source_system
           type: keyword
           description: |

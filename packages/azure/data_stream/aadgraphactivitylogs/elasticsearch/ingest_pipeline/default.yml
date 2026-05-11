@@ -71,92 +71,73 @@ processors:
         }
 
         ctx.azure['aadgraphactivitylogs'] = keysToSnakeCase(ctx.azure.aadgraphactivitylogs);
+  # Drop Microsoft's internal UDI plumbing fields. They are present on every
+  # AAD Graph event in the diagnostic stream (Windows .NET ticks timestamp,
+  # region scope, internal tenant id, internal unique id) and carry no
+  # detection value.
+  - remove:
+      field:
+        - azure.aadgraphactivitylogs.properties.__udi_required_fields_event_time
+        - azure.aadgraphactivitylogs.properties.__udi_required_fields_region_scope
+        - azure.aadgraphactivitylogs.properties.__udi_required_fields_tenant_id
+        - azure.aadgraphactivitylogs.properties.__udi_required_fields_unique_id
+      ignore_missing: true
+      tag: remove-udi_required_fields
   - date:
-      field: azure.aadgraphactivitylogs.time
+      field: azure.aadgraphactivitylogs.properties.time_generated
       target_field: '@timestamp'
-      if: ctx.azure?.aadgraphactivitylogs?.time != null
-      tag: date-time
-      # Order is prioritized by observed frequency for this log
-      # category.
-      # We expect the first format to be used in 99% of cases.
-      # However, we include the other formats seen in other
-      # categories as a necessary fallback.
-      formats: 
+      if: ctx.azure?.aadgraphactivitylogs?.properties?.time_generated != null
+      tag: date-timestamp_from_time_generated
+      # ISO8601 is the canonical event-hub shape. Other formats are kept as
+      # defensive fallbacks for tenant variants seen in sibling Azure
+      # categories.
+      formats:
         - ISO8601
         - "M/d/yyyy h:mm:ss a XXX"
         - "M/d/yyyy h:mm:ss a"
         - "M/d/yyyy H:mm:ss"
         - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
-  - remove:
-      field: azure.aadgraphactivitylogs.time
+  # In the live event-hub shape this field is named `issuedAt` and uses the
+  # M/d/yyyy h:mm:ss a format (e.g. "5/11/2026 12:35:58 PM"). Rename to
+  # token_issued_at so downstream consumers see a consistent name.
+  - rename:
+      field: azure.aadgraphactivitylogs.properties.issued_at
+      target_field: azure.aadgraphactivitylogs.properties.token_issued_at
       ignore_missing: true
-      tag: remove-time
+      tag: rename-properties_issued_at
   - date:
       field: azure.aadgraphactivitylogs.properties.token_issued_at
       target_field: azure.aadgraphactivitylogs.properties.token_issued_at
       if: ctx.azure?.aadgraphactivitylogs?.properties?.token_issued_at != null
       tag: date-token_issued_at
-      # Order is prioritized by observed frequency for this log
-      # category.
-      # We expect the first format to be used in 99% of cases.
-      # However, we include the other formats seen in other
-      # categories as a necessary fallback.
-      formats: 
-        - ISO8601
-        - "M/d/yyyy h:mm:ss a XXX"
+      formats:
         - "M/d/yyyy h:mm:ss a"
-        - "M/d/yyyy H:mm:ss"
-        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
+        - ISO8601
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: azure.aadgraphactivitylogs.resource_id
-      target_field: azure.resource_id
+  # In the live event-hub shape callerIpAddress is nested under properties.
+  - convert:
+      field: azure.aadgraphactivitylogs.properties.caller_ip_address
+      target_field: source.ip
+      type: ip
       ignore_missing: true
-      tag: rename-resource_id
-  - convert:
-        field: azure.aadgraphactivitylogs.caller_ip_address
-        target_field: source.ip
-        type: ip
-        ignore_missing: true
-        tag: convert-caller_ip_address
-        on_failure:
-        - rename: 
-            field: azure.aadgraphactivitylogs.caller_ip_address
+      tag: convert-properties_caller_ip_address
+      on_failure:
+        - rename:
+            field: azure.aadgraphactivitylogs.properties.caller_ip_address
             target_field: source.address
-            ignore_missing: true 
-            tag: rename-caller_ip_address
+            ignore_missing: true
+            tag: rename-properties_caller_ip_address
             on_failure:
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-        field: azure.aadgraphactivitylogs.properties.ip_address
-        target_field: source.ip
-        type: ip
-        ignore_missing: true
-        tag: convert-properties_ip_address
-        if: ctx.source?.ip == null
-        on_failure:
-        - rename: 
-            field: azure.aadgraphactivitylogs.properties.ip_address
-            target_field: source.address
-            ignore_missing: true 
-            tag: rename-properties_ip_address
-            if: ctx.source?.address == null
-            on_failure:
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-
+              - append:
+                  field: error.message
+                  value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
-      field: 
-        - azure.aadgraphactivitylogs.caller_ip_address
-        - azure.aadgraphactivitylogs.properties.ip_address
+      field: azure.aadgraphactivitylogs.properties.caller_ip_address
       if: 'ctx.source?.ip != null'
-      tag: remove-caller_ip_address
+      tag: remove-properties_caller_ip_address
       ignore_missing: true
   - set:
       field: client.ip
@@ -184,27 +165,12 @@ processors:
       copy_from: azure.aadgraphactivitylogs.properties.session_id
       tag: set_session_id
       ignore_empty_value: true
-  - set:
-      field: token.id
-      copy_from: azure.aadgraphactivitylogs.properties.sign_in_activity_id
-      tag: set_token_id
-      ignore_empty_value: true
   - append:
       field: related.ip
       tag: append-related_ip
       value: '{{source.ip}}'
       allow_duplicates: false
       if: 'ctx.source?.ip != null'
-  - convert:
-      field: azure.aadgraphactivitylogs.level
-      target_field: log.level
-      type: string
-      tag: convert-level
-      ignore_missing: true
-  - remove:
-      field: azure.aadgraphactivitylogs.level
-      ignore_missing: true
-      tag: remove-level
   - convert:
       field: azure.aadgraphactivitylogs.duration_ms
       target_field: event.duration
@@ -280,20 +246,15 @@ processors:
       if: ctx.azure?.tenant_id != null
       ignore_missing: true
   - rename:
-      field: azure.aadgraphactivitylogs.correlation_id
-      target_field: azure.correlation_id
-      ignore_missing: true
-      tag: rename-correlation_id
-  - rename:
       field: azure.aadgraphactivitylogs.properties.request_id
       target_field: http.request.id
       ignore_missing: true
       tag: rename-properties_request_id
   - rename:
-      field: azure.aadgraphactivitylogs.properties.request_method
+      field: azure.aadgraphactivitylogs.properties.http_method
       target_field: http.request.method
       ignore_missing: true
-      tag: rename-properties_request_methods
+      tag: rename-properties_http_method
   - uri_parts:
       field: azure.aadgraphactivitylogs.properties.request_uri
       if: ctx.azure?.aadgraphactivitylogs?.properties?.request_uri != null
@@ -314,14 +275,26 @@ processors:
       ignore_missing: true
       tag: rename-properties_response_bytes
   - rename:
-      field: azure.aadgraphactivitylogs.properties.response_status_code
+      field: azure.aadgraphactivitylogs.properties.http_status_code
       target_field: http.response.status_code
       ignore_missing: true
-      tag: rename-properties_response_statuscode
+      tag: rename-properties_http_status_code
+  # `roles` and `wids` arrive as comma-delimited strings with frequent leading
+  # whitespace and trailing commas (e.g. " Group.Read.All," or
+  # " 0997a1d0-...,"). Normalize first (strip surrounding whitespace/commas)
+  # then split on comma. `scopes` is space-separated per the MS Graph
+  # convention and is left as-is.
+  - gsub:
+      field: azure.aadgraphactivitylogs.properties.roles
+      pattern: '^[\s,]+|[\s,]+$'
+      replacement: ''
+      if: ctx.azure?.aadgraphactivitylogs?.properties?.roles != null && ctx.azure.aadgraphactivitylogs.properties.roles != ''
+      tag: gsub-properties_roles
+      ignore_missing: true
   - split:
       field: azure.aadgraphactivitylogs.properties.roles
       if: ctx.azure?.aadgraphactivitylogs?.properties?.roles != null && ctx.azure.aadgraphactivitylogs.properties.roles != ''
-      separator: ' '
+      separator: '\s*,\s*'
       tag: split-properties_roles
       on_failure:
         - append:
@@ -336,10 +309,17 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - gsub:
+      field: azure.aadgraphactivitylogs.properties.wids
+      pattern: '^[\s,]+|[\s,]+$'
+      replacement: ''
+      if: ctx.azure?.aadgraphactivitylogs?.properties?.wids != null && ctx.azure.aadgraphactivitylogs.properties.wids != ''
+      tag: gsub-properties_wids
+      ignore_missing: true
   - split:
       field: azure.aadgraphactivitylogs.properties.wids
       if: ctx.azure?.aadgraphactivitylogs?.properties?.wids != null && ctx.azure.aadgraphactivitylogs.properties.wids != ''
-      separator: ' '
+      separator: '\s*,\s*'
       tag: split-properties_wids
       on_failure:
         - append:
@@ -509,9 +489,16 @@ processors:
         String method = ctx.http?.request?.method;
         if (path == null || method == null) { return; }
         String[] parts = path.splitOnToken('/');
-        // expected shape: ["", "v2", "<tid-or-myorganization>", "<collection>", ...]
-        if (parts.length < 4) { return; }
-        String collection = parts[3];
+        // Observed AAD Graph request URI shapes:
+        //   /v2/{tid-or-myorganization}/{collection}/...  -> collection at parts[3]
+        //   /{tid-or-myorganization}/$batch (or other)    -> collection at parts[2]
+        if (parts.length < 3) { return; }
+        String collection;
+        if (parts.length >= 4 && parts[1] == 'v2') {
+          collection = parts[3];
+        } else {
+          collection = parts[2];
+        }
         if (collection == null || collection.isEmpty()) { return; }
         if (collection.startsWith('$')) { collection = collection.substring(1); }
         // CamelCase -> hyphen-lower (servicePrincipals -> service-principals)
