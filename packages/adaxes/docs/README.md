@@ -64,6 +64,10 @@ For more information on architectures that can be used for scaling this integrat
 
 For high-volume Adaxes deployments, prefer TCP transport, increase Filebeat `max_message_size` and the OS UDP receive buffer, and run multiple agents behind a network load balancer.
 
+## Trademarks
+
+Adaxes® is a registered trademark of Softerra Ltd. This integration is a community contribution to Elastic and is not affiliated with, endorsed by, or sponsored by Softerra Ltd. The name "Adaxes" is used here under the nominative fair use doctrine, solely to identify the third-party product that this integration ingests data from. All rights to the Adaxes name and related marks remain with their respective owner.
+
 ## Reference
 
 ### operations
