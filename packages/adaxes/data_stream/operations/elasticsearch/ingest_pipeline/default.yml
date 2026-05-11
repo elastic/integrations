@@ -411,14 +411,10 @@ processors:
 
 on_failure:
   - set:
-      tag: set_error_message
-      field: error.message
-      value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        in pipeline '{{{ _ingest.pipeline }}}'
-        failed with message '{{{ _ingest.on_failure_message }}}'
-  - set:
       tag: set_pipeline_error_to_event_kind
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
