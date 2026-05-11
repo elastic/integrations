@@ -341,7 +341,7 @@ processors:
       target_field: cloudflare_logpush.spectrum_event.client.tls.protocol
       ignore_missing: true
   - grok:
-      if: ctx.json?.cloudflare_logpush?.spectrum_event?.client?.tls?.protocol != 'none' || ctx.json?.cloudflare_logpush?.spectrum_event?.client?.tls?.protocol != 'unknown'
+      if: ctx.cloudflare_logpush?.spectrum_event?.client?.tls?.protocol != 'none' && ctx.cloudflare_logpush?.spectrum_event?.client?.tls?.protocol != 'unknown'
       field: cloudflare_logpush.spectrum_event.client.tls.protocol
       patterns:
         - "^%{DATA:tls.version_protocol}v%{DATA:tls.version}$"
@@ -439,7 +439,7 @@ processors:
         - cloudflare_logpush.spectrum_event.origin.ip
         - cloudflare_logpush.spectrum_event.origin.port
         - cloudflare_logpush.spectrum_event.application
-        - cloudflare_logpush.spectrum_event.event_action
+        - cloudflare_logpush.spectrum_event.action
         - cloudflare_logpush.spectrum_event.status
         - cloudflare_logpush.spectrum_event.client.asn
         - cloudflare_logpush.spectrum_event.client.bytes
