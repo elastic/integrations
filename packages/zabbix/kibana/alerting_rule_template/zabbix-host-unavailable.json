@@ -1,0 +1,35 @@
+{
+    "id": "zabbix-host-unavailable",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Zabbix] Host Agent Unavailable",
+        "tags": [
+            "Zabbix"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when monitored hosts have unavailable agent interfaces.\n// This means the Zabbix server cannot reach the agent on the host.\nFROM metrics-zabbix.host_status-*\n| WHERE zabbix.host.active_available == \"unavailable\"\n  AND zabbix.host.status == \"enabled\"\n| STATS occurrences = COUNT(*) BY zabbix.host.name, zabbix.host.interface.ip\n| WHERE occurrences >= 1"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp",
+            "size": 100,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

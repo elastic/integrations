@@ -1,0 +1,252 @@
+---
+description: Pipeline for processing Zabbix host_status metrics from host.get.
+processors:
+  - json:
+      tag: parse_message_json
+      field: message
+      target_field: _json
+      on_failure:
+        - set:
+            tag: set_event_original_on_failure
+            field: event.original
+            copy_from: message
+            ignore_failure: true
+        - append:
+            tag: append_error_message_json_parse
+            field: error.message
+            value: "Failed to parse message as JSON [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
+  - remove:
+      tag: remove_raw_message
+      field: message
+      ignore_missing: true
+
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: zabbix
+
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: zabbix.host_status
+
+  - rename:
+      tag: rename_hostid
+      field: _json.hostid
+      target_field: zabbix.host.id
+      ignore_missing: true
+
+  - rename:
+      tag: rename_host
+      field: _json.host
+      target_field: zabbix.host.host
+      ignore_missing: true
+
+  - rename:
+      tag: rename_host_name
+      field: _json.name
+      target_field: zabbix.host.name
+      ignore_missing: true
+
+  # Populate ECS host.name from visible name
+  - set:
+      tag: set_host_name
+      field: host.name
+      copy_from: zabbix.host.name
+      ignore_empty_value: true
+
+  # Map status to human-readable string: 0=enabled, 1=disabled
+  - set:
+      tag: set_status_enabled
+      field: zabbix.host.status
+      value: enabled
+      if: ctx._json?.status == '0'
+
+  - set:
+      tag: set_status_disabled
+      field: zabbix.host.status
+      value: disabled
+      if: ctx._json?.status == '1'
+
+  # Map monitored_by to keyword: 0=server, 1=proxy, 2=proxy_group
+  - set:
+      tag: set_monitored_by_server
+      field: zabbix.host.monitored_by
+      value: server
+      if: ctx._json?.monitored_by == '0'
+  - set:
+      tag: set_monitored_by_proxy
+      field: zabbix.host.monitored_by
+      value: proxy
+      if: ctx._json?.monitored_by == '1'
+  - set:
+      tag: set_monitored_by_proxy_group
+      field: zabbix.host.monitored_by
+      value: proxy_group
+      if: ctx._json?.monitored_by == '2'
+
+  # Map maintenance_status to keyword: 0=off, 1=on
+  - set:
+      tag: set_maintenance_status_off
+      field: zabbix.host.maintenance.status
+      value: "off"
+      if: ctx._json?.maintenance_status == '0'
+
+  - set:
+      tag: set_maintenance_status_on
+      field: zabbix.host.maintenance.status
+      value: "on"
+      if: ctx._json?.maintenance_status == '1'
+
+  # Map maintenance_type to keyword: 0=with_data, 1=without_data
+  - set:
+      tag: set_maintenance_type_with_data
+      field: zabbix.host.maintenance.type
+      value: with_data
+      if: ctx._json?.maintenance_type == '0' && ctx._json?.maintenance_status == '1'
+
+  - set:
+      tag: set_maintenance_type_without_data
+      field: zabbix.host.maintenance.type
+      value: without_data
+      if: ctx._json?.maintenance_type == '1' && ctx._json?.maintenance_status == '1'
+
+  # Map active_available to keyword: 0=unknown, 1=available, 2=unavailable
+  - set:
+      tag: set_active_available_unknown
+      field: zabbix.host.active_available
+      value: unknown
+      if: ctx._json?.active_available == '0'
+  - set:
+      tag: set_active_available_available
+      field: zabbix.host.active_available
+      value: available
+      if: ctx._json?.active_available == '1'
+  - set:
+      tag: set_active_available_unavailable
+      field: zabbix.host.active_available
+      value: unavailable
+      if: ctx._json?.active_available == '2'
+
+  - rename:
+      tag: rename_proxyid
+      field: _json.proxyid
+      target_field: zabbix.host.proxy.id
+      ignore_missing: true
+
+  # Extract primary interface fields from interfaces array
+  - script:
+      tag: extract_interface
+      lang: painless
+      if: ctx._json?.interfaces != null && ctx._json.interfaces instanceof List && ctx._json.interfaces.size() > 0
+      source: >-
+        def iface = ctx._json.interfaces[0];
+        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+        if (ctx.zabbix.host == null) ctx.zabbix.host = new HashMap();
+        def ifaceMap = new HashMap();
+        if (iface.ip != null && iface.ip.toString().length() > 0) ifaceMap.put('ip', iface.ip);
+        if (iface.port != null) ifaceMap.put('port', iface.port);
+        if (iface.type != null) {
+          def t = Integer.parseInt(iface.type.toString());
+          def types = new HashMap();
+          types.put(1, 'agent');
+          types.put(2, 'snmp');
+          types.put(3, 'ipmi');
+          types.put(4, 'jmx');
+          ifaceMap.put('type', types.containsKey(t) ? types.get(t) : iface.type.toString());
+        }
+        if (iface.available != null) {
+          def a = Integer.parseInt(iface.available.toString());
+          def avail = ['unknown', 'available', 'unavailable'];
+          ifaceMap.put('available', (a >= 0 && a < avail.size()) ? avail[a] : iface.available.toString());
+        }
+        ctx.zabbix.host.put('interface', ifaceMap);
+      on_failure:
+        - append:
+            tag: append_error_extract_interface
+            field: error.message
+            value: "Failed to extract interface [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
+
+  # Extract host group names as keyword array
+  - script:
+      tag: extract_groups
+      lang: painless
+      if: ctx._json?.hostgroups != null && ctx._json.hostgroups instanceof List
+      source: >-
+        def names = new ArrayList();
+        for (def g : ctx._json.hostgroups) {
+          if (g.name != null) names.add(g.name);
+        }
+        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+        if (ctx.zabbix.host == null) ctx.zabbix.host = new HashMap();
+        ctx.zabbix.host.groups = names;
+      on_failure:
+        - append:
+            tag: append_error_extract_groups
+            field: error.message
+            value: "Failed to extract groups [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
+
+  # Flatten tags into key-value map for flattened field type
+  - script:
+      tag: flatten_tags
+      lang: painless
+      if: ctx._json?.tags != null && ctx._json.tags instanceof List
+      source: >-
+        def tagMap = new HashMap();
+        for (def t : ctx._json.tags) {
+          if (t.tag != null) {
+            tagMap.put(t.tag, t.value != null ? t.value : '');
+          }
+        }
+        if (ctx.zabbix == null) ctx.zabbix = new HashMap();
+        if (ctx.zabbix.host == null) ctx.zabbix.host = new HashMap();
+        ctx.zabbix.host.tags = tagMap;
+      on_failure:
+        - append:
+            tag: append_error_flatten_tags
+            field: error.message
+            value: "Failed to flatten tags [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
+
+  # Populate related.hosts for threat intel correlation
+  - append:
+      tag: append_related_hosts
+      field: related.hosts
+      value: "{{host.name}}"
+      allow_duplicates: false
+      if: ctx.host?.name != null
+
+  # Cleanup source fields
+  - remove:
+      tag: cleanup_source_fields
+      field:
+        - message
+      ignore_missing: true
+
+  - remove:
+      tag: cleanup_temp
+      field: _temp
+      ignore_missing: true
+
+  - remove:
+      tag: remove_json_temp
+      field: _json
+      ignore_missing: true
+
+on_failure:
+  - set:
+      tag: set_pipeline_error
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_pipeline_error
+      field: error.message
+      value: >-
+        Processor {{_ingest.on_failure_processor_type}}
+        with tag {{_ingest.on_failure_processor_tag}}
+        in pipeline {{_ingest.on_failure_pipeline}}
+        failed with message: {{_ingest.on_failure_message}}

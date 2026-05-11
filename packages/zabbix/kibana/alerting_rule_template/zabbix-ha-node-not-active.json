@@ -1,0 +1,35 @@
+{
+    "id": "zabbix-ha-node-not-active",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Zabbix] HA Node Not Active",
+        "tags": [
+            "Zabbix"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when a Zabbix HA cluster node is unavailable or stopped.\n// In a healthy cluster, nodes should be either active or standby.\nFROM metrics-zabbix.ha_status-*\n| WHERE zabbix.ha.status IN (\"unavailable\", \"stopped\")\n| STATS occurrences = COUNT(*) BY zabbix.ha.name, zabbix.ha.status\n| WHERE occurrences >= 1"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp",
+            "size": 100,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">"
+        },
+        "alertDelay": {
+            "active": 2
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

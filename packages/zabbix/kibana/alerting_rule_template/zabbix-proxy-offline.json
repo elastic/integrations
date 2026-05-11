@@ -1,0 +1,35 @@
+{
+    "id": "zabbix-proxy-offline",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Zabbix] Proxy Offline",
+        "tags": [
+            "Zabbix"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when a Zabbix proxy goes offline or has an outdated/unsupported version.\n// Offline proxies stop collecting data from monitored hosts.\nFROM metrics-zabbix.proxy_health-*\n| WHERE zabbix.proxy.state == \"offline\" OR zabbix.proxy.compatibility IN (\"outdated\", \"unsupported\")\n| STATS occurrences = COUNT(*) BY zabbix.proxy.name, zabbix.proxy.state, zabbix.proxy.compatibility\n| WHERE occurrences >= 1"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp",
+            "size": 100,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">"
+        },
+        "alertDelay": {
+            "active": 2
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

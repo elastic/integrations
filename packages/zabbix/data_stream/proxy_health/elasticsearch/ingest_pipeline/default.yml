@@ -1,0 +1,174 @@
+---
+description: Pipeline for processing Zabbix proxy_health metrics from proxy.get.
+processors:
+  - json:
+      tag: parse_message_json
+      field: message
+      target_field: _json
+      on_failure:
+        - set:
+            tag: set_event_original_on_failure
+            field: event.original
+            copy_from: message
+            ignore_failure: true
+        - append:
+            tag: append_error_message_json_parse
+            field: error.message
+            value: "Failed to parse message as JSON [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
+  - remove:
+      tag: remove_raw_message
+      field: message
+      ignore_missing: true
+
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+
+  - set:
+      tag: set_event_module
+      field: event.module
+      value: zabbix
+
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: zabbix.proxy_health
+
+  - rename:
+      tag: rename_proxyid
+      field: _json.proxyid
+      target_field: zabbix.proxy.id
+      ignore_missing: true
+
+  - rename:
+      tag: rename_name
+      field: _json.name
+      target_field: zabbix.proxy.name
+      ignore_missing: true
+
+  # Map operating_mode: 0=active, 1=passive
+  - set:
+      tag: set_operating_mode_active
+      field: zabbix.proxy.operating_mode
+      value: active
+      if: ctx._json?.operating_mode == '0'
+  - set:
+      tag: set_operating_mode_passive
+      field: zabbix.proxy.operating_mode
+      value: passive
+      if: ctx._json?.operating_mode == '1'
+
+  # Set @timestamp from last_access (unix epoch seconds)
+  - date:
+      tag: date_last_access
+      field: _json.last_access
+      formats:
+        - UNIX
+      if: ctx._json?.last_access != null && ctx._json?.last_access != '0'
+      on_failure:
+        - append:
+            tag: append_error_last_access
+            field: error.message
+            value: "Failed to parse last_access [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
+
+  - date:
+      tag: convert_last_access
+      field: _json.last_access
+      target_field: zabbix.proxy.last_access
+      formats:
+        - UNIX
+      if: ctx._json?.last_access != null && ctx._json?.last_access != '0'
+      on_failure:
+        - append:
+            tag: append_error_convert_last_access
+            field: error.message
+            value: "Failed to convert last_access [{{_ingest.on_failure_processor_tag}}]: {{_ingest.on_failure_message}}"
+
+  - rename:
+      tag: rename_address
+      field: _json.address
+      target_field: zabbix.proxy.address
+      ignore_missing: true
+
+  - rename:
+      tag: rename_port
+      field: _json.port
+      target_field: zabbix.proxy.port
+      ignore_missing: true
+
+  - rename:
+      tag: rename_version
+      field: _json.version
+      target_field: zabbix.proxy.version
+      ignore_missing: true
+
+  # Map compatibility: 0=undefined, 1=current, 2=outdated, 3=unsupported
+  - set:
+      tag: set_compatibility_undefined
+      field: zabbix.proxy.compatibility
+      value: undefined
+      if: ctx._json?.compatibility == '0'
+  - set:
+      tag: set_compatibility_current
+      field: zabbix.proxy.compatibility
+      value: current
+      if: ctx._json?.compatibility == '1'
+  - set:
+      tag: set_compatibility_outdated
+      field: zabbix.proxy.compatibility
+      value: outdated
+      if: ctx._json?.compatibility == '2'
+  - set:
+      tag: set_compatibility_unsupported
+      field: zabbix.proxy.compatibility
+      value: unsupported
+      if: ctx._json?.compatibility == '3'
+
+  # Map state: 0=unknown, 1=online, 2=offline
+  - set:
+      tag: set_state_unknown
+      field: zabbix.proxy.state
+      value: unknown
+      if: ctx._json?.state == '0'
+  - set:
+      tag: set_state_online
+      field: zabbix.proxy.state
+      value: online
+      if: ctx._json?.state == '1'
+  - set:
+      tag: set_state_offline
+      field: zabbix.proxy.state
+      value: offline
+      if: ctx._json?.state == '2'
+
+  # Cleanup source fields
+  - remove:
+      tag: cleanup_source_fields
+      field:
+        - message
+      ignore_missing: true
+
+  - remove:
+      tag: cleanup_temp
+      field: _temp
+      ignore_missing: true
+
+  - remove:
+      tag: remove_json_temp
+      field: _json
+      ignore_missing: true
+
+on_failure:
+  - set:
+      tag: set_pipeline_error
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_pipeline_error
+      field: error.message
+      value: >-
+        Processor {{_ingest.on_failure_processor_type}}
+        with tag {{_ingest.on_failure_processor_tag}}
+        in pipeline {{_ingest.on_failure_pipeline}}
+        failed with message: {{_ingest.on_failure_message}}
