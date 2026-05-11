@@ -12,10 +12,10 @@ FIND_OLDEST_SCRIPT="${REPO_ROOT}/.buildkite/scripts/find_oldest_supported_versio
 if [[ ! -f "${VENV_DIR}/bin/activate" ]]; then
     rm -rf "${VENV_DIR}"
     if ! python3 -m venv "${VENV_DIR}"; then
-        if command -v apt-get >/dev/null 2>&1 && [[ "$(id -u)" -eq 0 ]]; then
+        if command -v apt-get >/dev/null 2>&1; then
             echo "python3 -m venv unavailable; installing python3-venv"
-            DEBIAN_FRONTEND=noninteractive apt-get update -qq
-            DEBIAN_FRONTEND=noninteractive apt-get install -y -qq python3-venv
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y python3-venv
         fi
         rm -rf "${VENV_DIR}"
         python3 -m venv "${VENV_DIR}"
@@ -23,6 +23,6 @@ if [[ ! -f "${VENV_DIR}/bin/activate" ]]; then
 fi
 # shellcheck source=/dev/null
 source "${VENV_DIR}/bin/activate"
-pip install -q -r "${REQ_FILE}"
-python "${FIND_OLDEST_SCRIPT}" --test
+python3 -m pip install -q -r "${REQ_FILE}"
+python3 "${FIND_OLDEST_SCRIPT}" --test
 deactivate
