@@ -67,7 +67,7 @@ More details about this CI pipeline:
 - This CI pipeline tries to test the minimum packages possible::
     - In the Pull Request context, it is checked the files modified/added/deleted in the given PR:
         - Those packages with changes (`packages/*`) will be added to the list of packages to be tested.
-        - If files outside `packages` folder are updated (e.g. `go.mod` , `.buildkite/*`), all packages are going to be tested. There are some exceptions to this, for instance the `.github/CODEOWNERS` file or `.docs/` folder ([files excluded](https://github.com/elastic/integrations/blob/376fc891a1e6c662b4ef1897b118044faf51e7bf/.buildkite/scripts/common.sh#L695)).
+        - If files outside `packages` folder are updated (for example `go.mod` , `.buildkite/*`), all packages are going to be tested. There are some exceptions to this, for instance the `.github/CODEOWNERS` file or `.docs/` folder ([files excluded](https://github.com/elastic/integrations/blob/376fc891a1e6c662b4ef1897b118044faf51e7bf/.buildkite/scripts/common.sh#L695)).
     - In branches context (`main`, `backport-*`, or `feature/*`):
         - The latest Buildkite build that finished successfully in that branch is retrieved, and all the file changes in the working copy between the changeset of that build and the merged commit are obtained.
         - Given all those changes, the packages selected to be tested follow the same rules as in the PR.
