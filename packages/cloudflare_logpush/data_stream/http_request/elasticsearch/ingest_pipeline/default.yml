@@ -316,8 +316,6 @@ processors:
       type: boolean
       ignore_missing: true
       on_failure:
-        - remove:
-            field: json.CacheTieredFill
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -449,9 +447,14 @@ processors:
       ignore_missing: true
   - dissect:
       field: cloudflare_logpush.http_request.client.request.protocol
+      tag: dissect_client_request_protocol
       pattern: '%{network.protocol}/%{http.version}'
       ignore_missing: true
       if: ctx.cloudflare_logpush?.http_request?.client?.request?.protocol != null && !['none', 'unknown'].contains(ctx.cloudflare_logpush.http_request.client.request.protocol)
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - lowercase:
       field: network.protocol
       ignore_missing: true
@@ -493,9 +496,14 @@ processors:
       ignore_missing: true
   - dissect:
       field: cloudflare_logpush.http_request.client.ssl.protocol
+      tag: dissect_client_ssl_protocol
       pattern: '%{tls.version_protocol}v%{tls.version}'
       ignore_missing: true
       if: ctx.cloudflare_logpush?.http_request?.client?.ssl?.protocol != null && !['none', 'unknown'].contains(ctx.cloudflare_logpush.http_request.client.ssl.protocol)
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - lowercase:
       field: tls.version_protocol
       ignore_missing: true
@@ -534,8 +542,6 @@ processors:
       type: boolean
       ignore_missing: true
       on_failure:
-        - remove:
-            field: json.EdgeCFConnectingO2O
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -914,8 +920,6 @@ processors:
       type: boolean
       ignore_missing: true
       on_failure:
-        - remove:
-            field: json.WorkerSubrequest
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
