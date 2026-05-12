@@ -534,9 +534,12 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
       tag: pipeline-azure-shared-pipeline
+  # url.original is populated by the uri_parts processor above
+  # (keep_original: true) and carries the same value that
+  # properties.request_uri held before it was removed.
   - fingerprint:
-      fields: 
-        - azure.aadgraphactivitylogs.properties.request_uri
+      fields:
+        - url.original
         - http.request.id
         - azure.tenant_id
         - azure.aadgraphactivitylogs.properties.time_generated
