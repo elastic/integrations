@@ -61,7 +61,7 @@ Make sure that you have administrative privileges to modify the Elastic Agent sy
 
 2. Open the `elastic-agent.service` file in your preferred text editor, find the `EnvironmentFile` key (commonly found at `/etc/sysconfig/elastic-agent`), and verify its contents, as these configurations are essential for the elastic-agent's runtime environment initialization. If the EnvironmentFile is absent, create it and set the necessary permissions to ensure the elastic-agent has full access.
 
-3. Add the `LD_LIBRARY_PATH` environment variable to the configured `EnvironmentFile`. Set it to the directory where libraries (`libclntsh.so`) are located. For example, if your libraries are in the `/opt/oracle/instantclient_21_1 directory`, add the following line to the `EnvironmentFile` (i.e. `/etc/systemd/system/elastic-agent.service`)
+3. Add the `LD_LIBRARY_PATH` environment variable to the configured `EnvironmentFile`. Set it to the directory where libraries (`libclntsh.so`) are located. For example, if your libraries are in the `/opt/oracle/instantclient_21_1 directory`, add the following line to the `EnvironmentFile` (for example, `/etc/systemd/system/elastic-agent.service`)
 
       `LD_LIBRARY_PATH=/opt/oracle/instantclient_21_1`
 
