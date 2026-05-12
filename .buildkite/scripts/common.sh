@@ -645,7 +645,13 @@ get_from_changeset() {
 
         from="${previous_successful_commit}"
         if [[ "${previous_successful_commit}" == "null" ]]; then
-            from="origin/${BUILDKITE_BRANCH}^"
+            if [[ "${BUILDKITE_BRANCH}" =~ ^backport- ]]; then
+                # First push of a new backport branch: only CI infrastructure files
+                # changed, no package code was modified — skip package testing.
+                from="${BUILDKITE_COMMIT}"
+            else
+                from="origin/${BUILDKITE_BRANCH}^"
+            fi
         fi
     fi
 
