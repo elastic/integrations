@@ -1,0 +1,319 @@
+# [InfluxDB OTel] Overview — Key health and capacity metrics
+dashboards:
+- id: influxdb_otel-overview
+  name: '[InfluxDB OTel] Overview'
+  description: >-
+    High-level overview of InfluxDB health: instance capacity, HTTP traffic,
+    query controller load, storage health, and Go runtime.
+  settings:
+    margins: true
+    titles: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+  filters:
+  - field: data_stream.dataset
+    equals: influxdb.otel
+  controls:
+  - type: options
+    label: Host
+    data_view: metrics-*
+    field: host.name
+  panels:
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: influxdb_otel-overview
+      - label: HTTP & Storage
+        dashboard: influxdb_otel-http-storage
+      - label: Query & Tasks
+        dashboard: influxdb_otel-query-tasks
+
+  - hide_title: true
+    size: {w: 16, h: 12}
+    markdown:
+      content: |
+        ## [InfluxDB OTel] Overview
+
+        This dashboard provides a high-level view of InfluxDB health:
+        - Instance capacity (buckets, orgs, uptime)
+        - HTTP API request rate and traffic
+        - Query controller load and memory headroom
+        - Storage health (WAL, cache, compaction)
+        - Go runtime (heap, goroutines)
+
+  - title: Uptime (seconds)
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE influxdb_uptime_seconds IS NOT NULL
+      - STATS uptime = MAX(LAST_OVER_TIME(influxdb_uptime_seconds))
+      primary:
+        field: uptime
+        label: Uptime
+        format:
+          type: number
+          decimals: 0
+          suffix: "s"
+
+  - title: Buckets
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE influxdb_buckets_total IS NOT NULL
+      - STATS buckets = MAX(LAST_OVER_TIME(influxdb_buckets_total))
+      primary:
+        field: buckets
+        label: Buckets
+        format:
+          type: number
+          decimals: 0
+
+  - title: HTTP Requests
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+      - WHERE http_api_requests_total IS NOT NULL
+      - STATS requests = MAX(http_api_requests_total)
+      primary:
+        field: requests
+        label: Requests
+        format:
+          type: number
+          compact: true
+
+  - title: Active Queries
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE qc_all_active IS NOT NULL
+      - STATS active = MAX(LAST_OVER_TIME(qc_all_active))
+      primary:
+        field: active
+        label: Active
+        format:
+          type: number
+          decimals: 0
+
+  - title: WAL Size
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE storage_wal_size IS NOT NULL
+      - STATS wal_bytes = SUM(LAST_OVER_TIME(storage_wal_size))
+      primary:
+        field: wal_bytes
+        label: WAL
+        format:
+          type: bytes
+
+  - title: Goroutines
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE go_goroutines IS NOT NULL
+      - STATS goroutines = MAX(LAST_OVER_TIME(go_goroutines))
+      primary:
+        field: goroutines
+        label: Goroutines
+        format:
+          type: number
+          decimals: 0
+
+  - title: HTTP API Requests Over Time
+    size: {w: 48, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - FROM metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+      - WHERE http_api_requests_total IS NOT NULL
+      - STATS requests = MAX(http_api_requests_total) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), response_code
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: requests
+        label: Requests
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: response_code
+      legend:
+        visible: show
+        position: right
+
+  - title: Query Controller Active by Stage
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE qc_compiling_active IS NOT NULL OR qc_queueing_active IS NOT NULL OR qc_executing_active IS NOT NULL
+      - STATS compiling = MAX(LAST_OVER_TIME(qc_compiling_active)), queueing = MAX(LAST_OVER_TIME(qc_queueing_active)), executing = 
+        MAX(LAST_OVER_TIME(qc_executing_active)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: compiling
+        label: Compiling
+        format:
+          type: number
+      - field: queueing
+        label: Queueing
+        format:
+          type: number
+      - field: executing
+        label: Executing
+        format:
+          type: number
+      appearance:
+        y_left_axis:
+          title: Active Queries
+      legend:
+        visible: show
+        position: right
+
+  - title: Storage Disk Usage
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE storage_shard_disk_size IS NOT NULL OR storage_wal_size IS NOT NULL OR storage_tsm_files_disk_bytes IS NOT NULL
+      - STATS shard_bytes = SUM(LAST_OVER_TIME(storage_shard_disk_size)), wal_bytes = SUM(LAST_OVER_TIME(storage_wal_size)), tsm_bytes = 
+        SUM(LAST_OVER_TIME(storage_tsm_files_disk_bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: shard_bytes
+        label: Shard
+        format:
+          type: bytes
+      - field: wal_bytes
+        label: WAL
+        format:
+          type: bytes
+      - field: tsm_bytes
+        label: TSM
+        format:
+          type: bytes
+      appearance:
+        y_left_axis:
+          title: Bytes
+      legend:
+        visible: show
+        position: right
+
+  - title: Go Heap In-Use
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE go_memstats_heap_inuse_bytes IS NOT NULL
+      - STATS heap_bytes = MAX(LAST_OVER_TIME(go_memstats_heap_inuse_bytes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: heap_bytes
+        label: Heap In-Use
+        format:
+          type: bytes
+      legend:
+        visible: show
+        position: right
+
+  - title: Cache Memory vs Disk
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE storage_cache_inuse_bytes IS NOT NULL OR storage_cache_disk_bytes IS NOT NULL
+      - STATS inuse_bytes = SUM(LAST_OVER_TIME(storage_cache_inuse_bytes)), disk_bytes = SUM(LAST_OVER_TIME(storage_cache_disk_bytes)) BY 
+        time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: inuse_bytes
+        label: In-Memory
+        format:
+          type: bytes
+      - field: disk_bytes
+        label: On-Disk
+        format:
+          type: bytes
+      appearance:
+        y_left_axis:
+          title: Bytes
+      legend:
+        visible: show
+        position: right
+
+  - title: Top Hosts by Request Count
+    size: {w: 24, h: 12}
+    esql:
+      type: pie
+      query:
+      - FROM metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+      - WHERE http_api_requests_total IS NOT NULL
+      - STATS total = MAX(http_api_requests_total) BY host.name
+      - SORT total DESC
+      - LIMIT 10
+      metrics:
+      - field: total
+      breakdowns:
+      - field: host.name
+        label: Host
+      appearance:
+        donut: medium
+      legend:
+        visible: show

@@ -1,0 +1,87 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when the ScreenConnect client (ConnectWise Control) connects to a newly observed host server that is not the official ScreenConnect cloud. ScreenConnect is a common RMM/remote access tool abused for C2 and persistence. Self-hosted or non-standard relay servers may indicate abuse or compromise. The rule aggregates by server host (parsed from the client command line), requires first-time observation within the rule window, and limits to a single host to reduce noise.",
+        "from": "now-5d",
+        "interval": "6m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Newly Observed ScreenConnect Host Server",
+        "note": "## Triage and analysis\n\n### Investigating Newly Observed ScreenConnect Host Server\n\nScreenConnect (ConnectWise Control) is legitimate RMM software often abused by threat actors for command-and-control and persistence. This rule fires when a host is seen connecting to a ScreenConnect server host that was not seen before (within the rule window) and that is not the official *.screenconnect.com cloud\u2014surfacing self-hosted or non-standard relay servers that may indicate abuse.\n\n### Possible investigation steps\n\n- Identify the host and user from the alert and confirm whether use of ScreenConnect is approved.\n- Inspect the parsed ScreenConnect server host (Esql.screenconnect_server)\u2014is it an internal host, a known vendor, or an unknown domain/IP?\n- Review the process command line for the full connection parameters and any other suspicious options.\n- Correlate with the companion rule \"First Time Seen Remote Monitoring and Management Tool\" for the same host.\n- Check for other alerts on the host or user in the past 48 hours.\n\n### False positive analysis\n\n- Legitimate use of self-hosted ScreenConnect/ConnectWise Control by IT or MSP will trigger; allowlist known relay servers by host or exception if appropriate.\n- New deployments of on-prem ScreenConnect relays will appear as newly observed; validate with change management.\n\n### Response and remediation\n\n- If unauthorized RMM use or an unknown relay is confirmed: isolate the host, remove or block the client, and investigate how the software was installed and who operates the server.\n- Enforce policy that only approved RMM tools and approved relay servers may be used.\n",
+        "query": "from logs-endpoint.events.process-* metadata _id, _version, _index\n| where event.category == \"process\" and event.type == \"start\" and (process.name == \"ScreenConnect.ClientService.exe\" or process.code_signature.subject_name == \"ConnectWise, LLC\")\n| grok process.command_line \"\"\"e=Access&y=Guest&h=(?<Esql.screenconnect_server>[^&]+)&p\"\"\"\n| where Esql.screenconnect_server is not null and not Esql.screenconnect_server like \"*.screenconnect.com\"\n| stats Esql.count_distinct_host_id = count_distinct(host.id),\n        Esql.first_time_seen = min(@timestamp),\n        Esql.user_name_values = values(user.name),\n        Esql.command_line_values = values(process.command_line),\n        Esql.host_id_values = values(host.id),\n        Esql.host_name_values = values(host.name) by Esql.screenconnect_server\n| eval Esql.recent = date_diff(\"minute\", Esql.first_time_seen, now())\n| where Esql.recent <= 6 and Esql.count_distinct_host_id == 1\n| eval host.id = mv_first(Esql.host_id_values),\n       host.name = mv_first(Esql.host_name_values),\n       process.command_line = mv_first(Esql.command_line_values)\n| keep host.id, host.name, process.command_line, Esql.screenconnect_server\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1219/002/",
+            "https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-025a"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.screenconnect_server",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "a8b2c4d6-e8f0-12a4-b6c8-d0e2f4a6b8c0",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1219",
+                        "name": "Remote Access Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1219/",
+                        "subtechnique": [
+                            {
+                                "id": "T1219.002",
+                                "name": "Remote Desktop Software",
+                                "reference": "https://attack.mitre.org/techniques/T1219/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "a8b2c4d6-e8f0-12a4-b6c8-d0e2f4a6b8c0_1",
+    "type": "security-rule"
+}

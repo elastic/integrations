@@ -4,6 +4,10 @@ This integration is for [Microsoft Defender for Endpoint](https://docs.microsoft
 
 Microsoft Defender for Endpoint integration collects data for Alert, Machine, Machine Action, and Vulnerability logs using REST API.
 
+For a demo, refer to the following video (click to view).
+
+[![Microsoft Defender for Endpoint integration video](https://play.vidyard.com/fsxgbbf7qarpgx345x28v5.jpg)](https://videos.elastic.co/watch/fSxgBbf7QArpgX345x28v5)
+
 ## Data streams
 
 This integration collects the following logs:
@@ -589,24 +593,24 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-10-21T16:43:18.340Z",
+    "@timestamp": "2026-03-10T13:37:45.682Z",
     "agent": {
-        "ephemeral_id": "fc08f059-a301-41b4-8aca-e04734e21c4d",
-        "id": "85702a4b-7e1b-4c02-bba1-3aec32c16101",
-        "name": "elastic-agent-98433",
+        "ephemeral_id": "db614f6f-8a16-472a-80e2-83cfa2ebcbbf",
+        "id": "b3f5093a-16fa-48c6-89df-08b621bceec2",
+        "name": "elastic-agent-42544",
         "type": "filebeat",
         "version": "8.19.3"
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.vulnerability",
-        "namespace": "32915",
+        "namespace": "48522",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "85702a4b-7e1b-4c02-bba1-3aec32c16101",
+        "id": "b3f5093a-16fa-48c6-89df-08b621bceec2",
         "snapshot": false,
         "version": "8.19.3"
     },
@@ -617,7 +621,7 @@ An example event for `vulnerability` looks as following:
         ],
         "dataset": "microsoft_defender_endpoint.vulnerability",
         "id": "1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226",
-        "ingested": "2025-10-21T16:43:19Z",
+        "ingested": "2026-03-10T13:37:46Z",
         "kind": "event",
         "original": "{\"CveBatchTitle\":\"Red_hat February 2025 Vulnerabilities\",\"CveBatchUrl\":\"https://security.access.redhat.com/data/oval/v2/RHEL9/rhel-9.8-eus.oval.xml.bz2\",\"CveId\":\"CVE-2022-49226\",\"CvssScore\":5.5,\"DeviceId\":\"1212121212121212121212\",\"DeviceName\":\"sample-host-1\",\"ExploitabilityLevel\":\"NoExploit\",\"FirstSeenTimestamp\":\"2025-10-06 10:43:58\",\"Id\":\"1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226\",\"IsOnboarded\":true,\"LastSeenTimestamp\":\"2025-10-06 22:45:00\",\"OSArchitecture\":\"x64\",\"OSPlatform\":\"Linux\",\"OSVersion\":\"enterprise_linux_9.4\",\"RbacGroupId\":0,\"RbacGroupName\":\"Unassigned\",\"RecommendationReference\":\"va-_-red_hat-_-kernel\",\"RecommendedSecurityUpdate\":\"CVE-2022-49226_oval:com.redhat.rhsa:def:20249315\",\"RecommendedSecurityUpdateId\":\"RHSA-2024:9315\",\"RecommendedSecurityUpdateUrl\":\"https://access.redhat.com/errata/RHSA-2024:9315\",\"RegistryPaths\":[],\"SecurityUpdateAvailable\":true,\"SoftwareName\":\"kernel\",\"SoftwareVendor\":\"red_hat\",\"SoftwareVersion\":\"0:5.14.0-427.42.1.el9_4\",\"VulnerabilitySeverityLevel\":\"Medium\"}",
         "type": [

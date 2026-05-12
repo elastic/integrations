@@ -1,0 +1,1737 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {},
+            "showApplySelections": false
+        },
+        "description": "High-level Kafka cluster health: broker count, consumer lag, replication status, and consumer group membership. For ES superusers and administrators of production Kafka clusters.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "kafkametricsreceiver.otel"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "kafkametricsreceiver.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "layout": "horizontal",
+                    "links": [
+                        {
+                            "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard",
+                            "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                            "label": "Overview",
+                            "order": 0,
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_023dd0d5-85a5-7c2d-7761-09ac67eaf6b0_dashboard",
+                            "id": "023dd0d5-85a5-7c2d-7761-09ac67eaf6b0",
+                            "label": "Consumer Groups",
+                            "order": 1,
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_9fa8a215-5ab9-a0b8-3ae7-50918026c5b2_dashboard",
+                            "id": "9fa8a215-5ab9-a0b8-3ae7-50918026c5b2",
+                            "label": "Topics \u0026 Partitions",
+                            "order": 2,
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_55497914-9303-4f76-667d-ef92eaa42807_dashboard",
+                            "id": "55497914-9303-4f76-667d-ef92eaa42807",
+                            "label": "Replication Health",
+                            "order": 3,
+                            "type": "dashboardLink"
+                        }
+                    ]
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "## [Kafka OTel] Overview\n\nCluster health at a glance:\n- Broker count stability \n- Total consumer lag across all groups \n- Under-replicated partition count\n- Consumer groups with zero members\n- Topic and partition topology\n"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "df3eb799-5e66-44d7-a23f-c02f83975463",
+                    "w": 16,
+                    "x": 0,
+                    "y": 2
+                },
+                "panelIndex": "df3eb799-5e66-44d7-a23f-c02f83975463",
+                "type": "DASHBOARD_MARKDOWN"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "e99c54bd-b190-d6b7-873e-bcf06fc90a89": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "23e41af3-757b-7be3-ba4a-da76eceba54d",
+                                                    "customLabel": true,
+                                                    "fieldName": "brokers",
+                                                    "inMetricDimension": true,
+                                                    "label": "Brokers",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "44714e97-119f-dc33-b7f7-4ce49cc5463f",
+                                                    "customLabel": false,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "time_bucket",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "23e41af3-757b-7be3-ba4a-da76eceba54d",
+                                                    "customLabel": true,
+                                                    "fieldName": "brokers",
+                                                    "inMetricDimension": true,
+                                                    "label": "Brokers",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "44714e97-119f-dc33-b7f7-4ce49cc5463f",
+                                                    "customLabel": false,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "time_bucket",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "query": {
+                                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.brokers IS NOT NULL\n| STATS brokers = MAX(LAST_OVER_TIME(kafka.brokers)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.brokers IS NOT NULL\n| STATS brokers = MAX(LAST_OVER_TIME(kafka.brokers)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "23e41af3-757b-7be3-ba4a-da76eceba54d"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "e99c54bd-b190-d6b7-873e-bcf06fc90a89",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "44714e97-119f-dc33-b7f7-4ce49cc5463f"
+                                    }
+                                ],
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Broker Count Over Time",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "337f7387-25ac-db8d-5d79-056975c75cfa",
+                    "w": 24,
+                    "x": 24,
+                    "y": 16
+                },
+                "panelIndex": "337f7387-25ac-db8d-5d79-056975c75cfa",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                    "managed": false,
+                                    "name": "metrics-kafkametricsreceiver.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-kafkametricsreceiver.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                            "title": "metrics-kafkametricsreceiver.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "250adb6c-a3ee-4bd7-9f5e-fe701530d2b6": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "total_lag",
+                                                    "customLabel": false,
+                                                    "fieldName": "total_lag",
+                                                    "inMetricDimension": true,
+                                                    "label": "total_lag",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": false,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "time_bucket",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                            "query": {
+                                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.consumer_group.lag_sum IS NOT NULL\n| STATS lag = MAX(kafka.consumer_group.lag_sum)\n    BY attributes.group, time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| STATS total_lag = SUM(lag) BY time_bucket\n| SORT time_bucket ASC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.consumer_group.lag_sum IS NOT NULL\n| STATS lag = MAX(kafka.consumer_group.lag_sum)\n    BY attributes.group, time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| STATS total_lag = SUM(lag) BY time_bucket\n| SORT time_bucket ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "total_lag"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "250adb6c-a3ee-4bd7-9f5e-fe701530d2b6",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "time_bucket"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.consumer_group.lag_sum IS NOT NULL\n| STATS lag = MAX(kafka.consumer_group.lag_sum)\n    BY attributes.group, time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| STATS total_lag = SUM(lag) BY time_bucket\n| SORT time_bucket ASC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "8501c161-0806-31e2-5944-808e14384b60",
+                    "w": 24,
+                    "x": 0,
+                    "y": 16
+                },
+                "panelIndex": "8501c161-0806-31e2-5944-808e14384b60",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                    "managed": false,
+                                    "name": "metrics-kafkametricsreceiver.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-kafkametricsreceiver.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                            "title": "metrics-kafkametricsreceiver.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "872c513d-dc21-2eda-22e5-f3bd06890338": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "d558689a-a066-bbc0-e59f-a93654972edb",
+                                                    "customLabel": true,
+                                                    "fieldName": "lag_sum",
+                                                    "inMetricDimension": true,
+                                                    "label": "Lag",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "1e6904ec-2867-e558-ec9c-1e72297e1d42",
+                                                    "customLabel": false,
+                                                    "fieldName": "attributes.group",
+                                                    "label": "attributes.group"
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "d558689a-a066-bbc0-e59f-a93654972edb",
+                                                    "customLabel": true,
+                                                    "fieldName": "lag_sum",
+                                                    "inMetricDimension": true,
+                                                    "label": "Lag",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "1e6904ec-2867-e558-ec9c-1e72297e1d42",
+                                                    "customLabel": true,
+                                                    "fieldName": "attributes.group",
+                                                    "label": "Group"
+                                                }
+                                            ],
+                                            "index": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                            "query": {
+                                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.consumer_group.lag_sum IS NOT NULL\n| STATS lag_sum = MAX(kafka.consumer_group.lag_sum) BY attributes.group\n| SORT lag_sum DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.consumer_group.lag_sum IS NOT NULL\n| STATS lag_sum = MAX(kafka.consumer_group.lag_sum) BY attributes.group\n| SORT lag_sum DESC\n| LIMIT 10"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "d558689a-a066-bbc0-e59f-a93654972edb"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "872c513d-dc21-2eda-22e5-f3bd06890338",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_unstacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "1e6904ec-2867-e558-ec9c-1e72297e1d42"
+                                    }
+                                ],
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_unstacked",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Consumer Lag by Group (Top 10)",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.consumer_group.lag_sum IS NOT NULL\n| STATS lag_sum = MAX(kafka.consumer_group.lag_sum) BY attributes.group\n| SORT lag_sum DESC\n| LIMIT 10"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "8d62801b-1e08-4ed1-5884-4ec779fe3071",
+                    "w": 24,
+                    "x": 24,
+                    "y": 26
+                },
+                "panelIndex": "8d62801b-1e08-4ed1-5884-4ec779fe3071",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                    "managed": false,
+                                    "name": "metrics-kafkametricsreceiver.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-kafkametricsreceiver.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                            "title": "metrics-kafkametricsreceiver.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "eb9ed4c0-5712-d669-1f4e-f10efd95d04f": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "d558689a-a066-bbc0-e59f-a93654972edb",
+                                                    "customLabel": true,
+                                                    "fieldName": "lag_sum",
+                                                    "inMetricDimension": true,
+                                                    "label": "Lag",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "063c4976-1285-e229-5879-4c7845b3a305",
+                                                    "customLabel": false,
+                                                    "fieldName": "attributes.topic",
+                                                    "label": "attributes.topic"
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "d558689a-a066-bbc0-e59f-a93654972edb",
+                                                    "customLabel": true,
+                                                    "fieldName": "lag_sum",
+                                                    "inMetricDimension": true,
+                                                    "label": "Lag",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "063c4976-1285-e229-5879-4c7845b3a305",
+                                                    "customLabel": true,
+                                                    "fieldName": "attributes.topic",
+                                                    "label": "Topic"
+                                                }
+                                            ],
+                                            "index": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                            "query": {
+                                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.consumer_group.lag_sum IS NOT NULL\n| STATS lag = MAX(kafka.consumer_group.lag_sum) BY attributes.group, attributes.topic\n| STATS lag_sum = SUM(lag) BY attributes.topic\n| SORT lag_sum DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.consumer_group.lag_sum IS NOT NULL\n| STATS lag = MAX(kafka.consumer_group.lag_sum) BY attributes.group, attributes.topic\n| STATS lag_sum = SUM(lag) BY attributes.topic\n| SORT lag_sum DESC\n| LIMIT 10"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "d558689a-a066-bbc0-e59f-a93654972edb"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "eb9ed4c0-5712-d669-1f4e-f10efd95d04f",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_unstacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "063c4976-1285-e229-5879-4c7845b3a305"
+                                    }
+                                ],
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_unstacked",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Lag by Topic (Top 10)",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.consumer_group.lag_sum IS NOT NULL\n| STATS lag = MAX(kafka.consumer_group.lag_sum) BY attributes.group, attributes.topic\n| STATS lag_sum = SUM(lag) BY attributes.topic\n| SORT lag_sum DESC\n| LIMIT 10"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "a705abae-d30a-7937-875b-40403bb2bc4d",
+                    "w": 24,
+                    "x": 0,
+                    "y": 26
+                },
+                "panelIndex": "a705abae-d30a-7937-875b-40403bb2bc4d",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [],
+                                    "layers": {
+                                        "ce83660d-89e1-6652-b22c-1929b9ca8907": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "0a824a41-1c38-2f32-e6fa-ef6ae5a714da",
+                                                    "customLabel": false,
+                                                    "fieldName": "count",
+                                                    "inMetricDimension": true,
+                                                    "label": "count",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "0333e3c9-fd19-5a50-5398-62047d6a082f",
+                                                    "customLabel": true,
+                                                    "fieldName": "member_status",
+                                                    "label": "Members"
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "0a824a41-1c38-2f32-e6fa-ef6ae5a714da",
+                                                    "customLabel": false,
+                                                    "fieldName": "count",
+                                                    "inMetricDimension": true,
+                                                    "label": "count",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "0333e3c9-fd19-5a50-5398-62047d6a082f",
+                                                    "customLabel": true,
+                                                    "fieldName": "member_status",
+                                                    "label": "Members"
+                                                }
+                                            ],
+                                            "query": {
+                                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.consumer_group.members IS NOT NULL\n| STATS members = MAX(kafka.consumer_group.members) BY attributes.group\n| EVAL member_status = CASE(members == 0, \"0 (empty)\", members \u003e 0 AND members \u003c= 5, \"1-5\", members \u003e 5 AND members \u003c= 20, \"6-20\", \"20+\")\n| STATS count = COUNT(*) BY member_status\n| SORT count DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.consumer_group.members IS NOT NULL\n| STATS members = MAX(kafka.consumer_group.members) BY attributes.group\n| EVAL member_status = CASE(members == 0, \"0 (empty)\", members \u003e 0 AND members \u003c= 5, \"1-5\", members \u003e 5 AND members \u003c= 20, \"6-20\", \"20+\")\n| STATS count = COUNT(*) BY member_status\n| SORT count DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "ce83660d-89e1-6652-b22c-1929b9ca8907",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "0a824a41-1c38-2f32-e6fa-ef6ae5a714da"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "0333e3c9-fd19-5a50-5398-62047d6a082f"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "Consumer Groups by Member Count",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.consumer_group.members IS NOT NULL\n| STATS members = MAX(kafka.consumer_group.members) BY attributes.group\n| EVAL member_status = CASE(members == 0, \"0 (empty)\", members \u003e 0 AND members \u003c= 5, \"1-5\", members \u003e 5 AND members \u003c= 20, \"6-20\", \"20+\")\n| STATS count = COUNT(*) BY member_status\n| SORT count DESC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "9596b3f6-9d9d-19a7-717d-8d03c78993f0",
+                    "w": 24,
+                    "x": 24,
+                    "y": 36
+                },
+                "panelIndex": "9596b3f6-9d9d-19a7-717d-8d03c78993f0",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                    "managed": false,
+                                    "name": "metrics-kafkametricsreceiver.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-kafkametricsreceiver.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                            "title": "metrics-kafkametricsreceiver.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "3d222337-2500-90ca-58d3-f9d9f71b0e0e": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "24ba3808-12cd-2357-6c7a-c2b4dda7b6e9",
+                                                    "customLabel": true,
+                                                    "fieldName": "count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Under-Replicated",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "44714e97-119f-dc33-b7f7-4ce49cc5463f",
+                                                    "customLabel": false,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "time_bucket",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "24ba3808-12cd-2357-6c7a-c2b4dda7b6e9",
+                                                    "customLabel": true,
+                                                    "fieldName": "count",
+                                                    "inMetricDimension": true,
+                                                    "label": "Under-Replicated",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "44714e97-119f-dc33-b7f7-4ce49cc5463f",
+                                                    "customLabel": false,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "time_bucket",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                            "query": {
+                                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL\n| STATS replicas = MAX(kafka.partition.replicas), in_sync = MAX(kafka.partition.replicas_in_sync)\n    BY attributes.topic, attributes.partition, time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| EVAL under_replicated = replicas - in_sync\n| WHERE under_replicated \u003e 0\n| STATS count = COUNT(*) BY time_bucket\n| SORT time_bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL\n| STATS replicas = MAX(kafka.partition.replicas), in_sync = MAX(kafka.partition.replicas_in_sync)\n    BY attributes.topic, attributes.partition, time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| EVAL under_replicated = replicas - in_sync\n| WHERE under_replicated \u003e 0\n| STATS count = COUNT(*) BY time_bucket\n| SORT time_bucket ASC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "24ba3808-12cd-2357-6c7a-c2b4dda7b6e9"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "3d222337-2500-90ca-58d3-f9d9f71b0e0e",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "44714e97-119f-dc33-b7f7-4ce49cc5463f"
+                                    }
+                                ],
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Under-Replicated Partitions Over Time",
+                        "version": 1,
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL\n| STATS replicas = MAX(kafka.partition.replicas), in_sync = MAX(kafka.partition.replicas_in_sync)\n    BY attributes.topic, attributes.partition, time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| EVAL under_replicated = replicas - in_sync\n| WHERE under_replicated \u003e 0\n| STATS count = COUNT(*) BY time_bucket\n| SORT time_bucket ASC"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "39e781fd-9d85-6080-613e-82b045d569d8",
+                    "w": 24,
+                    "x": 0,
+                    "y": 36
+                },
+                "panelIndex": "39e781fd-9d85-6080-613e-82b045d569d8",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [],
+                                    "layers": {
+                                        "b3a94ba1-f454-670a-8b15-1da5714da014": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "6a59d2b3-c989-6ade-16cc-80efb2986df5",
+                                                    "customLabel": true,
+                                                    "fieldName": "attributes.topic",
+                                                    "label": "Topic"
+                                                },
+                                                {
+                                                    "columnId": "9ec30bb9-f1ad-3e91-d648-b2a42e6c3d54",
+                                                    "customLabel": true,
+                                                    "fieldName": "partitions",
+                                                    "inMetricDimension": true,
+                                                    "label": "Partitions",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "6a59d2b3-c989-6ade-16cc-80efb2986df5",
+                                                    "customLabel": true,
+                                                    "fieldName": "attributes.topic",
+                                                    "label": "Topic"
+                                                },
+                                                {
+                                                    "columnId": "9ec30bb9-f1ad-3e91-d648-b2a42e6c3d54",
+                                                    "customLabel": true,
+                                                    "fieldName": "partitions",
+                                                    "inMetricDimension": true,
+                                                    "label": "Partitions",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "query": {
+                                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.topic.partitions IS NOT NULL\n| STATS partitions = MAX(kafka.topic.partitions) BY attributes.topic\n| SORT partitions DESC\n| LIMIT 50"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.topic.partitions IS NOT NULL\n| STATS partitions = MAX(kafka.topic.partitions) BY attributes.topic\n| SORT partitions DESC\n| LIMIT 50"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "6a59d2b3-c989-6ade-16cc-80efb2986df5",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "9ec30bb9-f1ad-3e91-d648-b2a42e6c3d54",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "b3a94ba1-f454-670a-8b15-1da5714da014",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
+                            }
+                        },
+                        "title": "Top Topics by Partition Count",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.topic.partitions IS NOT NULL\n| STATS partitions = MAX(kafka.topic.partitions) BY attributes.topic\n| SORT partitions DESC\n| LIMIT 50"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "b63bc833-06c5-2db1-78eb-8a6050d03e82",
+                    "w": 48,
+                    "x": 0,
+                    "y": 46
+                },
+                "panelIndex": "b63bc833-06c5-2db1-78eb-8a6050d03e82",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "3e6bb59a-2113-23a6-b4f7-c799c58f1ef8": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "10814910-b993-a0ec-4ac6-bfe8717c7340",
+                                                    "customLabel": true,
+                                                    "fieldName": "unique_topics",
+                                                    "inMetricDimension": true,
+                                                    "label": "Topics",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "10814910-b993-a0ec-4ac6-bfe8717c7340",
+                                                    "customLabel": true,
+                                                    "fieldName": "unique_topics",
+                                                    "inMetricDimension": true,
+                                                    "label": "Topics",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "query": {
+                                                "esql": "FROM metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.topic.partitions IS NOT NULL\n| STATS unique_topics = COUNT_DISTINCT(attributes.topic)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "esql": "FROM metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.topic.partitions IS NOT NULL\n| STATS unique_topics = COUNT_DISTINCT(attributes.topic)"
+                            },
+                            "visualization": {
+                                "layerId": "3e6bb59a-2113-23a6-b4f7-c799c58f1ef8",
+                                "layerType": "data",
+                                "metricAccessor": "10814910-b993-a0ec-4ac6-bfe8717c7340",
+                                "showBar": false
+                            }
+                        },
+                        "title": "Topics",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "d58ba307-2059-1f9a-a37c-d14ded1f0cb3",
+                    "w": 8,
+                    "x": 16,
+                    "y": 9
+                },
+                "panelIndex": "d58ba307-2059-1f9a-a37c-d14ded1f0cb3",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "b81c7217-d768-aafd-e08b-c139d9d2e470": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "c22a46c7-913f-134e-4925-9f5a3cab4700",
+                                                    "customLabel": true,
+                                                    "fieldName": "brokers",
+                                                    "inMetricDimension": true,
+                                                    "label": "Brokers",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "c22a46c7-913f-134e-4925-9f5a3cab4700",
+                                                    "customLabel": true,
+                                                    "fieldName": "brokers",
+                                                    "inMetricDimension": true,
+                                                    "label": "Brokers",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "query": {
+                                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.brokers IS NOT NULL\n| STATS brokers = MAX(kafka.brokers)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.brokers IS NOT NULL\n| STATS brokers = MAX(kafka.brokers)"
+                            },
+                            "visualization": {
+                                "layerId": "b81c7217-d768-aafd-e08b-c139d9d2e470",
+                                "layerType": "data",
+                                "metricAccessor": "c22a46c7-913f-134e-4925-9f5a3cab4700",
+                                "showBar": false
+                            }
+                        },
+                        "title": "Brokers",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "faeae98a-2151-daad-4ddf-bc1c77ab52b7",
+                    "w": 8,
+                    "x": 16,
+                    "y": 2
+                },
+                "panelIndex": "faeae98a-2151-daad-4ddf-bc1c77ab52b7",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                    "managed": false,
+                                    "name": "metrics-kafkametricsreceiver.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-kafkametricsreceiver.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                            "title": "metrics-kafkametricsreceiver.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "e39615e1-18c0-f840-8cf7-da9a26477e37": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "d130cae9-2511-fae1-6d1f-205113cd7694",
+                                                    "customLabel": true,
+                                                    "fieldName": "total_lag",
+                                                    "inMetricDimension": true,
+                                                    "label": "Total Lag",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "d130cae9-2511-fae1-6d1f-205113cd7694",
+                                                    "customLabel": true,
+                                                    "fieldName": "total_lag",
+                                                    "inMetricDimension": true,
+                                                    "label": "Total Lag",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                            "query": {
+                                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.consumer_group.lag_sum IS NOT NULL\n| STATS latest_lag = MAX(kafka.consumer_group.lag_sum) BY attributes.group\n| STATS total_lag = SUM(latest_lag)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.consumer_group.lag_sum IS NOT NULL\n| STATS latest_lag = MAX(kafka.consumer_group.lag_sum) BY attributes.group\n| STATS total_lag = SUM(latest_lag)"
+                            },
+                            "visualization": {
+                                "layerId": "e39615e1-18c0-f840-8cf7-da9a26477e37",
+                                "layerType": "data",
+                                "metricAccessor": "d130cae9-2511-fae1-6d1f-205113cd7694",
+                                "showBar": false
+                            }
+                        },
+                        "title": "Total Lag",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.consumer_group.lag_sum IS NOT NULL\n| STATS latest_lag = MAX(kafka.consumer_group.lag_sum) BY attributes.group\n| STATS total_lag = SUM(latest_lag)"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "70655726-6b18-411c-8545-46fe7bbdd21f",
+                    "w": 8,
+                    "x": 24,
+                    "y": 2
+                },
+                "panelIndex": "70655726-6b18-411c-8545-46fe7bbdd21f",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                    "managed": false,
+                                    "name": "metrics-kafkametricsreceiver.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-kafkametricsreceiver.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                            "title": "metrics-kafkametricsreceiver.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "075d34ec-90e5-4f08-8d8b-27b522052794": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "under_replicated_partitions",
+                                                    "customLabel": true,
+                                                    "fieldName": "under_replicated_partitions",
+                                                    "inMetricDimension": true,
+                                                    "label": "Under replicated partitions",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "89c7f8ea9a864540349517969cfe38b3d7f12a57c2a1936c97e1844d6c571192",
+                                            "query": {
+                                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL\n| STATS replicas = MAX(kafka.partition.replicas),\n        in_sync = MAX(kafka.partition.replicas_in_sync)\n  BY attributes.topic, attributes.partition\n| WHERE replicas \u003e in_sync\n| STATS under_replicated_partitions = COUNT(*)"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL\n| STATS replicas = MAX(kafka.partition.replicas),\n        in_sync = MAX(kafka.partition.replicas_in_sync)\n  BY attributes.topic, attributes.partition\n| WHERE replicas \u003e in_sync\n| STATS under_replicated_partitions = COUNT(*)"
+                            },
+                            "visualization": {
+                                "layerId": "075d34ec-90e5-4f08-8d8b-27b522052794",
+                                "layerType": "data",
+                                "metricAccessor": "under_replicated_partitions"
+                            }
+                        },
+                        "title": "under_replicated_partitions",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.partition.replicas IS NOT NULL AND kafka.partition.replicas_in_sync IS NOT NULL\n| STATS replicas = MAX(kafka.partition.replicas),\n        in_sync = MAX(kafka.partition.replicas_in_sync)\n  BY attributes.topic, attributes.partition\n| WHERE replicas \u003e in_sync\n| STATS under_replicated_partitions = COUNT(*)"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "e079e0c2-d9b3-115b-ad94-cf389bbbacf7",
+                    "w": 8,
+                    "x": 32,
+                    "y": 2
+                },
+                "panelIndex": "e079e0c2-d9b3-115b-ad94-cf389bbbacf7",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "aab83e9b-efd5-e440-1550-be4a538cd27e": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "4e12562d-df82-f995-53d9-84a59bdc6d27",
+                                                    "customLabel": true,
+                                                    "fieldName": "empty_groups",
+                                                    "inMetricDimension": true,
+                                                    "label": "Empty Groups",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "4e12562d-df82-f995-53d9-84a59bdc6d27",
+                                                    "customLabel": true,
+                                                    "fieldName": "empty_groups",
+                                                    "inMetricDimension": true,
+                                                    "label": "Empty Groups",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "query": {
+                                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.consumer_group.members IS NOT NULL\n| STATS members = MAX(kafka.consumer_group.members) BY attributes.group\n| WHERE members == 0\n| STATS empty_groups = COUNT(*)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "esql": "TS metrics-kafkametricsreceiver.otel-*\n| WHERE data_stream.dataset == \"kafkametricsreceiver.otel\"\n| WHERE kafka.consumer_group.members IS NOT NULL\n| STATS members = MAX(kafka.consumer_group.members) BY attributes.group\n| WHERE members == 0\n| STATS empty_groups = COUNT(*)"
+                            },
+                            "visualization": {
+                                "layerId": "aab83e9b-efd5-e440-1550-be4a538cd27e",
+                                "layerType": "data",
+                                "metricAccessor": "4e12562d-df82-f995-53d9-84a59bdc6d27",
+                                "showBar": false
+                            }
+                        },
+                        "title": "Groups with No Members",
+                        "type": "lens",
+                        "version": 1,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "44ee2a6f-1962-6f3e-07fe-7aad2781e9fe",
+                    "w": 8,
+                    "x": 24,
+                    "y": 9
+                },
+                "panelIndex": "44ee2a6f-1962-6f3e-07fe-7aad2781e9fe",
+                "type": "lens"
+            }
+        ],
+        "timeFrom": "now-15m",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "[Kafka OTel] Overview"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-03-13T13:08:22.039Z",
+    "id": "kafka_otel-overview",
+    "references": [
+        {
+            "id": "kafka_otel-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "kafka_otel-consumer-groups",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_023dd0d5-85a5-7c2d-7761-09ac67eaf6b0_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "kafka_otel-topics-partitions",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_9fa8a215-5ab9-a0b8-3ae7-50918026c5b2_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "kafka_otel-replication",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_55497914-9303-4f76-667d-ef92eaa42807_dashboard",
+            "type": "dashboard"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+}

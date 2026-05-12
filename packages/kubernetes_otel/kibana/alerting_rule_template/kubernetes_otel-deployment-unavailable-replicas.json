@@ -1,0 +1,46 @@
+{
+    "id": "kubernetes_otel-deployment-unavailable-replicas",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when a Kubernetes deployment has fewer available replicas than desired, indicating the deployment cannot maintain its target replica count. Common causes: rolling update failures, resource starvation, image pull errors.",
+        "name": "[K8s OTel] Deployment unavailable replicas",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "Kubernetes"
+        ],
+        "schedule": {
+            "interval": "1m"
+        },
+        "alertDelay": {
+            "active": 5
+        },
+        "flapping": {
+            "enabled": true,
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## Deployment Unavailable Replicas\n\n### Triage Steps\n1. Identify the affected deployment(s) from the alert results.\n2. Check the Workload Health dashboard for deployment status.\n3. Run `kubectl describe deployment <name> -n <namespace>` to check events and conditions.\n4. Look for pods in non-Running states: `kubectl get pods -l app=<deployment> -n <namespace>`.\n5. Navigate to Pod & Container Detail filtered by the namespace to inspect failing pods.\n\n### Common Causes\n- Image pull errors (wrong tag, private registry auth)\n- Insufficient cluster resources (CPU, memory) to schedule pods\n- Pod crash loops preventing readiness\n- Rolling update stuck due to new version failures\n- PVC binding failures for pods requiring persistent storage\n\n### Tuning\n- The `alertDelay` of 5 runs allows for brief transient gaps during rolling updates.\n- Increase `alertDelay` if your deployments have slow startup times.\n- The rule uses `desired > 0` to exclude scaled-to-zero deployments.\n\n### Escalation\nIf a deployment remains degraded for more than 10 minutes, investigate the underlying pod failures and consider rolling back."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.deployment.desired IS NOT NULL\n    AND k8s.deployment.available IS NOT NULL\n| STATS\n    desired = LAST(k8s.deployment.desired, @timestamp),\n    available = LAST(k8s.deployment.available, @timestamp)\n    BY k8s.deployment.name, k8s.namespace.name\n// Only alert for deployments that should have replicas running\n| WHERE desired > 0\n// Alert when available replicas are fewer than desired\n| WHERE available < desired\n| EVAL unavailable = desired - available\n| KEEP k8s.namespace.name, k8s.deployment.name, desired, available, unavailable\n| SORT unavailable DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 1,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "k8s.deployment.name",
+            "termSize": 20
+        }
+    }
+}

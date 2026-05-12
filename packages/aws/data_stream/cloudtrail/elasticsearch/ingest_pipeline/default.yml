@@ -71,9 +71,6 @@ processors:
           'serialNumber': true
         hostResourceTypes:
           'instance': true
-          'volume': true
-          'snapshot': true
-          'image': true
         serviceResourceTypes:
           'stack': true
           'stack-set': true
@@ -114,9 +111,6 @@ processors:
           'dhcp-options': true
         hostIdPrefixes:
           - 'i-'
-          - 'vol-'
-          - 'snap-'
-          - 'ami-'
         serviceIdPrefixes:
           - 'sg-'
           - 'sgr-'
@@ -941,6 +935,7 @@ processors:
           }
           if (!hostTargets.isEmpty()) {
             field("host.target.entity.id").set(hostTargets);
+            field("host.id").set(hostTargets.first());
           }
           if (!serviceTargets.isEmpty()) {
             field("service.target.entity.id").set(serviceTargets);
@@ -2106,3 +2101,8 @@ on_failure:
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - remove:
+      field:
+        - json
+        - _conf
+      ignore_missing: true

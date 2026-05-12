@@ -1,0 +1,56 @@
+{
+  "id": "postgresql_otel-backend-buffer-writes",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when backend-sourced buffer writes exceed 100 in the window. Background writer cannot keep up \u2014 write pressure.",
+    "name": "[PostgreSQL OTel] Backend buffer writes high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "postgresql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-io-health"
+        },
+        {
+          "id": "postgresql_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL backend buffer writes high\n\n### What fired\n`postgresql.bgwriter.buffers.writes` with `source=backend` summed > 100 in the window.\n\n### Why it matters\nWhen the bgwriter cannot keep up, backends must flush dirty buffers themselves \u2014 hurting query latency. Sustained backend writes predict I/O contention.\n\n### Triage\n1. Inspect `bgwriter.maxwritten` stops.\n2. Check checkpoint frequency.\n\n### Remediation\n- Tune bgwriter parameters.\n- Upgrade disk IOPS.\n\n### Tuning\n- Threshold 100; tune per scrape cadence.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-postgresqlreceiver.otel-*\n// Buffers written by backend (not bgwriter) indicate background writer cannot keep up\n| WHERE postgresql.bgwriter.buffers.writes IS NOT NULL AND attributes.source == \"backend\"\n| EVAL writes_val = TO_DOUBLE(postgresql.bgwriter.buffers.writes)\n| STATS backend_writes = SUM(writes_val) BY service.instance.id\n// Threshold: > 100 buffers in window; adjust based on checkpoint frequency\n| WHERE backend_writes > 100"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "service.instance.id",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
