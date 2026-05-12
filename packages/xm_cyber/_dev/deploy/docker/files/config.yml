@@ -1,0 +1,252 @@
+rules:
+  # Auth — X-Api-Key header
+  - path: /api/auth
+    methods: ['POST']
+    request_headers:
+      X-Api-Key: "mock-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "accessToken": "mock-access-token-abc123",
+            "refreshToken": "mock-refresh-token-xyz789"
+          }
+          `}}
+  # Token refresh
+  - path: /api/refresh-token
+    methods: ['POST']
+    request_headers:
+      Content-Type:
+        - 'application/json'
+    request_body: /.*"refreshToken".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "accessToken": "mock-access-token-refreshed-abc123",
+            "refreshToken": "mock-refresh-token-refreshed-xyz789"
+          }
+          `}}
+  # Page 2 — fetched via nextLink cursor=page2 (more specific match, must precede page 1)
+  - path: /api/entityInventory/entities
+    methods: ['GET']
+    query_params:
+      cursor: 'page2'
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "id": "awsSsmParameter-arn:aws:ssm:us-east-2:702947630755:parameter/EC2Rescue/Passwords/i-0d056ac1b7c822c92",
+                "accountId": "702947630755",
+                "arn": "arn:aws:ssm:us-east-2:702947630755:parameter/EC2Rescue/Passwords/i-0d056ac1b7c822c92",
+                "customProperties": {
+                  "domainWorkgroup": {
+                    "type": "domain",
+                    "data": "AWS/702947630755"
+                  },
+                  "ouComputer": "AWS/702947630755/us-east-2/SSM/ParameterMetadata",
+                  "ouUser": "AWS/702947630755/SSM/ParameterMetadata",
+                  "subnetInfo": "AWS_702947630755_us-east-2"
+                },
+                "disabled": false,
+                "displayName": "/EC2Rescue/Passwords/i-0d056ac1b7c822c92",
+                "entityType": "AwsSsmParameterEntity",
+                "name": "/EC2Rescue/Passwords/i-0d056ac1b7c822c92",
+                "notIncludedInAttacks": false,
+                "region": "us-east-2",
+                "ruleDisplayName": "702947630755 / /EC2Rescue/Passwords/i-0d056ac1b7c822c92",
+                "ssmParameterDataType": "text",
+                "ssmParameterDescription": "New local Administrator password for instance i-0d056ac1b7c822c92",
+                "ssmParameterKeyId": "alias/aws/ssm",
+                "ssmParameterLastModifiedDate": "2021-07-28T08:11:54.200Z",
+                "ssmParameterLastModifiedUser": "arn:aws:sts::702947630755:assumed-role/AmazonSSMRoleForInstancesQuickSetup/i-0d056ac1b7c822c92",
+                "ssmParameterName": "/EC2Rescue/Passwords/i-0d056ac1b7c822c92",
+                "ssmParameterTier": "Standard",
+                "ssmParameterType": "SecureString",
+                "ssmParameterVersion": 1,
+                "status": "active",
+                "type": "awsSsmParameter",
+                "typeDisplayName": "AWS SSM Parameter",
+                "useType": "Storage",
+                "xmProviderAccount": "xm-test3",
+                "xmUpdateTime": "2026-05-05T21:05:15.079Z",
+                "accountName": "xm-test3",
+                "organizationId": "o-wvjziar78j",
+                "category": "Cloud",
+                "entityDetails": {
+                  "name": "/EC2Rescue/Passwords/i-0d056ac1b7c822c92",
+                  "id": "awsSsmParameter-arn:aws:ssm:us-east-2:702947630755:parameter/EC2Rescue/Passwords/i-0d056ac1b7c822c92",
+                  "isAsset": null,
+                  "subType": "awsSsmParameter",
+                  "subTypeDisplayName": "AWS SSM Parameter"
+                }
+              }
+            ],
+            "paging": {
+              "page": 1,
+              "pageSize": 2,
+              "total": 3,
+              "totalPages": 2,
+              "nextLink": null
+            },
+            "metadata": {}
+          }
+          `}}
+  # Page 1 — initial full fetch (no cursor; only pageSize+sort)
+  - path: /api/entityInventory/entities
+    methods: ['GET']
+    query_params:
+      pageSize: '2'
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "id": "awsSsmParameter-arn:aws:ssm:us-east-1:702947630755:parameter/CodeBuild/accessKeys",
+                "accountId": "702947630755",
+                "arn": "arn:aws:ssm:us-east-1:702947630755:parameter/CodeBuild/accessKeys",
+                "customProperties": {
+                  "domainWorkgroup": {
+                    "type": "domain",
+                    "data": "AWS/702947630755"
+                  },
+                  "ouComputer": "AWS/702947630755/us-east-1/SSM/ParameterMetadata",
+                  "ouUser": "AWS/702947630755/SSM/ParameterMetadata",
+                  "subnetInfo": "AWS_702947630755_us-east-1"
+                },
+                "disabled": false,
+                "displayName": "/CodeBuild/accessKeys",
+                "entityType": "AwsSsmParameterEntity",
+                "name": "/CodeBuild/accessKeys",
+                "notIncludedInAttacks": false,
+                "region": "us-east-1",
+                "ruleDisplayName": "702947630755 / /CodeBuild/accessKeys",
+                "ssmParameterDataType": "text",
+                "ssmParameterKeyId": "alias/aws/ssm",
+                "ssmParameterLastModifiedDate": "2020-07-19T09:53:58.629Z",
+                "ssmParameterLastModifiedUser": "arn:aws:sts::702947630755:assumed-role/AWSReservedSSO_AdministratorAccess_4b70f7a69b186776/zur@xmcyber.com",
+                "ssmParameterName": "/CodeBuild/accessKeys",
+                "ssmParameterTier": "Standard",
+                "ssmParameterType": "SecureString",
+                "ssmParameterVersion": 1,
+                "status": "active",
+                "type": "awsSsmParameter",
+                "typeDisplayName": "AWS SSM Parameter",
+                "useType": "Storage",
+                "xmProviderAccount": "xm-test3",
+                "xmUpdateTime": "2026-05-05T21:05:15.079Z",
+                "accountName": "xm-test3",
+                "organizationId": "o-wvjziar78j",
+                "category": "Cloud",
+                "entityDetails": {
+                  "name": "/CodeBuild/accessKeys",
+                  "id": "awsSsmParameter-arn:aws:ssm:us-east-1:702947630755:parameter/CodeBuild/accessKeys",
+                  "isAsset": null,
+                  "subType": "awsSsmParameter",
+                  "subTypeDisplayName": "AWS SSM Parameter"
+                }
+              },
+              {
+                "id": "awsSecret-/CrowdStrike/CSPM/SensorManagement/FalconAPICredentials",
+                "useType": "Storage",
+                "entityType": "AwsSecretEntity",
+                "accountId": "908522078858",
+                "accountName": "aws-908522078858",
+                "organizationId": "o-wvjziar78j",
+                "arn": "arn:aws:secretsmanager:us-east-1:908522078858:secret:/CrowdStrike/CSPM/SensorManagement/FalconAPICredentials-4BkOB0",
+                "xmUpdateTime": "2026-05-05T21:05:15.079Z",
+                "customProperties": {
+                  "domainWorkgroup": {
+                    "type": "domain",
+                    "data": "AWS/908522078858"
+                  },
+                  "ouComputer": "AWS/908522078858/us-east-1/SecretsManager/SecretListEntry",
+                  "ouUser": "AWS/908522078858/SecretsManager/SecretListEntry",
+                  "subnetInfo": "AWS_908522078858_us-east-1"
+                },
+                "region": "us-east-1",
+                "awsTags": [
+                  {
+                    "Key": "aws:cloudformation:stack-id",
+                    "Value": "arn:aws:cloudformation:us-east-1:908522078858:stack/StackSet-crowdstrike-SensorManagement-9fb10f6b-9dc3-4c3c-a078-dcec6bde4487/3493fc10-2bf9-11f0-a92a-0affd5d0d7df"
+                  },
+                  {
+                    "Key": "aws:cloudformation:stack-name",
+                    "Value": "StackSet-crowdstrike-SensorManagement-9fb10f6b-9dc3-4c3c-a078-dcec6bde4487"
+                  },
+                  {
+                    "Key": "aws:cloudformation:logical-id",
+                    "Value": "CrowdStrikeSensorManagementFalconCredentialsSecret"
+                  }
+                ],
+                "ruleDisplayName": "908522078858 / /CrowdStrike/CSPM/SensorManagement/FalconAPICredentials",
+                "secretDescription": "Falcon API credentials used by the 1-Click sensor management orchestrator.",
+                "status": "active",
+                "type": "awsSecret",
+                "displayName": "/CrowdStrike/CSPM/SensorManagement/FalconAPICredentials",
+                "name": "/CrowdStrike/CSPM/SensorManagement/FalconAPICredentials",
+                "disabled": false,
+                "notIncludedInAttacks": false,
+                "typeDisplayName": "AWS Secret",
+                "labels": [
+                  {
+                    "id": "aws:cloudformation:stack-id: arn:aws:cloudformation:us-east-1:908522078858:stack/StackSet-crowdstrike-SensorManagement-9fb10f6b-9dc3-4c3c-a078-dcec6bde4487/3493fc10-2bf9-11f0-a92a-0affd5d0d7df",
+                    "type": "cloud"
+                  },
+                  {
+                    "id": "aws:cloudformation:stack-name: StackSet-crowdstrike-SensorManagement-9fb10f6b-9dc3-4c3c-a078-dcec6bde4487",
+                    "type": "cloud"
+                  },
+                  {
+                    "id": "aws:cloudformation:logical-id: CrowdStrikeSensorManagementFalconCredentialsSecret",
+                    "type": "cloud"
+                  }
+                ],
+                "tagsStr": [
+                  "aws:cloudformation:stack-id: arn:aws:cloudformation:us-east-1:908522078858:stack/StackSet-crowdstrike-SensorManagement-9fb10f6b-9dc3-4c3c-a078-dcec6bde4487/3493fc10-2bf9-11f0-a92a-0affd5d0d7df",
+                  "aws:cloudformation:stack-name: StackSet-crowdstrike-SensorManagement-9fb10f6b-9dc3-4c3c-a078-dcec6bde4487",
+                  "aws:cloudformation:logical-id: CrowdStrikeSensorManagementFalconCredentialsSecret"
+                ],
+                "category": "Cloud",
+                "entityDetails": {
+                  "name": "/CrowdStrike/CSPM/SensorManagement/FalconAPICredentials",
+                  "id": "awsSecret-/CrowdStrike/CSPM/SensorManagement/FalconAPICredentials",
+                  "isAsset": null,
+                  "subType": "awsSecret",
+                  "subTypeDisplayName": "AWS Secret"
+                }
+              }
+            ],
+            "paging": {
+              "page": 0,
+              "pageSize": 2,
+              "total": 3,
+              "totalPages": 2,
+              "nextLink": "/api/entityInventory/entities?cursor=page2"
+            },
+            "metadata": {}
+          }
+          `}}
