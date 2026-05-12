@@ -2,6 +2,7 @@
 description: Pipeline for parsing Cloudflare NEL Report logs.
 processors:
   - set:
+      tag: set_ecs_version_b777da29
       field: ecs.version
       value: '9.3.0'
   - rename:
@@ -18,21 +19,25 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
       value: [network]
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
-## AWS S3 input does _id Based Deduplication and generates "_id" by default.
-## When "Data Deduplication" is not enabled, this field must be removed.
-## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
   - remove:
       field: _id
       tag: remove_id_based_deduplication
@@ -63,6 +68,7 @@ processors:
         }
         catch (Exception e) {}
   - date:
+      tag: date_json_Timestamp_772fbe7f
       field: json.Timestamp
       if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
       formats:
@@ -72,21 +78,26 @@ processors:
       timezone: UTC
       on_failure:
       - append:
+          tag: append_error_message_2e342a9c
           field: error.message
           value: "{{{_ingest.on_failure_message}}}"
   - set:
+      tag: set_cloudflare_logpush_nel_report_timestamp_26266fd5
       field: cloudflare_logpush.nel_report.timestamp
       copy_from: '@timestamp'
       ignore_empty_value: true
   - rename:
+      tag: rename_json_Type_to_cloudflare_logpush_nel_report_error_type_7eb310ae
       field: json.Type
       target_field: cloudflare_logpush.nel_report.error.type
       ignore_missing: true
   - set:
+      tag: set_error_type_147e9bbb
       field: error.type
       copy_from: cloudflare_logpush.nel_report.error.type
       ignore_empty_value: true
   - convert:
+      tag: convert_json_ClientIPASN_to_cloudflare_logpush_nel_report_client_ip_asn_value_300a6be2
       field: json.ClientIPASN
       target_field: cloudflare_logpush.nel_report.client.ip.asn.value
       if: ctx.json?.ClientIPASN != ''
@@ -94,21 +105,26 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_bdef4019
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_ClientIPASNDescription_to_cloudflare_logpush_nel_report_client_ip_asn_description_263da4c2
       field: json.ClientIPASNDescription
       target_field: cloudflare_logpush.nel_report.client.ip.asn.description
       ignore_missing: true
   - rename:
+      tag: rename_json_ClientIPCountry_to_cloudflare_logpush_nel_report_client_ip_country_6c2f728a
       field: json.ClientIPCountry
       target_field: cloudflare_logpush.nel_report.client.ip.country
       ignore_missing: true
   - rename:
+      tag: rename_json_LastKnownGoodColoCode_to_cloudflare_logpush_nel_report_last_known_good_colo_code_5bab09a8
       field: json.LastKnownGoodColoCode
       target_field: cloudflare_logpush.nel_report.last_known_good.colo.code
       ignore_missing: true
   - rename:
+      tag: rename_json_Phase_to_cloudflare_logpush_nel_report_phase_5a53d486
       field: json.Phase
       target_field: cloudflare_logpush.nel_report.phase
       ignore_missing: true
@@ -119,6 +135,7 @@ processors:
         - _conf
       ignore_missing: true
   - remove:
+      tag: remove_2bb47153
       field:
         - cloudflare_logpush.nel_report.timestamp
         - cloudflare_logpush.nel_report.error.type
@@ -126,6 +143,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+        tag: script_a3eb5add
         description: Drops null/empty values recursively.
         lang: painless
         source: |

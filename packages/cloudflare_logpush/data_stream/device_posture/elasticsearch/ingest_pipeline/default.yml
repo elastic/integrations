@@ -2,6 +2,7 @@
 description: Pipeline for parsing Cloudflare Device Posture Results logs.
 processors:
   - set:
+      tag: set_ecs_version_b777da29
       field: ecs.version
       value: '9.3.0'
   - rename:
@@ -18,20 +19,24 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - set:
+      tag: set_event_category_ba9b1d84
       field: event.category
       value: [host]
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
-## AWS S3 input does _id Based Deduplication and generates "_id" by default.
-## When "Data Deduplication" is not enabled, this field must be removed.
-## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
   - remove:
       field: _id
       tag: remove_id_based_deduplication
@@ -62,6 +67,7 @@ processors:
         }
         catch (Exception e) {}
   - date:
+      tag: date_json_Timestamp_772fbe7f
       field: json.Timestamp
       if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
       formats:
@@ -71,145 +77,180 @@ processors:
       timezone: UTC
       on_failure:
       - append:
+          tag: append_error_message_2e342a9c
           field: error.message
           value: "{{{_ingest.on_failure_message}}}"
   - set:
+      tag: set_cloudflare_logpush_device_posture_timestamp_058b7d14
       field: cloudflare_logpush.device_posture.timestamp
       copy_from: "@timestamp"
   - rename:
+      tag: rename_json_ClientVersion_to_cloudflare_logpush_device_posture_version_cd931ae0
       field: json.ClientVersion
       target_field: cloudflare_logpush.device_posture.version
       ignore_missing: true
   - set:
+      tag: set_user_agent_version_0039ca63
       field: user_agent.version
       copy_from: cloudflare_logpush.device_posture.version
       ignore_empty_value: true
   - rename:
+      tag: rename_json_DeviceID_to_cloudflare_logpush_device_posture_host_id_3ce2738f
       field: json.DeviceID
       target_field: cloudflare_logpush.device_posture.host.id
       ignore_missing: true
   - set:
+      tag: set_host_id_e7544a66
       field: host.id
       copy_from: cloudflare_logpush.device_posture.host.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_DeviceManufacturer_to_cloudflare_logpush_device_posture_host_manufacturer_043abe93
       field: json.DeviceManufacturer
       target_field: cloudflare_logpush.device_posture.host.manufacturer
       ignore_missing: true
   - rename:
+      tag: rename_json_DeviceModel_to_cloudflare_logpush_device_posture_host_model_265ecd11
       field: json.DeviceModel
       target_field: cloudflare_logpush.device_posture.host.model
       ignore_missing: true
   - rename:
+      tag: rename_json_DeviceName_to_cloudflare_logpush_device_posture_host_name_707832af
       field: json.DeviceName
       target_field: cloudflare_logpush.device_posture.host.name
       ignore_missing: true
   - set:
+      tag: set_host_name_6d640aee
       field: host.name
       copy_from: cloudflare_logpush.device_posture.host.name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_DeviceSerialNumber_to_cloudflare_logpush_device_posture_host_serial_b4965794
       field: json.DeviceSerialNumber
       target_field: cloudflare_logpush.device_posture.host.serial
       ignore_missing: true
   - rename:
+      tag: rename_json_DeviceType_to_cloudflare_logpush_device_posture_host_os_family_44e10223
       field: json.DeviceType
       target_field: cloudflare_logpush.device_posture.host.os.family
       ignore_missing: true
   - set:
+      tag: set_host_os_family_d17288fa
       field: host.os.family
       copy_from: cloudflare_logpush.device_posture.host.os.family
       ignore_empty_value: true
   - rename:
+      tag: rename_json_OSVersion_to_cloudflare_logpush_device_posture_host_os_version_07952967
       field: json.OSVersion
       target_field: cloudflare_logpush.device_posture.host.os.version
       ignore_missing: true
   - set:
+      tag: set_host_os_version_0207737e
       field: host.os.version
       copy_from: cloudflare_logpush.device_posture.host.os.version
       ignore_empty_value: true
   - rename:
+      tag: rename_json_PolicyID_to_cloudflare_logpush_device_posture_rule_id_49b576e7
       field: json.PolicyID
       target_field: cloudflare_logpush.device_posture.rule.id
       ignore_missing: true
   - set:
+      tag: set_rule_id_c7dba46e
       field: rule.id
       copy_from: cloudflare_logpush.device_posture.rule.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_PostureCheckName_to_cloudflare_logpush_device_posture_rule_name_7da2cd15
       field: json.PostureCheckName
       target_field: cloudflare_logpush.device_posture.rule.name
       ignore_missing: true
   - set:
+      tag: set_rule_name_74bd3f32
       field: rule.name
       copy_from: cloudflare_logpush.device_posture.rule.name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_PostureCheckType_to_cloudflare_logpush_device_posture_rule_category_cee57ee7
       field: json.PostureCheckType
       target_field: cloudflare_logpush.device_posture.rule.category
       ignore_missing: true
   - set:
+      tag: set_rule_category_96fa1c5a
       field: rule.category
       copy_from: cloudflare_logpush.device_posture.rule.category
       ignore_empty_value: true
   - rename:
+      tag: rename_json_PostureEvaluatedResult_to_cloudflare_logpush_device_posture_eval_result_8b2e584c
       field: json.PostureEvaluatedResult
       target_field: cloudflare_logpush.device_posture.eval.result
       ignore_missing: true
-# Set event.outcome from cloudflare_logpush.device_posture.eval.result
+  # Set event.outcome from cloudflare_logpush.device_posture.eval.result
   - set:
+      tag: set_event_outcome_1d222747
       field: event.outcome
       value: success
       if: ctx.cloudflare_logpush?.device_posture?.eval?.result != null && ctx.cloudflare_logpush?.device_posture?.eval?.result == true
   - set:
+      tag: set_event_outcome_47177ebb
       field: event.outcome
       value: failure
       if: ctx.cloudflare_logpush?.device_posture?.eval?.result != null && ctx.cloudflare_logpush?.device_posture?.eval?.result == false
   - rename:
+      tag: rename_json_PostureExpectedJSON_to_cloudflare_logpush_device_posture_eval_expected_624f00fb
       field: json.PostureExpectedJSON
       target_field: cloudflare_logpush.device_posture.eval.expected
       ignore_missing: true
   - rename:
+      tag: rename_json_PostureReceivedJSON_to_cloudflare_logpush_device_posture_eval_received_c94d95bd
       field: json.PostureReceivedJSON
       target_field: cloudflare_logpush.device_posture.eval.received
       ignore_missing: true
   - rename:
+      tag: rename_json_RegistrationID_to_cloudflare_logpush_device_posture_registration_id_aecfd64a
       field: json.RegistrationID
       target_field: cloudflare_logpush.device_posture.registration_id
       ignore_missing: true
   - rename:
+      tag: rename_json_UserUID_to_cloudflare_logpush_device_posture_user_id_b055e3c0
       field: json.UserUID
       target_field: cloudflare_logpush.device_posture.user.id
       ignore_missing: true
   - set:
+      tag: set_user_id_9ab83028
       field: user.id
       copy_from: cloudflare_logpush.device_posture.user.id
       if: ctx.cloudflare_logpush?.device_posture?.user?.id != null && ctx.cloudflare_logpush?.device_posture?.user?.id != ""
   - rename:
+      tag: rename_json_Email_to_cloudflare_logpush_device_posture_user_email_70ea23e4
       field: json.Email
       target_field: cloudflare_logpush.device_posture.user.email
       ignore_missing: true
   - set:
+      tag: set_user_email_839e5d58
       field: user.email
       copy_from: cloudflare_logpush.device_posture.user.email
       if: ctx.cloudflare_logpush?.device_posture?.user?.email != null && ctx.cloudflare_logpush?.device_posture?.user?.email != ""
-# Create related fields
+  # Create related fields
   - append:
+      tag: append_related_hosts_d1851e05
       field: related.hosts
       value: "{{{host.id}}}"
       if: ctx.host?.id != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_452ef445
       field: related.hosts
       value: "{{{host.name}}}"
       if: ctx.host?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_7f407fef
       field: related.user
       value: "{{{user.id}}}"
       if: ctx.user?.id != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_34fcf415
       field: related.user
       value: "{{{user.email}}}"
       if: ctx.user?.email != null
@@ -221,6 +262,7 @@ processors:
         - _conf
       ignore_missing: true
   - remove:
+      tag: remove_f9fe5077
       field:
         - cloudflare_logpush.device_posture.timestamp
         - cloudflare_logpush.device_posture.version
@@ -237,6 +279,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |

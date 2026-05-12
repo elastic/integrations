@@ -28,7 +28,7 @@ processors:
       tag: set_event_kind
   - set:
       field: event.category
-      value: 
+      value:
          - network
          - intrusion_detection
       tag: set_event_category
@@ -36,9 +36,9 @@ processors:
       field: event.type
       value: [info]
       tag: set_event_type
-## AWS S3 input does _id Based Deduplication and generates "_id" by default.
-## When "Data Deduplication" is not enabled, this field must be removed.
-## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
   - remove:
       field: _id
       tag: remove_id_based_deduplication
@@ -47,7 +47,7 @@ processors:
         must be removed.
       if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
       ignore_missing: true
-# Timestamp
+  # Timestamp
   - script:
       lang: painless
       tag: painless_timestamp_to_milli
@@ -80,6 +80,7 @@ processors:
       tag: date_event_timestamp
       on_failure:
       - append:
+          tag: append_error_message_38394fec
           field: error.message
           value: "{{{_ingest.on_failure_message}}}"
   - set:
@@ -87,7 +88,7 @@ processors:
       copy_from: "@timestamp"
       tag: set_timestamp
 
-# Handle destination IP and port
+  # Handle destination IP and port
   - rename:
       field: json.DestinationIP
       target_field: cloudflare_logpush.magic_ids.destination.ip
@@ -98,7 +99,7 @@ processors:
       copy_from: cloudflare_logpush.magic_ids.destination.ip
       ignore_empty_value: true
       tag: set_destination_ip
-# Geo enrichment (destination IP)
+  # Geo enrichment (destination IP)
   - geoip:
       field: destination.ip
       target_field: destination.geo
@@ -133,7 +134,7 @@ processors:
       ignore_empty_value: true
       tag: set_destination_port
 
-# Handle source IP and port
+  # Handle source IP and port
   - rename:
       field: json.SourceIP
       target_field: cloudflare_logpush.magic_ids.source.ip
@@ -144,7 +145,7 @@ processors:
       copy_from: cloudflare_logpush.magic_ids.source.ip
       ignore_empty_value: true
       tag: set_source_ip
-# Geo enrichment (source IP)
+  # Geo enrichment (source IP)
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -213,7 +214,7 @@ processors:
        if: ctx.event?.action == 'block'
        tag: append_event_type_block
 
-# Custom fields
+  # Custom fields
   - rename:
       field: json.ColoCode
       target_field: cloudflare_logpush.magic_ids.colo.code
@@ -240,7 +241,7 @@ processors:
       ignore_missing: true
       tag: rename_signature_revision
 
-# Create related fields
+  # Create related fields
   - append:
       field: related.ip
       value: '{{{destination.ip}}}'
@@ -254,7 +255,7 @@ processors:
       allow_duplicates: false
       tag: append_related_source_ip
 
-# Clean resulting event
+  # Clean resulting event
   - remove:
       tag: remove_json_conf
       field:

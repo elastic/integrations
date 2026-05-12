@@ -34,9 +34,9 @@ processors:
       field: event.type
       value: [info]
       tag: set_event_type
-## AWS S3 input does _id Based Deduplication and generates "_id" by default.
-## When "Data Deduplication" is not enabled, this field must be removed.
-## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
   - remove:
       field: _id
       tag: remove_id_based_deduplication
@@ -45,7 +45,7 @@ processors:
         must be removed.
       if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
       ignore_missing: true
-# Timestamp
+  # Timestamp
   - script:
       lang: painless
       tag: painless_timestamp_to_milli
@@ -78,6 +78,7 @@ processors:
       tag: date_event_timestamp
       on_failure:
       - append:
+          tag: append_error_message_38394fec
           field: error.message
           value: "{{{_ingest.on_failure_message}}}"
   - set:
@@ -85,7 +86,7 @@ processors:
       copy_from: "@timestamp"
       tag: set_timestamp
 
-# Handle source IP
+  # Handle source IP
   - rename:
       field: json.SourceIP
       target_field: cloudflare_logpush.dns_firewall.source.ip
@@ -96,7 +97,7 @@ processors:
       copy_from: cloudflare_logpush.dns_firewall.source.ip
       ignore_empty_value: true
       tag: set_source_ip
-# Geo enrichment (source IP)
+  # Geo enrichment (source IP)
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -121,7 +122,7 @@ processors:
       ignore_missing: true
       tag: rename_source_as_org
 
-# DNS ECS fields
+  # DNS ECS fields
   - rename:
       field: json.QueryName
       target_field: cloudflare_logpush.dns_firewall.question.name
@@ -142,6 +143,7 @@ processors:
       tag: convert_dns_response_code
       on_failure:
         - append:
+            tag: append_error_message_d8ae6c3a
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
@@ -153,6 +155,7 @@ processors:
       tag: convert_dns_upstream_response_code
       on_failure:
         - append:
+            tag: append_error_message_510a49ca
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
@@ -166,7 +169,7 @@ processors:
       if: ctx.cloudflare_logpush?.dns_firewall?.response?.code == null && ctx.cloudflare_logpush?.dns_firewall?.upstream?.response_code != null
       tag: set_dns_upstream_response_code
 
-# Custom fields
+  # Custom fields
   - rename:
       field: json.ClusterID
       target_field: cloudflare_logpush.dns_firewall.cluster_id
@@ -248,7 +251,7 @@ processors:
       ignore_missing: true
       tag: rename_dns_upstream_response_time_ms
 
-# Create related fields
+  # Create related fields
   - append:
       field: related.ip
       value: '{{{source.ip}}}'
@@ -268,7 +271,7 @@ processors:
       allow_duplicates: false
       tag: append_related_upstream_ip
 
-# Clean resulting event
+  # Clean resulting event
   - remove:
       tag: remove_json_conf
       field:

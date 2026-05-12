@@ -2,6 +2,7 @@
 description: Pipeline for parsing Cloudflare Access Request logs.
 processors:
   - set:
+      tag: set_ecs_version_b777da29
       field: ecs.version
       value: '9.3.0'
   - rename:
@@ -18,20 +19,24 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
       value: [network]
   - set:
+      tag: set_event_type_24c7243c
       field: event.type
       value: [access]
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
-## AWS S3 input does _id Based Deduplication and generates "_id" by default.
-## When "Data Deduplication" is not enabled, this field must be removed.
-## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
   - remove:
       field: _id
       tag: remove_id_based_deduplication
@@ -40,7 +45,7 @@ processors:
         must be removed.
       if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
       ignore_missing: true
-# ECS fields
+  # ECS fields
   - script:
       lang: painless
       tag: painless_created_at_to_milli
@@ -63,6 +68,7 @@ processors:
         }
         catch (Exception e) {}
   - date:
+      tag: date_json_CreatedAt_71066ccc
       field: json.CreatedAt
       if: ctx.json?.CreatedAt != null && ctx.json.CreatedAt != ''
       formats:
@@ -72,79 +78,98 @@ processors:
       timezone: UTC
       on_failure:
       - append:
+          tag: append_error_message_d9aeb333
           field: error.message
           value: "{{{_ingest.on_failure_message}}}"
   - set:
+      tag: set_cloudflare_logpush_access_request_timestamp_7b8f00af
       field: cloudflare_logpush.access_request.timestamp
       copy_from: "@timestamp"
   - rename:
+      tag: rename_json_Action_to_cloudflare_logpush_access_request_action_cd9b83c4
       field: json.Action
       target_field: cloudflare_logpush.access_request.action
       ignore_missing: true
   - set:
+      tag: set_event_action_3b69f4cf
       field: event.action
       copy_from: cloudflare_logpush.access_request.action
       ignore_empty_value: true
   - rename:
+      tag: rename_json_Allowed_to_cloudflare_logpush_access_request_allowed_333c5906
       field: json.Allowed
       target_field: cloudflare_logpush.access_request.allowed
       ignore_missing: true
-# Enrich event.type based on the allowed field
+  # Enrich event.type based on the allowed field
   - append:
+      tag: append_event_type_88337741
       field: event.type
       value: allowed
       allow_duplicates: false
       if: ctx.cloudflare_logpush?.access_request?.allowed != null && ctx.cloudflare_logpush?.access_request?.allowed == true
   - append:
+      tag: append_event_type_078c13d5
       field: event.type
       value: denied
       allow_duplicates: false
       if: ctx.cloudflare_logpush?.access_request?.allowed != null && ctx.cloudflare_logpush?.access_request?.allowed == false
   - rename:
+      tag: rename_json_AppDomain_to_cloudflare_logpush_access_request_app_domain_1f56d686
       field: json.AppDomain
       target_field: cloudflare_logpush.access_request.app.domain
       ignore_missing: true
   - set:
+      tag: set_url_domain_7cb52535
       field: url.domain
       copy_from: cloudflare_logpush.access_request.app.domain
       ignore_empty_value: true
   - rename:
+      tag: rename_json_AppUUID_to_cloudflare_logpush_access_request_app_uuid_d39a6a6e
       field: json.AppUUID
       target_field: cloudflare_logpush.access_request.app.uuid
       ignore_missing: true
   - rename:
+      tag: rename_json_Connection_to_cloudflare_logpush_access_request_connection_c6197c9c
       field: json.Connection
       target_field: cloudflare_logpush.access_request.connection
       ignore_missing: true
   - rename:
+      tag: rename_json_Country_to_cloudflare_logpush_access_request_country_4a1942ee
       field: json.Country
       target_field: cloudflare_logpush.access_request.country
       ignore_missing: true
   - set:
+      tag: set_client_geo_country_name_cc252be1
       field: client.geo.country_name
       copy_from: cloudflare_logpush.access_request.country
       ignore_empty_value: true
   - rename:
+      tag: rename_json_Email_to_cloudflare_logpush_access_request_user_email_8368fd05
       field: json.Email
       target_field: cloudflare_logpush.access_request.user.email
       ignore_missing: true
   - set:
+      tag: set_user_email_777a8c8b
       field: user.email
       copy_from: cloudflare_logpush.access_request.user.email
       ignore_empty_value: true
   - rename:
+      tag: rename_json_IPAddress_to_cloudflare_logpush_access_request_client_ip_37faff3b
       field: json.IPAddress
       target_field: cloudflare_logpush.access_request.client.ip
       ignore_missing: true
   - set:
+      tag: set_client_ip_fea56e55
       field: client.ip
       copy_from: cloudflare_logpush.access_request.client.ip
       ignore_empty_value: true
-# Geo enrichment
+  # Geo enrichment
   - geoip:
+      tag: geoip_client_ip_to_client_geo_92da0c99
       field: client.ip
       target_field: client.geo
   - geoip:
+      tag: geoip_client_ip_to_client_as_f17fb2b3
       database_file: GeoLite2-ASN.mmdb
       field: client.ip
       target_field: client.as
@@ -153,62 +178,76 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_client_as_asn_to_client_as_number_a6e30d01
       field: client.as.asn
       target_field: client.as.number
       ignore_missing: true
   - rename:
+      tag: rename_client_as_organization_name_to_client_as_organization_name_817a526f
       field: client.as.organization_name
       target_field: client.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_json_PurposeJustificationPrompt_to_cloudflare_logpush_access_request_request_prompt_4c2a8f1f
       field: json.PurposeJustificationPrompt
       target_field: cloudflare_logpush.access_request.request.prompt
       ignore_missing: true
   - rename:
+      tag: rename_json_PurposeJustificationResponse_to_cloudflare_logpush_access_request_request_response_634724ab
       field: json.PurposeJustificationResponse
       target_field: cloudflare_logpush.access_request.request.response
       ignore_missing: true
   - rename:
+      tag: rename_json_RayID_to_cloudflare_logpush_access_request_ray_id_c5de5bdc
       field: json.RayID
       target_field: cloudflare_logpush.access_request.ray.id
       ignore_missing: true
   - set:
+      tag: set_event_id_dcd710c3
       field: event.id
       copy_from: cloudflare_logpush.access_request.ray.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_TemporaryAccessApprovers_to_cloudflare_logpush_access_request_temp_access_approvers_018ad516
       field: json.TemporaryAccessApprovers
       target_field: cloudflare_logpush.access_request.temp_access.approvers
       ignore_missing: true
   - rename:
+      tag: rename_json_TemporaryAccessDuration_to_cloudflare_logpush_access_request_temp_access_duration_f8473a8a
       field: json.TemporaryAccessDuration
       target_field: cloudflare_logpush.access_request.temp_access.duration
       ignore_missing: true
   - rename:
+      tag: rename_json_UserUID_to_cloudflare_logpush_access_request_user_id_dde20323
       field: json.UserUID
       target_field: cloudflare_logpush.access_request.user.id
       ignore_missing: true
   - set:
+      tag: set_user_id_1cba3d65
       field: user.id
       copy_from: cloudflare_logpush.access_request.user.id
       ignore_empty_value: true
-# Create related fields
+  # Create related fields
   - append:
+      tag: append_related_ip_3726c45d
       field: related.ip
       value: "{{{client.ip}}}"
       if: ctx.client?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_7f407fef
       field: related.user
       value: "{{{user.id}}}"
       if: ctx.user?.id != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_34fcf415
       field: related.user
       value: "{{{user.email}}}"
       if: ctx.user?.email != null
       allow_duplicates: false
   - foreach:
+      tag: foreach_cloudflare_logpush_access_request_temp_access_approvers_eb3fbf32
       field: cloudflare_logpush.access_request.temp_access.approvers
       processor:
         append:
@@ -223,6 +262,7 @@ processors:
         - _conf
       ignore_missing: true
   - remove:
+      tag: remove_66238882
       field:
         - cloudflare_logpush.access_request.timestamp
         - cloudflare_logpush.access_request.action
@@ -237,6 +277,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |

@@ -2,6 +2,7 @@
 description: Pipeline for parsing Cloudflare CASB Findings logs.
 processors:
   - set:
+      tag: set_ecs_version_b777da29
       field: ecs.version
       value: '9.3.0'
   - rename:
@@ -18,20 +19,24 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
       value: [network]
   - set:
+      tag: set_event_type_24c7243c
       field: event.type
       value: [access]
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
-## AWS S3 input does _id Based Deduplication and generates "_id" by default.
-## When "Data Deduplication" is not enabled, this field must be removed.
-## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
   - remove:
       field: _id
       tag: remove_id_based_deduplication
@@ -62,6 +67,7 @@ processors:
         }
         catch (Exception e) {}
   - date:
+      tag: date_json_DetectedTimestamp_ea878f55
       field: json.DetectedTimestamp
       if: ctx.json?.DetectedTimestamp != null && ctx.json.DetectedTimestamp != ''
       formats:
@@ -71,81 +77,100 @@ processors:
       timezone: UTC
       on_failure:
       - append:
+          tag: append_error_message_60a0a2fe
           field: error.message
           value: "{{{_ingest.on_failure_message}}}"
   - set:
+      tag: set_cloudflare_logpush_casb_timestamp_e42a92e8
       field: cloudflare_logpush.casb.timestamp
       copy_from: "@timestamp"
   - rename:
+      tag: rename_json_AssetDisplayName_to_cloudflare_logpush_casb_asset_name_63f9ef91
       field: json.AssetDisplayName
       target_field: cloudflare_logpush.casb.asset.name
       ignore_missing: true
   - rename:
+      tag: rename_json_AssetExternalID_to_cloudflare_logpush_casb_asset_id_efa6dd3c
       field: json.AssetExternalID
       target_field: cloudflare_logpush.casb.asset.id
       ignore_missing: true
   - rename:
+      tag: rename_json_AssetLink_to_cloudflare_logpush_casb_asset_url_cf671294
       field: json.AssetLink
       target_field: cloudflare_logpush.casb.asset.url
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_cloudflare_logpush_casb_asset_url_to_url_38a3e7b3
       field: cloudflare_logpush.casb.asset.url
       target_field: url
       if: ctx.cloudflare_logpush?.casb?.asset?.url != null
   - rename:
+      tag: rename_json_AssetMetadata_to_cloudflare_logpush_casb_asset_metadata_b65bc3fd
       field: json.AssetMetadata
       target_field: cloudflare_logpush.casb.asset.metadata
       ignore_missing: true
   - rename:
+      tag: rename_json_FindingTypeDisplayName_to_cloudflare_logpush_casb_finding_type_name_5434146f
       field: json.FindingTypeDisplayName
       target_field: cloudflare_logpush.casb.finding.type.name
       ignore_missing: true
   - rename:
+      tag: rename_json_FindingTypeID_to_cloudflare_logpush_casb_finding_type_id_1de37d4d
       field: json.FindingTypeID
       target_field: cloudflare_logpush.casb.finding.type.id
       ignore_missing: true
   - rename:
+      tag: rename_json_FindingTypeSeverity_to_cloudflare_logpush_casb_finding_type_severity_94779089
       field: json.FindingTypeSeverity
       target_field: cloudflare_logpush.casb.finding.type.severity
       ignore_missing: true
-# Set event.severity based on the incoming severity value ("low", "medium", "high", "critical")
+  # Set event.severity based on the incoming severity value ("low", "medium", "high", "critical")
   - set:
+      tag: set_event_severity_114ed469
       field: event.severity
       value: 1
       if: ctx.cloudflare_logpush?.casb?.finding?.type?.severity == "Low"
   - set:
+      tag: set_event_severity_a8bcf8b1
       field: event.severity
       value: 2
       if: ctx.cloudflare_logpush?.casb?.finding?.type?.severity == "Medium"
   - set:
+      tag: set_event_severity_49e96e4b
       field: event.severity
       value: 3
       if: ctx.cloudflare_logpush?.casb?.finding?.type?.severity == "High"
   - set:
+      tag: set_event_severity_8f2d0035
       field: event.severity
       value: 4
       if: ctx.cloudflare_logpush?.casb?.finding?.type?.severity == "Critical"
   - rename:
+      tag: rename_json_InstanceID_to_cloudflare_logpush_casb_finding_id_ecd3a70b
       field: json.InstanceID
       target_field: cloudflare_logpush.casb.finding.id
       ignore_missing: true
   - set:
+      tag: set_event_id_e9188c13
       field: event.id
       copy_from: cloudflare_logpush.casb.finding.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_IntegrationDisplayName_to_cloudflare_logpush_casb_integration_name_ad60962d
       field: json.IntegrationDisplayName
       target_field: cloudflare_logpush.casb.integration.name
       ignore_missing: true
   - rename:
+      tag: rename_json_IntegrationID_to_cloudflare_logpush_casb_integration_id_4913e059
       field: json.IntegrationID
       target_field: cloudflare_logpush.casb.integration.id
       ignore_missing: true
   - rename:
+      tag: rename_json_IntegrationPolicyVendor_to_cloudflare_logpush_casb_integration_policy_vendor_48bcfb2c
       field: json.IntegrationPolicyVendor
       target_field: cloudflare_logpush.casb.integration.policy_vendor
       ignore_missing: true
-# Clean event
+  # Clean event
   - remove:
       tag: remove_json_conf
       field:
@@ -153,6 +178,7 @@ processors:
         - _conf
       ignore_missing: true
   - remove:
+      tag: remove_08601542
       field:
         - cloudflare_logpush.casb.timestamp
         - cloudflare_logpush.casb.asset.url
@@ -162,6 +188,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |

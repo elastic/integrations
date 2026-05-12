@@ -2,6 +2,7 @@
 description: Pipeline for parsing Cloudflare DNS logs.
 processors:
   - set:
+      tag: set_ecs_version_b777da29
       field: ecs.version
       value: '9.3.0'
   - rename:
@@ -18,21 +19,25 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
       value: [network]
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
-## AWS S3 input does _id Based Deduplication and generates "_id" by default.
-## When "Data Deduplication" is not enabled, this field must be removed.
-## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
   - remove:
       field: _id
       tag: remove_id_based_deduplication
@@ -63,6 +68,7 @@ processors:
         }
         catch (Exception e) {}
   - date:
+      tag: date_json_Timestamp_772fbe7f
       field: json.Timestamp
       if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
       formats:
@@ -72,13 +78,16 @@ processors:
       timezone: UTC
       on_failure:
       - append:
+          tag: append_error_message_2e342a9c
           field: error.message
           value: "{{{_ingest.on_failure_message}}}"
   - set:
+      tag: set_cloudflare_logpush_dns_timestamp_9e5e1fac
       field: cloudflare_logpush.dns.timestamp
       copy_from: '@timestamp'
       ignore_empty_value: true
   - convert:
+      tag: convert_json_SourceIP_to_cloudflare_logpush_dns_source_ip_75350b07
       field: json.SourceIP
       target_field: cloudflare_logpush.dns.source.ip
       if: ctx.json?.SourceIP != ''
@@ -86,21 +95,26 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3471a5da
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_source_ip_a6b54f72
       field: source.ip
       copy_from: cloudflare_logpush.dns.source.ip
       ignore_empty_value: true
   - rename:
+      tag: rename_json_QueryName_to_cloudflare_logpush_dns_query_name_c1af2645
       field: json.QueryName
       target_field: cloudflare_logpush.dns.query.name
       ignore_missing: true
   - set:
+      tag: set_dns_question_name_2b839091
       field: dns.question.name
       copy_from: cloudflare_logpush.dns.query.name
       ignore_empty_value: true
   - convert:
+      tag: convert_json_QueryType_to_cloudflare_logpush_dns_query_type_338b0b66
       field: json.QueryType
       target_field: cloudflare_logpush.dns.query.type
       if: ctx.json?.QueryType != ''
@@ -108,13 +122,16 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_bf7aa4b9
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_ColoCode_to_cloudflare_logpush_dns_colo_code_81807dd5
       field: json.ColoCode
       target_field: cloudflare_logpush.dns.colo.code
       ignore_missing: true
   - convert:
+      tag: convert_json_EDNSSubnet_to_cloudflare_logpush_dns_edns_subnet_64443394
       field: json.EDNSSubnet
       target_field: cloudflare_logpush.dns.edns.subnet
       if: ctx.json?.EDNSSubnet != ''
@@ -122,9 +139,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_7eabd1ad
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_EDNSSubnetLength_to_cloudflare_logpush_dns_edns_subnet_length_30aeafd8
       field: json.EDNSSubnetLength
       target_field: cloudflare_logpush.dns.edns.subnet_length
       if: ctx.json?.EDNSSubnetLength != ''
@@ -132,13 +151,16 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_77bbf26b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_ResponseCached_to_cloudflare_logpush_dns_response_cached_65a351a9
       field: json.ResponseCached
       target_field: cloudflare_logpush.dns.response.cached
       ignore_missing: true
   - convert:
+      tag: convert_json_ResponseCode_to_cloudflare_logpush_dns_response_code_0e3a9a64
       field: json.ResponseCode
       target_field: cloudflare_logpush.dns.response.code
       if: ctx.json?.ResponseCode != ''
@@ -146,21 +168,25 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_708e10f1
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_hosts_d7e930d8
       field: related.hosts
       value: '{{{cloudflare_logpush.dns.query.name}}}'
       if: ctx.cloudflare_logpush?.dns?.query?.name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_30d15214
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_c1edff72
       field: related.ip
       value: '{{{cloudflare_logpush.dns.edns.subnet}}}'
       if: ctx.cloudflare_logpush?.dns?.edns?.subnet != null
@@ -173,6 +199,7 @@ processors:
         - _conf
       ignore_missing: true
   - remove:
+      tag: remove_8d04016b
       field:
         - cloudflare_logpush.dns.timestamp
         - cloudflare_logpush.dns.query.name
@@ -181,6 +208,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+        tag: script_a3eb5add
         description: Drops null/empty values recursively.
         lang: painless
         source: |

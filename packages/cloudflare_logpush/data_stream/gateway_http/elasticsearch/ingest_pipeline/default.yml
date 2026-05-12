@@ -2,6 +2,7 @@
 description: Pipeline for parsing Cloudflare Gateway HTTP logs.
 processors:
   - set:
+      tag: set_ecs_version_b777da29
       field: ecs.version
       value: '9.3.0'
   - rename:
@@ -18,35 +19,42 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
       value: [network]
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - append:
+      tag: append_event_type_f178ce9b
       field: event.type
       value: allowed
       allow_duplicates: false
       if: ctx.json?.Action != '' && ctx.json?.Action == 'allow'
   - append:
+      tag: append_event_type_0e4bad26
       field: event.type
       value: allowed
       allow_duplicates: false
       if: ctx.json?.Action != '' && ctx.json?.Action == 'bypass'
   - append:
+      tag: append_event_type_267507e8
       field: event.type
       value: denied
       allow_duplicates: false
       if: ctx.json?.Action != '' && ctx.json?.Action == 'block'
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
-## AWS S3 input does _id Based Deduplication and generates "_id" by default.
-## When "Data Deduplication" is not enabled, this field must be removed.
-## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
   - remove:
       field: _id
       tag: remove_id_based_deduplication
@@ -55,7 +63,7 @@ processors:
         must be removed.
       if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
       ignore_missing: true
-# ECS fields
+  # ECS fields
   - script:
       lang: painless
       tag: painless_datetime_to_milli
@@ -78,6 +86,7 @@ processors:
         }
         catch (Exception e) {}
   - date:
+      tag: date_json_Datetime_5886cebc
       field: json.Datetime
       if: ctx.json?.Datetime != null && ctx.json.Datetime != ''
       formats:
@@ -87,49 +96,61 @@ processors:
       timezone: UTC
       on_failure:
       - append:
+          tag: append_error_message_da98a171
           field: error.message
           value: "{{{_ingest.on_failure_message}}}"
   - set:
+      tag: set_cloudflare_logpush_gateway_http_timestamp_81b84a1e
       field: cloudflare_logpush.gateway_http.timestamp
       copy_from: "@timestamp"
   - rename:
+      tag: rename_json_Action_to_cloudflare_logpush_gateway_http_action_e2c0d6b7
       field: json.Action
       target_field: cloudflare_logpush.gateway_http.action
       ignore_missing: true
   - set:
+      tag: set_event_action_d51e882e
       field: event.action
       copy_from: cloudflare_logpush.gateway_http.action
       ignore_empty_value: true
   - rename:
+      tag: rename_json_DeviceID_to_cloudflare_logpush_gateway_http_host_id_65ac8bc9
       field: json.DeviceID
       target_field: cloudflare_logpush.gateway_http.host.id
       ignore_missing: true
   - set:
+      tag: set_host_id_99855bb0
       field: host.id
       copy_from: cloudflare_logpush.gateway_http.host.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_DeviceName_to_cloudflare_logpush_gateway_http_host_name_84c5dcb9
       field: json.DeviceName
       target_field: cloudflare_logpush.gateway_http.host.name
       ignore_missing: true
   - set:
+      tag: set_host_name_dd86bf58
       field: host.name
       copy_from: cloudflare_logpush.gateway_http.host.name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_DestinationIP_to_cloudflare_logpush_gateway_http_destination_ip_0b9cc7a3
       field: json.DestinationIP
       target_field: cloudflare_logpush.gateway_http.destination.ip
       ignore_missing: true
   - set:
+      tag: set_destination_ip_837c9892
       field: destination.ip
       copy_from: cloudflare_logpush.gateway_http.destination.ip
       ignore_empty_value: true
-# Geo enrichment (destination IP)
+  # Geo enrichment (destination IP)
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_ab5e2968
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -138,67 +159,83 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_json_DestinationPort_to_cloudflare_logpush_gateway_http_destination_port_e4f72c27
       field: json.DestinationPort
       target_field: cloudflare_logpush.gateway_http.destination.port
       ignore_missing: true
   - set:
+      tag: set_destination_port_f3bb2b4e
       field: destination.port
       copy_from: cloudflare_logpush.gateway_http.destination.port
       ignore_empty_value: true
   - rename:
+      tag: rename_json_HTTPMethod_to_cloudflare_logpush_gateway_http_request_method_6172f61c
       field: json.HTTPMethod
       target_field: cloudflare_logpush.gateway_http.request.method
       ignore_missing: true
   - set:
+      tag: set_http_request_method_69168ea6
       field: http.request.method
       copy_from: cloudflare_logpush.gateway_http.request.method
       ignore_empty_value: true
   - rename:
+      tag: rename_json_HTTPStatusCode_to_cloudflare_logpush_gateway_http_response_status_code_534c51bf
       field: json.HTTPStatusCode
       target_field: cloudflare_logpush.gateway_http.response.status_code
       ignore_missing: true
   - set:
+      tag: set_http_response_status_code_63af1e22
       field: http.response.status_code
       copy_from: cloudflare_logpush.gateway_http.response.status_code
       ignore_empty_value: true
   - rename:
+      tag: rename_json_HTTPVersion_to_cloudflare_logpush_gateway_http_request_version_c7ca5f2e
       field: json.HTTPVersion
       target_field: cloudflare_logpush.gateway_http.request.version
       ignore_missing: true
   - set:
+      tag: set_http_version_2a76bccd
       field: http.version
       copy_from: cloudflare_logpush.gateway_http.request.version
       ignore_empty_value: true
   - rename:
+      tag: rename_json_Referer_to_cloudflare_logpush_gateway_http_request_referrer_9148694c
       field: json.Referer
       target_field: cloudflare_logpush.gateway_http.request.referrer
       ignore_missing: true
   - set:
+      tag: set_http_request_referrer_e0995d6e
       field: http.request.referrer
       copy_from: cloudflare_logpush.gateway_http.request.referrer
       ignore_empty_value: true
   - rename:
+      tag: rename_json_SourceIP_to_cloudflare_logpush_gateway_http_source_ip_00bbb849
       field: json.SourceIP
       target_field: cloudflare_logpush.gateway_http.source.ip
       ignore_missing: true
   - set:
+      tag: set_source_ip_2da8b268
       field: source.ip
       copy_from: cloudflare_logpush.gateway_http.source.ip
       ignore_empty_value: true
-# Geo enrichment (source IP)
+  # Geo enrichment (source IP)
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -207,247 +244,306 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_json_SourcePort_to_cloudflare_logpush_gateway_http_source_port_28aa0759
       field: json.SourcePort
       target_field: cloudflare_logpush.gateway_http.source.port
       ignore_missing: true
   - set:
+      tag: set_source_port_0321a1a0
       field: source.port
       copy_from: cloudflare_logpush.gateway_http.source.port
       ignore_empty_value: true
   - rename:
+      tag: rename_json_URL_to_cloudflare_logpush_gateway_http_url_6b9de1e1
       field: json.URL
       target_field: cloudflare_logpush.gateway_http.url
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_cloudflare_logpush_gateway_http_url_to_url_a1cdd978
       field: cloudflare_logpush.gateway_http.url
       target_field: url
       if: ctx.cloudflare_logpush?.gateway_http?.url != null
   - rename:
+      tag: rename_json_UserAgent_to_cloudflare_logpush_gateway_http_user_agent_a8bd2af6
       field: json.UserAgent
       target_field: cloudflare_logpush.gateway_http.user_agent
       ignore_missing: true
   - set:
+      tag: set_user_agent_original_55a5449d
       field: user_agent.original
       copy_from: cloudflare_logpush.gateway_http.user_agent
       ignore_empty_value: true
   - rename:
+      tag: rename_json_UserID_to_cloudflare_logpush_gateway_http_user_id_651716a9
       field: json.UserID
       target_field: cloudflare_logpush.gateway_http.user.id
       ignore_missing: true
   - set:
+      tag: set_user_id_b987eb50
       field: user.id
       copy_from: cloudflare_logpush.gateway_http.user.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_Email_to_cloudflare_logpush_gateway_http_user_email_75bd2046
       field: json.Email
       target_field: cloudflare_logpush.gateway_http.user.email
       ignore_missing: true
   - set:
+      tag: set_user_email_515524fe
       field: user.email
       copy_from: cloudflare_logpush.gateway_http.user.email
       ignore_empty_value: true
-# Custom fields
+  # Custom fields
   - rename:
+      tag: rename_json_AccountID_to_cloudflare_logpush_gateway_http_account_id_96473be8
       field: json.AccountID
       target_field: cloudflare_logpush.gateway_http.account_id
       ignore_missing: true
   - rename:
+      tag: rename_json_ApplicationIDs_to_cloudflare_logpush_gateway_http_application_ids_436f1ac3
       field: json.ApplicationIDs
       target_field: cloudflare_logpush.gateway_http.application.ids
       ignore_missing: true
   - rename:
+      tag: rename_json_ApplicationNames_to_cloudflare_logpush_gateway_http_application_names_f73b8713
       field: json.ApplicationNames
       target_field: cloudflare_logpush.gateway_http.application.names
       ignore_missing: true
   - rename:
+      tag: rename_json_BlockedFileHash_to_cloudflare_logpush_gateway_http_blocked_file_hash_10149780
       field: json.BlockedFileHash
       target_field: cloudflare_logpush.gateway_http.blocked_file.hash
       ignore_missing: true
   - rename:
+      tag: rename_json_BlockedFileName_to_cloudflare_logpush_gateway_http_blocked_file_name_92a883de
       field: json.BlockedFileName
       target_field: cloudflare_logpush.gateway_http.blocked_file.name
       ignore_missing: true
   - rename:
+      tag: rename_json_BlockedFileReason_to_cloudflare_logpush_gateway_http_blocked_file_reason_d2532038
       field: json.BlockedFileReason
       target_field: cloudflare_logpush.gateway_http.blocked_file.reason
       ignore_missing: true
   - rename:
+      tag: rename_json_BlockedFileSize_to_cloudflare_logpush_gateway_http_blocked_file_size_cc2cc2ca
       field: json.BlockedFileSize
       target_field: cloudflare_logpush.gateway_http.blocked_file.size
       ignore_missing: true
   - rename:
+      tag: rename_json_BlockedFileType_to_cloudflare_logpush_gateway_http_blocked_file_type_813e4450
       field: json.BlockedFileType
       target_field: cloudflare_logpush.gateway_http.blocked_file.type
       ignore_missing: true
   - rename:
+      tag: rename_json_CategoryIDs_to_cloudflare_logpush_gateway_http_category_ids_3d6fd593
       field: json.CategoryIDs
       target_field: cloudflare_logpush.gateway_http.category.ids
       ignore_missing: true
   - rename:
+      tag: rename_json_CategoryNames_to_cloudflare_logpush_gateway_http_category_names_40f1817b
       field: json.CategoryNames
       target_field: cloudflare_logpush.gateway_http.category.names
       ignore_missing: true
   - rename:
+      tag: rename_json_DestinationIPContinentCode_to_cloudflare_logpush_gateway_http_destination_ip_continent_code_9fdde7b1
       field: json.DestinationIPContinentCode
       target_field: cloudflare_logpush.gateway_http.destination_ip.continent_code
       ignore_missing: true
   - rename:
+      tag: rename_json_DestinationIPCountryCode_to_cloudflare_logpush_gateway_http_destination_ip_country_code_4de8d4c5
       field: json.DestinationIPCountryCode
       target_field: cloudflare_logpush.gateway_http.destination_ip.country_code
       ignore_missing: true
   - rename:
+      tag: rename_json_DownloadedFileNames_to_cloudflare_logpush_gateway_http_downloaded_files_0a00963d
       field: json.DownloadedFileNames
       target_field: cloudflare_logpush.gateway_http.downloaded_files
       ignore_missing: true
   - rename:
+      tag: rename_json_DownloadMatchedDlpProfileEntries_to_cloudflare_logpush_gateway_http_download_matched_dlp_profile_entries_849ef096
       field: json.DownloadMatchedDlpProfileEntries
       target_field: cloudflare_logpush.gateway_http.download_matched_dlp.profile_entries
       ignore_missing: true
   - rename:
+      tag: rename_json_DownloadMatchedDlpProfiles_to_cloudflare_logpush_gateway_http_download_matched_dlp_profiles_634a15d7
       field: json.DownloadMatchedDlpProfiles
       target_field: cloudflare_logpush.gateway_http.download_matched_dlp.profiles
       ignore_missing: true
   - rename:
+      tag: rename_json_FileInfo_to_cloudflare_logpush_gateway_http_file_info_0862bd42
       field: json.FileInfo
       target_field: cloudflare_logpush.gateway_http.file_info
       ignore_missing: true
   - rename:
+      tag: rename_json_ForensicCopyStatus_to_cloudflare_logpush_gateway_http_forensic_copy_status_346706cb
       field: json.ForensicCopyStatus
       target_field: cloudflare_logpush.gateway_http.forensic_copy_status
       ignore_missing: true
   - rename:
+      tag: rename_json_HTTPHost_to_cloudflare_logpush_gateway_http_request_host_bc8a245c
       field: json.HTTPHost
       target_field: cloudflare_logpush.gateway_http.request.host
       ignore_missing: true
   - rename:
+      tag: rename_json_IsIsolated_to_cloudflare_logpush_gateway_http_isolated_74fad537
       field: json.IsIsolated
       target_field: cloudflare_logpush.gateway_http.isolated
       ignore_missing: true
   - rename:
+      tag: rename_json_PolicyID_to_cloudflare_logpush_gateway_http_policy_id_24ccffdd
       field: json.PolicyID
       target_field: cloudflare_logpush.gateway_http.policy.id
       ignore_missing: true
   - rename:
+      tag: rename_json_PolicyName_to_cloudflare_logpush_gateway_http_policy_name_16ffb46d
       field: json.PolicyName
       target_field: cloudflare_logpush.gateway_http.policy.name
       ignore_missing: true
   - rename:
+      tag: rename_json_PrivateAppAUD_to_cloudflare_logpush_gateway_http_private_app_aud_4b5ea161
       field: json.PrivateAppAUD
       target_field: cloudflare_logpush.gateway_http.private_app_aud
       ignore_missing: true
   - rename:
+      tag: rename_json_ProxyEndpoint_to_cloudflare_logpush_gateway_http_proxy_endpoint_5f4e91b6
       field: json.ProxyEndpoint
       target_field: cloudflare_logpush.gateway_http.proxy_endpoint
       ignore_missing: true
   - convert:
+      tag: convert_json_Quarantined_to_cloudflare_logpush_gateway_http_quarantined_f31dfd9b
       field: json.Quarantined
       target_field: cloudflare_logpush.gateway_http.quarantined
       type: boolean
       ignore_missing: true
       on_failure:
       - append:
+          tag: append_error_message_9338ef24
           field: error.message
           value: "{{{_ingest.on_failure_message}}}"
   - rename:
+      tag: rename_json_RequestID_to_cloudflare_logpush_gateway_http_request_id_ad9f8c34
       field: json.RequestID
       target_field: cloudflare_logpush.gateway_http.request_id
       ignore_missing: true
   - rename:
+      tag: rename_json_SessionID_to_cloudflare_logpush_gateway_http_session_id_ed7f705a
       field: json.SessionID
       target_field: cloudflare_logpush.gateway_http.session_id
       ignore_missing: true
   - rename:
+      tag: rename_json_SourceInternalIP_to_cloudflare_logpush_gateway_http_source_internal_ip_4e2dfdec
       field: json.SourceInternalIP
       target_field: cloudflare_logpush.gateway_http.source.internal_ip
       ignore_missing: true
   - rename:
+      tag: rename_json_SourceIPContinentCode_to_cloudflare_logpush_gateway_http_source_ip_continent_code_28450e67
       field: json.SourceIPContinentCode
       target_field: cloudflare_logpush.gateway_http.source_ip.continent_code
       ignore_missing: true
   - rename:
+      tag: rename_json_SourceIPCountryCode_to_cloudflare_logpush_gateway_http_source_ip_country_code_548be907
       field: json.SourceIPCountryCode
       target_field: cloudflare_logpush.gateway_http.source_ip.country_code
       ignore_missing: true
   - rename:
+      tag: rename_json_UntrustedCertificateAction_to_cloudflare_logpush_gateway_http_untrusted_certificate_action_717d6185
       field: json.UntrustedCertificateAction
       target_field: cloudflare_logpush.gateway_http.untrusted_certificate_action
       ignore_missing: true
   - rename:
+      tag: rename_json_UploadMatchedDlpProfileEntries_to_cloudflare_logpush_gateway_http_upload_matched_dlp_profile_entries_24d0b066
       field: json.UploadMatchedDlpProfileEntries
       target_field: cloudflare_logpush.gateway_http.upload_matched_dlp.profile_entries
       ignore_missing: true
   - rename:
+      tag: rename_json_UploadMatchedDlpProfiles_to_cloudflare_logpush_gateway_http_upload_matched_dlp_profiles_eefa4a53
       field: json.UploadMatchedDlpProfiles
       target_field: cloudflare_logpush.gateway_http.upload_matched_dlp.profiles
       ignore_missing: true
   - rename:
+      tag: rename_json_UploadedFileNames_to_cloudflare_logpush_gateway_http_uploaded_files_7e0bf6c3
       field: json.UploadedFileNames
       target_field: cloudflare_logpush.gateway_http.uploaded_files
       ignore_missing: true
   - rename:
+      tag: rename_json_VirtualNetworkID_to_cloudflare_logpush_gateway_http_virtual_network_id_3d61e73a
       field: json.VirtualNetworkID
       target_field: cloudflare_logpush.gateway_http.virtual_network.id
       ignore_missing: true
   - rename:
+      tag: rename_json_VirtualNetworkName_to_cloudflare_logpush_gateway_http_virtual_network_name_b9ac8c6e
       field: json.VirtualNetworkName
       target_field: cloudflare_logpush.gateway_http.virtual_network.name
       ignore_missing: true
   - rename:
+      tag: rename_json_AppControlInfo_to_cloudflare_logpush_gateway_http_app_control_info_63f61099
       field: json.AppControlInfo
       target_field: cloudflare_logpush.gateway_http.app_control_info
       ignore_missing: true
   - rename:
+      tag: rename_json_ApplicationStatuses_to_cloudflare_logpush_gateway_http_application_statuses_336d5293
       field: json.ApplicationStatuses
       target_field: cloudflare_logpush.gateway_http.application.statuses
       ignore_missing: true
   - rename:
+      tag: rename_json_RedirectTargetURI_to_cloudflare_logpush_gateway_http_redirect_target_uri_0db7ee2d
       field: json.RedirectTargetURI
       target_field: cloudflare_logpush.gateway_http.redirect_target_uri
       ignore_missing: true
   - rename:
+      tag: rename_json_RegistrationID_to_cloudflare_logpush_gateway_http_registration_id_ec6607ec
       field: json.RegistrationID
       target_field: cloudflare_logpush.gateway_http.registration_id
       ignore_missing: true
-# Create related fields
+  # Create related fields
   - append:
+      tag: append_related_ip_8121c591
       field: related.ip
       value: "{{{source.ip}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_c1a6356b
       field: related.ip
       value: "{{{destination.ip}}}"
       if: ctx.destination?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_850e9c49
       field: related.ip
       value: "{{{cloudflare_logpush.gateway_http.source.internal_ip}}}"
       if: ctx.cloudflare_logpush?.gateway_http?.source?.internal_ip != null && ctx.cloudflare_logpush.gateway_http.source.internal_ip != ''
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_d1851e05
       field: related.hosts
       value: "{{{host.id}}}"
       if: ctx.host?.id != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_452ef445
       field: related.hosts
       value: "{{{host.name}}}"
       if: ctx.host?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_7f407fef
       field: related.user
       value: "{{{user.id}}}"
       if: ctx.user?.id != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_34fcf415
       field: related.user
       value: "{{{user.email}}}"
       if: ctx.user?.email != null
@@ -459,6 +555,7 @@ processors:
         - _conf
       ignore_missing: true
   - remove:
+      tag: remove_3a16012a
       field:
         - cloudflare_logpush.gateway_http.timestamp
         - cloudflare_logpush.gateway_http.action
@@ -480,6 +577,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_a3eb5add
       description: Drops null/empty values recursively.
       lang: painless
       source: |

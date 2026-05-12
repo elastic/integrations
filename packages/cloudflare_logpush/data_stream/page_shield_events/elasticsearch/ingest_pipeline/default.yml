@@ -2,6 +2,7 @@
 description: Pipeline for parsing Cloudflare Page Shield Event logs.
 processors:
   - set:
+      tag: set_ecs_version_b777da29
       field: ecs.version
       value: '9.3.0'
   - rename:
@@ -18,21 +19,25 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
       value: [network]
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
-## AWS S3 input does _id Based Deduplication and generates "_id" by default.
-## When "Data Deduplication" is not enabled, this field must be removed.
-## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
   - remove:
       field: _id
       tag: remove_id_based_deduplication
@@ -63,6 +68,7 @@ processors:
         }
         catch (Exception e) {}
   - date:
+      tag: date_json_Timestamp_a965763d
       field: json.Timestamp
       if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
       formats:
@@ -72,48 +78,59 @@ processors:
       timezone: UTC
       on_failure:
       - append:
+          tag: append_error_message_458edc7c
           field: error.message
           value: >-
             Processor '{{{ _ingest.on_failure_processor_type }}}'
             {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
             {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_cloudflare_logpush_page_shield_events_timestamp_15ff66de
       field: cloudflare_logpush.page_shield_events.timestamp
       copy_from: '@timestamp'
       ignore_empty_value: true
   - rename:
+      tag: rename_json_Action_to_cloudflare_logpush_page_shield_events_action_249c1317
       field: json.Action
       target_field: cloudflare_logpush.page_shield_events.action
       ignore_missing: true
   - set:
+      tag: set_event_action_b99711ae
       field: event.action
       copy_from: cloudflare_logpush.page_shield_events.action
       ignore_empty_value: true
   - lowercase:
+      tag: lowercase_event_action_9334b869
       field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_json_CSPDirective_to_cloudflare_logpush_page_shield_events_csp_directive_ec50c63e
       field: json.CSPDirective
       target_field: cloudflare_logpush.page_shield_events.csp_directive
       ignore_missing: true
   - rename:
+      tag: rename_json_Host_to_cloudflare_logpush_page_shield_events_host_664c8787
       field: json.Host
       target_field: cloudflare_logpush.page_shield_events.host
       ignore_missing: true
   - set:
+      tag: set_host_name_122ed077
       field: host.name
       copy_from: cloudflare_logpush.page_shield_events.host
       ignore_empty_value: true
   - append:
+      tag: append_related_hosts_555b812b
       field: related.hosts
       value: '{{{host.name}}}'
       if: ctx.host?.name != null && ctx.host.name != ''
       allow_duplicates: false
   - rename:
+      tag: rename_json_PageURL_to_cloudflare_logpush_page_shield_events_page_url_529399de
       field: json.PageURL
       target_field: cloudflare_logpush.page_shield_events.page_url
       ignore_missing: true
   - rename:
+      tag: rename_json_URL_to_cloudflare_logpush_page_shield_events_url_32905bc9
       field: json.URL
       target_field: cloudflare_logpush.page_shield_events.url
       ignore_missing: true
@@ -124,16 +141,19 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b6e9755f
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - rename:
+      tag: rename_json_PolicyID_to_cloudflare_logpush_page_shield_events_policy_id_8eed8fc8
       field: json.PolicyID
       target_field: cloudflare_logpush.page_shield_events.policy_id
       ignore_missing: true
   - rename:
+      tag: rename_json_ResourceType_to_cloudflare_logpush_page_shield_events_resource_type_085e4bce
       field: json.ResourceType
       target_field: cloudflare_logpush.page_shield_events.resource_type
       ignore_missing: true
@@ -145,16 +165,19 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_888a80d6
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - rename:
+      tag: rename_json_URLHost_to_cloudflare_logpush_page_shield_events_url_host_ed944944
       field: json.URLHost
       target_field: cloudflare_logpush.page_shield_events.url_host
       ignore_missing: true
   - set:
+      tag: set_url_domain_086e7313
       field: url.domain
       copy_from: cloudflare_logpush.page_shield_events.url_host
       ignore_empty_value: true
@@ -165,6 +188,7 @@ processors:
         - _conf
       ignore_missing: true
   - remove:
+      tag: remove_4c693a8d
       field:
         - cloudflare_logpush.page_shield_events.action
         - cloudflare_logpush.page_shield_events.host
@@ -174,6 +198,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+        tag: script_a3eb5add
         description: Drops null/empty values recursively.
         lang: painless
         source: |
@@ -196,6 +221,7 @@ processors:
       tag: set_pipeline_error_into_event_kind
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
