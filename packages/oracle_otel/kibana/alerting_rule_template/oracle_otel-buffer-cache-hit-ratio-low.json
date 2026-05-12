@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the Oracle buffer cache hit ratio falls below 90%. Below 90% indicates cache thrashing and disk-bound reads.",
     "name": "[Oracle OTel] Buffer cache hit ratio low",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 8,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "oracle_otel-overview"
+        },
+        {
+          "id": "oracle_otel-resource-capacity"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Oracle buffer cache hit ratio low\n\n### What fired\n`1 - physical_reads/logical_reads < 0.90` over the window.\n\n### Why it matters\nOracle's buffer cache absorbs most reads. A sub-90% hit ratio means many reads are going to disk \u2014 a significant performance regression and often a sizing problem.\n\n### Triage\n1. Check SGA sizing and automatic memory management settings.\n2. Inspect queries doing many physical reads.\n\n### Remediation\n- Increase SGA / buffer cache size.\n- Tune offending queries.\n\n### Tuning\n- 90% threshold; tune per environment.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-oracledbreceiver.otel-*\n// logical_reads and physical_reads are co-located in Reads TSDB group; INCREASE for counter deltas\n| WHERE oracledb.logical_reads IS NOT NULL\n        AND oracledb.physical_reads IS NOT NULL\n| STATS delta_physical = SUM(INCREASE(oracledb.physical_reads)),\n        delta_logical = SUM(INCREASE(oracledb.logical_reads))\n        BY oracledb.instance.name, host.name\n| WHERE delta_logical > 0\n// Hit ratio = 1 - (physical / logical); < 90% indicates buffer cache thrashing\n// Adjust threshold (e.g. 0.95 for 95%) to tune sensitivity\n| EVAL hit_ratio_pct = ROUND((1.0 - delta_physical / delta_logical) * 100.0, 1)\n| WHERE hit_ratio_pct < 90\n| SORT hit_ratio_pct ASC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,
