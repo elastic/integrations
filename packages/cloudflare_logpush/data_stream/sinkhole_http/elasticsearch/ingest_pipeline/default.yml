@@ -86,11 +86,19 @@ processors:
       tag: set_timestamp
 
 # Handle destination IP
-  - rename:
+  - convert:
       field: json.DestAddr
+      tag: convert_destaddr_to_ip
       target_field: cloudflare_logpush.sinkhole_http.destination.ip
+      type: ip
       ignore_missing: true
-      tag: rename_destination_ip
+      if: ctx.json?.DestAddr != ''
+      on_failure:
+        - remove:
+            field: json.DestAddr
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.ip
       copy_from: cloudflare_logpush.sinkhole_http.destination.ip
@@ -122,11 +130,19 @@ processors:
       tag: rename_destination_as_org
 
 # Handle source IP
-  - rename:
+  - convert:
       field: json.SrcAddr
+      tag: convert_srcaddr_to_ip
       target_field: cloudflare_logpush.sinkhole_http.source.ip
+      type: ip
       ignore_missing: true
-      tag: rename_source_ip
+      if: ctx.json?.SrcAddr != ''
+      on_failure:
+        - remove:
+            field: json.SrcAddr
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.sinkhole_http.source.ip
@@ -168,11 +184,18 @@ processors:
       copy_from: cloudflare_logpush.sinkhole_http.request.body.content
       ignore_empty_value: true
       tag: set_http_body
-  - rename:
+  - convert:
       field: json.BodyLength
+      tag: convert_bodylength_to_long
       target_field: cloudflare_logpush.sinkhole_http.request.body.bytes
+      type: long
       ignore_missing: true
-      tag: rename_http_body_bytes
+      on_failure:
+        - remove:
+            field: json.BodyLength
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: http.request.body.bytes
       copy_from: cloudflare_logpush.sinkhole_http.request.body.bytes

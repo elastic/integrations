@@ -348,12 +348,11 @@ processors:
       field: json.ClientTlsProtocol
       target_field: cloudflare_logpush.spectrum_event.client.tls.protocol
       ignore_missing: true
-  - grok:
-      if: ctx.cloudflare_logpush?.spectrum_event?.client?.tls?.protocol != 'none' && ctx.cloudflare_logpush?.spectrum_event?.client?.tls?.protocol != 'unknown'
+  - dissect:
       field: cloudflare_logpush.spectrum_event.client.tls.protocol
-      patterns:
-        - "^%{DATA:tls.version_protocol}v%{DATA:tls.version}$"
-      ignore_failure: true
+      pattern: '%{tls.version_protocol}v%{tls.version}'
+      ignore_missing: true
+      if: ctx.cloudflare_logpush?.spectrum_event?.client?.tls?.protocol != null && !['none', 'unknown'].contains(ctx.cloudflare_logpush.spectrum_event.client.tls.protocol)
   - lowercase:
       field: tls.version_protocol
       ignore_missing: true
@@ -365,10 +364,18 @@ processors:
       field: json.ColoCode
       target_field: cloudflare_logpush.spectrum_event.colo.code
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.IpFirewall
+      tag: convert_ipfirewall_to_boolean
       target_field: cloudflare_logpush.spectrum_event.ip_firewall
+      type: boolean
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.IpFirewall
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.OriginProto
       target_field: cloudflare_logpush.spectrum_event.origin.protocol

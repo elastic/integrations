@@ -86,11 +86,19 @@ processors:
       tag: set_timestamp
 
 # Handle source IP
-  - rename:
+  - convert:
       field: json.SourceIP
+      tag: convert_sourceip_to_ip
       target_field: cloudflare_logpush.dns_firewall.source.ip
+      type: ip
       ignore_missing: true
-      tag: rename_source_ip
+      if: ctx.json?.SourceIP != ''
+      on_failure:
+        - remove:
+            field: json.SourceIP
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.dns_firewall.source.ip
@@ -177,36 +185,79 @@ processors:
       target_field: cloudflare_logpush.dns_firewall.colo.code
       ignore_missing: true
       tag: rename_colo_code
-  - rename:
+  - convert:
       field: json.EDNSSubnet
+      tag: convert_ednssubnet_to_ip
       target_field: cloudflare_logpush.dns_firewall.edns.subnet
+      type: ip
       ignore_missing: true
-      tag: rename_edns_subnet
-  - rename:
+      if: ctx.json?.EDNSSubnet != ''
+      on_failure:
+        - remove:
+            field: json.EDNSSubnet
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.EDNSSubnetLength
+      tag: convert_ednssubnetlength_to_long
       target_field: cloudflare_logpush.dns_firewall.edns.subnet_length
+      type: long
       ignore_missing: true
-      tag: rename_edns_subnet_length
-  - rename:
+      on_failure:
+        - remove:
+            field: json.EDNSSubnetLength
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.QueryDO
+      tag: convert_querydo_to_boolean
       target_field: cloudflare_logpush.dns_firewall.question.dnssec_ok
+      type: boolean
       ignore_missing: true
-      tag: rename_question_do
-  - rename:
+      on_failure:
+        - remove:
+            field: json.QueryDO
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.QueryRD
+      tag: convert_queryrd_to_boolean
       target_field: cloudflare_logpush.dns_firewall.question.recursion_desired
+      type: boolean
       ignore_missing: true
-      tag: rename_question_recursion_desired
-  - rename:
+      on_failure:
+        - remove:
+            field: json.QueryRD
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.QuerySize
+      tag: convert_querysize_to_long
       target_field: cloudflare_logpush.dns_firewall.question.size
+      type: long
       ignore_missing: true
-      tag: rename_question_size
-  - rename:
+      on_failure:
+        - remove:
+            field: json.QuerySize
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.QueryTCP
+      tag: convert_querytcp_to_boolean
       target_field: cloudflare_logpush.dns_firewall.question.tcp
+      type: boolean
       ignore_missing: true
-      tag: rename_question_tcp
+      on_failure:
+        - remove:
+            field: json.QueryTCP
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: network.transport
       value: tcp
@@ -222,31 +273,60 @@ processors:
       target_field: cloudflare_logpush.dns_firewall.question.type
       ignore_missing: true
       tag: rename_question_type
-  - rename:
+  - convert:
       field: json.ResponseCached
+      tag: convert_responsecached_to_boolean
       target_field: cloudflare_logpush.dns_firewall.response.cached
+      type: boolean
       ignore_missing: true
-      tag: rename_dns_response_cached
+      on_failure:
+        - remove:
+            field: json.ResponseCached
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ResponseReason
       target_field: cloudflare_logpush.dns_firewall.response.reason
       ignore_missing: true
       tag: rename_dns_response_reason
-  - rename:
+  - convert:
       field: json.ResponseCachedStale
+      tag: convert_responsecachedstale_to_boolean
       target_field: cloudflare_logpush.dns_firewall.response.cached_stale
+      type: boolean
       ignore_missing: true
-      tag: rename_dns_response_cached_stale
-  - rename:
+      on_failure:
+        - remove:
+            field: json.ResponseCachedStale
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.UpstreamIP
+      tag: convert_upstreamip_to_ip
       target_field: cloudflare_logpush.dns_firewall.upstream.ip
+      type: ip
       ignore_missing: true
-      tag: rename_dns_upstream_ip
-  - rename:
+      if: ctx.json?.UpstreamIP != ''
+      on_failure:
+        - remove:
+            field: json.UpstreamIP
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.UpstreamResponseTimeMs
+      tag: convert_upstreamresponsetimems_to_long
       target_field: cloudflare_logpush.dns_firewall.upstream.response_time_ms
+      type: long
       ignore_missing: true
-      tag: rename_dns_upstream_response_time_ms
+      on_failure:
+        - remove:
+            field: json.UpstreamResponseTimeMs
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 # Create related fields
   - append:

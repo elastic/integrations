@@ -116,10 +116,19 @@ processors:
       field: host.name
       copy_from: cloudflare_logpush.gateway_http.host.name
       ignore_empty_value: true
-  - rename:
+  - convert:
       field: json.DestinationIP
+      tag: convert_destinationip_to_ip
       target_field: cloudflare_logpush.gateway_http.destination.ip
+      type: ip
       ignore_missing: true
+      if: ctx.json?.DestinationIP != ''
+      on_failure:
+        - remove:
+            field: json.DestinationIP
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.ip
       copy_from: cloudflare_logpush.gateway_http.destination.ip
@@ -145,10 +154,18 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.DestinationPort
+      tag: convert_destinationport_to_long
       target_field: cloudflare_logpush.gateway_http.destination.port
+      type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.DestinationPort
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.port
       copy_from: cloudflare_logpush.gateway_http.destination.port
@@ -161,10 +178,18 @@ processors:
       field: http.request.method
       copy_from: cloudflare_logpush.gateway_http.request.method
       ignore_empty_value: true
-  - rename:
+  - convert:
       field: json.HTTPStatusCode
+      tag: convert_httpstatuscode_to_long
       target_field: cloudflare_logpush.gateway_http.response.status_code
+      type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.HTTPStatusCode
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: http.response.status_code
       copy_from: cloudflare_logpush.gateway_http.response.status_code
@@ -185,10 +210,19 @@ processors:
       field: http.request.referrer
       copy_from: cloudflare_logpush.gateway_http.request.referrer
       ignore_empty_value: true
-  - rename:
+  - convert:
       field: json.SourceIP
+      tag: convert_sourceip_to_ip
       target_field: cloudflare_logpush.gateway_http.source.ip
+      type: ip
       ignore_missing: true
+      if: ctx.json?.SourceIP != ''
+      on_failure:
+        - remove:
+            field: json.SourceIP
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.gateway_http.source.ip
@@ -214,10 +248,18 @@ processors:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.SourcePort
+      tag: convert_sourceport_to_long
       target_field: cloudflare_logpush.gateway_http.source.port
+      type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.SourcePort
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.port
       copy_from: cloudflare_logpush.gateway_http.source.port
@@ -279,10 +321,18 @@ processors:
       field: json.BlockedFileReason
       target_field: cloudflare_logpush.gateway_http.blocked_file.reason
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.BlockedFileSize
+      tag: convert_blockedfilesize_to_long
       target_field: cloudflare_logpush.gateway_http.blocked_file.size
+      type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.BlockedFileSize
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.BlockedFileType
       target_field: cloudflare_logpush.gateway_http.blocked_file.type
@@ -327,10 +377,18 @@ processors:
       field: json.HTTPHost
       target_field: cloudflare_logpush.gateway_http.request.host
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.IsIsolated
+      tag: convert_isisolated_to_boolean
       target_field: cloudflare_logpush.gateway_http.isolated
+      type: boolean
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.IsIsolated
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.PolicyID
       target_field: cloudflare_logpush.gateway_http.policy.id
@@ -364,10 +422,19 @@ processors:
       field: json.SessionID
       target_field: cloudflare_logpush.gateway_http.session_id
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.SourceInternalIP
+      tag: convert_sourceinternalip_to_ip
       target_field: cloudflare_logpush.gateway_http.source.internal_ip
+      type: ip
       ignore_missing: true
+      if: ctx.json?.SourceInternalIP != ''
+      on_failure:
+        - remove:
+            field: json.SourceInternalIP
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.SourceIPContinentCode
       target_field: cloudflare_logpush.gateway_http.source_ip.continent_code
