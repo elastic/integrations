@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when any scheduler/worker jobs record heartbeat failures (`airflow.job_heartbeat_failure > 0`). Heartbeat failures indicate workers are dying unexpectedly or the metadata DB is unreachable.",
     "name": "[Airflow OTel] Scheduler job heartbeat failures",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -21,13 +22,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "airflow_otel-scheduler-capacity"
+        },
+        {
+          "id": "airflow_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Airflow job heartbeat failures\n\n### What fired\nThe counter `airflow.job_heartbeat_failure` increased during the evaluation window.\n\n### Why it matters\nAirflow uses heartbeats to detect live schedulers, workers, and DAG processors. Heartbeat failures signal that jobs are crashing, the metadata database is unreachable, or the host is unhealthy. Failed heartbeats lead to task zombies and missed runs.\n\n### Triage\n1. Scheduler & Capacity dashboard: confirm which component's heartbeats are failing.\n2. Check metadata DB health \u2014 heartbeats are DB writes.\n3. Look at host-level resources: CPU, memory, network on scheduler/worker nodes.\n4. Review scheduler logs around the failure timestamps.\n\n### Remediation\n- Stabilise the metadata DB (scale up, reduce contention).\n- Address host OOM / eviction issues on affected nodes.\n- Ensure clock skew is small; large skew triggers spurious heartbeat failures.\n\n### Tuning\n- Fires on any increase, intentionally. Heartbeat failures are always worth triaging.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.job_heartbeat_failure IS NOT NULL\n// Counter: sum heartbeat failures in the window\n| STATS failure_count = SUM(airflow.job_heartbeat_failure)\n| WHERE failure_count > 0"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,
