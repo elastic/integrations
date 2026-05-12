@@ -774,7 +774,7 @@ This is the `Event` dataset.
 | ocsf.device.hw_info.bios_date | The BIOS date. For example: 03/31/16. | keyword |
 | ocsf.device.hw_info.bios_manufacturer | The BIOS manufacturer. For example: LENOVO. | keyword |
 | ocsf.device.hw_info.bios_ver | The BIOS version. For example: LENOVO G5ETA2WW (2.62). | keyword |
-| ocsf.device.hw_info.chassis | The chassis type describes the system enclosure or physical form factor. Such as the following examples for Windows Windows Chassis Types. | keyword |
+| ocsf.device.hw_info.chassis | The chassis type describes the system enclosure or physical form factor. Such as the following examples for Windows Chassis Types. | keyword |
 | ocsf.device.hw_info.cpu_bits | The cpu architecture, the number of bits used for addressing in memory. For example: 32 or 64. | long |
 | ocsf.device.hw_info.cpu_cores | The number of processor cores in all installed processors. For Example: 42. | long |
 | ocsf.device.hw_info.cpu_count | The number of physical processors on a system. For example: 1. | long |
