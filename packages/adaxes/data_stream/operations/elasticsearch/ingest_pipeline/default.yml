@@ -170,6 +170,9 @@ processors:
   # display name exists in multiple OUs), and user.email.
   # Scheduled-task initiators ("Weekly - Mon 9.00") are left as-is in
   # adaxes.initiator.name and produce no user.* fields.
+  # Name uses `.+?` (not `[^(]+?`) so display names that contain parens
+  # — e.g. "Bob Smith (disabled) (bob@corp.com)" — still parse: the trailing
+  # `\)$` anchor forces the engine to latch onto the final email parens.
   - grok:
       tag: parse_initiator_user
       field: adaxes.initiator.name
@@ -177,8 +180,8 @@ processors:
       ignore_failure: true
       if: "ctx.adaxes?.initiator?.name != null && ctx.adaxes.initiator.name.contains('@')"
       patterns:
-        - '^(?<_tmp.iname>[^(]+?)\s*\((?<adaxes.initiator.sequence>\d+)\)\s*\((?<user.email>[^@\s]+@[^)]+)\)$'
-        - '^(?<_tmp.iname>[^(]+?)\s*\((?<user.email>[^@\s]+@[^)]+)\)$'
+        - '^(?<_tmp.iname>.+?)\s*\((?<adaxes.initiator.sequence>\d+)\)\s*\((?<user.email>[^@\s]+@[^)]+)\)$'
+        - '^(?<_tmp.iname>.+?)\s*\((?<user.email>[^@\s]+@[^)]+)\)$'
 
   - convert:
       tag: convert_initiator_sequence
