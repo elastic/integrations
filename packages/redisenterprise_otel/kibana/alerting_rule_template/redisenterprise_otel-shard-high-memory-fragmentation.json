@@ -1,40 +1,54 @@
 {
-    "id": "redisenterprise_otel-shard-high-memory-fragmentation",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Redis Enterprise OTel] Shard high memory fragmentation",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "redisenterprise"
-        ],
-        "schedule": {
-            "interval": "15m"
+  "id": "redisenterprise_otel-shard-high-memory-fragmentation",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when `redis_mem_fragmentation_ratio > 1.5` on shards > 10 MB. High fragmentation wastes memory.",
+    "name": "[Redis Enterprise OTel] Shard high memory fragmentation",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "redisenterprise"
+    ],
+    "schedule": {
+      "interval": "15m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "redisenterprise_otel-shard-diagnostics"
         },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE redis_mem_fragmentation_ratio IS NOT NULL\n    AND redis_used_memory IS NOT NULL\n| STATS\n    avg_frag = AVG(redis_mem_fragmentation_ratio),\n    avg_used = AVG(redis_used_memory)\n  BY redis, bdb, node, cluster\n// Only evaluate shards with meaningful memory usage (>10 MB)\n// Small shards naturally exhibit high fragmentation ratios\n| WHERE avg_used > 10485760\n// Alert when fragmentation ratio exceeds 1.5\n// ratio = RSS / used_memory; values >> 1.0 indicate wasted memory\n// Consider enabling active defragmentation or scheduling a restart\n    AND avg_frag > 1.5\n| SORT avg_frag DESC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 30,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "redis",
-            "termSize": 100
+        {
+          "id": "redisenterprise_otel-database-performance"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Redis Enterprise shard high memory fragmentation\n\n### What fired\nAverage fragmentation ratio > 1.5 on a shard with > 10 MB used.\n\n### Why it matters\nFragmentation ratio > 1.5 wastes memory. Chronic fragmentation may require a shard restart (memory compaction) to reclaim.\n\n### Triage\n1. Check shard growth and deletion patterns.\n\n### Remediation\n- Use `MEMORY PURGE` or restart the shard.\n\n### Tuning\n- 1.5 threshold; skip small shards.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE redis_mem_fragmentation_ratio IS NOT NULL\n    AND redis_used_memory IS NOT NULL\n| STATS\n    avg_frag = AVG(redis_mem_fragmentation_ratio),\n    avg_used = AVG(redis_used_memory)\n  BY redis, bdb, node, cluster\n// Only evaluate shards with meaningful memory usage (>10 MB)\n// Small shards naturally exhibit high fragmentation ratios\n| WHERE avg_used > 10485760\n// Alert when fragmentation ratio exceeds 1.5\n// ratio = RSS / used_memory; values >> 1.0 indicate wasted memory\n// Consider enabling active defragmentation or scheduling a restart\n    AND avg_frag > 1.5\n| SORT avg_frag DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 30,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "redis",
+      "termSize": 100
     }
+  }
 }

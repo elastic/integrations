@@ -2,14 +2,35 @@
   "id": "mongodb_otel-high-cursor-count",
   "type": "alerting_rule_template",
   "attributes": {
+    "description": "Alerts when open cursor count exceeds 1000. Possible cursor leak.",
     "name": "[MongoDB OTel] High cursor count",
+    "ruleTypeId": ".es-query",
     "tags": [
       "observability",
       "mongodb"
     ],
-    "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "mongodb_otel-operations"
+        },
+        {
+          "id": "mongodb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## MongoDB high cursor count\n\n### What fired\nCursor count exceeded 1000 during the window.\n\n### Why it matters\nLarge open-cursor counts usually mean applications are forgetting to close cursors or iterating them very slowly. The server will time them out eventually but in the meantime they hold memory and connection resources.\n\n### Triage\n1. Sample `db.serverStatus().metrics.cursor` to find leakers.\n2. Inspect application query patterns.\n\n### Remediation\n- Fix cursor handling in the application.\n\n### Tuning\n- 1000 threshold; tune to workload.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",
@@ -20,13 +41,6 @@
       },
       "groupBy": "row",
       "timeField": "@timestamp"
-    },
-    "alertDelay": {
-      "active": 2
-    },
-    "flapping": {
-      "lookBackWindow": 10,
-      "statusChangeThreshold": 4
     }
   },
   "managed": true,
