@@ -352,11 +352,16 @@ processors:
             tag: append_error_message_3f9d719f
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      tag: rename_json_CacheTieredFill_to_cloudflare_logpush_http_request_cache_tiered_fill_4d84627f
+  - convert:
       field: json.CacheTieredFill
+      tag: convert_cachetieredfill_to_boolean
       target_field: cloudflare_logpush.http_request.cache.tiered_fill
+      type: boolean
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_ClientCity_to_cloudflare_logpush_http_request_client_city_c3f90d8e
       field: json.ClientCity
@@ -505,13 +510,19 @@ processors:
       field: json.ClientRequestProtocol
       target_field: cloudflare_logpush.http_request.client.request.protocol
       ignore_missing: true
-  - grok:
-      tag: grok_cloudflare_logpush_http_request_client_request_protocol_5275bfc4
+  - dissect:
       field: cloudflare_logpush.http_request.client.request.protocol
-      patterns:
-        - "^%{DATA:network.protocol}/%{DATA:http.version}$"
+      tag: dissect_client_request_protocol
+      pattern: '%{network.protocol}/%{http.version}'
       ignore_missing: true
-      ignore_failure: true
+      if: >-
+        ctx.cloudflare_logpush?.http_request?.client?.request?.protocol != null &&
+        ctx.cloudflare_logpush.http_request.client.request.protocol != 'none' &&
+        ctx.cloudflare_logpush.http_request.client.request.protocol != 'unknown'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - lowercase:
       tag: lowercase_network_protocol_49872259
       field: network.protocol
@@ -561,13 +572,19 @@ processors:
       field: json.ClientSSLProtocol
       target_field: cloudflare_logpush.http_request.client.ssl.protocol
       ignore_missing: true
-  - grok:
-      tag: grok_cloudflare_logpush_http_request_client_ssl_protocol_b064e6b1
+  - dissect:
       field: cloudflare_logpush.http_request.client.ssl.protocol
-      patterns:
-        - "^%{DATA:tls.version_protocol}v%{DATA:tls.version}$"
+      tag: dissect_client_ssl_protocol
+      pattern: '%{tls.version_protocol}v%{tls.version}'
       ignore_missing: true
-      ignore_failure: true
+      if: >-
+        ctx.cloudflare_logpush?.http_request?.client?.ssl?.protocol != null &&
+        ctx.cloudflare_logpush.http_request.client.ssl.protocol != 'none' &&
+        ctx.cloudflare_logpush.http_request.client.ssl.protocol != 'unknown'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - lowercase:
       tag: lowercase_tls_version_protocol_b840a1f9
       field: tls.version_protocol
@@ -606,11 +623,16 @@ processors:
       field: json.Cookies
       target_field: cloudflare_logpush.http_request.cookies
       ignore_missing: true
-  - rename:
-      tag: rename_json_EdgeCFConnectingO2O_to_cloudflare_logpush_http_request_edge_cf_connecting_o2o_91472862
+  - convert:
       field: json.EdgeCFConnectingO2O
+      tag: convert_edgecfconnectingo2o_to_boolean
       target_field: cloudflare_logpush.http_request.edge.cf_connecting_o2o
+      type: boolean
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_EdgeColoCode_to_cloudflare_logpush_http_request_edge_colo_code_78f5d638
       field: json.EdgeColoCode
@@ -1053,11 +1075,16 @@ processors:
       field: json.WorkerStatus
       target_field: cloudflare_logpush.http_request.worker.status
       ignore_missing: true
-  - rename:
-      tag: rename_json_WorkerSubrequest_to_cloudflare_logpush_http_request_worker_subrequest_value_d96f1113
+  - convert:
       field: json.WorkerSubrequest
+      tag: convert_workersubrequest_to_boolean
       target_field: cloudflare_logpush.http_request.worker.subrequest.value
+      type: boolean
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_WorkerSubrequestCount_to_cloudflare_logpush_http_request_worker_subrequest_count_108a2873
       field: json.WorkerSubrequestCount

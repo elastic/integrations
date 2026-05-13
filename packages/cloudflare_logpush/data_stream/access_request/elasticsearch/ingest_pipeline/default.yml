@@ -95,12 +95,17 @@ processors:
       field: event.action
       copy_from: cloudflare_logpush.access_request.action
       ignore_empty_value: true
-  - rename:
-      tag: rename_json_Allowed_to_cloudflare_logpush_access_request_allowed_333c5906
+  - convert:
       field: json.Allowed
+      tag: convert_allowed_to_boolean
       target_field: cloudflare_logpush.access_request.allowed
+      type: boolean
       ignore_missing: true
-  # Enrich event.type based on the allowed field
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+# Enrich event.type based on the allowed field
   - append:
       tag: append_event_type_88337741
       field: event.type
@@ -153,11 +158,17 @@ processors:
       field: user.email
       copy_from: cloudflare_logpush.access_request.user.email
       ignore_empty_value: true
-  - rename:
-      tag: rename_json_IPAddress_to_cloudflare_logpush_access_request_client_ip_37faff3b
+  - convert:
       field: json.IPAddress
+      tag: convert_ipaddress_to_ip
       target_field: cloudflare_logpush.access_request.client.ip
+      type: ip
       ignore_missing: true
+      if: ctx.json?.IPAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       tag: set_client_ip_fea56e55
       field: client.ip
@@ -212,11 +223,16 @@ processors:
       field: json.TemporaryAccessApprovers
       target_field: cloudflare_logpush.access_request.temp_access.approvers
       ignore_missing: true
-  - rename:
-      tag: rename_json_TemporaryAccessDuration_to_cloudflare_logpush_access_request_temp_access_duration_f8473a8a
+  - convert:
       field: json.TemporaryAccessDuration
+      tag: convert_temporaryaccessduration_to_long
       target_field: cloudflare_logpush.access_request.temp_access.duration
+      type: long
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_UserUID_to_cloudflare_logpush_access_request_user_id_dde20323
       field: json.UserUID

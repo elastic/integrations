@@ -154,11 +154,16 @@ processors:
             tag: append_error_message_77bbf26b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      tag: rename_json_ResponseCached_to_cloudflare_logpush_dns_response_cached_65a351a9
+  - convert:
       field: json.ResponseCached
+      tag: convert_responsecached_to_boolean
       target_field: cloudflare_logpush.dns.response.cached
+      type: boolean
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_ResponseCode_to_cloudflare_logpush_dns_response_code_0e3a9a64
       field: json.ResponseCode

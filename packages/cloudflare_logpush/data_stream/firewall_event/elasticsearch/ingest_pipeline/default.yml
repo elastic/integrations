@@ -269,12 +269,19 @@ processors:
       field: json.ClientRequestProtocol
       target_field: cloudflare_logpush.firewall_event.client.request.protocol
       ignore_missing: true
-  - grok:
-      tag: grok_cloudflare_logpush_firewall_event_client_request_protocol_3ee431a4
+  - dissect:
       field: cloudflare_logpush.firewall_event.client.request.protocol
-      patterns:
-        - "^%{DATA:network.protocol}/%{DATA:http.version}$"
-      ignore_failure: true
+      tag: dissect_client_request_protocol
+      pattern: '%{network.protocol}/%{http.version}'
+      ignore_missing: true
+      if: >-
+        ctx.cloudflare_logpush?.firewall_event?.client?.request?.protocol != null &&
+        ctx.cloudflare_logpush.firewall_event.client.request.protocol != 'none' &&
+        ctx.cloudflare_logpush.firewall_event.client.request.protocol != 'unknown'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - lowercase:
       tag: lowercase_network_protocol_49872259
       field: network.protocol
