@@ -1,0 +1,96 @@
+rules:
+  # ----- Authentication -----
+  - path: /api/auth
+    methods: ['POST']
+    request_headers:
+      X-Api-Key: "mock-api-key"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "accessToken": "mock-access-token-vuln",
+            "refreshToken": "mock-refresh-token-vuln"
+          }
+          `}}
+
+  # ----- Refresh-token -----
+  - path: /api/refresh-token
+    methods: ['POST']
+    request_headers:
+      Content-Type:
+        - 'application/json'
+    request_body: /.*"refreshToken".*/
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "accessToken": "mock-access-token-vuln-refreshed",
+            "refreshToken": "mock-refresh-token-vuln-refreshed"
+          }
+          `}}
+
+  - path: /api/v2/vrm/public/products
+    methods: ['GET']
+    query_params:
+      pageSize: '20'
+    request_headers:
+      Authorization: "Bearer mock-access-token-vuln"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "affectedCriticalAssets": 2,
+                "chokePointsFoundOn": 0,
+                "devicesFoundOn": 2,
+                "productName": "wget",
+                "productOperatingSystems": ["Linux sles 12.5 Server"],
+                "productVulnerabilities": 1,
+                "productsCriticalAssetsAtRisk": 0,
+                "vendor": null
+              },
+              {
+                "affectedCriticalAssets": 26,
+                "chokePointsFoundOn": 6,
+                "devicesFoundOn": 26,
+                "productName": ".net framework",
+                "productOperatingSystems": [
+                  "Windows 10 ver 1909",
+                  "Windows Server 2012 R2",
+                  "Windows 7 SP 1.0",
+                  "Windows Server 2012 R2 (DC)",
+                  "Windows Server 2019 (DC)"
+                ],
+                "productVulnerabilities": 71,
+                "productsCriticalAssetsAtRisk": 38,
+                "vendor": "microsoft"
+              },
+              {
+                "affectedCriticalAssets": 1,
+                "chokePointsFoundOn": 1,
+                "devicesFoundOn": 1,
+                "productName": "ACME Secure Agent",
+                "productOperatingSystems": ["Windows Server 2019 (DC)", "Ubuntu 22.04"],
+                "productVulnerabilities": 4243,
+                "productsCriticalAssetsAtRisk": 12,
+                "vendor": "ACME"
+              }
+            ],
+            "meta": {
+              "next": null
+            }
+          }
+          `}}
