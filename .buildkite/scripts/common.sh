@@ -648,7 +648,7 @@ get_from_changeset() {
         from="${previous_successful_commit}"
         if [[ "${previous_successful_commit}" == "null" ]]; then
             if [[ "${BUILDKITE_BRANCH}" =~ ${LONG_RUNNING_BRANCH_PATTERN} ]]; then
-                # First push of a new backport or feature/* branch: only CI infrastructure files
+                # First push of a new long-running branch (matches LONG_RUNNING_BRANCH_PATTERN): only CI infrastructure files
                 # changed, no package code was modified — skip package testing.
                 from="${BUILDKITE_COMMIT}"
             else
