@@ -1,20 +1,14 @@
 version: '2.3'
 services:
   test-unix:
-    image: alpine:latest
+    image: docker.elastic.co/observability/stream:v0.21.0
     volumes:
       - ./sample_logs:/sample_logs:ro
       - ${SERVICE_LOGS_DIR}:/tmp
-    command:
-      - sh
-      - -c
-      - apk add --quiet socat && echo "Added socat" && trap 'socat - UNIX-CONNECT:/tmp/test.sock < /sample_logs/test-unix.log; echo "socat done"; exit 0' HUP && echo "Waiting for SIGHUP" && while true; do sleep 1 & wait $!; done
+    command: log --start-signal=SIGHUP --delay=5s --addr /tmp/test.sock -p=unix /sample_logs/test-unix.log
   test-syslog:
-    image: alpine:latest
+    image: docker.elastic.co/observability/stream:v0.21.0
     volumes:
       - ./sample_logs:/sample_logs:ro
       - ${SERVICE_LOGS_DIR}:/tmp
-    command:
-      - sh
-      - -c
-      - apk add --quiet socat && echo "Added socat" && trap 'socat - UNIX-CONNECT:/tmp/test-syslog.sock < /sample_logs/test-unix.log; echo "socat done"; exit 0' HUP && echo "Waiting for SIGHUP" && while true; do sleep 1 & wait $!; done
+    command: log --start-signal=SIGHUP --delay=5s --addr /tmp/test-syslog.sock -p=unix /sample_logs/test-unix.log
