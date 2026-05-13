@@ -1,0 +1,62 @@
+name: CI Trigger Security-ML Package Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "packages/beaconing/**"
+      - "packages/ded/**"
+      - "packages/dga/**"
+      - "packages/hta/**"
+      - "packages/lmd/**"
+      - "packages/pad/**"
+      - "packages/problemchild/**"
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: trigger-secml-itp-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch ephemeral token for security-ml dispatch
+        id: auth
+        uses: elastic/ci-gh-actions/fetch-github-token@v1.5.0
+        with:
+          vault-instance: ci-prod
+
+      - name: Detect changed packages
+        id: packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VALID_PACKAGES="beaconing ded dga hta lmd pad problemchild"
+          CHANGED=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files \
+            --paginate \
+            --jq '.[].filename')
+          PACKAGES=""
+          for pkg in $VALID_PACKAGES; do
+            if echo "$CHANGED" | grep -q "^packages/${pkg}/"; then
+              PACKAGES="${PACKAGES:+$PACKAGES,}$pkg"
+            fi
+          done
+          echo "packages=$PACKAGES" >> "$GITHUB_OUTPUT"
+          echo "Changed packages: $PACKAGES"
+
+      - name: Trigger security-ml integration tests
+        if: steps.packages.outputs.packages != ''
+        env:
+          GH_TOKEN: ${{ steps.auth.outputs.token }}
+        run: |
+          gh workflow run itp-dispatch-integrations.yml \
+            --repo elastic/security-ml \
+            -f packages="${{ steps.packages.outputs.packages }}" \
+            -f branch="${{ github.event.pull_request.head.ref }}" \
+            -f pr_number="${{ github.event.pull_request.number }}" \
+            -f pr_repo="${{ github.repository }}"
