@@ -58,8 +58,8 @@ processors:
       if: ctx.zscaler_zia?.saas_security != null && ctx._conf?.strict_fields == true
       source: |-
         if (ctx.zscaler_zia.saas_security.version != params.expect.version) {
-          ctx.error = ctx.error == null ? [:] : ctx.error;
-          ctx.error.message = ctx.error.message == null ? [] : ctx.error.message;
+          ctx.error = ctx.error ?: [:];
+          ctx.error.message = ctx.error.message ?: [];
           ctx.error.message.add('template version mismatch: ' + (ctx.zscaler_zia.saas_security.version == null ? 'null' : ctx.zscaler_zia.saas_security.version.toString()) + ' is not expected version (see ' + params.data_stream + ' https://epr.elastic.co/package/zscaler_zia/' + params.pkg_version + '/docs/README.md)');
         }
       on_failure:
@@ -236,28 +236,33 @@ processors:
       tag: set_email_is_inbound_to_false
       value: false
       if: ctx.zscaler_zia?.saas_security?.email?.is_inbound instanceof String && ctx.zscaler_zia.saas_security.email.is_inbound.toLowerCase() == 'no'
+  - remove:
+      field: zscaler_zia.saas_security.dlp.dict_counts
+      tag: remove_dlp_dict_counts_if_none
+      ignore_missing: true
+      if: ctx.zscaler_zia?.saas_security?.dlp?.dict_counts != null && ctx.zscaler_zia.saas_security.dlp.dict_counts == "None"
   - script:
       lang: painless
       tag: script_split_pipe_delimited_multi_value_fields
-      description: >-
-        Split NSS pipe-delimited strings into arrays for multi-value fields.
-        Skips placeholder values (empty, None, 0).
+      description: Split NSS pipe-delimited strings into arrays for multi-value fields.
       source: |-
         void splitStr(Map m, String key) {
           if (m == null || key == null) return;
           def v = m.get(key);
           if (!(v instanceof String)) return;
           String s = (String) v;
-          if (s.length() == 0 || s.equals('None') || s.equals('0')) return;
+          if (s.length() == 0) return;
           List out = new ArrayList();
-          for (String p : s.splitOnToken('|')) {
-            if (p.length() > 0 && !p.equals('None')) {
-              out.add(p);
+          int from = 0;
+          int n = s.length();
+          for (int i = 0; i < n; i++) {
+            if (s.charAt(i) == (char)'|') {
+              out.add(s.substring(from, i));
+              from = i + 1;
             }
           }
-          if (out.size() > 0) {
-            m.put(key, out);
-          }
+          out.add(s.substring(from, n));
+          m.put(key, out);
         }
         def ss = ctx.zscaler_zia?.saas_security;
         if (ss == null) return;
@@ -313,6 +318,9 @@ processors:
           type: long
           ignore_missing: true
           on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -327,6 +335,9 @@ processors:
           type: long
           ignore_missing: true
           on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -590,7 +601,6 @@ processors:
         if (ctx.email == null) ctx.email = [:];
         if (ctx.email.attachments == null) ctx.email.attachments = new ArrayList();
         for (int i = 0; i < n; i++) {
-          def item = new HashMap();
           def file = new HashMap();
           if (names != null && i < names.size()) file.put('name', names.get(i));
           if (sizes != null && i < sizes.size()) file.put('size', sizes.get(i));
@@ -599,10 +609,9 @@ processors:
             hash.put('md5', md5s.get(i));
             file.put('hash', hash);
           }
-          if (file.size() > 0) {
-            item.put('file', file);
-            ctx.email.attachments.add(item);
-          }
+          def item = new HashMap();
+          item.put('file', file);
+          ctx.email.attachments.add(item);
         }
       on_failure:
         - append:
