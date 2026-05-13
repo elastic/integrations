@@ -152,10 +152,16 @@ processors:
       field: rule.category
       copy_from: cloudflare_logpush.device_posture.rule.category
       ignore_empty_value: true
-  - rename:
+  - convert:
       field: json.PostureEvaluatedResult
+      tag: convert_postureevaluatedresult_to_boolean
       target_field: cloudflare_logpush.device_posture.eval.result
+      type: boolean
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 # Set event.outcome from cloudflare_logpush.device_posture.eval.result
   - set:
       field: event.outcome

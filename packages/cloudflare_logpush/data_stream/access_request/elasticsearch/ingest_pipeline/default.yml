@@ -85,10 +85,16 @@ processors:
       field: event.action
       copy_from: cloudflare_logpush.access_request.action
       ignore_empty_value: true
-  - rename:
+  - convert:
       field: json.Allowed
+      tag: convert_allowed_to_boolean
       target_field: cloudflare_logpush.access_request.allowed
+      type: boolean
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 # Enrich event.type based on the allowed field
   - append:
       field: event.type
@@ -132,10 +138,17 @@ processors:
       field: user.email
       copy_from: cloudflare_logpush.access_request.user.email
       ignore_empty_value: true
-  - rename:
+  - convert:
       field: json.IPAddress
+      tag: convert_ipaddress_to_ip
       target_field: cloudflare_logpush.access_request.client.ip
+      type: ip
       ignore_missing: true
+      if: ctx.json?.IPAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: client.ip
       copy_from: cloudflare_logpush.access_request.client.ip
@@ -180,10 +193,16 @@ processors:
       field: json.TemporaryAccessApprovers
       target_field: cloudflare_logpush.access_request.temp_access.approvers
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.TemporaryAccessDuration
+      tag: convert_temporaryaccessduration_to_long
       target_field: cloudflare_logpush.access_request.temp_access.duration
+      type: long
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.UserUID
       target_field: cloudflare_logpush.access_request.user.id

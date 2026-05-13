@@ -309,10 +309,16 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - rename:
+  - convert:
       field: json.CacheTieredFill
+      tag: convert_cachetieredfill_to_boolean
       target_field: cloudflare_logpush.http_request.cache.tiered_fill
+      type: boolean
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ClientCity
       target_field: cloudflare_logpush.http_request.client.city
@@ -439,12 +445,19 @@ processors:
       field: json.ClientRequestProtocol
       target_field: cloudflare_logpush.http_request.client.request.protocol
       ignore_missing: true
-  - grok:
+  - dissect:
       field: cloudflare_logpush.http_request.client.request.protocol
-      patterns:
-        - "^%{DATA:network.protocol}/%{DATA:http.version}$"
+      tag: dissect_client_request_protocol
+      pattern: '%{network.protocol}/%{http.version}'
       ignore_missing: true
-      ignore_failure: true
+      if: >-
+        ctx.cloudflare_logpush?.http_request?.client?.request?.protocol != null &&
+        ctx.cloudflare_logpush.http_request.client.request.protocol != 'none' &&
+        ctx.cloudflare_logpush.http_request.client.request.protocol != 'unknown'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - lowercase:
       field: network.protocol
       ignore_missing: true
@@ -484,12 +497,19 @@ processors:
       field: json.ClientSSLProtocol
       target_field: cloudflare_logpush.http_request.client.ssl.protocol
       ignore_missing: true
-  - grok:
+  - dissect:
       field: cloudflare_logpush.http_request.client.ssl.protocol
-      patterns:
-        - "^%{DATA:tls.version_protocol}v%{DATA:tls.version}$"
+      tag: dissect_client_ssl_protocol
+      pattern: '%{tls.version_protocol}v%{tls.version}'
       ignore_missing: true
-      ignore_failure: true
+      if: >-
+        ctx.cloudflare_logpush?.http_request?.client?.ssl?.protocol != null &&
+        ctx.cloudflare_logpush.http_request.client.ssl.protocol != 'none' &&
+        ctx.cloudflare_logpush.http_request.client.ssl.protocol != 'unknown'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - lowercase:
       field: tls.version_protocol
       ignore_missing: true
@@ -521,10 +541,16 @@ processors:
       field: json.Cookies
       target_field: cloudflare_logpush.http_request.cookies
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.EdgeCFConnectingO2O
+      tag: convert_edgecfconnectingo2o_to_boolean
       target_field: cloudflare_logpush.http_request.edge.cf_connecting_o2o
+      type: boolean
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.EdgeColoCode
       target_field: cloudflare_logpush.http_request.edge.colo.code
@@ -893,10 +919,16 @@ processors:
       field: json.WorkerStatus
       target_field: cloudflare_logpush.http_request.worker.status
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.WorkerSubrequest
+      tag: convert_workersubrequest_to_boolean
       target_field: cloudflare_logpush.http_request.worker.subrequest.value
+      type: boolean
       ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.WorkerSubrequestCount
       target_field: cloudflare_logpush.http_request.worker.subrequest.count

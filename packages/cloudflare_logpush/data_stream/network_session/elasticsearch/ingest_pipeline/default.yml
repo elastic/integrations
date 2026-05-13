@@ -150,10 +150,17 @@ processors:
       field: host.name
       copy_from: cloudflare_logpush.network_session.host.name
       ignore_empty_value: true
-  - rename:
+  - convert:
       field: json.OriginIP
+      tag: convert_originip_to_ip
       target_field: cloudflare_logpush.network_session.destination.ip
+      type: ip
       ignore_missing: true
+      if: ctx.json?.OriginIP != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.ip
       copy_from: cloudflare_logpush.network_session.destination.ip
@@ -226,10 +233,17 @@ processors:
       field: event.end
       copy_from: cloudflare_logpush.network_session.session.end
       ignore_empty_value: true
-  - rename:
+  - convert:
       field: json.SourceIP
+      tag: convert_sourceip_to_ip
       target_field: cloudflare_logpush.network_session.source.ip
+      type: ip
       ignore_missing: true
+      if: ctx.json?.SourceIP != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.network_session.source.ip
@@ -311,10 +325,17 @@ processors:
       field: json.EgressColoName
       target_field: cloudflare_logpush.network_session.egress.colo_name
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.EgressIP
+      tag: convert_egressip_to_ip
       target_field: cloudflare_logpush.network_session.egress.ip
+      type: ip
       ignore_missing: true
+      if: ctx.json?.EgressIP != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.EgressPort
       target_field: cloudflare_logpush.network_session.egress.port
@@ -339,10 +360,17 @@ processors:
       field: json.RuleEvaluationDurationMs
       target_field: cloudflare_logpush.network_session.rule_evaluation.time_ms
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.SourceInternalIP
+      tag: convert_sourceinternalip_to_ip
       target_field: cloudflare_logpush.network_session.source.internal_ip
+      type: ip
       ignore_missing: true
+      if: ctx.json?.SourceInternalIP != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ClientTLSCipher
       target_field: cloudflare_logpush.network_session.tls.client.cipher
