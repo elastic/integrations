@@ -47,6 +47,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
                 - **DNS**: 9011
                 - **Endpoint DLP**: 9023
                 - **Firewall**: 9012
+                - **SaaS Security Activity**: 9026
                 - **Tunnel**: 9013
                 - **Web**: 9014
             - **Feed Output Type**: Select Custom in Feed output type and paste the appropriate response format in Feed output format as follows:
@@ -69,6 +70,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
               - **DNS**: 9556
               - **Endpoint DLP**: 9561
               - **Firewall**: 9557
+              - **SaaS Security Activity**: 9565
               - **Tunnel**: 9558
               - **Web**: 9559
           - Select JSON as feed output type.
@@ -161,6 +163,25 @@ Zscaler Firewall Log response format (v2):
 Sample Response:
 ```json
 {"version":"v2","sourcetype":"zscalernss-fw","event":{"datetime":"Mon Oct 16 22:55:48 2023","cltdomain":"www.example.com","cdip":"2a02:cf40::","outbytes":"10000","cdport":"22","destcountry":"USA","devicemodel":"20L8S7WC08","sdip":"67.43.156.0","duration":"600","sdport":"443","tz":"GMT","action":"Blocked","devicehostname":"THINKPADSMITH","recordid":"123456","deviceosversion":"Version 10.14.2 (Build 18C54)","devicename":"admin","nwsvc":"HTTP","deviceostype":"iOS","ipsrulelabel":"Default IPS Rule","nwapp":"Skype","rdr_rulename":"FWD_Rule_1","proto":"TCP","rulelabel":"rule1","dnatrulelabel":"DNAT_Rule_1","srcipcountry":"United States","rule":"Default_Firewall_Filtering_Rule","ssip":"1.128.0.0","inbytes":"10000","ssport":"22","csip":"0.0.0.0","aggregate":"Yes","csport":"25","bypass_time":"Mon Oct 16 22:55:48 2023","user":"jdoe%40safemarch.com","datacentercountry":"US","bypassed_session":"1","day":"Mon","datacentercity":"Sa","department":"sales","datacenter":"CA Client Node DC","deviceappversion":"2.0.0.120","day_of_month":"16","avgduration":"600","dept":"Sales","eedone":"Yes","deviceowner":"jsmith","external_deviceid":"1234","durationms":"600","forward_gateway_name":"FWD_1","epochtime":"1578128400","ipcat":"Finance","flow_type":"Direct","location":"Headquarters","hour":"22","login":"jdo%40safemarch.com","ips_custom_signature":"0","month":"Oct","locationname":"Headquarters","dnat":"Yes","minute":"55","odevicename":"2175092224","month_of_year":"10","ofwd_gw_name":"8794487099","ocsip":"9960223283","oipcat":"5300295980","odeviceowner":"10831489","odnatlabel":"7956407282","odevicehostname":"2168890624","orulelabel":"624054738","oipsrulelabel":"6200694987","second":"48","ordr_rulename":"3399565100","stateful":"Yes","ozpa_app_seg_name":"7648246731","threatcat":"Botnet Callback","numsessions":"5","tsip":"89.160.20.128","threat_name":"Linux.Backdoor.Tsunami","year":"2023","threatname":"Linux.Backdoor","zpa_app_seg_name":"ZPA_test_app_segment","tuntype":"L2 tunnel","ztunnelversion":"ZTUNNEL_1_0"}}
+```
+
+### SaaS Security Activity Log
+
+- Default port (NSS Feed): _9026_
+- Default port (Cloud NSS Feed): _9565_
+
+See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/nss-feed-output-format-saas-security-activity-logs)
+
+To collect SaaS Security Activity logs, configure the NSS feed in the ZIA Admin Console using the **Feed Output Format** below. The format uses snake_case nested JSON keys that the integration parses without additional field renaming, and includes a `version` token so the pipeline can validate the template at ingest time.
+
+Zscaler SaaS Security Activity Log response format (v1):
+```
+\{"version":"v1","sourcetype":"zscalernss-saas_security_activity","time":"%s{time}","tz":"%s{tz}","event_time":"%s{eventtime}","activity":\{"type":"%s{act_type_name}","count":"%d{act_cnt}"\},"is_admin":"%s{is_admin_act}","application":\{"name":"%s{appname}"\},"tenant":"%s{tenant}","user_name":"%s{username}","external_owner":"%s{extownername}","object":\{"type":"%s{objtypename1}","subtype":"%s{objtypename2}","names":"%s{objnames1}","subnames":"%s{objnames2}"\},"src_ip":"%s{src_ip}"\}
+```
+
+Sample Response:
+```json
+{"version":"v1","sourcetype":"zscalernss-saas_security_activity","time":"Tue Jan 14 16:22:01 2026","tz":"GMT","event_time":"Tue Jan 14 16:22:01 2026","activity":{"type":"Share","count":"3"},"is_admin":"0","application":{"name":"SALESFORCE"},"tenant":"example-corp.my.salesforce.com","user_name":"bob.smith@example.com","external_owner":"partner@guest.example.net","object":{"type":"Record","subtype":"Account","names":"[Acme-Corp-Account, Acme-Corp-Opportunity]","subnames":"None"},"src_ip":"81.2.69.144"}
 ```
 
 ### Tunnel Log
@@ -1233,6 +1254,150 @@ An example event for `firewall` looks as following:
 | zscaler_zia.firewall.year | Year. | long |
 | zscaler_zia.firewall.z_tunnel_version | The Z-Tunnel version. | keyword |
 | zscaler_zia.firewall.zpa_app_segment | The name of the Zscaler Private Access (ZPA) application segment. | keyword |
+
+
+### saas_security_activity
+
+This is the `saas_security_activity` dataset.
+
+#### Example
+
+An example event for `saas_security_activity` looks as following:
+
+```json
+{
+    "@timestamp": "2024-03-15T11:30:00.000Z",
+    "agent": {
+        "ephemeral_id": "8681947d-75c5-4986-bf93-76e0be66d916",
+        "id": "7c414290-279e-4082-b25c-7650a0a1bb85",
+        "name": "elastic-agent-90558",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "zscaler_zia.saas_security_activity",
+        "namespace": "48302",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "7c414290-279e-4082-b25c-7650a0a1bb85",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "upload",
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "dataset": "zscaler_zia.saas_security_activity",
+        "ingested": "2026-05-13T09:34:49Z",
+        "kind": "event",
+        "provider": "Zscaler",
+        "timezone": "GMT",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "observer": {
+        "product": "Zscaler ZIA",
+        "vendor": "Zscaler"
+    },
+    "related": {
+        "ip": [
+            "89.160.20.112"
+        ],
+        "user": [
+            "finance.robot@example.com",
+            "vendor@partner.example.org"
+        ]
+    },
+    "source": {
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
+        "ip": "89.160.20.112"
+    },
+    "tags": [
+        "forwarded",
+        "zscaler_zia-saas_security_activity"
+    ],
+    "user": {
+        "domain": "example.com",
+        "email": "finance.robot@example.com",
+        "name": "finance.robot@example.com"
+    },
+    "zscaler_zia": {
+        "saas_security_activity": {
+            "activity": {
+                "count": 1,
+                "type": "Upload"
+            },
+            "application": {
+                "name": "GOOGLE_DRIVE"
+            },
+            "event_time": "2024-03-15T11:30:00.000Z",
+            "external_owner": "vendor@partner.example.org",
+            "is_admin": false,
+            "object": {
+                "names": "[invoice-2024-Q1.xlsx]",
+                "subnames": "[Shared with Vendors]",
+                "subtype": "Folder",
+                "type": "File"
+            },
+            "sourcetype": "zscalernss-saas_security_activity",
+            "tenant": "example.com",
+            "version": "v1"
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+| zscaler_zia.saas_security_activity.activity.count | The activity count. | long |
+| zscaler_zia.saas_security_activity.activity.type | The type of activity performed by the user. | keyword |
+| zscaler_zia.saas_security_activity.application.name | The SaaS application name associated with the activity. | keyword |
+| zscaler_zia.saas_security_activity.event_time | The event time of the activity. | date |
+| zscaler_zia.saas_security_activity.external_owner | The external owner of the SaaS application. | keyword |
+| zscaler_zia.saas_security_activity.is_admin | Indicates whether the user who performed the activity is an administrator. | boolean |
+| zscaler_zia.saas_security_activity.object.names | The names or identifiers associated with the primary object type. | keyword |
+| zscaler_zia.saas_security_activity.object.subnames | The names or identifiers associated with the secondary object type, if applicable. | keyword |
+| zscaler_zia.saas_security_activity.object.subtype | The second object type associated with the activity, if applicable. | keyword |
+| zscaler_zia.saas_security_activity.object.type | The object type associated with the activity. | keyword |
+| zscaler_zia.saas_security_activity.sourcetype | NSS feed sourcetype identifier for SaaS Security Activity. | keyword |
+| zscaler_zia.saas_security_activity.src_ip | The IP address associated with the activity. | ip |
+| zscaler_zia.saas_security_activity.tenant | The SaaS application tenant associated with the activity. | keyword |
+| zscaler_zia.saas_security_activity.time | The time and date of the transaction. This excludes the time zone. | date |
+| zscaler_zia.saas_security_activity.tz | The time zone. This is the same as the time zone you specified when you configured the NSS feed. | keyword |
+| zscaler_zia.saas_security_activity.user_name | The user who performed the activity. | keyword |
+| zscaler_zia.saas_security_activity.version | Feed Output Format template version expected by this integration. | keyword |
 
 
 ### sandbox_report
