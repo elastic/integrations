@@ -1,0 +1,1113 @@
+---
+description: Pipeline for parsing HPE Aruba ClearPass Policy Manager logs
+processors:
+  - set:
+      field: ecs.version
+      value: '9.3.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - grok:
+      field: event.original
+      patterns:
+        - '^<%{POSINT:log.syslog.priority}>%{SYSLOGTIMESTAMP:_temp.relay.timestamp} %{IPORHOST:log.syslog.hostname} %{NONNEGINT:log.syslog.version} %{TIMESTAMP_ISO8601:_temp.timestamp} %{IPORHOST:observer.hostname} %{NOTSPACE:log.syslog.appname} %{NOTSPACE:log.syslog.procid} %{NOTSPACE:log.syslog.msgid} %{GREEDYDATA:_temp.structured_data}$'
+        - '^<%{POSINT:log.syslog.priority}>%{NONNEGINT:log.syslog.version} %{TIMESTAMP_ISO8601:_temp.timestamp} %{IPORHOST:observer.hostname} %{NOTSPACE:log.syslog.appname} %{NOTSPACE:log.syslog.procid} %{NOTSPACE:log.syslog.msgid} %{GREEDYDATA:_temp.structured_data}$'
+  - date:
+      field: _temp.timestamp
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+  - convert:
+      field: log.syslog.priority
+      type: long
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.log?.syslog?.priority != null
+      source: |
+        if (ctx.log.syslog.severity == null) {
+          ctx.log.syslog.severity = new HashMap();
+        }
+        if (ctx.log.syslog.facility == null) {
+          ctx.log.syslog.facility = new HashMap();
+        }
+        ctx.log.syslog.severity.code = ctx.log.syslog.priority & 7;
+        ctx.log.syslog.facility.code = ctx.log.syslog.priority >> 3;
+  - set:
+      field: observer.name
+      copy_from: observer.hostname
+      ignore_empty_value: true
+  - set:
+      field: observer.vendor
+      value: HPE Aruba
+  - set:
+      field: observer.product
+      value: ClearPass Policy Manager
+  - set:
+      field: observer.type
+      value: access-management
+  - set:
+      field: event.provider
+      value: ClearPass
+  - script:
+      lang: painless
+      if: ctx._temp?.structured_data != null
+      description: Parse RFC5424 structured data blocks into normalized ClearPass custom fields.
+      source: |-
+        Map ensureMap(Map parent, String key) {
+          if (!(parent[key] instanceof Map)) {
+            parent[key] = new HashMap();
+          }
+          return (Map) parent[key];
+        }
+
+        String normalizeName(String value) {
+          if (value == null || value == "") {
+            return value;
+          }
+
+          StringBuilder result = new StringBuilder();
+          boolean previousUnderscore = false;
+          for (int index = 0; index < value.length(); index++) {
+            char current = value.charAt(index);
+            if (!Character.isLetterOrDigit(current)) {
+              if (!previousUnderscore && result.length() > 0) {
+                result.append("_");
+                previousUnderscore = true;
+              }
+              continue;
+            }
+
+            if (Character.isUpperCase(current) && result.length() > 0 && index > 0) {
+              char previous = value.charAt(index - 1);
+              boolean hasLowerBoundary = Character.isLowerCase(previous) || Character.isDigit(previous);
+              boolean nextIsLower = index + 1 < value.length() && Character.isLowerCase(value.charAt(index + 1));
+              if ((hasLowerBoundary || nextIsLower) && !previousUnderscore) {
+                result.append("_");
+              }
+            }
+
+            result.append(Character.toLowerCase(current));
+            previousUnderscore = false;
+          }
+
+          while (result.length() > 0 && result.substring(result.length() - 1).equals("_")) {
+            result.deleteCharAt(result.length() - 1);
+          }
+
+          return result.toString();
+        }
+
+        List parseList(String value) {
+          List result = new ArrayList();
+          if (value == null || value == "") {
+            return result;
+          }
+
+          StringBuilder currentToken = new StringBuilder();
+          List tokens = new ArrayList();
+          for (int index = 0; index < value.length(); index++) {
+            String current = value.substring(index, index + 1);
+            if (current.equals(",")) {
+              tokens.add(currentToken.toString());
+              currentToken = new StringBuilder();
+              continue;
+            }
+            currentToken.append(current);
+          }
+          tokens.add(currentToken.toString());
+
+          for (def token : tokens) {
+            String item = token == null ? "" : token.toString().trim();
+            while (item.startsWith("[")) {
+              item = item.substring(1).trim();
+            }
+            while (item.endsWith("]")) {
+              item = item.substring(0, item.length() - 1).trim();
+            }
+            if (item != null && item != "") {
+              result.add(item);
+            }
+          }
+
+          return result;
+        }
+
+        Map parseParams(String input) {
+          Map result = new HashMap();
+          if (input == null || input == "") {
+            return result;
+          }
+
+          int index = 0;
+          while (index < input.length()) {
+            while (index < input.length() && input.substring(index, index + 1).equals(" ")) {
+              index++;
+            }
+            if (index >= input.length()) {
+              break;
+            }
+
+            int keyStart = index;
+            while (index < input.length()) {
+              String current = input.substring(index, index + 1);
+              if (current.equals("=") || current.equals(" ")) {
+                break;
+              }
+              index++;
+            }
+
+            if (index >= input.length() || !input.substring(index, index + 1).equals("=")) {
+              while (index < input.length() && !input.substring(index, index + 1).equals(" ")) {
+                index++;
+              }
+              continue;
+            }
+
+            String key = input.substring(keyStart, index);
+            index++;
+            StringBuilder value = new StringBuilder();
+            if (index < input.length() && input.substring(index, index + 1).equals("\"")) {
+              index++;
+              boolean escaped = false;
+              while (index < input.length()) {
+                String current = input.substring(index, index + 1);
+                index++;
+                if (escaped) {
+                  value.append(current);
+                  escaped = false;
+                  continue;
+                }
+                if (current.equals("\\")) {
+                  escaped = true;
+                  continue;
+                }
+                if (current.equals("\"")) {
+                  break;
+                }
+                value.append(current);
+              }
+            } else {
+              int valueStart = index;
+              while (index < input.length() && !input.substring(index, index + 1).equals(" ")) {
+                index++;
+              }
+              value.append(input.substring(valueStart, index));
+            }
+
+            if (key != null && key != "") {
+              result[key] = value.toString();
+            }
+          }
+
+          return result;
+        }
+
+        Map parseStructuredData(String input) {
+          Map result = new HashMap();
+          if (input == null || input == "") {
+            return result;
+          }
+
+          int index = 0;
+          while (index < input.length()) {
+            int open = input.indexOf("[", index);
+            if (open == -1) {
+              break;
+            }
+
+            int close = open + 1;
+            boolean quoted = false;
+            boolean escaped = false;
+            while (close < input.length()) {
+              String current = input.substring(close, close + 1);
+              if (escaped) {
+                escaped = false;
+                close++;
+                continue;
+              }
+              if (current.equals("\\")) {
+                escaped = true;
+                close++;
+                continue;
+              }
+              if (current.equals("\"")) {
+                quoted = !quoted;
+                close++;
+                continue;
+              }
+              if (current.equals("]") && !quoted) {
+                break;
+              }
+              close++;
+            }
+
+            if (close >= input.length()) {
+              break;
+            }
+
+            String block = input.substring(open + 1, close);
+            int separator = block.indexOf(" ");
+            String blockId = separator == -1 ? block : block.substring(0, separator);
+            String params = separator == -1 ? "" : block.substring(separator + 1);
+            result[blockId] = parseParams(params);
+            index = close + 1;
+          }
+
+          return result;
+        }
+
+        void mapRawField(Map aruba, String rawKey, String rawValue) {
+          if (rawKey == null || rawKey == "" || rawValue == null) {
+            return;
+          }
+
+          String trimmedValue = rawValue.trim();
+          if (trimmedValue == "") {
+            return;
+          }
+
+          if (rawKey.equals("eventId")) {
+            aruba.event_id = trimmedValue;
+            return;
+          }
+          if (rawKey.equals("CppmNode.CPPM-Node")) {
+            aruba.cppm_node = trimmedValue;
+            return;
+          }
+
+          int separator = rawKey.indexOf(".");
+          if (separator == -1) {
+            aruba[normalizeName(rawKey)] = trimmedValue;
+            return;
+          }
+
+          String groupName = normalizeName(rawKey.substring(0, separator));
+          String fieldName = normalizeName(rawKey.substring(separator + 1));
+          Map group = ensureMap(aruba, groupName);
+          if (fieldName.equals("roles") || fieldName.equals("enforcement_profiles")) {
+            List parsedValues = parseList(trimmedValue);
+            if (!parsedValues.isEmpty()) {
+              group[fieldName] = parsedValues;
+              return;
+            }
+          }
+          group[fieldName] = trimmedValue;
+        }
+
+        Map blocks = parseStructuredData(ctx._temp.structured_data);
+        if (blocks.isEmpty()) {
+          return;
+        }
+
+        Map aruba = ctx.aruba_cppm instanceof Map ? (Map) ctx.aruba_cppm : new HashMap();
+        ctx.aruba_cppm = aruba;
+
+        for (blockEntry in blocks.entrySet()) {
+          if (blockEntry.getValue() instanceof Map) {
+            for (paramEntry in ((Map) blockEntry.getValue()).entrySet()) {
+              String rawKey = paramEntry.getKey() == null ? null : paramEntry.getKey().toString();
+              String blockName = blockEntry.getKey() == null ? null : blockEntry.getKey().toString();
+              if (blockName != null && !blockName.startsWith("clearPass@")) {
+                rawKey = blockName + "." + rawKey;
+              }
+              String rawValue = paramEntry.getValue() == null ? null : paramEntry.getValue().toString();
+              mapRawField(aruba, rawKey, rawValue);
+            }
+          }
+        }
+  - convert:
+      field: aruba_cppm.guest.enabled
+      type: boolean
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: aruba_cppm.radius.acct_input_octets
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: aruba_cppm.radius.acct_input_pkts
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: aruba_cppm.radius.acct_delay_time
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: aruba_cppm.radius.acct_nas_port
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: aruba_cppm.radius.acct_output_octets
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: aruba_cppm.radius.acct_output_pkts
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: aruba_cppm.radius.acct_session_time
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: aruba_cppm.radius.duration
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: aruba_cppm.radius.input_bytes
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: aruba_cppm.radius.output_bytes
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - gsub:
+      field: aruba_cppm.common.alerts
+      pattern: '\\n'
+      replacement: '; '
+      ignore_missing: true
+  - gsub:
+      field: aruba_cppm.cppm_alert.alerts
+      pattern: '\\n'
+      replacement: '; '
+      ignore_missing: true
+  - gsub:
+      field: aruba_cppm.cppm_error_code.error_code_details
+      pattern: '\\n'
+      replacement: '; '
+      ignore_missing: true
+  - date:
+      field: aruba_cppm.common.request_updated_at
+      target_field: event.start
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXX
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXXX
+        - yyyy-MM-dd HH:mm:ss.SSSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSX
+        - yyyy-MM-dd HH:mm:ssX
+        - strict_date_optional_time_nanos
+        - ISO8601
+      ignore_failure: true
+      if: ctx.aruba_cppm?.common?.request_updated_at != null
+  - date:
+      field: aruba_cppm.common.request_timestamp
+      target_field: event.start
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXX
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXXX
+        - yyyy-MM-dd HH:mm:ss.SSSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSX
+        - yyyy-MM-dd HH:mm:ssX
+        - strict_date_optional_time_nanos
+        - ISO8601
+      ignore_failure: true
+      if: ctx.aruba_cppm?.common?.request_timestamp != null && ctx.event?.start == null
+  - date:
+      field: aruba_cppm.radius.start_time
+      target_field: event.start
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXX
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXXX
+        - yyyy-MM-dd HH:mm:ss.SSSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSX
+        - yyyy-MM-dd HH:mm:ssX
+        - strict_date_optional_time_nanos
+        - ISO8601
+      ignore_failure: true
+      if: ctx.aruba_cppm?.radius?.start_time != null && ctx.event?.start == null
+  - date:
+      field: aruba_cppm.radius.end_time
+      target_field: event.end
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXX
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXXX
+        - yyyy-MM-dd HH:mm:ss.SSSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSX
+        - yyyy-MM-dd HH:mm:ssX
+        - strict_date_optional_time_nanos
+        - ISO8601
+      ignore_failure: true
+      if: ctx.aruba_cppm?.radius?.end_time != null
+  - date:
+      field: aruba_cppm.radius.acct_timestamp
+      target_field: event.end
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXX
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXXX
+        - yyyy-MM-dd HH:mm:ss.SSSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSX
+        - yyyy-MM-dd HH:mm:ssX
+        - strict_date_optional_time_nanos
+        - ISO8601
+      ignore_failure: true
+      if: ctx.aruba_cppm?.radius?.acct_timestamp != null && ctx.event?.end == null
+  - date:
+      field: aruba_cppm.cppm_config_audit.updated_at
+      target_field: event.start
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXX
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXXX
+        - yyyy-MM-dd HH:mm:ss.SSSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSX
+        - yyyy-MM-dd HH:mm:ssX
+        - strict_date_optional_time_nanos
+        - ISO8601
+      ignore_failure: true
+      if: ctx.aruba_cppm?.cppm_config_audit?.updated_at != null && ctx.event?.start == null
+  - date:
+      field: aruba_cppm.cppm_system_event.timestamp
+      target_field: event.start
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXX
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXXX
+        - yyyy-MM-dd HH:mm:ss.SSSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSX
+        - yyyy-MM-dd HH:mm:ssX
+        - strict_date_optional_time_nanos
+        - ISO8601
+      ignore_failure: true
+      if: ctx.aruba_cppm?.cppm_system_event?.timestamp != null && ctx.event?.start == null
+  - date:
+      field: aruba_cppm.onboard_ocsp.timestamp
+      target_field: event.start
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXX
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXXX
+        - yyyy-MM-dd HH:mm:ss.SSSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSSX
+        - yyyy-MM-dd HH:mm:ss.SSSX
+        - yyyy-MM-dd HH:mm:ssX
+        - strict_date_optional_time_nanos
+        - ISO8601
+      ignore_failure: true
+      if: ctx.aruba_cppm?.onboard_ocsp?.timestamp != null && ctx.event?.start == null
+  - script:
+      lang: painless
+      if: ctx.aruba_cppm != null
+      description: Normalize parsed ClearPass fields into ECS.
+      source: |-
+        Map ensureMap(Map parent, String key) {
+          if (!(parent[key] instanceof Map)) {
+            parent[key] = new HashMap();
+          }
+          return (Map) parent[key];
+        }
+
+        def getValue(Map root, String path) {
+          if (root == null || path == null || path == "") {
+            return null;
+          }
+          def current = root;
+          int start = 0;
+          while (start <= path.length()) {
+            int separator = path.indexOf(".", start);
+            String part = separator == -1 ? path.substring(start) : path.substring(start, separator);
+            if (!(current instanceof Map)) {
+              return null;
+            }
+            current = current[part];
+            if (current == null) {
+              return null;
+            }
+            if (separator == -1) {
+              break;
+            }
+            start = separator + 1;
+          }
+          return current;
+        }
+
+        String firstString(List values) {
+          if (values == null) {
+            return null;
+          }
+          for (def value : values) {
+            if (value == null) {
+              continue;
+            }
+            if (value instanceof List) {
+              if (!value.isEmpty() && value[0] != null) {
+                String candidate = value[0].toString().trim();
+                if (candidate != "") {
+                  return candidate;
+                }
+              }
+              continue;
+            }
+            String candidate = value.toString().trim();
+            if (candidate != "") {
+              return candidate;
+            }
+          }
+          return null;
+        }
+
+        List firstList(List values) {
+          if (values == null) {
+            return null;
+          }
+          for (def value : values) {
+            if (value == null) {
+              continue;
+            }
+            if (value instanceof List && !value.isEmpty()) {
+              return value;
+            }
+            String candidate = value.toString().trim();
+            if (candidate != "") {
+              List result = new ArrayList();
+              result.add(candidate);
+              return result;
+            }
+          }
+          return null;
+        }
+
+        Long firstLong(List values) {
+          if (values == null) {
+            return null;
+          }
+          for (def value : values) {
+            if (value == null) {
+              continue;
+            }
+            if (value instanceof Number) {
+              return ((Number) value).longValue();
+            }
+            String candidate = value.toString().trim();
+            if (candidate == "") {
+              continue;
+            }
+            try {
+              return Long.parseLong(candidate);
+            } catch (Exception e) {
+            }
+          }
+          return null;
+        }
+
+        boolean isMacLike(String value) {
+          if (value == null) {
+            return false;
+          }
+          StringBuilder cleaned = new StringBuilder();
+          for (int index = 0; index < value.length(); index++) {
+            char current = value.charAt(index);
+            if (Character.isLetterOrDigit(current)) {
+              cleaned.append(Character.toLowerCase(current));
+            }
+          }
+          if (cleaned.length() != 12) {
+            return false;
+          }
+          for (int index = 0; index < cleaned.length(); index++) {
+            char current = cleaned.charAt(index);
+            boolean digit = Character.isDigit(current);
+            boolean hexLetter = current >= 97 && current <= 102;
+            if (!digit && !hexLetter) {
+              return false;
+            }
+          }
+          return true;
+        }
+
+        String normalizeMac(String value) {
+          if (value == null) {
+            return null;
+          }
+          StringBuilder cleaned = new StringBuilder();
+          for (int index = 0; index < value.length(); index++) {
+            char current = value.charAt(index);
+            if (Character.isLetterOrDigit(current)) {
+              cleaned.append(Character.toLowerCase(current));
+            }
+          }
+          if (cleaned.length() != 12) {
+            return value.toLowerCase();
+          }
+          StringBuilder normalized = new StringBuilder();
+          for (int index = 0; index < cleaned.length(); index += 2) {
+            if (index > 0) {
+              normalized.append("-");
+            }
+            normalized.append(cleaned.substring(index, index + 2).toUpperCase());
+          }
+          return normalized.toString();
+        }
+
+        String normalizeOutcome(String value) {
+          if (value == null) {
+            return null;
+          }
+          String lowered = value.toLowerCase();
+          if (lowered.contains("success") || lowered.contains("pass") || lowered.contains("accept") || lowered.contains("allow") || lowered.contains("enabled")) {
+            return "success";
+          }
+          if (lowered.contains("fail") || lowered.contains("reject") || lowered.contains("deny") || lowered.contains("error") || lowered.contains("disabled")) {
+            return "failure";
+          }
+          return null;
+        }
+
+        Map event = ensureMap(ctx, "event");
+        event.kind = event.kind == null ? "event" : event.kind;
+
+        String username = firstString([
+          getValue(ctx, "aruba_cppm.common.username"),
+          getValue(ctx, "aruba_cppm.auth.username"),
+          getValue(ctx, "aruba_cppm.radius.acct_username"),
+          getValue(ctx, "aruba_cppm.radius.username"),
+          getValue(ctx, "aruba_cppm.tacacs.username"),
+          getValue(ctx, "aruba_cppm.guest.username"),
+          getValue(ctx, "aruba_cppm.onboard_cert.username"),
+          getValue(ctx, "aruba_cppm.onboard_enrollment.username"),
+          getValue(ctx, "aruba_cppm.endpoint.username"),
+          getValue(ctx, "aruba_cppm.cppm_config_audit.updated_by")
+        ]);
+
+        String userFullName = firstString([
+          getValue(ctx, "aruba_cppm.guest.visitor_name")
+        ]);
+
+        List userRoles = firstList([
+          getValue(ctx, "aruba_cppm.common.roles"),
+          getValue(ctx, "aruba_cppm.auth.roles"),
+          getValue(ctx, "aruba_cppm.tacacs.roles")
+        ]);
+
+        String organizationName = firstString([
+          getValue(ctx, "aruba_cppm.guest.visitor_company")
+        ]);
+
+        String sourceIp = firstString([
+          getValue(ctx, "aruba_cppm.radius.acct_framed_ip_address"),
+          getValue(ctx, "aruba_cppm.radius.framed_ip_address"),
+          getValue(ctx, "aruba_cppm.endpoint.ip_address"),
+          getValue(ctx, "aruba_cppm.auth.host_ip_address"),
+          getValue(ctx, "aruba_cppm.webauth.host_ip_address"),
+          getValue(ctx, "aruba_cppm.onboard_ocsp.remote_address")
+        ]);
+
+        String destinationIp = firstString([
+          getValue(ctx, "aruba_cppm.common.nas_ip_address"),
+          getValue(ctx, "aruba_cppm.auth.nas_ip_address"),
+          getValue(ctx, "aruba_cppm.radius.acct_nas_ip_address"),
+          getValue(ctx, "aruba_cppm.radius.nas_ip_address"),
+          getValue(ctx, "aruba_cppm.tacacs.nas_ip_address")
+        ]);
+
+        String macCandidate = firstString([
+          getValue(ctx, "aruba_cppm.common.host_mac_address"),
+          getValue(ctx, "aruba_cppm.auth.host_mac_address"),
+          getValue(ctx, "aruba_cppm.endpoint.mac_address"),
+          getValue(ctx, "aruba_cppm.guest.mac_address"),
+          getValue(ctx, "aruba_cppm.onboard_cert.mac_address"),
+          getValue(ctx, "aruba_cppm.onboard_enrollment.mac_address"),
+          getValue(ctx, "aruba_cppm.radius.acct_calling_station_id"),
+          getValue(ctx, "aruba_cppm.radius.calling_station_id")
+        ]);
+
+
+        String eventReason = firstString([
+          getValue(ctx, "aruba_cppm.common.alerts"),
+          getValue(ctx, "aruba_cppm.cppm_alert.alerts"),
+          getValue(ctx, "aruba_cppm.cppm_error_code.error_code_details"),
+          getValue(ctx, "aruba_cppm.cppm_config_audit.category"),
+          getValue(ctx, "aruba_cppm.cppm_system_event.category")
+        ]);
+
+        String errorCode = firstString([
+          getValue(ctx, "aruba_cppm.common.error_code")
+        ]);
+
+        String logLevel = firstString([
+          getValue(ctx, "aruba_cppm.cppm_system_event.level")
+        ]);
+
+        String logLogger = firstString([
+          getValue(ctx, "aruba_cppm.cppm_system_event.source")
+        ]);
+
+        String action = firstString([
+          getValue(ctx, "aruba_cppm.cppm_config_audit.action"),
+          getValue(ctx, "aruba_cppm.cppm_system_event.action")
+        ]);
+
+        String endpointName = firstString([
+          getValue(ctx, "aruba_cppm.endpoint.hostname"),
+          getValue(ctx, "aruba_cppm.endpoint.device_name"),
+          getValue(ctx, "aruba_cppm.onboard_enrollment.device_name")
+        ]);
+
+        String endpointOs = firstString([
+          getValue(ctx, "aruba_cppm.endpoint.system_client_os")
+        ]);
+
+        String deviceManufacturer = firstString([
+          getValue(ctx, "aruba_cppm.endpoint.mac_vendor")
+        ]);
+
+        String deviceType = firstString([
+          getValue(ctx, "aruba_cppm.endpoint.device_category")
+        ]);
+
+        String deviceProductName = firstString([
+          getValue(ctx, "aruba_cppm.onboard_enrollment.device_product")
+        ]);
+
+        Long sourceBytes = firstLong([
+          getValue(ctx, "aruba_cppm.radius.input_bytes"),
+          getValue(ctx, "aruba_cppm.radius.acct_input_octets")
+        ]);
+
+        Long destinationBytes = firstLong([
+          getValue(ctx, "aruba_cppm.radius.output_bytes"),
+          getValue(ctx, "aruba_cppm.radius.acct_output_octets")
+        ]);
+
+        Long sourcePackets = firstLong([
+          getValue(ctx, "aruba_cppm.radius.acct_input_pkts")
+        ]);
+
+        Long destinationPackets = firstLong([
+          getValue(ctx, "aruba_cppm.radius.acct_output_pkts")
+        ]);
+
+        Long durationSeconds = firstLong([
+          getValue(ctx, "aruba_cppm.radius.duration"),
+          getValue(ctx, "aruba_cppm.radius.acct_session_time")
+        ]);
+
+        String authOutcome = normalizeOutcome(firstString([
+          getValue(ctx, "aruba_cppm.auth.login_status")
+        ]));
+
+        if (event.code == null && getValue(ctx, "aruba_cppm.event_id") != null) {
+          event.code = getValue(ctx, "aruba_cppm.event_id");
+        }
+        if (event.reason == null && eventReason != null) {
+          event.reason = eventReason;
+        }
+        if (event.action == null && action != null) {
+          event.action = action;
+        }
+        if (event.outcome == null && authOutcome != null) {
+          event.outcome = authOutcome;
+        }
+        if (event.duration == null && durationSeconds != null) {
+          event.duration = Long.valueOf(durationSeconds.longValue() * 1000000000L);
+        }
+
+        if (sourceIp != null) {
+          Map source = ensureMap(ctx, "source");
+          if (source.ip == null) {
+            source.ip = sourceIp;
+          }
+        }
+
+        if (destinationIp != null) {
+          Map destination = ensureMap(ctx, "destination");
+          if (destination.ip == null) {
+            destination.ip = destinationIp;
+          }
+        }
+
+        if (macCandidate != null && isMacLike(macCandidate)) {
+          Map source = ensureMap(ctx, "source");
+          if (source.mac == null) {
+            source.mac = normalizeMac(macCandidate);
+          }
+        }
+
+        if (username != null && !isMacLike(username)) {
+          Map user = ensureMap(ctx, "user");
+          int separator = username.indexOf("\\");
+          if (separator > -1) {
+            if (user.domain == null && separator > 0) {
+              user.domain = username.substring(0, separator);
+            }
+            if (user.name == null && separator + 1 < username.length()) {
+              user.name = username.substring(separator + 1);
+            }
+          } else {
+            if (user.name == null) {
+              user.name = username;
+            }
+            int atSeparator = username.indexOf("@");
+            if (user.email == null && atSeparator > 0 && atSeparator == username.lastIndexOf("@")) {
+              user.email = username;
+            }
+          }
+        }
+
+        if (userRoles != null) {
+          Map user = ensureMap(ctx, "user");
+          if (user.roles == null) {
+            user.roles = userRoles;
+          }
+        }
+
+        if (userFullName != null) {
+          Map user = ensureMap(ctx, "user");
+          if (user.full_name == null) {
+            user.full_name = userFullName;
+          }
+        }
+
+        if (organizationName != null) {
+          Map organization = ensureMap(ctx, "organization");
+          if (organization.name == null) {
+            organization.name = organizationName;
+          }
+        }
+
+        if (endpointName != null) {
+          Map host = ensureMap(ctx, "host");
+          if (host.name == null) {
+            host.name = endpointName;
+          }
+        }
+
+        if (endpointOs != null) {
+          Map host = ensureMap(ctx, "host");
+          Map os = ensureMap(host, "os");
+          if (os.full == null) {
+            os.full = endpointOs;
+          }
+          if (os.name == null) {
+            os.name = endpointOs;
+          }
+        }
+
+        if (deviceManufacturer != null || deviceType != null || deviceProductName != null) {
+          Map device = ensureMap(ctx, "device");
+          if (device.manufacturer == null && deviceManufacturer != null) {
+            device.manufacturer = deviceManufacturer;
+          }
+          if (device.type == null && deviceType != null) {
+            device.type = deviceType;
+          }
+          if (deviceProductName != null) {
+            Map product = ensureMap(device, "product");
+            if (product.name == null) {
+              product.name = deviceProductName;
+            }
+          }
+        }
+
+        if (errorCode != null) {
+          Map error = ensureMap(ctx, "error");
+          if (error.code == null && errorCode != null) {
+            error.code = errorCode;
+          }
+        }
+
+        if (logLevel != null || logLogger != null) {
+          Map log = ensureMap(ctx, "log");
+          if (log.level == null && logLevel != null) {
+            log.level = logLevel;
+          }
+          if (log.logger == null && logLogger != null) {
+            log.logger = logLogger;
+          }
+        }
+
+        if (sourceBytes != null || destinationBytes != null || sourcePackets != null || destinationPackets != null) {
+          Map source = ensureMap(ctx, "source");
+          Map destination = ensureMap(ctx, "destination");
+          Map network = ensureMap(ctx, "network");
+          if (source.bytes == null && sourceBytes != null) {
+            source.bytes = sourceBytes;
+          }
+          if (destination.bytes == null && destinationBytes != null) {
+            destination.bytes = destinationBytes;
+          }
+          if (source.packets == null && sourcePackets != null) {
+            source.packets = sourcePackets;
+          }
+          if (destination.packets == null && destinationPackets != null) {
+            destination.packets = destinationPackets;
+          }
+          if (network.bytes == null && sourceBytes != null && destinationBytes != null) {
+            network.bytes = Long.valueOf(sourceBytes.longValue() + destinationBytes.longValue());
+          }
+          if (network.packets == null && sourcePackets != null && destinationPackets != null) {
+            network.packets = Long.valueOf(sourcePackets.longValue() + destinationPackets.longValue());
+          }
+        }
+
+        if (ctx.observer instanceof Map) {
+          Map observer = (Map) ctx.observer;
+          String observerVersion = firstString([
+            getValue(ctx, "aruba_cppm.origin.sw_version")
+          ]);
+          String observerIpOne = firstString([
+            getValue(ctx, "aruba_cppm.origin.ip")
+          ]);
+          String observerIpTwo = firstString([
+            getValue(ctx, "aruba_cppm.cppm_node")
+          ]);
+          if (observer.version == null && observerVersion != null) {
+            observer.version = observerVersion;
+          }
+          if (observerIpOne != null || observerIpTwo != null) {
+            if (!(observer.ip instanceof List)) {
+              observer.ip = new ArrayList();
+            }
+            List observerIps = (List) observer.ip;
+            if (observerIpOne != null && !observerIps.contains(observerIpOne)) {
+              observerIps.add(observerIpOne);
+            }
+            if (observerIpTwo != null && !observerIps.contains(observerIpTwo)) {
+              observerIps.add(observerIpTwo);
+            }
+          }
+        }
+
+        String protocol = null;
+        if (getValue(ctx, "aruba_cppm.tacacs.username") != null || getValue(ctx, "aruba_cppm.tacacs.service") != null) {
+          protocol = "tacacs";
+        } else if (getValue(ctx, "aruba_cppm.webauth.host_ip_address") != null) {
+          protocol = "webauth";
+        } else if (getValue(ctx, "aruba_cppm.radius.auth_method") != null || getValue(ctx, "aruba_cppm.radius.auth_source") != null || getValue(ctx, "aruba_cppm.radius.acct_session_id") != null || getValue(ctx, "aruba_cppm.radius.acct_username") != null || getValue(ctx, "aruba_cppm.radius.username") != null || getValue(ctx, "aruba_cppm.auth.username") != null) {
+          protocol = "radius";
+        } else {
+          String authProtocol = firstString([
+            getValue(ctx, "aruba_cppm.auth.protocol")
+          ]);
+          if (authProtocol != null) {
+            String lowered = authProtocol.toLowerCase();
+            if (lowered.contains("tacacs")) {
+              protocol = "tacacs";
+            } else if (lowered.contains("web")) {
+              protocol = "webauth";
+            } else if (lowered.contains("radius")) {
+              protocol = "radius";
+            }
+          }
+        }
+
+        if (protocol != null) {
+          Map network = ensureMap(ctx, "network");
+          if (network.protocol == null) {
+            network.protocol = protocol;
+          }
+        }
+  - pipeline:
+      if: ctx.event?.code == '3002' || ctx.aruba_cppm?.radius?.acct_session_id != null || ctx.aruba_cppm?.radius?.acct_timestamp != null || ctx.aruba_cppm?.radius?.acct_username != null
+      name: '{{ IngestPipeline "accounting" }}'
+  - pipeline:
+      if: ctx.event?.code == '3001' || ctx.aruba_cppm?.auth?.username != null || ctx.aruba_cppm?.auth?.login_status != null || ctx.aruba_cppm?.tacacs?.username != null || ctx.aruba_cppm?.radius?.auth_method != null || ctx.aruba_cppm?.radius?.auth_source != null
+      name: '{{ IngestPipeline "authentication" }}'
+  - pipeline:
+      if: ctx.aruba_cppm?.cppm_config_audit?.action != null || ctx.aruba_cppm?.cppm_config_audit?.category != null
+      name: '{{ IngestPipeline "config_audit" }}'
+  - pipeline:
+      if: ctx.aruba_cppm?.cppm_system_event?.action != null || ctx.aruba_cppm?.cppm_system_event?.category != null || ctx.aruba_cppm?.cppm_system_event?.level != null
+      name: '{{ IngestPipeline "system_event" }}'
+  - append:
+      field: related.hosts
+      value: '{{{observer.name}}}'
+      allow_duplicates: false
+      if: ctx.observer?.name != null
+  - append:
+      field: related.hosts
+      value: '{{{observer.hostname}}}'
+      allow_duplicates: false
+      if: ctx.observer?.hostname != null
+  - append:
+      field: related.hosts
+      value: '{{{log.syslog.hostname}}}'
+      allow_duplicates: false
+      if: ctx.log?.syslog?.hostname != null
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - append:
+      field: related.ip
+      value: '{{{aruba_cppm.origin.ip}}}'
+      allow_duplicates: false
+      if: ctx.aruba_cppm?.origin?.ip != null
+  - append:
+      field: related.ip
+      value: '{{{aruba_cppm.cppm_node}}}'
+      allow_duplicates: false
+      if: ctx.aruba_cppm?.cppm_node != null
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - set:
+      field: message
+      copy_from: event.reason
+      ignore_empty_value: true
+      if: ctx.message == null && ctx.event?.reason != null
+  - set:
+      field: message
+      value: 'HPE Aruba CPPM event {{{event.code}}}'
+      if: ctx.message == null && ctx.event?.code != null
+  - set:
+      field: message
+      copy_from: event.original
+      ignore_empty_value: true
+      if: ctx.message == null
+  - remove:
+      field:
+        - _temp
+        - message
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
