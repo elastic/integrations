@@ -231,7 +231,10 @@ processors:
       tag: dissect_client_request_protocol
       pattern: '%{network.protocol}/%{http.version}'
       ignore_missing: true
-      if: ctx.cloudflare_logpush?.firewall_event?.client?.request?.protocol != null && !['none', 'unknown'].contains(ctx.cloudflare_logpush.firewall_event.client.request.protocol)
+      if: >-
+        ctx.cloudflare_logpush?.firewall_event?.client?.request?.protocol != null &&
+        ctx.cloudflare_logpush.firewall_event.client.request.protocol != 'none' &&
+        ctx.cloudflare_logpush.firewall_event.client.request.protocol != 'unknown'
       on_failure:
         - append:
             field: error.message

@@ -353,7 +353,10 @@ processors:
       tag: dissect_client_tls_protocol
       pattern: '%{tls.version_protocol}v%{tls.version}'
       ignore_missing: true
-      if: ctx.cloudflare_logpush?.spectrum_event?.client?.tls?.protocol != null && !['none', 'unknown'].contains(ctx.cloudflare_logpush.spectrum_event.client.tls.protocol)
+      if: >-
+        ctx.cloudflare_logpush?.spectrum_event?.client?.tls?.protocol != null &&
+        ctx.cloudflare_logpush.spectrum_event.client.tls.protocol != 'none' &&
+        ctx.cloudflare_logpush.spectrum_event.client.tls.protocol != 'unknown'
       on_failure:
         - append:
             field: error.message
