@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when Oracle process utilisation exceeds 85%. Nearing the process limit causes ORA-00020.",
     "name": "[Oracle OTel] Process utilisation high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 8,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "oracle_otel-resource-capacity"
+        },
+        {
+          "id": "oracle_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Oracle process utilisation high\n\n### What fired\n`processes.usage / processes.limit > 85%`.\n\n### Why it matters\nWhen Oracle hits its `processes` init limit, new connections fail with ORA-00020. Approaching the ceiling threatens availability.\n\n### Triage\n1. Inspect session / process count trend.\n\n### Remediation\n- Raise `processes` init parameter.\n- Tune client-side pooling.\n\n### Tuning\n- 85% threshold.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-oracledbreceiver.otel-*\n// Process usage and limit are in separate TSDB document groups; aggregate across time window\n| STATS usage = MAX(oracledb.processes.usage),\n        limit_val = MAX(oracledb.processes.limit)\n        BY oracledb.instance.name, host.name\n| WHERE limit_val > 0\n// Utilisation threshold: 85% — approaching process limit causes ORA-00020 connection refusals\n// Adjust threshold to tune sensitivity (e.g. 80 for earlier warning)\n| EVAL utilisation_pct = ROUND(usage * 100.0 / limit_val, 1)\n| WHERE utilisation_pct > 85\n| SORT utilisation_pct DESC"
+        "esql": "FROM metrics-oracledbreceiver.otel-*\n// Process usage and limit are in separate TSDB document groups; aggregate across time window\n| STATS usage = MAX(oracledb.processes.usage),\n        limit_val = MAX(oracledb.processes.limit)\n        BY oracledb.instance.name, host.name\n| WHERE limit_val > 0\n// Utilisation threshold: 85% \u2014 approaching process limit causes ORA-00020 connection refusals\n// Adjust threshold to tune sensitivity (e.g. 80 for earlier warning)\n| EVAL utilisation_pct = ROUND(usage * 100.0 / limit_val, 1)\n| WHERE utilisation_pct > 85\n| SORT utilisation_pct DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

@@ -1,37 +1,54 @@
 {
-    "id": "nginx_otel-dropped-connections",
-    "type": "alerting_rule_template",
-    "attributes": {
-        "name": "[Nginx OTel] Dropped connections detected",
-        "tags": [
-            "Nginx OTel"
-        ],
-        "ruleTypeId": ".es-query",
-        "schedule": {
-            "interval": "1m"
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "esqlQuery": {
-                "esql": "FROM metrics-nginxreceiver.otel-*\n// Filter to connection counter documents (exclude gauge docs with state attribute)\n| WHERE state IS NULL\n// Cast counters to long for aggregation support\n| EVAL accepted = TO_LONG(nginx.connections_accepted), handled = TO_LONG(nginx.connections_handled)\n// Compute delta over the time window per host\n| STATS max_accepted = MAX(accepted), min_accepted = MIN(accepted), max_handled = MAX(handled), min_handled = MIN(handled) BY host.name\n// Calculate new connections accepted vs handled in this window\n| EVAL delta_accepted = max_accepted - min_accepted, delta_handled = max_handled - min_handled\n| EVAL dropped = delta_accepted - delta_handled\n// Alert when any connections were dropped\n| WHERE dropped > 0\n| SORT dropped DESC\n| LIMIT 10"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "groupBy": "row",
-            "termField": "host.name",
-            "termSize": 10
-        },
-        "alertDelay": {
-            "active": 3
-        }
+  "id": "nginx_otel-dropped-connections",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "description": "Alerts when `connections_accepted - connections_handled > 0`. NGINX is dropping connections \u2014 worker_connections or FDs exhausted.",
+    "name": "[Nginx OTel] Dropped connections detected",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "Nginx OTel"
+    ],
+    "schedule": {
+      "interval": "1m"
     },
-    "managed": true,
-    "coreMigrationVersion": "8.8.0",
-    "typeMigrationVersion": "10.1.0"
+    "alertDelay": {
+      "active": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "nginx_otel-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        },
+        {
+          "id": "nginx_otel-b2c3d4e5-f6a7-8901-bcde-f12345678901"
+        },
+        {
+          "id": "nginx_otel-c3d4e5f6-a7b8-9012-cdef-123456789012"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## NGINX dropped connections detected\n\n### What fired\nWindow delta of accepted minus handled > 0.\n\n### Why it matters\nAny dropped connection is a definitive saturation signal: NGINX could not handle all incoming connections \u2014 typically because `worker_connections` is exhausted or the process hit its FD limit.\n\n### Triage\n1. Inspect `nginx.connections_current` by state.\n2. Check `worker_connections` config and FD ulimit.\n\n### Remediation\n- Raise `worker_connections` / `worker_processes`.\n- Raise FD limits.\n\n### Tuning\n- Fires on any drop.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "FROM metrics-nginxreceiver.otel-*\n// Filter to connection counter documents (exclude gauge docs with state attribute)\n| WHERE state IS NULL\n// Cast counters to long for aggregation support\n| EVAL accepted = TO_LONG(nginx.connections_accepted), handled = TO_LONG(nginx.connections_handled)\n// Compute delta over the time window per host\n| STATS max_accepted = MAX(accepted), min_accepted = MIN(accepted), max_handled = MAX(handled), min_handled = MIN(handled) BY host.name\n// Calculate new connections accepted vs handled in this window\n| EVAL delta_accepted = max_accepted - min_accepted, delta_handled = max_handled - min_handled\n| EVAL dropped = delta_accepted - delta_handled\n// Alert when any connections were dropped\n| WHERE dropped > 0\n| SORT dropped DESC\n| LIMIT 10"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 10
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
 }

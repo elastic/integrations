@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `redis.memory.used / redis.maxmemory > 90%`. Approaching maxmemory triggers evictions or OOM.",
     "name": "[Redis OTel] Memory approaching maxmemory",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "redis_otel-memory-persistence"
+        },
+        {
+          "id": "redis_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Redis memory approaching maxmemory\n\n### What fired\nMemory usage exceeded 90% of `maxmemory`.\n\n### Why it matters\nAt 100% maxmemory, Redis either evicts keys (cache workloads) or OOMs (no eviction policy). Both are user-visible.\n\n### Triage\n1. Correlate with eviction and fragmentation trends.\n\n### Remediation\n- Raise `maxmemory` or reduce key set.\n\n### Tuning\n- 90% threshold; tune per workload.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-redisreceiver.otel-*\n| WHERE data_stream.dataset == \"redisreceiver.otel\"\n  AND redis.memory.used IS NOT NULL\n  AND redis.maxmemory IS NOT NULL\n  AND redis.maxmemory > 0\n// Used memory as percentage of maxmemory\n| STATS used = MAX(redis.memory.used),\n        max_mem = MAX(redis.maxmemory)\n  BY server.address, server.port\n| EVAL usage_pct = ROUND(used / max_mem * 100.0, 2)\n// Alert when usage exceeds 90%; adjust threshold as needed\n| WHERE usage_pct > 90.0\n| SORT usage_pct DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,
