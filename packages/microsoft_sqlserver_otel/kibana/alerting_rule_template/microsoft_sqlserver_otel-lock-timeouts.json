@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `sqlserver.lock.timeout.rate > 0`. Queries giving up waiting for locks indicate contention beyond clients' patience.",
     "name": "[SQL Server OTel] Lock timeouts",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "microsoft_sqlserver_otel-concurrency-errors"
+        },
+        {
+          "id": "microsoft_sqlserver_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## SQL Server lock timeouts\n\n### What fired\nLock timeout rate exceeded 0 during the window.\n\n### Why it matters\nTimeouts mean queries failed rather than waited \u2014 worse user experience than blocking alone. Usually paired with rising lock waits and blocked processes.\n\n### Triage\n1. Look at blocked processes and lock-wait rate on the same host.\n2. Check application-side lock timeout settings.\n\n### Remediation\n- Reduce transaction hold time.\n- Apply row-versioning / snapshot isolation where safe.\n\n### Tuning\n- Fires on any non-zero rate.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-sqlserverreceiver.otel-default\n// Lock timeouts: queries giving up waiting for locks\n| WHERE metrics.sqlserver.lock.timeout.rate IS NOT NULL\n| STATS max_timeouts = MAX(metrics.sqlserver.lock.timeout.rate),\n       instance_id = MAX(resource.attributes.service.instance.id)\n  BY COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\")\n| WHERE max_timeouts > 0\n| KEEP instance_id, max_timeouts"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,
