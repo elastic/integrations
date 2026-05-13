@@ -115,10 +115,10 @@ The `audit` data stream collects audit log events from Cursor covering authentic
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cursor.audit.action | Sub-action reported inside the event payload (e.g. create, revoke, install, disconnect). | keyword |
+| cursor.audit.action | Sub-action reported inside the event payload (for example, create, revoke, install, disconnect). | keyword |
 | cursor.audit.api_key_id | API key identifier (also used for the Admin API alias `key_id`). | keyword |
 | cursor.audit.api_key_name | API key name. | keyword |
-| cursor.audit.auth_id | Auth identity from event metadata context.s | keyword |
+| cursor.audit.auth_id | Auth identity from event metadata context. | keyword |
 | cursor.audit.bugbot_enabled | Whether Bugbot was enabled or disabled in a bulk repo update. | boolean |
 | cursor.audit.command_id | Team command identifier. | keyword |
 | cursor.audit.command_name | Team command name. | keyword |
@@ -131,7 +131,7 @@ The `audit` data stream collects audit log events from Cursor covering authentic
 | cursor.audit.ghost_mode | Whether ghost mode was enabled for the request. | boolean |
 | cursor.audit.git_enterprise_uuid | Enterprise UUID for GitHub Enterprise installations. | keyword |
 | cursor.audit.git_org_owner | Git organization or owner name. | keyword |
-| cursor.audit.git_provider | Git provider (e.g. github). | keyword |
+| cursor.audit.git_provider | Git provider (for example, github). | keyword |
 | cursor.audit.github_app_type | Bugbot GitHub App type (dotcom or enterprise). | keyword |
 | cursor.audit.github_hostname | Bugbot GitHub Enterprise hostname. | keyword |
 | cursor.audit.hook_id | Team hook identifier. | keyword |
@@ -154,14 +154,14 @@ The `audit` data stream collects audit log events from Cursor covering authentic
 | cursor.audit.old_role | Previous role (update_user_role). | keyword |
 | cursor.audit.old_value | Previous value for setting changes. | keyword |
 | cursor.audit.operating_systems | Operating systems targeted by a team hook. | keyword |
-| cursor.audit.operation | Operation label (e.g. enable, disable) for bulk repo updates. | keyword |
+| cursor.audit.operation | Operation label (for example, enable, disable) for bulk repo updates. | keyword |
 | cursor.audit.organization_id | Organization identifier for organization_api_key events. | keyword |
 | cursor.audit.permissions | Permissions granted to a directory group. | keyword |
 | cursor.audit.personal_message | Indicator of whether a personal message was attached (yes/no), not the actual content. | keyword |
 | cursor.audit.privacy_mode | Privacy mode enum extracted from embedded context JSON. | keyword |
 | cursor.audit.prompt_content | Team hook prompt content. | keyword |
 | cursor.audit.prompt_model | Team hook prompt model. | keyword |
-| cursor.audit.provider | Provider (e.g. github) reported by Bugbot installation events. | keyword |
+| cursor.audit.provider | Provider (for example, github) reported by Bugbot installation events. | keyword |
 | cursor.audit.reason | Reason string for access-check results. | keyword |
 | cursor.audit.repo_name | Repository name for team_repo events. | keyword |
 | cursor.audit.repo_node_id | GitHub node ID of the repository. | keyword |
@@ -174,7 +174,7 @@ The `audit` data stream collects audit log events from Cursor covering authentic
 | cursor.audit.role | Role assigned to the user (lower-cased for add_user). | keyword |
 | cursor.audit.rule_id | Team/Bugbot rule identifier. | keyword |
 | cursor.audit.rule_name | Team/Bugbot rule name. | keyword |
-| cursor.audit.scope | Scope qualifier (e.g. team, user). | keyword |
+| cursor.audit.scope | Scope qualifier (for example, team, user). | keyword |
 | cursor.audit.scope_id | Protected git scope identifier. | keyword |
 | cursor.audit.scoped_to_repos | Repositories a cloud agent secret is scoped to. | keyword |
 | cursor.audit.script_content | Team hook script content. | keyword |
@@ -183,11 +183,11 @@ The `audit` data stream collects audit log events from Cursor covering authentic
 | cursor.audit.sender_email | Email of the user who sent an invite email. | keyword |
 | cursor.audit.sender_user_id | User ID of the invite email sender. | keyword |
 | cursor.audit.server_name | MCP server display name (mcp_server_config events). | keyword |
-| cursor.audit.server_type | MCP server transport type (e.g. HTTP) for mcp_server_config events. | keyword |
+| cursor.audit.server_type | MCP server transport type (for example, HTTP) for mcp_server_config events. | keyword |
 | cursor.audit.service_account_id | Service account identifier. | keyword |
 | cursor.audit.service_account_name | Service account name. | keyword |
 | cursor.audit.setting_name | Name of the setting that changed. | keyword |
-| cursor.audit.source | How an action was initiated (invite, autoAdd, dashboard, slack, ide, manual, etc.). | keyword |
+| cursor.audit.source | How an action was initiated (for example, invite, autoAdd, dashboard, slack, ide, manual). | keyword |
 | cursor.audit.spend_limit_dollars | Spend limit reported by the Admin API in dollars. | long |
 | cursor.audit.success | Raw `success` flag reported for login events. | boolean |
 | cursor.audit.team_id | Cursor team identifier (numeric string). | keyword |
