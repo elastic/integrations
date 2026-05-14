@@ -1,0 +1,79 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+
+state:
+  api_key: {{api_key}}
+  secret_key: {{secret_key}}
+redact:
+  fields:
+    - api_key
+    - secret_key
+program: |
+  request(
+    "GET",
+    state.url.trim_right("/") + "/api/v2/gateways"
+  ).with({
+    "Header":{
+        "Accept": ["application/json"],
+        "api-key": [state.api_key],
+        "api-secret": [state.secret_key],
+    }
+  }).do_request().as(resp, resp.StatusCode == 200 ?
+    resp.Body.decode_json().as(body,
+      {
+        "events": body.?gateways.orValue([]).map(e, {
+          "message": e.encode_json(),
+        }),
+        "api_key": state.api_key,
+        "secret_key": state.secret_key,
+      }
+    )
+  :
+    {
+      "events": {
+        "error": {
+          "code": string(resp.StatusCode),
+          "id": string(resp.Status),
+          "message": "GET" + state.url.trim_right("/") + "/api/v2/gateways/: " + (
+            size(resp.Body) != 0 ?
+              string(resp.Body)
+            :
+              string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+          ),
+        },
+      },
+      "api_key": state.api_key,
+      "secret_key": state.secret_key,
+    }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -1,0 +1,210 @@
+---
+description: Pipeline for processing network logs.
+processors:
+  - date:
+      field: axonius.network.creation_time_stamp
+      tag: date_creation_time_stamp
+      target_field: axonius.network.creation_time_stamp
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.axonius?.network?.creation_time_stamp != null && ctx.axonius.network.creation_time_stamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_network_creation_time_stamp
+      copy_from: axonius.network.creation_time_stamp
+      ignore_empty_value: true
+  - set:
+      field: network.direction
+      tag: set_network_direction_from_network_direction
+      copy_from: axonius.network.direction
+      ignore_empty_value: true
+  - lowercase:
+      field: network.direction
+      tag: lowercase_network_direction
+      ignore_missing: true
+  - set:
+      field: host.geo.city_name
+      tag: set_host_geo_city_name_from_network_location
+      copy_from: axonius.network.location
+      ignore_empty_value: true
+  - convert:
+      field: axonius.network.mtu
+      tag: convert_mtu_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.network.mtu
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.network.peerings
+      tag: foreach_peerings_exchange_subnet_routes
+      if: ctx.axonius?.network?.peerings instanceof List
+      processor:
+        convert:
+          field: _ingest._value.exchange_subnet_routes
+          tag: convert_peerings_exchange_subnet_routes_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.exchange_subnet_routes
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.network.peerings
+      tag: foreach_peerings_export_custom_routes
+      if: ctx.axonius?.network?.peerings instanceof List
+      processor:
+        convert:
+          field: _ingest._value.export_custom_routes
+          tag: convert_peerings_export_custom_routes_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.export_custom_routes
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.network.peerings
+      tag: foreach_peerings_import_custom_routes
+      if: ctx.axonius?.network?.peerings instanceof List
+      processor:
+        convert:
+          field: _ingest._value.import_custom_routes
+          tag: convert_peerings_import_custom_routes_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.import_custom_routes
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.network.peerings
+      tag: foreach_peerings_peer_mtu
+      if: ctx.axonius?.network?.peerings instanceof List
+      processor:
+        convert:
+          field: _ingest._value.peer_mtu
+          tag: convert_peerings_peer_mtu_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.peer_mtu
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: axonius.network.priority
+      tag: convert_priority_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.network.priority
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.network.subnetworks
+      tag: foreach_subnetworks_creation_timestamp
+      if: ctx.axonius?.network?.subnetworks instanceof List
+      processor:
+        date:
+          field: _ingest._value.creation_timestamp
+          tag: date_subnetworks_creation_timestamp
+          target_field: _ingest._value.creation_timestamp
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+            - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+          on_failure:
+            - remove:
+                field: _ingest._value.creation_timestamp
+                ignore_missing: true
+  - foreach:
+      field: axonius.network.subnetworks
+      tag: foreach_subnetworks_gateway_address
+      if: ctx.axonius?.network?.subnetworks instanceof List
+      processor:
+        convert:
+          field: _ingest._value.gateway_address
+          tag: convert_subnetworks_gateway_address_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.gateway_address
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.network.subnetworks
+      tag: foreach_subnetworks_ip_cidr_range
+      if: ctx.axonius?.network?.subnetworks instanceof List
+      processor:
+        convert:
+          field: _ingest._value.ip_cidr_range
+          tag: convert_subnetworks_ip_cidr_range_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.ip_cidr_range
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.network.subnetworks
+      tag: foreach_subnetworks_private_ip_google_access
+      if: ctx.axonius?.network?.subnetworks instanceof List
+      processor:
+        convert:
+          field: _ingest._value.private_ip_google_access
+          tag: convert_subnetworks_private_ip_google_access_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.private_ip_google_access
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
