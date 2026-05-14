@@ -22,7 +22,6 @@ processors:
       tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
-      ignore_failure: true
   - set:
       tag: set_event_category_dbab8a4e
       field: event.category
@@ -497,7 +496,7 @@ processors:
       tag: rename_json_OriginTlsStatus_to_cloudflare_logpush_spectrum_event_origin_tls_status_3d757d94
       field: json.OriginTlsStatus
       target_field: cloudflare_logpush.spectrum_event.origin.tls.status
-      ignore_failure: true
+      ignore_missing: true
   - rename:
       tag: rename_json_ProxyProtocol_to_cloudflare_logpush_spectrum_event_proxy_protocol_13f4be6c
       field: json.ProxyProtocol
@@ -509,28 +508,24 @@ processors:
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       tag: append_related_ip_e2ed7178
       field: related.ip
       value: '{{{cloudflare_logpush.spectrum_event.client.ip}}}'
       if: ctx.cloudflare_logpush?.spectrum_event?.client?.ip != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       tag: append_related_ip_51dd17d0
       field: related.ip
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       tag: append_related_ip_76f92f90
       field: related.ip
       value: '{{{cloudflare_logpush.spectrum_event.origin.ip}}}'
       if: ctx.cloudflare_logpush?.spectrum_event?.origin?.ip != null
       allow_duplicates: false
-      ignore_failure: true
   - community_id:
       tag: community_id_d2308e7a
       target_field: network.community_id

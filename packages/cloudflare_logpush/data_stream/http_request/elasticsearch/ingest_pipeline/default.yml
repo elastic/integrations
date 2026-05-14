@@ -22,7 +22,6 @@ processors:
       tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
-      ignore_failure: true
   - set:
       tag: set_event_category_dbab8a4e
       field: event.category
@@ -563,7 +562,7 @@ processors:
       tag: user_agent_json_ClientRequestUserAgent_a0e18c70
       field: json.ClientRequestUserAgent
       if: ctx.json?.ClientRequestUserAgent != ''
-      ignore_failure: true
+      ignore_missing: true
   - rename:
       tag: rename_json_ClientRequestUserAgent_to_cloudflare_logpush_http_request_client_request_user_agent_712bf2d0
       field: json.ClientRequestUserAgent
@@ -1209,21 +1208,18 @@ processors:
       value: '{{{cloudflare_logpush.http_request.ja3_hash}}}'
       if: ctx.cloudflare_logpush?.http_request?.ja3_hash != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       tag: append_related_ip_30d15214
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       tag: append_related_ip_51dd17d0
       field: related.ip
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
       allow_duplicates: false
-      ignore_failure: true
   - remove:
       tag: remove_json_conf
       field:

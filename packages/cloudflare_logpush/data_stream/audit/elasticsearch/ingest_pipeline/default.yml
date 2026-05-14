@@ -22,7 +22,6 @@ processors:
       tag: json_event_original
       field: event.original
       target_field: json
-      ignore_failure: true
   - set:
       tag: set_event_type
       field: event.type
@@ -90,7 +89,7 @@ processors:
       tag: set_cloudflare_logpush_audit_timestamp
       field: cloudflare_logpush.audit.timestamp
       copy_from: '@timestamp'
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       tag: rename_json_actiontype
       field: json.ActionType
@@ -100,7 +99,7 @@ processors:
       tag: set_event_action
       field: event.action
       copy_from: cloudflare_logpush.audit.action.type
-      ignore_failure: true
+      ignore_empty_value: true
   - lowercase:
       tag: lowercase_event_action
       field: event.action
@@ -119,7 +118,7 @@ processors:
       tag: set_event_outcome
       field: event.outcome
       copy_from: cloudflare_logpush.audit.action.result
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       tag: rename_json_actoremail
       field: json.ActorEmail
@@ -221,14 +220,12 @@ processors:
       value: '{{{user.id}}}'
       if: ctx.user?.id != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       tag: append_related_ip
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
-      ignore_failure: true
   - remove:
       tag: remove_json_conf
       field:

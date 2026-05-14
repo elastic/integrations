@@ -22,7 +22,6 @@ processors:
       tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
-      ignore_failure: true
   - set:
       tag: set_event_category_dbab8a4e
       field: event.category
@@ -188,21 +187,18 @@ processors:
       value: '{{{cloudflare_logpush.dns.query.name}}}'
       if: ctx.cloudflare_logpush?.dns?.query?.name != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       tag: append_related_ip_30d15214
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       tag: append_related_ip_c1edff72
       field: related.ip
       value: '{{{cloudflare_logpush.dns.edns.subnet}}}'
       if: ctx.cloudflare_logpush?.dns?.edns?.subnet != null
       allow_duplicates: false
-      ignore_failure: true
   - remove:
       tag: remove_json_conf
       field:
