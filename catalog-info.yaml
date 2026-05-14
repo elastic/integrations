@@ -192,6 +192,12 @@ spec:
       description: 'Daily pipeline for the Integrations project'
     spec:
       pipeline_file: ".buildkite/pipeline.schedule-daily.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+              - .go-version
+            cleanup_sparse_state: true
       schedules:
         main_daily:
           branch: "main"
@@ -268,6 +274,12 @@ spec:
       description: 'Weekly pipeline for the Integrations project'
     spec:
       pipeline_file: ".buildkite/pipeline.schedule-weekly.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+              - .go-version
+            cleanup_sparse_state: true
       # NOTE: Stop running weekly for now
       #       see https://github.com/elastic/integrations/issues/18868
       #schedules:
@@ -317,6 +329,12 @@ spec:
       description: 'Pipeline for the Integrations project in serverless'
     spec:
       pipeline_file: ".buildkite/pipeline.serverless.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+              - .go-version
+            cleanup_sparse_state: true
       provider_settings:
         trigger_mode: none # don't trigger jobs from github activity
         build_pull_request_forks: false
@@ -361,6 +379,12 @@ spec:
       description: 'Pipeline to create backport branches in the Integrations project'
     spec:
       pipeline_file: ".buildkite/pipeline.backport.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+              - .go-version
+            cleanup_sparse_state: true
       provider_settings:
         trigger_mode: none # don't trigger jobs from github activity
         build_pull_request_forks: false
@@ -404,6 +428,12 @@ spec:
     spec:
       branch_configuration: "main backport-*"
       pipeline_file: ".buildkite/pipeline.publish.yml"
+      initial_step_plugins:
+        - sparse-checkout#v1.6.0:
+            paths:
+              - .buildkite
+              - .go-version
+            cleanup_sparse_state: true
       provider_settings:
         build_pull_request_forks: false
         build_pull_requests: false # requires filter_enabled and filter_condition settings as below when used with buildkite-pr-bot
