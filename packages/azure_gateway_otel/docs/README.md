@@ -2,7 +2,7 @@
 
 Azure Application Gateway is a managed Layer 7 load balancer and reverse proxy that terminates TLS, routes HTTP/HTTPS traffic to backend pools, and optionally evaluates each request against a Web Application Firewall (WAF) policy.
 
-These assets provide dashboards, alert rules, and SLO templates for Azure Application Gateway resource logs (Access, Firewall, and Performance) ingested via the OpenTelemetry `azureencodingextension`, covering traffic, latency, error rates, backend health, and WAF activity.
+These assets provide dashboards for Azure Application Gateway resource logs (Access, Firewall, and Performance) ingested via the OpenTelemetry `azureencodingextension`, covering traffic, latency, error rates, backend health, and WAF activity.
 
 ## Compatibility
 
@@ -47,20 +47,3 @@ Each Application Gateway resource log record is translated into an OTel log docu
 | **[Azure Application Gateway OTel] Overview** | Traffic, latency, and error overview for Azure Application Gateway access logs. |
 | **[Azure Application Gateway OTel] Backend Health** | Backend pool latency, status, and AGW-vs-backend latency split for Azure Application Gateway. |
 | **[Azure Application Gateway OTel] WAF** | Web Application Firewall activity for Azure Application Gateway: rule matches, actions, offending clients. |
-
-## Alert rules
-
-| Alert | Trigger | Severity |
-|-------|---------|----------|
-| **[Azure Application Gateway OTel] High backend pool 5xx rate** | A backend pool returns HTTP 5xx for more than 5% of requests that reached the backend over a 15-minute window. | Critical |
-| **[Azure Application Gateway OTel] AGW-originated 5xx rate** | The gateway returns HTTP 5xx without reaching a backend above 1% of total requests over a 15-minute window. | High |
-| **[Azure Application Gateway OTel] Listener p95 latency regression** | Client-perceived p95 latency at a listener exceeds 2 seconds over a 15-minute window. | High |
-| **[Azure Application Gateway OTel] No healthy backend or upstream error** | `ERRORINFO_NO_HEALTHY_BACKEND` or `ERRORINFO_UPSTREAM_*` reason codes appear in Access logs over a 15-minute window. | Critical |
-| **[Azure Application Gateway OTel] WAF attack concentration from client IP** | A single client IP triggers a large number of attack-category WAF rule matches over a 15-minute window. | Medium |
-
-## SLO templates
-
-| SLO | Target | Window | Description |
-|-----|--------|--------|-------------|
-| **[Azure Application Gateway OTel] Gateway availability 99.5% rolling 30 days** | 99.5% | 30-day rolling | Tracks the share of requests for which the gateway returned a status code below 500 to the client. |
-| **[Azure Application Gateway OTel] Gateway latency under 1s 99.5% rolling 30 days** | 99.5% | 30-day rolling | Tracks the share of requests for which the total gateway processing time was below 1 second. |
