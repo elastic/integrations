@@ -423,6 +423,7 @@ The following table lists the exported fields for this data stream:
 | cisco_ise.log.category.name |  | keyword |
 | cisco_ise.log.cause |  | keyword |
 | cisco_ise.log.cisco_av_pair.AuthenticationIdentityStore |  | keyword |
+| cisco_ise.log.cisco_av_pair.FQSubjectName |  | keyword |
 | cisco_ise.log.cisco_av_pair.audit-session-id |  | keyword |
 | cisco_ise.log.cisco_av_pair.coa-push |  | boolean |
 | cisco_ise.log.cisco_av_pair.cts-device-capability |  | keyword |
