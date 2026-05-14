@@ -107,7 +107,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 - Missing Lookback Support: The integration currently lacks a lookback window for metric collection. If the Elastic Agent stops or an Agentless deployment restarts, metrics might be missed. A lookback feature is currently in development to address this.
 - Batch API Issue: When Batch API is active (default is inactive), a lack of matching resources in a single integration can cause collection to halt for all integrations.
-  - Fixes Scheduled: 8.19.16, 9.3.5, 9.4.2 and 9.5.0.
+  - Fixes Scheduled: 8.19.17, 9.3.6, and 9.4.2.
   - Workarounds: Turn off the Batch API setting, or ensure each integration targets at least one Azure resource.
 
 **What is lookback?** The integration stores the timestamp of the last successful collection. Upon restart, it uses this to backfill any missing data since that point.
