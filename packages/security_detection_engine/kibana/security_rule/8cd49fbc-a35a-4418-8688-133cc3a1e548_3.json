@@ -1,0 +1,135 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies attempts to execute commands via proxy using the Windows OpenSSH client. This may indicate an attempt to bypass application control via trusted Windows binaries.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.name",
+                "user.id",
+                "process.executable",
+                "process.pe.original_file_name",
+                "process.command_line",
+                "process.pid",
+                "process.entity_id",
+                "process.Ext.authentication_id",
+                "process.Ext.session_info.logon_type",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.code_signature.trusted"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Proxy Execution via Windows OpenSSH",
+        "note": "## Triage and analysis\n\n### Investigating Proxy Execution via Windows OpenSSH\n\n#### Possible investigation steps\n\n- What OpenSSH execution path did the alert capture?\n  - Why: \"ProxyCommand\" launches a local helper through the user's shell, \"LocalCommand\" runs locally after connection only when \"PermitLocalCommand\" is enabled, and remote command options shift the action to the SSH target.\n  - Focus: `process.name` and `process.command_line`, separating \"ProxyCommand\", \"LocalCommand\", \"RemoteCommand\", chained \"scp\"/\"sftp\", shell/LOLBIN helpers, and loopback targets like \"localhost\" or \"127.0.0.1\".\n  - Implication: escalate when the option runs \"cmd.exe\", \"powershell.exe\", \"mshta.exe\", \"msiexec.exe\", \"schtasks.exe\", a downloader, script, or chained copy/execution command; close is plausible only when it stays inside a recognized bastion, transfer, or deployment pattern with no execution-oriented helper.\n- Is the OpenSSH client and launcher context expected for that behavior?\n  - Focus: `process.executable`, `process.pe.original_file_name`, `process.code_signature.trusted`, `process.parent.executable`, and `process.parent.command_line`, checking native \"C:\\Windows\\System32\\OpenSSH\\\" use versus renamed or user-writable copies.\n  - Implication: escalate when identity or lineage is inconsistent, such as an unsigned or renamed client, a user-writable path, Office/browser/script-host ancestry, or another LOLBin as the launcher; a native signed client lowers only masquerade risk and does not clear proxy execution.\n- Does the user and logon session fit recognized SSH automation on this host?\n  - Focus: `user.id`, `user.name`, `host.id`, `process.Ext.session_info.logon_type`, and `process.Ext.authentication_id`.\n  - Hint: if session origin matters, pivot on `host.id` from `process.Ext.authentication_id` to Windows Security `winlog.event_data.TargetLogonId`, then read `source.ip` and `winlog.event_data.AuthenticationPackageName`; search `winlog.event_data.SubjectLogonId` for explicit-credential event 4648. Missing Windows Security telemetry is unresolved, not benign. !{investigate{\"description\":\"\",\"label\":\"Windows Security events for the OpenSSH session\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.TargetLogonId\",\"queryType\":\"phrase\",\"value\":\"{{process.Ext.authentication_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4624\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.SubjectLogonId\",\"queryType\":\"phrase\",\"value\":\"{{process.Ext.authentication_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4648\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-24h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the session is remote-interactive, network-origin, explicit-credential, or tied to a user/host pair that does not normally run this SSH pattern; lower concern only when the same identity, launcher, and command profile are recurrent for this host and no other evidence conflicts.\n- Did the client reach the destination implied by the SSH option path?\n  - Focus: process-scoped DNS and connections for `host.id` and `process.entity_id`; read `dns.question.name`, `dns.resolved_ip`, `destination.ip`, and `destination.port`. !{investigate{\"description\":\"\",\"label\":\"Network activity for the alerting OpenSSH process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: if `process.entity_id` is unavailable, rerun with `host.id` + `process.pid` in the alert window. Interpret DNS lookups separately from connections. Missing network or DNS telemetry is unresolved, not benign; loopback `destination.ip` supports proxy-execution when the command targets localhost.\n  - Implication: escalate when the process reaches loopback listeners, rare public infrastructure, unrelated internal systems, or admin ports outside the expected SSH workflow; bounded destinations matching the same operator and command pattern reduce scope but do not override suspicious local execution.\n- Did the proxied path create local child execution or transfer artifacts?\n  - Focus: child starts where `process.parent.entity_id` matches `process.entity_id`, plus manually queried file events scoped to the same process; read child `process.command_line`, staged `file.path`, and rename context from `file.Ext.original.path`. !{investigate{\"description\":\"\",\"label\":\"Child process starts from the same OpenSSH instance\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: if process-scoped pivots are unavailable, repeat with `host.id` + `process.pid` in a tight alert window and compare child commands or file writes to the OpenSSH option string. Missing file telemetry limits artifact review; it is not benign.\n  - Implication: escalate when OpenSSH spawns shells, script hosts, scheduled-task helpers, or drops/copies executable, archive, or script content into new paths; absence of child/file evidence keeps the case process-local only when earlier command, lineage, and destination evidence fit.\n- If local evidence remains suspicious or unresolved, does the pattern recur beyond this event?\n  - Focus: recent alerts for `host.id`, keyed to OpenSSH proxy execution, script hosts, downloaders, scheduled tasks, credential access, or the suspicious `process.command_line` fragment. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: if host scope stays unresolved, pivot to `user.id` for the same launcher, command fragment, or recovered destination pattern across other hosts. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden scope when the same proxy-execution pattern, destination, or follow-on artifact appears on unrelated hosts or sessions; a single event supports closure only when the local evidence already binds to one exact recognized workflow and outside confirmation covers any legitimacy gap.\n- What disposition do command intent, identity, lineage, session, destination, artifacts, and recurrence support?\n  - Implication: escalate for unauthorized local proxy execution, suspicious launcher/session context, rare or loopback destinations, staging, child shells, or repeated indirect execution; close only when alert-local evidence and recovery bind one recognized workflow on this host and outside confirmation verifies any telemetry gap; preserve evidence and escalate when evidence is mixed or incomplete.\n\n### False positive analysis\n\n- Recognized jump-host or bastion wrappers can use the native OpenSSH client with \"ProxyCommand\" for a fixed proxy helper or \"RemoteCommand\" for a bounded admin task. Confirm binary identity, launcher, option string, `user.id`, `host.id`, recovered destination, and child/file evidence all align with one workflow. Shell or LOLBin-bearing \"ProxyCommand\" and \"LocalCommand\" remain suspicious unless a controlled test or deployment wrapper is confirmed by telemetry and outside context.\n- Recognized transfer or sync jobs can use \"sftp.exe\" or chained \"scp\" from a fixed automation account or host. Confirm `process.parent.executable`, transfer-oriented `process.command_line`, recovered `file.path`, destination evidence, `user.id`, and `host.id` stay inside that product workflow. Keep the alert suspicious if child `process.command_line` activity, scheduled-task helpers, executable staging, or SSH configuration changes diverge from the transfer pattern.\n- Before creating an exception, validate recurrence for the same `process.executable`, `process.parent.executable`, option-bearing `process.command_line`, `user.id`, `host.id`, and recovered destination or transfer path. Avoid exceptions on \"ssh.exe\", \"sftp.exe\", or \"Command=\" alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and document the exact command, launcher, user, host, destination or transfer path, and session evidence that justified closure. Create an exception only for the minimum recurring workflow pattern, not for OpenSSH use in general.\n- If suspicious but unconfirmed, preserve the alert, Timeline view, command line, parent/child process tree, recovered destination or DNS evidence, staged/copied files, relevant authentication records, and SSH client/server configuration files before containment or cleanup. Apply reversible containment first, such as temporary destination restrictions or heightened monitoring for the affected user and host, and avoid process termination until scope is clearer.\n- If confirmed malicious, isolate the host or contain the account when command intent, launcher lineage, destination, authentication, or artifact evidence shows unauthorized proxy execution. Weigh host criticality before isolation, block confirmed malicious destinations or hashes, and record the process instance and artifact identifiers before killing processes or deleting files.\n- Eradicate only the artifacts and settings found during the investigation: copied payloads, scripts, scheduled tasks, downloaded content, unauthorized \"ProxyCommand\", \"LocalCommand\", or \"PermitLocalCommand\" settings, and any malicious key material such as unexpected \".ssh\\authorized_keys\" or \"%PROGRAMDATA%\\ssh\\administrators_authorized_keys\" entries. Then remediate the launcher or access path that allowed the OpenSSH proxy launch.\n- Rotate credentials, tokens, and SSH keys when authentication records, session origin, transferred files, or key artifacts show explicit-credential abuse, privileged account misuse, or unauthorized key-based access. Review adjacent admin sessions for the same `source.ip`, `host.id`, or `user.id` before restoring normal access.\n- Post-incident hardening: restrict OpenSSH client use to recognized bastion, deployment, or transfer hosts where feasible; disable \"PermitLocalCommand\" unless required; review \"%PROGRAMDATA%\\ssh\\ssh_config\" and affected users' \".ssh\\config\" for unauthorized command options; retain the confirmed command, parent, destination, and user pattern for future triage and exception review.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and process.name : (\"ssh.exe\", \"sftp.exe\") and\n  process.command_line : (\n    \"*Command=*powershell*\", \"*schtasks*\", \"*Command=*@echo off*\", \"*Command=*http*\",\n    \"*Command=*mshta*\", \"*Command=*msiexec*\", \"*Command=*cmd /c*\", \"*Command=*cmd.exe*\",\n    \"*Command=\\\"cmd /c*\", \"*LocalCommand=scp*&&*\", \"*LocalCommand=?scp*&&*\", \"*Command=*script*\"\n  )\n",
+        "references": [
+            "https://lolbas-project.github.io/lolbas/Binaries/Ssh/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "8cd49fbc-a35a-4418-8688-133cc3a1e548",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1202",
+                        "name": "Indirect Command Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1202/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 3
+    },
+    "id": "8cd49fbc-a35a-4418-8688-133cc3a1e548_3",
+    "type": "security-rule"
+}

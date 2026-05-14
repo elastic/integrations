@@ -1,43 +1,57 @@
 {
-    "id": "vsphere_otel-host-memory-utilization-high",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[vSphere OTel] Host memory utilization high",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "vsphere",
-            "vcenter",
-            "memory"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "vsphere_otel-host-memory-utilization-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when host memory utilisation exceeds 85%. Above 85% risks ballooning and swapping on VMs.",
+    "name": "[vSphere OTel] Host memory utilization high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "vsphere",
+      "vcenter",
+      "memory"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "vsphere_otel-hosts"
         },
-        "alertDelay": {
-            "active": 3
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-vcenterreceiver.otel-*\n// Host memory utilization: healthy <85%; unhealthy >90%\n// Adjust threshold (e.g. 85 or 90) to suit environment\n| WHERE vcenter.host.memory.utilization IS NOT NULL AND vcenter.host.memory.utilization > 85\n| STATS utilization_pct = MAX(vcenter.host.memory.utilization) BY vcenter.datacenter.name, vcenter.cluster.name, vcenter.host.name\n| SORT utilization_pct DESC\n| LIMIT 20"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "vcenter.host.name",
-            "termSize": 20,
-            "excludeHitsFromPreviousRun": true
+        {
+          "id": "vsphere_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## vSphere host memory utilization high\n\n### What fired\n`vcenter.host.memory.utilization > 85%` during the window.\n\n### Why it matters\nAbove ~85% memory, ESXi starts reclaiming from VMs \u2014 ballooning, compression, eventually swapping. Performance collapses at high utilisation.\n\n### Triage\n1. Correlate with VM ballooning / swapping metrics.\n\n### Remediation\n- Migrate VMs.\n- Add hosts.\n\n### Tuning\n- 85% threshold; 90% for tolerant environments.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-vcenterreceiver.otel-*\n// Host memory utilization: healthy <85%; unhealthy >90%\n// Adjust threshold (e.g. 85 or 90) to suit environment\n| WHERE vcenter.host.memory.utilization IS NOT NULL AND vcenter.host.memory.utilization > 85\n| STATS utilization_pct = MAX(vcenter.host.memory.utilization) BY vcenter.datacenter.name, vcenter.cluster.name, vcenter.host.name\n| SORT utilization_pct DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "vcenter.host.name",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }
