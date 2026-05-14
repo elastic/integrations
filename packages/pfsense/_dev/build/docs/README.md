@@ -145,4 +145,6 @@ The `log` data stream collects and parses all supported log types from the pfSen
 
 {{ event "log" }}
 
+### Inputs used
+
 {{ inputDocs }}
