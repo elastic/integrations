@@ -154,7 +154,7 @@ An example event for `access` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-05-14T12:30:30.227Z",
+    "@timestamp": "2026-05-14T14:12:23.435Z",
     "attributes": {
         "log": {
             "file": {
@@ -163,11 +163,11 @@ An example event for `access` looks as following:
         }
     },
     "body": {
-        "text": "::1 - - [14/May/2026:12:30:20 +0000] \"GET /server-status HTTP/1.1\" 200 97 \"-\" \"curl/8.14.1\" \"-\""
+        "text": "::1 - - [14/May/2026:14:12:12 +0000] \"GET /server-status HTTP/1.1\" 200 97 \"-\" \"curl/8.14.1\" \"-\""
     },
     "data_stream": {
         "dataset": "nginx.access.otel",
-        "namespace": "67588",
+        "namespace": "92632",
         "type": "logs"
     },
     "event": {
@@ -178,8 +178,8 @@ An example event for `access` looks as following:
             "name": "access.log"
         }
     },
-    "message": "::1 - - [14/May/2026:12:30:20 +0000] \"GET /server-status HTTP/1.1\" 200 97 \"-\" \"curl/8.14.1\" \"-\"",
-    "observed_timestamp": "2026-05-14T12:30:30.227992917Z"
+    "message": "::1 - - [14/May/2026:14:12:12 +0000] \"GET /server-status HTTP/1.1\" 200 97 \"-\" \"curl/8.14.1\" \"-\"",
+    "observed_timestamp": "2026-05-14T14:12:23.435914792Z"
 }
 ```
 
@@ -210,7 +210,7 @@ An example event for `error` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-05-14T12:32:30.692Z",
+    "@timestamp": "2026-05-14T14:14:11.813Z",
     "attributes": {
         "log": {
             "file": {
@@ -219,11 +219,11 @@ An example event for `error` looks as following:
         }
     },
     "body": {
-        "text": "2026/05/14 12:32:20 [warn] 1#1: conflicting server name \"localhost\" on [::]:80, ignored"
+        "text": "2026/05/14 14:14:01 [warn] 1#1: conflicting server name \"localhost\" on [::]:80, ignored"
     },
     "data_stream": {
         "dataset": "nginx.error.otel",
-        "namespace": "85297",
+        "namespace": "71988",
         "type": "logs"
     },
     "event": {
@@ -234,8 +234,8 @@ An example event for `error` looks as following:
             "name": "error.log"
         }
     },
-    "message": "2026/05/14 12:32:20 [warn] 1#1: conflicting server name \"localhost\" on [::]:80, ignored",
-    "observed_timestamp": "2026-05-14T12:32:30.692907709Z"
+    "message": "2026/05/14 14:14:01 [warn] 1#1: conflicting server name \"localhost\" on [::]:80, ignored",
+    "observed_timestamp": "2026-05-14T14:14:11.813583592Z"
 }
 ```
 
@@ -266,21 +266,21 @@ An example event for `stubstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-05-14T12:34:40.942Z",
+    "@timestamp": "2026-05-14T14:16:23.042Z",
     "_metric_names_hash": "1013a2d4cadaa836",
     "attributes": {
-        "state": "active"
+        "state": "writing"
     },
     "data_stream": {
         "dataset": "nginxreceiver.otel",
-        "namespace": "19041",
+        "namespace": "51962",
         "type": "metrics"
     },
     "event": {
         "dataset": "nginxreceiver.otel"
     },
     "host": {
-        "name": "elastic-agent-14970",
+        "name": "elastic-agent-11988",
         "os": {
             "platform": "linux"
         }
@@ -299,7 +299,7 @@ An example event for `stubstatus` looks as following:
     "resource": {
         "attributes": {
             "host": {
-                "name": "elastic-agent-14970"
+                "name": "elastic-agent-11988"
             },
             "os": {
                 "type": "linux"
@@ -311,8 +311,8 @@ An example event for `stubstatus` looks as following:
         "name": "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/nginxreceiver",
         "version": "9.5.0"
     },
-    "start_timestamp": "2026-05-14T12:34:39.925Z",
-    "state": "active",
+    "start_timestamp": "2026-05-14T14:16:22.020Z",
+    "state": "writing",
     "unit": "connections"
 }
 ```
