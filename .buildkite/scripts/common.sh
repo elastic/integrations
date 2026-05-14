@@ -10,6 +10,8 @@ platform_type_lowercase="${platform_type,,}"
 
 SCRIPTS_BUILDKITE_PATH="${WORKSPACE}/.buildkite/scripts"
 
+readonly LONG_RUNNING_BRANCH_PATTERN="^(backport-|feature/)"
+
 export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 
 API_BUILDKITE_PIPELINES_URL="https://api.buildkite.com/v2/organizations/elastic/pipelines/"
@@ -639,14 +641,14 @@ get_from_changeset() {
         from="${BUILDKITE_COMMIT}^"
     fi
 
-    if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ^backport- ]]; then
+    if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ${LONG_RUNNING_BRANCH_PATTERN} ]]; then
         local previous_successful_commit
         previous_successful_commit=$(get_previous_successful_commit "${BUILDKITE_PIPELINE_SLUG}" "${BUILDKITE_BRANCH}")
 
         from="${previous_successful_commit}"
         if [[ "${previous_successful_commit}" == "null" ]]; then
-            if [[ "${BUILDKITE_BRANCH}" =~ ^backport- ]]; then
-                # First push of a new backport branch: only CI infrastructure files
+            if [[ "${BUILDKITE_BRANCH}" =~ ${LONG_RUNNING_BRANCH_PATTERN} ]]; then
+                # First push of a new long-running branch (matches LONG_RUNNING_BRANCH_PATTERN): only CI infrastructure files
                 # changed, no package code was modified — skip package testing.
                 from="${BUILDKITE_COMMIT}"
             else
@@ -662,7 +664,7 @@ get_to_changeset() {
     # Changeset that triggered the build
     local to="${BUILDKITE_COMMIT}"
 
-    if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ^backport- ]]; then
+    if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ${LONG_RUNNING_BRANCH_PATTERN} ]]; then
         to="origin/${BUILDKITE_BRANCH}"
     fi
     echo "${to}"
