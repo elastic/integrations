@@ -15,7 +15,7 @@ output_permissions:
         uuid-for-permissions-on-related-indices:
             indices:
                 - names:
-                    - metrics-nginx_composable.stubstatus.otel-ep
+                    - metrics-nginxreceiver.otel-ep
                   privileges:
                     - auto_configure
                     - create_doc
@@ -28,12 +28,12 @@ processors:
             - context: datapoint
               statements:
                 - set(attributes["data_stream.type"], "metrics")
-                - set(attributes["data_stream.dataset"], "nginx_composable.stubstatus")
+                - set(attributes["data_stream.dataset"], "nginxreceiver")
                 - set(attributes["data_stream.namespace"], "ep")
 receivers:
     nginx/componentid-0:
         collection_interval: 10s
-        endpoint: http://localhost:80/status
+        endpoint: http://localhost:80/server-status
         initial_delay: 1s
 secret_references: []
 service:

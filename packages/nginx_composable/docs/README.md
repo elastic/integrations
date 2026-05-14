@@ -17,6 +17,8 @@ The Nginx (composable) integration collects Nginx access and error logs plus stu
 
 Fleet configures Elastic Agent with this integration’s data streams. The Agent runs the EDOT collector with the [filelog receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver) to tail your access and error log files, and the [nginx receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/nginxreceiver) to scrape the configured `stub_status` URL. Telemetry is exported to Elasticsearch; the bundled **nginx_otel** content package provides dashboards once data is flowing.
 
+Each data stream declares an explicit `dataset` override so that `data_stream.dataset` matches what the `nginx_otel` content package expects: `nginx.access.otel` (access logs), `nginx.error.otel` (error logs), and `nginxreceiver.otel` (stub status metrics). Without these overrides Fleet would default to `nginx_otel_integration.<stream>.otel`, which the content package dashboards do not filter on.
+
 ## What data does this integration collect?
 
 The integration collects the following:
@@ -45,7 +47,7 @@ Elastic Agent tails the Nginx log files you configure and scrapes the stub statu
 
 
 
-### Set up steps in nginx_composable
+### Set up steps in nginx_otel_integration
 
 1. Ensure **access** and **error** logs are written to paths that match the globs you will set in the integration (defaults assume `/var/log/nginx/access.log*` and `/var/log/nginx/error.log*`).
 2. Enable **`stub_status`** on a server block and choose a URL path (for example `/server-status`). The integration’s default **endpoint** is `http://localhost:80/server-status`; your path and port must match what you enter in Fleet.
@@ -76,7 +78,7 @@ location /server-status {
 ### Validation
 
 1. Generate a few HTTP requests against Nginx and, if needed, trigger a benign error log line so both log types have recent data.
-2. In Kibana, open **Discover** and search for the integration’s logs and metrics (for example filter by `data_stream.dataset` values such as `nginx_composable.access.otel`, `nginx_composable.error.otel`, and `nginx_composable.stubstatus.otel`).
+2. In Kibana, open **Discover** and search for the integration’s logs and metrics (for example filter by `data_stream.dataset` values such as `nginx.access.otel`, `nginx.error.otel`, and `nginxreceiver.otel`).
 3. Open the **nginx_otel** dashboards supplied by the content package to confirm charts populate after documents appear.
 
 ## Troubleshooting
@@ -114,7 +116,7 @@ Stub status collection uses a simple **HTTP GET** request to the configured **en
 
 #### access
 
-The `access` data stream collects Nginx HTTP access log lines from files matched by the configured include globs. Events are stored as OpenTelemetry-aligned logs.
+The `access` data stream collects Nginx HTTP access log lines from files matched by the configured include globs. Events are stored as OpenTelemetry-aligned logs. The dataset is overridden to `nginx.access` so documents land under `data_stream.dataset: nginx.access.otel`, matching the `nginx_otel` content package dashboards.
 
 ##### access fields
 
@@ -134,7 +136,7 @@ An example event for `access` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-05-13T10:31:12.191Z",
+    "@timestamp": "2026-05-14T12:30:30.227Z",
     "attributes": {
         "log": {
             "file": {
@@ -143,29 +145,29 @@ An example event for `access` looks as following:
         }
     },
     "body": {
-        "text": "::1 - - [13/May/2026:10:31:02 +0000] \"GET /server-status HTTP/1.1\" 200 97 \"-\" \"curl/8.14.1\" \"-\""
+        "text": "::1 - - [14/May/2026:12:30:20 +0000] \"GET /server-status HTTP/1.1\" 200 97 \"-\" \"curl/8.14.1\" \"-\""
     },
     "data_stream": {
-        "dataset": "nginx_composable.access.otel",
-        "namespace": "60964",
+        "dataset": "nginx.access.otel",
+        "namespace": "67588",
         "type": "logs"
     },
     "event": {
-        "dataset": "nginx_composable.access.otel"
+        "dataset": "nginx.access.otel"
     },
     "log": {
         "file": {
             "name": "access.log"
         }
     },
-    "message": "::1 - - [13/May/2026:10:31:02 +0000] \"GET /server-status HTTP/1.1\" 200 97 \"-\" \"curl/8.14.1\" \"-\"",
-    "observed_timestamp": "2026-05-13T10:31:12.19176522Z"
+    "message": "::1 - - [14/May/2026:12:30:20 +0000] \"GET /server-status HTTP/1.1\" 200 97 \"-\" \"curl/8.14.1\" \"-\"",
+    "observed_timestamp": "2026-05-14T12:30:30.227992917Z"
 }
 ```
 
 #### error
 
-The `error` data stream collects Nginx error log lines from files matched by the configured include globs.
+The `error` data stream collects Nginx error log lines from files matched by the configured include globs. The dataset is overridden to `nginx.error` so documents land under `data_stream.dataset: nginx.error.otel`, matching the `nginx_otel` content package dashboards.
 
 ##### error fields
 
@@ -185,7 +187,7 @@ An example event for `error` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-05-13T10:33:13.647Z",
+    "@timestamp": "2026-05-14T12:32:30.692Z",
     "attributes": {
         "log": {
             "file": {
@@ -194,29 +196,29 @@ An example event for `error` looks as following:
         }
     },
     "body": {
-        "text": "2026/05/13 10:33:02 [warn] 1#1: conflicting server name \"localhost\" on [::]:80, ignored"
+        "text": "2026/05/14 12:32:20 [warn] 1#1: conflicting server name \"localhost\" on [::]:80, ignored"
     },
     "data_stream": {
-        "dataset": "nginx_composable.error.otel",
-        "namespace": "18176",
+        "dataset": "nginx.error.otel",
+        "namespace": "85297",
         "type": "logs"
     },
     "event": {
-        "dataset": "nginx_composable.error.otel"
+        "dataset": "nginx.error.otel"
     },
     "log": {
         "file": {
             "name": "error.log"
         }
     },
-    "message": "2026/05/13 10:33:02 [warn] 1#1: conflicting server name \"localhost\" on [::]:80, ignored",
-    "observed_timestamp": "2026-05-13T10:33:13.647292595Z"
+    "message": "2026/05/14 12:32:20 [warn] 1#1: conflicting server name \"localhost\" on [::]:80, ignored",
+    "observed_timestamp": "2026-05-14T12:32:30.692907709Z"
 }
 ```
 
 #### stubstatus
 
-The `stubstatus` data stream collects metrics from the Nginx `stub_status` endpoint exposed over HTTP.
+The `stubstatus` data stream collects metrics from the Nginx `stub_status` endpoint exposed over HTTP. The dataset is overridden to `nginxreceiver` so documents land under `data_stream.dataset: nginxreceiver.otel`, matching the `nginx_otel` content package dashboards.
 
 ##### stubstatus fields
 
@@ -236,21 +238,21 @@ An example event for `stubstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-05-13T10:35:33.943Z",
+    "@timestamp": "2026-05-14T12:34:40.942Z",
     "_metric_names_hash": "1013a2d4cadaa836",
     "attributes": {
-        "state": "writing"
+        "state": "active"
     },
     "data_stream": {
-        "dataset": "nginx_composable.stubstatus.otel",
-        "namespace": "81748",
+        "dataset": "nginxreceiver.otel",
+        "namespace": "19041",
         "type": "metrics"
     },
     "event": {
-        "dataset": "nginx_composable.stubstatus.otel"
+        "dataset": "nginxreceiver.otel"
     },
     "host": {
-        "name": "elastic-agent-69029",
+        "name": "elastic-agent-14970",
         "os": {
             "platform": "linux"
         }
@@ -269,7 +271,7 @@ An example event for `stubstatus` looks as following:
     "resource": {
         "attributes": {
             "host": {
-                "name": "elastic-agent-69029"
+                "name": "elastic-agent-14970"
             },
             "os": {
                 "type": "linux"
@@ -279,10 +281,10 @@ An example event for `stubstatus` looks as following:
     },
     "scope": {
         "name": "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/nginxreceiver",
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
-    "start_timestamp": "2026-05-13T10:35:32.932Z",
-    "state": "writing",
+    "start_timestamp": "2026-05-14T12:34:39.925Z",
+    "state": "active",
     "unit": "connections"
 }
 ```

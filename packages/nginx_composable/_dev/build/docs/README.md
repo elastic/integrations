@@ -21,6 +21,8 @@ The Nginx (composable) integration collects Nginx access and error logs plus stu
 {{/* Add a high level overview on how this integration works. For example, does it collect data from API calls or recieving data from a network or file.*/}}
 Fleet configures Elastic Agent with this integration’s data streams. The Agent runs the EDOT collector with the [filelog receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver) to tail your access and error log files, and the [nginx receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/nginxreceiver) to scrape the configured `stub_status` URL. Telemetry is exported to Elasticsearch; the bundled **nginx_otel** content package provides dashboards once data is flowing.
 
+Each data stream declares an explicit `dataset` override so that `data_stream.dataset` matches what the `nginx_otel` content package expects: `nginx.access.otel` (access logs), `nginx.error.otel` (error logs), and `nginxreceiver.otel` (stub status metrics). Without these overrides Fleet would default to `nginx_otel_integration.<stream>.otel`, which the content package dashboards do not filter on.
+
 ## What data does this integration collect?
 {{/* Complete this section with information on what types of data the integration collects, and link to reference documentation if available
 */}}
@@ -56,7 +58,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html) 
 */}}
 
-### Set up steps in nginx_composable
+### Set up steps in nginx_otel_integration
 {{/* List the steps that are required to set up the 3rd party system to send data to Elastic. 
 This should be specific to the steps needed to set up the 3rd party system to send data to Elastic. It should not include generic information about how to install or set up the 3rd party system itself.
 */}}
@@ -96,7 +98,7 @@ If required, list the steps needed in the vendor product to start sending events
 Then list how to validate that the data is in Elasticsearch, using Kibana. This could be which indices to check in the Discover table, or which built in dashboards to look at to see the data.
 */}}
 1. Generate a few HTTP requests against Nginx and, if needed, trigger a benign error log line so both log types have recent data.
-2. In Kibana, open **Discover** and search for the integration’s logs and metrics (for example filter by `data_stream.dataset` values such as `nginx_composable.access.otel`, `nginx_composable.error.otel`, and `nginx_composable.stubstatus.otel`).
+2. In Kibana, open **Discover** and search for the integration’s logs and metrics (for example filter by `data_stream.dataset` values such as `nginx.access.otel`, `nginx.error.otel`, and `nginxreceiver.otel`).
 3. Open the **nginx_otel** dashboards supplied by the content package to confirm charts populate after documents appear.
 
 ## Troubleshooting
@@ -143,7 +145,7 @@ Stub status collection uses a simple **HTTP GET** request to the configured **en
 
 #### access
 
-The `access` data stream collects Nginx HTTP access log lines from files matched by the configured include globs. Events are stored as OpenTelemetry-aligned logs.
+The `access` data stream collects Nginx HTTP access log lines from files matched by the configured include globs. Events are stored as OpenTelemetry-aligned logs. The dataset is overridden to `nginx.access` so documents land under `data_stream.dataset: nginx.access.otel`, matching the `nginx_otel` content package dashboards.
 
 ##### access fields
 
@@ -155,7 +157,7 @@ The `access` data stream collects Nginx HTTP access log lines from files matched
 
 #### error
 
-The `error` data stream collects Nginx error log lines from files matched by the configured include globs.
+The `error` data stream collects Nginx error log lines from files matched by the configured include globs. The dataset is overridden to `nginx.error` so documents land under `data_stream.dataset: nginx.error.otel`, matching the `nginx_otel` content package dashboards.
 
 ##### error fields
 
@@ -167,7 +169,7 @@ The `error` data stream collects Nginx error log lines from files matched by the
 
 #### stubstatus
 
-The `stubstatus` data stream collects metrics from the Nginx `stub_status` endpoint exposed over HTTP.
+The `stubstatus` data stream collects metrics from the Nginx `stub_status` endpoint exposed over HTTP. The dataset is overridden to `nginxreceiver` so documents land under `data_stream.dataset: nginxreceiver.otel`, matching the `nginx_otel` content package dashboards.
 
 ##### stubstatus fields
 
