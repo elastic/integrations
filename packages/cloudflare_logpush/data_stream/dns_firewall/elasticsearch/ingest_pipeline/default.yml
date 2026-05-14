@@ -34,9 +34,9 @@ processors:
       field: event.type
       value: [info]
       tag: set_event_type
-## AWS S3 input does _id Based Deduplication and generates "_id" by default.
-## When "Data Deduplication" is not enabled, this field must be removed.
-## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
   - remove:
       field: _id
       tag: remove_id_based_deduplication
@@ -45,7 +45,7 @@ processors:
         must be removed.
       if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
       ignore_missing: true
-# Timestamp
+  # Timestamp
   - script:
       lang: painless
       tag: painless_timestamp_to_milli
@@ -78,6 +78,7 @@ processors:
       tag: date_event_timestamp
       on_failure:
       - append:
+          tag: append_error_message_38394fec
           field: error.message
           value: "{{{_ingest.on_failure_message}}}"
   - set:
@@ -85,7 +86,7 @@ processors:
       copy_from: "@timestamp"
       tag: set_timestamp
 
-# Handle source IP
+  # Handle source IP
   - convert:
       field: json.SourceIP
       tag: convert_sourceip_to_ip
@@ -95,6 +96,7 @@ processors:
       if: ctx.json?.SourceIP != ''
       on_failure:
         - append:
+            tag: append_error_message_83a22c97
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -102,7 +104,7 @@ processors:
       copy_from: cloudflare_logpush.dns_firewall.source.ip
       ignore_empty_value: true
       tag: set_source_ip
-# Geo enrichment (source IP)
+  # Geo enrichment (source IP)
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -127,7 +129,7 @@ processors:
       ignore_missing: true
       tag: rename_source_as_org
 
-# DNS ECS fields
+  # DNS ECS fields
   - rename:
       field: json.QueryName
       target_field: cloudflare_logpush.dns_firewall.question.name
@@ -148,6 +150,7 @@ processors:
       tag: convert_dns_response_code
       on_failure:
         - append:
+            tag: append_error_message_d8ae6c3a
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
@@ -159,6 +162,7 @@ processors:
       tag: convert_dns_upstream_response_code
       on_failure:
         - append:
+            tag: append_error_message_510a49ca
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
@@ -172,7 +176,7 @@ processors:
       if: ctx.cloudflare_logpush?.dns_firewall?.response?.code == null && ctx.cloudflare_logpush?.dns_firewall?.upstream?.response_code != null
       tag: set_dns_upstream_response_code
 
-# Custom fields
+  # Custom fields
   - rename:
       field: json.ClusterID
       target_field: cloudflare_logpush.dns_firewall.cluster_id
@@ -192,6 +196,7 @@ processors:
       if: ctx.json?.EDNSSubnet != ''
       on_failure:
         - append:
+            tag: append_error_message_01372df7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -202,6 +207,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_84fd5472
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -212,6 +218,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_406f267d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -222,6 +229,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_8c6a76fb
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -232,6 +240,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b8dd0db1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -242,6 +251,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_13cd5a09
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -267,6 +277,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d63cfe79
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
@@ -282,6 +293,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_0ce63313
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -293,6 +305,7 @@ processors:
       if: ctx.json?.UpstreamIP != ''
       on_failure:
         - append:
+            tag: append_error_message_a33c06b7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -303,10 +316,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f9eca425
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-# Create related fields
+  # Create related fields
   - append:
       field: related.ip
       value: '{{{source.ip}}}'
@@ -326,7 +340,7 @@ processors:
       allow_duplicates: false
       tag: append_related_upstream_ip
 
-# Clean resulting event
+  # Clean resulting event
   - remove:
       tag: remove_json_conf
       field:

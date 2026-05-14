@@ -2,6 +2,7 @@
 description: Pipeline for parsing Cloudflare DLP Forensic Copies logs.
 processors:
   - set:
+      tag: set_ecs_version_b777da29
       field: ecs.version
       value: '9.3.0'
   - rename:
@@ -18,21 +19,25 @@ processors:
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
       value: [network]
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
-## AWS S3 input does _id Based Deduplication and generates "_id" by default.
-## When "Data Deduplication" is not enabled, this field must be removed.
-## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
   - remove:
       field: _id
       tag: remove_id_based_deduplication
@@ -63,6 +68,7 @@ processors:
         }
         catch (Exception e) {}
   - date:
+      tag: date_json_Datetime_7d886bee
       field: json.Datetime
       if: ctx.json?.Datetime != null && ctx.json.Datetime != ''
       formats:
@@ -72,44 +78,54 @@ processors:
       timezone: UTC
       on_failure:
       - append:
+          tag: append_error_message_29e9e999
           field: error.message
           value: >-
             Processor '{{{ _ingest.on_failure_processor_type }}}'
             {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
             {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_cloudflare_logpush_dlp_forensic_copies_datetime_94563ee8
       field: cloudflare_logpush.dlp_forensic_copies.datetime
       copy_from: '@timestamp'
       ignore_empty_value: true
   - rename:
+      tag: rename_json_AccountID_to_cloudflare_logpush_dlp_forensic_copies_account_id_7a9b9bc3
       field: json.AccountID
       target_field: cloudflare_logpush.dlp_forensic_copies.account_id
       ignore_missing: true
   - rename:
+      tag: rename_json_ForensicCopyID_to_cloudflare_logpush_dlp_forensic_copies_forensic_copy_id_837e04d6
       field: json.ForensicCopyID
       target_field: cloudflare_logpush.dlp_forensic_copies.forensic_copy_id
       ignore_missing: true
   - rename:
+      tag: rename_json_GatewayRequestID_to_cloudflare_logpush_dlp_forensic_copies_gateway_request_id_6dd30812
       field: json.GatewayRequestID
       target_field: cloudflare_logpush.dlp_forensic_copies.gateway_request_id
       ignore_missing: true
   - rename:
+      tag: rename_json_Headers_to_cloudflare_logpush_dlp_forensic_copies_headers_6c33bc32
       field: json.Headers
       target_field: cloudflare_logpush.dlp_forensic_copies.headers
       ignore_missing: true
   - rename:
+      tag: rename_json_Payload_to_cloudflare_logpush_dlp_forensic_copies_payload_78daacc6
       field: json.Payload
       target_field: cloudflare_logpush.dlp_forensic_copies.payload
       ignore_missing: true
   - rename:
+      tag: rename_json_Phase_to_cloudflare_logpush_dlp_forensic_copies_phase_153ee19a
       field: json.Phase
       target_field: cloudflare_logpush.dlp_forensic_copies.phase
       ignore_missing: true
   - rename:
+      tag: rename_json_TriggeredRuleID_to_cloudflare_logpush_dlp_forensic_copies_triggered_rule_id_3e1335d4
       field: json.TriggeredRuleID
       target_field: cloudflare_logpush.dlp_forensic_copies.triggered_rule_id
       ignore_missing: true
   - set:
+      tag: set_rule_id_f2c7e8a4
       field: rule.id
       copy_from: cloudflare_logpush.dlp_forensic_copies.triggered_rule_id
       ignore_empty_value: true
@@ -120,6 +136,7 @@ processors:
         - _conf
       ignore_missing: true
   - remove:
+      tag: remove_bd294ab1
       field:
         - cloudflare_logpush.dlp_forensic_copies.action
         - cloudflare_logpush.dlp_forensic_copies.host
@@ -129,6 +146,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+        tag: script_a3eb5add
         description: Drops null/empty values recursively.
         lang: painless
         source: |
@@ -151,6 +169,7 @@ processors:
       tag: set_pipeline_error_into_event_kind
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -35,9 +35,9 @@ processors:
       tag: set_event_category
       field: event.category
       value: [authentication]
-## AWS S3 input does _id Based Deduplication and generates "_id" by default.
-## When "Data Deduplication" is not enabled, this field must be removed.
-## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
   - remove:
       field: _id
       tag: remove_id_based_deduplication
@@ -78,6 +78,7 @@ processors:
       timezone: UTC
       on_failure:
         - append:
+            tag: append_error_message_cf54c4b8
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
   - set:
@@ -143,6 +144,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_dee045ad
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:

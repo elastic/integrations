@@ -34,9 +34,9 @@ processors:
       field: event.kind
       value: event
       tag: set_event_kind
-## AWS S3 input does _id Based Deduplication and generates "_id" by default.
-## When "Data Deduplication" is not enabled, this field must be removed.
-## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
   - remove:
       field: _id
       tag: remove_id_based_deduplication
@@ -57,6 +57,7 @@ processors:
       tag: date_event_timestamp
       on_failure:
       - append:
+          tag: append_error_message_c14f4a20
           field: error.message
           value: |-
             Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
@@ -142,21 +143,25 @@ processors:
       ignore_missing: true
       tag: rename_script_version
   - convert:
+      tag: convert_json_CPUTimeMs_to_cloudflare_logpush_workers_trace_cpu_time_ms_29cf5c42
       field: json.CPUTimeMs
       target_field: cloudflare_logpush.workers_trace.cpu_time_ms
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1d0f189c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_WallTimeMs_to_cloudflare_logpush_workers_trace_wall_time_ms_e1d87cac
       field: json.WallTimeMs
       target_field: cloudflare_logpush.workers_trace.wall_time_ms
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_43f21cf6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
