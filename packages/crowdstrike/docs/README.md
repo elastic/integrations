@@ -314,23 +314,36 @@ The integration sets `event.severity` according to the mapping in the table abov
 | 60 - 79                | high          |
 | 80 - 100               | critical      |
 
+### Lookup index aliases renamed in 3.16.2
+
+In 3.16.2 the FDR lookup transform destination indices and stable aliases were moved out of the `logs-*` namespace so the empty lookup indices no longer match the default Security Solution `logs-*` index pattern (which produced "missing the timestamp field `@timestamp`" warnings on detection rules):
+
+| Before                                            | After                                       |
+|---------------------------------------------------|---------------------------------------------|
+| `logs-crowdstrike_lookup.aidmaster`               | `crowdstrike_lookup.aidmaster`              |
+| `logs-crowdstrike_lookup.userinfo`                | `crowdstrike_lookup.userinfo`               |
+| `logs-crowdstrike_lookup.dest_aidmaster-1`        | `crowdstrike_lookup.dest_aidmaster-1`       |
+| `logs-crowdstrike_lookup.dest_userinfo-1`         | `crowdstrike_lookup.dest_userinfo-1`        |
+
+If you wrote custom ES|QL queries, dashboards, or detection rules against the old alias names, update them to the new names. The bundled dashboards have been updated. After upgrading, the old `logs-crowdstrike_lookup.*` indices and aliases left behind by previous installs are unused and can be safely deleted.
+
 ### Query-time host metadata enrichment (LOOKUP JOIN)
 
 When the integration is installed, a transform maintains the latest host metadata (`aidmaster`) per host in a lookup index. You can enrich FDR event data with this metadata at query time using ES|QL [`LOOKUP JOIN`](https://www.elastic.co/docs/reference/query-languages/esql/commands/lookup-join) on `host.id`.
 
-**Lookup index:** `logs-crowdstrike_lookup.aidmaster` — stable alias for the aidmaster lookup data maintained by the integration transform. The backing destination index is managed by the package and may change when you upgrade; use this alias in queries so joins keep working across versions. The lookup retains only `host.id` and `crowdstrike.info.*`; ECS host fields from `aidmaster` are stored under `crowdstrike.info.host.*` (e.g. `crowdstrike.info.host.hostname`, `crowdstrike.info.host.cid`, `crowdstrike.info.host.os_version`).
+**Lookup index:** `crowdstrike_lookup.aidmaster` — stable alias for the aidmaster lookup data maintained by the integration transform. The backing destination index is managed by the package and may change when you upgrade; use this alias in queries so joins keep working across versions. The lookup retains only `host.id` and `crowdstrike.info.*`; ECS host fields from `aidmaster` are stored under `crowdstrike.info.host.*` (e.g. `crowdstrike.info.host.hostname`, `crowdstrike.info.host.cid`, `crowdstrike.info.host.os_version`).
 
 **Example ES|QL query:**
 
 ```sql
 FROM logs-crowdstrike.fdr-*
 | WHERE aws.s3.object.key LIKE "*/data/*"
-| LOOKUP JOIN logs-crowdstrike_lookup.aidmaster ON host.id
+| LOOKUP JOIN crowdstrike_lookup.aidmaster ON host.id
 | KEEP @timestamp, event.action, host.id, crowdstrike.info.host.hostname
 | LIMIT 20
 ```
 
-**Elasticsearch 8.19+** is required for `LOOKUP JOIN` to resolve an alias. Use `logs-crowdstrike_lookup.aidmaster` as in the example above. On **releases before 8.19**, `LOOKUP JOIN` must target the concrete transform destination index instead: in Kibana go to **Stack Management** → **Transforms**, open the CrowdStrike latest aidmaster transform, and use the **destination_index** name shown there (that name can change with the integration version).
+**Elasticsearch 8.19+** is required for `LOOKUP JOIN` to resolve an alias. Use `crowdstrike_lookup.aidmaster` as in the example above. On **releases before 8.19**, `LOOKUP JOIN` must target the concrete transform destination index instead: in Kibana go to **Stack Management** → **Transforms**, open the CrowdStrike latest aidmaster transform, and use the **destination_index** name shown there (that name can change with the integration version).
 
 **Using enriched fields:** Enrichment from the lookup is under the `crowdstrike.info.host.*` namespace (e.g. `crowdstrike.info.host.hostname` for hostname, `crowdstrike.info.host.cid` for customer ID). Use these fields in dashboards and detection rules when building on query-time enrichment.
 
@@ -340,7 +353,7 @@ FROM logs-crowdstrike.fdr-*
 
 A second transform maintains the latest user metadata per host-user pair from `UserIdentity` and `UserLogon` sensor events in a lookup index. Unlike `userinfo` directory data (which requires [Falcon Discover](https://www.crowdstrike.com/platform/exposure-management/falcon-discover/) and covers only Windows), sensor events are available to all FDR customers on all platforms (Windows, macOS, Linux, ChromeOS). You can enrich FDR events with user metadata at query time using ES|QL [`LOOKUP JOIN`](https://www.elastic.co/docs/reference/query-languages/esql/commands/lookup-join).
 
-**Lookup index:** `logs-crowdstrike_lookup.userinfo` — stable alias for the user lookup data maintained by the integration transform. The backing destination index is managed by the package and may change when you upgrade; use this alias in queries so joins keep working across versions. The lookup retains only `host_user_key` and `crowdstrike.info.*`; user fields are stored under `crowdstrike.info.user.*` (e.g. `crowdstrike.info.user.name`, `crowdstrike.info.user.domain`, `crowdstrike.info.user.logon_type`).
+**Lookup index:** `crowdstrike_lookup.userinfo` — stable alias for the user lookup data maintained by the integration transform. The backing destination index is managed by the package and may change when you upgrade; use this alias in queries so joins keep working across versions. The lookup retains only `host_user_key` and `crowdstrike.info.*`; user fields are stored under `crowdstrike.info.user.*` (e.g. `crowdstrike.info.user.name`, `crowdstrike.info.user.domain`, `crowdstrike.info.user.logon_type`).
 
 **Composite join key:** Because Unix UIDs are local to each host (the same numeric UID can refer to different users on different machines), the user lookup uses a composite key combining both `host.id` and `user.id`. Queries must construct this key with `EVAL` before joining:
 
@@ -352,7 +365,7 @@ A second transform maintains the latest user metadata per host-user pair from `U
 FROM logs-crowdstrike.fdr-*
 | WHERE aws.s3.object.key LIKE "*/data/*" OR log.file.path LIKE "*/data/*"
 | EVAL host_user_key = CONCAT(host.id, "::", user.id)
-| LOOKUP JOIN logs-crowdstrike_lookup.userinfo ON host_user_key
+| LOOKUP JOIN crowdstrike_lookup.userinfo ON host_user_key
 | KEEP @timestamp, event.action, host.id, user.id,
        crowdstrike.info.user.name, crowdstrike.info.user.domain
 | LIMIT 20
@@ -363,15 +376,15 @@ FROM logs-crowdstrike.fdr-*
 ```sql
 FROM logs-crowdstrike.fdr-*
 | WHERE aws.s3.object.key LIKE "*/data/*" OR log.file.path LIKE "*/data/*"
-| LOOKUP JOIN logs-crowdstrike_lookup.aidmaster ON host.id
+| LOOKUP JOIN crowdstrike_lookup.aidmaster ON host.id
 | EVAL host_user_key = CONCAT(host.id, "::", user.id)
-| LOOKUP JOIN logs-crowdstrike_lookup.userinfo ON host_user_key
+| LOOKUP JOIN crowdstrike_lookup.userinfo ON host_user_key
 | KEEP @timestamp, event.action, host.id, crowdstrike.info.host.hostname,
        user.id, crowdstrike.info.user.name, crowdstrike.info.user.domain
 | LIMIT 20
 ```
 
-**Elasticsearch 8.19+** is required for `LOOKUP JOIN` to resolve an alias. Use `logs-crowdstrike_lookup.userinfo` as in the examples above. On **releases before 8.19**, `LOOKUP JOIN` must target the concrete transform destination index instead: in Kibana go to **Stack Management** → **Transforms**, open the CrowdStrike latest userinfo transform, and use the **destination_index** name shown there (that name can change with the integration version). If you use both host and user lookups on releases before 8.19, you will need two concrete destination index names — one for aidmaster and one for userinfo — both obtainable from **Stack Management** → **Transforms**.
+**Elasticsearch 8.19+** is required for `LOOKUP JOIN` to resolve an alias. Use `crowdstrike_lookup.userinfo` as in the examples above. On **releases before 8.19**, `LOOKUP JOIN` must target the concrete transform destination index instead: in Kibana go to **Stack Management** → **Transforms**, open the CrowdStrike latest userinfo transform, and use the **destination_index** name shown there (that name can change with the integration version). If you use both host and user lookups on releases before 8.19, you will need two concrete destination index names — one for aidmaster and one for userinfo — both obtainable from **Stack Management** → **Transforms**.
 
 **Using enriched fields:** Enrichment from the user lookup is under the `crowdstrike.info.user.*` namespace (e.g. `crowdstrike.info.user.name` for username, `crowdstrike.info.user.domain` for UPN domain, `crowdstrike.info.user.logon_type` for logon type). Use these fields in dashboards and ES|QL detection rules when building on query-time enrichment. Note that detection rules using EQL, threshold, or KQL operate on stored documents and cannot use `LOOKUP JOIN` — those rule types continue to rely on ingest-time cache enrichment for user metadata.
 
