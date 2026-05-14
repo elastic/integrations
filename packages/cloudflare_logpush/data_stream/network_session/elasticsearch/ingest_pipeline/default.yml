@@ -90,6 +90,7 @@ processors:
       tag: set_json_SessionStartTime_3f0f0e5a
       field: json.SessionStartTime
       copy_from: "@timestamp"
+      ignore_empty_value: true
   - script:
       lang: painless
       tag: painless_session_end_time_to_milli
@@ -135,6 +136,7 @@ processors:
       tag: set_cloudflare_logpush_network_session_timestamp_7ec4f502
       field: cloudflare_logpush.network_session.timestamp
       copy_from: "@timestamp"
+      ignore_empty_value: true
   - rename:
       tag: rename_json_BytesReceived_to_cloudflare_logpush_network_session_destination_bytes_088c6ffa
       field: json.BytesReceived
@@ -186,7 +188,7 @@ processors:
       target_field: cloudflare_logpush.network_session.destination.ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.OriginIP != ''
+      if: ctx.json?.OriginIP != null && ctx.json.OriginIP != ''
       on_failure:
         - append:
             tag: append_error_message_394f4054
@@ -202,6 +204,8 @@ processors:
       tag: geoip_destination_ip_to_destination_geo_394bcdb5
       field: destination.ip
       target_field: destination.geo
+      ignore_missing: true
+      if: ctx.destination?.ip != null
   - geoip:
       tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
@@ -211,6 +215,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      if: ctx.destination?.ip != null
   - rename:
       tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
@@ -287,7 +292,7 @@ processors:
       target_field: cloudflare_logpush.network_session.source.ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.SourceIP != ''
+      if: ctx.json?.SourceIP != null && ctx.json.SourceIP != ''
       on_failure:
         - append:
             tag: append_error_message_1ee8a1ac
@@ -303,6 +308,8 @@ processors:
       tag: geoip_source_ip_to_source_geo_0494c6b1
       field: source.ip
       target_field: source.geo
+      ignore_missing: true
+      if: ctx.source?.ip != null
   - geoip:
       tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
@@ -312,6 +319,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      if: ctx.source?.ip != null
   - rename:
       tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
@@ -399,7 +407,7 @@ processors:
       target_field: cloudflare_logpush.network_session.egress.ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.EgressIP != ''
+      if: ctx.json?.EgressIP != null && ctx.json.EgressIP != ''
       on_failure:
         - append:
             tag: append_error_message_0b129a2c
@@ -441,7 +449,7 @@ processors:
       target_field: cloudflare_logpush.network_session.source.internal_ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.SourceInternalIP != ''
+      if: ctx.json?.SourceInternalIP != null && ctx.json.SourceInternalIP != ''
       on_failure:
         - append:
             tag: append_error_message_3a73acf7
@@ -488,7 +496,7 @@ processors:
       target_field: cloudflare_logpush.network_session.initial_origin_ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.InitialOriginIP != ''
+      if: ctx.json?.InitialOriginIP != null && ctx.json.InitialOriginIP != ''
       on_failure:
         - append:
             tag: append_error_message_34d648d9

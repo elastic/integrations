@@ -90,6 +90,7 @@ processors:
       tag: set_cloudflare_logpush_gateway_dns_timestamp_69c587e3
       field: cloudflare_logpush.gateway_dns.timestamp
       copy_from: "@timestamp"
+      ignore_empty_value: true
   - rename:
       tag: rename_json_DeviceID_to_cloudflare_logpush_gateway_dns_host_id_0913a274
       field: json.DeviceID
@@ -126,7 +127,7 @@ processors:
       target_field: cloudflare_logpush.gateway_dns.destination.ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.DstIP != ''
+      if: ctx.json?.DstIP != null && ctx.json.DstIP != ''
       on_failure:
         - append:
             tag: append_error_message_1c988cc4
@@ -143,6 +144,7 @@ processors:
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
+      if: ctx.destination?.ip != null
   - geoip:
       tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
@@ -152,6 +154,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      if: ctx.destination?.ip != null
   - rename:
       tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
@@ -235,6 +238,7 @@ processors:
       tag: set_dns_response_code_3de8fbb6
       field: dns.response_code
       copy_from: cloudflare_logpush.gateway_dns.response_code
+      ignore_empty_value: true
   - rename:
       tag: rename_json_RData_to_cloudflare_logpush_gateway_dns_answers_9bdd6d3f
       field: json.RData
@@ -251,6 +255,7 @@ processors:
       target_field: cloudflare_logpush.gateway_dns.resolved_ip
       type: ip
       ignore_missing: true
+      if: ctx.json?.ResolvedIPs != null && ctx.json.ResolvedIPs != ''
       on_failure:
         - append:
             tag: append_error_message_32506aaa
@@ -267,7 +272,7 @@ processors:
       target_field: cloudflare_logpush.gateway_dns.source.ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.SrcIP != ''
+      if: ctx.json?.SrcIP != null && ctx.json.SrcIP != ''
       on_failure:
         - append:
             tag: append_error_message_dcbe79e0
@@ -284,6 +289,7 @@ processors:
       field: source.ip
       target_field: source.geo
       ignore_missing: true
+      if: ctx.source?.ip != null
   - geoip:
       tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
@@ -293,6 +299,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      if: ctx.source?.ip != null
   - rename:
       tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
@@ -318,6 +325,7 @@ processors:
       tag: set_source_port_1a426ae9
       field: source.port
       copy_from: cloudflare_logpush.gateway_dns.source.port
+      ignore_empty_value: true
   - rename:
       tag: rename_json_TimeZone_to_cloudflare_logpush_gateway_dns_timezone_665792ac
       field: json.TimeZone
@@ -327,6 +335,7 @@ processors:
       tag: set_event_timezone_960e95b1
       field: event.timezone
       copy_from: cloudflare_logpush.gateway_dns.timezone
+      ignore_empty_value: true
   - rename:
       tag: rename_json_UserID_to_cloudflare_logpush_gateway_dns_user_id_c4e5da4a
       field: json.UserID
@@ -336,6 +345,7 @@ processors:
       tag: set_user_id_0d9672f9
       field: user.id
       copy_from: cloudflare_logpush.gateway_dns.user.id
+      ignore_empty_value: true
   # Custom fields
   - rename:
       tag: rename_json_ColoCode_to_cloudflare_logpush_gateway_dns_colo_code_9e8b055e
@@ -368,6 +378,7 @@ processors:
       target_field: cloudflare_logpush.gateway_dns.authoritative_name_server_ip
       type: ip
       ignore_missing: true
+      if: ctx.json?.AuthoritativeNameServerIPs != null && ctx.json.AuthoritativeNameServerIPs != ''
       on_failure:
         - append:
             tag: append_error_message_82741c48
@@ -624,7 +635,7 @@ processors:
       target_field: cloudflare_logpush.gateway_dns.initial_resolved_ips
       type: ip
       ignore_missing: true
-      if: ctx.json?.InitialResolvedIPs != ''
+      if: ctx.json?.InitialResolvedIPs != null && ctx.json.InitialResolvedIPs != ''
       on_failure:
         - append:
             tag: append_error_message_7b30fdfb

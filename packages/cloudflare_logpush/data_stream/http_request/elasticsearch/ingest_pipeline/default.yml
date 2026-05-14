@@ -194,7 +194,7 @@ processors:
       tag: convert_json_OriginIP_to_cloudflare_logpush_http_request_origin_ip_191f66a5
       field: json.OriginIP
       target_field: cloudflare_logpush.http_request.origin.ip
-      if: ctx.json?.OriginIP != ''
+      if: ctx.json?.OriginIP != null && ctx.json.OriginIP != ''
       type: ip
       ignore_missing: true
       on_failure:
@@ -275,7 +275,7 @@ processors:
       tag: convert_json_ClientIP_to_cloudflare_logpush_http_request_client_ip_3d9346d4
       field: json.ClientIP
       target_field: cloudflare_logpush.http_request.client.ip
-      if: ctx.json?.ClientIP != ''
+      if: ctx.json?.ClientIP != null && ctx.json.ClientIP != ''
       type: ip
       ignore_missing: true
       on_failure:
@@ -490,11 +490,13 @@ processors:
       field: tmp.constructed_uri
       tag: set_tmp_constructed_uri
       value: '{{{url.scheme}}}://{{{url.domain}}}{{{json.ClientRequestURI}}}'
+      ignore_empty_value: true
       if: ctx.json?.ClientRequestURI != null && ctx.url?.scheme != null && ctx.url?.domain != null && ctx.json.ClientRequestURI.startsWith('/')
   - set:
       field: tmp.constructed_uri
       tag: set_tmp_constructed_uri_from_ClientRequestURI
       copy_from: json.ClientRequestURI
+      ignore_empty_value: true
       if: ctx.json?.ClientRequestURI != null && !ctx.json.ClientRequestURI.startsWith('/')
   - uri_parts:
       field: tmp.constructed_uri
@@ -740,7 +742,7 @@ processors:
       tag: convert_json_EdgeServerIP_to_cloudflare_logpush_http_request_edge_server_ip_4aaf36d3
       field: json.EdgeServerIP
       target_field: cloudflare_logpush.http_request.edge.server.ip
-      if: ctx.json?.EdgeServerIP != ''
+      if: ctx.json?.EdgeServerIP != null && ctx.json.EdgeServerIP != ''
       type: ip
       ignore_missing: true
       on_failure:

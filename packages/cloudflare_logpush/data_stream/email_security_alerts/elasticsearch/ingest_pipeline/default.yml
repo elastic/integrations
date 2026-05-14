@@ -181,6 +181,7 @@ processors:
       tag: convert_smtp_helo_server_ip
       type: ip
       ignore_missing: true
+      if: ctx.json?.SMTPHeloServerIP != null && ctx.json.SMTPHeloServerIP != ''
       on_failure:
         - append:
             tag: append_error_message_42dddf15
@@ -305,6 +306,7 @@ processors:
       tag: convert_smtp_helo_server_name_ip
       type: ip
       ignore_missing: true
+      if: ctx.server?.address != null && ctx.server.address != ''
       on_failure:
         - set:
             tag: set_server_domain_d9956d45
@@ -386,6 +388,8 @@ processors:
       tag: geoip_server_ip_to_server_geo_bc3fd9f9
       field: server.ip
       target_field: server.geo
+      ignore_missing: true
+      if: ctx.server?.ip != null
   - geoip:
       tag: geoip_server_ip_to_server_as_ed2798db
       database_file: GeoLite2-ASN.mmdb
@@ -395,6 +399,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      if: ctx.server?.ip != null
   - rename:
       tag: rename_server_as_asn_to_server_as_number_f46ba339
       field: server.as.asn

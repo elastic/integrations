@@ -90,6 +90,7 @@ processors:
       tag: set_cloudflare_logpush_gateway_network_timestamp_f08081fc
       field: cloudflare_logpush.gateway_network.timestamp
       copy_from: "@timestamp"
+      ignore_empty_value: true
   - rename:
       tag: rename_json_Action_to_cloudflare_logpush_gateway_network_action_f9131c6f
       field: json.Action
@@ -106,7 +107,7 @@ processors:
       target_field: cloudflare_logpush.gateway_network.destination.ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.DestinationIP != ''
+      if: ctx.json?.DestinationIP != null && ctx.json.DestinationIP != ''
       on_failure:
         - append:
             tag: append_error_message_4a3961f8
@@ -123,6 +124,7 @@ processors:
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
+      if: ctx.destination?.ip != null
   - geoip:
       tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
@@ -132,6 +134,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      if: ctx.destination?.ip != null
   - rename:
       tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
@@ -209,7 +212,7 @@ processors:
       target_field: cloudflare_logpush.gateway_network.source.ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.SourceIP != ''
+      if: ctx.json?.SourceIP != null && ctx.json.SourceIP != ''
       on_failure:
         - append:
             tag: append_error_message_1d82882e
@@ -226,6 +229,7 @@ processors:
       field: source.ip
       target_field: source.geo
       ignore_missing: true
+      if: ctx.source?.ip != null
   - geoip:
       tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
@@ -235,6 +239,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      if: ctx.source?.ip != null
   - rename:
       tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
@@ -344,7 +349,7 @@ processors:
       target_field: cloudflare_logpush.gateway_network.override.ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.OverrideIP != ''
+      if: ctx.json?.OverrideIP != null && ctx.json.OverrideIP != ''
       on_failure:
         - append:
             tag: append_error_message_acc703b0
@@ -382,7 +387,7 @@ processors:
       target_field: cloudflare_logpush.gateway_network.source.internal_ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.SourceInternalIP != ''
+      if: ctx.json?.SourceInternalIP != null && ctx.json.SourceInternalIP != ''
       on_failure:
         - append:
             tag: append_error_message_aeea9379

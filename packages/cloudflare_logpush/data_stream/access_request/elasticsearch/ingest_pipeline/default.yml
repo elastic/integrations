@@ -90,6 +90,7 @@ processors:
       tag: set_cloudflare_logpush_access_request_timestamp_7b8f00af
       field: cloudflare_logpush.access_request.timestamp
       copy_from: "@timestamp"
+      ignore_empty_value: true
   - rename:
       tag: rename_json_Action_to_cloudflare_logpush_access_request_action_cd9b83c4
       field: json.Action
@@ -170,7 +171,7 @@ processors:
       target_field: cloudflare_logpush.access_request.client.ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.IPAddress != ''
+      if: ctx.json?.IPAddress != null && ctx.json.IPAddress != ''
       on_failure:
         - append:
             tag: append_error_message_64a77b32
@@ -186,6 +187,8 @@ processors:
       tag: geoip_client_ip_to_client_geo_92da0c99
       field: client.ip
       target_field: client.geo
+      ignore_missing: true
+      if: ctx.client?.ip != null
   - geoip:
       tag: geoip_client_ip_to_client_as_f17fb2b3
       database_file: GeoLite2-ASN.mmdb
@@ -195,6 +198,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      if: ctx.client?.ip != null
   - rename:
       tag: rename_client_as_asn_to_client_as_number_a6e30d01
       field: client.as.asn

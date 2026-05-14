@@ -63,6 +63,7 @@ processors:
   - set:
       field: cloudflare_logpush.workers_trace.timestamp
       copy_from: "@timestamp"
+      ignore_empty_value: true
       tag: set_timestamp
 
   # ECS fields
@@ -168,6 +169,7 @@ processors:
       description: Convert Workers Trace Events keys to snake case recursively.
       tag: script_convert_snake_case
       lang: painless
+      if: ctx.cloudflare_logpush?.workers_trace != null
       source: |-
         Map keysToSnakeCase(Map m) {
           def regex = /([a-z])([A-Z]+)/;
