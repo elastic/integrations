@@ -114,6 +114,15 @@ Do NOT use **bold** for issue names like "**No data is being collected**:".
 - Stub status metrics missing or failing: Verify the **endpoint** URL path matches your Nginx `location`, that `stub_status` is enabled, and that firewall or `allow`/`deny` rules permit the Agent to reach the URL. A `404` usually means the path is wrong; `403` often means access control blocked the scrape.
 - For Elastic Agent and Fleet issues: see [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
+## Known issues and limitations
+
+### Access and error log fields not parsed from raw log lines
+
+The fields `attributes.http.request.method`, `attributes.http.response.status_code`, `attributes.http.version`, `attributes.source.address`, `attributes.url.original`, and `attributes.user_agent.name` (access logs), and `attributes.log.level` and `attributes.process.pid` (error logs) are declared in the index mappings so Elasticsearch accepts and stores them correctly when they are present. However, these fields are **not populated today**. The `filelog_otel` input package is a generic log tailer: it emits the raw log line as `body.text` and `message` but does not parse the Nginx Combined Log Format or the Nginx error log format into OTel semantic conventions.
+
+As a result, the **[Nginx OTel] Request Health** and **[Nginx OTel] Traffic & Capacity** dashboard panels that rely on these parsed fields (status code breakdowns, top URLs, client addresses, user agents, log levels) will be empty until the limitation is addressed upstream.
+
+
 ## Performance and scaling
 {{/* Add any vendor specific performance and scaling information to this section.
 Performance and scaling information should be specific to sending data to Elasticsearch. It should not include information about the vendor product itself or generic information about performance and scaling.

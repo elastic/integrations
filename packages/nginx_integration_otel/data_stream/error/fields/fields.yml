@@ -1,0 +1,30 @@
+- name: attributes
+  type: group
+  fields:
+    - name: log
+      type: group
+      fields:
+        - name: level
+          type: keyword
+          description: Nginx error log severity level (e.g., warn, error, crit).
+        - name: file
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: Log file name.
+    - name: process
+      type: group
+      fields:
+        - name: pid
+          type: long
+          description: Process ID of the nginx worker that emitted the log entry.
+- name: body
+  type: group
+  fields:
+    - name: text
+      type: match_only_text
+      description: Raw log line as emitted by the OTel filelog receiver.
+- name: observed_timestamp
+  type: date
+  description: Timestamp when the log line was collected by the OTel receiver.

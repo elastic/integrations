@@ -87,6 +87,15 @@ location /server-status {
 - Stub status metrics missing or failing: Verify the **endpoint** URL path matches your Nginx `location`, that `stub_status` is enabled, and that firewall or `allow`/`deny` rules permit the Agent to reach the URL. A `404` usually means the path is wrong; `403` often means access control blocked the scrape.
 - For Elastic Agent and Fleet issues: see [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
+## Known issues and limitations
+
+### Access and error log fields not parsed from raw log lines
+
+The fields `attributes.http.request.method`, `attributes.http.response.status_code`, `attributes.http.version`, `attributes.source.address`, `attributes.url.original`, and `attributes.user_agent.name` (access logs), and `attributes.log.level` and `attributes.process.pid` (error logs) are declared in the index mappings so Elasticsearch accepts and stores them correctly when they are present. However, these fields are **not populated today**. The `filelog_otel` input package is a generic log tailer: it emits the raw log line as `body.text` and `message` but does not parse the Nginx Combined Log Format or the Nginx error log format into OTel semantic conventions.
+
+As a result, the **[Nginx OTel] Request Health** and **[Nginx OTel] Traffic & Capacity** dashboard panels that rely on these parsed fields (status code breakdowns, top URLs, client addresses, user agents, log levels) will be empty until the limitation is addressed upstream.
+
+
 ## Performance and scaling
 
 High-traffic Nginx nodes produce large log volume; tailing many large files increases Agent CPU and I/O. Stub status scraping is comparatively small; keep a single reachable endpoint per instance.
@@ -125,9 +134,18 @@ The `access` data stream collects Nginx HTTP access log lines from files matched
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| attributes.http.request.method | HTTP request method. | keyword |
+| attributes.http.response.status_code | HTTP response status code. | long |
+| attributes.http.version | HTTP protocol version. | keyword |
+| attributes.log.file.name | Log file name. | keyword |
+| attributes.source.address | Source IP address of the client. | keyword |
+| attributes.url.original | Original URL path as seen in the access log. | wildcard |
+| attributes.user_agent.name | Parsed user agent name. | keyword |
+| body.text | Raw log line as emitted by the OTel filelog receiver. | match_only_text |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| observed_timestamp | Timestamp when the log line was collected by the OTel receiver. | date |
 
 
 ##### access sample event
@@ -176,9 +194,14 @@ The `error` data stream collects Nginx error log lines from files matched by the
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| attributes.log.file.name | Log file name. | keyword |
+| attributes.log.level | Nginx error log severity level (e.g., warn, error, crit). | keyword |
+| attributes.process.pid | Process ID of the nginx worker that emitted the log entry. | long |
+| body.text | Raw log line as emitted by the OTel filelog receiver. | match_only_text |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| observed_timestamp | Timestamp when the log line was collected by the OTel receiver. | date |
 
 
 ##### error sample event
@@ -224,12 +247,17 @@ The `stubstatus` data stream collects metrics from the Nginx `stub_status` endpo
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| nginx.connections_accepted | The total number of accepted client connections. | long | counter |
+| nginx.connections_current | The current number of connections. Broken down by state via the `state` attribute. | long | gauge |
+| nginx.connections_handled | The total number of handled client connections. | long | counter |
+| nginx.requests | The total number of client requests. | long | counter |
+| state | The state of the connection (active, reading, writing, waiting). Present only on nginx.connections_current datapoints. | keyword |  |
 
 
 ##### stubstatus sample event

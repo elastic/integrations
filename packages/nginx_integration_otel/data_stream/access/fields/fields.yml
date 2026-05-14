@@ -1,0 +1,57 @@
+- name: attributes
+  type: group
+  fields:
+    - name: http
+      type: group
+      fields:
+        - name: request
+          type: group
+          fields:
+            - name: method
+              type: keyword
+              description: HTTP request method.
+        - name: response
+          type: group
+          fields:
+            - name: status_code
+              type: long
+              description: HTTP response status code.
+        - name: version
+          type: keyword
+          description: HTTP protocol version.
+    - name: source
+      type: group
+      fields:
+        - name: address
+          type: keyword
+          description: Source IP address of the client.
+    - name: url
+      type: group
+      fields:
+        - name: original
+          type: wildcard
+          description: Original URL path as seen in the access log.
+    - name: user_agent
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Parsed user agent name.
+    - name: log
+      type: group
+      fields:
+        - name: file
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: Log file name.
+- name: body
+  type: group
+  fields:
+    - name: text
+      type: match_only_text
+      description: Raw log line as emitted by the OTel filelog receiver.
+- name: observed_timestamp
+  type: date
+  description: Timestamp when the log line was collected by the OTel receiver.
