@@ -44,6 +44,12 @@ steps:
     command: "echo 'Get reference from main'"
     agents:
       image: "${LINUX_AGENT_IMAGE}"
+    plugins:
+      - sparse-checkout#v1.6.0:
+          paths:
+            - .buildkite
+            - .go-version
+          cleanup_sparse_state: true
     if: |
       build.env('BUILDKITE_PULL_REQUEST') != "false"
 
@@ -67,6 +73,12 @@ steps:
       # GCP VM used to match the same Python 3 version available in the steps that test packages
       provider: gcp
       image: "${IMAGE_UBUNTU_X86_64}"
+    plugins:
+      - sparse-checkout#v1.6.0:
+          paths:
+            - .buildkite
+            - .go-version
+          cleanup_sparse_state: true
 
   - label: ":junit: Sources Junit annotate"
     agents:
@@ -76,6 +88,11 @@ steps:
       - step: "check"
         allow_failure: true
     plugins:
+      - sparse-checkout#v1.6.0:
+          paths:
+            - .buildkite
+            - .go-version
+          cleanup_sparse_state: true
       - junit-annotate#v2.7.0:
           artifacts: "tests-report.xml"
           failed-download-exit-code: 0 # Not fail the build in case there are no XML files
@@ -108,6 +125,11 @@ steps:
       cpu: "8"
       memory: "4G"
     plugins:
+      - sparse-checkout#v1.6.0:
+          paths:
+            - .buildkite
+            - .go-version
+          cleanup_sparse_state: true
       - elastic/vault-github-token#v0.1.0:
     if: |
       build.env('BUILDKITE_PULL_REQUEST') != "false" &&
@@ -118,6 +140,11 @@ steps:
       # requires at least "bash", "curl" and "git"
       image: "docker.elastic.co/ci-agent-images/buildkite-junit-annotate:1.0"
     plugins:
+      - sparse-checkout#v1.6.0:
+          paths:
+            - .buildkite
+            - .go-version
+          cleanup_sparse_state: true
       - junit-annotate#v2.7.0:
           artifacts: "build/test-results/*.xml"
           failed-download-exit-code: 0 # Not fail the build in case there are no XML files
