@@ -1,12 +1,10 @@
 config_version: 2
 interval: {{interval}}
 
-{{#if enable_request_tracer}}
 resource.tracer:
-  enabled: true
+  enabled: {{enable_request_tracer}}
   filename: "../../logs/cel/http-request-trace-*.ndjson"
   maxbackups: 5
-{{/if}}
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
 {{/if}}
@@ -21,6 +19,9 @@ resource.url: {{url}}
 {{!-- https://api.hackerone.com/getting-started/#rate-limits --}}
 resource.rate_limit.limit: 5
 resource.rate_limit.burst: 20
+
+resource.headers:
+  Accept: application/json
 
 state:
   initial_interval: {{initial_interval}}
@@ -71,15 +72,13 @@ program: |-
   (size(state.?program_handles.orValue([])) == 0 && size(state.?inbox_ids.orValue([])) == 0) ?
     state.with(
       {
-        "events": [
-          {
-            "error": {
-              "code": "configuration",
-              "id": "missing_scope_filter",
-              "message": "At least one program handle or inbox id is required.",
-            },
+        "events": {
+          "error": {
+            "code": "configuration",
+            "id": "missing_scope_filter",
+            "message": "At least one program handle or inbox id is required.",
           },
-        ],
+        },
         "want_more": false,
       }
     )
@@ -124,7 +123,6 @@ program: |-
           {
             "Header": {
               "Authorization": ["Basic " + bytes(state.api_token_identifier + ":" + state.api_token_value).base64()],
-              "Accept": ["application/json"],
             },
           }
         ).do_request().as(resp,
@@ -144,8 +142,8 @@ program: |-
                 ),
                 // Max(last_activity_at) on this page only; cycle running max folded later.
                 "pageMax": body.?data.orValue([]).map(r,
-                  has(r.?attributes.last_activity_at) || has(r.?attributes.created_at),
-                  r.attributes.?last_activity_at.orValue(r.attributes.created_at)
+                  r.?attributes.?last_activity_at.hasValue() || r.?attributes.?created_at.hasValue(),
+                  r.?attributes.?last_activity_at.orValue(r.?attributes.created_at.orValue(""))
                 ).as(stamps,
                   (size(stamps) > 0) ? stamps.max() : ""
                 ),
