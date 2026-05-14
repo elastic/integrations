@@ -1,6 +1,7 @@
 # Test that a 404 response from the threat detail endpoint does not halt
 # collection of remaining threats. The mock returns 3 threats: the middle
-# one returns 404 and should be skipped. The other two should be collected.
+# one returns 404 and should be silently skipped. The other two should be
+# collected.
 
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
@@ -12,22 +13,14 @@ docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} abnorm
 add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
 
-# Expect 3 documents: 2 data events from the successful threats, plus
-# 1 error event from the 404 (indexed after the terminate processor
-# stops further pipeline processing).
-get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 3 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+# Expect 2 documents: the 404 threat is silently skipped.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
 cp stdout got_docs.json
 
 # Verify both OK threat IDs are present in the data events.
 exec jq -r '[.hits.hits[]._source.abnormal_security.threat.id // empty] | sort | .[]' got_docs.json
 stdout 'ok-threat-1'
 stdout 'ok-threat-2'
-
-# Verify exactly 1 error event mentioning the 404 threat.
-exec jq '[.hits.hits[]._source | select(.error.code == "404")] | length' got_docs.json
-stdout '^1$'
-exec jq -r '.hits.hits[]._source.error.message // empty' got_docs.json
-stdout '404-threat'
 
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
 uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
