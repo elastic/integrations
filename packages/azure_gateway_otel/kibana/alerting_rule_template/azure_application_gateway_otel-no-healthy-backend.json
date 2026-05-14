@@ -1,0 +1,52 @@
+{
+    "id": "azure_application_gateway_otel-no-healthy-backend",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts on the appearance of ERRORINFO_NO_HEALTHY_BACKEND or ERRORINFO_UPSTREAM_* reason codes in Access logs over a 15-minute window. These codes are emitted when AGW cannot route to a healthy backend member or the upstream connection fails — high-signal backend-pool health regression that can precede a full outage.",
+        "name": "[Azure Application Gateway OTel] No healthy backend or upstream error",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "azure",
+            "application-gateway"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                { "id": "azure_gateway_otel-backend-health" },
+                { "id": "azure_gateway_otel-overview" }
+            ],
+            "investigation_guide": {
+                "blob": "## No Healthy Backend / Upstream Error\n\nAGW reported `ERRORINFO_NO_HEALTHY_BACKEND` or `ERRORINFO_UPSTREAM_*` for one or more requests. The gateway could not establish a healthy connection to a backend pool member.\n\n### Triage Steps\n1. Open the Backend Health dashboard, filter to the affected backend pool.\n2. Verify in Azure portal that pool members are passing health probes and that probe configuration matches application reality (path, expected status, host header).\n3. Sample affected requests:\n   `FROM logs-azure.application_gateway.otel-default | WHERE attributes.azure.category == \"ApplicationGatewayAccessLog\" AND (attributes.error.type == \"ERRORINFO_NO_HEALTHY_BACKEND\" OR attributes.error.type LIKE \"ERRORINFO_UPSTREAM_*\") | SORT @timestamp DESC | LIMIT 50`\n4. Cross-check backend-side application logs, NSG/firewall changes, and recent infrastructure deploys.\n\n### Common Causes\n- All backend pool members down or unreachable.\n- Health probe misconfiguration after a path or hostname change.\n- Network ACL / NSG / private-endpoint connectivity regression.\n- Backend mTLS certificate expiry or renegotiation failure.\n\n### Tuning\n- The `5` occurrence floor filters transient single-request blips; lower it for stricter pages.\n- Pool-level grouping makes the alert actionable — adjust `termSize` if you operate many pools."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM logs-azure.application_gateway.otel-default\n| WHERE attributes.azure.category == \"ApplicationGatewayAccessLog\"\n  AND (\n    attributes.error.type == \"ERRORINFO_NO_HEALTHY_BACKEND\"\n    // Catches ERRORINFO_UPSTREAM_CONNECT_FAILED, ERRORINFO_UPSTREAM_TIMED_OUT, etc.\n    OR attributes.error.type LIKE \"ERRORINFO_UPSTREAM_*\"\n  )\n| STATS\n    occurrences = COUNT(*),\n    distinct_listeners = COUNT_DISTINCT(attributes.azure.agw.listener.name)\n  BY attributes.error.type,\n     attributes.azure.agw.backend.pool.name,\n     resource.attributes.cloud.resource_id\n// Tune up to filter transient single-request blips, down for stricter alerting.\n| WHERE occurrences > 5\n| SORT occurrences DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "attributes.azure.agw.backend.pool.name",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

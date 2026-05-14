@@ -1,0 +1,54 @@
+{
+    "id": "azure_application_gateway_otel-waf-attack-from-client-ip",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when a single client IP triggers a large number of attack-category WAF rule matches (SQLi, XSS, RCE, LFI, RFI, PHP injection, Java injection) over a 15-minute window. Works in both Detection and Prevention mode — does not depend on Blocked actions.",
+        "name": "[Azure Application Gateway OTel] WAF attack concentration from client IP",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "security",
+            "azure",
+            "application-gateway",
+            "waf"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                { "id": "azure_gateway_otel-waf" },
+                { "id": "azure_gateway_otel-overview" }
+            ],
+            "investigation_guide": {
+                "blob": "## WAF Attack Concentration From Client IP\n\nA single client IP triggered a large number of WAF rule matches in attack categories (SQLi, XSS, RCE, LFI, RFI, PHP/Java injection). The attack signal is independent of WAF mode: in Detection mode the request still reaches the backend; in Prevention mode it is blocked.\n\n### Triage Steps\n1. Open the WAF dashboard and filter to the offending client IP.\n2. Review the rule-group distribution for this IP — a focused attack will be concentrated in one or two categories.\n3. Check the user agent (`attributes.user_agent.original`) and target paths (`attributes.url.path`) for known scanner signatures.\n4. Determine if the requests were blocked (Prevention) or only logged (Detection):\n   `FROM logs-azure.application_gateway.otel-default | WHERE attributes.azure.category == \"ApplicationGatewayFirewallLog\" AND attributes.client.address == \"<ip>\" | STATS c = COUNT(*) BY attributes.security_rule.action, attributes.security_rule.ruleset.mode`\n5. If WAF is in Detection mode and the activity is hostile, consider switching the policy to Prevention or adding an IP-based custom block rule.\n\n### Tuning\n- The 20-match floor avoids paging on background scanner noise. Raise it for noisy public endpoints, or lower it for sensitive applications.\n- Add allow-listed scanner IPs (security team probes) by extending the WHERE clause with `AND attributes.client.address NOT IN (...)`.\n- Extend the attack-category list to include `RFI`, `WEB-SHELL`, `FIX-SESSION` etc. as needed."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM logs-azure.application_gateway.otel-default\n| WHERE attributes.azure.category == \"ApplicationGatewayFirewallLog\"\n  AND attributes.client.address IS NOT NULL\n// Flag rule matches that map to high-signal attack categories.\n// security_rule.ruleset.name encodes the rule group, e.g. REQUEST-942-APPLICATION-ATTACK-SQLI.\n// Extend this list to suit your environment.\n| EVAL is_attack = CASE(\n    attributes.security_rule.ruleset.name LIKE \"*SQLI*\"\n      OR attributes.security_rule.ruleset.name LIKE \"*XSS*\"\n      OR attributes.security_rule.ruleset.name LIKE \"*RCE*\"\n      OR attributes.security_rule.ruleset.name LIKE \"*LFI*\"\n      OR attributes.security_rule.ruleset.name LIKE \"*RFI*\"\n      OR attributes.security_rule.ruleset.name LIKE \"*PHP*\"\n      OR attributes.security_rule.ruleset.name LIKE \"*JAVA*\",\n    1, 0)\n| STATS\n    attack_matches = SUM(is_attack),\n    total_matches = COUNT(*)\n  BY attributes.client.address,\n     resource.attributes.cloud.resource_id\n// Tune this threshold up for noisy public endpoints, down for sensitive ones.\n| WHERE attack_matches > 20\n| SORT attack_matches DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "attributes.client.address",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

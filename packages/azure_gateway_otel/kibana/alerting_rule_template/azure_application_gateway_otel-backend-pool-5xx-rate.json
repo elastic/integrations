@@ -1,0 +1,52 @@
+{
+    "id": "azure_application_gateway_otel-backend-pool-5xx-rate",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when a backend pool returns HTTP 5xx for more than 5% of requests that actually reached the backend over a 15-minute window. Targets backend-side incidents (failing pool, unhealthy members) rather than AGW-internal failures.",
+        "name": "[Azure Application Gateway OTel] High backend pool 5xx rate",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "azure",
+            "application-gateway"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                { "id": "azure_gateway_otel-backend-health" },
+                { "id": "azure_gateway_otel-overview" }
+            ],
+            "investigation_guide": {
+                "blob": "## High Backend Pool 5xx Rate\n\nA backend pool is returning HTTP 5xx for an elevated share of requests reaching the backend.\n\n### Triage Steps\n1. Open the Backend Health dashboard and filter to the affected pool.\n2. Check backend status distribution: are errors concentrated on a single backend member or spread across the pool?\n3. Inspect recent Access logs for the pool:\n   `FROM logs-azure.application_gateway.otel-default | WHERE attributes.azure.category == \"ApplicationGatewayAccessLog\" AND attributes.azure.agw.backend.pool.name == \"<pool>\" AND attributes.azure.agw.backend.status_code >= 500 | SORT @timestamp DESC | LIMIT 50`\n4. Correlate with backend latency: rising latency alongside 5xx points to a backend overload; flat latency with sudden 5xx points to an application error.\n5. Check `attributes.error.type` for `ERRORINFO_UPSTREAM_*` codes.\n\n### Common Causes\n- Backend application crash or deploy regression.\n- Backend pool member health-probe failures.\n- Backend resource saturation (CPU, memory, connection pool).\n\n### Tuning\n- Adjust the `5.0` percent threshold to suit your SLO.\n- Increase the `20` minimum-request floor to avoid noise on low-traffic pools."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM logs-azure.application_gateway.otel-default\n// Only requests that actually reached a backend (status code present)\n| WHERE attributes.azure.category == \"ApplicationGatewayAccessLog\"\n  AND attributes.azure.agw.backend.pool.name IS NOT NULL\n  AND attributes.azure.agw.backend.status_code IS NOT NULL\n| EVAL backend_5xx = CASE(attributes.azure.agw.backend.status_code >= 500, 1, 0)\n| STATS\n    total = COUNT(*),\n    backend_errors = SUM(backend_5xx)\n  BY attributes.azure.agw.backend.pool.name,\n     resource.attributes.cloud.resource_id\n// Minimum sample size to avoid noise on idle pools; tune up if alerts are flaky\n| WHERE total > 20\n| EVAL backend_error_rate_pct = ROUND(backend_errors / TO_DOUBLE(total) * 100.0, 2)\n// Adjust the threshold to match your SLO budget\n| WHERE backend_error_rate_pct > 5.0\n| SORT backend_error_rate_pct DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "attributes.azure.agw.backend.pool.name",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

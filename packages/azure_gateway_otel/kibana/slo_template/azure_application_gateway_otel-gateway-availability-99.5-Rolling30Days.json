@@ -1,0 +1,56 @@
+{
+  "attributes": {
+    "name": "[Azure Application Gateway OTel] Gateway availability 99.5% rolling 30 days",
+    "description": "This SLO tracks gateway-boundary availability for Azure Application Gateway via OTel access logs. A request is counted as good when the HTTP status code returned to the client is below 500 (i.e. the gateway did not return a 5xx). The objective is that at least 99.5% of requests are served successfully over a rolling 30-day window. Sustained breaches indicate AGW-side failures (no healthy backend, WAF block, gateway capacity issues) or backend incidents surfaced through the gateway.",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "logs-*",
+        "filter": "data_stream.dataset: \"azure.application_gateway.otel\" AND attributes.azure.category: \"ApplicationGatewayAccessLog\"",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "doc_count",
+              "filter": "NOT attributes.http.response.status_code >= 500"
+            }
+          ],
+          "equation": "A"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "doc_count"
+            }
+          ],
+          "equation": "A"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995
+    },
+    "tags": [
+      "azure_application_gateway",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.cloud.resource_id"
+    ],
+    "artifacts": {
+      "dashboards": [
+        { "id": "azure_gateway_otel-overview" },
+        { "id": "azure_gateway_otel-backend-health" }
+      ]
+    }
+  },
+  "id": "azure_application_gateway_otel-gateway-availability-99.5-Rolling30Days",
+  "type": "slo_template"
+}

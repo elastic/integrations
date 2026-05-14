@@ -1,0 +1,56 @@
+{
+  "attributes": {
+    "name": "[Azure Application Gateway OTel] Gateway latency under 1s 99.5% rolling 30 days",
+    "description": "This SLO tracks gateway-boundary latency for Azure Application Gateway via OTel access logs. A request is counted as good when the total time the gateway took to process the request and return a response to the client (attributes.azure.agw.latency) is below 1 second. The objective is that at least 99.5% of requests are served within 1 second over a rolling 30-day window. Sustained breaches indicate gateway overhead growth (TLS, WAF evaluation, capacity pressure) or backend slowness surfaced at the gateway boundary.",
+    "indicator": {
+      "type": "sli.metric.custom",
+      "params": {
+        "index": "logs-*",
+        "filter": "data_stream.dataset: \"azure.application_gateway.otel\" AND attributes.azure.category: \"ApplicationGatewayAccessLog\"",
+        "good": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "doc_count",
+              "filter": "attributes.azure.agw.latency < 1"
+            }
+          ],
+          "equation": "A"
+        },
+        "total": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "doc_count"
+            }
+          ],
+          "equation": "A"
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "occurrences",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995
+    },
+    "tags": [
+      "azure_application_gateway",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.cloud.resource_id"
+    ],
+    "artifacts": {
+      "dashboards": [
+        { "id": "azure_gateway_otel-overview" },
+        { "id": "azure_gateway_otel-backend-health" }
+      ]
+    }
+  },
+  "id": "azure_application_gateway_otel-gateway-latency-99.5-Rolling30Days",
+  "type": "slo_template"
+}
