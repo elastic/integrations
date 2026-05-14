@@ -22,6 +22,7 @@ This integration collects log messages of the following type:
 
 - `Audit Feed`: Collects [Audit Feed](https://api.catonetworks.com/documentation/#query-auditFeed) logs from the Cato Networks API (endpoint: `/api/v1/graphql2`).
 
+**Audit data stream**: The audit dataset contains administrative and configuration activities from the Cato Management Application (CMA), which manages the broader Cato SASE Cloud Platform.
 
 ### Supported use cases
 
@@ -123,17 +124,15 @@ For more information on architectures that can be used for scaling this integrat
 
 {{fields "audit"}}
 
-### Example event
-
-#### Audit
-
-{{event "audit"}}
-
 #### Event
 
 {{fields "event"}}
 
 ### Example event
+
+#### Audit
+
+{{event "audit"}}
 
 #### Event
 

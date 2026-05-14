@@ -31,33 +31,42 @@ processors:
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
-  - fingerprint:
-      fields:
-        - event.original
-      tag: fingerprint_event_original
-      target_field: _id
-      ignore_missing: true
   - json:
       field: event.original
       tag: json_event_original
       target_field: cato_networks.audit
-  - set:
+  - append:
       field: event.category
-      tag: set_event_category
-      value: ['configuration']
+      tag: append_event_category
+      value: configuration
+      allow_duplicates: false
   - set:
       field: event.kind
       tag: set_event_kind
       value: event
   - append:
       field: event.type
-      tag: append_info_into_event_type
-      value: ['info','change']
+      tag: append_event_type_info
+      value: info
+      allow_duplicates: false
   - dot_expander:
       tag: dot_expander_cato_networks_audit
       field: '*'
       path: cato_networks.audit
-  
+  - fingerprint:
+      fields:
+        - cato_networks.audit.account_id
+        - cato_networks.audit.admin_id
+        - cato_networks.audit.module
+        - cato_networks.audit.creation_date
+        - cato_networks.audit.change_type
+        - cato_networks.audit.model_name
+        - cato_networks.audit.model_type
+        - cato_networks.audit.insertion_date
+      tag: fingerprint_audit_identity
+      target_field: _id
+      ignore_missing: true
+
   # Type Conflicting fields
   - rename:
       field: cato_networks.audit.change.After.adminRoles
@@ -157,16 +166,6 @@ processors:
         - remove:
             field: cato_networks.audit.change.After.backhaulingEnabled
             ignore_missing: true
-  - set:
-      field: host.geo.city_name
-      tag: set_host_geo_city_name_from_audit_change_after_city_raw
-      copy_from: cato_networks.audit.change.After.cityRaw
-      ignore_empty_value: true
-  - set:
-      field: host.geo.country_name
-      tag: set_host_geo_country_name_from_audit_change_after_country_raw
-      copy_from: cato_networks.audit.change.After.countryRaw
-      ignore_empty_value: true
   - convert:
       field: cato_networks.audit.change.After.disableAclForSip
       tag: convert_change_After_disableAclForSip_to_boolean
@@ -335,16 +334,6 @@ processors:
         - remove:
             field: cato_networks.audit.change.After.longitude
             ignore_missing: true
-  - set:
-      field: host.geo.location
-      tag: set_host_geo_location_from_audit_change_after_latitude
-      value: '{"lon": {{{cato_networks.audit.change.After.longitude}}}, "lat": {{{cato_networks.audit.change.After.latitude}}}}'
-      if: ctx.cato_networks?.audit?.change?.After?.longitude != null && ctx.cato_networks?.audit?.change?.After?.latitude != null
-  - json:
-      field: host.geo.location
-      tag: json_host_geo_location
-      target_field: host.geo.location
-      if: ctx.host?.geo?.location != null
   - convert:
       field: cato_networks.audit.change.After.maxBandwidth
       tag: convert_change_After_maxBandwidth_to_double
@@ -1474,11 +1463,6 @@ processors:
         - remove:
             field: cato_networks.audit.change.After.startDate
             ignore_missing: true
-  - set:
-      field: host.geo.region_iso_code
-      tag: set_host_geo_region_iso_code_from_audit_change_after_state_raw
-      copy_from: cato_networks.audit.change.After.stateRaw
-      ignore_empty_value: true
   - convert:
       field: cato_networks.audit.change.After.trialBandwidth
       tag: convert_change_After_trialBandwidth_to_double
@@ -1524,6 +1508,24 @@ processors:
       field: event.action
       tag: lowercase_event_action
       ignore_missing: true
+  - append:
+      field: event.type
+      tag: append_event_type_creation
+      value: creation
+      allow_duplicates: false
+      if: ctx.event?.action == 'created'
+  - append:
+      field: event.type
+      tag: append_event_type_change
+      value: change
+      allow_duplicates: false
+      if: ctx.event?.action == 'modified'
+  - append:
+      field: event.type
+      tag: append_event_type_deletion
+      value: deletion
+      allow_duplicates: false
+      if: ctx.event?.action == 'deleted'
   - date:
       field: cato_networks.audit.creation_date
       tag: date_creation_date
@@ -1561,7 +1563,7 @@ processors:
         - remove:
             field: cato_networks.audit.insertion_date
             ignore_missing: true
-  
+
   # change.After.allowedUpdatableItems[].* fields conversion
   - foreach:
       field: cato_networks.audit.change.After.allowedUpdatableItems
@@ -1633,7 +1635,7 @@ processors:
             - remove:
                 field: _ingest._value.newSaveMethod
                 ignore_missing: true
-  
+
   # change.After.adminRoles[].role.* fields conversion
   - foreach:
       field: cato_networks.audit.change.After.adminRoles
@@ -1737,7 +1739,7 @@ processors:
             - remove:
                 field: _ingest._value.role.visible
                 ignore_missing: true
-  
+
   # change.After.allowedItems[].* fields conversion
   - foreach:
       field: cato_networks.audit.change.After.allowedItems
@@ -1775,7 +1777,7 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  
+
   # change.After.from[].* field conversion
   - foreach:
       field: cato_networks.audit.change.After.from
@@ -1811,7 +1813,7 @@ processors:
             - remove:
                 field: _ingest._value.newSaveMethod
                 ignore_missing: true
-  
+
   # change.After.permissions.* field conversion
   - foreach:
       field: cato_networks.audit.change.After.permissions
@@ -1848,7 +1850,7 @@ processors:
             - remove:
                 field: _ingest._value.newSaveMethod
                 ignore_missing: true
-  
+
   # change.After.socketConnectionConfiguration.socketInterfaces[].* fields conversion
   - foreach:
       field: cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces
@@ -2113,8 +2115,8 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  
-  # socketConnectionConfiguration.socketsSettings.primary.links[].* fields conversion 
+
+  # socketConnectionConfiguration.socketsSettings.primary.links[].* fields conversion
   - foreach:
       field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links
       tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_links_creationDate
@@ -2381,7 +2383,7 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  
+
   # change.After.socketConnectionConfiguration.socketsSettings.primary.supportedAddOns[].* fields conversion
   - foreach:
       field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.supportedAddOns
@@ -2401,7 +2403,7 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  
+
   # change.After.socketConnectionConfiguration.socketsSettings.primary.supportedMigrations[].* fields conversion
   - foreach:
       field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.supportedMigrations
@@ -2444,7 +2446,7 @@ processors:
                 - append:
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  
+
   #   # change.After.socketsSettings.primary.links[].* fields conversion
   - foreach:
       field: cato_networks.audit.change.After.socketsSettings.primary.links
@@ -2709,7 +2711,7 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  
+
   # change.After.socketsSettings.primary.supportedAddOns[].* fields conversion
   - foreach:
       field: cato_networks.audit.change.After.socketsSettings.primary.supportedAddOns
@@ -2729,7 +2731,7 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  
+
   # change.After.socketsSettings.primary.supportedMigrations[].* fields conversion
   - foreach:
       field: cato_networks.audit.change.After.socketsSettings.primary.supportedMigrations
@@ -2772,7 +2774,7 @@ processors:
                 - append:
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  
+
   # rename all fields name to snake case
   - script:
       tag: script_convert_camelcase_to_snake_case
@@ -2827,13 +2829,9 @@ processors:
         }
   - remove:
       field:
-        - cato_networks.audit.change.after.city_raw
-        - cato_networks.audit.change.after.country_raw
-        - cato_networks.audit.change.after.state_raw
         - cato_networks.audit.creation_date
       tag: remove_custom_duplicate_fields
       ignore_missing: true
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - script:
       tag: remove_null_values
       lang: painless
@@ -2872,10 +2870,6 @@ processors:
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
-  - set:
-      field: event.kind
-      tag: set_pipeline_error_to_event_kind
-      value: pipeline_error
   - append:
       field: error.message
       value: >-
@@ -2883,6 +2877,10 @@ on_failure:
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message
         '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
   - append:
       field: tags
       tag: append_tags
