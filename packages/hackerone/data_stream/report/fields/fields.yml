@@ -1,0 +1,724 @@
+- name: hackerone
+  type: group
+  fields:
+    - name: report
+      type: group
+      description: >-
+        Raw HackerOne report resource document parsed from the JSON:API response. The structure mirrors the upstream payload — `id`, `type`, `attributes`, and `relationships` — without further field renames inside `hackerone.report`.
+      fields:
+        - name: id
+          type: keyword
+          description: JSON:API resource identifier for the report.
+        - name: type
+          type: keyword
+          description: JSON:API resource type discriminator (typically `report`).
+        - name: attributes
+          type: group
+          fields:
+            - name: title
+              type: keyword
+              description: Report title mirrored alongside ECS message.
+            - name: main_state
+              type: keyword
+              description: High-level workflow state (draft/open/closed).
+            - name: state
+              type: keyword
+              description: Operational report state consumed for ECS categorization.
+            - name: source
+              type: keyword
+              description: Source label for the submission when present.
+            - name: vulnerability_information
+              type: match_only_text
+              description: Raw Markdown narrative mirrored from the reporter submission.
+            - name: severity_metrics
+              type: match_only_text
+              description: Free-form supplemental severity commentary when captured on attributes.
+            - name: cve_ids
+              type: keyword
+              description: Full CVE identifiers when present beyond the ECS vulnerability.id primary.
+            - name: weaknesses
+              type: keyword
+              description: Alternate weakness identifiers as delivered on certain payloads.
+            - name: created_at
+              type: date
+              description: Report creation time mirrored from attributes.
+            - name: submitted_at
+              type: date
+              description: Submission acceptance time when present.
+            - name: triaged_at
+              type: date
+            - name: closed_at
+              type: date
+            - name: disclosed_at
+              type: date
+              description: Public disclosure timestamp.
+            - name: bounty_awarded_at
+              type: date
+              description: Timestamp when a bounty award was recorded.
+            - name: swag_awarded_at
+              type: date
+              description: Timestamp when swag was recorded as awarded.
+            - name: reporter_agreed_on_going_public_at
+              type: date
+              description: When the researcher agreed to going public.
+            - name: bug_reporter_agreed_on_going_public
+              type: boolean
+              description: Whether the researcher agreed to go public where provided on the payload.
+            - name: submitted_by_team_member
+              type: boolean
+              description: Whether the submission was filed by a program team member when present.
+            - name: cloned_from
+              type: keyword
+              description: Source report reference when cloning is indicated.
+            - name: first_program_activity_at
+              type: date
+              description: First program-side activity time.
+            - name: last_program_activity_at
+              type: date
+              description: Last program activity time.
+            - name: last_reporter_activity_at
+              type: date
+              description: Last reporter activity time.
+            - name: last_activity_at
+              type: date
+              description: Last activity time on the report (primary polling cursor).
+            - name: last_public_activity_at
+              type: date
+              description: Last public activity time.
+            - name: hai_is_priority
+              type: boolean
+            - name: hai_is_priority_reason
+              type: keyword
+            - name: timer_bounty_awarded_miss_at
+              type: date
+            - name: timer_bounty_awarded_elapsed_time
+              type: long
+            - name: timer_first_program_response_miss_at
+              type: date
+            - name: timer_first_program_response_elapsed_time
+              type: long
+            - name: timer_report_resolved_miss_at
+              type: date
+            - name: timer_report_resolved_elapsed_time
+              type: long
+            - name: timer_report_triage_miss_at
+              type: date
+            - name: timer_report_triage_elapsed_time
+              type: long
+            - name: attachment_ids
+              type: keyword
+              description: Optional attachment identifiers on the raw report resource attributes when provided.
+            - name: original_report_id
+              type: keyword
+            - name: issue_tracker_reference_id
+              type: keyword
+            - name: issue_tracker_reference_url
+              type: keyword
+        - name: relationships
+          type: group
+          fields:
+            - name: severity
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: type
+                      type: keyword
+                    - name: attributes
+                      type: group
+                      fields:
+                        - name: rating
+                          type: keyword
+                        - name: score
+                          type: double
+                        - name: max_severity
+                          type: keyword
+                        - name: author_type
+                          type: keyword
+                        - name: user_id
+                          type: long
+                        - name: created_at
+                          type: date
+                        - name: calculation_method
+                          type: keyword
+                        - name: cvss_vector_string
+                          type: keyword
+                        - name: attack_vector
+                          type: keyword
+                        - name: attack_complexity
+                          type: keyword
+                        - name: privileges_required
+                          type: keyword
+                        - name: user_interaction
+                          type: keyword
+                        - name: scope
+                          type: keyword
+                        - name: confidentiality
+                          type: keyword
+                        - name: integrity
+                          type: keyword
+                        - name: availability
+                          type: keyword
+                        - name: cvss_4_point_0_metrics
+                          type: group
+                          description: >-
+                            CVSS v4 metric set forwarded as-is from the upstream payload.
+                          fields:
+                            - name: attack_vector
+                              type: keyword
+                            - name: attack_complexity
+                              type: keyword
+                            - name: attack_requirements
+                              type: keyword
+                            - name: privileges_required
+                              type: keyword
+                            - name: user_interaction
+                              type: keyword
+                            - name: vulnerable_confidentiality
+                              type: keyword
+                            - name: vulnerable_integrity
+                              type: keyword
+                            - name: vulnerable_availability
+                              type: keyword
+                            - name: subsequent_confidentiality
+                              type: keyword
+                            - name: subsequent_integrity
+                              type: keyword
+                            - name: subsequent_availability
+                              type: keyword
+            - name: weakness
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: type
+                      type: keyword
+                    - name: attributes
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                        - name: description
+                          type: match_only_text
+                        - name: external_id
+                          type: keyword
+                        - name: created_at
+                          type: date
+            - name: reporter
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: type
+                      type: keyword
+                      description: JSON API reporter resource type discriminator (typically user).
+                    - name: attributes
+                      type: group
+                      fields:
+                        - name: username
+                          type: keyword
+                        - name: name
+                          type: keyword
+                        - name: disabled
+                          type: boolean
+                        - name: hackerone_triager
+                          type: boolean
+                        - name: bio
+                          type: match_only_text
+                        - name: website
+                          type: keyword
+                        - name: location
+                          type: keyword
+                        - name: reputation
+                          type: long
+                        - name: signal
+                          type: double
+                        - name: impact
+                          type: double
+                        - name: created_at
+                          type: date
+            - name: program
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: type
+                      type: keyword
+                    - name: attributes
+                      type: group
+                      fields:
+                        - name: handle
+                          type: keyword
+                        - name: created_at
+                          type: date
+                        - name: updated_at
+                          type: date
+            - name: assignee
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: type
+                      type: keyword
+                      description: Assignee discriminator (user/group).
+                    - name: attributes
+                      type: group
+                      fields:
+                        - name: username
+                          type: keyword
+                        - name: name
+                          type: keyword
+                        - name: created_at
+                          type: date
+                        - name: permissions
+                          type: keyword
+            - name: structured_scope
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: type
+                      type: keyword
+                    - name: attributes
+                      type: group
+                      fields:
+                        - name: asset_type
+                          type: keyword
+                        - name: asset_identifier
+                          type: keyword
+                        - name: eligible_for_bounty
+                          type: boolean
+                        - name: eligible_for_submission
+                          type: boolean
+                        - name: instruction
+                          type: match_only_text
+                        - name: max_severity
+                          type: keyword
+                        - name: reference
+                          type: keyword
+                        - name: confidentiality_requirement
+                          type: keyword
+                        - name: integrity_requirement
+                          type: keyword
+                        - name: availability_requirement
+                          type: keyword
+                        - name: created_at
+                          type: date
+                        - name: updated_at
+                          type: date
+            - name: campaign
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: type
+                      type: keyword
+                    - name: attributes
+                      type: group
+                      fields:
+                        - name: campaign_type
+                          type: keyword
+                        - name: researchers_information
+                          type: match_only_text
+                        - name: critical
+                          type: double
+                        - name: high
+                          type: double
+                        - name: medium
+                          type: double
+                        - name: low
+                          type: double
+                        - name: bounty_pool_limit
+                          type: double
+                        - name: bounty_spent
+                          type: double
+                        - name: start_date
+                          type: date
+                        - name: end_date
+                          type: date
+                        - name: extended_at
+                          type: date
+                        - name: status
+                          type: keyword
+                        - name: target_audience
+                          type: boolean
+                        - name: total_reports
+                          type: long
+                        - name: valid_reports
+                          type: long
+                        - name: total_critical_reports
+                          type: long
+                        - name: total_high_reports
+                          type: long
+            - name: bounties
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: type
+                      type: keyword
+                    - name: attributes
+                      type: group
+                      fields:
+                        - name: amount
+                          type: double
+                        - name: bonus_amount
+                          type: double
+                        - name: awarded_amount
+                          type: double
+                        - name: awarded_bonus_amount
+                          type: double
+                        - name: awarded_currency
+                          type: keyword
+                        - name: created_at
+                          type: date
+            - name: swag
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: type
+                      type: keyword
+                    - name: attributes
+                      type: group
+                      fields:
+                        - name: sent
+                          type: boolean
+                        - name: created_at
+                          type: date
+                    - name: relationships
+                      type: group
+                      fields:
+                        - name: user
+                          type: group
+                          fields:
+                            - name: data
+                              type: group
+                              fields:
+                                - name: id
+                                  type: keyword
+                                - name: type
+                                  type: keyword
+                                - name: attributes
+                                  type: group
+                                  fields:
+                                    - name: username
+                                      type: keyword
+                                    - name: name
+                                      type: keyword
+                                    - name: disabled
+                                      type: boolean
+                                    - name: created_at
+                                      type: date
+            - name: collaborators
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: weight
+                      type: long
+                    - name: user
+                      type: group
+                      fields:
+                        - name: id
+                          type: keyword
+                        - name: type
+                          type: keyword
+                        - name: attributes
+                          type: group
+                          fields:
+                            - name: username
+                              type: keyword
+                            - name: name
+                              type: keyword
+                            - name: disabled
+                              type: boolean
+                            - name: created_at
+                              type: date
+            - name: attachments
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: type
+                      type: keyword
+                    - name: attributes
+                      type: group
+                      fields:
+                        - name: file_name
+                          type: keyword
+                        - name: content_type
+                          type: keyword
+                        - name: file_size
+                          type: long
+                        - name: created_at
+                          type: date
+                        - name: expiring_url
+                          type: keyword
+            - name: activities
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: type
+                      type: keyword
+                    - name: attributes
+                      type: group
+                      fields:
+                        - name: report_id
+                          type: keyword
+                        - name: message
+                          type: match_only_text
+                        - name: internal
+                          type: boolean
+                        - name: created_at
+                          type: date
+                        - name: updated_at
+                          type: date
+                        - name: bounty_amount
+                          type: keyword
+                        - name: bonus_amount
+                          type: keyword
+                    - name: relationships
+                      type: group
+                      fields:
+                        - name: attachments
+                          type: group
+                          fields:
+                            - name: data
+                              type: group
+                              fields:
+                                - name: id
+                                  type: keyword
+                                - name: type
+                                  type: keyword
+                                - name: attributes
+                                  type: group
+                                  fields:
+                                    - name: file_name
+                                      type: keyword
+                                    - name: content_type
+                                      type: keyword
+                                    - name: file_size
+                                      type: long
+                                    - name: created_at
+                                      type: date
+                                    - name: expiring_url
+                                      type: keyword
+                        - name: actor
+                          type: group
+                          fields:
+                            - name: data
+                              type: group
+                              fields:
+                                - name: id
+                                  type: keyword
+                                - name: type
+                                  type: keyword
+                                - name: attributes
+                                  type: group
+                                  fields:
+                                    - name: username
+                                      type: keyword
+                                    - name: name
+                                      type: keyword
+                                    - name: disabled
+                                      type: boolean
+                                    - name: created_at
+                                      type: date
+            - name: summaries
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: type
+                      type: keyword
+                    - name: attributes
+                      type: group
+                      fields:
+                        - name: content
+                          type: match_only_text
+                        - name: category
+                          type: keyword
+                        - name: created_at
+                          type: date
+                        - name: updated_at
+                          type: date
+                    - name: relationships
+                      type: group
+                      fields:
+                        - name: user
+                          type: group
+                          fields:
+                            - name: data
+                              type: group
+                              fields:
+                                - name: id
+                                  type: keyword
+                                - name: type
+                                  type: keyword
+                                - name: attributes
+                                  type: group
+                                  fields:
+                                    - name: username
+                                      type: keyword
+                                    - name: name
+                                      type: keyword
+                                    - name: disabled
+                                      type: boolean
+                                    - name: created_at
+                                      type: date
+                        - name: attachments
+                          type: group
+                          fields:
+                            - name: data
+                              type: group
+                              fields:
+                                - name: id
+                                  type: keyword
+                                - name: type
+                                  type: keyword
+                                - name: attributes
+                                  type: group
+                                  fields:
+                                    - name: file_name
+                                      type: keyword
+                                    - name: content_type
+                                      type: keyword
+                                    - name: file_size
+                                      type: long
+                                    - name: created_at
+                                      type: date
+                                    - name: expiring_url
+                                      type: keyword
+            - name: custom_field_values
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: type
+                      type: keyword
+                    - name: attributes
+                      type: group
+                      fields:
+                        - name: label
+                          type: keyword
+                        - name: value
+                          type: keyword
+                        - name: field_value
+                          type: keyword
+            - name: inboxes
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: type
+                      type: keyword
+                    - name: attributes
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                        - name: type
+                          type: keyword
+            - name: automated_remediation_guidance
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: type
+                      type: keyword
+                    - name: attributes
+                      type: group
+                      fields:
+                        - name: reference
+                          type: keyword
+                        - name: created_at
+                          type: date
+            - name: custom_remediation_guidance
+              type: group
+              fields:
+                - name: data
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: type
+                      type: keyword
+                    - name: attributes
+                      type: group
+                      fields:
+                        - name: message
+                          type: match_only_text
+                        - name: created_at
+                          type: date
+                    - name: relationships
+                      type: group
+                      fields:
+                        - name: author
+                          type: group
+                          fields:
+                            - name: data
+                              type: group
+                              fields:
+                                - name: id
+                                  type: keyword
+                                - name: type
+                                  type: keyword
+                                - name: attributes
+                                  type: group
+                                  fields:
+                                    - name: username
+                                      type: keyword
+                                    - name: name
+                                      type: keyword
+                                    - name: disabled
+                                      type: boolean
+                                    - name: created_at
+                                      type: keyword

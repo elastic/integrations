@@ -1,0 +1,144 @@
+title: Report
+type: logs
+streams:
+  - input: cel
+    title: Reports
+    description: Collect vulnerability reports via the HackerOne Customer Reports API (`GET /v1/reports`).
+    template_path: cel.yml.hbs
+    vars:
+      - name: url
+        type: url
+        title: URL
+        description: |-
+          Base URL of the HackerOne API (`https://api.hackerone.com`).
+        required: true
+        show_user: true
+        default: https://api.hackerone.com
+      - name: api_token_identifier
+        type: text
+        title: API token identifier
+        description: Token identifier passed as Basic auth username.
+        required: true
+        secret: false
+        show_user: true
+      - name: api_token_value
+        type: password
+        title: API token value
+        description: Token value passed as Basic auth password.
+        required: true
+        secret: true
+        show_user: true
+      - name: program_handles
+        type: text
+        title: Program handles
+        description: |-
+          Program handles to restrict results (`filter[program][]`).
+          Provide at least one program handle **or** one inbox id — the API requires one scope filter.
+        multi: true
+        required: false
+        show_user: true
+      - name: inbox_ids
+        type: text
+        title: Inbox IDs
+        description: |-
+          Inbox identifiers (`filter[inbox_ids][]`). At least one program handle **or** one inbox id is required by the API.
+        multi: true
+        required: false
+        show_user: true
+      - name: interval
+        type: text
+        title: Interval
+        description: >-
+          How often the API is polled. Supported suffixes include `s` (seconds), `m` (minutes), and `h` (hours), as described in Elastic Agent duration parsing documentation.
+        required: true
+        show_user: true
+        default: 5m
+      - name: initial_interval
+        type: text
+        title: Initial lookback
+        description: |-
+          Duration to look back on the first poll for `filter[last_activity_at__gt]`. Supports `s`, `m`, `h`.
+        required: true
+        show_user: true
+        default: 24h
+      - name: page_size
+        type: integer
+        title: Page size
+        description: Value for `page[size]` on the initial request (HackerOne default page number is omitted on that request).
+        required: true
+        show_user: true
+        default: 100
+      - name: state_filter
+        type: text
+        title: State filter
+        description: |-
+          Optional `filter[state][]` values. Allowed values include:
+          `new`, `pending-program-review`, `triaged`, `needs-more-info`, `resolved`, `not-applicable`,
+          `informative`, `duplicate`, `spam`, `retesting`.
+        multi: true
+        required: false
+        show_user: true
+      - name: severity_filter
+        type: text
+        title: Severity filter
+        description: |-
+          Optional `filter[severity][]` values. Allowed values: `none`, `low`, `medium`, `high`, `critical`.
+        multi: true
+        required: false
+        show_user: true
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        description: Logs HTTP exchanges to agent disk for troubleshooting (avoid in production — may expose secrets).
+        required: true
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags applied to forwarded events before ingest.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+          - hackerone-report
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserve the raw REST response on `event.original` before ingestion.
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: |-
+          Configure Beat processors executed before ingestion. See Processors documentation.
+        multi: false
+        required: false
+        show_user: false
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: |-
+          Timeout for outbound HTTP requests. Examples include `45s`, `500ms`.
+        multi: false
+        required: true
+        show_user: false
+        default: 60s
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        description: |-
+          Proxy URL (`http[s]://<user>:<password>@hostname:port`) for outbound requests.
+        multi: false
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: SSL settings for outbound TLS connections (verification mode, CAs).
+        multi: false
+        required: false
+        show_user: false
