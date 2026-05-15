@@ -1,103 +1,56 @@
 ---
 description: Pipeline for processing compute image logs.
 processors:
-  - rename:
-      field: json.event.data.architecture
-      tag: rename_event_data_architecture
-      target_field: axonius.compute.event.data.architecture
-      ignore_missing: true
   - set:
       field: host.architecture
-      tag: set_host_architecture_from_compute_event_data_architecture
-      copy_from: axonius.compute.event.data.architecture
+      tag: set_host_architecture_from_compute_architecture
+      copy_from: axonius.compute.architecture
       ignore_empty_value: true
-  - rename:
-      field: json.event.data.aws_organization.arn
-      tag: rename_event_data_aws_organization_arn
-      target_field: axonius.compute.event.data.aws_organization.arn
-      ignore_missing: true
-  - rename:
-      field: json.event.data.aws_organization.available_policy_types
-      tag: rename_event_data_aws_organization_available_policy_types
-      target_field: axonius.compute.event.data.aws_organization.available_policy_types
-      ignore_missing: true
-  - rename:
-      field: json.event.data.aws_organization.feature_set
-      tag: rename_event_data_aws_organization_feature_set
-      target_field: axonius.compute.event.data.aws_organization.feature_set
-      ignore_missing: true
-  - rename:
-      field: json.event.data.aws_organization.id
-      tag: rename_event_data_aws_organization_id
-      target_field: axonius.compute.event.data.aws_organization.id
-      ignore_missing: true
   - set:
       field: cloud.account.id
-      tag: set_cloud_account_id_from_compute_event_data_aws_organization_id
-      copy_from: axonius.compute.event.data.aws_organization.id
+      tag: set_cloud_account_id_from_compute_aws_organization_id
+      copy_from: axonius.compute.aws_organization.id
       ignore_empty_value: true
-  - rename:
-      field: json.event.data.aws_organization.master_account_arn
-      tag: rename_event_data_aws_organization_master_account_arn
-      target_field: axonius.compute.event.data.aws_organization.master_account_arn
-      ignore_missing: true
-  - rename:
-      field: json.event.data.aws_organization.master_account_email
-      tag: rename_event_data_aws_organization_master_account_email
-      target_field: axonius.compute.event.data.aws_organization.master_account_email
-      ignore_missing: true
   - append:
       field: related.user
-      tag: append_compute_event_data_aws_organization_master_account_email_into_related_user
-      value: '{{{axonius.compute.event.data.aws_organization.master_account_email}}}'
+      tag: append_compute_aws_organization_master_account_email_into_related_user
+      value: '{{{axonius.compute.aws_organization.master_account_email}}}'
       allow_duplicates: false
-      if: ctx.axonius?.compute?.event?.data?.aws_organization?.master_account_email != null
-  - rename:
-      field: json.event.data.aws_organization.master_account_id
-      tag: rename_event_data_aws_organization_master_account_id
-      target_field: axonius.compute.event.data.aws_organization.master_account_id
-      ignore_missing: true
-  - rename:
-      field: json.event.data.aws_region
-      tag: rename_event_data_aws_region
-      target_field: axonius.compute.event.data.aws_region
-      ignore_missing: true
+      if: ctx.axonius?.compute?.aws_organization?.master_account_email != null
   - date:
-      field: json.event.data.create_time
-      tag: date_event_data_create_time
-      target_field: axonius.compute.event.data.create_time
+      field: axonius.compute.create_time
+      tag: date_create_time
+      target_field: axonius.compute.create_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.json?.event?.data?.create_time != null && ctx.json.event.data.create_time != ''
+      if: ctx.axonius?.compute?.create_time != null && ctx.axonius.compute.create_time != ''
       on_failure:
+        - remove:
+            field: axonius.compute.create_time
+            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_compute_event_data_create_time
-      copy_from: axonius.compute.event.data.create_time
+      tag: set_event_created_from_compute_create_time
+      copy_from: axonius.compute.create_time
       ignore_empty_value: true
-  - rename:
-      field: json.event.data.description
-      tag: rename_event_data_description
-      target_field: axonius.compute.event.data.description
-      ignore_missing: true
   - set:
       field: message
-      tag: set_message_from_compute_event_data_description
-      copy_from: axonius.compute.event.data.description
+      tag: set_message_from_compute_description
+      copy_from: axonius.compute.description
       ignore_empty_value: true
   - foreach:
-      field: json.event.data.ebs_volumes
-      tag: foreach_event_data_ebs_volumes_create_time
-      if: ctx.json?.event?.data?.ebs_volumes instanceof List
+      field: axonius.compute.ebs_volumes
+      tag: foreach_ebs_volumes_create_time
+      if: ctx.axonius?.compute?.ebs_volumes instanceof List
       processor:
         date:
           field: _ingest._value.create_time
-          tag: date_event_data_ebs_volumes_create_time
+          tag: date_ebs_volumes_create_time
           target_field: _ingest._value.create_time
           formats:
             - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -108,13 +61,13 @@ processors:
                 field: _ingest._value.create_time
                 ignore_missing: true
   - foreach:
-      field: json.event.data.ebs_volumes
-      tag: foreach_event_data_ebs_volumes_size
-      if: ctx.json?.event?.data?.ebs_volumes instanceof List
+      field: axonius.compute.ebs_volumes
+      tag: foreach_ebs_volumes_size
+      if: ctx.axonius?.compute?.ebs_volumes instanceof List
       processor:
         convert:
           field: _ingest._value.size
-          tag: convert_event_data_ebs_volumes_size_to_double
+          tag: convert_ebs_volumes_size_to_double
           type: double
           ignore_missing: true
           on_failure:
@@ -124,42 +77,34 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.ebs_volumes
-      tag: rename_event_data_ebs_volumes
-      target_field: axonius.compute.event.data.ebs_volumes
-      ignore_missing: true
   - convert:
-      field: json.event.data.encrypted
-      tag: convert_event_data_encrypted_to_boolean
-      target_field: axonius.compute.event.data.encrypted
+      field: axonius.compute.encrypted
+      tag: convert_encrypted_to_boolean
+      target_field: axonius.compute.encrypted
       type: boolean
       ignore_missing: true
+      if: ctx.axonius?.compute?.encrypted != ''
       on_failure:
+        - remove:
+            field: axonius.compute.encrypted
+            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.event.data.size
-      tag: convert_event_data_size_to_double
-      target_field: axonius.compute.event.data.size
+      field: axonius.compute.size
+      tag: convert_size_to_double
+      target_field: axonius.compute.size
       type: double
       ignore_missing: true
+      if: ctx.axonius?.compute?.size != ''
       on_failure:
+        - remove:
+            field: axonius.compute.size
+            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.state
-      tag: rename_event_data_state
-      target_field: axonius.compute.event.data.state
-      ignore_missing: true
-  - rename:
-      field: json.event.data.tags.tag_source
-      tag: rename_event_data_tags_tag_source
-      target_field: axonius.compute.event.data.tags.tag_source
-      ignore_missing: true
-on_failure:
   - append:
       field: error.message
       value: |-
