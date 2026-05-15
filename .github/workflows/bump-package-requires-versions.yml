@@ -36,17 +36,7 @@ jobs:
         run: echo "UPDATECLI_ACTION=apply" >> $GITHUB_ENV
 
       - name: Bump package requires versions
-        run: updatecli ${{ env.UPDATECLI_ACTION }} --config .github/workflows/updatecli/package-requires.d
-
-      - name: Create Pull Request
-        if: ${{ github.event_name != 'pull_request' }}
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: '[automation] Bump pinned versions in package requires: blocks'
-          title: '[automation] Bump pinned versions in package requires: blocks'
-          labels: |
-            automation
-            dependency
-          branch: automation/bump-package-requires
-          delete-branch: true
+        # --experimental needed for commitusingapi option.
+        run: updatecli --experimental ${{ env.UPDATECLI_ACTION }} --config .github/workflows/updatecli/package-requires.d --values .github/workflows/updatecli/values.d/scm.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

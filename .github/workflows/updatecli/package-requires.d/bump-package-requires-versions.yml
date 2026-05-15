@@ -2,12 +2,35 @@
 name: Bump pinned versions in package requires blocks
 pipelineid: bump-package-requires-versions
 
+scms:
+  default:
+    kind: github
+    spec:
+      owner: '{{ .scm.owner }}'
+      repository: '{{ .scm.repository }}'
+      user: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      username: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      token: '{{ requiredEnv "GITHUB_TOKEN" }}'
+      commitusingapi: true
+      branch: main
+
 targets:
   bump_requires:
-    name: bump requires versions across all integration package manifests
+    name: '[updatecli] Bump pinned versions in package requires'
     kind: shell
+    scmid: default
     spec:
       environments:
         - name: PATH
         - name: HOME
       command: sh .github/workflows/updatecli/package-requires.d/bump-package-requires-versions.sh
+
+actions:
+  openPullRequest:
+    title: '[updatecli] Bump pinned versions in package requires'
+    kind: github/pullrequest
+    scmid: default
+    spec:
+      labels:
+        - automation
+        - dependency
