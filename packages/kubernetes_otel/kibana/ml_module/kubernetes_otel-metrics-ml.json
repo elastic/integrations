@@ -1,0 +1,174 @@
+{
+    "id": "kubernetes_otel-metrics-ml",
+    "type": "ml-module",
+    "migrationVersion": {
+        "search": "7.9.3"
+    },
+    "references": [],
+    "attributes": {
+        "id": "kubernetes-otel-metrics-ml",
+        "title": "Kubernetes pod resources (OpenTelemetry)",
+        "description": "Detect anomalies in pod-level resource consumption (memory working set, network throughput) using metrics from the OpenTelemetry kubeletstats receiver.",
+        "type": "Container metrics",
+        "logo": {
+            "icon": "logoKubernetes"
+        },
+        "defaultIndexPattern": "metrics-kubeletstatsreceiver.otel-*",
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "exists": {
+                            "field": "k8s.pod.memory.working_set"
+                        }
+                    }
+                ],
+                "must_not": {
+                    "terms": {
+                        "_tier": [
+                            "data_frozen",
+                            "data_cold"
+                        ]
+                    }
+                }
+            }
+        },
+        "jobs": [
+            {
+                "id": "k8s_pod_memory_anomaly",
+                "config": {
+                    "groups": [
+                        "kubernetes",
+                        "otel"
+                    ],
+                    "description": "Kubernetes: detect pods whose memory working set has grown unusually relative to that pod's own history. Catches slow leak trajectories before they cross a hard OOM threshold.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "detector_description": "Anomalous pod memory working set",
+                                "function": "high_mean",
+                                "field_name": "k8s.pod.memory.working_set",
+                                "by_field_name": "k8s.pod.name",
+                                "partition_field_name": "k8s.namespace.name"
+                            }
+                        ],
+                        "influencers": [
+                            "k8s.pod.name",
+                            "k8s.namespace.name",
+                            "k8s.node.name"
+                        ]
+                    },
+                    "analysis_limits": {
+                        "model_memory_limit": "128mb"
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "model_plot_config": {
+                        "enabled": false,
+                        "annotations_enabled": true
+                    }
+                }
+            },
+            {
+                "id": "k8s_pod_network_io_anomaly",
+                "config": {
+                    "groups": [
+                        "kubernetes",
+                        "otel"
+                    ],
+                    "description": "Kubernetes: detect pods whose network throughput (transmit or receive) deviates from that pod's own baseline. Surfaces both unusual spikes (runaway processes, unexpected load) and unusual drops (network partition, idle pod) independently per direction.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "detector_description": "Anomalous pod network I/O by direction",
+                                "function": "mean",
+                                "field_name": "k8s.pod.network.io",
+                                "by_field_name": "k8s.pod.name",
+                                "partition_field_name": "direction"
+                            }
+                        ],
+                        "influencers": [
+                            "k8s.pod.name",
+                            "k8s.namespace.name",
+                            "direction"
+                        ]
+                    },
+                    "analysis_limits": {
+                        "model_memory_limit": "256mb"
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "model_plot_config": {
+                        "enabled": false,
+                        "annotations_enabled": true
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-k8s_pod_memory_anomaly",
+                "job_id": "k8s_pod_memory_anomaly",
+                "config": {
+                    "job_id": "k8s_pod_memory_anomaly",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "exists": {
+                                        "field": "k8s.pod.memory.working_set"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "k8s.pod.name"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-k8s_pod_network_io_anomaly",
+                "job_id": "k8s_pod_network_io_anomaly",
+                "config": {
+                    "job_id": "k8s_pod_network_io_anomaly",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "exists": {
+                                        "field": "k8s.pod.network.io"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "k8s.pod.name"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "direction"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}
