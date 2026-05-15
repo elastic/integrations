@@ -23,9 +23,19 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Install Updatecli in the runner
         uses: updatecli/updatecli-action@2c3221bc5f4499a99fec2c87d9de4a83cb30e990 #v3.1.3
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: '.go-version'
+
+      - name: Install elastic-package
+        run: go install github.com/elastic/elastic-package@$(grep 'github.com/elastic/elastic-package' go.mod | awk '{print $2}')
 
       - name: Select diff action
         if: ${{ github.event_name == 'pull_request' }}
@@ -40,3 +50,27 @@ jobs:
         run: updatecli --experimental ${{ env.UPDATECLI_ACTION }} --config .github/workflows/updatecli/package-requires.d --values .github/workflows/updatecli/values.d/scm.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUMPS_OUTPUT: ${{ runner.temp }}/bumps.json
+
+      - name: Add changelog entries for bumped packages
+        if: ${{ env.UPDATECLI_ACTION == 'apply' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUMPS_JSON: ${{ runner.temp }}/bumps.json
+        run: |
+          [ -s "$BUMPS_JSON" ] || { echo "No bumps recorded; skipping changelog step."; exit 0; }
+          BRANCH="updatecli_main_bump-package-requires-versions"
+          PR_URL=$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url')
+          [ -n "$PR_URL" ] || { echo "No open PR found for branch $BRANCH; skipping."; exit 0; }
+          git fetch origin "$BRANCH"
+          git checkout -B "$BRANCH" -f "origin/$BRANCH"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          PR_URL="$PR_URL" .github/workflows/updatecli/package-requires.d/add-changelogs.sh
+          if ! git diff --quiet HEAD; then
+            git add -A
+            git commit -m "Add changelog entries for bumped requires versions"
+            git push origin "$BRANCH"
+          else
+            echo "No changelog changes to commit."
+          fi
