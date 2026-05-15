@@ -47,7 +47,7 @@
                 "6c9dd2d4-d260-4691-8e98-652802837d68": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
-                        "fieldName": "axonius.compute.event.data.criticality",
+                        "fieldName": "axonius.compute.criticality",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -64,7 +64,7 @@
                 "7fd5da9e-9ee7-4e02-a968-c98b2d962b6d": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
-                        "fieldName": "axonius.compute.event.data.class_type",
+                        "fieldName": "axonius.compute.class_type",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -98,7 +98,7 @@
                 "d8f7dcc7-b033-44f7-8713-768ee5b56079": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
-                        "fieldName": "axonius.compute.event.data.category",
+                        "fieldName": "axonius.compute.category",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -186,6 +186,11 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-008270d8-1b9e-4836-86aa-6dfc8e6cc0c6",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "34293862-0a7a-4285-98fa-21db08b7b255",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
@@ -225,7 +230,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "axonius.compute.event.data.network_interfaces.ips"
+                                                    "sourceField": "axonius.compute.network_interfaces.ips"
                                                 },
                                                 "bea44f10-a57a-4519-9565-20db9338de00": {
                                                     "customLabel": true,
@@ -251,7 +256,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "axonius.compute.event.data.network_interfaces.mac"
+                                                    "sourceField": "axonius.compute.network_interfaces.mac"
                                                 },
                                                 "c78152ca-5566-4f0d-8c43-681f493a2c7f": {
                                                     "customLabel": true,
@@ -277,7 +282,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "axonius.compute.event.data.network_interfaces.manufacturer"
+                                                    "sourceField": "axonius.compute.network_interfaces.manufacturer"
                                                 },
                                                 "d24a0e16-fe8b-483c-8e05-2ab5b27388db": {
                                                     "customLabel": true,
@@ -305,7 +310,60 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "34293862-0a7a-4285-98fa-21db08b7b255",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "axonius.compute"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "axonius.compute"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "false"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "false"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -347,7 +405,60 @@
                             "events": []
                         }
                     },
-                    "filters": [],
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "axonius.compute"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "axonius.compute"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "labels.is_transform_source",
+                                            "index": "logs-*",
+                                            "key": "labels.is_transform_source",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "false"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "labels.is_transform_source": "false"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
                     "query": {
                         "language": "kuery",
                         "query": ""
@@ -375,13 +486,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-941cde98-bee8-4909-a740-56bb228db072",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "f9e3ba83-9dfb-4486-ac68-f0c9837ad747",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "941cde98-bee8-4909-a740-56bb228db072": {
                                             "columnOrder": [
@@ -413,7 +528,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "axonius.compute.event.data.installed_software.name"
+                                                    "sourceField": "axonius.compute.installed_software.name"
                                                 },
                                                 "529ac539-02c8-4e5e-90aa-82a0abb06816": {
                                                     "customLabel": true,
@@ -430,27 +545,71 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {}
                                 },
                                 "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "logs-*",
-                                            "timeField": "@timestamp",
-                                            "title": "logs-*"
-                                        }
-                                    ],
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "f9e3ba83-9dfb-4486-ac68-f0c9837ad747",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "axonius.compute"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "axonius.compute"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "false"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "false"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -482,7 +641,60 @@
                             "events": []
                         }
                     },
-                    "filters": [],
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "axonius.compute"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "axonius.compute"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "labels.is_transform_source",
+                                            "index": "logs-*",
+                                            "key": "labels.is_transform_source",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "false"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "labels.is_transform_source": "false"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
                     "query": {
                         "language": "kuery",
                         "query": ""
@@ -510,13 +722,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-77b14fa5-cf8d-4a7d-a46b-0c7c321f7ec2",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "f4092d9f-88a8-42ff-985e-915c29c56a81",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "77b14fa5-cf8d-4a7d-a46b-0c7c321f7ec2": {
                                             "columnOrder": [
@@ -565,28 +781,71 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {}
                                 },
                                 "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "logs-*",
-                                            "timeField": "@timestamp",
-                                            "title": "logs-*"
-                                        }
-                                    ],
-                                    "initialContext": null,
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "f4092d9f-88a8-42ff-985e-915c29c56a81",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "axonius.compute"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "axonius.compute"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "false"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "false"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -619,7 +878,60 @@
                             "events": []
                         }
                     },
-                    "filters": [],
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "axonius.compute"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "axonius.compute"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "labels.is_transform_source",
+                                            "index": "logs-*",
+                                            "key": "labels.is_transform_source",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "false"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "labels.is_transform_source": "false"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
                     "query": {
                         "language": "kuery",
                         "query": ""
@@ -687,6 +999,11 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-2d7e128c-0287-41ba-81e7-56d2421bd5d3",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "18974930-eb49-4e65-ab77-5751fdf1b51b",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
@@ -736,7 +1053,7 @@
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "axonius.compute.event.data.status"
+                                                    "sourceField": "axonius.compute.status"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -752,7 +1069,60 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "18974930-eb49-4e65-ab77-5751fdf1b51b",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "axonius.compute"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "axonius.compute"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "false"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "false"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -806,7 +1176,60 @@
                             "events": []
                         }
                     },
-                    "filters": [],
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "axonius.compute"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "axonius.compute"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "labels.is_transform_source",
+                                            "index": "logs-*",
+                                            "key": "labels.is_transform_source",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "false"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "labels.is_transform_source": "false"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
                     "query": {
                         "language": "kuery",
                         "query": ""
@@ -833,6 +1256,11 @@
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-7c28a11b-81be-4cad-9a39-83fa174e1f12",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "39820022-9567-4bcb-9ac9-04be32ced0f0",
                                 "type": "index-pattern"
                             }
                         ],
@@ -886,7 +1314,60 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "39820022-9567-4bcb-9ac9-04be32ced0f0",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "axonius.compute"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "axonius.compute"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "false"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "false"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -943,7 +1424,60 @@
                             "events": []
                         }
                     },
-                    "filters": [],
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "axonius.compute"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "axonius.compute"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "labels.is_transform_source",
+                                            "index": "logs-*",
+                                            "key": "labels.is_transform_source",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "false"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "labels.is_transform_source": "false"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
                     "query": {
                         "language": "kuery",
                         "query": ""
@@ -970,6 +1504,11 @@
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-22fa2b53-6f0f-44d6-9bbe-f4935cffa948",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "5e3288e5-225a-469a-ae56-28a146a6bdba",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1036,7 +1575,60 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "5e3288e5-225a-469a-ae56-28a146a6bdba",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "axonius.compute"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "axonius.compute"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "false"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "false"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1092,7 +1684,60 @@
                             "events": []
                         }
                     },
-                    "filters": [],
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "axonius.compute"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "axonius.compute"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "labels.is_transform_source",
+                                            "index": "logs-*",
+                                            "key": "labels.is_transform_source",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "false"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "labels.is_transform_source": "false"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
                     "query": {
                         "language": "kuery",
                         "query": ""
@@ -1120,13 +1765,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-b8ef1ff2-f776-44d0-9d47-ff3bcbafb627",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "79108d12-41e6-471e-ab7d-704ede32e47c",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "b8ef1ff2-f776-44d0-9d47-ff3bcbafb627": {
                                             "columnOrder": [
@@ -1158,7 +1807,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "axonius.compute.event.data.os.type"
+                                                    "sourceField": "axonius.compute.os.type"
                                                 },
                                                 "ce7a5491-0e86-4cb0-8218-7e653671c5e0": {
                                                     "customLabel": true,
@@ -1175,27 +1824,71 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {}
                                 },
                                 "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "logs-*",
-                                            "timeField": "@timestamp",
-                                            "title": "logs-*"
-                                        }
-                                    ],
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "79108d12-41e6-471e-ab7d-704ede32e47c",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "axonius.compute"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "axonius.compute"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "false"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "false"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1252,7 +1945,60 @@
                             "events": []
                         }
                     },
-                    "filters": [],
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "axonius.compute"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "axonius.compute"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "labels.is_transform_source",
+                                            "index": "logs-*",
+                                            "key": "labels.is_transform_source",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "false"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "labels.is_transform_source": "false"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
                     "query": {
                         "language": "kuery",
                         "query": ""
@@ -1280,13 +2026,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-5bde0f01-3786-4565-ae3d-6675a999349c",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "b4176fa1-1e1e-4179-966a-beb9b4a4ccc1",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "5bde0f01-3786-4565-ae3d-6675a999349c": {
                                             "columnOrder": [
@@ -1389,27 +2139,71 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {}
                                 },
                                 "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "logs-*",
-                                            "timeField": "@timestamp",
-                                            "title": "logs-*"
-                                        }
-                                    ],
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "b4176fa1-1e1e-4179-966a-beb9b4a4ccc1",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "axonius.compute"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "axonius.compute"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "false"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "false"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1448,7 +2242,60 @@
                             "events": []
                         }
                     },
-                    "filters": [],
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "axonius.compute"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "axonius.compute"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "labels.is_transform_source",
+                                            "index": "logs-*",
+                                            "key": "labels.is_transform_source",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "false"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "labels.is_transform_source": "false"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
                     "query": {
                         "language": "kuery",
                         "query": ""
@@ -1475,6 +2322,11 @@
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-5daf4f85-9bb5-43b2-aeff-e2be127ebaac",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "41e9adb4-d69a-467c-99b1-9f8000369305",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1525,7 +2377,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "axonius.compute.event.data.data_center"
+                                                    "sourceField": "axonius.compute.data_center"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -1541,7 +2393,60 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "41e9adb4-d69a-467c-99b1-9f8000369305",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "axonius.compute"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "axonius.compute"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "false"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "false"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1573,7 +2478,60 @@
                             "events": []
                         }
                     },
-                    "filters": [],
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "axonius.compute"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "axonius.compute"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "labels.is_transform_source",
+                                            "index": "logs-*",
+                                            "key": "labels.is_transform_source",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "false"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "labels.is_transform_source": "false"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
                     "query": {
                         "language": "kuery",
                         "query": ""
@@ -1600,6 +2558,11 @@
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-1c6323e8-96c7-41f2-8219-b242ead70bd0",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "ac054b56-45e5-4d7d-929a-e20ad7bb0958",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1667,7 +2630,60 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "ac054b56-45e5-4d7d-929a-e20ad7bb0958",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "axonius.compute"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "axonius.compute"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "false"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "false"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1699,7 +2715,60 @@
                             "events": []
                         }
                     },
-                    "filters": [],
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "axonius.compute"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "axonius.compute"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "labels.is_transform_source",
+                                            "index": "logs-*",
+                                            "key": "labels.is_transform_source",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "false"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "labels.is_transform_source": "false"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
                     "query": {
                         "language": "kuery",
                         "query": ""
@@ -1726,6 +2795,11 @@
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-d4703676-f7ce-4288-8b92-f3e4db0dacf2",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "435700f4-e343-4308-9059-1766a07323cd",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1792,7 +2866,60 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "435700f4-e343-4308-9059-1766a07323cd",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "axonius.compute"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "axonius.compute"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "false"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "false"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1824,7 +2951,60 @@
                             "events": []
                         }
                     },
-                    "filters": [],
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "axonius.compute"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "axonius.compute"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "labels.is_transform_source",
+                                            "index": "logs-*",
+                                            "key": "labels.is_transform_source",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "false"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "labels.is_transform_source": "false"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
                     "query": {
                         "language": "kuery",
                         "query": ""
@@ -1851,6 +3031,11 @@
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-9558f88f-3b83-4937-a265-8b1f38205db8",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "358ffbcf-8bc5-416f-84f1-5b8683386670",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1944,7 +3129,60 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "358ffbcf-8bc5-416f-84f1-5b8683386670",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "axonius.compute"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "axonius.compute"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "false"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "false"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1981,7 +3219,60 @@
                             "events": []
                         }
                     },
-                    "filters": [],
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "axonius.compute"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "axonius.compute"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "labels.is_transform_source",
+                                            "index": "logs-*",
+                                            "key": "labels.is_transform_source",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "false"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "labels.is_transform_source": "false"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
                     "query": {
                         "language": "kuery",
                         "query": ""
@@ -2009,13 +3300,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-4c8ee0b2-ef6c-4fd7-8db5-6bf85f1d36b4",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "66be4438-dcaf-4525-9102-5102e9a02de3",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "4c8ee0b2-ef6c-4fd7-8db5-6bf85f1d36b4": {
                                             "columnOrder": [
@@ -2059,32 +3354,76 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "axonius.compute.event.data.threat_level"
+                                                    "sourceField": "axonius.compute.threat_level"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {}
                                 },
                                 "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "logs-*",
-                                            "timeField": "@timestamp",
-                                            "title": "logs-*"
-                                        }
-                                    ],
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "66be4438-dcaf-4525-9102-5102e9a02de3",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "axonius.compute"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "axonius.compute"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "false"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "false"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -2141,7 +3480,60 @@
                             "events": []
                         }
                     },
-                    "filters": [],
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "axonius.compute"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "axonius.compute"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "labels.is_transform_source",
+                                            "index": "logs-*",
+                                            "key": "labels.is_transform_source",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "false"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "labels.is_transform_source": "false"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
                     "query": {
                         "language": "kuery",
                         "query": ""
@@ -2169,13 +3561,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-4c8ee0b2-ef6c-4fd7-8db5-6bf85f1d36b4",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "5189b9f6-f632-4b19-bd8e-fa51119bb7d3",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "4c8ee0b2-ef6c-4fd7-8db5-6bf85f1d36b4": {
                                             "columnOrder": [
@@ -2220,32 +3616,76 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "axonius.compute.event.data.risk_level"
+                                                    "sourceField": "axonius.compute.risk_level"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {}
                                 },
                                 "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "logs-*",
-                                            "timeField": "@timestamp",
-                                            "title": "logs-*"
-                                        }
-                                    ],
                                     "layers": {}
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "5189b9f6-f632-4b19-bd8e-fa51119bb7d3",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "data_stream.dataset",
+                                                    "index": "logs-*",
+                                                    "key": "data_stream.dataset",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "axonius.compute"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "data_stream.dataset": "axonius.compute"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "disabled": false,
+                                                    "field": "labels.is_transform_source",
+                                                    "index": "logs-*",
+                                                    "key": "labels.is_transform_source",
+                                                    "negate": false,
+                                                    "params": {
+                                                        "query": "false"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "labels.is_transform_source": "false"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -2302,7 +3742,60 @@
                             "events": []
                         }
                     },
-                    "filters": [],
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "index": "logs-*",
+                                "negate": false,
+                                "params": [
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "data_stream.dataset",
+                                            "index": "logs-*",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "axonius.compute"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "axonius.compute"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "meta": {
+                                            "disabled": false,
+                                            "field": "labels.is_transform_source",
+                                            "index": "logs-*",
+                                            "key": "labels.is_transform_source",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "false"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "labels.is_transform_source": "false"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "relation": "AND",
+                                "type": "combined"
+                            },
+                            "query": {}
+                        }
+                    ],
                     "query": {
                         "language": "kuery",
                         "query": ""
@@ -2328,7 +3821,7 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-12-19T07:20:45.917Z",
+    "created_at": "2026-05-15T04:30:19.006Z",
     "id": "axonius-08681c8c-7071-48b8-9fb2-e2c31c38539f",
     "references": [
         {
@@ -2348,7 +3841,17 @@
         },
         {
             "id": "logs-*",
+            "name": "f1034331-c3dc-46cc-b7c2-18d347dc5361:34293862-0a7a-4285-98fa-21db08b7b255",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "ab8413c6-1287-4465-8d97-23dc9bcaae3d:indexpattern-datasource-layer-941cde98-bee8-4909-a740-56bb228db072",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ab8413c6-1287-4465-8d97-23dc9bcaae3d:f9e3ba83-9dfb-4486-ac68-f0c9837ad747",
             "type": "index-pattern"
         },
         {
@@ -2358,7 +3861,17 @@
         },
         {
             "id": "logs-*",
+            "name": "932714a9-b32b-497c-bf4b-5c0c5964b82d:f4092d9f-88a8-42ff-985e-915c29c56a81",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "18a269d7-535f-43a9-8a8b-252d527a7966:indexpattern-datasource-layer-2d7e128c-0287-41ba-81e7-56d2421bd5d3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "18a269d7-535f-43a9-8a8b-252d527a7966:18974930-eb49-4e65-ab77-5751fdf1b51b",
             "type": "index-pattern"
         },
         {
@@ -2368,7 +3881,17 @@
         },
         {
             "id": "logs-*",
+            "name": "b07f0542-f4e2-483f-b32e-8a5471fdcb5a:39820022-9567-4bcb-9ac9-04be32ced0f0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "1afad62a-e0a7-4058-9665-a395ec60ca16:indexpattern-datasource-layer-22fa2b53-6f0f-44d6-9bbe-f4935cffa948",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "1afad62a-e0a7-4058-9665-a395ec60ca16:5e3288e5-225a-469a-ae56-28a146a6bdba",
             "type": "index-pattern"
         },
         {
@@ -2378,7 +3901,17 @@
         },
         {
             "id": "logs-*",
+            "name": "ed04b360-fe59-4fba-b062-c4f54cafc61d:79108d12-41e6-471e-ab7d-704ede32e47c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "72ec9cbe-28b3-4f79-89c1-af274fad9c96:indexpattern-datasource-layer-5bde0f01-3786-4565-ae3d-6675a999349c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "72ec9cbe-28b3-4f79-89c1-af274fad9c96:b4176fa1-1e1e-4179-966a-beb9b4a4ccc1",
             "type": "index-pattern"
         },
         {
@@ -2388,7 +3921,17 @@
         },
         {
             "id": "logs-*",
+            "name": "c0a7bb4b-1354-4d7a-b056-d591508cc088:41e9adb4-d69a-467c-99b1-9f8000369305",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "8c253b28-4096-45f3-b8a9-27b87984bb8e:indexpattern-datasource-layer-1c6323e8-96c7-41f2-8219-b242ead70bd0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8c253b28-4096-45f3-b8a9-27b87984bb8e:ac054b56-45e5-4d7d-929a-e20ad7bb0958",
             "type": "index-pattern"
         },
         {
@@ -2398,7 +3941,17 @@
         },
         {
             "id": "logs-*",
+            "name": "67a67c5d-0852-4d63-a0f4-a4d657e53cf8:435700f4-e343-4308-9059-1766a07323cd",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "5fde9949-32e4-41b4-97c0-e74d4cb4b576:indexpattern-datasource-layer-9558f88f-3b83-4937-a265-8b1f38205db8",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5fde9949-32e4-41b4-97c0-e74d4cb4b576:358ffbcf-8bc5-416f-84f1-5b8683386670",
             "type": "index-pattern"
         },
         {
@@ -2408,7 +3961,17 @@
         },
         {
             "id": "logs-*",
+            "name": "f87a4edd-c4c0-49b8-a84a-450e4b611175:66be4438-dcaf-4525-9102-5102e9a02de3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "56b681c0-839f-4347-a619-6f5bfddfc4c9:indexpattern-datasource-layer-4c8ee0b2-ef6c-4fd7-8db5-6bf85f1d36b4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "56b681c0-839f-4347-a619-6f5bfddfc4c9:5189b9f6-f632-4b19-bd8e-fa51119bb7d3",
             "type": "index-pattern"
         },
         {

@@ -193,6 +193,19 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      field: axonius.compute.tenant_number
+      tag: convert_tenant_number_to_long
+      type: long
+      ignore_missing: true
+      if: ctx.axonius?.compute?.tenant_number != ''
+      on_failure:
+        - remove:
+            field: axonius.compute.tenant_number
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
       field: axonius.compute.is_fetched_from_adapter
       tag: convert_is_fetched_from_adapter_to_boolean
       type: boolean
