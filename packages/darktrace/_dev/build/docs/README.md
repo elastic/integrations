@@ -8,6 +8,11 @@ Use the Darktrace integration to collect and parse data from the REST APIs or vi
 
 For example, you could use the data from this integration to know which model is breached and analyse model breaches, and also know about system health, changes in monitored traffic, and any errors experienced by Darktrace Security Modules or probe instances.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Data streams
 
 The Darktrace integration collects logs for three types of events: AI Analyst Alert, Model Breach Alert and System Status Alert.
