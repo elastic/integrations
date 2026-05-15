@@ -6,9 +6,9 @@
     },
     "references": [],
     "attributes": {
-        "id": "kubernetes-otel-events-ml",
+        "id": "kubernetes_otel-events-ml",
         "title": "Kubernetes workload events (OpenTelemetry)",
-        "description": "Detect workloads (pods, replicasets, deployments, etc.) producing unusual rates of Warning events such as BackOff, CrashLoopBackOff, OOMKilling, FailedScheduling, FailedMount, Unhealthy, Evicted. Uses logs from the OpenTelemetry k8s_events receiver.",
+        "description": "Detect namespaces producing unusual rates of Kubernetes Warning events such as BackOff, CrashLoopBackOff, OOMKilling, FailedScheduling, FailedMount, Unhealthy, Evicted. Uses logs from the OpenTelemetry k8s_events receiver. Modelled per namespace because the involved object names (pods, replicasets) are typically ephemeral; the event reason and object name are surfaced as influencers so anomalies are still attributable.",
         "type": "Container logs",
         "logo": {
             "icon": "logoKubernetes"
@@ -41,21 +41,20 @@
                         "kubernetes",
                         "otel"
                     ],
-                    "description": "Kubernetes: detect workloads producing unusual rates of Warning events (BackOff, CrashLoopBackOff, OOMKilling, FailedScheduling, FailedMount, Unhealthy, Evicted). Captures restart storms and operational distress in a context-aware way that a fixed-threshold rule cannot.",
+                    "description": "Kubernetes: detect namespaces producing unusual rates of Warning events (BackOff, CrashLoopBackOff, OOMKilling, FailedScheduling, FailedMount, Unhealthy, Evicted). Per-pod restart storms are covered by the threshold-based alert rules; this job catches namespace-wide elevations that drift below any fixed threshold, with event reason and involved object surfaced as influencers for attribution.",
                     "analysis_config": {
                         "bucket_span": "15m",
                         "detectors": [
                             {
-                                "detector_description": "High Warning event rate per Kubernetes object",
+                                "detector_description": "High Warning event rate per namespace",
                                 "function": "high_non_zero_count",
-                                "by_field_name": "k8s.object.name",
                                 "partition_field_name": "k8s.namespace.name"
                             }
                         ],
                         "influencers": [
-                            "k8s.object.name",
                             "k8s.namespace.name",
-                            "k8s.event.reason"
+                            "k8s.event.reason",
+                            "k8s.object.name"
                         ]
                     },
                     "analysis_limits": {
