@@ -1,0 +1,155 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies potential relay attacks against a machine account by identifying network share access events coming from a remote source.ip but using the target server computer account. This may indicate an SMB relay attack.",
+        "from": "now-9m",
+        "index": [
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "source.ip",
+                "host.name",
+                "host.id",
+                "host.ip",
+                "winlog.computer_name",
+                "event.code",
+                "winlog.event_data.SubjectLogonId",
+                "winlog.event_data.IpAddress",
+                "winlog.event_data.ShareName",
+                "winlog.event_data.RelativeTargetName",
+                "winlog.event_data.AccessMask"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Machine Account Relay Attack via SMB",
+        "note": "## Triage and analysis\n\n### Investigating Potential Machine Account Relay Attack via SMB\n\n#### Possible investigation steps\n\n- What does the alert-local 5145 event show about the remote source, target server, machine account, and exact share or pipe path?\n  - Focus: `source.ip`, `winlog.computer_name`, `user.name`, `winlog.event_data.ShareName`, and `winlog.event_data.RelativeTargetName`, noting \"IPC$\", \"ADMIN$\", and coercion-related named pipes in the relative target path.\n  - Implication: escalate when a remote source reaches relayable pipes or admin shares while `user.name` matches the target server machine account; lower suspicion only when the same source, target, and path are already tied to a known relay-safe infrastructure tier.\n\n- Does the apparent machine-account access really resolve to one target-server identity and one stable infrastructure path?\n  - Focus: `user.name`, `winlog.computer_name`, `host.name`, `host.ip`, and `source.ip`.\n  - Implication: relay remains likely when the target server account appears from a `source.ip` that is not one of the target server's `host.ip` values; if hostname aliases or clustering explain the address mismatch, keep validating the share path and auth evidence before closure.\n\n- Do surrounding authentication events show the same source creating machine-account network logons or NTLM fallback on the target?\n  - Why: 5145 proves share access; 4624 and 4625 show whether the source authenticated with the target machine account and which protocol path was used, while 4648 only adds explicit-credential context.\n  - Focus: Windows Security events on the target server from the alert source: `winlog.event_data.TargetUserName`, `winlog.logon.type`, `winlog.event_data.AuthenticationPackageName`, and `winlog.event_data.LmPackageName`.\n  - Hint: pivot on 4624 and 4625 for the alert `source.ip`, target server, and `user.name` to `winlog.event_data.TargetUserName` match; use 4648 only for explicit-credential context. Missing authentication telemetry is unresolved, not benign. !{investigate{\"description\":\"\",\"label\":\"Authentication events from this source to the target machine account\",\"providers\":[[{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4624\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"source.ip\",\"queryType\":\"phrase\",\"value\":\"{{source.ip}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.TargetUserName\",\"queryType\":\"phrase\",\"value\":\"{{user.name}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4625\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"source.ip\",\"queryType\":\"phrase\",\"value\":\"{{source.ip}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.TargetUserName\",\"queryType\":\"phrase\",\"value\":\"{{user.name}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the same source produces machine-account type 3 logons, failures followed by success, NTLM where Kerberos is expected, or weak LM details; lower suspicion only when auth fields match the same stable infrastructure path seen in the 5145 evidence.\n\n- Do surrounding 5145 events show the source revisiting relayable pipes, alternate shares, or more servers with the same machine-account pattern?\n  - Focus: 5145 events for the same `source.ip` and `user.name`, comparing `winlog.event_data.ShareName`, `winlog.event_data.RelativeTargetName`, and `winlog.event_data.AccessMask` across target servers.\n  - Hint: start with 5145 events for the same `source.ip` and `user.name` in the alert window, then expand only if the first events show relayable pipe access, admin-share access, or repeated machine-account use. !{investigate{\"description\":\"\",\"label\":\"Detailed file-share events from this source and machine account\",\"providers\":[[{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"5145\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"source.ip\",\"queryType\":\"phrase\",\"value\":\"{{source.ip}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.name\",\"queryType\":\"phrase\",\"value\":\"{{user.name}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: broader pipe, admin-share, or multi-server coverage supports active relay; a bounded single-path pattern lowers urgency only when it stays inside the same recognized infrastructure cohort.\n\n- If local evidence stays suspicious or unresolved, do related alerts expand the source or target scope?\n  - Focus: related alerts for `source.ip` covering coercion, relay, lateral movement, remote execution, or credential access from the same origin. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with this source IP\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"source.ip\",\"queryType\":\"phrase\",\"value\":\"{{source.ip}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: compare target-server alerts for suspicious authentication, service creation, persistence, or credential access on `host.id`. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with this target server\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden containment when the same source targets other servers or the target shows follow-on execution or persistence; keep scope local only when related alerts stay confined to the same recognized infrastructure cohort.\n\n- Based on the evidence gathered, what disposition is supported?\n  - Focus: 5145 share or pipe path, machine-account and target fit, source role, surrounding auth, repeated 5145 scope, and related-alert scope.\n  - Implication: escalate when relayable access aligns with the target machine account plus NTLM/auth corroboration, repeated 5145 activity, or related alerts; close only when all evidence tightly binds one stable infrastructure workflow with no contradictory auth or scope; preserve and escalate when evidence is mixed or incomplete.\n\n### False positive analysis\n\n- Load balancers, cluster nodes, proxies, management gateways, backup, or orchestration tooling can make a machine account appear to access a share from a different source. Confirm only when the source-target-account tuple, share or pipe path, access mask, and auth method all align with the same stable infrastructure role, with no broader relayable paths or extra machine-account auth. Use topology records only to corroborate that exact telemetry pattern; if unavailable, require the same field pattern across prior alerts.\n- Build exceptions from the minimum confirmed workflow: `source.ip`, `winlog.computer_name`, `user.name`, `winlog.event_data.ShareName`, and `winlog.event_data.RelativeTargetName`, plus the stable auth pattern when available. Avoid exceptions on `user.name`, `winlog.event_data.ShareName`, or `source.ip` alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and document the recognized source, target server, machine account, share or pipe path, access mask, and auth pattern. Create an exception only after the same workflow recurs across prior alerts or is corroborated by topology records.\n- If suspicious but unconfirmed, preserve the alert, surrounding 5145 and authentication records, case timeline, source and target identities, share or pipe path, access mask, and NTLM/auth details before containment. Apply reversible containment first, such as restricting SMB from the source to the target or tightening access to the exposed relay path; use host isolation only if the source continues suspicious machine-account access and the server role can tolerate interruption.\n- If confirmed malicious, contain the source host or block the relay path using the preserved 5145/auth evidence. Record the evidence before terminating processes, blocking access, or rotating secrets.\n- After scoping affected source and target systems, rotate the affected computer-account secret when evidence shows credential material was exposed, replayed, or relayed to privileged services; otherwise coordinate identity review before disruptive rotation. Review adjacent systems or delegated credentials exposed through the same relay path.\n- Post-incident hardening: enforce SMB signing or Extended Protection, reduce NTLM exposure, restrict relayable services, and audit other servers contacted from the same `source.ip`.\n",
+        "query": "file where host.os.type == \"windows\" and event.code == \"5145\" and endswith(user.name, \"$\") and\n\n /* compare computername with user.name and make sure they match (dot-boundary prevents prefix-only matches) */\n startswith~(concat(winlog.computer_name, \".\"), concat(substring(user.name, 0, -1), \".\")) and\n\n /* exclude local access */\n not endswith(string(source.ip), string(host.ip)) and\n source.ip != \"::\" and source.ip != null and source.ip != \"::1\" and source.ip != \"127.0.0.1\"\n",
+        "references": [
+            "https://github.com/p0dalirius/windows-coerced-authentication-methods",
+            "https://www.thehacker.recipes/ad/movement/mitm-and-coerced-authentications/",
+            "https://attack.mitre.org/techniques/T1187/"
+        ],
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.computer_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "d84a11c0-eb12-4e7d-8a0a-718e38351e29",
+        "setup": "## Setup\n\nAudit Detailed File Share must be enabled to generate the events used by this rule.\nSetup instructions: https://ela.st/audit-detailed-file-share\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Active Directory",
+            "Use Case: Active Directory Monitoring",
+            "Data Source: Windows Security Event Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1187",
+                        "name": "Forced Authentication",
+                        "reference": "https://attack.mitre.org/techniques/T1187/"
+                    },
+                    {
+                        "id": "T1557",
+                        "name": "Adversary-in-the-Middle",
+                        "reference": "https://attack.mitre.org/techniques/T1557/",
+                        "subtechnique": [
+                            {
+                                "id": "T1557.001",
+                                "name": "LLMNR/NBT-NS Poisoning and SMB Relay",
+                                "reference": "https://attack.mitre.org/techniques/T1557/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.002",
+                                "name": "SMB/Windows Admin Shares",
+                                "reference": "https://attack.mitre.org/techniques/T1021/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 4
+    },
+    "id": "d84a11c0-eb12-4e7d-8a0a-718e38351e29_4",
+    "type": "security-rule"
+}
