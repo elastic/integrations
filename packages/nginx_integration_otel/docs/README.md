@@ -98,7 +98,7 @@ As a result, the **[Nginx OTel] Request Health** and **[Nginx OTel] Traffic & Ca
 
 ## Performance and scaling
 
-High-traffic Nginx nodes produce large log volume; tailing many large files increases Agent CPU and I/O. Stub status scraping is comparatively small; keep a single reachable endpoint per instance.
+High-traffic Nginx nodes produce large log volume. Tailing many large files increases Agent CPU and I/O. Stub status scraping is comparatively small. Keep a single reachable endpoint per instance.
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
