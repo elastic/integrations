@@ -396,19 +396,23 @@ dashboards:
               label: Targeted Hosts
 
       - title: Top Targeted URLs
+        description: >-
+          Request URLs (including query string) most frequently flagged by WAF rules.
+          Firewall log records expose the full URL as `url.original`; matched payloads
+          (SQLi, XSS, traversal, …) are typically visible in the query string.
         size: {w: 16, h: 12}
         esql:
           type: datatable
           query:
             - FROM logs-azure.application_gateway.otel-*
             - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
-            - WHERE attributes.url.path IS NOT NULL
-            - STATS `Matches` = COUNT(*), `Blocked` = COUNT(*) WHERE attributes.security_rule.action == "Blocked", `Clients` = COUNT_DISTINCT(attributes.client.address) BY `URL Path` = attributes.url.path
+            - WHERE attributes.url.original IS NOT NULL
+            - STATS `Matches` = COUNT(*), `Blocked` = COUNT(*) WHERE attributes.security_rule.action == "Blocked", `Clients` = COUNT_DISTINCT(attributes.client.address) BY `URL` = attributes.url.original
             - SORT `Matches` DESC
             - LIMIT 100
           breakdowns:
-            - field: URL Path
-              label: URL Path
+            - field: URL
+              label: URL
           metrics:
             - field: Matches
               label: Matches
