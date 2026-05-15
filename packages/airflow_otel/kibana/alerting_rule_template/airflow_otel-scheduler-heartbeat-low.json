@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the scheduler heartbeat rate falls far below expected (fewer than 5 heartbeat events in 15 minutes despite active telemetry). Low heartbeats suggest a stalled or dying scheduler.",
     "name": "[Airflow OTel] Scheduler heartbeats critically low",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "airflow_otel-scheduler-capacity"
+        },
+        {
+          "id": "airflow_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Airflow scheduler heartbeats critically low\n\n### What fired\nFewer than 5 `airflow.scheduler_heartbeat` events were observed in the evaluation window while other Airflow telemetry was still flowing.\n\n### Why it matters\nThe scheduler emits a heartbeat every few seconds during normal operation. A steep drop indicates the scheduler is stalled (long-running DAG file parse, DB lock, blocked network call). No heartbeats means no new task instances are being dispatched.\n\n### Triage\n1. Scheduler & Capacity dashboard: verify heartbeat rate against `airflow.scheduler.scheduler_loop_duration`.\n2. Inspect DAG processor health and metadata DB latency.\n3. Check for GIL contention / blocked threads in scheduler logs.\n4. Verify the scheduler process is actually running (OS-level) on the host.\n\n### Remediation\n- Restart the scheduler once root cause is understood.\n- Shed load off the metadata DB.\n- Migrate to HA scheduler configuration if single-point-of-failure is unacceptable.\n\n### Tuning\n- The `hb_count < 5 AND total_docs > 10` condition avoids false positives when Airflow telemetry itself is paused. Adjust both numbers to your scrape cadence.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n// Count scheduler heartbeats in the rule's time window\n| STATS hb_count = COUNT(airflow.scheduler_heartbeat), total_docs = COUNT(*)\n// Alert when we have Airflow activity but fewer than 5 heartbeats\n// Adjust threshold (5) for your scheduler heartbeat cadence\n| WHERE total_docs > 10 AND hb_count < 5"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,
