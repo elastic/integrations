@@ -86,12 +86,12 @@ processors:
             kvSplit = i;
           }
           if (c == (char)' ' || i == n - 1) {
-            if (i != kvStart) {
+            if (i != kvStart && kvSplit > kvStart) {
               def endIndex = i == n - 1 ? i + 1 : i;
               def key = ctx["message"].substring(kvStart, kvSplit);
               def value = wsPattern.matcher(ctx["message"].substring(kvSplit + 1, endIndex)).replaceAll("");
 
-              if (value != "N/A" && !wordPattern.matcher(key).find()) {
+              if (key.length() > 0 && value != "N/A" && !wordPattern.matcher(key).find()) {
                 ctx["_fields_"].put(key, value);
               }
             }
@@ -221,6 +221,11 @@ processors:
   - convert:
       tag: convert_logver
       field: _fields_.logver
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_cat
+      field: _fields_.cat
       type: long
       ignore_missing: true
 
