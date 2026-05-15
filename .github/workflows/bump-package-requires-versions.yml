@@ -1,0 +1,52 @@
+---
+name: Bump pinned versions in package requires blocks
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 1'
+  pull_request:
+    paths:
+      - .github/workflows/updatecli/package-requires.d/**
+      - .github/workflows/bump-package-requires-versions.yml
+
+permissions:
+  contents: read
+
+jobs:
+  bump-package-requires:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Updatecli in the runner
+        uses: updatecli/updatecli-action@2c3221bc5f4499a99fec2c87d9de4a83cb30e990 #v3.1.3
+
+      - name: Select diff action
+        if: ${{ github.event_name == 'pull_request' }}
+        run: echo "UPDATECLI_ACTION=diff" >> $GITHUB_ENV
+
+      - name: Select apply action
+        if: ${{ github.event_name != 'pull_request' }}
+        run: echo "UPDATECLI_ACTION=apply" >> $GITHUB_ENV
+
+      - name: Bump package requires versions
+        run: updatecli ${{ env.UPDATECLI_ACTION }} --config .github/workflows/updatecli/package-requires.d
+
+      - name: Create Pull Request
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: '[automation] Bump pinned versions in package requires: blocks'
+          title: '[automation] Bump pinned versions in package requires: blocks'
+          labels: |
+            automation
+            dependency
+          branch: automation/bump-package-requires
+          delete-branch: true
