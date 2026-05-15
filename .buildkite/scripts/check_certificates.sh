@@ -5,6 +5,7 @@
 # to simulate vendor APIs during system tests. Each mock server is configured with a
 # self-signed TLS certificate checked into the repo under:
 #   packages/<integration>/_dev/deploy/docker/files/*.crt
+#   packages/<technology>/<package>/_dev/deploy/docker/files/*.crt
 #
 # The CEL input in Elastic Agent validates the mock server's certificate against the CA
 # embedded in the test config (test-*-config.yml). When the cert expires, TLS handshakes
@@ -23,9 +24,7 @@
 #   ERROR   — certificate is expired or expires within 6 months (180 days)
 #   WARNING — certificate expires within 1 year (365 days)
 #
-# Exits non-zero if any ERROR is found. Warnings are printed but do not fail the build.
-# Called from test_one_package.sh (per-package, scoped) so that a cert problem fails
-# only the affected package's test step.
+# Exits non-zero if any ERROR is found. Warnings are logged but do not fail the script.
 
 set -euo pipefail
 
