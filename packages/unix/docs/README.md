@@ -1,6 +1,6 @@
 # Custom Unix Logs Integration for Elastic
 
-> **Note**: This integration is currently in beta and subject to change.
+> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
@@ -40,7 +40,7 @@ This integration includes the following data stream:
 
 ### Elastic prerequisites
 
-- Elastic Agent: A running Elastic Agent that's enrolled in a Fleet policy.
+- Elastic Agent: A running Elastic Agent managed by a Fleet policy or configured in standalone mode.
 - The Elastic Agent must have write permission to the directory where the socket will be created.
 
 ### Source prerequisites

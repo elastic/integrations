@@ -29,7 +29,7 @@ The **Custom Unix Logs** integration is compatible with any process or applicati
 
 ## Elastic prerequisites
 
-- **Elastic Agent:** A running Elastic Agent enrolled in a Fleet policy.
+- **Elastic Agent:** A running Elastic Agent managed by a Fleet policy or configured in standalone mode.
 - **Filesystem Access:** The Elastic Agent must have write permission to the directory where the socket will be created.
 
 ## Source prerequisites
@@ -95,3 +95,6 @@ After configuration is complete, follow these steps to verify data is flowing co
 
 # Documentation sites
 - [Filebeat Unix Input](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-unix)
+- [RFC 3164: The BSD Syslog Protocol](https://datatracker.ietf.org/doc/html/rfc3164)
+- [RFC 5424: The Syslog Protocol](https://datatracker.ietf.org/doc/html/rfc5424)
+- [RFC 6587: Transmission of Syslog Messages over TCP](https://datatracker.ietf.org/doc/html/rfc6587)

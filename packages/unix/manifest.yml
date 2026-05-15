@@ -1,4 +1,4 @@
-format_version: "3.3.2"
+format_version: "3.6.2"
 name: unix
 title: Custom Unix Logs
 description: Collect data from a Unix domain socket with Elastic Agent.
@@ -26,13 +26,19 @@ policy_templates:
         required: true
         show_user: true
       - name: socket_type
-        type: text
+        type: select
         title: Socket Type
         description: |
           The socket type: stream or datagram. The default is stream.
         required: false
         show_user: true
         default: stream
+        multi: false
+        options:
+          - value: stream
+            text: stream
+          - value: datagram
+            text: datagram
       - name: use_logs_stream
         type: bool
         title: Use the "logs" data stream
@@ -63,11 +69,17 @@ policy_templates:
         required: false
         show_user: false
       - name: framing
-        type: text
+        type: select
         title: Framing
-        description: Specify the framing used to split incoming events. Can be one of delimiter or rfc6587. The default is delimiter.
+        description: Specify the framing used to split incoming events. The default is delimiter.
         required: false
         show_user: false
+        multi: false
+        options:
+          - value: delimiter
+            text: delimiter
+          - value: rfc6587
+            text: rfc6587
       - name: line_delimiter
         type: text
         title: Line Delimiter
@@ -75,13 +87,13 @@ policy_templates:
         required: false
         show_user: false
       - name: max_connections
-        type: text
+        type: integer
         title: Max Connections
         description: The at most number of connections to accept at any given point in time.
         required: false
         show_user: false
       - name: timeout
-        type: text
+        type: duration
         title: Timeout
         description: The duration of inactivity before a remote connection is closed. The default is 300s. Valid time units are ns, us, ms, s, m, h.
         required: false
