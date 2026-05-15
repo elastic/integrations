@@ -8,7 +8,7 @@
     "attributes": {
         "id": "kubernetes_otel-metrics-ml",
         "title": "Kubernetes workload resources (OpenTelemetry)",
-        "description": "Detect anomalies in pod-level resource consumption (memory working set, network throughput) rolled up per workload (Deployment, StatefulSet, DaemonSet) using metrics from the OpenTelemetry kubeletstats receiver. Surfaces slow drifts and time-of-day deviations that fixed-threshold alerts miss.",
+        "description": "Detect anomalies in pod-level resource consumption (memory working set, network throughput) using metrics from the OpenTelemetry kubeletstats receiver. Memory is modelled per workload (Deployment, StatefulSet, DaemonSet) to survive pod recycling; network is modelled per namespace from a proper bytes/bucket rate derived from the cumulative counter.",
         "type": "Container metrics",
         "logo": {
             "icon": "logoKubernetes"
@@ -88,48 +88,68 @@
                 }
             },
             {
-                "id": "k8s_workload_network_io_anomaly",
+                "id": "k8s_network_rx_anomaly",
                 "config": {
                     "groups": [
                         "kubernetes",
                         "otel"
                     ],
-                    "description": "Kubernetes: detect workloads (Deployment, StatefulSet, DaemonSet) whose pod network throughput deviates from that workload's own baseline. Surfaces both unusual spikes (runaway processes, unexpected load) and unusual drops (network partition, idle workload) independently per direction. Time-of-day patterns are learned, so a batch job at high throughput during its window is normal and the same workload at high throughput outside that window is not.",
+                    "description": "Kubernetes: detect namespaces whose peak inbound pod throughput is unusual compared to that namespace's own history. The cumulative counter k8s.pod.network.io is converted into bytes-per-bucket via a derivative aggregation and clamped to ignore negative deltas caused by pod restarts. ML learns time-of-day patterns, so a batch job running at high throughput during its expected window is normal and the same workload at high throughput outside that window is not.",
                     "analysis_config": {
                         "bucket_span": "15m",
+                        "summary_count_field_name": "doc_count",
                         "detectors": [
                             {
-                                "detector_description": "Anomalous Deployment network I/O by direction",
-                                "function": "mean",
-                                "field_name": "k8s.pod.network.io",
-                                "by_field_name": "k8s.deployment.name",
-                                "partition_field_name": "direction"
-                            },
-                            {
-                                "detector_description": "Anomalous StatefulSet network I/O by direction",
-                                "function": "mean",
-                                "field_name": "k8s.pod.network.io",
-                                "by_field_name": "k8s.statefulset.name",
-                                "partition_field_name": "direction"
-                            },
-                            {
-                                "detector_description": "Anomalous DaemonSet network I/O by direction",
-                                "function": "mean",
-                                "field_name": "k8s.pod.network.io",
-                                "by_field_name": "k8s.daemonset.name",
-                                "partition_field_name": "direction"
+                                "detector_description": "Max inbound bytes/bucket per namespace",
+                                "function": "max",
+                                "field_name": "rx_bytes_per_bucket",
+                                "partition_field_name": "k8s.namespace.name"
                             }
                         ],
                         "influencers": [
-                            "k8s.deployment.name",
-                            "k8s.statefulset.name",
-                            "k8s.daemonset.name",
                             "k8s.namespace.name",
-                            "direction"
+                            "k8s.pod.uid"
                         ]
                     },
                     "analysis_limits": {
-                        "model_memory_limit": "256mb"
+                        "model_memory_limit": "32mb"
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "model_plot_config": {
+                        "enabled": false,
+                        "annotations_enabled": true
+                    }
+                }
+            },
+            {
+                "id": "k8s_network_tx_anomaly",
+                "config": {
+                    "groups": [
+                        "kubernetes",
+                        "otel"
+                    ],
+                    "description": "Kubernetes: detect namespaces whose peak outbound pod throughput is unusual compared to that namespace's own history. The cumulative counter k8s.pod.network.io is converted into bytes-per-bucket via a derivative aggregation and clamped to ignore negative deltas caused by pod restarts. ML learns time-of-day patterns, so steady periodic transmit traffic is modelled correctly and unexpected bursts (e.g. data exfiltration, runaway producer) are flagged.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "summary_count_field_name": "doc_count",
+                        "detectors": [
+                            {
+                                "detector_description": "Max outbound bytes/bucket per namespace",
+                                "function": "max",
+                                "field_name": "tx_bytes_per_bucket",
+                                "partition_field_name": "k8s.namespace.name"
+                            }
+                        ],
+                        "influencers": [
+                            "k8s.namespace.name",
+                            "k8s.pod.uid"
+                        ]
+                    },
+                    "analysis_limits": {
+                        "model_memory_limit": "32mb"
                     },
                     "data_description": {
                         "time_field": "@timestamp",
@@ -151,6 +171,9 @@
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
+                    "indices_options": {
+                        "allow_no_indices": true
+                    },
                     "query": {
                         "bool": {
                             "filter": [
@@ -183,45 +206,165 @@
                 }
             },
             {
-                "id": "datafeed-k8s_workload_network_io_anomaly",
-                "job_id": "k8s_workload_network_io_anomaly",
+                "id": "datafeed-k8s_network_rx_anomaly",
+                "job_id": "k8s_network_rx_anomaly",
                 "config": {
-                    "job_id": "k8s_workload_network_io_anomaly",
+                    "job_id": "k8s_network_rx_anomaly",
                     "indices": [
                         "INDEX_PATTERN_NAME"
                     ],
+                    "indices_options": {
+                        "allow_no_indices": true
+                    },
                     "query": {
                         "bool": {
                             "filter": [
                                 {
+                                    "term": {
+                                        "direction": "receive"
+                                    }
+                                },
+                                {
                                     "exists": {
                                         "field": "k8s.pod.network.io"
                                     }
-                                },
-                                {
-                                    "exists": {
-                                        "field": "direction"
+                                }
+                            ]
+                        }
+                    },
+                    "chunking_config": {
+                        "mode": "manual",
+                        "time_span": "900s"
+                    },
+                    "aggregations": {
+                        "k8s.namespace.name": {
+                            "terms": {
+                                "field": "k8s.namespace.name",
+                                "size": 50
+                            },
+                            "aggregations": {
+                                "k8s.pod.uid": {
+                                    "terms": {
+                                        "field": "k8s.pod.uid",
+                                        "size": 200
+                                    },
+                                    "aggregations": {
+                                        "buckets": {
+                                            "date_histogram": {
+                                                "field": "@timestamp",
+                                                "fixed_interval": "5m"
+                                            },
+                                            "aggregations": {
+                                                "@timestamp": {
+                                                    "max": {
+                                                        "field": "@timestamp"
+                                                    }
+                                                },
+                                                "rx_bytes_max": {
+                                                    "max": {
+                                                        "field": "k8s.pod.network.io"
+                                                    }
+                                                },
+                                                "rx_bytes_derivative": {
+                                                    "derivative": {
+                                                        "buckets_path": "rx_bytes_max"
+                                                    }
+                                                },
+                                                "rx_bytes_per_bucket": {
+                                                    "bucket_script": {
+                                                        "buckets_path": {
+                                                            "d": "rx_bytes_derivative"
+                                                        },
+                                                        "script": "params.d > 0.0 ? params.d : 0.0"
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
-                            ],
-                            "should": [
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "id": "datafeed-k8s_network_tx_anomaly",
+                "job_id": "k8s_network_tx_anomaly",
+                "config": {
+                    "job_id": "k8s_network_tx_anomaly",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "indices_options": {
+                        "allow_no_indices": true
+                    },
+                    "query": {
+                        "bool": {
+                            "filter": [
                                 {
-                                    "exists": {
-                                        "field": "k8s.deployment.name"
+                                    "term": {
+                                        "direction": "transmit"
                                     }
                                 },
                                 {
                                     "exists": {
-                                        "field": "k8s.statefulset.name"
-                                    }
-                                },
-                                {
-                                    "exists": {
-                                        "field": "k8s.daemonset.name"
+                                        "field": "k8s.pod.network.io"
                                     }
                                 }
-                            ],
-                            "minimum_should_match": 1
+                            ]
+                        }
+                    },
+                    "chunking_config": {
+                        "mode": "manual",
+                        "time_span": "900s"
+                    },
+                    "aggregations": {
+                        "k8s.namespace.name": {
+                            "terms": {
+                                "field": "k8s.namespace.name",
+                                "size": 50
+                            },
+                            "aggregations": {
+                                "k8s.pod.uid": {
+                                    "terms": {
+                                        "field": "k8s.pod.uid",
+                                        "size": 200
+                                    },
+                                    "aggregations": {
+                                        "buckets": {
+                                            "date_histogram": {
+                                                "field": "@timestamp",
+                                                "fixed_interval": "5m"
+                                            },
+                                            "aggregations": {
+                                                "@timestamp": {
+                                                    "max": {
+                                                        "field": "@timestamp"
+                                                    }
+                                                },
+                                                "tx_bytes_max": {
+                                                    "max": {
+                                                        "field": "k8s.pod.network.io"
+                                                    }
+                                                },
+                                                "tx_bytes_derivative": {
+                                                    "derivative": {
+                                                        "buckets_path": "tx_bytes_max"
+                                                    }
+                                                },
+                                                "tx_bytes_per_bucket": {
+                                                    "bucket_script": {
+                                                        "buckets_path": {
+                                                            "d": "tx_bytes_derivative"
+                                                        },
+                                                        "script": "params.d > 0.0 ? params.d : 0.0"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
