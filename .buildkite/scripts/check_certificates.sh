@@ -55,7 +55,11 @@ _days_remaining() {
 
 # We exclude *.key files because some packages store private keys with a .pem extension and
 # openssl would fail to parse them as X.509 certificates.
-mapfile -t cert_files < <(find "$search_root" \( -name "*.crt" -o -name "*.pem" \) -not -name "*.key" | sort)
+find_output=$(find "$search_root" \( -name "*.crt" -o -name "*.pem" \) -not -name "*.key" | sort)
+
+# readarray -> stores lines from a stream into an array; -t to strip trailing newlines
+# Using printf '%s' to avoid cert_files=("") instead of an empty array when find returns no results.
+readarray -t cert_files < <(printf '%s' "$find_output")
 
 if [ ${#cert_files[@]} -eq 0 ]; then
     echo "No certificate files found under ${search_root} — nothing to check."
