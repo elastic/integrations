@@ -267,14 +267,30 @@ processors:
 
         def attributes = [:];
         ctx.cisco_ise.log.log_details.get("cisco-av-pair")?.forEach((v) -> {
+          def firstEq = v.indexOf('=');
+          if (firstEq <= 0) {
+            return true;
+          }
+          def topKey = v.substring(0, firstEq).trim();
+          def rest = v.substring(firstEq + 1);
+
+          // Only mdm-tlv uses nested subkeys (device-platform=win, ...). Other pairs
+          // (e.g. FQSubjectName=...cn=...,ou=...) may contain '=' in the value and must stay scalar.
+          if (!"mdm-tlv".equals(topKey)) {
+            attributes[topKey] = rest.trim();
+            return true;
+          }
+
           def inEscape = false;
           def start = 0;
           def key = "";
-          def m = attributes;
+          if (!attributes.containsKey("mdm-tlv")) {
+            attributes["mdm-tlv"] = [:];
+          }
+          def m = attributes["mdm-tlv"];
 
-          for (def i = 0, n = v.length(); i < n; ++i) {
-            def c = v.charAt(i);
-            // Escape handling.
+          for (def i = 0, n = rest.length(); i < n; ++i) {
+            def c = rest.charAt(i);
             if (inEscape) {
               inEscape = false;
               continue;
@@ -285,9 +301,9 @@ processors:
             }
 
             if (c == (char)'=') {
-              key = v.substring(start, i).trim();
-              def nextSplit = v.indexOf("=", i + 1);
-              if (nextSplit != -1 && v.charAt(nextSplit - 1) != (char)'\\') {
+              key = rest.substring(start, i).trim();
+              def nextSplit = rest.indexOf("=", i + 1);
+              if (nextSplit != -1 && rest.charAt(nextSplit - 1) != (char)'\\') {
                 if (!m.containsKey(key)) {
                   m[key] = [:];
                 }
@@ -296,7 +312,7 @@ processors:
               start = i + 1;
             }
             if (i == n - 1) {
-              m[key] = v.substring(start, n).trim();
+              m[key] = rest.substring(start, n).trim();
             }
           }
 

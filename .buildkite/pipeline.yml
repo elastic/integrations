@@ -60,6 +60,14 @@ steps:
     artifact_paths:
       - tests-report.xml
 
+  - label: ":snake: Python CI scripts unit tests"
+    key: "check-ci-python-scripts"
+    command: ".buildkite/scripts/run_ci_python_scripts_tests.sh"
+    agents:
+      # GCP VM used to match the same Python 3 version available in the steps that test packages
+      provider: gcp
+      image: "${IMAGE_UBUNTU_X86_64}"
+
   - label: ":junit: Sources Junit annotate"
     agents:
       # requires at least "bash", "curl" and "git"
@@ -83,6 +91,8 @@ steps:
       UPLOAD_SAFE_LOGS: 1
     depends_on:
       - step: "check"
+        allow_failure: false
+      - step: "check-ci-python-scripts"
         allow_failure: false
 
   - wait: ~
