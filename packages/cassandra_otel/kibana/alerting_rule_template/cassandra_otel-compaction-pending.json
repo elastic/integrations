@@ -1,39 +1,52 @@
 {
-    "id": "cassandra_otel-compaction-pending",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Cassandra OTel] Compaction falling behind (pending tasks)",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "cassandra"
-        ],
-        "schedule": {
-            "interval": "5m"
-        },
-        "alertDelay": {
-            "active": 3
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "TS metrics-cassandra.otel-default\n// Gauge: pending compaction tasks; > 0 means compaction is falling behind\n| WHERE cassandra.compaction.tasks.pending IS NOT NULL\n| STATS pending = MAX(MAX_OVER_TIME(cassandra.compaction.tasks.pending)) BY server.address\n// Any persistent backlog degrades read performance\n| WHERE pending > 0\n| SORT pending DESC"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "server.address",
-            "termSize": 20,
-            "excludeHitsFromPreviousRun": true
+  "id": "cassandra_otel-compaction-pending",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when a node has pending compaction tasks (`cassandra.compaction.tasks.pending > 0`). A persistent backlog degrades read performance as SSTables pile up.",
+    "name": "[Cassandra OTel] Compaction falling behind (pending tasks)",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cassandra"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cassandra_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Cassandra compaction pending\n\n### What fired\n`cassandra.compaction.tasks.pending` exceeded 0 on at least one node over the evaluation window.\n\n### Why it matters\nCassandra merges SSTables through compaction. When compaction falls behind, each read must consult more SSTables, drastically increasing read latency and disk I/O. Sustained pending compactions usually indicate write load outpaces compaction throughput or disk I/O is constrained.\n\n### Triage\n1. Overview dashboard: confirm the affected nodes and trend.\n2. Correlate with read latency p99 and range-slice latency \u2014 you should see degradation on the same nodes.\n3. Inspect disk I/O utilisation and free space on data directories.\n4. Look for recent schema or workload changes driving write amplification.\n\n### Remediation\n- Throttle or throttle down writes until compaction catches up (cluster-wide).\n- Increase `concurrent_compactors` / `compaction_throughput_mb_per_sec` if hardware permits.\n- Scale out to distribute write load across more nodes.\n\n### Tuning\n- Fires on any pending task. For large clusters with steady small backlogs, use `pending > N` or a percentage of total SSTables.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-cassandra.otel-default\n// Gauge: pending compaction tasks; > 0 means compaction is falling behind\n| WHERE cassandra.compaction.tasks.pending IS NOT NULL\n| STATS pending = MAX(MAX_OVER_TIME(cassandra.compaction.tasks.pending)) BY server.address\n// Any persistent backlog degrades read performance\n| WHERE pending > 0\n| SORT pending DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "server.address",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }
