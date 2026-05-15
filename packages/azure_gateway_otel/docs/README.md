@@ -8,9 +8,7 @@ These assets provide dashboards covering traffic, latency, errors, backend healt
 
 The Azure Application Gateway OpenTelemetry assets have been tested with the OpenTelemetry Azure encoding extension (`azureencodingextension`).
 
-Tested against:
-
-- Azure Application Gateway v2 SKU (Standard_v2, WAF_v2)
+Tested against an Azure Application Gateway v2 (`WAF_v2`) deployment. The dashboards should also work with `Standard_v2` (non-WAF) gateways — the WAF dashboard will simply be empty. The v1 SKU and its `ApplicationGatewayPerformanceLog` category are not tested.
 
 ## Requirements
 
@@ -26,7 +24,7 @@ The `azureencodingextension` decodes diagnostic log records into OpenTelemetry-n
 
 ### Configuration
 
-Add your own setup details as per the EDOT Cloud Forwarder (ECF) used.
+These assets assume Application Gateway diagnostic logs reach Elasticsearch via the EDOT Cloud Forwarder for Azure. Follow the official setup instructions at [EDOT Cloud Forwarder for Azure](https://www.elastic.co/docs/reference/opentelemetry/edot-cloud-forwarder/azure) to deploy the forwarder (Bicep template, Function App, Event Hubs) and connect it to your Elastic Managed OTLP endpoint. Once the forwarder is running and the Application Gateway diagnostic categories listed above are routed to its Event Hub, records arrive on the `logs-azure.application_gateway.otel-*` data stream and these dashboards become populated.
 
 ## Reference
 
