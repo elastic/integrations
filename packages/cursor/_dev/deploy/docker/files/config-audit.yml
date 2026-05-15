@@ -2,13 +2,14 @@ rules:
   # Round 3+ — steady-state, page 1.
   # Fires on every subsequent interval once Round 2 has completed.
   # The startTime exactly matches the last event timestamp returned by Round 2
-  # (2026-05-04T17:00:00.000Z), which the CEL stored as cursor.last_timestamp.
+  # (2026-05-04T17:00:00.000Z), which the CEL stored as cursor.last_timestamp
+  # and then reformatted to RFC3339Nano (trailing zeros stripped to `Z`).
   # Returns zero events so the cursor does not advance and polling terminates.
   - path: /teams/audit-logs
     methods: ["GET"]
     query_params:
       page: "1"
-      startTime: "2026-05-04T17:00:00.000Z"
+      startTime: "2026-05-04T17:00:00Z"
       endTime: "{endTime:.*}"
       pageSize: "{pageSize:.*}"
     request_headers:
@@ -37,14 +38,15 @@ rules:
   # Round 2 — page 1.
   # Fires at the start of the second polling interval.
   # The startTime exactly matches the last event timestamp from Round 1 page 2
-  # (2026-05-04T15:30:00.000Z), which the CEL stored as cursor.last_timestamp.
+  # (2026-05-04T15:30:00.000Z), which the CEL stored as cursor.last_timestamp
+  # and then reformatted to RFC3339Nano (trailing zeros stripped to `Z`).
   # Returns 2 events and hasNextPage=false so pagination stops immediately.
   # The last event timestamp (2026-05-04T17:00:00.000Z) becomes the cursor for Round 3+.
   - path: /teams/audit-logs
     methods: ["GET"]
     query_params:
       page: "1"
-      startTime: "2026-05-04T15:30:00.000Z"
+      startTime: "2026-05-04T15:30:00Z"
       endTime: "{endTime:.*}"
       pageSize: "{pageSize:.*}"
     request_headers:

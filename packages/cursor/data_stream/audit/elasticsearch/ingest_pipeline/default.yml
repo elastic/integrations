@@ -1068,6 +1068,24 @@ processors:
       value: '{{{user.target.email}}}'
       allow_duplicates: false
       if: ctx.user?.target?.email != null && ctx.user.target.email != "unknown"
+  - append:
+      field: related.user
+      tag: append_creator_email_to_related_user
+      value: '{{{cursor.audit.creator_email}}}'
+      allow_duplicates: false
+      if: ctx.cursor?.audit?.creator_email != null && ctx.cursor.audit.creator_email != "unknown"
+  - append:
+      field: related.user
+      tag: append_sender_email_to_related_user
+      value: '{{{cursor.audit.sender_email}}}'
+      allow_duplicates: false
+      if: ctx.cursor?.audit?.sender_email != null && ctx.cursor.audit.sender_email != "unknown"
+  - append:
+      field: related.user
+      tag: append_sender_user_id_to_related_user
+      value: '{{{cursor.audit.sender_user_id}}}'
+      allow_duplicates: false
+      if: ctx.cursor?.audit?.sender_user_id != null && ctx.cursor.audit.sender_user_id != ""
 
   # --- Finalization ---
   - set:

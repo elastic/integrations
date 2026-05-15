@@ -28,9 +28,23 @@ redact:
     - api_key
 program: |-
   {
-    "start": state.?cursor.last_timestamp.orValue(
-      (now - duration(state.initial_interval)).format(time_layout.RFC3339Nano)
-    ),
+    // The Cursor Admin API rejects startTime/endTime windows larger than 30
+    // days and does not serve data older than that. Clamp the effective start
+    // at now - 30 days so configurations or persisted cursors reaching further
+    // back still produce a valid request (best-effort 30-day lookback) instead
+    // of erroring out.
+    "start": timestamp(
+      max(
+        int(
+          timestamp(
+            state.?cursor.last_timestamp.orValue(
+              (now - duration(state.initial_interval)).format(time_layout.RFC3339Nano)
+            )
+          )
+        ),
+        int(now - duration("720h"))
+      )
+    ).format(time_layout.RFC3339Nano),
     "end": state.?cursor.next.window_end.orValue(
       now.format(time_layout.RFC3339Nano)
     ),

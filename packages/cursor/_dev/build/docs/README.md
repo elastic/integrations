@@ -9,18 +9,12 @@ The Cursor integration collects audit logs from [Cursor](https://cursor.com), an
 
 This integration requires a **Cursor Enterprise** plan. The Admin API and S3 streaming delivery are available only to Enterprise-tier teams.
 
-- **Admin API (CEL input):** Cursor Admin API at `https://api.cursor.com`. The API uses a single, unversioned endpoint.
-- **S3 Streaming (AWS S3 input):** Requires S3 streaming delivery configured by Cursor (contact `hi@cursor.com`). Files are delivered as gzip-compressed NDJSON (`.jsonl.gz`) in date-partitioned paths (`YYYY/MM/DD/`).
+This integration supports two methods for collecting Cursor audit logs:
 
-### How it works
+- **Admin API (CEL input):** the Elastic Agent polls the Cursor Admin API at `https://api.cursor.com` on a configurable schedule. The Cursor Admin API only retains audit events for the last 30 days.
+- **S3 Streaming (AWS S3 input):** Cursor delivers audit logs to a customer-owned S3 bucket as gzip-compressed NDJSON files (`.jsonl.gz`) in date-partitioned paths (`YYYY/MM/DD/`). S3 streaming must be enabled on the Cursor side; contact `hi@cursor.com` to request it.
 
-This integration supports two methods for collecting audit logs:
-
-1. **REST API polling (CEL input):** The Elastic Agent polls the `GET /teams/audit-logs` endpoint on a configurable schedule (default: every 5 minutes). The CEL program handles page-number pagination, time-based filtering, and automatic chunking of lookback windows longer than 30 days (the API enforces a maximum 30-day range per request). Events are deduplicated using a fingerprint of the `event_id` field.
-
-2. **S3 streaming (AWS S3 input):** Cursor pushes audit log files to a customer-owned S3 bucket in near real-time. The Elastic Agent reads from the S3 bucket directly or via SQS notifications. This method provides richer event metadata (auth context, ghost mode, privacy mode, request correlation ID) and is not subject to API rate limits.
-
-Both input methods feed the same `audit` data stream and share a common ingest pipeline that normalizes events from either format into a unified schema.
+Both input methods feed the same `audit` data stream and share a common ingest pipeline that normalizes events from either source into a unified schema.
 
 ## What data does this integration collect?
 
@@ -87,9 +81,9 @@ After deploying the integration:
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
-**Rate limits (CEL input):** The Cursor Admin API enforces a limit of 20 requests per minute per team. The default polling interval of 5 minutes and built-in rate limiting in the CEL program keep usage well within this limit. If you encounter `429` errors, increase the polling interval.
+**Rate limits (CEL input):** The Cursor Admin API enforces a limit of 20 requests per minute per team. The default polling interval of 5 minutes keeps usage well within this limit. If you encounter `429` errors, increase the polling interval.
 
-**30-day window limit (CEL input):** The Admin API restricts each request to a maximum 30-day time range. The CEL program automatically chunks longer lookback windows into 30-day segments during initial backfill.
+**30-day retention (CEL input):** The Cursor Admin API only serves audit events from the last 30 days. The integration automatically clamps the initial lookback to a maximum of 30 days, so configuring a larger `Initial Lookback Interval` will still produce a valid backfill — it simply collects the previous 30 days.
 
 **`"unknown"` values (S3 input):** System-initiated events (for example, auto-enrolled users or automated removals) can have `ip_address` and `user_email` set to `"unknown"`. The pipeline handles this gracefully and does not attempt IP conversion on these sentinel values.
 
@@ -105,7 +99,7 @@ For high-volume teams, the S3 streaming input is recommended as it is not subjec
 
 ### Audit
 
-The `audit` data stream collects audit log events from Cursor covering authentication, user management, team configuration, API key lifecycle, directory group operations, Bugbot management, and security controls. It supports two input methods: REST API polling via CEL and S3 streaming via AWS S3/SQS.
+The `audit` data stream collects audit log events from Cursor covering authentication, user management, team configuration, API key lifecycle, directory group operations, Bugbot management, and security controls. It supports two input methods: Admin API polling and S3 streaming via AWS S3/SQS.
 
 #### Audit fields
 
@@ -127,5 +121,5 @@ The `audit` data stream collects audit log events from Cursor covering authentic
 
 These APIs and services are used with this integration:
 
-* [Cursor Admin API — Get Audit Logs](https://cursor.com/docs/account/teams/admin-api#get-audit-logs): `GET /teams/audit-logs` — retrieves paginated audit log events with time-based filtering. Supports filtering by event type via the `eventTypes` query parameter. Authentication uses HTTP Basic with the Admin API key as the username and an empty password.
+* [Cursor Admin API — Get Audit Logs](https://cursor.com/docs/account/teams/admin-api#get-audit-logs): retrieves audit log events with time-based filtering. Optional filtering by event type is supported. Audit events are retained for 30 days.
 * [Cursor S3 Streaming](https://cursor.com/docs/enterprise/compliance-and-monitoring): Enterprise customers can arrange streaming delivery of audit logs to an S3 bucket. Files are gzip-compressed NDJSON (`.jsonl.gz`) organized in `YYYY/MM/DD/` date-partitioned paths.
