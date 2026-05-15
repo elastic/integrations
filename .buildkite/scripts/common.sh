@@ -648,9 +648,16 @@ get_from_changeset() {
         from="${previous_successful_commit}"
         if [[ "${previous_successful_commit}" == "null" ]]; then
             if [[ "${BUILDKITE_BRANCH}" =~ ${LONG_RUNNING_BRANCH_PATTERN} ]]; then
-                # First push of a new long-running branch (matches LONG_RUNNING_BRANCH_PATTERN): only CI infrastructure files
-                # changed, no package code was modified — skip package testing.
-                from="${BUILDKITE_COMMIT}"
+                # First push of a new long-running branch. Use the merge-base with main to scope
+                # the diff to commits exclusive to this branch. If those commits contain package
+                # changes, test them; otherwise (e.g. CI infra-only first commit) skip package testing.
+                local merge_base
+                merge_base=$(git merge-base "${BUILDKITE_COMMIT}" "origin/main")
+                if git diff --name-only "${merge_base}" "${BUILDKITE_COMMIT}" | grep -E '^packages/' > /dev/null; then
+                    from="${merge_base}"
+                else
+                    from="${BUILDKITE_COMMIT}"
+                fi
             else
                 from="origin/${BUILDKITE_BRANCH}^"
             fi
