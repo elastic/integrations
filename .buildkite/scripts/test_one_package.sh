@@ -26,12 +26,14 @@ with_kubernetes
 
 use_elastic_package
 
+exit_code=0
+
 echo "--- [${package_name}] Check TLS certificate expiry"
 if ! .buildkite/scripts/check_certificates.sh "${package_path}" ; then
-    exit 1
+    buildkite-agent annotate "Failed validation of SSL certificates for ${package_path}" --style "warning" --context "ctx-ssl-${package_path//\//-}"
+    exit_code=1
 fi
 
-exit_code=0
 if ! process_package "${package_path}" ; then
     # keep this message as a collapsed group in Buildkite, so it
     # is not hidden by the previous collapsed group.
