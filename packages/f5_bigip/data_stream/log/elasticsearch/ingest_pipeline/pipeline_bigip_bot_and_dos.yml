@@ -16,7 +16,8 @@ processors:
       field_split: ';'
       value_split: =
       target_field: kv
-      if: ctx.event.original.contains('device_product=ASM')
+      strip_brackets: true
+      if: ctx.event.original.contains('device_product=ASM') || ctx.event.original.contains('device_product="ASM"')
       on_failure:
         - append:
             field: error.message
