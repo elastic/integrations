@@ -39,7 +39,7 @@ An example event for `event` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.17.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
         "id": "09bea17f-617d-4342-8fa8-6021743dacc6",
@@ -135,19 +135,28 @@ An example event for `event` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| file.accessed | Last time the file was accessed. Note that not all filesystems keep track of access time. | date |
+| file.attributes | Array of file attributes. Attributes names will vary by platform. Here's a non-exhaustive list of values that are expected in this field: archive, compressed, directory, encrypted, execute, hidden, read, readonly, system, write. | keyword |
+| file.created | File creation time. Note that not all filesystems store the creation time. | date |
 | file.ctime | Last time the file attributes or metadata changed. Note that changes to the file content will update `mtime`. This implies `ctime` will be adjusted at the same time, since `mtime` is an attribute of the file. | date |
+| file.drive_letter | Drive letter where the file is located. This field is only relevant on Windows. The value should be uppercase, and not include the colon. | keyword |
 | file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| file.fork_name | A fork is additional data associated with a filesystem object. On Linux, a resource fork is used to store additional data with a filesystem object. A file always has at least one fork for the data portion, and additional forks may exist. On NTFS, this is analogous to an Alternate Data Stream (ADS), and the default data stream for a file is just called $DATA. Zone.Identifier is commonly used by Windows to track contents downloaded from the Internet. An ADS is typically of the form: `C:\path\to\filename.extension:some_fork_name`, and `some_fork_name` is the value that should populate `fork_name`. `filename.extension` should populate `file.name`, and `extension` should populate `file.extension`. The full path, `file.path`, will include the fork name. | keyword |
 | file.gid | Primary group ID (GID) of the file. | keyword |
 | file.group | Primary group name of the file. | keyword |
 | file.hash.sha1 | SHA1 hash. | keyword |
 | file.inode | Inode representing the file in the filesystem. | keyword |
-| file.mime_type | MIME type should identify the format of the file or stream of bytes using https://www.iana.org/assignments/media-types/media-types.xhtml[IANA official types], where possible. When more than one type is applicable, the most specific type should be used. | keyword |
+| file.mime_type | MIME type should identify the format of the file or stream of bytes using IANA official types: https://www.iana.org/assignments/media-types/media-types.xhtml, where possible. When more than one type is applicable, the most specific type should be used. | keyword |
 | file.mode | Mode of the file in octal representation. | keyword |
 | file.mtime | Last time the file content was modified. | date |
+| file.name | Name of the file including the extension, without the directory. | keyword |
 | file.origin | An array of strings describing a possible external origin for this file. For example, the URL it was downloaded from. Only supported in macOS, via the kMDItemWhereFroms attribute. Omitted if origin information is not available. | keyword |
 | file.origin.text | Multi-field of `file.origin`. | text |
 | file.owner | File owner's username. | keyword |
@@ -193,6 +202,10 @@ An example event for `event` looks as following:
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.parent.pid | Process id. | long |
 | process.pid | Process id. | long |
+| process.user.domain | Name of the directory the user is a member of (for example an LDAP or Active Directory domain). | keyword |
+| process.user.id | Unique identifier of the user. | keyword |
+| process.user.name | Short name or login of the user. | keyword |
+| process.user.name.text | Multi-field of `process.user.name`. | match_only_text |
 | process.working_directory | The working directory of the process. | keyword |
 | process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |

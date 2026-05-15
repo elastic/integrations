@@ -1,0 +1,54 @@
+{
+  "attributes": {
+    "name": "[Redis Enterprise OTel] Database memory utilization 99.5% rolling 30 days",
+    "description": "Monitors Redis Enterprise database memory utilization ratio (used_memory / memory_limit), ensuring 99.5% of 1-minute windows maintain memory usage below 90% of the configured limit over a rolling 30-day period. Redis is an in-memory datastore where approaching the memory limit risks eviction of data or rejection of write commands (OOM), both of which directly impact application availability and data integrity.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"redisenterprise.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "avg",
+              "field": "bdb_used_memory"
+            },
+            {
+              "name": "B",
+              "aggregation": "avg",
+              "field": "bdb_memory_limit"
+            }
+          ],
+          "equation": "A/B",
+          "comparator": "LT",
+          "threshold": 0.9
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "redisenterprise",
+      "otel"
+    ],
+    "groupBy": "bdb",
+    "artifacts": {
+      "dashboards": [
+        {"id": "redisenterprise_otel-overview"},
+        {"id": "redisenterprise_otel-database-performance"}
+      ]
+    }
+  },
+  "id": "redisenterprise_otel-database-memory-utilization-99.5-Rolling30Days",
+  "type": "slo_template"
+}
