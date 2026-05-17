@@ -59,159 +59,143 @@ redact:
     - api_token_value
 
 program: |-
-  // Reports collection: GET /v1/reports paginated by `links.next`, with a
-  // strictly-greater-than `last_activity_at` cursor. The +1ms guard on the
-  // cursor compensates for HackerOne's millisecond-granularity comparison.
-  //
-  // State scope:
-  // cursor.last_activity_at   persisted across restarts (resumable bookmark)
-  // state.next                intra-session pagination URL (lost on restart;
-  // intentional, so a stale URL never resurrects)
-  // state.cycle_max           intra-session running max across the cycle's
-  // pages; promoted into cursor on the final page
-  (size(state.?program_handles.orValue([])) == 0 && size(state.?inbox_ids.orValue([])) == 0) ?
+  {
+    "updated_since": (state.?cursor.cycle_since.orValue("") != "") ?
+      state.?cursor.cycle_since.orValue("")
+    :
+      state.?cursor.max_updated_at.orValue(
+        string(now - duration(state.initial_interval))
+      ),
+    "prior_running": string(state.?cursor.running_max_updated_at.orValue("")),
+  }.as(bind,
     state.with(
-      {
-        "events": {
-          "error": {
-            "code": "configuration",
-            "id": "missing_scope_filter",
-            "message": "At least one program handle or inbox id is required.",
+      request(
+        "GET",
+        (state.?next_link.orValue("") != "") ?
+          state.?next_link.orValue("")
+        :
+          state.url.trim_right("/") + "/v1/reports?" + {
+            "sort": ["reports.last_activity_at"],
+            "page[size]": [string(int(state.page_size))],
+            "filter[last_activity_at__gt]": [
+              (
+                state.?cursor.last_activity_at.optMap(t,
+                  timestamp(t) + duration("1ms")
+                )
+              ).orValue(
+                now - duration(state.initial_interval)
+              ).format("2006-01-02T15:04:05.000Z07:00"),
+            ],
+            ?"filter[program][]": state.?program_handles[0].hasValue() ?
+              optional.of(state.program_handles)
+            :
+              optional.none(),
+            ?"filter[inbox_ids][]": state.?inbox_ids[0].hasValue() ?
+              optional.of(state.inbox_ids)
+            :
+              optional.none(),
+            ?"filter[state][]": state.?state_filter[0].hasValue() ?
+              optional.of(state.state_filter)
+            :
+              optional.none(),
+            ?"filter[severity][]": state.?severity_filter[0].hasValue() ?
+              optional.of(state.severity_filter)
+            :
+              optional.none(),
+          }.format_query()
+      ).with(
+        {
+          "Header": {
+            "Accept": ["application/json"],
+            "Authorization": [
+              "Basic " + bytes(state.api_token_identifier + ":" + state.api_token_value).base64(),
+            ],
           },
-        },
-        "want_more": false,
-      }
-    )
-  :
-    (
-      // We have no URL, but allow this to be handled by the GET request.
-      (state.?next.orValue("") != "") ?
-        state.?next.orValue("")
-      :
-        state.url.trim_right("/") + "/v1/reports?" + {
-          "sort": ["reports.last_activity_at"],
-          "page[size]": [string(int(state.page_size))],
-          "filter[last_activity_at__gt]": [
-            (
-              state.?cursor.last_activity_at.optMap(t,
-                timestamp(t) + duration("1ms")
-              )
-            ).orValue(
-              now - duration(state.initial_interval)
-            ).format("2006-01-02T15:04:05.000Z07:00"),
-          ],
-          ?"filter[program][]": state.?program_handles[0].hasValue() ?
-            optional.of(state.program_handles)
-          :
-            optional.none(),
-          ?"filter[inbox_ids][]": state.?inbox_ids[0].hasValue() ?
-            optional.of(state.inbox_ids)
-          :
-            optional.none(),
-          ?"filter[state][]": state.?state_filter[0].hasValue() ?
-            optional.of(state.state_filter)
-          :
-            optional.none(),
-          ?"filter[severity][]": state.?severity_filter[0].hasValue() ?
-            optional.of(state.severity_filter)
-          :
-            optional.none(),
-        }.format_query()
-    ).as(reqUrl,
-      state.with(
-        request("GET", reqUrl).with(
-          {
-            "Header": {
-              "Authorization": ["Basic " + bytes(state.api_token_identifier + ":" + state.api_token_value).base64()],
-            },
-          }
-        ).do_request().as(resp,
-          (resp.StatusCode == 200) ?
-            resp.Body.decode_json().as(body,
+        }
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          try(resp.Body.decode_json()).as(body,
+            is_error(body.with({})) ?
               {
-                // HackerOne returns `{"links": {"next": null}}` when there is no next page and
-                // `{"links": {"next": "..."}}` otherwise. `body.?links.?next.orValue(null)`
-                // also collapses key absence into null defensively, so a single `!= null`
-                // check covers every observed shape.
-                "nextResolved": ((body.?links.?next.orValue(null) != null) ? string(body.links.next) : "").as(linkNext,
-                  // Relative paths (start with "/") are resolved against state.url; absolute URLs pass through.
-                  linkNext.startsWith("/") ?
-                    (state.url.trim_right("/") + linkNext)
-                  :
-                    linkNext
-                ),
-                // Max(last_activity_at) on this page only; cycle running max folded later.
-                "pageMax": body.?data.orValue([]).map(r,
+                "events": {
+                  "error": {
+                    "message": "GET /v1/reports: Response is not a JSON object",
+                  },
+                },
+                "want_more": false,
+                "next_link": "",
+                "url": state.url,
+              }
+            :
+              {
+                "items": body.?data.orValue([]),
+                "next_link": (body.?links.?next.orValue(null) != null) ?
+                  string(body.links.next).as(raw,
+                    raw.startsWith("/") ?
+                      (state.url.trim_right("/") + raw)
+                    :
+                      raw
+                  )
+                :
+                  "",
+                "max_updated": body.?data.orValue([]).map(r,
                   r.?attributes.?last_activity_at.hasValue() || r.?attributes.?created_at.hasValue(),
-                  r.?attributes.?last_activity_at.orValue(r.?attributes.created_at.orValue(""))
+                  r.?attributes.?last_activity_at.orValue(r.?attributes.?created_at.orValue(""))
                 ).as(stamps,
                   (size(stamps) > 0) ? stamps.max() : ""
                 ),
-                "events": body.?data.orValue([]).map(item, {"message": item.encode_json()}),
-              }.as(d,
+              }.as(page,
                 (
-                  // newMax = max(running cycle_max, this page's max). Computed once and reused.
-                  !has(d.pageMax) ?
-                    state.?cycle_max.orValue("")
-                  : (state.?cycle_max.orValue("") != "") ?
-                    ((d.pageMax > state.?cycle_max.orValue("")) ? d.pageMax : state.?cycle_max.orValue(""))
-                  :
-                    d.pageMax
-                ).as(newMax,
-                  (d.nextResolved != "" && d.nextResolved != reqUrl) ?
-                    // Pagination continues — keep next, accumulate cycle_max, do NOT touch cursor yet.
-                    {
-                      "events": d.events,
-                      "want_more": true,
-                      "next": d.nextResolved,
-                      "cycle_max": newMax,
-                    }
-                  :
-                    // Last page in this cycle — promote newMax into cursor, clear transient state.
-                    {
-                      "events": d.events,
-                      "want_more": false,
-                      "next": "",
-                      "cycle_max": "",
-                      "cursor": (newMax != "") ?
-                        state.?cursor.orValue({}).with({"last_activity_at": newMax})
+                  (bind.prior_running != "" && page.max_updated != "") ?
+                    (
+                      (bind.prior_running > page.max_updated) ?
+                        bind.prior_running
                       :
-                        state.?cursor.orValue({}),
-                    }
+                        page.max_updated
+                    )
+                  : (bind.prior_running != "") ? bind.prior_running : page.max_updated
+                ).as(cm,
+                  {
+                    "events": (size(page.items) > 0) ?
+                      dyn(page.items.map(e, {"message": e.encode_json()}))
+                    : (page.next_link != "") ?
+                      dyn([{"retry": true}])
+                    :
+                      dyn([]),
+                    "want_more": page.next_link != "",
+                    "next_link": page.next_link,
+                    "cursor": (page.next_link != "") ?
+                      {
+                        ?"max_updated_at": state.?cursor.max_updated_at,
+                        "cycle_since": bind.updated_since,
+                        "running_max_updated_at": cm,
+                      }
+                    :
+                      {
+                        ?"max_updated_at": (cm != "") ?
+                          optional.of(cm)
+                        :
+                          state.?cursor.max_updated_at,
+                      },
+                    "url": state.url,
+                  }
                 )
               )
-            )
-          :
-            // Permanent client errors (4xx other than 429) -- emit an indexable error event,
-            // preserve the cursor so the next cycle does not refetch the same failing window,
-            // and let the pipeline terminate processor route it to error.message.
-            {
-              "events": [
-                {
-                  "error": {
-                    "code": string(resp.StatusCode),
-                    "id": string(resp.Status),
-                    "message": (resp.StatusCode == 401) ?
-                      "GET /v1/reports: invalid API token (401)"
-                    : (resp.StatusCode == 403) ?
-                      "GET /v1/reports: access denied - check program handle or IP allowlist (403)"
-                    :
-                      "GET /v1/reports: " + (
-                        (size(resp.Body) != 0) ?
-                          string(resp.Body)
-                        :
-                          string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                      ),
-                  },
-                },
-              ],
-              "want_more": false,
-              "next": "",
-              "cycle_max": "",
-            }
-        )
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "message": "GET /v1/reports: " + string(resp.StatusCode),
+              },
+            },
+            "want_more": false,
+            "next_link": "",
+            "url": state.url,
+          }
       )
     )
+  )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
