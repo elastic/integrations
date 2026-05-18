@@ -54,10 +54,10 @@ The `alerts` data stream provides security events from the Doppel API.
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | The time the event occurred or was updated. | date |
-| data_stream.dataset | The dataset name for the data stream | constant_keyword |
-| data_stream.namespace | The namespace for the data stream (e.g., default). | constant_keyword |
-| data_stream.type | The generic type of the data stream | constant_keyword |
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | doppel.app.bundle_id | The unique bundle identifier of the application. | keyword |
 | doppel.app.developer_name | The listed developer name for the rogue application. | keyword |
 | doppel.app.platform | The app store platform (e.g., iOS, Android) hosting the app. | keyword |
@@ -86,6 +86,8 @@ The `alerts` data stream provides security events from the Doppel API.
 | doppel.uploaded_by | The user or system account that uploaded the alert. | keyword |
 | doppel_alert_updated_at | The timestamp when the alert was last updated. | date |
 | event.created | The time the alert was created in the Doppel system. | date |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
 | event.provider | The source or provider of the event (Doppel). | keyword |
 | event.reference | A URL or link referencing the original alert in the Doppel dashboard. | keyword |
 | event.risk_score | A normalized risk score for the alert. | float |
