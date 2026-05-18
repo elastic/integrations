@@ -1414,26 +1414,26 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-01-05T12:06:57.268Z",
+    "@timestamp": "2026-05-18T11:43:14.500Z",
     "agent": {
-        "ephemeral_id": "15548e80-a8ea-4a4c-baab-48929ef5392c",
-        "id": "d54bb79c-84f4-4b99-abc8-fc8158cedafe",
-        "name": "elastic-agent-64195",
+        "ephemeral_id": "b37172cf-3f98-450d-a5ef-bafca5805285",
+        "id": "7d3b810d-b3de-4287-91c8-c299e2118a48",
+        "name": "elastic-agent-40104",
         "type": "filebeat",
-        "version": "8.19.4"
+        "version": "8.19.10"
     },
     "data_stream": {
         "dataset": "m365_defender.vulnerability",
-        "namespace": "60777",
+        "namespace": "63805",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "d54bb79c-84f4-4b99-abc8-fc8158cedafe",
+        "id": "7d3b810d-b3de-4287-91c8-c299e2118a48",
         "snapshot": false,
-        "version": "8.19.4"
+        "version": "8.19.10"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1441,79 +1441,19 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "m365_defender.vulnerability",
-        "id": "1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226",
-        "ingested": "2026-01-05T12:06:58Z",
+        "ingested": "2026-05-18T11:43:17Z",
         "kind": "event",
-        "original": "{\"CveBatchTitle\":\"Red_hat February 2025 Vulnerabilities\",\"CveBatchUrl\":\"https://security.access.redhat.com/data/oval/v2/RHEL9/rhel-9.8-eus.oval.xml.bz2\",\"CveId\":\"CVE-2022-49226\",\"CvssScore\":5.5,\"DeviceId\":\"1212121212121212121212\",\"DeviceName\":\"sample-host-1\",\"ExploitabilityLevel\":\"NoExploit\",\"FirstSeenTimestamp\":\"2025-10-06 10:43:58\",\"Id\":\"1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226\",\"IsOnboarded\":true,\"LastSeenTimestamp\":\"2025-10-06 22:45:00\",\"OSArchitecture\":\"x64\",\"OSPlatform\":\"Linux\",\"OSVersion\":\"enterprise_linux_9.4\",\"RbacGroupId\":0,\"RbacGroupName\":\"Unassigned\",\"RecommendationReference\":\"va-_-red_hat-_-kernel\",\"RecommendedSecurityUpdate\":\"CVE-2022-49226_oval:com.redhat.rhsa:def:20249315\",\"RecommendedSecurityUpdateId\":\"RHSA-2024:9315\",\"RecommendedSecurityUpdateUrl\":\"https://access.redhat.com/errata/RHSA-2024:9315\",\"RegistryPaths\":[],\"SecurityUpdateAvailable\":true,\"SoftwareName\":\"kernel\",\"SoftwareVendor\":\"red_hat\",\"SoftwareVersion\":\"0:5.14.0-427.42.1.el9_4\",\"VulnerabilitySeverityLevel\":\"Medium\"}",
+        "original": "{\"cveId\":\"CVE-2022-49226\",\"deviceId\":\"1212121212121212121212\",\"deviceName\":\"sample-host-1\",\"diskPaths\":[],\"eventTimestamp\":\"2025-10-06 12:00:00\",\"exploitabilityLevel\":\"NoExploit\",\"firstSeenTimestamp\":\"2025-10-06 10:43:58\",\"id\":\"1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226\",\"lastSeenTimestamp\":\"2025-10-06 22:45:00\",\"osArchitecture\":\"x64\",\"osPlatform\":\"Linux\",\"osVersion\":\"enterprise_linux_9.4\",\"rbacGroupName\":\"Unassigned\",\"recommendationReference\":\"va-_-red_hat-_-kernel\",\"recommendedSecurityUpdate\":\"CVE-2022-49226_oval:com.redhat.rhsa:def:20249315\",\"recommendedSecurityUpdateId\":\"RHSA-2024:9315\",\"recommendedSecurityUpdateUrl\":null,\"registryPaths\":[],\"softwareName\":\"kernel\",\"softwareVendor\":\"red_hat\",\"softwareVersion\":\"0:5.14.0-427.42.1.el9_4\",\"status\":\"New\",\"vulnerabilitySeverityLevel\":\"Medium\"}",
         "type": [
             "info"
         ]
     },
-    "group": {
-        "id": "0",
-        "name": "Unassigned"
-    },
-    "host": {
-        "architecture": "x64",
-        "hostname": "sample-host-1",
-        "id": "1212121212121212121212",
-        "name": "sample-host-1",
-        "os": {
-            "name": "Linux enterprise_linux_9.4",
-            "platform": "Linux",
-            "type": "linux",
-            "version": "enterprise_linux_9.4"
-        }
-    },
     "input": {
         "type": "cel"
     },
-    "m365_defender": {
-        "vulnerability": {
-            "cve_batch_title": "Red_hat February 2025 Vulnerabilities",
-            "cve_batch_url": "https://security.access.redhat.com/data/oval/v2/RHEL9/rhel-9.8-eus.oval.xml.bz2",
-            "cve_id": "CVE-2022-49226",
-            "cvss_score": 5.5,
-            "device_id": "1212121212121212121212",
-            "device_name": "sample-host-1",
-            "exploitability_level": "NoExploit",
-            "first_seen_timestamp": "2025-10-06T10:43:58.000Z",
-            "id": "1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226",
-            "is_onboarded": true,
-            "last_seen_timestamp": "2025-10-06T22:45:00.000Z",
-            "os_architecture": "x64",
-            "os_platform": "Linux",
-            "os_version": "enterprise_linux_9.4",
-            "rbac_group_id": "0",
-            "rbac_group_name": "Unassigned",
-            "recommendation_reference": "va-_-red_hat-_-kernel",
-            "recommended_security_update": "CVE-2022-49226_oval:com.redhat.rhsa:def:20249315",
-            "recommended_security_update_id": "RHSA-2024:9315",
-            "security_update_available": true,
-            "severity_level": "Medium",
-            "software_name": "kernel",
-            "software_vendor": "red_hat",
-            "software_version": "0:5.14.0-427.42.1.el9_4"
-        }
-    },
-    "message": "Red_hat February 2025 Vulnerabilities",
     "observer": {
         "product": "Microsoft 365 Defender",
         "vendor": "Microsoft"
-    },
-    "package": {
-        "name": "kernel",
-        "version": "0:5.14.0-427.42.1.el9_4"
-    },
-    "related": {
-        "hosts": [
-            "1212121212121212121212",
-            "sample-host-1"
-        ]
-    },
-    "resource": {
-        "id": "1212121212121212121212",
-        "name": "sample-host-1"
     },
     "tags": [
         "preserve_original_event",
@@ -1522,19 +1462,9 @@ An example event for `vulnerability` looks as following:
         "m365_defender-vulnerability"
     ],
     "vulnerability": {
-        "classification": "CVSS",
-        "cve": "CVE-2022-49226",
-        "enumeration": "CVE",
-        "id": "CVE-2022-49226",
-        "reference": "https://www.cve.org/CVERecord?id=CVE-2022-49226",
         "scanner": {
             "vendor": "Microsoft"
-        },
-        "score": {
-            "base": 5.5
-        },
-        "severity": "Medium",
-        "title": "Vulnerability found in kernel 0:5.14.0-427.42.1.el9_4 - CVE-2022-49226"
+        }
     }
 }
 ```
@@ -1560,6 +1490,7 @@ An example event for `vulnerability` looks as following:
 | m365_defender.vulnerability.device_id | Unique identifier for the device in the service. | keyword |
 | m365_defender.vulnerability.device_name | Fully qualified domain name (FQDN) of the device. | keyword |
 | m365_defender.vulnerability.disk_paths | Disk evidence that the product is installed on the device. | keyword |
+| m365_defender.vulnerability.event_timestamp | The time this delta event was found. | date |
 | m365_defender.vulnerability.exploitability_level | The exploitability level of this vulnerability (NoExploit, ExploitIsPublic, ExploitIsVerified, ExploitIsInKit) | keyword |
 | m365_defender.vulnerability.first_seen_timestamp | First time this product CVE was seen on the device. | date |
 | m365_defender.vulnerability.id | Unique identifier for the record. | keyword |
@@ -1574,11 +1505,11 @@ An example event for `vulnerability` looks as following:
 | m365_defender.vulnerability.recommended_security_update | Name or description of the security update provided by the software vendor to address the vulnerability. | keyword |
 | m365_defender.vulnerability.recommended_security_update_id | Identifier of the applicable security updates or identifier for the corresponding guidance or knowledge base (KB) articles. | keyword |
 | m365_defender.vulnerability.registry_paths | Registry evidence that the product is installed in the device. | keyword |
-| m365_defender.vulnerability.security_update_available | Indicates whether a security update is available for the software. | boolean |
 | m365_defender.vulnerability.severity_level | Severity level assigned to the security vulnerability based on the CVSS score. | keyword |
 | m365_defender.vulnerability.software_name | Name of the software product. | keyword |
 | m365_defender.vulnerability.software_vendor | Name of the software vendor. | keyword |
 | m365_defender.vulnerability.software_version | Version number of the software product. | keyword |
+| m365_defender.vulnerability.status | Delta event status indicating whether the vulnerability is New, Fixed, or Updated. | keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | package.fixed_version |  | keyword |
 | package.name | Package name | keyword |
@@ -1588,6 +1519,7 @@ An example event for `vulnerability` looks as following:
 | vulnerability.cve | The CVE id of the vulnerability. | keyword |
 | vulnerability.published_date |  | date |
 | vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
+| vulnerability.status | Lifecycle state of the vulnerability finding on the asset. Expected values: open, fixed, reopened, unknown. | keyword |
 | vulnerability.title |  | keyword |
 
 
