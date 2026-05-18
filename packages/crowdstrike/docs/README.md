@@ -26,8 +26,9 @@ The integration collects data from multiple sources within CrowdStrike Falcon an
 
 2. **CrowdStrike REST API** — Pulls alerts, host inventory, and vulnerability data (indexed into the `alert`, `host`, and `vulnerability` datasets).
 
-    **Identity Protection (GraphQL)** — Additional datasets use the CrowdStrike Identity Protection **GraphQL** API (`/identity-protection/combined/graphql/v1`).:
+    **Identity Protection (GraphQL)** — Additional datasets use the CrowdStrike Identity Protection **GraphQL** API (`/identity-protection/combined/graphql/v1`).
     - **Security assessments** (`identity_protection_assessment`) — Discovers domains, then ingests per-domain security assessment results.
+    - **Timeline** (`identity_protection_timeline`) — Collects identity protection timeline events including authentication, service access, LDAP search, account lifecycle, and privilege escalation activity.
 
     :::{note}
     GovCloud CID users must enable the GovCloud option in the integration configuration to query the `/devices/queries/devices/v1` endpoint instead of the unsupported `/devices/combined/devices/v1` endpoint.
@@ -44,6 +45,7 @@ The integration collects data from multiple sources within CrowdStrike Falcon an
 - **Vulnerability** (vulnerability dataset)
 - **Identity Protection (GraphQL)**:
     - **Security assessments** (identity_protection_assessment dataset)
+    - **Timeline** (identity_protection_timeline dataset)
 
 ## What do I need to use this integration?
 
@@ -125,6 +127,7 @@ The following parameters from your CrowdStrike instance are required:
     | Host          | read:host     |
     | Vulnerability | read:vulnerability |
     | Identity protection assessment | read:Identity Protection Assessment, write:Identity Protection GraphQL |
+    | Identity protection timeline | read:Identity Protection Timeline, write:Identity Protection GraphQL |
 
 ### Collect data using CrowdStrike Falcon Data Replicator (FDR)
 
@@ -3782,6 +3785,162 @@ An example event for `identity_protection_assessment` looks as following:
 | crowdstrike.idp.security_assessment.assessment_factors_nested.severity |  | keyword |
 | crowdstrike.idp.security_assessment.overall_score | Falcon Identity Protection overall score (0-1). | double |
 | crowdstrike.idp.security_assessment.overall_score_level | Qualitative level (e.g. LOW, MEDIUM, HIGH). | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | keyword |
+| observer.vendor | Vendor name of the observer. | keyword |
+
+
+
+### Identity Protection Timeline
+
+This is the `identity_protection_timeline` dataset.
+
+#### Example
+
+An example event for `identity_protection_timeline` looks as following:
+
+```json
+{
+    "@timestamp": "2024-06-01T12:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "c73f17b7-bad4-492c-a7e3-c34fb1bbcbce",
+        "id": "75a8fafd-68de-4744-9373-e4187af62c01",
+        "name": "elastic-agent-62101",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "crowdstrike": {
+        "idp": {
+            "timeline": {
+                "end_time": "2024-06-01T12:00:05Z",
+                "endpoint_entity": {
+                    "primary_display_name": "APP01"
+                },
+                "event_id": "evt-page2-1",
+                "event_label": "Service ticket",
+                "event_severity": "LOW",
+                "event_type": "SERVICE_ACCESS",
+                "start_time": "2024-06-01T12:00:00Z",
+                "timestamp": "2024-06-01T12:00:00Z",
+                "user_entity": {
+                    "primary_display_name": "svc_account"
+                }
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "crowdstrike.identity_protection_timeline",
+        "namespace": "27267",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "75a8fafd-68de-4744-9373-e4187af62c01",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "SERVICE_ACCESS",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "severity": 21,
+        "dataset": "crowdstrike.identity_protection_timeline",
+        "end": "2024-06-01T12:00:05.000Z",
+        "id": "evt-page2-1",
+        "ingested": "2026-05-18T08:14:27Z",
+        "kind": "event",
+        "original": "{\"endTime\":\"2024-06-01T12:00:05Z\",\"endpointEntity\":{\"primaryDisplayName\":\"APP01\"},\"eventId\":\"evt-page2-1\",\"eventLabel\":\"Service ticket\",\"eventSeverity\":\"LOW\",\"eventType\":\"SERVICE_ACCESS\",\"startTime\":\"2024-06-01T12:00:00Z\",\"timestamp\":\"2024-06-01T12:00:00Z\",\"userEntity\":{\"primaryDisplayName\":\"svc_account\"}}",
+        "start": "2024-06-01T12:00:00.000Z",
+        "type": [
+            "access"
+        ]
+    },
+    "host": {
+        "name": "APP01"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "hosts": [
+            "APP01"
+        ],
+        "user": [
+            "svc_account"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "crowdstrike-identity-protection-timeline"
+    ],
+    "user": {
+        "name": "svc_account"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| crowdstrike.idp.timeline.active_directory_site_name | If the activity is known to have occurred within an Active Directory site, this is set to the site's name. | keyword |
+| crowdstrike.idp.timeline.authentication_type | Vendor authentication mechanism. | keyword |
+| crowdstrike.idp.timeline.data_source_vendor_name | Name of the upstream identity. | keyword |
+| crowdstrike.idp.timeline.end_time | The event end time. For non-continuous events, its value is identical with startTime and timestamp. | date |
+| crowdstrike.idp.timeline.endpoint_display_name | A display-oriented label reflecting the best available display name for the origin endpoint. | keyword |
+| crowdstrike.idp.timeline.endpoint_entity.primary_display_name | The primary display name used to represent this endpoint in user-facing data. | keyword |
+| crowdstrike.idp.timeline.entity.accounts.object_sid | Active Directory objectSid string. | keyword |
+| crowdstrike.idp.timeline.entity.accounts.sam_account_name | sAMAccountName for the AD account. | keyword |
+| crowdstrike.idp.timeline.entity.accounts.service_principal_names | SPNs registered on the account. | keyword |
+| crowdstrike.idp.timeline.entity.primary_display_name | Primary display name for the directory object. | keyword |
+| crowdstrike.idp.timeline.entity.secondary_display_name | Qualified display form. | keyword |
+| crowdstrike.idp.timeline.entity.type | Entity kind from the vendor. | keyword |
+| crowdstrike.idp.timeline.event_id | A unique identifier for the event. | keyword |
+| crowdstrike.idp.timeline.event_label | The display name for the event. This is typically based on the event type, but may also depend on additional data, such as the event data source. | keyword |
+| crowdstrike.idp.timeline.event_severity | The event severity. Defaults to NEUTRAL. | keyword |
+| crowdstrike.idp.timeline.event_type | The event type. | keyword |
+| crowdstrike.idp.timeline.geo_location.city | City derived from GeoIP for ipAddress. | keyword |
+| crowdstrike.idp.timeline.geo_location.country | Country derived from GeoIP for ipAddress. | keyword |
+| crowdstrike.idp.timeline.host_name | The origin endpoint host name. | keyword |
+| crowdstrike.idp.timeline.ip_address | The origin endpoint IP address. | keyword |
+| crowdstrike.idp.timeline.ip_address_reputations | Vendor IP reputation signals; exact shape depends on API schema. | keyword |
+| crowdstrike.idp.timeline.isp_classification | ISP or IP reputation category from vendor enrichment. | keyword |
+| crowdstrike.idp.timeline.isp_domain | ISP or organization domain string when provided. | keyword |
+| crowdstrike.idp.timeline.kerberos_encryption_types | Kerberos etypes offered or used. | keyword |
+| crowdstrike.idp.timeline.ldap_search_attributes | LDAP attributes requested in the search. | keyword |
+| crowdstrike.idp.timeline.ldap_search_filter_sample | Sampled LDAP filter text for the search. | keyword |
+| crowdstrike.idp.timeline.ldap_search_query_signatures | Vendor signatures classifying the LDAP query pattern. | keyword |
+| crowdstrike.idp.timeline.ldap_search_scope | LDAP search scope value. | keyword |
+| crowdstrike.idp.timeline.ldap_search_size_limit | LDAP size limit when provided. | long |
+| crowdstrike.idp.timeline.ldap_security_type | LDAP binding / security mode when relevant. | keyword |
+| crowdstrike.idp.timeline.network_tag | The subnet label, as defined in the system configuration, associated with the origin endpoint IP address at the time the activity was performed. | keyword |
+| crowdstrike.idp.timeline.network_type | The subnet type, as defined in the system configuration, associated with the origin endpoint IP address at the time the activity was performed. | keyword |
+| crowdstrike.idp.timeline.protocol_type | The primary network protocol used for performing the activity. | keyword |
+| crowdstrike.idp.timeline.protocol_version |  | keyword |
+| crowdstrike.idp.timeline.smb_dialect | SMB dialect when SMB was involved. | keyword |
+| crowdstrike.idp.timeline.start_time | An alias for the timestamp field. Use it in conjunction with endTime for continuous events. | date |
+| crowdstrike.idp.timeline.target_endpoint_entity.primary_display_name | Display name of the endpoint that was targeted. | keyword |
+| crowdstrike.idp.timeline.target_service_description | Longer description of the targeted service context. | keyword |
+| crowdstrike.idp.timeline.target_service_display_name | Human-readable name of the targeted service. | keyword |
+| crowdstrike.idp.timeline.target_service_identifier | Technical identifier for the targeted service. | keyword |
+| crowdstrike.idp.timeline.target_service_type | Enum or category for the targeted service. | keyword |
+| crowdstrike.idp.timeline.timestamp | The event start time. This is the primary sort-key in timeline queries. | date |
+| crowdstrike.idp.timeline.tls_version | TLS protocol version when the auth path used TLS. | keyword |
+| crowdstrike.idp.timeline.user_display_name | A display-oriented label of the best available display name for the user associated with this event. | keyword |
+| crowdstrike.idp.timeline.user_entity.email_addresses | The list of unique email addresses available for this entity from all known data sources. | keyword |
+| crowdstrike.idp.timeline.user_entity.primary_display_name | The primary display name representing this user in user-facing data. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |

@@ -108,6 +108,7 @@ processors:
       value: event
       if: ctx.crowdstrike?.idp != null
   - script:
+      tag: set_event_category_and_type_from_timeline_event_type
       if: ctx.crowdstrike?.idp?.timeline?.event_type != null
       params:
         SUCCESSFUL_AUTHENTICATION:
@@ -115,16 +116,18 @@ processors:
             - authentication
           type:
             - info
+          outcome: success
         FAILED_AUTHENTICATION:
           category:
             - authentication
           type:
             - info
+          outcome: failure
         SERVICE_ACCESS:
           category:
-            - iam
+            - network
           type:
-            - info
+            - access
         LDAP_SEARCH:
           category:
             - database
@@ -164,7 +167,7 @@ processors:
           category:
             - iam
           type:
-            - info
+            - change
       source: |-
         def m = params.get(ctx.crowdstrike?.idp?.timeline?.event_type);
         if (m != null) {
@@ -178,6 +181,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_0b0b54ba
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -199,22 +203,27 @@ processors:
         }
 
   - set:
+      tag: set_event_id_f48bfe47
       field: event.id
       copy_from: crowdstrike.idp.timeline.event_id
       ignore_empty_value: true
   - set:
+      tag: set_event_action_71e8636b
       field: event.action
       copy_from: crowdstrike.idp.timeline.event_type
       ignore_empty_value: true
   - set:
+      tag: set_user_full_name_26c188b2
       field: user.full_name
       copy_from: crowdstrike.idp.timeline.user_display_name
       ignore_empty_value: true
   - set:
+      tag: set_user_name_d7b52186
       field: user.name
       copy_from: crowdstrike.idp.timeline.user_entity.primary_display_name
       ignore_empty_value: true
   - set:
+      tag: set_user_name_f33b0386
       field: user.name
       copy_from: crowdstrike.idp.timeline.entity.primary_display_name
       ignore_empty_value: true
@@ -223,79 +232,97 @@ processors:
       field: crowdstrike.idp.timeline.entity.secondary_display_name
       target_field: _temp.user_parts
       separator: '\\'
+      tag: split_entity_secondary_display_name
       if: ctx.crowdstrike?.idp?.timeline?.entity?.secondary_display_name != null
       on_failure:
         - append:
-            tag: append_error_message_split_user_name
+            tag: append_error_message_split_entity_secondary_display_name
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: _temp.user_parts.0
       target_field: user.domain
+      tag: rename_entity_domain_to_user_domain
       ignore_missing: true
   - set:
+      tag: set_host_name_f224d0b1
       field: host.name
       copy_from: crowdstrike.idp.timeline.endpoint_entity.primary_display_name
       ignore_empty_value: true
   - set:
+      tag: set_host_name_bf84cf7e
       field: host.name
       copy_from: crowdstrike.idp.timeline.endpoint_display_name
       ignore_empty_value: true
       if: ctx.host?.name == null
   - set:
+      tag: set_host_hostname_b832e735
       field: host.hostname
       copy_from: crowdstrike.idp.timeline.host_name
       ignore_empty_value: true
   - set:
+      tag: set_destination_domain_52c44b10
       field: destination.domain
       copy_from: crowdstrike.idp.timeline.target_endpoint_entity.primary_display_name
       ignore_empty_value: true
   - set:
+      tag: set_network_type_0d36ef01
       field: network.type
       copy_from: crowdstrike.idp.timeline.network_type
       ignore_empty_value: true
   - set:
+      tag: set_network_protocol_31cc014f
       field: network.protocol
       copy_from: crowdstrike.idp.timeline.protocol_type
       ignore_empty_value: true
   - set:
+      tag: set_tls_version_69497c61
       field: tls.version
       copy_from: crowdstrike.idp.timeline.tls_version
       ignore_empty_value: true
   - set:
+      tag: set_service_name_c09034e4
       field: service.name
       copy_from: crowdstrike.idp.timeline.target_service_entity.primary_display_name
       ignore_empty_value: true
   - set:
+      tag: set_service_name_3d56bd1c
       field: service.name
       copy_from: crowdstrike.idp.timeline.target_service_display_name
       ignore_empty_value: true
       if: ctx.service?.name == null
   - set:
-      field: service.identifier
+      field: service.id
+      tag: set_service_id_from_target_service_identifier
       copy_from: crowdstrike.idp.timeline.target_service_identifier
       ignore_empty_value: true
   - set:
+      tag: set_host_os_name_3506ada7
       field: host.os.name
       copy_from: crowdstrike.idp.timeline.operating_system_info.display_name
       ignore_empty_value: true
   - set:
+      tag: set_host_os_type_be51924d
       field: host.os.type
       copy_from: crowdstrike.idp.timeline.operating_system_info.name
       ignore_empty_value: true
   - set:
+      tag: set_host_os_family_bf6e6112
       field: host.os.family
       copy_from: crowdstrike.idp.timeline.operating_system_info.family
       ignore_empty_value: true
   - set:
+      tag: set_host_os_version_bdb32d76
       field: host.os.version
       copy_from: crowdstrike.idp.timeline.operating_system_info.version
       ignore_empty_value: true
   - set:
+      tag: set_source_geo_country_name_c1187261
       field: source.geo.country_name
       copy_from: crowdstrike.idp.timeline.geo_location.country
       ignore_empty_value: true
   - set:
+      tag: set_source_geo_city_name_12c77d6d
       field: source.geo.city_name
       copy_from: crowdstrike.idp.timeline.geo_location.city
       ignore_empty_value: true
@@ -339,23 +366,24 @@ processors:
       field: crowdstrike.idp.timeline.ip_address
       type: ip
       target_field: source.ip
-      tag: convert_source_address_to_ip
-      if: ctx.source?.address != null && ctx.source.address != ''
+      tag: convert_timeline_ip_address_to_source_ip
+      ignore_missing: true
+      if: ctx.crowdstrike?.idp?.timeline?.ip_address != null && ctx.crowdstrike.idp.timeline.ip_address != ''
       on_failure:
         - append:
-            tag: append_error_message_convert_source_address_to_ip
+            tag: append_error_message_convert_timeline_ip_address_to_source_ip
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - geoip:
       tag: geoip_source_ip_into_source_geo_fcc86651
-      if: ctx.source?.ip != null && ctx._conf?.enable_geoip_source_ip == true
+      if: ctx.source?.ip != null
       field: source.ip
       target_field: source.geo
       first_only: true
       ignore_missing: true
   - geoip:
       tag: geoip_source_ip_into_source_as_56e63fbc
-      if: ctx.source?.ip != null && ctx._conf?.enable_geoip_source_ip == true
+      if: ctx.source?.ip != null
       field: source.ip
       target_field: source.as
       database_file: GeoLite2-ASN.mmdb
@@ -449,6 +477,30 @@ processors:
       allow_duplicates: false
       if: ctx.source?.ip != null
 
+  - remove:
+      field:
+        - crowdstrike.idp.timeline.event_id
+        - crowdstrike.idp.timeline.event_type
+        - crowdstrike.idp.timeline.event_severity
+        - crowdstrike.idp.timeline.timestamp
+        - crowdstrike.idp.timeline.start_time
+        - crowdstrike.idp.timeline.end_time
+        - crowdstrike.idp.timeline.endpoint_entity
+        - crowdstrike.idp.timeline.ip_address
+        - crowdstrike.idp.timeline.network_type
+        - crowdstrike.idp.timeline.protocol_type
+        - crowdstrike.idp.timeline.tls_version
+        - crowdstrike.idp.timeline.target_service_entity
+        - crowdstrike.idp.timeline.target_service_display_name
+        - crowdstrike.idp.timeline.target_service_identifier
+        - crowdstrike.idp.timeline.user_display_name
+        - crowdstrike.idp.timeline.user_entity
+        - crowdstrike.idp.timeline.entity
+        - crowdstrike.idp.timeline.operating_system_info
+        - crowdstrike.idp.timeline.geo_location
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
       field:
         - _temp
