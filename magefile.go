@@ -190,7 +190,7 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 		var err error
 		maxIssues, err = strconv.Atoi(maxIssuesString)
 		if err != nil {
-			return fmt.Errorf("failed to convert to int env. variable CI_MAX_TESTS_REPORTED %s: %w", maxIssuesString, err)
+			return fmt.Errorf("failed to convert env. variable CI_MAX_TESTS_REPORTED to int (%s): %w", maxIssuesString, err)
 		}
 	}
 
@@ -255,7 +255,7 @@ func IsSubscriptionCompatible() error {
 func KibanaConstraintPackage() error {
 	constraint, err := citools.KibanaConstraintPackage("manifest.yml")
 	if err != nil {
-		return fmt.Errorf("faile")
+		return fmt.Errorf("failed to get Kibana constraint")
 	}
 	if constraint == nil {
 		fmt.Println("null")
