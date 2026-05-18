@@ -119,7 +119,8 @@ func readGithubOwners(codeownersPath string) (*githubOwners, error) {
 		}
 		path, owners := fields[0], fields[1:]
 
-		// It is ok to overwrite because latter lines have precedence in these files.
+		// remove trailing slash from path
+		path = strings.TrimSuffix(path, "/")
 		codeowners.owners[path] = owners
 	}
 	if err := scanner.Err(); err != nil {
