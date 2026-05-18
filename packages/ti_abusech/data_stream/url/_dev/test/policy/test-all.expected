@@ -38,6 +38,17 @@ inputs:
                   },
                   "want_more": false,
                 }
+              : duration(state.interval_value) > duration("72h") ?
+                {
+                  "events": {
+                    "error": {
+                      "code": "400",
+                      "id": "configuration_error",
+                      "message": "the polling interval (" + state.interval_value + ") exceeds the 3-day window of the URLhaus recent API. Reduce the interval to 72h or less to avoid missing data.",
+                    },
+                  },
+                  "want_more": false,
+                }
               :
               request("GET", state.url).with({
                 "Header":{
@@ -168,6 +179,7 @@ inputs:
           resource.url: http://host.tld
           state:
             auth_key: ${SECRET_0}
+            interval_value: 30m
           tags:
             - preserve_original_event
             - forwarded
