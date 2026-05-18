@@ -118,10 +118,7 @@ The `report` data stream collects HackerOne bug bounty reports via the `GET /v1/
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
-| hackerone.report.attributes.attachment_ids | Optional attachment identifiers on the raw report resource attributes when provided. | keyword |
 | hackerone.report.attributes.bounty_awarded_at | Timestamp when a bounty award was recorded. | date |
-| hackerone.report.attributes.bug_reporter_agreed_on_going_public | Whether the researcher agreed to go public where provided on the payload. | boolean |
-| hackerone.report.attributes.cloned_from | Source report reference when cloning is indicated. | keyword |
 | hackerone.report.attributes.closed_at |  | date |
 | hackerone.report.attributes.created_at | Report creation time mirrored from attributes. | date |
 | hackerone.report.attributes.cve_ids | Full CVE identifiers when present beyond the ECS vulnerability.id primary. | keyword |
@@ -138,11 +135,9 @@ The `report` data stream collects HackerOne bug bounty reports via the `GET /v1/
 | hackerone.report.attributes.main_state | High-level workflow state (draft/open/closed). | keyword |
 | hackerone.report.attributes.original_report_id |  | keyword |
 | hackerone.report.attributes.reporter_agreed_on_going_public_at | When the researcher agreed to going public. | date |
-| hackerone.report.attributes.severity_metrics | Free-form supplemental severity commentary when captured on attributes. | match_only_text |
 | hackerone.report.attributes.source | Source label for the submission when present. | keyword |
 | hackerone.report.attributes.state | Operational report state consumed for ECS categorization. | keyword |
 | hackerone.report.attributes.submitted_at | Submission acceptance time when present. | date |
-| hackerone.report.attributes.submitted_by_team_member | Whether the submission was filed by a program team member when present. | boolean |
 | hackerone.report.attributes.swag_awarded_at | Timestamp when swag was recorded as awarded. | date |
 | hackerone.report.attributes.timer_bounty_awarded_elapsed_time |  | long |
 | hackerone.report.attributes.timer_bounty_awarded_miss_at |  | date |
@@ -155,7 +150,6 @@ The `report` data stream collects HackerOne bug bounty reports via the `GET /v1/
 | hackerone.report.attributes.title | Report title mirrored alongside ECS message. | keyword |
 | hackerone.report.attributes.triaged_at |  | date |
 | hackerone.report.attributes.vulnerability_information | Raw Markdown narrative mirrored from the reporter submission. | match_only_text |
-| hackerone.report.attributes.weaknesses | Alternate weakness identifiers as delivered on certain payloads. | keyword |
 | hackerone.report.id | JSON:API resource identifier for the report. | keyword |
 | hackerone.report.relationships.activities.data.attributes.bonus_amount |  | keyword |
 | hackerone.report.relationships.activities.data.attributes.bounty_amount |  | keyword |
@@ -238,7 +232,7 @@ The `report` data stream collects HackerOne bug bounty reports via the `GET /v1/
 | hackerone.report.relationships.custom_remediation_guidance.data.attributes.created_at |  | date |
 | hackerone.report.relationships.custom_remediation_guidance.data.attributes.message |  | match_only_text |
 | hackerone.report.relationships.custom_remediation_guidance.data.id |  | keyword |
-| hackerone.report.relationships.custom_remediation_guidance.data.relationships.author.data.attributes.created_at |  | keyword |
+| hackerone.report.relationships.custom_remediation_guidance.data.relationships.author.data.attributes.created_at |  | date |
 | hackerone.report.relationships.custom_remediation_guidance.data.relationships.author.data.attributes.disabled |  | boolean |
 | hackerone.report.relationships.custom_remediation_guidance.data.relationships.author.data.attributes.name |  | keyword |
 | hackerone.report.relationships.custom_remediation_guidance.data.relationships.author.data.attributes.username |  | keyword |
@@ -382,22 +376,22 @@ An example event for `report` looks as following:
 {
     "@timestamp": "2026-05-06T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "54d72c21-5e4a-496f-9a56-09ba273f8145",
-        "id": "2da63b8e-8812-48cd-b11f-1d9623c3e18c",
-        "name": "elastic-agent-79317",
+        "ephemeral_id": "d6c80e44-1875-4dc1-a9be-8c705e6e4334",
+        "id": "680a5d6d-4f38-4348-9157-0550617e964d",
+        "name": "elastic-agent-66594",
         "type": "filebeat",
         "version": "9.4.1"
     },
     "data_stream": {
         "dataset": "hackerone.report",
-        "namespace": "52607",
+        "namespace": "37490",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "2da63b8e-8812-48cd-b11f-1d9623c3e18c",
+        "id": "680a5d6d-4f38-4348-9157-0550617e964d",
         "snapshot": false,
         "version": "9.4.1"
     },
@@ -411,7 +405,7 @@ An example event for `report` looks as following:
         "dataset": "hackerone.report",
         "end": "2026-05-06T15:00:00.000Z",
         "id": "1003",
-        "ingested": "2026-05-18T11:36:14Z",
+        "ingested": "2026-05-18T13:13:00Z",
         "kind": "event",
         "module": "hackerone",
         "original": "{\"attributes\":{\"created_at\":\"2026-05-06T15:00:00.000Z\",\"cve_ids\":[],\"last_activity_at\":\"2026-05-06T15:00:00.000Z\",\"state\":\"triaged\",\"submitted_at\":\"2026-05-06T15:01:00.000Z\",\"title\":\"Second-page XSS example\",\"vulnerability_information\":\"Short stub description for tests.\"},\"id\":\"1003\",\"relationships\":{\"program\":{\"data\":{\"attributes\":{\"created_at\":\"2017-09-28T13:08:32.058Z\",\"handle\":\"acme\",\"updated_at\":\"2026-05-07T08:41:04.851Z\"},\"id\":\"9001\",\"type\":\"program\"}}},\"type\":\"report\"}",
@@ -512,10 +506,7 @@ An example event for `report` looks as following:
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
-| hackerone.report.attributes.attachment_ids | Optional attachment identifiers on the raw report resource attributes when provided. | keyword |
 | hackerone.report.attributes.bounty_awarded_at | Timestamp when a bounty award was recorded. | date |
-| hackerone.report.attributes.bug_reporter_agreed_on_going_public | Whether the researcher agreed to go public where provided on the payload. | boolean |
-| hackerone.report.attributes.cloned_from | Source report reference when cloning is indicated. | keyword |
 | hackerone.report.attributes.closed_at |  | date |
 | hackerone.report.attributes.created_at | Report creation time mirrored from attributes. | date |
 | hackerone.report.attributes.cve_ids | Full CVE identifiers when present beyond the ECS vulnerability.id primary. | keyword |
@@ -532,11 +523,9 @@ An example event for `report` looks as following:
 | hackerone.report.attributes.main_state | High-level workflow state (draft/open/closed). | keyword |
 | hackerone.report.attributes.original_report_id |  | keyword |
 | hackerone.report.attributes.reporter_agreed_on_going_public_at | When the researcher agreed to going public. | date |
-| hackerone.report.attributes.severity_metrics | Free-form supplemental severity commentary when captured on attributes. | match_only_text |
 | hackerone.report.attributes.source | Source label for the submission when present. | keyword |
 | hackerone.report.attributes.state | Operational report state consumed for ECS categorization. | keyword |
 | hackerone.report.attributes.submitted_at | Submission acceptance time when present. | date |
-| hackerone.report.attributes.submitted_by_team_member | Whether the submission was filed by a program team member when present. | boolean |
 | hackerone.report.attributes.swag_awarded_at | Timestamp when swag was recorded as awarded. | date |
 | hackerone.report.attributes.timer_bounty_awarded_elapsed_time |  | long |
 | hackerone.report.attributes.timer_bounty_awarded_miss_at |  | date |
@@ -549,7 +538,6 @@ An example event for `report` looks as following:
 | hackerone.report.attributes.title | Report title mirrored alongside ECS message. | keyword |
 | hackerone.report.attributes.triaged_at |  | date |
 | hackerone.report.attributes.vulnerability_information | Raw Markdown narrative mirrored from the reporter submission. | match_only_text |
-| hackerone.report.attributes.weaknesses | Alternate weakness identifiers as delivered on certain payloads. | keyword |
 | hackerone.report.id | JSON:API resource identifier for the report. | keyword |
 | hackerone.report.relationships.activities.data.attributes.bonus_amount |  | keyword |
 | hackerone.report.relationships.activities.data.attributes.bounty_amount |  | keyword |
@@ -632,7 +620,7 @@ An example event for `report` looks as following:
 | hackerone.report.relationships.custom_remediation_guidance.data.attributes.created_at |  | date |
 | hackerone.report.relationships.custom_remediation_guidance.data.attributes.message |  | match_only_text |
 | hackerone.report.relationships.custom_remediation_guidance.data.id |  | keyword |
-| hackerone.report.relationships.custom_remediation_guidance.data.relationships.author.data.attributes.created_at |  | keyword |
+| hackerone.report.relationships.custom_remediation_guidance.data.relationships.author.data.attributes.created_at |  | date |
 | hackerone.report.relationships.custom_remediation_guidance.data.relationships.author.data.attributes.disabled |  | boolean |
 | hackerone.report.relationships.custom_remediation_guidance.data.relationships.author.data.attributes.name |  | keyword |
 | hackerone.report.relationships.custom_remediation_guidance.data.relationships.author.data.attributes.username |  | keyword |
