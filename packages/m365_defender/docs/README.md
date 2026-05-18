@@ -19,7 +19,7 @@ This integration supports below API versions to collect data.
     - [Alerts](https://learn.microsoft.com/en-us/graph/api/security-list-alerts_v2?view=graph-rest-1.0)
     - [Incidents](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0)
   - [Microsoft Defender for Endpoint API v1.0](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)
-    - [Vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files)
+    - [Vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities)
   - [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide)
     - Supported Microsoft Defender XDR Streaming event types are listed below. For more details on all available event types, refer to [documentation](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types).
 
@@ -67,7 +67,7 @@ The Microsoft Defender XDR integration collects logs for four types of events: A
 
 **Events:** This data stream uses the [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide) to collect Alert, Device, Email, App and Identity Events. Events are streamed to an Azure Event Hub. For a list of supported events exposed by the Streaming API and supported by Elastic's integration, please refer to Microsoft's documentation [here](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types?view=o365-worldwide).
 
-**Vulnerabilities:** This data stream uses the [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)'s [`/api/machines/SoftwareVulnerabilitiesExport`](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files) endpoint to collect vulnerability assessments.
+**Vulnerabilities:** This data stream uses the [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)'s [`/api/machines/SoftwareVulnerabilityChangesByMachine`](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities) delta endpoint to collect vulnerability change events (new, updated, and fixed vulnerabilities).
 
 **Note:** The **Alerts** data stream ingests individual detection events surfaced by Microsoft and partner security providers, while **Incidents** data stream ingests correlated collections of alerts that represent a broader attack.
 
@@ -177,7 +177,17 @@ The values used in `event.severity` are consistent with Elastic Detection Rules.
 
 ## Troubleshooting
 
-- Expiring SAS URLs: The option `SAS Valid Hours` in `vulnerability` data stream controls the duration that the `Shared Access Signature (SAS)` download URLs are valid for. The default value of this option is `1h` i.e., 1 hour, and the maximum allowed value is `6h` i.e., 6 hours. Increase the value of the option `SAS Valid Hours` when you see `error.message` indicates signatures are invalid, or when you notice invalid signature errors inside CEL trace logs.
+### Vulnerability data stream: Fixed vulnerabilities appearing on the Findings page
+
+The vulnerability data stream uses Microsoft Defender for Endpoint's delta API, which returns change events including remediated (`Fixed`) vulnerabilities. Each record carries a `vulnerability.status` field with one of the following values: `open`, `fixed`, or `unknown`.
+
+Until the Kibana Vulnerability Findings page adds a default filter on this field, remediated vulnerabilities will appear alongside open findings. To exclude them, add the following filter to the Findings page or any saved search:
+
+```
+NOT vulnerability.status: fixed
+```
+
+This is equivalent to showing only currently active vulnerabilities.
 
 ## Scaling
 
@@ -1414,24 +1424,24 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-05-18T11:43:14.500Z",
+    "@timestamp": "2026-05-18T13:46:48.833Z",
     "agent": {
-        "ephemeral_id": "b37172cf-3f98-450d-a5ef-bafca5805285",
-        "id": "7d3b810d-b3de-4287-91c8-c299e2118a48",
-        "name": "elastic-agent-40104",
+        "ephemeral_id": "5539665b-3fe9-49d8-a045-b6b8421bd6ed",
+        "id": "ed1fd721-0d94-4537-9beb-9f449cd62e86",
+        "name": "elastic-agent-81995",
         "type": "filebeat",
         "version": "8.19.10"
     },
     "data_stream": {
         "dataset": "m365_defender.vulnerability",
-        "namespace": "63805",
+        "namespace": "92152",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "7d3b810d-b3de-4287-91c8-c299e2118a48",
+        "id": "ed1fd721-0d94-4537-9beb-9f449cd62e86",
         "snapshot": false,
         "version": "8.19.10"
     },
@@ -1441,19 +1451,77 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "m365_defender.vulnerability",
-        "ingested": "2026-05-18T11:43:17Z",
+        "id": "1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226",
+        "ingested": "2026-05-18T13:46:51Z",
         "kind": "event",
         "original": "{\"cveId\":\"CVE-2022-49226\",\"deviceId\":\"1212121212121212121212\",\"deviceName\":\"sample-host-1\",\"diskPaths\":[],\"eventTimestamp\":\"2025-10-06 12:00:00\",\"exploitabilityLevel\":\"NoExploit\",\"firstSeenTimestamp\":\"2025-10-06 10:43:58\",\"id\":\"1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226\",\"lastSeenTimestamp\":\"2025-10-06 22:45:00\",\"osArchitecture\":\"x64\",\"osPlatform\":\"Linux\",\"osVersion\":\"enterprise_linux_9.4\",\"rbacGroupName\":\"Unassigned\",\"recommendationReference\":\"va-_-red_hat-_-kernel\",\"recommendedSecurityUpdate\":\"CVE-2022-49226_oval:com.redhat.rhsa:def:20249315\",\"recommendedSecurityUpdateId\":\"RHSA-2024:9315\",\"recommendedSecurityUpdateUrl\":null,\"registryPaths\":[],\"softwareName\":\"kernel\",\"softwareVendor\":\"red_hat\",\"softwareVersion\":\"0:5.14.0-427.42.1.el9_4\",\"status\":\"New\",\"vulnerabilitySeverityLevel\":\"Medium\"}",
         "type": [
             "info"
         ]
     },
+    "group": {
+        "id": "0",
+        "name": "Unassigned"
+    },
+    "host": {
+        "architecture": "x64",
+        "hostname": "sample-host-1",
+        "id": "1212121212121212121212",
+        "name": "sample-host-1",
+        "os": {
+            "name": "Linux enterprise_linux_9.4",
+            "platform": "Linux",
+            "type": "linux",
+            "version": "enterprise_linux_9.4"
+        }
+    },
     "input": {
         "type": "cel"
+    },
+    "m365_defender": {
+        "vulnerability": {
+            "cve_id": "CVE-2022-49226",
+            "cvss_score": 5.5,
+            "device_id": "1212121212121212121212",
+            "device_name": "sample-host-1",
+            "event_timestamp": "2025-10-06T12:00:00.000Z",
+            "exploitability_level": "NoExploit",
+            "first_seen_timestamp": "2025-10-06T10:43:58.000Z",
+            "id": "1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226",
+            "is_onboarded": true,
+            "last_seen_timestamp": "2025-10-06T22:45:00.000Z",
+            "os_architecture": "x64",
+            "os_platform": "Linux",
+            "os_version": "enterprise_linux_9.4",
+            "rbac_group_id": "0",
+            "rbac_group_name": "Unassigned",
+            "recommendation_reference": "va-_-red_hat-_-kernel",
+            "recommended_security_update": "CVE-2022-49226_oval:com.redhat.rhsa:def:20249315",
+            "recommended_security_update_id": "RHSA-2024:9315",
+            "severity_level": "Medium",
+            "software_name": "kernel",
+            "software_vendor": "red_hat",
+            "software_version": "0:5.14.0-427.42.1.el9_4",
+            "status": "New"
+        }
     },
     "observer": {
         "product": "Microsoft 365 Defender",
         "vendor": "Microsoft"
+    },
+    "package": {
+        "name": "kernel",
+        "version": "0:5.14.0-427.42.1.el9_4"
+    },
+    "related": {
+        "hosts": [
+            "1212121212121212121212",
+            "sample-host-1"
+        ]
+    },
+    "resource": {
+        "id": "1212121212121212121212",
+        "name": "sample-host-1"
     },
     "tags": [
         "preserve_original_event",
@@ -1462,9 +1530,20 @@ An example event for `vulnerability` looks as following:
         "m365_defender-vulnerability"
     ],
     "vulnerability": {
+        "classification": "CVSS",
+        "cve": "CVE-2022-49226",
+        "enumeration": "CVE",
+        "id": "CVE-2022-49226",
+        "reference": "https://www.cve.org/CVERecord?id=CVE-2022-49226",
         "scanner": {
             "vendor": "Microsoft"
-        }
+        },
+        "score": {
+            "base": 5.5
+        },
+        "severity": "Medium",
+        "status": "open",
+        "title": "Vulnerability found in kernel 0:5.14.0-427.42.1.el9_4 - CVE-2022-49226"
     }
 }
 ```
@@ -1538,4 +1617,4 @@ This integration dataset uses the following APIs:
 - `Alerts`: [List alerts_v2](https://learn.microsoft.com/en-us/graph/api/security-list-alerts_v2?view=graph-rest-1.0&tabs=http) endpoint from [Microsoft Graph Security REST API v1.0](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)
 - `Events`: [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide)
 - `Incidents`: [List incidents](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0&tabs=http) endpoint from [Microsoft Graph Security REST API v1.0](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)
-- `Vulnerabilities`: [Get software vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files) endpoint from [Microsoft Defender for Endpoint API v1.0](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)
+- `Vulnerabilities`: [SoftwareVulnerabilityChangesByMachine](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities) delta endpoint from [Microsoft Defender for Endpoint API v1.0](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)
