@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the leader fails to send heartbeats to followers (`etcd_server_heartbeat_send_failures_total` increases). A precursor to leader elections.",
     "name": "[etcd OTel] Heartbeat send failures",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "etcd_otel-raft-consensus"
+        },
+        {
+          "id": "etcd_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## etcd heartbeat send failures\n\n### What fired\n`etcd_server_heartbeat_send_failures_total` increased during the window.\n\n### Why it matters\nHeartbeats keep followers in sync with the leader. Failures indicate slow disk, overloaded leader, or network issues between peers, and often precede leader elections.\n\n### Triage\n1. Check disk I/O latency on the leader (fsync is on the critical path).\n2. Look at `rpc_connection_avg_round_trip_latency` or equivalent between peers.\n3. Check CPU on the leader.\n\n### Remediation\n- Move etcd to dedicated SSDs.\n- Spread peers across low-latency links.\n- Tune `--heartbeat-interval` only as last resort.\n\n### Tuning\n- Fires on any increase.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-etcd.otel-default*\n// Counter: leader failing to send heartbeats to followers; precursor to leader elections\n| WHERE etcd_server_heartbeat_send_failures_total IS NOT NULL\n| STATS increase = SUM(INCREASE(etcd_server_heartbeat_send_failures_total))\n    BY resource.attributes.service.instance.id\n| WHERE increase > 0\n| SORT increase DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

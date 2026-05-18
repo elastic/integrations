@@ -1,39 +1,55 @@
 {
-    "id": "traefik_otel-high-5xx-rate-by-service",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Traefik OTel] High 5xx error rate by service",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "traefik"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "traefik_otel-high-5xx-rate-by-service",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when per-service 5xx rate exceeds threshold. Service-level error diagnosis.",
+    "name": "[Traefik OTel] High 5xx error rate by service",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "traefik"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "traefik_otel-services"
         },
-        "alertDelay": {
-            "active": 3
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-traefik.otel-*\n// Limit to service-level request counters (counter requires TS + INCREASE)\n| WHERE traefik_service_requests_total IS NOT NULL\n// Aggregate total and 5xx requests per service over the time window\n| STATS\n    total = SUM(traefik_service_requests_total),\n    errors_5xx = SUM(traefik_service_requests_total) WHERE attributes.code LIKE \"5*\"\n  BY attributes.service\n// Minimum sample size to avoid noisy low-traffic services; adjust based on expected volume\n| WHERE total > 100\n// Calculate error rate as percentage\n| EVAL error_rate_pct = ROUND(errors_5xx / total * 100.0, 2)\n// Alert threshold: tune for sensitivity (e.g. 5.0 = 5%)\n| WHERE error_rate_pct > 5.0\n| SORT error_rate_pct DESC\n| LIMIT 10"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "attributes.service",
-            "termSize": 10,
-            "excludeHitsFromPreviousRun": true
+        {
+          "id": "traefik_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Traefik high 5xx error rate by service\n\n### What fired\nPer-service 5xx rate exceeded threshold (min 100 total requests).\n\n### Why it matters\nService-level 5xx indicates problems with the backend instances fronted by that service.\n\n### Triage\n1. Check backend health-checks.\n2. Inspect deployment state.\n\n### Remediation\n- Fix / roll back the backend.\n\n### Tuning\n- Tune threshold per SLA.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-traefik.otel-*\n// Limit to service-level request counters (counter requires TS + INCREASE)\n| WHERE traefik_service_requests_total IS NOT NULL\n// Aggregate total and 5xx requests per service over the time window\n| STATS\n    total = SUM(traefik_service_requests_total),\n    errors_5xx = SUM(traefik_service_requests_total) WHERE attributes.code LIKE \"5*\"\n  BY attributes.service\n// Minimum sample size to avoid noisy low-traffic services; adjust based on expected volume\n| WHERE total > 100\n// Calculate error rate as percentage\n| EVAL error_rate_pct = ROUND(errors_5xx / total * 100.0, 2)\n// Alert threshold: tune for sensitivity (e.g. 5.0 = 5%)\n| WHERE error_rate_pct > 5.0\n| SORT error_rate_pct DESC\n| LIMIT 10"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.service",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

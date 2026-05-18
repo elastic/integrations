@@ -37,6 +37,33 @@ Ensure you have created a JumpCloud admin API key that you have access to, refer
 
 ![Example of Add JumpCloud Integration](../img/sample-add-integration.png)
 
+## Supported services
+
+The integration collects events from [JumpCloud's Directory Insights API](https://docs.jumpcloud.com/api/insights/directory/1.0/index.html). You can control which event categories are collected using the **services** setting. The default value is `all`, which collects events from every service.
+
+The supported service values are:
+
+| Service | Description |
+|---|---|
+| `all` | Events from all services. |
+| `access_management` | Access management activity. |
+| `aigw` | AI gateway activity. |
+| `alert` | Alert service events. |
+| `asset_management` | Asset management activity. |
+| `di_events` | Generic Directory Insights events. |
+| `directory` | Admin Portal and User Portal activity, including admin changes and authentications. |
+| `genai` | Generative AI activity. |
+| `ldap` | User authentications to LDAP, including LDAP Bind and Search events. |
+| `mdm` | MDM command results. |
+| `notifications` | Notification activity. |
+| `object_storage` | Object storage activity. |
+| `password_manager` | JumpCloud password manager activity. |
+| `radius` | User authentications to RADIUS, used for Wi-Fi and VPNs. |
+| `reports` | Report activity. |
+| `software` | Application changes on macOS, Windows, and Linux devices. |
+| `sso` | User authentications to SAML applications. |
+| `systems` | User authentications to macOS, Windows, and Linux systems, including agent-related events. |
+
 ## Events
 
 The JumpCloud events dataset provides events from JumpCloud Directory Insights events that have been received.
