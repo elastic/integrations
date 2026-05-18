@@ -22,7 +22,6 @@ processors:
       tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
-      ignore_failure: true
   - set:
       tag: set_event_category_dbab8a4e
       field: event.category
@@ -67,6 +66,11 @@ processors:
           }
         }
         catch (Exception e) {}
+      on_failure:
+        - append:
+            tag: append_error_message_62a5623e
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       tag: date_json_Datetime_5886cebc
       field: json.Datetime
@@ -77,10 +81,10 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ssZ
       timezone: UTC
       on_failure:
-      - append:
-          tag: append_error_message_da98a171
-          field: error.message
-          value: "{{{_ingest.on_failure_message}}}"
+        - append:
+            tag: append_error_message_da98a171
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       tag: set_cloudflare_logpush_network_analytics_timestamp_5d354fd6
       field: cloudflare_logpush.network_analytics.timestamp
@@ -112,8 +116,7 @@ processors:
         - append:
             tag: append_error_message_6fed3df1
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       tag: set_destination_as_number_d9408f17
       field: destination.as.number
@@ -123,15 +126,14 @@ processors:
       tag: convert_json_ip_destinations_address
       field: json.IPDestinationAddress
       target_field: cloudflare_logpush.network_analytics.destination.ip
-      if: ctx.json?.IPDestinationAddress != ''
+      if: ctx.json?.IPDestinationAddress != null && ctx.json.IPDestinationAddress != ''
       type: ip
       ignore_missing: true
       on_failure:
         - append:
             tag: append_error_message_b07c157a
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       tag: set_destination_ip_84cf708a
       field: destination.ip
@@ -148,8 +150,7 @@ processors:
         - append:
             tag: append_error_message_7a6d8e95
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       tag: set_destination_port_3c5d6b46
       field: destination.port
@@ -183,15 +184,14 @@ processors:
       tag: convert_ip_source_address
       field: json.IPSourceAddress
       target_field: cloudflare_logpush.network_analytics.source.ip
-      if: ctx.json?.IPSourceAddress != ''
+      if: ctx.json?.IPSourceAddress != null && ctx.json.IPSourceAddress != ''
       type: ip
       ignore_missing: true
       on_failure:
         - append:
             tag: append_error_message_25034cae
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       tag: set_source_ip_a7297980
       field: source.ip
@@ -208,8 +208,7 @@ processors:
         - append:
             tag: append_error_message_2dfdb20b
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       tag: set_source_as_number_3022b95d
       field: source.as.number
@@ -226,8 +225,7 @@ processors:
         - append:
             tag: append_error_message_a9852f97
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       tag: set_source_port_7623a0b8
       field: source.port
@@ -305,8 +303,7 @@ processors:
         - append:
             tag: append_error_message_56fee3b7
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_ColoName_to_cloudflare_logpush_network_analytics_colo_name_4eba22ef
       field: json.ColoName
@@ -358,8 +355,7 @@ processors:
         - append:
             tag: append_error_message_b8840269
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_gre_ethertype
       field: json.GREEthertype
@@ -371,8 +367,7 @@ processors:
         - append:
             tag: append_error_message_20f5cc9d
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_gre_etherType
       field: json.GREEtherType
@@ -384,8 +379,7 @@ processors:
         - append:
             tag: append_error_message_94caddbd
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_gre_header_length
       field: json.GREHeaderLength
@@ -397,8 +391,7 @@ processors:
         - append:
             tag: append_error_message_f9e7fa1c
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_key
       field: json.GREKey
@@ -410,8 +403,7 @@ processors:
         - append:
             tag: append_error_message_5e3f94f4
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_sequence_number
       field: json.GRESequenceNumber
@@ -423,8 +415,7 @@ processors:
         - append:
             tag: append_error_message_56ff7487
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_gre_version
       field: json.GREVersion
@@ -436,8 +427,7 @@ processors:
         - append:
             tag: append_error_message_e8bfc131
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_icmp_checksum
       field: json.ICMPChecksum
@@ -449,8 +439,7 @@ processors:
         - append:
             tag: append_error_message_8d15e17f
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_icmp_code
       field: json.ICMPCode
@@ -462,8 +451,7 @@ processors:
         - append:
             tag: append_error_message_67269d93
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_icmp_type
       field: json.ICMPType
@@ -475,8 +463,7 @@ processors:
         - append:
             tag: append_error_message_0fc0a20b
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_IPDestinationSubnet_to_cloudflare_logpush_network_analytics_ip_destination_subnet_82888579
       field: json.IPDestinationSubnet
@@ -493,8 +480,7 @@ processors:
         - append:
             tag: append_error_message_1e290dd6
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_ip_header_length
       field: json.IPHeaderLength
@@ -506,8 +492,7 @@ processors:
         - append:
             tag: append_error_message_2a3696da
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_ip_more_fragments
       field: json.IPMoreFragments
@@ -519,8 +504,7 @@ processors:
         - append:
             tag: append_error_message_d3f7abb8
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_ip_protocol
       field: json.IPProtocol
@@ -532,8 +516,7 @@ processors:
         - append:
             tag: append_error_message_da0b2506
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_IPSourceSubnet_to_cloudflare_logpush_network_analytics_ip_source_subnet_a13f22f5
       field: json.IPSourceSubnet
@@ -550,8 +533,7 @@ processors:
         - append:
             tag: append_error_message_b0b3717f
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_ip_total_length_buckets
       field: json.IPTotalLengthBuckets
@@ -563,8 +545,7 @@ processors:
         - append:
             tag: append_error_message_ad6b2e89
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_IPTTL_to_cloudflare_logpush_network_analytics_ip_ttl_value_a7e5501d
       field: json.IPTTL
@@ -593,8 +574,7 @@ processors:
         - append:
             tag: append_error_message_23f4280c
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_IPTTLBuckets_to_cloudflare_logpush_network_analytics_ip_ttl_buckets_a9999f1a
       field: json.IPTTLBuckets
@@ -623,8 +603,7 @@ processors:
         - append:
             tag: append_error_message_6ac74af4
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_ipv4_checksum
       field: json.IPv4Checksum
@@ -636,8 +615,7 @@ processors:
         - append:
             tag: append_error_message_fc7a5e0b
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_ipv4_dont_fragment
       field: json.IPv4DontFragment
@@ -649,8 +627,7 @@ processors:
         - append:
             tag: append_error_message_e48616c3
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_IPv4DSCP_to_cloudflare_logpush_network_analytics_ipv4_dscp_d9a537ca
       field: json.IPv4DSCP
@@ -679,8 +656,7 @@ processors:
         - append:
             tag: append_error_message_7f3f5fce
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_IPv4ECN_to_cloudflare_logpush_network_analytics_ipv4_ecn_f6376678
       field: json.IPv4ECN
@@ -709,8 +685,7 @@ processors:
         - append:
             tag: append_error_message_fa047d46
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_ipv4_identification
       field: json.IPv4Identification
@@ -722,8 +697,7 @@ processors:
         - append:
             tag: append_error_message_c63f0b6f
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_ipv4_options
       field: json.IPv4Options
@@ -735,8 +709,7 @@ processors:
         - append:
             tag: append_error_message_e6dbb0e3
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_IPv6DSCP_to_cloudflare_logpush_network_analytics_ipv6_dscp_29df8bce
       field: json.IPv6DSCP
@@ -765,8 +738,7 @@ processors:
         - append:
             tag: append_error_message_e7390c1a
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_IPv6ECN_to_cloudflare_logpush_network_analytics_ipv6_ecn_7091f9d8
       field: json.IPv6ECN
@@ -795,8 +767,7 @@ processors:
         - append:
             tag: append_error_message_d4c6526e
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_IPv6ExtensionHeaders_to_cloudflare_logpush_network_analytics_ipv6_extension_headers_cdd8e128
       field: json.IPv6ExtensionHeaders
@@ -813,8 +784,7 @@ processors:
         - append:
             tag: append_error_message_5836c8e3
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_ipv6_identification
       field: json.IPv6Identification
@@ -826,8 +796,7 @@ processors:
         - append:
             tag: append_error_message_252080b3
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_MitigationReason_to_cloudflare_logpush_network_analytics_mitigation_reason_59208f9b
       field: json.MitigationReason
@@ -879,8 +848,7 @@ processors:
         - append:
             tag: append_error_message_a7f59d86
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_SourceASNName_to_cloudflare_logpush_network_analytics_source_as_number_name_b995e894
       field: json.SourceASNName
@@ -927,8 +895,7 @@ processors:
         - append:
             tag: append_error_message_40337db1
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_tcp_checksum
       field: json.TCPChecksum
@@ -940,8 +907,7 @@ processors:
         - append:
             tag: append_error_message_b7f3ee91
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_tcp_data_offset
       field: json.TCPDataOffset
@@ -953,8 +919,7 @@ processors:
         - append:
             tag: append_error_message_bdbbdf96
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_tcp_flags
       field: json.TCPFlags
@@ -966,8 +931,7 @@ processors:
         - append:
             tag: append_error_message_66f99dac
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_TCPFlagsString_to_cloudflare_logpush_network_analytics_tcp_flags_string_df4680fd
       field: json.TCPFlagsString
@@ -1001,8 +965,7 @@ processors:
         - append:
             tag: append_error_message_e4a4fc5e
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_TCPOptions_to_cloudflare_logpush_network_analytics_tcp_options_0cd59237
       field: json.TCPOptions
@@ -1056,8 +1019,7 @@ processors:
         - append:
             tag: append_error_message_889a83e6
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_TCPSACKPermitted_to_cloudflare_logpush_network_analytics_tcp_sack_permitted_324342d0
       field: json.TCPSACKPermitted
@@ -1086,8 +1048,7 @@ processors:
         - append:
             tag: append_error_message_0492955a
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_tcp_sequence_number
       field: json.TCPSequenceNumber
@@ -1099,8 +1060,7 @@ processors:
         - append:
             tag: append_error_message_0b4a34e5
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_TCPTimestampECR_to_cloudflare_logpush_network_analytics_tcp_timestamp_ecr_b92c89a2
       field: json.TCPTimestampECR
@@ -1129,8 +1089,7 @@ processors:
         - append:
             tag: append_error_message_1e5ad762
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_tcp_timestamp_value
       field: json.TCPTimestampValue
@@ -1142,8 +1101,7 @@ processors:
         - append:
             tag: append_error_message_1b4d9258
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_tcp_urgent_pointer
       field: json.TCPUrgentPointer
@@ -1155,8 +1113,7 @@ processors:
         - append:
             tag: append_error_message_765ad76b
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_tcp_window_scale
       field: json.TCPWindowScale
@@ -1168,8 +1125,7 @@ processors:
         - append:
             tag: append_error_message_51371744
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_tcp_window_size
       field: json.TCPWindowSize
@@ -1181,8 +1137,7 @@ processors:
         - append:
             tag: append_error_message_ff56e1f2
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_udp_checksum
       field: json.UDPChecksum
@@ -1194,8 +1149,7 @@ processors:
         - append:
             tag: append_error_message_d6313995
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_json_udp_payload_length
       field: json.UDPPayloadLength
@@ -1207,8 +1161,7 @@ processors:
         - append:
             tag: append_error_message_708a2da3
             field: error.message
-            value: |-
-              Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_Verdict_to_cloudflare_logpush_network_analytics_verdict_78867681
       field: json.Verdict
@@ -1252,35 +1205,30 @@ processors:
       value: '{{{cloudflare_logpush.network_analytics.source.geo_hash}}}'
       if: ctx.cloudflare_logpush?.network_analytics?.source?.geo_hash != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       tag: append_related_hash_2b7befbd
       field: related.hash
       value: '{{{cloudflare_logpush.network_analytics.destination.geo_hash}}}'
       if: ctx.cloudflare_logpush?.network_analytics?.destination?.geo_hash != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       tag: append_related_hash_4269df8f
       field: related.hash
       value: '{{{cloudflare_logpush.network_analytics.colo.geo_hash}}}'
       if: ctx.cloudflare_logpush?.network_analytics?.colo?.geo_hash != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       tag: append_related_ip_30d15214
       field: related.ip
-      value: '{{{source.ip}}}'
-      if: ctx.source?.ip != null
+      value: '{{{cloudflare_logpush.network_analytics.source.ip}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.source?.ip != null
       allow_duplicates: false
-      ignore_failure: true
   - append:
       tag: append_related_ip_51dd17d0
       field: related.ip
-      value: '{{{destination.ip}}}'
-      if: ctx.destination?.ip != null
+      value: '{{{cloudflare_logpush.network_analytics.destination.ip}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.destination?.ip != null
       allow_duplicates: false
-      ignore_failure: true
   - community_id:
       tag: community_id_d2308e7a
       target_field: network.community_id
@@ -1315,33 +1263,51 @@ processors:
         - cloudflare_logpush.network_analytics.source.as.number.name
         - cloudflare_logpush.network_analytics.source.country
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-      ignore_failure: true
       ignore_missing: true
   - script:
-        tag: script_a3eb5add
-        description: Drops null/empty values recursively.
-        lang: painless
-        source: |
-          boolean dropEmptyFields(Object object) {
-            if (object == null || object == "") {
-              return true;
-            } else if (object instanceof Map) {
-              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-              return (((Map) object).size() == 0);
-            } else if (object instanceof List) {
-              ((List) object).removeIf(value -> dropEmptyFields(value));
-              return (((List) object).length == 0);
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
             }
-            return false;
-          }
-          dropEmptyFields(ctx);
+            return v == null || v == '' || v == 'N/A' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_tags_9fe66b2c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
+      tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
       field: tags
