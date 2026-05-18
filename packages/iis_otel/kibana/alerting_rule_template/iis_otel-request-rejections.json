@@ -3,9 +3,13 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `iis.request.rejected` increases. Rejections mean IIS turned away requests because the queue was full or limits were reached.",
     "name": "[IIS OTel] Request rejections detected",
     "ruleTypeId": ".es-query",
-    "tags": ["observability", "iis"],
+    "tags": [
+      "observability",
+      "iis"
+    ],
     "schedule": {
       "interval": "5m"
     },
@@ -17,13 +21,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "iis_otel-overview"
+        },
+        {
+          "id": "iis_otel-sites"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## IIS request rejections detected\n\n### What fired\n`INCREASE(iis.request.rejected) > 0` on a pool during the window.\n\n### Why it matters\nRejected requests are immediate HTTP 503 failures returned to the client without ever being processed. Almost always indicates a saturated pool \u2014 either the request queue is full or an explicit limit (`maxConcurrentRequestsPerCPU`, `processModel.requestQueueLimit`) was reached.\n\n### Triage\n1. Identify the affected pool.\n2. Inspect queue depth and queue age trends.\n3. Check `w3wp.exe` health (CPU, threads, GC) on the host.\n4. Look at downstream call latency.\n\n### Remediation\n- Raise the queue limit if hardware allows.\n- Add worker processes.\n- Fix slow downstream calls.\n\n### Tuning\n- Fires on any non-zero increase. Each rejection is a client-visible 503 \u2014 do not loosen the threshold without good reason.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-iisreceiver.otel-*\n| WHERE iis.request.rejected IS NOT NULL\n| STATS rejected_increase = SUM(INCREASE(iis.request.rejected)) BY iis.application_pool, host.name\n| WHERE rejected_increase > 0\n| SORT rejected_increase DESC\n| LIMIT 20"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

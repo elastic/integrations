@@ -1,33 +1,52 @@
 {
     "@timestamp": "2023-09-19T12:00:00.000Z",
     "agent": {
-        "ephemeral_id": "fe6f8be2-37c0-4f74-83b6-d6061fff286d",
-        "id": "97a57f01-e27c-4ad1-87e6-ef4b6d5e1e0e",
-        "name": "elastic-agent-25658",
+        "ephemeral_id": "41d6ed02-30b5-487f-b977-50f480f64233",
+        "id": "72bf15d4-3ddc-42f7-89fe-e7c23c7f40e5",
+        "name": "elastic-agent-78757",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "sinkhole_http": {
             "account_id": "AC123456",
+            "destination": {
+                "ip": "89.160.20.129"
+            },
+            "host": {
+                "name": "example.com"
+            },
             "request": {
+                "body": {
+                    "bytes": 39,
+                    "content": "{\"action\": \"login\", \"user\": \"john_doe\"}"
+                },
                 "headers": [
                     "Host: example.com",
                     "User-Agent: Mozilla/5.0",
                     "Accept: */*",
                     "Connection: keep-alive"
                 ],
-                "password": "password123"
+                "method": "POST",
+                "password": "password123",
+                "referrer": "https://searchengine.com/",
+                "uri": "/api/v1/login",
+                "url": "https://example.com/api/v1/login"
             },
-            "sinkhole_id": "SH001"
+            "sinkhole_id": "SH001",
+            "source": {
+                "ip": "67.43.156.2"
+            },
+            "timestamp": "2023-09-19T12:00:00.000Z",
+            "user": {
+                "name": "john_doe"
+            },
+            "user_agent": "Mozilla/5.0"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.sinkhole_http",
-        "namespace": "95284",
+        "namespace": "17322",
         "type": "logs"
     },
     "destination": {
@@ -55,7 +74,7 @@
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "97a57f01-e27c-4ad1-87e6-ef4b6d5e1e0e",
+        "id": "72bf15d4-3ddc-42f7-89fe-e7c23c7f40e5",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -65,22 +84,12 @@
             "network"
         ],
         "dataset": "cloudflare_logpush.sinkhole_http",
-        "ingested": "2025-12-12T10:10:56Z",
+        "ingested": "2026-04-29T10:54:43Z",
         "kind": "event",
+        "original": "{\"AccountID\":\"AC123456\",\"Body\":\"{\\\"action\\\": \\\"login\\\", \\\"user\\\": \\\"john_doe\\\"}\",\"BodyLength\":39,\"DestAddr\":\"89.160.20.129\",\"Headers\":\"Host: example.com\\nUser-Agent: Mozilla/5.0\\nAccept: */*\\nConnection: keep-alive\",\"Host\":\"example.com\",\"Method\":\"POST\",\"Password\":\"password123\",\"R2Path\":\"\",\"Referrer\":\"https://searchengine.com/\",\"SinkholeID\":\"SH001\",\"SrcAddr\":\"67.43.156.2\",\"Timestamp\":\"2023-09-19T12:00:00Z\",\"URI\":\"/api/v1/login\",\"URL\":\"https://example.com/api/v1/login\",\"UserAgent\":\"Mozilla/5.0\",\"Username\":\"john_doe\"}",
         "type": [
             "info"
         ]
-    },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "sinkhole_http.log"
-            }
-        }
     },
     "host": {
         "name": "example.com"
@@ -96,13 +105,7 @@
         }
     },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/sinkhole_http.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
         "hosts": [
@@ -132,6 +135,8 @@
         "ip": "67.43.156.2"
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-sinkhole_http"
     ],

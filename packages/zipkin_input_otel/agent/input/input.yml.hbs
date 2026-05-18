@@ -1,0 +1,27 @@
+receivers:
+  zipkin:
+    endpoint: {{endpoint}}
+    parse_string_tags: {{parse_string_tags}}
+{{#if tls_enabled}}
+    tls:
+{{#if tls_ca_file}}
+      ca_file: {{tls_ca_file}}
+{{/if}}
+{{#if tls_cert_file}}
+      cert_file: {{tls_cert_file}}
+{{/if}}
+{{#if tls_key_file}}
+      key_file: {{tls_key_file}}
+{{/if}}
+      min_version: "{{tls_min_version}}"
+{{#if tls_max_version}}
+      max_version: "{{tls_max_version}}"
+{{/if}}
+{{#if tls_include_system_ca_certs_pool}}
+      include_system_ca_certs_pool: {{tls_include_system_ca_certs_pool}}
+{{/if}}
+{{/if}}
+service:
+  pipelines:
+    traces:
+      receivers: [zipkin]
