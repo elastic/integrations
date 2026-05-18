@@ -108,16 +108,31 @@ processors:
             tag: append_error_message_bdef4019
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_source_as_number_983fc3d0
+      field: source.as.number
+      copy_from: cloudflare_logpush.nel_report.client.ip.asn.value
+      ignore_empty_value: true
   - rename:
       tag: rename_json_ClientIPASNDescription_to_cloudflare_logpush_nel_report_client_ip_asn_description_263da4c2
       field: json.ClientIPASNDescription
       target_field: cloudflare_logpush.nel_report.client.ip.asn.description
       ignore_missing: true
+  - set:
+      tag: set_source_as_organization_name_8af78dac
+      field: source.as.organization.name
+      copy_from: cloudflare_logpush.nel_report.client.ip.asn.description
+      ignore_empty_value: true
   - rename:
       tag: rename_json_ClientIPCountry_to_cloudflare_logpush_nel_report_client_ip_country_6c2f728a
       field: json.ClientIPCountry
       target_field: cloudflare_logpush.nel_report.client.ip.country
       ignore_missing: true
+  - set:
+      tag: set_source_geo_country_iso_code_5c3ec239
+      field: source.geo.country_iso_code
+      copy_from: cloudflare_logpush.nel_report.client.ip.country
+      ignore_empty_value: true
   - rename:
       tag: rename_json_LastKnownGoodColoCode_to_cloudflare_logpush_nel_report_last_known_good_colo_code_5bab09a8
       field: json.LastKnownGoodColoCode
@@ -139,6 +154,9 @@ processors:
       field:
         - cloudflare_logpush.nel_report.timestamp
         - cloudflare_logpush.nel_report.error.type
+        - cloudflare_logpush.nel_report.client.ip.asn.value
+        - cloudflare_logpush.nel_report.client.ip.asn.description
+        - cloudflare_logpush.nel_report.client.ip.country
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_failure: true
       ignore_missing: true

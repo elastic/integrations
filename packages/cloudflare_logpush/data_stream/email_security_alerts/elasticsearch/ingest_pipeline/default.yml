@@ -109,6 +109,11 @@ processors:
       field: json.CC
       target_field: cloudflare_logpush.email_security_alerts.cc
       ignore_missing: true
+  - set:
+      tag: set_email_cc_address_from_cc
+      field: email.cc.address
+      copy_from: cloudflare_logpush.email_security_alerts.cc
+      ignore_empty_value: true
   - rename:
       tag: rename_json_CCName_to_cloudflare_logpush_email_security_alerts_cc_name_4557bc82
       field: json.CCName
@@ -124,6 +129,12 @@ processors:
       field: json.From
       target_field: cloudflare_logpush.email_security_alerts.from
       ignore_missing: true
+  - append:
+      tag: append_email_from_address_385809de
+      field: email.from.address
+      value: '{{{cloudflare_logpush.email_security_alerts.from}}}'
+      if: ctx.cloudflare_logpush?.email_security_alerts?.from != null
+      allow_duplicates: false
   - rename:
       tag: rename_json_FromName_to_cloudflare_logpush_email_security_alerts_from_name_ec6c39de
       field: json.FromName
@@ -144,6 +155,11 @@ processors:
       field: json.MessageID
       target_field: cloudflare_logpush.email_security_alerts.message_id
       ignore_missing: true
+  - set:
+      tag: set_email_message_id_from_message_id
+      field: email.message_id
+      copy_from: cloudflare_logpush.email_security_alerts.message_id
+      ignore_empty_value: true
   - rename:
       tag: rename_json_Origin_to_cloudflare_logpush_email_security_alerts_origin_0d91ddaf
       field: json.Origin
@@ -159,6 +175,12 @@ processors:
       field: json.ReplyTo
       target_field: cloudflare_logpush.email_security_alerts.reply_to
       ignore_missing: true
+  - append:
+      field: email.reply_to.address
+      tag: append_reply_to_address_into_email_reply_to_address
+      value: '{{{cloudflare_logpush.email_security_alerts.reply_to}}}'
+      if: ctx.cloudflare_logpush?.email_security_alerts?.reply_to != null
+      allow_duplicates: false
   - rename:
       tag: rename_json_ReplyToName_to_cloudflare_logpush_email_security_alerts_reply_to_name_67e356fb
       field: json.ReplyToName
@@ -213,6 +235,11 @@ processors:
       field: json.Subject
       target_field: cloudflare_logpush.email_security_alerts.subject
       ignore_missing: true
+  - set:
+      tag: set_email_subject_from_subject
+      field: email.subject
+      copy_from: cloudflare_logpush.email_security_alerts.subject
+      ignore_empty_value: true
   - rename:
       tag: rename_json_ThreatCategories_to_cloudflare_logpush_email_security_alerts_threat_categories_c839555e
       field: json.ThreatCategories
@@ -223,6 +250,21 @@ processors:
       field: json.To
       target_field: cloudflare_logpush.email_security_alerts.to
       ignore_missing: true
+  - append:
+      tag: append_email_to_address_from_to
+      field: email.to.address
+      value: '{{{cloudflare_logpush.email_security_alerts.to}}}'
+      if: ctx.cloudflare_logpush?.email_security_alerts?.to instanceof String
+      allow_duplicates: false
+  - foreach:
+      tag: foreach_cloudflare_logpush_email_security_alerts_to_4c8873df
+      field: cloudflare_logpush.email_security_alerts.to
+      if: ctx.cloudflare_logpush?.email_security_alerts?.to instanceof List
+      processor:
+        append:
+          field: email.to.address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - rename:
       tag: rename_json_ToName_to_cloudflare_logpush_email_security_alerts_to_name_4d463964
       field: json.ToName
@@ -250,6 +292,24 @@ processors:
       field: related.user
       value: '{{{cloudflare_logpush.email_security_alerts.smtp_envelope_from}}}'
       if: ctx.cloudflare_logpush?.email_security_alerts?.smtp_envelope_from != null && ctx.cloudflare_logpush.email_security_alerts.smtp_envelope_from != ''
+      allow_duplicates: false
+  - append:
+      tag: append_original_sender_into_related_user
+      field: related.user
+      value: '{{{cloudflare_logpush.email_security_alerts.original_sender}}}'
+      if: ctx.cloudflare_logpush?.email_security_alerts?.original_sender != null
+      allow_duplicates: false
+  - append:
+      tag: append_reply_to_name_into_related_user
+      field: related.user
+      value: '{{{cloudflare_logpush.email_security_alerts.reply_to_name}}}'
+      if: ctx.cloudflare_logpush?.email_security_alerts?.reply_to_name != null
+      allow_duplicates: false
+  - append:
+      tag: append_reply_to_into_related_user
+      field: related.user
+      value: '{{{cloudflare_logpush.email_security_alerts.reply_to}}}'
+      if: ctx.cloudflare_logpush?.email_security_alerts?.reply_to != null
       allow_duplicates: false
   - foreach:
       tag: foreach_cloudflare_logpush_email_security_alerts_to_968c1ea6
@@ -411,9 +471,11 @@ processors:
       if: ctx.cloudflare_logpush?.email_security_alerts?.attachments instanceof List
       source: |-
         def files = [];
+        def emailAttachments = [];
         def hashes = new HashSet();
         for (def a: ctx.cloudflare_logpush.email_security_alerts.attachments) {
           def f = [:];
+          def efa = [:];
           if (a.Name != null) {
             f.name = a.Name;
           }
@@ -443,11 +505,19 @@ processors:
             f.hash = fh;
           }
           files.add(f);
+          efa.put('file', f);
+          emailAttachments.add(efa);
           for (def h: fh.entrySet()) {
             hashes.add(h.getValue());
           }
         }
         ctx.file = files;
+        if (emailAttachments.size() != 0) {
+          if (ctx.email == null) {
+            ctx.email = [:];
+          }
+          ctx.email.attachments = emailAttachments;
+        }
         ctx.related = ctx.related ?: [:];
         ctx.related.hash = hashes;
 
@@ -463,6 +533,12 @@ processors:
       field:
         - cloudflare_logpush.email_security_alerts.timestamp
         - cloudflare_logpush.email_security_alerts.smtp_helo_server_ip
+        - cloudflare_logpush.email_security_alerts.from
+        - cloudflare_logpush.email_security_alerts.to
+        - cloudflare_logpush.email_security_alerts.cc
+        - cloudflare_logpush.email_security_alerts.subject
+        - cloudflare_logpush.email_security_alerts.message_id
+        - cloudflare_logpush.email_security_alerts.reply_to
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
       ignore_failure: true
       ignore_missing: true

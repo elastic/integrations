@@ -152,6 +152,11 @@ processors:
       field: json.PolicyID
       target_field: cloudflare_logpush.page_shield_events.policy_id
       ignore_missing: true
+  - set:
+      tag: set_rule_id_b07ea311
+      field: rule.id
+      copy_from: cloudflare_logpush.page_shield_events.policy_id
+      ignore_empty_value: true
   - rename:
       tag: rename_json_ResourceType_to_cloudflare_logpush_page_shield_events_resource_type_085e4bce
       field: json.ResourceType
@@ -181,6 +186,12 @@ processors:
       field: url.domain
       copy_from: cloudflare_logpush.page_shield_events.url_host
       ignore_empty_value: true
+  - append:
+      tag: append_url_host_into_related_hosts
+      field: related.hosts
+      value: '{{{cloudflare_logpush.page_shield_events.url_host}}}'
+      if: ctx.cloudflare_logpush?.page_shield_events?.url_host != null
+      allow_duplicates: false
   - remove:
       tag: remove_json_conf
       field:
@@ -194,6 +205,7 @@ processors:
         - cloudflare_logpush.page_shield_events.host
         - cloudflare_logpush.page_shield_events.url
         - cloudflare_logpush.page_shield_events.timestamp
+        - cloudflare_logpush.page_shield_events.policy_id
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
       ignore_failure: true
       ignore_missing: true

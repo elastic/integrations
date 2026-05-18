@@ -104,16 +104,31 @@ processors:
       field: host.id
       copy_from: cloudflare_logpush.device_posture.host.id
       ignore_empty_value: true
+  - set:
+      tag: set_device_id_from_host_id
+      field: device.id
+      copy_from: cloudflare_logpush.device_posture.host.id
+      ignore_empty_value: true
   - rename:
       tag: rename_json_DeviceManufacturer_to_cloudflare_logpush_device_posture_host_manufacturer_043abe93
       field: json.DeviceManufacturer
       target_field: cloudflare_logpush.device_posture.host.manufacturer
       ignore_missing: true
+  - set:
+      tag: set_device_manufacturer_from_host_manufacturer
+      field: device.manufacturer
+      copy_from: cloudflare_logpush.device_posture.host.manufacturer
+      ignore_empty_value: true
   - rename:
       tag: rename_json_DeviceModel_to_cloudflare_logpush_device_posture_host_model_265ecd11
       field: json.DeviceModel
       target_field: cloudflare_logpush.device_posture.host.model
       ignore_missing: true
+  - set:
+      tag: set_device_model_name_from_host_model
+      field: device.model.name
+      copy_from: cloudflare_logpush.device_posture.host.model
+      ignore_empty_value: true
   - rename:
       tag: rename_json_DeviceName_to_cloudflare_logpush_device_posture_host_name_707832af
       field: json.DeviceName
@@ -129,6 +144,11 @@ processors:
       field: json.DeviceSerialNumber
       target_field: cloudflare_logpush.device_posture.host.serial
       ignore_missing: true
+  - set:
+      tag: set_device_serial_number_from_host_serial
+      field: device.serial_number
+      copy_from: cloudflare_logpush.device_posture.host.serial
+      ignore_empty_value: true
   - rename:
       tag: rename_json_DeviceType_to_cloudflare_logpush_device_posture_host_os_family_44e10223
       field: json.DeviceType
@@ -137,6 +157,11 @@ processors:
   - set:
       tag: set_host_os_family_d17288fa
       field: host.os.family
+      copy_from: cloudflare_logpush.device_posture.host.os.family
+      ignore_empty_value: true
+  - set:
+      tag: set_device_type_from_host_os_family
+      field: device.type
       copy_from: cloudflare_logpush.device_posture.host.os.family
       ignore_empty_value: true
   - rename:
@@ -273,7 +298,10 @@ processors:
         - cloudflare_logpush.device_posture.timestamp
         - cloudflare_logpush.device_posture.version
         - cloudflare_logpush.device_posture.host.id
+        - cloudflare_logpush.device_posture.host.manufacturer
+        - cloudflare_logpush.device_posture.host.model
         - cloudflare_logpush.device_posture.host.name
+        - cloudflare_logpush.device_posture.host.serial
         - cloudflare_logpush.device_posture.host.os.family
         - cloudflare_logpush.device_posture.host.os.version
         - cloudflare_logpush.device_posture.rule.id

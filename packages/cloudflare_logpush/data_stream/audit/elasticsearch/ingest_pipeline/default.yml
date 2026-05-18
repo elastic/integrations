@@ -218,6 +218,18 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_user_email_into_related_user
+      field: related.user
+      value: '{{{cloudflare_logpush.audit.actor.email}}}'
+      if: ctx.cloudflare_logpush?.audit?.actor?.email != null
+      allow_duplicates: false
+  - append:
+      tag: append_owner_id_into_related_user
+      field: related.user
+      value: '{{{cloudflare_logpush.audit.owner.id}}}'
+      if: ctx.cloudflare_logpush?.audit?.owner?.id != null
+      allow_duplicates: false
+  - append:
       tag: append_related_ip
       field: related.ip
       value: '{{{source.ip}}}'

@@ -123,6 +123,11 @@ processors:
       field: host.id
       copy_from: cloudflare_logpush.gateway_http.host.id
       ignore_empty_value: true
+  - set:
+      tag: set_device_id_from_host_id
+      field: device.id
+      copy_from: cloudflare_logpush.gateway_http.host.id
+      ignore_empty_value: true
   - rename:
       tag: rename_json_DeviceName_to_cloudflare_logpush_gateway_http_host_name_84c5dcb9
       field: json.DeviceName
@@ -356,11 +361,21 @@ processors:
       field: json.BlockedFileHash
       target_field: cloudflare_logpush.gateway_http.blocked_file.hash
       ignore_missing: true
+  - set:
+      tag: set_file_hash_sha256_from_blocked_file_hash
+      field: file.hash.sha256
+      copy_from: cloudflare_logpush.gateway_http.blocked_file.hash
+      ignore_empty_value: true
   - rename:
       tag: rename_json_BlockedFileName_to_cloudflare_logpush_gateway_http_blocked_file_name_92a883de
       field: json.BlockedFileName
       target_field: cloudflare_logpush.gateway_http.blocked_file.name
       ignore_missing: true
+  - set:
+      tag: set_file_name_from_blocked_file_name
+      field: file.name
+      copy_from: cloudflare_logpush.gateway_http.blocked_file.name
+      ignore_empty_value: true
   - rename:
       tag: rename_json_BlockedFileReason_to_cloudflare_logpush_gateway_http_blocked_file_reason_d2532038
       field: json.BlockedFileReason
@@ -377,11 +392,21 @@ processors:
             tag: append_error_message_2976e983
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_file_size_from_blocked_file_size
+      field: file.size
+      copy_from: cloudflare_logpush.gateway_http.blocked_file.size
+      ignore_empty_value: true
   - rename:
       tag: rename_json_BlockedFileType_to_cloudflare_logpush_gateway_http_blocked_file_type_813e4450
       field: json.BlockedFileType
       target_field: cloudflare_logpush.gateway_http.blocked_file.type
       ignore_missing: true
+  - set:
+      tag: set_file_extension_from_blocked_file_type
+      field: file.extension
+      copy_from: cloudflare_logpush.gateway_http.blocked_file.type
+      ignore_empty_value: true
   - rename:
       tag: rename_json_CategoryIDs_to_cloudflare_logpush_gateway_http_category_ids_3d6fd593
       field: json.CategoryIDs
@@ -588,6 +613,18 @@ processors:
       if: ctx.host?.name != null
       allow_duplicates: false
   - append:
+      tag: append_request_host_into_related_hosts
+      field: related.hosts
+      value: "{{{cloudflare_logpush.gateway_http.request.host}}}"
+      if: ctx.cloudflare_logpush?.gateway_http?.request?.host != null
+      allow_duplicates: false
+  - append:
+      tag: append_file_hash_sha256_into_related_hash
+      field: related.hash
+      value: "{{{cloudflare_logpush.gateway_http.blocked_file.hash}}}"
+      if: ctx.cloudflare_logpush?.gateway_http?.blocked_file?.hash != null
+      allow_duplicates: false
+  - append:
       tag: append_related_user_7f407fef
       field: related.user
       value: "{{{user.id}}}"
@@ -624,6 +661,10 @@ processors:
         - cloudflare_logpush.gateway_http.user_agent
         - cloudflare_logpush.gateway_http.user.id
         - cloudflare_logpush.gateway_http.user.email
+        - cloudflare_logpush.gateway_http.blocked_file.hash
+        - cloudflare_logpush.gateway_http.blocked_file.name
+        - cloudflare_logpush.gateway_http.blocked_file.size
+        - cloudflare_logpush.gateway_http.blocked_file.type
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_failure: true
       ignore_missing: true
