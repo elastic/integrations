@@ -9,8 +9,12 @@ if [ ! -s "$BUMPS_JSON" ]; then
 fi
 
 if [ -z "${PR_URL:-}" ]; then
-  echo "PR_URL is required" >&2
-  exit 1
+  BRANCH="updatecli_main_bump-package-requires-versions"
+  PR_URL=$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url' 2>/dev/null || true)
+  if [ -z "$PR_URL" ]; then
+    echo "No open PR found for branch $BRANCH; skipping changelog step."
+    exit 0
+  fi
 fi
 
 # Returns "0" if the bumps array is empty.
@@ -29,12 +33,7 @@ for pkg_name in $pkg_names; do
     continue
   fi
 
-  # Skip packages still at initial dev version 0.1.0 (not yet released).
   pkg_version=$(yq '.version' "$manifest")
-  if [ "$pkg_version" = "0.1.0" ]; then
-    echo "SKIP: $pkg_name is at initial dev version 0.1.0, skipping changelog"
-    continue
-  fi
 
   # Compute max bump level across all deps for this package.
   has_major=$(jq "[.[] | select(.pkg == \"$pkg_name\" and .level == \"major\")] | length" "$BUMPS_JSON")
@@ -46,6 +45,12 @@ for pkg_name in $pkg_names; do
     max_level="minor"
   else
     max_level="patch"
+  fi
+
+  # Cap at minor for packages still at 0.1.0: a dep major bump should not
+  # produce a 1.0.0 entry before the package has had its first release.
+  if [ "$pkg_version" = "0.1.0" ] && [ "$max_level" = "major" ]; then
+    max_level="minor"
   fi
 
   echo "Processing $pkg_name (max bump level: $max_level)"

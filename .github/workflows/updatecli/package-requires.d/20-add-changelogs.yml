@@ -1,0 +1,41 @@
+---
+name: Add changelog entries for bumped packages
+id: add-changelogs
+dependson:
+  - bump-requires
+pipelineid: bump-package-requires-versions
+
+scms:
+  default:
+    kind: github
+    spec:
+      owner: '{{ .scm.owner }}'
+      repository: '{{ .scm.repository }}'
+      user: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      username: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      token: '{{ requiredEnv "GITHUB_TOKEN" }}'
+      commitusingapi: true
+      branch: main
+
+targets:
+  add_changelogs:
+    name: '[updatecli] Add changelog entries linked to the open PR'
+    kind: shell
+    scmid: default
+    spec:
+      environments:
+        - name: PATH
+        - name: HOME
+        - name: BUMPS_JSON
+        - name: GH_TOKEN
+      command: sh .github/workflows/updatecli/package-requires.d/add-changelogs.sh
+
+actions:
+  openPullRequest:
+    title: '[updatecli] Bump pinned versions in package requires'
+    kind: github/pullrequest
+    scmid: default
+    spec:
+      labels:
+        - automation
+        - dependency

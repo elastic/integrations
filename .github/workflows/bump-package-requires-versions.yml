@@ -1,4 +1,26 @@
 ---
+# Bump pinned versions in package `requires` blocks and update changelogs.
+#
+# Pipeline (two updatecli stages, run in order):
+#   1. bump-requires   — scans every package manifest for `requires` blocks,
+#                        resolves the latest compatible version of each pinned
+#                        dep, and commits the updated constraints to a branch.
+#                        Records each bump (package, dep, old→new, semver level)
+#                        to BUMPS_JSON for the next stage.
+#   2. add-changelogs  — reads BUMPS_JSON and calls `elastic-package changelog add`
+#                        for each affected package. Changelog bump level follows
+#                        the highest semver level of any dep bump for that package:
+#                          - one or more dep major bumps  → package minor bump
+#                            (capped at minor when the package is still at v0.1.0;
+#                             major is never used for unreleased packages)
+#                          - dep minor bumps only         → package minor bump
+#                          - dep patch bumps only         → package patch bump
+#                        Multiple dep bumps for the same package are folded into
+#                        a single changelog version entry.
+#
+# Execution mode:
+#   pull_request  → updatecli diff  (dry-run, shows what would change; no commits)
+#   schedule / workflow_dispatch → updatecli apply  (opens or updates the PR)
 name: Bump pinned versions in package requires blocks
 
 on:
@@ -46,31 +68,10 @@ jobs:
         run: echo "UPDATECLI_ACTION=apply" >> $GITHUB_ENV
 
       - name: Bump package requires versions
-        # --experimental needed for commitusingapi option.
+        # --experimental is required for the commitusingapi SCM option.
         run: updatecli --experimental ${{ env.UPDATECLI_ACTION }} --config .github/workflows/updatecli/package-requires.d --values .github/workflows/updatecli/values.d/scm.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BUMPS_OUTPUT: ${{ runner.temp }}/bumps.json
-
-      - name: Add changelog entries for bumped packages
-        if: ${{ env.UPDATECLI_ACTION == 'apply' }}
-        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUMPS_OUTPUT: ${{ runner.temp }}/bumps.json
           BUMPS_JSON: ${{ runner.temp }}/bumps.json
-        run: |
-          [ -s "$BUMPS_JSON" ] || { echo "No bumps recorded; skipping changelog step."; exit 0; }
-          BRANCH="updatecli_main_bump-package-requires-versions"
-          PR_URL=$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url')
-          [ -n "$PR_URL" ] || { echo "No open PR found for branch $BRANCH; skipping."; exit 0; }
-          git fetch origin "$BRANCH"
-          git checkout -B "$BRANCH" -f "origin/$BRANCH"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          PR_URL="$PR_URL" .github/workflows/updatecli/package-requires.d/add-changelogs.sh
-          if ! git diff --quiet HEAD; then
-            git add -A
-            git commit -m "Add changelog entries for bumped requires versions"
-            git push origin "$BRANCH"
-          else
-            echo "No changelog changes to commit."
-          fi
