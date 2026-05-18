@@ -13,6 +13,7 @@ on:
       - "packages/lmd/**"
       - "packages/pad/**"
       - "packages/problemchild/**"
+      - ".github/workflows/trigger-package-tests-security-ml.yml"
 
 concurrency:
   group: trigger-secml-itp-${{ github.event.pull_request.number }}
@@ -45,11 +46,15 @@ jobs:
             --paginate \
             --jq '.[].filename')
           PACKAGES=""
-          for pkg in $VALID_PACKAGES; do
-            if echo "$CHANGED" | grep -q "^packages/${pkg}/"; then
-              PACKAGES="${PACKAGES:+$PACKAGES,}$pkg"
-            fi
-          done
+          if echo "$CHANGED" | grep -q "^\.github/workflows/trigger-package-tests-security-ml\.yml$"; then
+            PACKAGES=$(echo "$VALID_PACKAGES" | tr ' ' ',')
+          else
+            for pkg in $VALID_PACKAGES; do
+              if echo "$CHANGED" | grep -q "^packages/${pkg}/"; then
+                PACKAGES="${PACKAGES:+$PACKAGES,}$pkg"
+              fi
+            done
+          fi
           echo "packages=$PACKAGES" >> "$GITHUB_OUTPUT"
           echo "Changed packages: $PACKAGES"
 
