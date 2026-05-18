@@ -445,10 +445,14 @@ processors:
       field: google_workspace.chrome.device_user
       tag: grok_device_user
       patterns:
-        - '%{DATA:host.hostname}\\%{DATA:user.name}@%{GREEDYDATA:user.domain}'
-        - '%{DATA:host.hostname}\\%{GREEDYDATA:user.name}'
+        - '%{DATA:_tmp.user_leading_domain}\\%{DATA:user.name}@%{GREEDYDATA:user.domain}'
+        - '%{DATA:user.domain}\\%{GREEDYDATA:user.name}'
         - '%{DATA:user.name}@%{GREEDYDATA:user.domain}'
         - '%{GREEDYDATA:user.name}'
+      ignore_missing: true
+  - remove:
+      field: _tmp
+      tag: remove_tmp
       ignore_missing: true
   - append:
       field: related.user
