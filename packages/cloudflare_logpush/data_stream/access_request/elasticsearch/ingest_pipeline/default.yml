@@ -67,6 +67,11 @@ processors:
           }
         }
         catch (Exception e) {}
+      on_failure:
+        - append:
+            tag: append_error_message_de6444e3
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       tag: date_json_CreatedAt_71066ccc
       field: json.CreatedAt
@@ -77,14 +82,15 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ssZ
       timezone: UTC
       on_failure:
-      - append:
-          tag: append_error_message_d9aeb333
-          field: error.message
-          value: "{{{_ingest.on_failure_message}}}"
+        - append:
+            tag: append_error_message_54b30f36
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       tag: set_cloudflare_logpush_access_request_timestamp_7b8f00af
       field: cloudflare_logpush.access_request.timestamp
       copy_from: "@timestamp"
+      ignore_empty_value: true
   - rename:
       tag: rename_json_Action_to_cloudflare_logpush_access_request_action_cd9b83c4
       field: json.Action
@@ -165,7 +171,7 @@ processors:
       target_field: cloudflare_logpush.access_request.client.ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.IPAddress != ''
+      if: ctx.json?.IPAddress != null && ctx.json.IPAddress != ''
       on_failure:
         - append:
             tag: append_error_message_64a77b32
@@ -181,6 +187,8 @@ processors:
       tag: geoip_client_ip_to_client_geo_92da0c99
       field: client.ip
       target_field: client.geo
+      ignore_missing: true
+      if: ctx.client?.ip != null
   - geoip:
       tag: geoip_client_ip_to_client_as_f17fb2b3
       database_file: GeoLite2-ASN.mmdb
@@ -190,6 +198,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      if: ctx.client?.ip != null
   - rename:
       tag: rename_client_as_asn_to_client_as_number_a6e30d01
       field: client.as.asn
@@ -250,20 +259,20 @@ processors:
   - append:
       tag: append_related_ip_3726c45d
       field: related.ip
-      value: "{{{client.ip}}}"
-      if: ctx.client?.ip != null
+      value: '{{{cloudflare_logpush.access_request.client.ip}}}'
+      if: ctx.cloudflare_logpush?.access_request?.client?.ip != null
       allow_duplicates: false
   - append:
       tag: append_related_user_7f407fef
       field: related.user
-      value: "{{{user.id}}}"
-      if: ctx.user?.id != null
+      value: '{{{cloudflare_logpush.access_request.user.id}}}'
+      if: ctx.cloudflare_logpush?.access_request?.user?.id != null
       allow_duplicates: false
   - append:
       tag: append_related_user_34fcf415
       field: related.user
-      value: "{{{user.email}}}"
-      if: ctx.user?.email != null
+      value: '{{{cloudflare_logpush.access_request.user.email}}}'
+      if: ctx.cloudflare_logpush?.access_request?.user?.email != null
       allow_duplicates: false
   - foreach:
       tag: foreach_cloudflare_logpush_access_request_temp_access_approvers_eb3fbf32
@@ -293,33 +302,51 @@ processors:
         - cloudflare_logpush.access_request.user.id
         - cloudflare_logpush.access_request.user.email
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-      ignore_failure: true
       ignore_missing: true
   - script:
-      tag: script_a3eb5add
-      description: Drops null/empty values recursively.
+      tag: script_to_drop_null_values
       lang: painless
-      source: |
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || v == 'N/A' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
-        dropEmptyFields(ctx);
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_tags_9fe66b2c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
+      tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
       field: tags
