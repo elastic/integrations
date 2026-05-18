@@ -535,7 +535,7 @@ An example event for `report` looks as following:
 | hackerone.report.attributes.timer_report_resolved_miss_at |  | date |
 | hackerone.report.attributes.timer_report_triage_elapsed_time |  | long |
 | hackerone.report.attributes.timer_report_triage_miss_at |  | date |
-| hackerone.report.attributes.title | Report title mirrored alongside ECS message. | keyword |
+| hackerone.report.attributes.title | Report title. Also copied to ECS `message`. | keyword |
 | hackerone.report.attributes.triaged_at |  | date |
 | hackerone.report.attributes.vulnerability_information | Raw Markdown narrative mirrored from the reporter submission. | match_only_text |
 | hackerone.report.id | JSON:API resource identifier for the report. | keyword |
