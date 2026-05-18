@@ -16,6 +16,12 @@ This integration supports the following data streams:
   events are correlated with known vulnerabilities or chained attacks. Incidents
   represent findings that require SOC analyst attention.
 
+- **Issues**: Application vulnerability findings reported by the Contrast ADR agent
+  (e.g., unchecked autobinding, insecure deserialization, missing input validation).
+  Issues carry a CVSS vector and severity, and are distinct from attack events:
+  issues describe a weakness in the application, attack events describe an attempt
+  to exploit one.
+
 ## Setup
 
 Contrast Security ADR writes data directly to Elasticsearch using the Elasticsearch
@@ -27,6 +33,7 @@ Java client (Bulk API). No Elastic Agent configuration is required.
 |---|---|
 | Attack Events | `logs-contrast_security.attack_event-*` |
 | Incidents | `logs-contrast_security.incident-*` |
+| Issues | `logs-contrast_security.issue-*` |
 
 ### Requirements
 
