@@ -72,7 +72,7 @@ More details about this CI pipeline:
         - The latest Buildkite build that finished successfully in that branch is retrieved, and all the file changes in the working copy between the changeset of that build and the merged commit are obtained.
         - Given all those changes, the packages selected to be tested follow the same rules as in the PR.
         - **First push (no previous successful build):**
-            - For `backport-*` and `feature/*` branches: the merge-base between the pushed commit and `origin/main` is computed to find commits exclusive to the branch. If those commits contain changes under `packages/`, the affected packages are tested. If only CI infrastructure files changed (e.g. `.buildkite/`, `dev/`), no package tests are run.
+            - For `backport-*` and `feature/*` branches: the merge-base between the pushed commit and `origin/main` is computed to find commits exclusive to the branch. If those commits contain changes under `packages/`, the affected packages are tested. If only CI infrastructure files changed (for example `.buildkite/`, `dev/`), no package tests are run.
             - For `main`: diffs against `origin/main^` (the previous commit on main).
 - Container logs, as they could contain sensitive information, are uploaded to a private Google Bucket.
 - Packages are tested running the Elastic stack with the minimum Kibana version supported according to their manifest (`.conditions.kibana.version`). If a package defines a Kibana version that is not released yet, `elastic-package` will be using the SNAPSHOT version. This can be overridden if the STACK_VERSION variable is defined in the environment.
