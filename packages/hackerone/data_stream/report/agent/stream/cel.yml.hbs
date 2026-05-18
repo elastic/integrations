@@ -79,7 +79,7 @@ program: |-
             "page[size]": [string(int(state.page_size))],
             "filter[last_activity_at__gt]": [
               (
-                state.?cursor.last_activity_at.optMap(t,
+                state.?cursor.max_updated_at.optMap(t,
                   timestamp(t) + duration("1ms")
                 )
               ).orValue(
@@ -196,6 +196,8 @@ program: |-
       )
     )
   )
+drop_event.when.equals.retry: true
+
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
