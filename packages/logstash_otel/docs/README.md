@@ -29,7 +29,7 @@ Add the following to `logstash.yml`:
 ```yaml
 otel.metrics.enabled: true
 otel.exporter.otlp.endpoint: "https://your-deployment.apm.us-central1.gcp.cloud.es.io:443"
-otel.exporter.otlp.protocol: "http"
+otel.exporter.otlp.protocol: "grpc"
 otel.exporter.otlp.headers: "Authorization=ApiKey your-base64-encoded-api-key"
 ```
 
