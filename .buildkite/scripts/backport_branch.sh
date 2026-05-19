@@ -210,6 +210,11 @@ updateBackportBranchContents() {
     git checkout "$SOURCE_BRANCH" -- ".github/workflows"
     git add .github/workflows
 
+    # This should be copied from the main branch before running "removeOtherPackages" function
+    echo "--- Copying .github/CODEOWNERS from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- ".github/CODEOWNERS"
+    git add .github/CODEOWNERS
+
     # Copy tools.go so we have the dev scripts dependencies required
     echo "--- Copying tools.go from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "tools.go"
