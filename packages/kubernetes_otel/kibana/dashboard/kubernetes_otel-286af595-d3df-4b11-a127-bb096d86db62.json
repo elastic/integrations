@@ -776,7 +776,7 @@
                       ],
                       "index": "6fb2202346b4e6848e0f086deb403aa5f95c9700542f59ac209b22ac8962bf93",
                       "query": {
-                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.container.cpu_limit IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.container.name IS NOT NULL\n  | STATS cpu_limit = MAX(k8s.container.cpu_limit) BY k8s.pod.name, k8s.container.name\n  | STATS total = SUM(cpu_limit)\n  | EVAL total_cores = ROUND(total, 2)\n  | KEEP total_cores"
+                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.container.cpu_limit IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.container.name IS NOT NULL\n  | STATS cpu_limit = MAX(k8s.container.cpu_limit),\n      last_seen = MAX(@timestamp)\n    BY k8s.pod.name, k8s.container.name\n  | INLINE STATS latest_ts = MAX(last_seen)\n  | WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n  | STATS total = SUM(cpu_limit)\n  | EVAL total_cores = ROUND(total, 2)\n  | KEEP total_cores"
                       },
                       "timeField": "@timestamp"
                     }
@@ -785,7 +785,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.container.cpu_limit IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.container.name IS NOT NULL\n  | STATS cpu_limit = MAX(k8s.container.cpu_limit) BY k8s.pod.name, k8s.container.name\n  | STATS total = SUM(cpu_limit)\n  | EVAL total_cores = ROUND(total, 2)\n  | KEEP total_cores"
+                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.container.cpu_limit IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.container.name IS NOT NULL\n  | STATS cpu_limit = MAX(k8s.container.cpu_limit),\n      last_seen = MAX(@timestamp)\n    BY k8s.pod.name, k8s.container.name\n  | INLINE STATS latest_ts = MAX(last_seen)\n  | WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n  | STATS total = SUM(cpu_limit)\n  | EVAL total_cores = ROUND(total, 2)\n  | KEEP total_cores"
               },
               "visualization": {
                 "applyColorTo": "background",
@@ -862,7 +862,7 @@
                       ],
                       "index": "6fb2202346b4e6848e0f086deb403aa5f95c9700542f59ac209b22ac8962bf93",
                       "query": {
-                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.container.memory_limit IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.container.name IS NOT NULL\n  | STATS mem_limit = MAX(k8s.container.memory_limit) BY k8s.pod.name, k8s.container.name\n  | STATS total = SUM(mem_limit)\n  | EVAL total_gb = ROUND(TO_DOUBLE(total) / 1073741824.0, 2)\n  | KEEP total_gb"
+                        "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.container.memory_limit IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.container.name IS NOT NULL\n  | STATS mem_limit = MAX(k8s.container.memory_limit),\n      last_seen = MAX(@timestamp)\n    BY k8s.pod.name, k8s.container.name\n  | INLINE STATS latest_ts = MAX(last_seen)\n  | WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n  | STATS total = SUM(mem_limit)\n  | EVAL total_gb = ROUND(TO_DOUBLE(total) / 1073741824.0, 2)\n  | KEEP total_gb"
                       },
                       "timeField": "@timestamp"
                     }
@@ -871,7 +871,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.container.memory_limit IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.container.name IS NOT NULL\n  | STATS mem_limit = MAX(k8s.container.memory_limit) BY k8s.pod.name, k8s.container.name\n  | STATS total = SUM(mem_limit)\n  | EVAL total_gb = ROUND(TO_DOUBLE(total) / 1073741824.0, 2)\n  | KEEP total_gb"
+                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.container.memory_limit IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.container.name IS NOT NULL\n  | STATS mem_limit = MAX(k8s.container.memory_limit),\n      last_seen = MAX(@timestamp)\n    BY k8s.pod.name, k8s.container.name\n  | INLINE STATS latest_ts = MAX(last_seen)\n  | WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n  | STATS total = SUM(mem_limit)\n  | EVAL total_gb = ROUND(TO_DOUBLE(total) / 1073741824.0, 2)\n  | KEEP total_gb"
               },
               "visualization": {
                 "applyColorTo": "background",
@@ -948,7 +948,7 @@
                       ],
                       "index": "8b35a512f9659f273caebddf039213e5c70c00f64041bd60f4f82b92429b79d0",
                       "query": {
-                        "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.volume.capacity IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.volume.name IS NOT NULL\n  | STATS vol_cap = MAX(k8s.volume.capacity) BY k8s.pod.name, k8s.volume.name\n  | STATS total = SUM(vol_cap)\n  | EVAL total_gb = ROUND(TO_DOUBLE(total) / 1073741824.0, 2)\n  | KEEP total_gb"
+                        "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.volume.capacity IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.volume.name IS NOT NULL\n  | STATS vol_cap = MAX(k8s.volume.capacity),\n      last_seen = MAX(@timestamp)\n    BY k8s.pod.name, k8s.volume.name\n  | INLINE STATS latest_ts = MAX(last_seen)\n  | WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n  | STATS total = SUM(vol_cap)\n  | EVAL total_gb = ROUND(TO_DOUBLE(total) / 1073741824.0, 2)\n  | KEEP total_gb"
                       },
                       "timeField": "@timestamp"
                     }
@@ -957,7 +957,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.volume.capacity IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.volume.name IS NOT NULL\n  | STATS vol_cap = MAX(k8s.volume.capacity) BY k8s.pod.name, k8s.volume.name\n  | STATS total = SUM(vol_cap)\n  | EVAL total_gb = ROUND(TO_DOUBLE(total) / 1073741824.0, 2)\n  | KEEP total_gb"
+                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.volume.capacity IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.volume.name IS NOT NULL\n  | STATS vol_cap = MAX(k8s.volume.capacity),\n      last_seen = MAX(@timestamp)\n    BY k8s.pod.name, k8s.volume.name\n  | INLINE STATS latest_ts = MAX(last_seen)\n  | WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n  | STATS total = SUM(vol_cap)\n  | EVAL total_gb = ROUND(TO_DOUBLE(total) / 1073741824.0, 2)\n  | KEEP total_gb"
               },
               "visualization": {
                 "applyColorTo": "background",
