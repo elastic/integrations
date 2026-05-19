@@ -6,7 +6,7 @@ This integration uses `http` metricbeat module to collect above metrics.
 
 ## Compatibility
 
-This integration has been tested against `CouchDB version 3.1` and `CouchDB version 3.2.2`.
+This integration has been tested against `CouchDB version 3.2.2` and `CouchDB version 3.5.2`.
 
 ## Requirements
 
@@ -30,13 +30,13 @@ An example event for `server` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-13T07:21:10.000Z",
+    "@timestamp": "2026-05-19T22:24:35.048Z",
     "agent": {
-        "ephemeral_id": "389401b4-5960-4cd8-a207-033a7e3c5a54",
-        "id": "1f5b14b7-019a-4625-85ab-1b51ea6c08e5",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "fe500f9f-556d-4d54-bb10-d3c97c42deef",
+        "id": "603c921f-4aec-431b-95e7-70941af02e0f",
+        "name": "elastic-agent-44591",
         "type": "metricbeat",
-        "version": "8.3.2"
+        "version": "9.4.1"
     },
     "couchdb": {
         "server": {
@@ -54,17 +54,17 @@ An example event for `server` looks as following:
                 "request_methods": {
                     "copy": 0,
                     "delete": 0,
-                    "get": 1,
+                    "get": 3,
                     "head": 0,
                     "post": 0,
                     "put": 0
                 },
                 "requests": {
                     "bulk": 0,
-                    "count": 1
+                    "count": 2
                 },
                 "status_codes": {
-                    "200": 1,
+                    "200": 2,
                     "201": 0,
                     "202": 0,
                     "301": 0,
@@ -91,16 +91,16 @@ An example event for `server` looks as following:
     },
     "data_stream": {
         "dataset": "couchdb.server",
-        "namespace": "ep",
+        "namespace": "97388",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "1f5b14b7-019a-4625-85ab-1b51ea6c08e5",
-        "snapshot": false,
-        "version": "8.3.2"
+        "id": "603c921f-4aec-431b-95e7-70941af02e0f",
+        "snapshot": true,
+        "version": "9.4.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -108,8 +108,8 @@ An example event for `server` looks as following:
             "database"
         ],
         "dataset": "couchdb.server",
-        "duration": 6178377,
-        "ingested": "2022-07-13T07:21:14Z",
+        "duration": 132409458,
+        "ingested": "2026-05-19T22:24:36Z",
         "kind": "metric",
         "module": "couchdb",
         "type": [
@@ -117,24 +117,24 @@ An example event for `server` looks as following:
         ]
     },
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-44591",
         "ip": [
-            "172.18.0.7"
+            "172.18.0.4",
+            "172.19.0.2"
         ],
         "mac": [
-            "02-42-AC-1F-00-07"
+            "16-AD-61-96-55-44",
+            "A2-B3-5B-02-EF-A1"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-44591",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "3.10.0-1160.66.1.el7.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "kernel": "6.8.0-64-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
@@ -142,7 +142,7 @@ An example event for `server` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "http://elastic-package-service_couchdb_1:5984/_node/_local/_stats",
+        "address": "http://svc-couchdb:5984/_node/_local/_stats",
         "type": "http"
     },
     "tags": [
