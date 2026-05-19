@@ -1,88 +1,94 @@
-config_version: "2"
-interval: {{interval}}m
-request.url: "https://api.doppel.com/v1/alerts"
-request.method: "GET"
-
-preserve_original_event: true
-
-{{#if enable_request_tracer}}
-request.tracer.filename: "../../logs/httpjson/doppel-request-trace-*.ndjson"
-request.tracer.maxbackups: 5
+config_version: 2
+interval: {{interval}}
+resource.url: {{url}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+state:
+  api_key: {{api_key}}
+{{#if x_user_api_key}}
+  x_user_api_key: {{x_user_api_key}}
 {{/if}}
-
-# Rate limit protection
-request.retry.max_attempts: 5
-request.retry.wait_min: 5s
-request.retry.wait_max: 60s  
-
-# --- THE CURSOR (v40) ---
-cursor:
-  # 1. Grabs the exact timestamp from the newest alert on Page 0
-  temp_max_v40:
-    value: '[[ if .last_response.body.metadata ]][[ if eq (toInt .last_response.body.metadata.page) 0 ]][[ if gt (len .last_response.body.alerts) 0 ]][[ $firstAlert := index .last_response.body.alerts 0 ]][[ if index $firstAlert "last_activity_timestamp" ]][[ formatDate (parseDate (index $firstAlert "last_activity_timestamp") "2006-01-02T15:04:05.999999") "2006-01-02T15:04:05" "UTC" ]][[ else ]][[ formatDate now "2006-01-02T15:04:05" "UTC" ]][[ end ]][[ else ]][[ formatDate now "2006-01-02T15:04:05" "UTC" ]][[ end ]][[ else if index .cursor "temp_max_v40" ]][[ index .cursor "temp_max_v40" ]][[ else ]][[ formatDate now "2006-01-02T15:04:05" "UTC" ]][[ end ]][[ else if index .cursor "temp_max_v40" ]][[ index .cursor "temp_max_v40" ]][[ else ]][[ formatDate now "2006-01-02T15:04:05" "UTC" ]][[ end ]]'
-    fail_on_template_error: false
-
-  # 2. Assigns the API timestamp for the historical poll, then uses 'now' for intervals
-  doppel_cursor_v40:
-    value: '[[ if .last_response.body.metadata ]][[ $page := toInt .last_response.body.metadata.page ]][[ $totalPages := toInt .last_response.body.metadata.total_pages ]][[ if or (eq $totalPages 0) (ge (add $page 1) $totalPages) ]][[ if not (index .cursor "doppel_cursor_v40") ]][[ if index .cursor "temp_max_v40" ]][[ index .cursor "temp_max_v40" ]][[ else ]][[ formatDate now "2006-01-02T15:04:05" "UTC" ]][[ end ]][[ else ]][[ formatDate now "2006-01-02T15:04:05" "UTC" ]][[ end ]][[ else if index .cursor "doppel_cursor_v40" ]][[ index .cursor "doppel_cursor_v40" ]][[ end ]][[ else if index .cursor "doppel_cursor_v40" ]][[ index .cursor "doppel_cursor_v40" ]][[ end ]]'
-    fail_on_template_error: false
-
-  # 3. Tracks the current page to safely resume if the agent restarts
-  resume_page_v40:
-    value: '[[ if .last_response.body.metadata ]][[ $page := toInt .last_response.body.metadata.page ]][[ $totalPages := toInt .last_response.body.metadata.total_pages ]][[ if or (eq $totalPages 0) (ge (add $page 1) $totalPages) ]]0[[ else ]][[ add $page 1 ]][[ end ]][[ else if index .cursor "resume_page_v40" ]][[ index .cursor "resume_page_v40" ]][[ else ]]0[[ end ]]'
-    fail_on_template_error: false
-
-# Doppel API config
-request.transforms:
-  - set:
-      target: header.x-api-key
-      value: '{{api_key}}'
-
-  {{#if x_user_api_key}}
-  - set:
-      target: header.x-user-api-key
-      value: '{{x_user_api_key}}'
-  {{/if}}
-
-  {{#if organization_code}}
-  - set:
-      target: header.x-organization-code
-      value: '{{organization_code}}'
-  {{/if}}
-
-# --- EXPLICIT TIMESTAMP LOGIC ---
-  - set:
-      target: url.params.last_activity_timestamp
-      value: '[[ if index .cursor "doppel_cursor_v40" ]][[ formatDate ((parseDate (index .cursor "doppel_cursor_v40") "2006-01-02T15:04:05").Add (parseDuration "-5m")) "2006-01-02T15:04:05" "UTC" ]][[ else ]][[ formatDate ((now).AddDate 0 0 -{{lookback_days}}) "2006-01-02T00:00:00" "UTC"]][[ end ]]'
-      fail_on_template_error: false
-
-  - set:
-      target: url.params.page_size
-      value: 200
-
-  # 4. Replaces the hardcoded default: 0 with our dynamic resume tracking
-  - set:
-      target: url.params.page
-      value: '[[ if index .cursor "resume_page_v40" ]][[ index .cursor "resume_page_v40" ]][[ else ]]0[[ end ]]'
-      fail_on_template_error: false
-
-response.pagination:
-  - set:
-      target: url.params.page
-      value: '[[ if .last_response.body.metadata ]][[ if and (gt (toInt .last_response.body.metadata.total_pages) 0) (lt (add (toInt .last_response.body.metadata.page) 1) (toInt .last_response.body.metadata.total_pages)) ]][[ add (toInt .last_response.body.metadata.page) 1 ]][[ end ]][[ end ]]'
-      fail_on_template_error: true
-
-# --- API EXCEPTION HANDLING ---
-response.error:
-  - set:
-      target: log.level
-      value: "error"
-  - set:
-      target: message
-      value: '[[ if .last_response.body.error ]][[ .last_response.body.error ]][[ else ]]Doppel API request failed with HTTP Status: [[ .last_response.status_code ]][[ end ]]'
-      fail_on_template_error: false
-
-# Splits events and prevents those empty null arrays from showing up
-response.split:
-  target: body.alerts
-  ignore_empty_value: true
+{{#if organization_code}}
+  organization_code: {{organization_code}}
+{{/if}}
+  initial_interval: {{initial_interval}}
+  page_size: {{page_size}}
+redact:
+  fields:
+    - api_key
+    - x_user_api_key
+program: |
+  (
+    // Don't recompute time ranges while paginating.
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with({
+        "last_activity_ts": (
+          state.?cursor.last_timestamp.orValue("") != "" ?
+            (timestamp(state.cursor.last_timestamp) - duration("5m")).format("2006-01-02T15:04:05")
+          :
+            (now - duration(state.initial_interval)).format("2006-01-02T15:04:05")
+        ),
+        "page": 0,
+      })
+  ).as(state,
+    state.with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "/v1/alerts?" + {
+          "page": [string(int(state.page))],
+          "page_size": [string(int(state.page_size))],
+          "last_activity_timestamp": [state.last_activity_ts],
+        }.format_query()
+      ).with({
+        "Header": {
+          "X-Api-Key": [state.api_key],
+          ?"X-User-Api-Key": state.?x_user_api_key.optMap(v, [v]),
+          ?"X-Organization-Code": state.?organization_code.optMap(v, [v]),
+        }
+      }).do_request().as(resp, resp.StatusCode == 200 ?
+        resp.Body.decode_json().as(body, {
+          "events": body.alerts.map(e, {"message": e.encode_json()}),
+          "page": int(body.metadata.page) + 1,
+          "want_more": int(body.metadata.page) + 1 < int(body.metadata.total_pages),
+          ?"cursor": int(body.metadata.page) + 1 >= int(body.metadata.total_pages) ?
+            optional.of({"last_timestamp": now.format(time_layout.RFC3339)})
+          :
+            optional.none(),
+        })
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET " + state.url.trim_right("/") + "/v1/alerts: " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "want_more": false,
+        }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

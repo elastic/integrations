@@ -85,6 +85,7 @@ The `alerts` data stream provides security events from the Doppel API.
 | doppel.telco.provider | The telecommunications provider or carrier. | keyword |
 | doppel.uploaded_by | The user or system account that uploaded the alert. | keyword |
 | doppel_alert_updated_at | The timestamp when the alert was last updated. | date |
+| ecs.version | ECS version this event conforms to. | keyword |
 | event.created | The time the alert was created in the Doppel system. | date |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
@@ -93,11 +94,14 @@ The `alerts` data stream provides security events from the Doppel API.
 | event.risk_score | A normalized risk score for the alert. | float |
 | event.severity | The numeric severity level of the alert. | long |
 | event.url | The URL associated with the event or threat. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | labels.audit_logs | Flattened object containing audit history and state changes for the alert. | flattened |
 | labels.entity_content | Flattened object containing raw details about the targeted entity. | flattened |
 | labels.severity | The string representation of the severity level (e.g., high, medium, low). | keyword |
 | message | The original raw message or a brief summary of the alert. | text |
 | organization.name | The name of the organization or brand targeted by the threat. | keyword |
+| related.ip | All of the IPs seen on the event. | ip |
+| tags | User defined tags. | keyword |
 | threat.indicator.ip | The IP address associated with the threat. | ip |
 | threat.indicator.name | The name or value of the threat indicator. | keyword |
 | threat.indicator.url.domain | The domain of the malicious or suspicious URL. | keyword |
@@ -184,7 +188,7 @@ An example event for `alerts` looks as following:
         }
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "labels": {
         "audit_logs": [
@@ -220,17 +224,28 @@ An example event for `alerts` looks as following:
 ### Inputs used
 These inputs can be used with this integration:
 <details>
-<summary>httpjson</summary>
+<summary>cel</summary>
 
 ## Setup
 
-For more details about the Http Json input settings, check the [Filebeat documentation](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-httpjson).
+For more details about the CEL input settings, check the [Filebeat documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html).
 
-### Collecting logs from Http Json
+Before configuring the CEL input, make sure you have:
+- Network connectivity to the target API endpoint
+- Valid authentication credentials (API keys, tokens, or certificates as required)
+- Appropriate permissions to read from the target data source
 
-To collect logs via http json, select **Collect logs via API** and configure the following parameter:
+### Collecting logs from CEL
 
-- API url: The API URL without the path.
+To configure the CEL input, you must specify the `request.url` value pointing to the API endpoint. The interval parameter controls how frequently requests are made and is the primary way to balance data freshness with API rate limits and costs. Authentication is often configured through the `request.headers` section using the appropriate method for the service.
+
+NOTE: To access the API service, make sure you have the necessary API credentials and that the Filebeat instance can reach the endpoint URL. Some services may require IP whitelisting or VPN access.
+
+To collect logs via API endpoint, configure the following parameters:
+
+- API Endpoint URL
+- API credentials (tokens, keys, or username/password)
+- Request interval (how often to fetch data)
 </details>
 
 
