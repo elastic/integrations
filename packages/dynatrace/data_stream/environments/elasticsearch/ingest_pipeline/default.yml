@@ -1,0 +1,68 @@
+---
+description: Pipeline for Dynatrace Managed environments
+processors:
+  - set:
+      field: ecs.version
+      value: 8.11.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+  - fingerprint:
+      fields:
+        - json.id
+        - json.name
+      target_field: _id
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: nest_env_fields
+      source: |
+        if (ctx.json == null) { return; }
+        if (!(ctx.json instanceof Map)) { return; }
+        Map src = ctx.json;
+        ctx.dynatrace = ctx.dynatrace ?: [:];
+        Map env = new HashMap();
+        env.put('id', src.get('id'));
+        env.put('name', src.get('name'));
+        env.put('state', src.get('state'));
+        env.put('trial', src.get('trial'));
+        env.put('tags', src.get('tags'));
+        env.put('creation_date', src.get('creationDate'));
+        env.put('quotas', src.get('quotas'));
+        env.put('storage', src.get('storage'));
+        env.entrySet().removeIf(e -> e.getValue() == null);
+        ctx.dynatrace.environments = env;
+        def eid = src.get('id');
+        if (eid != null) {
+          ctx.organization = ctx.organization ?: [:];
+          ctx.organization.id = eid;
+          def ename = src.get('name');
+          if (ename != null) { ctx.organization.name = ename; }
+        }
+  - set:
+      field: event.kind
+      value: state
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed: {{ _ingest.on_failure_message }}
+  - set:
+      field: event.kind
+      value: pipeline_error

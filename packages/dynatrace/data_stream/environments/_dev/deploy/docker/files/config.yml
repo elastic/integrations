@@ -1,0 +1,18 @@
+# Mock for environments only: GET /api/cluster/v2/environments → 2 environments → 2 events per collection.
+rules:
+  - path: /api/cluster/v2/environments
+    methods: [GET]
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "environments":[
+              {"id":"tenant-a","name":"Tenant A","state":"ENABLED","trial":false,"tags":[],"creationDate":"2021-02-09T11:03:17.732Z"},
+              {"id":"tenant-b","name":"Tenant B","state":"ENABLED","trial":false,"tags":["prod"],"creationDate":"2021-02-07T08:49:45.091Z"}
+            ],
+            "nextPageKey":null,
+            "pageSize":1000,
+            "totalCount":2
+          }
+          `}}

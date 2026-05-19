@@ -1,0 +1,84 @@
+title: Collect Dynatrace Problems
+type: logs
+release: experimental
+streams:
+  - input: cel
+    title: Dynatrace Problems
+    description: Collect open and recent problems from the Dynatrace Problems v2 API.
+    enabled: true
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: Interval at which to query the Dynatrace API. Go duration syntax (e.g. `5m`).
+        multi: false
+        required: true
+        show_user: true
+        default: 5m
+      - name: initial_interval
+        type: text
+        title: Initial lookback
+        description: |
+          Look back this far on the first run. Dynatrace `from` syntax, for example `now-1d`, `now-2h`.
+          On subsequent runs the integration uses the timestamp of the last received problem.
+        multi: false
+        required: false
+        show_user: true
+        default: now-1d
+      - name: page_size
+        type: integer
+        title: Page Size
+        description: Number of problems per page. Maximum is 500.
+        multi: false
+        required: false
+        show_user: true
+        default: 500
+      - name: max_executions
+        type: integer
+        title: Maximum Pages Per Interval
+        description: Maximum number of pages collected within a single interval.
+        multi: false
+        required: false
+        show_user: false
+        default: 1000
+      - name: problem_selector
+        type: text
+        title: Problem Selector
+        description: |
+          Optional Dynatrace problem selector, for example `status("OPEN")` or `severityLevel("AVAILABILITY","ERROR")`.
+          See [Problem selector](https://docs.dynatrace.com/docs/dynatrace-api/environment-api/problems-v2/problems/get-problems-list) for syntax.
+        multi: false
+        required: false
+        show_user: true
+      - name: entity_selector
+        type: text
+        title: Entity Selector
+        description: Optional entity selector to scope problems to specific entities.
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded
+          - dynatrace-problems
+      - name: preserve_original_event
+        title: Preserve original event
+        description: Preserves a raw copy of the original event in the field `event.original`.
+        type: bool
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

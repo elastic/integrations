@@ -1,0 +1,106 @@
+title: Collect Dynatrace Managed Tenant Problems
+type: logs
+release: experimental
+streams:
+  - input: cel
+    title: Dynatrace Tenant Problems (per-environment)
+    description: |
+      Collect problems for every environment registered on a Dynatrace Managed cluster. The CEL program
+      lists tenants from `/api/cluster/v2/environments` and walks each tenant's
+      `/e/<environmentId>/api/v2/problems` endpoint with its own per-tenant cursor.
+    enabled: true
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: Interval at which to query Dynatrace. Go duration syntax (e.g. `5m`).
+        multi: false
+        required: true
+        show_user: true
+        default: 5m
+      - name: initial_interval
+        type: text
+        title: Initial lookback
+        description: |
+          Initial lookback per tenant on the first run. Dynatrace `from` syntax, for example `now-1d`.
+        multi: false
+        required: false
+        show_user: true
+        default: now-1d
+      - name: page_size
+        type: integer
+        title: Problems Page Size
+        description: Problems per page per tenant. Maximum is 500.
+        multi: false
+        required: false
+        show_user: true
+        default: 500
+      - name: env_page_size
+        type: integer
+        title: Environments Page Size
+        description: Environments listed per page when refreshing the tenant list. Maximum is 1000.
+        multi: false
+        required: false
+        show_user: false
+        default: 1000
+      - name: env_filter
+        type: text
+        title: Environments Filter
+        description: |
+          Optional environments filter, for example `state(ENABLED)`. Only environments matching the
+          filter are queried.
+        multi: false
+        required: false
+        show_user: true
+        default: state(ENABLED)
+      - name: max_tenants_per_cycle
+        type: integer
+        title: Max Tenants Per Cycle
+        description: |
+          Maximum number of tenants processed in a single interval. Remaining tenants are picked up
+          on the next interval. Set to `0` to disable the cap.
+        multi: false
+        required: false
+        show_user: true
+        default: 0
+      - name: max_executions
+        type: integer
+        title: Maximum Pages Per Interval
+        description: Maximum number of HTTP requests issued in a single interval (across tenants and pagination).
+        multi: false
+        required: false
+        show_user: false
+        default: 5000
+      - name: problem_selector
+        type: text
+        title: Problem Selector
+        description: |
+          Optional Dynatrace problem selector applied to every tenant query, for example `status("OPEN")`.
+        multi: false
+        required: false
+        show_user: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded
+          - dynatrace-tenant-problems
+      - name: preserve_original_event
+        title: Preserve original event
+        description: Preserves a raw copy of the original event in the field `event.original`.
+        type: bool
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

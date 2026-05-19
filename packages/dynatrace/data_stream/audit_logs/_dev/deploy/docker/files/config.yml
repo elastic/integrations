@@ -1,0 +1,18 @@
+# Mock for audit logs only: GET /api/v2/auditlogs → 2 AuditLogEntry rows → 2 events per collection.
+rules:
+  - path: /api/v2/auditlogs
+    methods: [GET]
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "auditLogs":[
+              {"logId":"sys-audit-1","eventType":"LOGIN","category":"WEB_UI","entityId":"203.0.113.1","environmentId":"saas-env","success":true,"timestamp":1576073415531,"user":"user1@example.com","userType":"USER_NAME","userOrigin":"webui"},
+              {"logId":"sys-audit-2","eventType":"UPDATE","category":"CONFIG","entityId":"cfg-1","environmentId":"saas-env","success":true,"timestamp":1576073416000,"user":"user2@example.com","userType":"USER_NAME","userOrigin":"api"}
+            ],
+            "nextPageKey":null,
+            "pageSize":1000,
+            "totalCount":2
+          }
+          `}}

@@ -1,0 +1,19 @@
+deployer: docker
+input: cel
+policy_template: dynatrace_saas
+service: dynatrace-mock
+wait_for_data_timeout: 30s
+vars:
+  url: http://{{Hostname}}:{{Port}}/
+  api_token: testtoken
+  ssl:
+    verification_mode: none
+  http_client_timeout: 60s
+  enable_request_tracer: false
+data_stream:
+  vars:
+    interval: 5s
+    preserve_original_event: false
+assert:
+  # Mock returns 1 payload per GET; no fingerprint → successive polls index additional docs (expect 2 @ 5s interval).
+  hit_count: 2

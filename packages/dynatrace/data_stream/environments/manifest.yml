@@ -1,0 +1,83 @@
+title: Collect Dynatrace Managed Environments
+type: logs
+release: experimental
+streams:
+  - input: cel
+    title: Dynatrace Managed Environments
+    description: Collect tenants registered on the Managed cluster from `/api/cluster/v2/environments`.
+    enabled: true
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: Interval at which to query the environments API. Go duration syntax (e.g. `15m`).
+        multi: false
+        required: true
+        show_user: true
+        default: 15m
+      - name: page_size
+        type: integer
+        title: Page Size
+        description: Number of environments per page. Maximum is 1000.
+        multi: false
+        required: false
+        show_user: true
+        default: 1000
+      - name: max_executions
+        type: integer
+        title: Maximum Pages Per Interval
+        description: Maximum number of pages collected within a single interval.
+        multi: false
+        required: false
+        show_user: false
+        default: 100
+      - name: filter
+        type: text
+        title: Filter
+        description: |
+          Optional filter, for example `state(ENABLED)` or `name(prod),trial(false)`.
+          See the [list managed environments](https://docs.dynatrace.com/managed/dynatrace-api/cluster-api/cluster-api-v2/environments/list-managed-environments) docs.
+        multi: false
+        required: false
+        show_user: true
+      - name: include_consumption_info
+        type: bool
+        title: Include consumption info
+        description: Include cached consumption (limits, usage) for each environment.
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: include_storage_info
+        type: bool
+        title: Include storage info
+        description: Include storage usage and limits for each environment.
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded
+          - dynatrace-environments
+      - name: preserve_original_event
+        title: Preserve original event
+        description: Preserves a raw copy of the original event in the field `event.original`.
+        type: bool
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

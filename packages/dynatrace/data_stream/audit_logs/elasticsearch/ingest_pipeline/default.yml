@@ -1,0 +1,121 @@
+---
+description: Pipeline for Dynatrace audit logs
+processors:
+  - set:
+      field: ecs.version
+      value: 8.11.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+  - date:
+      field: json.timestamp
+      formats:
+        - UNIX_MS
+      ignore_failure: true
+      if: ctx.json?.timestamp != null
+  - script:
+      lang: painless
+      tag: nest_audit_fields
+      source: |
+        if (ctx.json == null) { return; }
+        if (!(ctx.json instanceof Map)) { return; }
+        Map src = ctx.json;
+        ctx.dynatrace = ctx.dynatrace ?: [:];
+        Map audit = new HashMap();
+        audit.put('log_id', src.get('logId'));
+        audit.put('event_type', src.get('eventType'));
+        audit.put('category', src.get('category'));
+        audit.put('entity_id', src.get('entityId'));
+        audit.put('environment_id', src.get('environmentId'));
+        audit.put('success', src.get('success'));
+        audit.put('user_origin', src.get('userOrigin'));
+        audit.put('user_type', src.get('userType'));
+        audit.put('patch', src.get('patch'));
+        Map settings = new HashMap();
+        settings.put('schema_id', src.get('dt.settings.schema_id'));
+        settings.put('scope_id', src.get('dt.settings.scope_id'));
+        settings.put('scope_name', src.get('dt.settings.scope_name'));
+        settings.put('object_id', src.get('dt.settings.object_id'));
+        settings.put('object_summary', src.get('dt.settings.object_summary'));
+        settings.put('key', src.get('dt.settings.key'));
+        settings.entrySet().removeIf(e -> e.getValue() == null);
+        if (!settings.isEmpty()) { audit.put('settings', settings); }
+        audit.entrySet().removeIf(e -> e.getValue() == null);
+        ctx.dynatrace.audit_logs = audit;
+        def u = src.get('user');
+        if (u != null) {
+          ctx.user = ctx.user ?: [:];
+          ctx.user.name = u;
+          ctx.user.id = u;
+        }
+        def msg = src.get('message');
+        if (msg != null) { ctx.message = msg; }
+  - fingerprint:
+      fields:
+        - dynatrace.audit_logs.log_id
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.action
+      copy_from: dynatrace.audit_logs.event_type
+      ignore_empty_value: true
+  - append:
+      field: event.category
+      value: ['authentication']
+      allow_duplicates: false
+      if: ctx.dynatrace?.audit_logs?.event_type == 'LOGIN' || ctx.dynatrace?.audit_logs?.event_type == 'LOGOUT'
+  - append:
+      field: event.category
+      value: ['configuration']
+      allow_duplicates: false
+      if: ctx.dynatrace?.audit_logs?.category == 'CONFIG'
+  - append:
+      field: event.type
+      value: ['change']
+      allow_duplicates: false
+      if: ctx.dynatrace?.audit_logs?.event_type == 'UPDATE'
+  - append:
+      field: event.type
+      value: ['creation']
+      allow_duplicates: false
+      if: ctx.dynatrace?.audit_logs?.event_type == 'CREATE'
+  - append:
+      field: event.type
+      value: ['deletion']
+      allow_duplicates: false
+      if: ctx.dynatrace?.audit_logs?.event_type == 'DELETE'
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.dynatrace?.audit_logs?.success == true
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.dynatrace?.audit_logs?.success == false
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} failed: {{ _ingest.on_failure_message }}
+  - set:
+      field: event.kind
+      value: pipeline_error

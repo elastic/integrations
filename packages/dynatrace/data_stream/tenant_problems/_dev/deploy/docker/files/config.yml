@@ -1,0 +1,44 @@
+# Mock for per-tenant problems: environments list + one problem per tenant → 2 events per collection cycle.
+rules:
+  - path: /api/cluster/v2/environments
+    methods: [GET]
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "environments":[
+              {"id":"tenant-a","name":"Tenant A","state":"ENABLED","trial":false,"tags":[],"creationDate":"2021-02-09T11:03:17.732Z"},
+              {"id":"tenant-b","name":"Tenant B","state":"ENABLED","trial":false,"tags":["prod"],"creationDate":"2021-02-07T08:49:45.091Z"}
+            ],
+            "nextPageKey":null,
+            "pageSize":1000,
+            "totalCount":2
+          }
+          `}}
+  - path: /e/tenant-a/api/v2/problems
+    methods: [GET]
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "problems":[
+              {"problemId":"tenant-a-problem-1","displayId":"P-TA-1","title":"Tenant A CPU","impactLevel":"INFRASTRUCTURE","severityLevel":"ERROR","status":"OPEN","startTime":1712430000000,"endTime":-1}
+            ],
+            "nextPageKey":null
+          }
+          `}}
+  - path: /e/tenant-b/api/v2/problems
+    methods: [GET]
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "problems":[
+              {"problemId":"tenant-b-problem-1","displayId":"P-TB-1","title":"Tenant B latency","impactLevel":"SERVICE","severityLevel":"PERFORMANCE","status":"OPEN","startTime":1712430050000,"endTime":-1}
+            ],
+            "nextPageKey":null
+          }
+          `}}

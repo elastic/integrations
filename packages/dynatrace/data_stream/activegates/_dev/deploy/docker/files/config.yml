@@ -1,0 +1,18 @@
+# Mock for ActiveGates only: GET /api/cluster/v2/activeGates → 2 ActiveGate objects → 2 events per collection.
+rules:
+  - path: /api/cluster/v2/activeGates
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - Api-Token testtoken
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "activeGates":[
+              {"id":"0x1","hostname":"ag-1","networkAddresses":["10.0.0.1"],"loadBalancerAddresses":[],"osType":"LINUX","osArchitecture":"X86","osBitness":"64","autoUpdateStatus":"UP2DATE","offlineSince":null,"version":"1.247.0","type":"CLUSTER","mainEnvironment":null,"environments":[],"autoUpdateSettings":{"setting":"ENABLED","effectiveSetting":"ENABLED"},"networkZone":"z","group":"default","modules":[],"containerized":false,"connectedHosts":{"number":2},"activeGateTokens":[]},
+              {"id":"0x2","hostname":"ag-2","networkAddresses":["10.0.0.2"],"loadBalancerAddresses":[],"osType":"LINUX","osArchitecture":"X86","osBitness":"64","autoUpdateStatus":"OUTDATED","offlineSince":null,"version":"1.246.0","type":"ENVIRONMENT","mainEnvironment":null,"environments":["tenant-a"],"autoUpdateSettings":{"setting":"INHERITED","effectiveSetting":"DISABLED"},"networkZone":"z","group":"default","modules":[],"containerized":false,"connectedHosts":{"number":0},"activeGateTokens":[]}
+            ]
+          }
+          `}}

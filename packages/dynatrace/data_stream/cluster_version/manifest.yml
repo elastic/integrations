@@ -1,0 +1,42 @@
+title: Collect Dynatrace Cluster Version
+type: logs
+release: experimental
+streams:
+  - input: cel
+    title: Dynatrace Cluster Version
+    description: Periodic snapshot of the Dynatrace cluster version (`/api/v1/config/clusterversion`).
+    enabled: true
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: Interval at which to query the cluster version. Go duration syntax (e.g. `1h`).
+        multi: false
+        required: true
+        show_user: true
+        default: 1h
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded
+          - dynatrace-cluster-version
+      - name: preserve_original_event
+        title: Preserve original event
+        description: Preserves a raw copy of the original event in the field `event.original`.
+        type: bool
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

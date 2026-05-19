@@ -1,0 +1,23 @@
+# Mock for cluster license only: GET /api/cluster/v2/clusterLicense → 1 JSON body → 1 event per collection.
+rules:
+  - path: /api/cluster/v2/clusterLicense
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - Api-Token testtoken
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "accountName":"Acme",
+            "clusterId":"cluster-mock",
+            "contactEmailAddress":"ops@example.com",
+            "licenseName":"Enterprise",
+            "licenseStatus":"ACTIVE",
+            "licenseType":"classic",
+            "productVersion":"1.247.0",
+            "usageOfDduUnits":{"quota":100000,"remaining":75000,"remainingPercent":75,"usage":25000,"usagePercent":25,"usageStatus":"USING_QUOTA"},
+            "usageOfHostUnits":{"quota":100,"remaining":30,"remainingPercent":30,"usage":70,"usagePercent":70,"usageStatus":"USING_QUOTA"}
+          }
+          `}}
