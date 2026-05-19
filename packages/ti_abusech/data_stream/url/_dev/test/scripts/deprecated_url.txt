@@ -1,0 +1,74 @@
+# Test that configuring the deprecated full export URL (/downloads/json)
+# results in a configuration error event and no data collection.
+#
+# The CEL program detects the old URL before making any HTTP request and
+# emits a single error event with a message instructing the user to update
+# the URL setting.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the mock service. The CEL guard fires before any HTTP request,
+# but the agent needs a resolvable host in the URL for startup.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} abusech-mock
+
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Expect exactly 1 error event and no data.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# The error event should mention the deprecated endpoint.
+exec jq -r '[.hits.hits[]._source.error.message // empty] | flatten | .[]' got_docs.json
+stdout 'deprecated full export endpoint'
+
+# No URL data events should be present.
+exec jq '[.hits.hits[]._source | select(.abusech.url != null)] | length' got_docs.json
+stdout '^0$'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down abusech-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  auth_key: test_auth_key
+data_stream:
+  vars:
+    url: http://abusech-mock:8080/downloads/json
+    interval: 30s
+    preserve_original_event: true
+    enable_request_tracer: false
+-- abusech-mock/docker-compose.yml --
+version: '2.3'
+services:
+  abusech-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: abusech-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- abusech-mock/config.yml --
+rules:
+  - path: /downloads/json
+    methods: [GET]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {}
