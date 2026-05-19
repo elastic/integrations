@@ -791,7 +791,6 @@ is_pr_affected() {
         'CODE_OF_CONDUCT\.md'
         'CONTRIBUTING\.md'
         'README\.md'
-        '\.agents/skills/'
     )
     local non_package_regex
     non_package_regex="^($(IFS='|'; echo "${non_package_patterns[*]}"))"
