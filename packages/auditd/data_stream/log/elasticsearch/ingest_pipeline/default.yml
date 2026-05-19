@@ -64,43 +64,37 @@ processors:
         - '%{AUDIT_PREFIX}\s*$'
         - '%{AUDIT_TYPE} %{AUDIT_KEY_VALUES}'
   - kv:
-      if: ctx.auditd?.log?.record_type == null
+      if: ctx.auditd?.log?.kv != null
       field: auditd.log.kv
       field_split: '(?:\s+|\x1d)(?=[^\s\x1d]+=)'
       value_split: '(?<!\\)='
       target_field: auditd.log
   - kv:
-      if: ctx.auditd?.log?.record_type == null
       field: auditd.log.sub_kv
       field_split: '\s+(?=[^\s]+=)'
       value_split: '='
       target_field: auditd.log
       ignore_missing: true
   - kv:
-      if: ctx.auditd?.log?.record_type == null
       field: auditd.log.sub_kv_enriched
       field_split: '\s+(?=[^\s]+=)'
       value_split: '='
       target_field: auditd.log
       ignore_missing: true
   - date:
-      if: ctx.auditd?.log?.record_type == null
       field: auditd.log.epoch
       target_field: "@timestamp"
       formats:
         - UNIX
       ignore_failure: true
   - lowercase:
-      if: ctx.auditd?.log?.record_type == null
       field: auditd.log.original_field
       ignore_missing: true
   - rename:
-      if: ctx.auditd?.log?.record_type == null
       ignore_failure: true
       field: auditd.log.old-auid
       target_field: auditd.log.old_auid
   - rename:
-      if: ctx.auditd?.log?.record_type == null
       ignore_failure: true
       field: auditd.log.old-ses
       target_field: auditd.log.old_ses
