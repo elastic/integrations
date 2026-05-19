@@ -1,0 +1,73 @@
+- name: greenhouse.audit
+  type: group
+  description: >
+    Greenhouse audit log fields.
+  fields:
+    - name: request
+      type: group
+      description: >
+        Request information for the audit event.
+      fields:
+        - name: id
+          type: keyword
+          description: >
+            The ID of the request.
+        - name: type
+          type: keyword
+          description: >
+            The name of the action taken in Greenhouse Recruiting, or the request URL if from Harvest API.
+    - name: performer
+      type: group
+      description: >
+        Information about who performed the action.
+      fields:
+        - name: id
+          type: keyword
+          description: >
+            The Greenhouse Recruiting user ID of the person who performed the change or the API key if performed using Greenhouse API.
+        - name: type
+          type: keyword
+          description: >
+            The type of performer: user, api_key, or greenhouse_internal.
+        - name: meta
+          type: group
+          description: >
+            Metadata about the performer.
+          fields:
+            - name: name
+              type: keyword
+              description: >
+                The name of the performer.
+            - name: username
+              type: keyword
+              description: >
+                The email address of the performer or the API key type.
+            - name: api_key_type
+              type: keyword
+              description: >
+                The type of API key used when performer is an API key.
+        - name: ip_address
+          type: ip
+          description: >
+            The IP address of the person or integration that performed the change.
+    - name: event
+      type: group
+      description: >
+        Event details.
+      fields:
+        - name: type
+          type: keyword
+          description: >
+            The type of event: data_change_update, data_change_create, data_change_destroy, harvest_access, or action.
+        - name: target_id
+          type: keyword
+          description: >
+            The ID of the element that was edited or accessed.
+        - name: target_type
+          type: keyword
+          description: >
+            The resource name for data changes, Harvest access, or the event action type for other actions.
+        - name: meta
+          type: flattened
+          description: >
+            The before and after values from data change events, or other relevant data for the event.

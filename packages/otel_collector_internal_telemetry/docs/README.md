@@ -8,9 +8,11 @@ This package contains dashboards that visualize the internal metrics from OpenTe
 
 The OTel collector dashboards are compatible with the metrics defined [here in the OpenTelemetry collector documentation](https://opentelemetry.io/docs/collector/internal-telemetry/). The oldest tested version of the OpenTelemetry Collector in combination with this package is v1.44.0.
 
+Furthermore, the package also contains dashboards to visualize metrics from the `tailsamplingprocessor`. Those metrics are documented [here](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/tailsamplingprocessor/documentation.md).
+
 ### How it works
 
-The dashboards rely on field names defined in above documentation.
+The dashboards rely on field names defined in above documentations.
 
 ## What do I need to use this integration?
 
