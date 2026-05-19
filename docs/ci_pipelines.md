@@ -12,7 +12,7 @@ Currently, there are five different pipelines:
 
 ## Pull Requests and pushes to specific branches
 
-In every push to a Pull Request as well as commits to `main` or `backport-*` branches, this pipeline is triggered automatically: https://buildkite.com/elastic/integrations
+In every push to a Pull Request as well as commits to `main`, `backport-*`, or `feature/*` branches, this pipeline is triggered automatically: https://buildkite.com/elastic/integrations
 
 This pipeline is in charge of testing the packages with a local Elastic stack.
 
@@ -62,13 +62,13 @@ These environment variables can be defined in different locations:
 More details about this CI pipeline:
 
 - Builds running in a Pull Request are canceled if a new commit is pushed to the PR branch.
-- Builds running from `main` or `backport-*` branches are finished even if new commits are merged.
+- Builds running from `main`, `backport-*`, or `feature/*` branches are finished even if new commits are merged.
 - As part of the Pull Requests, there are some benchmark files created and this data is pushed to the PR as a comment.
 - This CI pipeline tries to test the minimum packages possible::
     - In the Pull Request context, it is checked the files modified/added/deleted in the given PR:
         - Those packages with changes (`packages/*`) will be added to the list of packages to be tested.
-        - If files outside `packages` folder are updated (e.g. `go.mod` , `.buildkite/*`), all packages are going to be tested. There are some exceptions to this, for instance the `.github/CODEOWNERS` file or `.docs/` folder ([files excluded](https://github.com/elastic/integrations/blob/376fc891a1e6c662b4ef1897b118044faf51e7bf/.buildkite/scripts/common.sh#L695)).
-    - In branches context (`main` or `backport-*`):
+        - If files outside `packages` folder are updated (for example `go.mod` , `.buildkite/*`), all packages are going to be tested. There are some exceptions to this, for instance the `.github/CODEOWNERS` file or `.docs/` folder ([files excluded](https://github.com/elastic/integrations/blob/376fc891a1e6c662b4ef1897b118044faf51e7bf/.buildkite/scripts/common.sh#L695)).
+    - In branches context (`main`, `backport-*`, or `feature/*`):
         - The latest Buildkite build that finished successfully in that branch is retrieved, and all the file changes in the working copy between the changeset of that build and the merged commit are obtained.
         - Given all those changes, the packages selected to be tested follow the same rules as in the PR.
 - Container logs, as they could contain sensitive information, are uploaded to a private Google Bucket.
@@ -225,3 +225,13 @@ from the UI: https://buildkite.com/elastic/integrations-backport/
 
 More information about this pipeline and how to create these hotfixes in:
 https://www.elastic.co/guide/en/integrations-developer/current/developer-workflow-support-old-package.html
+
+## Feature branches
+
+`feature/*` branches are long-lived branches used for developing larger features before merging into `main`. They follow the same CI process as Pull Requests, ensuring all checks pass before code is integrated.
+
+- Every push to a `feature/*` branch triggers the main CI pipeline (https://buildkite.com/elastic/integrations), running the same package tests as a regular Pull Request.
+- Pull Requests targeting a `feature/*` branch also trigger CI checks, so all changes must pass CI before being merged into the feature branch.
+- Intermediate builds are cancelled or skipped when new commits arrive, consistent with `backport-*` branches.
+- Changeset detection works the same as for `backport-*` branches: only packages modified since the last successful build are tested. On the first push to a new `feature/*` branch, no package tests are run if only CI infrastructure files changed.
+- Publishing is **not** triggered for `feature/*` branches. Packages are published only when PRs are merged into `main` or `backport-*` branches.
