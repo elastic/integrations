@@ -25,15 +25,17 @@ processors:
         to: event.original
     fail_on_error: true
     ignore_missing: false
+
 # The decode_cef processor treats '\=' as a CEF escape sequence inside
-# values, which causes parse failures for URLs containing literal '\='
-# (e.g. query parameters like '?gtm\=value'). Strip these before decoding.
+# values, and is implemented in decode_cef processor. There was a bugfix ( v1.6.1 of this package )
+# where user had `\\=` in values, which is not a valid CEF escape sequence.
+# This replace processor is a workaround to replace `\\=` with `\=` in the message field.
 - replace:
-    when.contains.message: '\='
+    when.contains.message: '\\='
     fields:
       - field: "message"
-        pattern: "\\\\="
-        replacement: "="
+        pattern: '\\\\='
+        replacement: '\='
     ignore_missing: false
     fail_on_error: true
 - decode_cef:
