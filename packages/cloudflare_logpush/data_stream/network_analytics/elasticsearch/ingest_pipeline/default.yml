@@ -242,11 +242,22 @@ processors:
       field: json.AttackCampaignID
       target_field: cloudflare_logpush.network_analytics.attack.campaign.id
       ignore_missing: true
+  - set:
+      tag: set_threat_group_id_from_attack_campaign_id
+      field: threat.group.id
+      copy_from: cloudflare_logpush.network_analytics.attack.campaign.id
+      ignore_empty_value: true
   - rename:
       tag: rename_json_AttackID_to_cloudflare_logpush_network_analytics_attack_id_3d175e85
       field: json.AttackID
       target_field: cloudflare_logpush.network_analytics.attack.id
       ignore_missing: true
+  - append:
+      tag: append_attack_id_into_threat_indicator_id
+      field: threat.indicator.id
+      value: '{{{cloudflare_logpush.network_analytics.attack.id}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.attack?.id != null
+      allow_duplicates: false
   - rename:
       tag: rename_json_AttackVector_to_cloudflare_logpush_network_analytics_attack_vector_ee323f41
       field: json.AttackVector
@@ -304,11 +315,21 @@ processors:
       field: json.DestinationASNName
       target_field: cloudflare_logpush.network_analytics.destination.as.number.name
       ignore_missing: true
+  - set:
+      tag: set_destination_as_organization_name_a02d781e
+      field: destination.as.organization.name
+      copy_from: cloudflare_logpush.network_analytics.destination.as.number.name
+      ignore_empty_value: true
   - rename:
       tag: rename_json_DestinationCountry_to_cloudflare_logpush_network_analytics_destination_country_41b25d39
       field: json.DestinationCountry
       target_field: cloudflare_logpush.network_analytics.destination.country
       ignore_missing: true
+  - set:
+      tag: set_destination_geo_country_iso_code_7ee5973d
+      field: destination.geo.country_iso_code
+      copy_from: cloudflare_logpush.network_analytics.destination.country
+      ignore_empty_value: true
   - rename:
       tag: rename_json_DestinationGeoHash_to_cloudflare_logpush_network_analytics_destination_geo_hash_3760770c
       field: json.DestinationGeoHash
@@ -797,6 +818,11 @@ processors:
       field: json.RuleName
       target_field: cloudflare_logpush.network_analytics.rule.name
       ignore_missing: true
+  - set:
+      tag: set_rule_name_8f8d6554
+      field: rule.name
+      copy_from: cloudflare_logpush.network_analytics.rule.name
+      ignore_empty_value: true
   - rename:
       tag: rename_json_RulesetID_to_cloudflare_logpush_network_analytics_rule_set_id_ce25cb79
       field: json.RulesetID
@@ -824,6 +850,11 @@ processors:
       field: json.SourceASNName
       target_field: cloudflare_logpush.network_analytics.source.as.number.name
       ignore_missing: true
+  - set:
+      tag: set_source_as_organization_name_b7e50526
+      field: source.as.organization.name
+      copy_from: cloudflare_logpush.network_analytics.source.as.number.name
+      ignore_empty_value: true
   - rename:
       tag: rename_json_SourceASNDescription_to_cloudflare_logpush_network_analytics_source_as_number_description_b4edf388
       field: json.SourceASNDescription
@@ -834,6 +865,11 @@ processors:
       field: json.SourceCountry
       target_field: cloudflare_logpush.network_analytics.source.country
       ignore_missing: true
+  - set:
+      tag: set_source_geo_country_iso_code_60c57ee7
+      field: source.geo.country_iso_code
+      copy_from: cloudflare_logpush.network_analytics.source.country
+      ignore_empty_value: true
   - rename:
       tag: rename_json_SourceGeoHash_to_cloudflare_logpush_network_analytics_source_geo_hash_1f37e21e
       field: json.SourceGeoHash
@@ -1215,6 +1251,13 @@ processors:
         - cloudflare_logpush.network_analytics.rule.id
         - cloudflare_logpush.network_analytics.dns.query.name
         - cloudflare_logpush.network_analytics.dns.query.type
+        - cloudflare_logpush.network_analytics.attack.id
+        - cloudflare_logpush.network_analytics.attack.campaign.id
+        - cloudflare_logpush.network_analytics.destination.as.number.name
+        - cloudflare_logpush.network_analytics.destination.country
+        - cloudflare_logpush.network_analytics.rule.name
+        - cloudflare_logpush.network_analytics.source.as.number.name
+        - cloudflare_logpush.network_analytics.source.country
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_missing: true
   - script:
