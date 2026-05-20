@@ -1,0 +1,132 @@
+title: OpenText Service Manager incidents
+type: logs
+streams:
+  - input: cel
+    title: Incident records
+    description: Incremental poll of the incidents REST collection with start/count pagination.
+    template_path: cel.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: Incidents REST URL
+        description: >-
+          Full URL to the incidents resource (for example https://sm.example.com/SM/9/rest/incidents). Use the same scheme, host, port, and REST base path your deployment exposes.
+        multi: false
+        required: true
+        show_user: true
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between polling attempts. Supported units are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 5m
+      - name: batch_size
+        type: integer
+        title: Page size (count)
+        description: >-
+          REST `count` parameter (minimum 1). Use bounded pages for large environments; combine with sort for stable paging per OpenText REST documentation.
+        default: 100
+        multi: false
+        required: true
+        show_user: true
+      - name: initial_interval
+        type: text
+        title: Initial lookback window
+        description: >-
+          On first collection when no cursor exists, restrict the native query to incidents whose cursor time field falls within this window ending at poll time. Example values 168h, 30d.
+        multi: false
+        required: true
+        show_user: true
+        default: 168h
+      - name: native_query
+        type: text
+        title: Native Service Manager query
+        description: >-
+          Boolean expression for the REST `query` parameter (URL-encoded by the agent). Defaults to incident category; narrow this in large environments.
+        multi: false
+        required: true
+        show_user: true
+        default: 'Category="incident"'
+      - name: sort
+        type: text
+        title: Sort order
+        description: >-
+          REST `sort` parameter. A stable sort (time then unique key) avoids gaps when combining incremental filters with pagination.
+        multi: false
+        required: true
+        show_user: false
+        default: 'last.update.time:ascending,number:ascending'
+      - name: cursor_time_field
+        type: text
+        title: Cursor time field (properties key)
+        description: >-
+          Field name inside each incident `properties` map used for incremental filtering and sorting. Must match your extaccess field naming (defaults follow Micro Focus REST examples).
+        multi: false
+        required: true
+        show_user: false
+        default: "last.update.time"
+      - name: cursor_tiebreaker_field
+        type: text
+        title: Cursor tie-breaker field (properties key)
+        description: Field compared when multiple incidents share the same cursor time (typically the incident number).
+        multi: false
+        required: true
+        show_user: false
+        default: "number"
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: >-
+          Duration before the HTTP client times out. Use at least the expected latency for large `count` values.
+        multi: false
+        required: true
+        show_user: false
+        default: 120s
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - opentext_service_manager-incident
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event in `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        type: bool
+        title: Preserve duplicate custom fields
+        multi: false
+        required: false
+        show_user: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors run in the agent before ingest. See Elastic Agent [processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html).
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Logs HTTP requests and responses locally for debugging only.
+
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false
