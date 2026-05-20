@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Runs unit tests for scripts in dev/scripts/.
+# TODO: migrate to the bats framework (https://github.com/bats-core/bats-core)
+#       for better test isolation, TAP output, and native setup/teardown support.
 set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
