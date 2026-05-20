@@ -185,14 +185,6 @@ processors:
       copy_from: cloudflare_logpush.gateway_dns.answers
       ignore_empty_value: true
   - rename:
-      field: json.ResolvedIPs
-      target_field: cloudflare_logpush.gateway_dns.resolved_ip
-      ignore_missing: true
-  - set:
-      field: dns.resolved_ip
-      copy_from: cloudflare_logpush.gateway_dns.resolved_ip
-      ignore_empty_value: true
-  - rename:
       field: json.SrcIP
       target_field: cloudflare_logpush.gateway_dns.source.ip
       ignore_missing: true
@@ -272,9 +264,10 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - rename:
+  - convert:
       field: json.CNAMECategoryIDs
       target_field: cloudflare_logpush.gateway_dns.cname_category.ids
+      type: string
       ignore_missing: true
   - rename:
       field: json.CNAMECategoryNames
@@ -321,13 +314,15 @@ processors:
       field: json.DoTSubdomain
       target_field: cloudflare_logpush.gateway_dns.dot_subdomain
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.EDEErrors
       target_field: cloudflare_logpush.gateway_dns.extended_dns_error_codes
+      type: string
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.InitialCategoryIDs
       target_field: cloudflare_logpush.gateway_dns.initial_category.ids
+      type: string
       ignore_missing: true
   - rename:
       field: json.InitialCategoryNames
@@ -358,9 +353,10 @@ processors:
       field: json.MatchedCategoryNames
       target_field: cloudflare_logpush.gateway_dns.matched.category.names
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.MatchedIndicatorFeedIDs
       target_field: cloudflare_logpush.gateway_dns.matched.indicator_feed.ids
+      type: string
       ignore_missing: true
   - rename:
       field: json.MatchedIndicatorFeedNames
@@ -416,9 +412,10 @@ processors:
       field: json.QueryType
       target_field: cloudflare_logpush.gateway_dns.question.type_id
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.ResolvedIPCategoryIDs
       target_field: cloudflare_logpush.gateway_dns.resolved_ip_details.category.ids
+      type: string
       ignore_missing: true
   - rename:
       field: json.ResolvedIPCategoryNames
@@ -441,6 +438,10 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: dns.resolved_ip
+      copy_from: cloudflare_logpush.gateway_dns.resolved_ip_details.ips
+      ignore_empty_value: true
   - rename:
       field: json.ResolverPolicyID
       target_field: cloudflare_logpush.gateway_dns.resolver.policy.ids
@@ -504,6 +505,14 @@ processors:
       value: '{{{user.email}}}'
       if: ctx.user?.email != null
       allow_duplicates: false
+  - foreach:
+      field: cloudflare_logpush.gateway_dns.resolved_ip_details.ips
+      if: ctx.cloudflare_logpush?.gateway_dns?.resolved_ip_details?.ips instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
 # Clean resulting event
   - remove:
       tag: remove_json_conf
@@ -523,7 +532,7 @@ processors:
         - cloudflare_logpush.gateway_dns.question.type
         - cloudflare_logpush.gateway_dns.response_code
         - cloudflare_logpush.gateway_dns.answers
-        - cloudflare_logpush.gateway_dns.resolved_ip
+        - cloudflare_logpush.gateway_dns.resolved_ip_details.ips
         - cloudflare_logpush.gateway_dns.source.ip
         - cloudflare_logpush.gateway_dns.source.port
         - cloudflare_logpush.gateway_dns.timezone
