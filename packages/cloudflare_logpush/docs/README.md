@@ -1127,9 +1127,9 @@ An example event for `dns_firewall` looks as following:
 {
     "@timestamp": "2023-09-19T12:30:00.000Z",
     "agent": {
-        "ephemeral_id": "36cb9665-94d7-4218-a407-83637a0e6039",
-        "id": "a1640693-1117-4f63-bfdc-26ed636bc594",
-        "name": "elastic-agent-45160",
+        "ephemeral_id": "99f7534b-1905-46ec-bfd1-3a967fb96e64",
+        "id": "d1ca2bb9-37a5-4d66-8ab6-310d2ca786ba",
+        "name": "elastic-agent-39094",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -1169,20 +1169,20 @@ An example event for `dns_firewall` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.dns_firewall",
-        "namespace": "79104",
+        "namespace": "21534",
         "type": "logs"
     },
     "dns": {
         "question": {
             "name": "example.com"
         },
-        "response_code": "0"
+        "response_code": "NoError"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a1640693-1117-4f63-bfdc-26ed636bc594",
+        "id": "d1ca2bb9-37a5-4d66-8ab6-310d2ca786ba",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -1192,7 +1192,7 @@ An example event for `dns_firewall` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.dns_firewall",
-        "ingested": "2026-04-29T10:42:35Z",
+        "ingested": "2026-05-20T04:09:51Z",
         "kind": "event",
         "original": "{\"ClientResponseCode\":0,\"ClusterID\":\"CLUSTER-001\",\"ColoCode\":\"SFO\",\"EDNSSubnet\":\"67.43.156.0\",\"EDNSSubnetLength\":24,\"QueryDO\":true,\"QueryName\":\"example.com\",\"QueryRD\":true,\"QuerySize\":60,\"QueryTCP\":false,\"QueryType\":1,\"ResponseCached\":true,\"ResponseCachedStale\":false,\"SourceIP\":\"67.43.156.2\",\"Timestamp\":\"2023-09-19T12:30:00Z\",\"UpstreamIP\":\"81.2.69.144\",\"UpstreamResponseCode\":0,\"UpstreamResponseTimeMs\":30}",
         "type": [

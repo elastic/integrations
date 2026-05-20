@@ -8,6 +8,7 @@
           - Fix `gateway_dns` resolved IP modeling by replacing the flat `cloudflare_logpush.gateway_dns.resolved_ip` field with the nested `cloudflare_logpush.gateway_dns.resolved_ip_details.ips`, so per-IP category metadata can be captured alongside the IP values.
           - Fix `dlp_forensic_copies` `preserve_duplicate_custom_fields` toggle so that the correct custom fields (`triggered_rule_id`, `datetime`) — which have ECS counterparts — are removed when the toggle is OFF. Previously the remove processor referenced fields the pipeline never produced, so the toggle had no effect for these fields.
           - Fix integer-to-keyword type casting for `*IDs` fields in `gateway_dns`, `gateway_http`, and `gateway_network` by replacing `rename` processors with `convert` processors of `type: string`, so values are consistently stored as strings.
+          - Fix `dns.response_code` to correctly populate IANA keyword values instead of numeric representations.
       type: bugfix
       link: https://github.com/elastic/integrations/pull/18852
     - description: |
@@ -17,6 +18,7 @@
           - The `cloudflare_logpush.gateway_dns.resolved_ip` field is removed; resolved IPs now live under `cloudflare_logpush.gateway_dns.resolved_ip_details.ips`. Saved searches, dashboards, queries, and detection rules referencing the old field must be updated.
           - In the `dlp_forensic_copies` data stream, when `preserve_duplicate_custom_fields` is OFF (the default), `cloudflare_logpush.dlp_forensic_copies.triggered_rule_id` and `cloudflare_logpush.dlp_forensic_copies.datetime` are no longer present in documents. Users that depend on these custom fields must turn `preserve_duplicate_custom_fields` ON, or migrate to the corresponding ECS fields.
           - The `*IDs` fields in `gateway_dns`, `gateway_http`, and `gateway_network` are now indexed as strings rather than the raw JSON integers Cloudflare emits. Queries, dashboards, and detection rules comparing these fields against numeric values must be updated to use string values.
+          - `dns.response_code` now contains IANA keyword values instead of numeric representations. Queries, dashboards, and detection rules referencing this field must be updated to use the new keyword values.
       type: breaking-change
       link: https://github.com/elastic/integrations/pull/18852
 - version: "1.44.1"
