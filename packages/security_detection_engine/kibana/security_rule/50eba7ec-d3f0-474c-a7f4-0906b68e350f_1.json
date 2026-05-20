@@ -1,0 +1,133 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects suspicious sequences where a non-root user launches a high-risk parent process (interpreter, shell one-liner, or execution from user-writable paths) and then quickly executes a common privilege elevation helper (su, sudo, pkexec, passwd, chsh, newgrp) that gains an effective UID of 0 while the real UID remains non-root. This can indicate misuse of SUID/SGID helpers, polkit/sudo abuse, or interactive privilege escalation attempts captured via Auditd Manager telemetry.",
+        "false_positives": [
+            "Some break-glass workflows or automation may legitimately invoke sudo/su from scripts under user home directories. Validate the initiating user, parent context, and change approvals; tune by known admin tooling paths or accounts."
+        ],
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "logs-auditd_manager.auditd-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious SUID Binary Execution (Auditd Sequence)",
+        "note": "## Triage and analysis\n\n### Investigating Suspicious SUID Binary Execution (Auditd Sequence)\n\nConfirm whether the non-root real user should be invoking su, sudo, pkexec, or account utilities as root. Review the\nparent process chain and whether the parent executable location or shell invocation suggests a one-liner or staging\nfrom user-writable paths.\n\n### Possible investigation steps\n\n- Review process details for script paths, temp directory execution, or suspicious interpreters.\n- Check sudoers / polkit policy changes and recent authentication events for the user.\n- Pivot for follow-on persistence (cron, systemd units) or credential access from the same session.\n\n### Response and remediation\n\n- If unauthorized, contain the session, revoke elevated access, and review sudoers and polkit configuration for tampering.\n",
+        "query": "sequence by host.id with maxspan=30s\n  [process where host.os.type == \"linux\" and event.type == \"start\" and\n   event.action == \"executed\" and\n   user.id != \"0\" and user.effective.id != \"0\" and\n   (\n     process.name like (\"python*\", \"perl*\", \"ruby*\", \"php*\", \"lua*\", \".*\") or\n     process.name in (\"node\", \"bun\", \"java\") or\n     process.executable like (\"/tmp/*\", \"/var/tmp/*\", \"/dev/shm/*\", \"/run/user/*\", \"/var/run/user/*\", \"/home/*/*\") or\n     (\n       process.name in (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\", \"mksh\") and\n       process.args in (\"-c\", \"--command\", \"-ic\", \"-ci\", \"-cl\", \"-lc\")\n     )\n   )\n  ] by process.pid\n\n  [process where host.os.type == \"linux\" and event.type == \"start\" and\n   event.action == \"executed\" and\n   user.effective.id == \"0\" and user.id != \"0\" and\n   (\n     (process.name in (\"sudo\", \"pkexec\") and\n      not process.args like \"-*\" and\n      not process.args : (\"/usr/*\", \"/bin/*\", \"/sbin/*\", \"/opt/*\")) or\n     (process.name == \"su\" and\n      not process.args in (\"--command\", \"-c\", \"--shell\", \"-s\")) or\n     (process.name in (\"passwd\", \"chsh\", \"newgrp\") and\n      not process.args in (\"--shell\", \"-s\", \"--help\"))\n   )\n  ] by process.parent.pid\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1548/",
+            "https://docs.elastic.co/integrations/auditd_manager"
+        ],
+        "related_integrations": [
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.pid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.pid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "user.effective.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "50eba7ec-d3f0-474c-a7f4-0906b68e350f",
+        "severity": "medium",
+        "tags": [
+            "Data Source: Auditd Manager",
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/",
+                        "subtechnique": [
+                            {
+                                "id": "T1548.001",
+                                "name": "Setuid and Setgid",
+                                "reference": "https://attack.mitre.org/techniques/T1548/001/"
+                            },
+                            {
+                                "id": "T1548.003",
+                                "name": "Sudo and Sudo Caching",
+                                "reference": "https://attack.mitre.org/techniques/T1548/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "50eba7ec-d3f0-474c-a7f4-0906b68e350f_1",
+    "type": "security-rule"
+}

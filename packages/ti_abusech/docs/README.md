@@ -21,7 +21,7 @@ This integration collects threat intelligence indicators into the following data
 - `malwarebazaar`: Collects malware payloads from MalwareBazaar via [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
 - `sslblacklist`: Collects SSL certificate based threat indicators blacklisted on SSLBL via [SSLBL API endpoint](https://sslbl.abuse.ch/blacklist/sslblacklist.csv).
 - `threatfox`: Collects threat indicators from ThreatFox via [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
-- `url`: Collects malware URL based threat indicators from URLhaus via [URLhaus API](https://urlhaus.abuse.ch/api/#csv).
+- `url`: Collects recently added malware URL based threat indicators from URLhaus via [URLhaus API](https://urlhaus-api.abuse.ch/#urls-recent). The API returns at most 1000 entries from the last 3 days. The **Interval** setting must be short enough to avoid exceeding the 1000-entry limit between polls; otherwise the oldest URLs added in that window will be lost.
 
 ### Supported use cases
 
@@ -94,6 +94,14 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Troubleshooting
 
+- **Upgrading to v4.0.0**: Version 4.0.0 switches the URL data stream from the full export ZIP endpoint (`/downloads/json`) to the incremental JSON API (`/v1/urls/recent/`). When upgrading from a previous version, the URL setting in your integration policy retains the old value and must be updated manually:
+    1. In Kibana, navigate to **Fleet** > **Agent policies**.
+    2. Select the policy containing the abuse.ch integration.
+    3. Edit the abuse.ch integration.
+    4. Under the **Malware URLs** data stream, change the **URL** setting from `https://urlhaus.abuse.ch/downloads/json` to `https://urlhaus-api.abuse.ch/v1/urls/recent/`.
+    5. Select **Save integration**.
+
+    If the URL is not updated, the integration will log an error: `the URL is set to the deprecated full export endpoint (/downloads/json) which is no longer supported`. Additionally, the `labels.interval` field has been removed from URL data stream documents. If you have saved queries, detection rules, or dashboards that reference this field, remove those references. A new **IOC Expiration Duration** setting (default `90d`) now controls how long indicators remain active. Review this value and adjust it to match your organization's retention requirements.
 - When creating the **Auth Key** inside the [abuse.ch authentication](https://auth.abuse.ch/) portal, make sure you connect at least one additional authentication provider to ensure seemless access to the abuse.ch platform.
 - Check for captured ingestion errors inside Kibana. Ingestion errors, including API errors, are captured into `error.message` field.
     1. Navigate to **Analytics** > **Discover**.
@@ -314,6 +322,7 @@ For more information on architectures that can be used for scaling this integrat
 | abusech.url.blacklists.surbl | If the indicator is listed on the surbl blacklist. | keyword |
 | abusech.url.deleted_at | The timestamp when the indicator is (will be) deleted. | date |
 | abusech.url.id | The ID of the indicator. | keyword |
+| abusech.url.ioc_expiration_duration | The configured expiration duration. | keyword |
 | abusech.url.larted | Indicates whether the malware URL has been reported to the hosting provider (true or false). | boolean |
 | abusech.url.last_online | Last timestamp when the URL has been serving malware. | date |
 | abusech.url.reporter | The Twitter handle of the reporter that has reported this malware URL (or anonymous). | keyword |
@@ -331,7 +340,6 @@ For more information on architectures that can be used for scaling this integrat
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| labels.interval | User-configured value for `Interval` setting. This is used in calculation of indicator expiration time. | keyword |
 | labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
@@ -773,34 +781,40 @@ An example event for `url` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-07-16T06:32:41.644Z",
+    "@timestamp": "2026-05-11T18:17:40.972Z",
     "abusech": {
         "url": {
-            "deleted_at": "2025-07-16T07:31:14.625Z",
-            "id": "2786904",
+            "blacklists": {
+                "spamhaus_dbl": "not listed",
+                "surbl": "not listed"
+            },
+            "deleted_at": "2022-01-03T13:57:05.000Z",
+            "id": "1656008",
+            "ioc_expiration_duration": "90d",
+            "larted": true,
             "threat": "malware_download",
             "url_status": "online"
         }
     },
     "agent": {
-        "ephemeral_id": "8039c627-ea96-4027-8751-2ff7db77251b",
-        "id": "9106f11b-d54d-46d0-8ace-39e4fff1157b",
-        "name": "elastic-agent-41888",
+        "ephemeral_id": "fbc79c61-889e-4edd-b733-17bc0b3df43d",
+        "id": "dbaec5f5-5537-414c-9177-835ebc75386b",
+        "name": "elastic-agent-77348",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "9.3.1"
     },
     "data_stream": {
         "dataset": "ti_abusech.url",
-        "namespace": "49664",
+        "namespace": "12831",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9106f11b-d54d-46d0-8ace-39e4fff1157b",
-        "snapshot": true,
-        "version": "8.18.0"
+        "id": "dbaec5f5-5537-414c-9177-835ebc75386b",
+        "snapshot": false,
+        "version": "9.3.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -808,9 +822,10 @@ An example event for `url` looks as following:
             "threat"
         ],
         "dataset": "ti_abusech.url",
-        "ingested": "2025-07-16T06:32:44Z",
+        "ingested": "2026-05-11T18:17:43Z",
         "kind": "enrichment",
-        "original": "{\"dateadded\":\"2024-03-19 11:34:09 UTC\",\"id\":\"2786904\",\"last_online\":\"2024-03-19 11:34:09 UTC\",\"reporter\":\"lrz_urlhaus\",\"tags\":[\"elf\",\"Mozi\"],\"threat\":\"malware_download\",\"url\":\"http://115.55.244.160:41619/Mozi.m\",\"url_status\":\"online\",\"urlhaus_link\":\"https://urlhaus.abuse.ch/url/2786904/\"}",
+        "module": "ti_abusech",
+        "original": "{\"blacklists\":{\"spamhaus_dbl\":\"not listed\",\"surbl\":\"not listed\"},\"date_added\":\"2021-10-05 13:57:05 UTC\",\"host\":\"81.2.69.142\",\"id\":\"1656008\",\"larted\":\"true\",\"reporter\":\"tammeto\",\"tags\":null,\"threat\":\"malware_download\",\"url\":\"http://81.2.69.142:55871/mozi.m\",\"url_status\":\"online\",\"urlhaus_reference\":\"https://urlhaus.abuse.ch/url/1656008/\"}",
         "type": [
             "indicator"
         ]
@@ -819,30 +834,32 @@ An example event for `url` looks as following:
         "type": "cel"
     },
     "labels": {
-        "interval": "1h"
+        "is_ioc_transform_source": "true"
     },
     "tags": [
         "preserve_original_event",
         "forwarded",
-        "abusech-url",
-        "elf",
-        "Mozi"
+        "abusech-url"
     ],
     "threat": {
+        "feed": {
+            "dashboard_id": "ti_abusech-c0d8d1f0-3b20-11ec-ae50-2fdf1e96c6a6",
+            "name": "AbuseCH URL"
+        },
         "indicator": {
-            "first_seen": "2024-03-19T11:34:09.000Z",
-            "last_seen": "2024-03-19T11:34:09.000Z",
-            "name": "http://115.55.244.160:41619/Mozi.m",
-            "provider": "lrz_urlhaus",
-            "reference": "https://urlhaus.abuse.ch/url/2786904/",
+            "first_seen": "2021-10-05T13:57:05.000Z",
+            "ip": "81.2.69.142",
+            "name": "http://81.2.69.142:55871/mozi.m",
+            "provider": "tammeto",
+            "reference": "https://urlhaus.abuse.ch/url/1656008/",
             "type": "url",
             "url": {
-                "domain": "115.55.244.160",
+                "domain": "81.2.69.142",
                 "extension": "m",
-                "full": "http://115.55.244.160:41619/Mozi.m",
-                "original": "http://115.55.244.160:41619/Mozi.m",
-                "path": "/Mozi.m",
-                "port": 41619,
+                "full": "http://81.2.69.142:55871/mozi.m",
+                "original": "http://81.2.69.142:55871/mozi.m",
+                "path": "/mozi.m",
+                "port": 55871,
                 "scheme": "http"
             }
         }
@@ -865,11 +882,11 @@ This integration datasets use the following APIs:
 - `malwarebazaar`: [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
 - `sslblacklist`: [SSLBL API](https://sslbl.abuse.ch/blacklist/sslblacklist.csv).
 - `threatfox`: [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
-- `url`: [URLhaus API](https://urlhaus.abuse.ch/api/#csv).
+- `url`: [URLhaus API](https://urlhaus-api.abuse.ch/#urls-recent).
 
 ### Expiration of Indicators of Compromise (IOCs)
 
-All abuse.ch datasets now support indicator expiration. For the `URL` dataset, a full list of active threat indicators are ingested at every interval. For other datasets, namely `Malware`, `MalwareBazaar`, and `ThreatFox`, the threat indicators are expired after the duration `IOC Expiration Duration` is configured in the integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to make sure only active threat indicators are available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired threat indicators. The indicator match rules and dashboards are updated to list only active threat indicators.
+All abuse.ch datasets now support indicator expiration. The `URL`, `Malware`, `MalwareBazaar`, and `ThreatFox` datasets expire threat indicators after the duration configured in the `IOC Expiration Duration` setting (default `90d`). An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to make sure only active threat indicators are available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired threat indicators. The indicator match rules and dashboards are updated to list only active threat indicators.
 Destinations indices are aliased to `logs-ti_abusech_latest.<data_stream_name>`.
 
 | Source Data stream                  | Destination Index Pattern                        | Destination Alias                       |

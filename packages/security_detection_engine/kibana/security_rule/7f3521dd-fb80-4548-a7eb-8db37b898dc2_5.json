@@ -1,0 +1,138 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a process started by Notepad after opening a Markdown file. This may indicate successful exploitation of a Notepad markdown parsing vulnerability (CVE-2026-20841) that can lead to arbitrary code execution.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.command_line",
+                "process.hash.sha256",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "process.code_signature.status",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.parent.args",
+                "process.working_directory"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Notepad Markdown RCE Exploitation",
+        "note": "## Triage and analysis\n\n### Investigating Potential Notepad Markdown RCE Exploitation\n\n#### Possible investigation steps\n\n- What exact Notepad-to-child path did the alert preserve?\n  - Why: CVE-2026-20841 abuse centers on Markdown link handling that invokes unsafe protocol handlers, so the launched child and target are decisive.\n  - Focus: `process.parent.executable`, `process.parent.command_line`, `process.parent.args`, child `process.executable`, and child `process.command_line`.\n  - Implication: escalate when Notepad opened Markdown and launched a shell, script host, downloader, browser, archive handler, installer, or custom protocol handler with a URL, UNC path, file URI, app installer URI, or staged payload; lower suspicion only when child and target match a confirmed validation workflow.\n\n- What does child binary identity add to command intent?\n  - Focus: child `process.executable`, `process.hash.sha256`, `process.code_signature.subject_name`, `process.code_signature.trusted`, and `process.pe.original_file_name`.\n  - Implication: escalate when the child is unsigned, user-writable, signer/name-mismatched, or unusual for Markdown link handling; reduce suspicion only when signer, path, hash history, and command target all fit the same confirmed validation workflow.\n\n- Does parent launch context point to lure delivery or controlled use?\n  - Focus: Markdown path from `process.parent.args`, `process.parent.command_line`, `user.id`, `host.id`, and `host.name`.\n  - Implication: escalate when the path is in downloads, mail or chat caches, temp, removable media, network shares, or lure-like filenames; lower suspicion only when source path and child target match a confirmed validation case for the same user or host.\n\n- Did the child start more exploit-chain processes?\n  - Focus: process events on `host.id` where `process.parent.entity_id` links to `process.entity_id`, recording descendant `process.executable` and `process.command_line`. !{investigate{\"description\":\"\",\"label\":\"Child process events for the Notepad-spawned child\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: prefer entity ID-linked descendants; treat PID-only matches as candidates tightly anchored to `@timestamp`. Inspect `process.Ext.ancestry` only when direct lineage is incomplete.\n  - Implication: escalate for descendant shells, script interpreters, LOLBins, installers, payload runners, or browser-to-download chains; no descendants limits process scope but does not clear the Notepad launch.\n\n- Did the child stage artifacts for later execution?\n  - Focus: if file telemetry exists, review process-scoped `file.path`, `file.Ext.original.path`, and later `process.executable` reuse of a written path. !{investigate{\"description\":\"\",\"label\":\"File events for the same child process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: recover with `host.id` + `process.entity_id`; if unavailable, use `host.id` + `process.pid` + a tight alert window. Missing file telemetry is unresolved, not benign.\n  - Implication: escalate when the child writes executables, scripts, shortcuts, archives, or renamed payloads to user-writable paths, or a written artifact later runs; clean available file telemetry means staging is not corroborated, not that the alert is benign.\n\n- Did the child contact payload-delivery destinations?\n  - Focus: if DNS or connection telemetry exists, review `dns.question.name`, `destination.ip`, and `destination.port`. !{investigate{\"description\":\"\",\"label\":\"Network events for the same child process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: recover with `host.id` + `process.entity_id`; if unavailable, use `host.id` + `process.pid` + a tight alert window. Missing DNS or connection telemetry is unresolved, not benign.\n  - Implication: escalate when the child resolves or connects to rare, external, newly introduced, or delivery-oriented destinations outside its role; clean available network telemetry removes one corroborator but cannot override suspicious alert-local execution.\n\n- If local evidence is suspicious or unresolved, does the pattern change scope?\n  - Focus: related alerts for the same `user.id` over 48 hours, comparing child `process.executable`, child `process.command_line`, and source-path patterns from `process.parent.args` when present. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: if the user view is empty or ambiguous, compare related alerts for the same `host.id` over 48 hours before broadening. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden when related alerts show the same Notepad-child pattern, source-path family, or delivery indicator across unrelated users or hosts; use recurrence for scope only, not benign closure.\n\n- Escalate when child intent, descendant lineage, artifact staging, or destinations point to payload delivery, even if one conditional telemetry family is absent; close only when source path, child identity, command target, and `user.id`/`host.id` context prove one benign workflow; preserve evidence and escalate when telemetry is missing or contradictory.\n\n### False positive analysis\n\n- Authorized CVE validation, QA, or security lab activity can trigger this rule when controlled Markdown samples intentionally launch a stable helper. Confirm `process.parent.args`, child `process.executable`, child hash or signer, child `process.command_line`, and `user.id`/`host.id` cohort all match the same validation workflow; prior alerts support stability only after those anchors align.\n- Before creating an exception, validate stability for the same child identity, child command-target pattern, Markdown path family from `process.parent.args`, and `user.id` or `host.id` scope. Avoid exceptions on `process.parent.name`, `process.name`, or Notepad alone.\n\n### Response and remediation\n\n- If confirmed benign:\n  - Reverse temporary containment and record the Markdown path, child process identity, command target, and cohort evidence that confirmed the benign workflow. Build an exception only for the same stable `user.id` or `host.id` scope and child identity.\n- If suspicious but unconfirmed:\n  - Preserve the triggering Markdown file, parent `process.parent.command_line`, child `process.entity_id`, child `process.command_line`, descendant process identifiers, written artifact paths, and DNS or IP indicators before cleanup.\n  - Apply reversible containment tied to observed indicators, such as temporary restriction of the observed destination or heightened monitoring on the affected `host.id` and `user.id`.\n  - Escalate to host isolation if the child continues spawning payloads, downloading content, or contacting suspicious destinations after preservation.\n- If confirmed malicious:\n  - Isolate the host first, then stop the malicious child and descendant `process.entity_id` values after recording `process.entity_id`, `process.command_line`, the Markdown path from `process.parent.args`, and related artifact or destination indicators. If direct response is unavailable, hand off the preserved evidence set to the containment team.\n  - Block confirmed malicious domains, IPs, URLs, hashes, and child process paths identified during the investigation.\n  - Eradicate only the dropped files, startup artifacts, scheduled tasks, registry changes, and payload runners tied to the exploit chain, then quarantine the triggering Markdown file and remediate its delivery path.\n- Post-incident hardening:\n  - Update the Windows Notepad App to a version that remediates CVE-2026-20841, and restrict unsafe protocol-handler launch exposure for Markdown viewers where enterprise controls support it.\n  - Preserve or expand file and network telemetry if missing visibility prevented confirmation of Markdown source, payload staging, or destination activity.\n  - Record the Markdown delivery path, child-process pattern, and adjacent protocol-handler or payload variants in the case notes.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.parent.name : \"notepad.exe\" and process.parent.args : \"*.md\" and\n  not process.executable : \"C:\\\\Program Files\\\\WindowsApps\\\\Microsoft.WindowsNotepad_*\\\\Notepad\\\\Notepad.exe\"\n",
+        "references": [
+            "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-20841"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "7f3521dd-fb80-4548-a7eb-8db37b898dc2",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1203",
+                        "name": "Exploitation for Client Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1203/"
+                    },
+                    {
+                        "id": "T1204",
+                        "name": "User Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1204/",
+                        "subtechnique": [
+                            {
+                                "id": "T1204.002",
+                                "name": "Malicious File",
+                                "reference": "https://attack.mitre.org/techniques/T1204/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 5
+    },
+    "id": "7f3521dd-fb80-4548-a7eb-8db37b898dc2_5",
+    "type": "security-rule"
+}
