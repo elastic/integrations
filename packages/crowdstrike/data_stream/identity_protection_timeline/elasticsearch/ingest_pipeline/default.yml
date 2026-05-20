@@ -222,28 +222,46 @@ processors:
       field: user.name
       copy_from: crowdstrike.idp.timeline.user_entity.primary_display_name
       ignore_empty_value: true
-  - set:
-      tag: set_user_name_f33b0386
-      field: user.name
-      copy_from: crowdstrike.idp.timeline.entity.primary_display_name
-      ignore_empty_value: true
-      if: ctx.user?.name == null
-  - split:
-      field: crowdstrike.idp.timeline.entity.secondary_display_name
-      target_field: _temp.user_parts
-      separator: '\\'
-      tag: split_entity_secondary_display_name
-      if: ctx.crowdstrike?.idp?.timeline?.entity?.secondary_display_name != null
+  - script:
+      lang: painless
+      tag: map_entity_identity_fields_by_type
+      description: >-
+        Map entity fields to ECS based on entity.type. USER entities populate user.*;
+        ENDPOINT entities populate host.*.
+      if: ctx.crowdstrike?.idp?.timeline?.entity != null
+      source: |
+        def entity = ctx.crowdstrike.idp.timeline.entity;
+        def entityType = entity.type;
+        def secondary = entity.secondary_display_name;
+        if (secondary != null && secondary instanceof String && secondary != '') {
+          int slash = secondary.indexOf('\\');
+          if (slash >= 0) {
+            def domain = secondary.substring(0, slash);
+            if (domain != null && domain != '' && entityType == 'USER') {
+              ctx.user = ctx.user ?: [:];
+              ctx.user.domain = domain;
+            }
+          } else if (entityType == 'ENDPOINT') {
+            ctx.host = ctx.host ?: [:];
+            ctx.host.hostname = secondary;
+          }
+        }
+        if (entityType == 'ENDPOINT') {
+          if (entity.primary_display_name != null) {
+            ctx.host = ctx.host ?: [:];
+            ctx.host.name = entity.primary_display_name;
+          }
+        } else if (entityType == 'USER') {
+          if (entity.primary_display_name != null) {
+            ctx.user = ctx.user ?: [:];
+            ctx.user.full_name = entity.primary_display_name;
+          }
+        }
       on_failure:
         - append:
-            tag: append_error_message_split_entity_secondary_display_name
+            tag: append_error_message_map_entity_identity_fields_by_type
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: _temp.user_parts.0
-      target_field: user.domain
-      tag: rename_entity_domain_to_user_domain
-      ignore_missing: true
   - set:
       tag: set_host_name_f224d0b1
       field: host.name
@@ -266,51 +284,48 @@ processors:
       copy_from: crowdstrike.idp.timeline.target_endpoint_entity.primary_display_name
       ignore_empty_value: true
   - set:
-      tag: set_network_type_0d36ef01
-      field: network.type
-      copy_from: crowdstrike.idp.timeline.network_type
-      ignore_empty_value: true
-  - set:
       tag: set_network_protocol_31cc014f
       field: network.protocol
       copy_from: crowdstrike.idp.timeline.protocol_type
       ignore_empty_value: true
+  - lowercase:
+      tag: lowercase_network_protocol_49872259
+      field: network.protocol
+      ignore_missing: true
   - set:
       tag: set_tls_version_69497c61
       field: tls.version
       copy_from: crowdstrike.idp.timeline.tls_version
       ignore_empty_value: true
   - set:
-      tag: set_service_name_c09034e4
-      field: service.name
-      copy_from: crowdstrike.idp.timeline.target_service_entity.primary_display_name
-      ignore_empty_value: true
-  - set:
       tag: set_service_name_3d56bd1c
       field: service.name
       copy_from: crowdstrike.idp.timeline.target_service_display_name
       ignore_empty_value: true
-      if: ctx.service?.name == null
   - set:
       field: service.id
       tag: set_service_id_from_target_service_identifier
       copy_from: crowdstrike.idp.timeline.target_service_identifier
       ignore_empty_value: true
   - set:
-      tag: set_host_os_name_3506ada7
-      field: host.os.name
+      tag: set_host_os_full_3506ada7
+      field: host.os.full
       copy_from: crowdstrike.idp.timeline.operating_system_info.display_name
       ignore_empty_value: true
   - set:
-      tag: set_host_os_type_be51924d
-      field: host.os.type
+      tag: set_host_os_name_be51924d
+      field: host.os.name
       copy_from: crowdstrike.idp.timeline.operating_system_info.name
       ignore_empty_value: true
   - set:
-      tag: set_host_os_family_bf6e6112
-      field: host.os.family
+      tag: set_host_os_type_bf6e6112
+      field: host.os.type
       copy_from: crowdstrike.idp.timeline.operating_system_info.family
       ignore_empty_value: true
+  - lowercase:
+      tag: lowercase_host_os_type_b0e6b5a1
+      field: host.os.type
+      ignore_missing: true
   - set:
       tag: set_host_os_version_bdb32d76
       field: host.os.version
@@ -336,30 +351,65 @@ processors:
       source: |
         def emails = ctx.crowdstrike.idp.timeline.user_entity.email_addresses;
         if (emails.size() > 0 && emails[0] != null) {
-          ctx.user = ctx.user != null ? ctx.user : [:];
+          ctx.user = ctx.user ?: [:];
           ctx.user.email = emails[0];
         }
 
-  # entity.accounts[] → user.target.name, user.id (first account)
+  # entity.accounts[] → host.* (ENDPOINT) or user.* (USER) from first account descriptor
   - script:
       lang: painless
-      tag: map_entity_accounts_to_user_target
-      description: Map first Active Directory account descriptor to user.target.name and user.id.
+      tag: map_entity_accounts_by_type
+      description: >-
+        Map the first Active Directory account descriptor to ECS fields based on
+        entity.type.
       if: ctx.crowdstrike?.idp?.timeline?.entity?.accounts instanceof List
       source: |
-        def accounts = ctx.crowdstrike.idp.timeline.entity.accounts;
-        if (accounts.size() > 0 && accounts[0] instanceof Map) {
-          def acc = accounts[0];
+        def entity = ctx.crowdstrike.idp.timeline.entity;
+        def entityType = entity.type;
+        def accounts = entity.accounts;
+        if (accounts.size() == 0 || !(accounts[0] instanceof Map)) {
+          return;
+        }
+        def acc = accounts[0];
+        if (entityType == 'ENDPOINT') {
+          ctx.host = ctx.host ?: [:];
           if (acc.sam_account_name != null) {
-            ctx.user = ctx.user != null ? ctx.user : [:];
-            ctx.user.target = ctx.user.target != null ? ctx.user.target : [:];
+            def sam = acc.sam_account_name;
+            if (sam.endsWith('$')) {
+              sam = sam.substring(0, sam.length() - 1);
+            }
+            if (ctx.host.name == null) {
+              ctx.host.name = sam;
+            }
+          }
+          if (acc.object_sid != null) {
+            ctx.host.id = acc.object_sid;
+          }
+        } else if (entityType == 'USER') {
+          ctx.user = ctx.user ?: [:];
+          if (acc.sam_account_name != null) {
+            ctx.user.name = acc.sam_account_name;
+            ctx.user.target = ctx.user.target ?: [:];
             ctx.user.target.name = acc.sam_account_name;
           }
           if (acc.object_sid != null) {
-            ctx.user = ctx.user != null ? ctx.user : [:];
             ctx.user.id = acc.object_sid;
           }
+        } else {
+          ctx.entity = ctx.entity ?: [:];
+          if (acc.sam_account_name != null) {
+            ctx.entity.target = ctx.entity.target ?: [:];
+            ctx.entity.target.name = acc.sam_account_name;
+          }
+          if (acc.object_sid != null) {
+            ctx.entity.id = acc.object_sid;
+          }
         }
+      on_failure:
+        - append:
+            tag: append_error_message_map_entity_accounts_by_type
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # ip_address → source.ip
   - convert:
@@ -453,6 +503,18 @@ processors:
       allow_duplicates: false
       if: ctx.user?.target?.name != null
   - append:
+      field: related.user
+      value: '{{{user.full_name}}}'
+      tag: append_user_full_name_to_related
+      allow_duplicates: false
+      if: ctx.user?.full_name != null
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      tag: append_user_email_to_related
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - append:
       field: related.hosts
       value: '{{{host.name}}}'
       tag: append_host_name_to_related
@@ -487,15 +549,13 @@ processors:
         - crowdstrike.idp.timeline.end_time
         - crowdstrike.idp.timeline.endpoint_entity
         - crowdstrike.idp.timeline.ip_address
-        - crowdstrike.idp.timeline.network_type
         - crowdstrike.idp.timeline.protocol_type
         - crowdstrike.idp.timeline.tls_version
-        - crowdstrike.idp.timeline.target_service_entity
         - crowdstrike.idp.timeline.target_service_display_name
         - crowdstrike.idp.timeline.target_service_identifier
         - crowdstrike.idp.timeline.user_display_name
-        - crowdstrike.idp.timeline.user_entity
-        - crowdstrike.idp.timeline.entity
+        - crowdstrike.idp.timeline.user_entity.primary_display_name
+        - crowdstrike.idp.timeline.entity.primary_display_name
         - crowdstrike.idp.timeline.operating_system_info
         - crowdstrike.idp.timeline.geo_location
       tag: remove_custom_duplicate_fields
