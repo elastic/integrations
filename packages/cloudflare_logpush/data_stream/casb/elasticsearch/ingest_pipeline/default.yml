@@ -45,34 +45,30 @@ processors:
         must be removed.
       if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
       ignore_missing: true
+  - convert:
+      tag: convert_json_DetectedTimestamp_13072d0c
+      field: json.DetectedTimestamp
+      type: long
+      if: ctx.json?.DetectedTimestamp != null && ctx.json.DetectedTimestamp != ''
+      ignore_failure: true
   - script:
       lang: painless
       tag: painless_detected_timestamp_to_milli
-      if: ctx.json?.DetectedTimestamp != null
+      if: ctx.json?.DetectedTimestamp != null && ctx.json.DetectedTimestamp instanceof Number
       source: |
-        try {
-          long t;
-          if (ctx.json.DetectedTimestamp instanceof String) {
-            t = Long.parseLong(ctx.json.DetectedTimestamp);
-          } else if (ctx.json.DetectedTimestamp instanceof Number) {
-            t = (long)(ctx.json.DetectedTimestamp);
-          } else {
-            return;
-          }
-          if (t > (long)(1e18)) {
-            ctx.json.DetectedTimestamp = t/(long)(1e6)
-          } else if (t < (long)(1e10))  {
-            ctx.json.DetectedTimestamp = t*(long)(1e3)
-          }
+        long t = (long)(ctx.json.DetectedTimestamp);
+        if (t > (long)(1e18)) {
+          ctx.json.DetectedTimestamp = t/(long)(1e6)
+        } else if (t < (long)(1e10))  {
+          ctx.json.DetectedTimestamp = t*(long)(1e3)
         }
-        catch (Exception e) {}
       on_failure:
         - append:
-            tag: append_error_message_0f603f8f
+            tag: append_error_message_4765ab95
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_json_DetectedTimestamp_ea878f55
+      tag: date_json_DetectedTimestamp_db70ac08
       field: json.DetectedTimestamp
       if: ctx.json?.DetectedTimestamp != null && ctx.json.DetectedTimestamp != ''
       formats:
@@ -82,7 +78,7 @@ processors:
       timezone: UTC
       on_failure:
         - append:
-            tag: append_error_message_60a0a2fe
+            tag: append_error_message_4fa151ba
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:

@@ -45,30 +45,26 @@ processors:
         must be removed.
       if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
       ignore_missing: true
+  - convert:
+      tag: convert_json_When_fcae7a8e
+      field: json.When
+      type: long
+      if: ctx.json?.When != null && ctx.json.When != ''
+      ignore_failure: true
   - script:
       lang: painless
       tag: painless_when_to_milli
-      if: ctx.json?.When != null
+      if: ctx.json?.When != null && ctx.json.When instanceof Number
       source: |
-        try {
-          long t;
-          if (ctx.json.When instanceof String) {
-            t = Long.parseLong(ctx.json.When);
-          } else if (ctx.json.When instanceof Number) {
-            t = (long)(ctx.json.When);
-          } else {
-            return;
-          }
-          if (t > (long)(1e18)) {
-            ctx.json.When = t/(long)(1e6)
-          } else if (t < (long)(1e10))  {
-            ctx.json.When = t*(long)(1e3)
-          }
+        long t = (long)(ctx.json.When);
+        if (t > (long)(1e18)) {
+          ctx.json.When = t/(long)(1e6)
+        } else if (t < (long)(1e10))  {
+          ctx.json.When = t*(long)(1e3)
         }
-        catch (Exception e) {}
       on_failure:
         - append:
-            tag: append_error_message_0b6ddea6
+            tag: append_error_message_20151760
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -82,7 +78,7 @@ processors:
       timezone: UTC
       on_failure:
         - append:
-            tag: append_error_message_cf54c4b8
+            tag: append_error_message_864f4d96
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:

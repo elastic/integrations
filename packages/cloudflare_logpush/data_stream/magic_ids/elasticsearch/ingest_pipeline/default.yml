@@ -48,30 +48,26 @@ processors:
       if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
       ignore_missing: true
   # Timestamp
+  - convert:
+      tag: convert_json_Timestamp_7242ddce
+      field: json.Timestamp
+      type: long
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      ignore_failure: true
   - script:
       lang: painless
       tag: painless_timestamp_to_milli
-      if: ctx.json?.Timestamp != null
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp instanceof Number
       source: |
-        try {
-          long t;
-          if (ctx.json.Timestamp instanceof String) {
-            t = Long.parseLong(ctx.json.Timestamp);
-          } else if (ctx.json.Timestamp instanceof Number) {
-            t = (long)(ctx.json.Timestamp);
-          } else {
-            return;
-          }
-          if (t > (long)(1e18)) {
-            ctx.json.Timestamp = t/(long)(1e6)
-          } else if (t < (long)(1e10))  {
-            ctx.json.Timestamp = t*(long)(1e3)
-          }
+        long t = (long)(ctx.json.Timestamp);
+        if (t > (long)(1e18)) {
+          ctx.json.Timestamp = t/(long)(1e6)
+        } else if (t < (long)(1e10))  {
+          ctx.json.Timestamp = t*(long)(1e3)
         }
-        catch (Exception e) {}
       on_failure:
         - append:
-            tag: append_error_message_3a16db2c
+            tag: append_error_message_df40dd8a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
@@ -85,7 +81,7 @@ processors:
       tag: date_event_timestamp
       on_failure:
         - append:
-            tag: append_error_message_38394fec
+            tag: append_error_message_31244f95
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
