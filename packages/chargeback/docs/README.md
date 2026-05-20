@@ -16,7 +16,7 @@ The Chargeback integration assists organisations in addressing a crucial questio
 
 > **"How is my organisation consuming the Elastic solution, and to which tenants can I allocate these costs?"**
 
-The integration provides a breakdown of Elastic Consumption Units (ECUs) per:
+The integration provides a breakdown of chargeable units (ECU/ERU) per:
 
 - Deployment
 - Data tier
@@ -30,7 +30,7 @@ Currently, Chargeback calculations consider only Elasticsearch data nodes. Contr
 
 This default weighting means storage contributes most to the blended cost calculation, with indexing considered only on the hot tier. Adjust these weights based on your organisation's needs and best judgment.
 
-Chargeback costs are presented based on a configured rate and unit. These are used to display cost in your local currency, for instance `EUR`, with a rate of `0.85` per ECU.
+Chargeback costs are presented based on a configured rate and unit. These are used to display cost in your local currency, for instance `EUR`, with a rate of `0.85` per chargeable unit (ECU/ERU).
 
 ## Configuration
 
@@ -44,13 +44,13 @@ Using `_update/config` updates the document with ID `config`:
 POST chargeback_conf_lookup/_update/config
 {
   "doc": {
-    "conf_ecu_rate": 0.85,
-    "conf_ecu_rate_unit": "EUR",
+    "conf_chargeable_unit_rate": 0.85,
+    "conf_chargeable_unit_rate_unit": "EUR",
     "conf_indexing_weight": 20,
     "conf_query_weight": 20,
     "conf_storage_weight": 40,
     "conf_start_date": "2024-01-01T00:00:00.000Z",
-    "conf_end_date": "2024-12-31T23:tie"
+    "conf_end_date": "2024-12-31T23:59:59.999Z"
   }
 }
 ```
@@ -62,8 +62,8 @@ Using `_doc` creates a new document with an auto-generated ID:
 ```
 POST chargeback_conf_lookup/_doc
 {
-  "conf_ecu_rate": 0.95,
-  "conf_ecu_rate_unit": "EUR",
+  "conf_chargeable_unit_rate": 0.95,
+  "conf_chargeable_unit_rate_unit": "EUR",
   "conf_indexing_weight": 20,
   "conf_query_weight": 20,
   "conf_storage_weight": 40,
@@ -75,8 +75,8 @@ POST chargeback_conf_lookup/_doc
 This allows you to have different rates for different time periods (e.g., quarterly or annual rate changes).
 
 **Configuration Options:**
-- `conf_ecu_rate`: The monetary value per ECU (e.g., 0.85)
-- `conf_ecu_rate_unit`: The currency code (e.g., "EUR", "USD", "GBP")
+- `conf_chargeable_unit_rate`: The monetary value per chargeable unit (ECU/ERU) (e.g., 0.85)
+- `conf_chargeable_unit_rate_unit`: The currency code (e.g., "EUR", "USD", "GBP")
 - `conf_indexing_weight`: Weight for indexing operations (default: 20, only applies to hot tier)
 - `conf_query_weight`: Weight for query operations (default: 20)
 - `conf_storage_weight`: Weight for storage (default: 40)
@@ -87,7 +87,7 @@ This allows you to have different rates for different time periods (e.g., quarte
 
 The integration creates the following transforms to aggregate cost and usage data:
 
-1. **billing_cluster_cost** - Aggregates daily ECU usage per deployment from ESS Billing data, with support for deployment groups via `chargeback_group` tags
+1. **billing_cluster_cost** - Aggregates daily chargeable units (ECU/ERU) per deployment from ESS Billing data, with support for deployment groups via `chargeback_group` tags
 2. **cluster_deployment_contribution** - Calculates per-deployment usage metrics (indexing time, query time, storage) from Elasticsearch monitoring data
 3. **cluster_datastream_contribution** - Aggregates usage per data stream for detailed cost attribution
 4. **cluster_tier_contribution** - Aggregates usage per data tier (hot, warm, cold, frozen)
@@ -119,6 +119,12 @@ Chargeback data can be viewed in the `[Chargeback] Cost and Consumption breakdow
 
 ![Cost and Consumption breakdown](../img/chargeback.png)
 
+### Upgrading from 0.3.0
+
+From **0.3.1** onward, configuration and billing fields use chargeable-unit names (for example `conf_chargeable_unit_rate` and `total_chargeable_units` instead of `conf_ecu_rate` and `total_ecu`). The dashboard queries accept both the new and the previous field names, so you do not need to change existing documents in the lookup indices for panels to work. New data from the updated transforms uses the new names over time.
+
+If you built your own ES|QL, dashboards, or automation against the lookup indices, update those to the new field names when convenient.
+
 ## Deployment Groups
 
 The integration supports organizing deployments into logical groups using the `chargeback_group` tag on ESS Billing deployments. This enables cost allocation and filtering by teams, projects, or any organizational structure.
@@ -141,6 +147,8 @@ This integration includes 3 pre-configured alert rule templates that can be inst
 1. **Transform Health Monitoring** - Monitors the health of all Chargeback transforms and alerts when they encounter issues or failures
 2. **New Chargeback Group Detected** - Notifies when a new `chargeback_group` tag is added to a deployment
 3. **Deployment with Chargeback Group Missing Usage Data** - Detects when a deployment has a chargeback group assigned but is not sending usage/consumption data
+
+The templates ship as Kibana alerting rule assets with the package and need **Kibana 9.2.0 or newer**, the same minimum as the integration’s Kibana version condition (see **Requirements** below).
 
 **Important:** For alert rules 2 and 3, ensure that the Chargeback transforms are running before setting them up. These alerting rules query the lookup indices created by the transforms (`billing_cluster_cost_lookup`, `cluster_deployment_contribution_lookup`, etc.). If the transforms are not started, the alerts will not function correctly.
 
@@ -176,7 +184,7 @@ To use this integration, the following prerequisites must be met:
 
 **Data Flow:**
 1. ESS Billing data is collected into `metrics-ess_billing.billing-*`
-2. Elasticsearch usage data is collected into `metrics-elasticsearch.stack_monitoring.*` (or `monitoring-indices` for Stack Monitoring)
+2. Elasticsearch usage data is collected into `metrics-elasticsearch.stack_monitoring.*`, or—when using the Elasticsearch integration index pivot—into indices whose names match `monitoring-indices*` (the default destination is `monitoring-indices`).
 3. Chargeback transforms process and correlate this data
 4. Dashboard queries the resulting lookup indices using ES|QL
 

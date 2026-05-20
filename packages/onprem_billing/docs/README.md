@@ -44,11 +44,11 @@ Using mERU solves this:
 ## Requirements
 
 - Elastic Stack 9.2.0+
-- Elasticsearch Integration (for Stack Monitoring data in `monitoring-indices`)
+- Elasticsearch Integration (for Stack Monitoring data in indices matching `monitoring-indices*`, default `monitoring-indices`)
 
 This integration enables the Chargeback integration (0.2.x+) to work on non-cloud deployments (on-premises, ECE, ECK).
 
-> **Important:** Install on the **monitoring/management cluster** where `monitoring-indices` exists.
+> **Important:** Install on the **monitoring/management cluster** where Elasticsearch index-pivot output exists (names must match `monitoring-indices*`; default index name is `monitoring-indices`).
 
 ---
 
@@ -467,7 +467,7 @@ POST _transform/logs-onprem_billing.billing-*/_start
 **Check Stack Monitoring data availability:**
 
 ```json
-GET monitoring-indices/_count
+GET monitoring-indices*/_count
 ```
 
 **Check enrich policies exist:**
