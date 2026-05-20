@@ -98,7 +98,7 @@ program: |-
       auth_header
     :
       (
-        has(state.work_list) ?
+        (has(state.work_list) && size(state.work_list) > 0) ?
           // We have a work-list, do that first.
           // Work-lists do not allow partial requests on a work-list.
           // I think this needs to allow head()/tail() approach. This
@@ -123,8 +123,11 @@ program: |-
               // Threading rate-limit results obtained here through to the final
               // result is not tenable, so we do not do any work to allow them
               // to be interpreted by the input and just drop them.
+              // Snyk returns RFC 9110 structured X-Ratelimit-Limit values
+              // (e.g. "160, 160;w=1;name=...") that the rate_limit function
+              // cannot parse as a float. Extract the first token.
               rate_limit(
-                resp.Header,
+                resp.Header.with({"X-Ratelimit-Limit": [resp.Header[?"X-Ratelimit-Limit"][0].orValue("0").split(",")[0].trim_space()]}),
                 "X-Ratelimit",
                 false,
                 true,
@@ -154,8 +157,8 @@ program: |-
               "last_created": state.cursor.last_created,
             },
           ]
-        : (has(state.cursor) && state.end_point_type == "/rest/orgs/") ?
-          // ... a multi-org cursor, ...
+        : (has(state.cursor) && state.end_point_type in ["/rest/orgs/", "/rest/groups/"]) ?
+          // ... an id-keyed cursor, ...
           state.cursor.map(audit_id, state.cursor[audit_id].with({"id": audit_id}))
         :
           // ... or a new collection.
@@ -188,15 +191,19 @@ program: |-
                 optional.of([state.project_id])
               :
                 optional.none(),
-              ?"events": state.?events_filter,
+              ?"events": has(state.event_filter) ?
+                optional.of([state.event_filter.join(",")])
+              :
+                optional.none(),
             }.format_query()
           )
         ).with(auth_header).do_request().as(resp,
           // We are doing this work mainly for the side-effects of the rate_limit call.
           resp.with(
             // Calculate and apply rate limits.
+            // See rate_limit call in org list fetch for structured header comment.
             rate_limit(
-              resp.Header,
+              resp.Header.with({"X-Ratelimit-Limit": [resp.Header[?"X-Ratelimit-Limit"][0].orValue("0").split(",")[0].trim_space()]}),
               "X-Ratelimit",
               false,
               true,

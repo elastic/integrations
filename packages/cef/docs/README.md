@@ -1,6 +1,5 @@
 # Common Event Format (CEF) Integration for Elastic
 
-> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
@@ -322,7 +321,7 @@ To collect logs via TCP, select **Collect logs via TCP** and configure the follo
 To enable encrypted connections, configure the following SSL settings:
 
 **SSL Settings:**
-- Enable SSL*- Toggle to enable SSL/TLS encryption
+- Enable SSL - Toggle to enable SSL/TLS encryption
 - Certificate - Path to the SSL certificate file (`.crt` or `.pem`)
 - Certificate Key - Path to the private key file (`.key`)
 - Certificate Authorities - Path to CA certificate file for client certificate validation (optional)

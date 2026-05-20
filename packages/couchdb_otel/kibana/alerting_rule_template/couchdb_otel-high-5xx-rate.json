@@ -1,0 +1,48 @@
+{
+    "id": "couchdb_otel-high-5xx-rate",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when the proportion of 5xx server error responses (500, 501, 503) exceeds a configurable percentage of total HTTP responses. Sustained 5xx rates indicate the CouchDB server is failing or is overloaded and unable to serve requests.",
+        "name": "[CouchDB OTel] High 5xx server error rate",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "couchdb"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 6,
+            "statusChangeThreshold": 3
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## High 5xx Server Error Rate\n\n### Triage Steps\n1. Open the CouchDB overview dashboard and identify which status codes dominate (500 internal error vs 503 unavailable).\n2. Check `couchdb.average_request_time` — rising latency often precedes 5xx as the server becomes overloaded.\n3. Review CouchDB logs (`/var/log/couchdb/couchdb.log`) for stack traces and error messages from the time window.\n4. Verify host resources: CPU, memory, disk I/O, and disk space. CouchDB returns 500 when it cannot write to disk.\n5. Check Erlang VM health (BEAM process count, scheduler utilisation) — process exhaustion causes cascading 5xx.\n\n### Remediation\n- For 503: scale out additional CouchDB nodes or reduce client request rate.\n- For 500: address the underlying cause from logs (e.g. corrupt database file, out of disk, Erlang process limit).\n- Restart the affected node if the issue is transient and persists after immediate causes are ruled out.\n- For sustained issues, raise `max_dbs_open` and Erlang process limits in `local.ini`.\n\n### Threshold Tuning\nThe default of 5% 5xx rate is a balanced threshold. For mission-critical workloads, consider lowering to 1%. The query also requires a minimum of 0.01 responses/sec to suppress noise on idle nodes — raise this if you want to focus only on production-traffic nodes."
+            },
+            "dashboards": [
+                {"id": "couchdb_otel-overview"}
+            ]
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-couchdbreceiver.otel-default\n// Aggregate request rate and 5xx error rate per CouchDB node\n| STATS\n    total_rate = SUM(RATE(couchdb.httpd.responses)),\n    errors_5xx_rate = SUM(RATE(couchdb.httpd.responses)) WHERE attributes.http.status_code IN (\"500\", \"501\", \"503\")\n  BY couchdb.node.name\n// Minimum traffic to avoid noisy low-volume nodes\n| WHERE total_rate > 0.01\n// 5xx as percentage of total responses — tune threshold (default 5%)\n| EVAL error_rate_pct = ROUND(errors_5xx_rate / total_rate * 100.0, 2)\n| WHERE error_rate_pct > 5.0\n| SORT error_rate_pct DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "couchdb.node.name",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

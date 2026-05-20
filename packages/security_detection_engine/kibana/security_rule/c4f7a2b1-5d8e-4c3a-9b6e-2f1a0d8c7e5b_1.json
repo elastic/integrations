@@ -1,0 +1,120 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies hosts that triggered multiple distinct Elastic Defend behavior rules, while reducing false positives by considering only behavior rules that appear on a single host globally (via INLINE STATS). Hosts with two or more such rare behavior rules are more likely to be compromised and warrant prioritized triage.",
+        "from": "now-60m",
+        "interval": "30m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Multiple Rare Elastic Defend Behavior Rules by Host",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Multiple Rare Elastic Defend Behavior Rules by Host\n\nThis rule correlates Elastic Defend behavior alerts by host and applies a global prevalence filter: only behavior rules that fire on a single host in the lookback window are considered. Hosts that trigger two or more such rare behavior rules are flagged, as this pattern is more likely to indicate real compromise than commonly seen behavior rules.\n\n### Possible investigation steps\n\n- Review the listed behavior rule names and the associated process command lines (and parent command lines) to understand what actions triggered the alerts.\n- Identify the user(s) associated with the activity and confirm whether the behavior is expected for that role or host.\n- Correlate with other endpoint and network data for the host (process, network, file events) to assess scope and persistence.\n- Compare timestamps of the alerts to determine if activity is part of a single campaign or staged execution.\n\n### False positive analysis\n\n- The global prevalence filter (rules seen on only one host) reduces noise from behavior rules that fire widely (e.g., common software or policy). If legitimate single-host tools or scripts trigger multiple rare behavior rules, consider documenting and excluding known-good rule names or hosts.\n- Development or testing hosts may exhibit multiple rare behaviors; consider lowering severity or excluding those hosts if appropriate.\n\n### Response and remediation\n\n- Isolate the host if triage indicates compromise, then follow standard incident response procedures.\n- Collect and preserve artifacts (process hashes, command lines, files) for further analysis.\n- Escalate to the security team for full investigation and potential containment or eradication actions.\n",
+        "query": "from logs-endpoint.alerts-* metadata _id\n| where event.dataset == \"endpoint.alerts\" and event.code == \"behavior\"\n| INLINE STATS hosts = COUNT_DISTINCT(host.id) BY rule.name\n// excludes rules triggering on multiple hosts to reduce potential FPs\n| where hosts == 1\n| stats Esql.rule_name_count_distinct = COUNT_DISTINCT(rule.name),\n        Esql.rule_name_values = VALUES(rule.name),\n        Esql.process_executable_values = VALUES(process.executable),\n        Esql.process_parent_executable_values = VALUES(process.parent.executable),\n        Esql.process_command_line_values = VALUES(process.command_line),\n\t\tEsql.process_parent_command_line_values = VALUES(process.parent.command_line),\n        Esql.process_hash_sha256_values = VALUES(process.hash.sha256), \n\t\tEsql.file_path_values = VALUES(file.path),\n        Esql.dll_path_values = VALUES(dll.path),\n        Esql.dll_hash_sha256_values = VALUES(dll.hash.sha256), \n\t\tEsql.user_name_values = VALUES(user.name) by host.id\n// at least 2 unique rules\n| where Esql.rule_name_count_distinct >= 2\n// populate fields to use in rule exceptions\n| eval process.hash.sha256 = MV_FIRST(Esql.process_hash_sha256_values),\n       process.executable = MV_FIRST(Esql.process_executable_values),\n       process.parent.executable = MV_FIRST(Esql.process_parent_executable_values),\n       process.command_line = MV_FIRST(Esql.process_command_line_values),\n       user.name = MV_FIRST(Esql.user_name_values)\n| Keep host.id, user.name, process.executable, process.parent.executable, process.hash.sha256, process.command_line, Esql.*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/query-languages/esql/commands/inlinestats-by",
+            "https://github.com/elastic/protections-artifacts/tree/main/behavior"
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.dll_hash_sha256_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.dll_path_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.file_path_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_command_line_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_executable_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_hash_sha256_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_parent_command_line_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_parent_executable_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.rule_name_count_distinct",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.rule_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.user_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.hash.sha256",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 99,
+        "rule_id": "c4f7a2b1-5d8e-4c3a-9b6e-2f1a0d8c7e5b",
+        "severity": "critical",
+        "tags": [
+            "Use Case: Threat Detection",
+            "Rule Type: Higher-Order Rule",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend"
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "c4f7a2b1-5d8e-4c3a-9b6e-2f1a0d8c7e5b_1",
+    "type": "security-rule"
+}

@@ -1,6 +1,5 @@
 # Cisco ISE Integration for Elastic
 
-> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
@@ -308,7 +307,7 @@ To collect logs via TCP, select **Collect logs via TCP** and configure the follo
 To enable encrypted connections, configure the following SSL settings:
 
 **SSL Settings:**
-- Enable SSL*- Toggle to enable SSL/TLS encryption
+- Enable SSL - Toggle to enable SSL/TLS encryption
 - Certificate - Path to the SSL certificate file (`.crt` or `.pem`)
 - Certificate Key - Path to the private key file (`.key`)
 - Certificate Authorities - Path to CA certificate file for client certificate validation (optional)
@@ -423,6 +422,7 @@ The following table lists the exported fields for this data stream:
 | cisco_ise.log.category.name |  | keyword |
 | cisco_ise.log.cause |  | keyword |
 | cisco_ise.log.cisco_av_pair.AuthenticationIdentityStore |  | keyword |
+| cisco_ise.log.cisco_av_pair.FQSubjectName |  | keyword |
 | cisco_ise.log.cisco_av_pair.audit-session-id |  | keyword |
 | cisco_ise.log.cisco_av_pair.coa-push |  | boolean |
 | cisco_ise.log.cisco_av_pair.cts-device-capability |  | keyword |
@@ -547,6 +547,7 @@ The following table lists the exported fields for this data stream:
 | cisco_ise.log.radius.packet.type |  | keyword |
 | cisco_ise.log.radius_identifier |  | long |
 | cisco_ise.log.radius_packet.type |  | keyword |
+| cisco_ise.log.remote_address |  | keyword |
 | cisco_ise.log.request.latency |  | long |
 | cisco_ise.log.request.received_time |  | date |
 | cisco_ise.log.request_response.type |  | keyword |

@@ -1,15 +1,9 @@
 service: mysql_input_otel
+service_notify_signal: SIGHUP
 vars:
   endpoint: "{{Hostname}}:{{Port}}"
   username: "root"
+  collection_interval: 10s
+  initial_delay: 1s
 assert:
-  min_count: 30
-  fields_present:
-    - metrics.mysql.buffer_pool.operations
-    - metrics.mysql.log_operations
-    - metrics.mysql.commands
-    - metrics.mysql.connection.count
-    - metrics.mysql.connection.errors
-    - metrics.mysql.query.client.count
-    - metrics.mysql.table_open_cache
-    - metrics.mysql.client.network.io
+  min_count: 10

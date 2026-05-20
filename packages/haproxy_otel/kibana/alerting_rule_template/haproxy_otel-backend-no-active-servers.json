@@ -1,0 +1,54 @@
+{
+  "id": "haproxy_otel-backend-no-active-servers",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when a HAProxy backend has zero active servers (`haproxy.active < 1` on service_name=BACKEND). The backend cannot serve any traffic.",
+    "name": "[HAProxy OTel] Backend has no active servers",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "haproxy"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "haproxy_otel-backend"
+        },
+        {
+          "id": "haproxy_otel-server"
+        },
+        {
+          "id": "haproxy_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## HAProxy backend has no active servers\n\n### What fired\n`haproxy.active` on a BACKEND row dropped to 0 during the window.\n\n### Why it matters\nA backend with no active servers rejects all requests routed to it. This is a complete outage for any frontend using that backend.\n\n### Triage\n1. Drill into Server dashboard to see individual server health checks and downtime.\n2. Check `haproxy.failed_checks` increments and backup server availability.\n3. Look at server-side causes (crashes, networking).\n\n### Remediation\n- Restore at least one healthy server in the backend.\n- Route traffic to a backup backend if configured.\n\n### Tuning\n- Always P1 \u2014 do not loosen.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-haproxyreceiver.otel-*\n// Scope to backend aggregates (not frontends or individual servers)\n| WHERE haproxy.service_name == \"BACKEND\"\n// Exclude stats backend \u2014 it has no upstream servers by design\n| WHERE haproxy.proxy_name != \"stats\"\n// Aggregate minimum active count per backend over the time window\n| STATS min_active = MIN(haproxy.active) BY haproxy.proxy_name, haproxy.addr\n// Alert when any backend has zero active servers\n| WHERE min_active < 1\n| EVAL alert_key = CONCAT(TO_STRING(haproxy.proxy_name), \"::\", COALESCE(TO_STRING(haproxy.addr), \"\"))\n| LIMIT 50"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "alert_key",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

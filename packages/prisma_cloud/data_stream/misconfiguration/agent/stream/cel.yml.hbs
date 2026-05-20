@@ -24,56 +24,47 @@ redact:
     - password
     - next.access_token
 program: |
-  (
-    state.want_more ?
-      state
-    :
-      // Generate auth token
-      post_request(
-        state.url.trim_right("/") + "/login",
-        "application/json",
+  state.with(
+    // Always generate auth token - even during pagination to avoid 401s after token expiry.
+    post_request(
+      state.url.trim_right("/") + "/login",
+      "application/json",
+      {
+        "username": state.user,
+        "password": state.password,
+      }.encode_json()
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+        resp.Body.decode_json().as(body, {
+          "next": {
+            "access_token": body.token,
+            ?"pageToken": state.?next.pageToken,
+          },
+        })
+      :
         {
-          "username": state.user,
-          "password": state.password,
-        }.encode_json()
-      ).do_request().as(resp, resp.StatusCode == 200 ?
-          resp.Body.decode_json().as(body, {
-            "next": {
-              "access_token": body.token,
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "POST " + state.url.trim_right("/") + "/login: " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
             },
-            "url": state.url,
-            "user": state.user,
-            "password": state.password,
-            "batch_size": state.batch_size,
-          })
-        :
-          {
-            "events": {
-              "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "POST " + state.url.trim_right("/") + "/login: " + (
-                  size(resp.Body) != 0 ?
-                    string(resp.Body)
-                  :
-                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                ),
-              },
-            },
-            "want_more": false,
-            "batch_size": state.batch_size,
-            "url": state.url,
-            "user": state.user,
-            "password": state.password,
-          }
-      )
+          },
+          "want_more": false,
+          "next": {},
+        }
+    )
   ).as(state,
     // Exit if there is an error
     has(state.?events.error) ?
     	state
     :
       // Fetch scan info which contains the resources with misconfiguration details
-      request("GET",
+      state.with(request("GET",
         state.url.trim_right("/") + "/v2/resource/scan_info?" + {
           "scan.status": ["all"],
           "policy.complianceStandard": ["*"],
@@ -96,14 +87,8 @@ program: |
               []
             ),
             "next": {
-              // Store the access token for the pagination request.
-              ?"access_token": has(body.nextPageToken) ? optional.of(state.next.access_token) : optional.none(),
               ?"pageToken": body.?nextPageToken,
             },
-            "batch_size": state.batch_size,
-            "url": state.url,
-            "user": state.user,
-            "password": state.password,
             "want_more": has(body.nextPageToken),
           })
         :
@@ -121,12 +106,9 @@ program: |
               },
             },
             "want_more": false,
-            "batch_size": state.batch_size,
-            "url": state.url,
-            "user": state.user,
-            "password": state.password,
+            "next": {},
           }
-      )
+      ))
   )
 tags:
 {{#if preserve_original_event}}

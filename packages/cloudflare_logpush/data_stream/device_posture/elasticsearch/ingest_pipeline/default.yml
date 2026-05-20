@@ -219,7 +219,6 @@ processors:
         - cloudflare_logpush.device_posture.rule.id
         - cloudflare_logpush.device_posture.rule.name
         - cloudflare_logpush.device_posture.rule.category
-        - cloudflare_logpush.device_posture.result
         - cloudflare_logpush.device_posture.user.id
         - cloudflare_logpush.device_posture.user.email
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
@@ -246,7 +245,7 @@ on_failure:
   - append:
       field: error.message
       value: |-
-        Processor "{{ _ingest.on_failure_processor_type }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+        Processor "{{{ _ingest.on_failure_processor_type }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error

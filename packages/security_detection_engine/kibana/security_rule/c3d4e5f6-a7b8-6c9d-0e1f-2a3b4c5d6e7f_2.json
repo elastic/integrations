@@ -1,0 +1,197 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects suspicious process execution launched from a VS Code extension context (parent command line contains .vscode/extensions). Malicious extensions can run on startup and drop or execute payloads (e.g. RATs like ScreenConnect, script interpreters, or download utilities). This covers both script/LOLBin children and recently created executables from non-Program Files paths, as seen in campaigns such as the fake Clawdbot extension that installed ScreenConnect RAT.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Execution from VS Code Extension",
+        "note": "## Triage and analysis\n\n### Investigating Suspicious Execution from VS Code Extension\n\nMalicious VS Code extensions can use `activationEvents: [\"onStartupFinished\"]` to run as soon as the editor starts, then spawn scripts or download-and-execute payloads (e.g. weaponized ScreenConnect, batch/PowerShell downloaders). This rule flags process starts whose parent command line indicates execution from the extension host under `.vscode\\extensions\\` (or `/.vscode/extensions/`).\n\n### Possible investigation steps\n\n- Identify the extension: from the parent process command line, extract the path under `.vscode\\extensions\\` to get the extension id (e.g. `publisher.name-version`).\n- Check whether that extension is approved; search the VS Code marketplace (or internal registry) for the same name and compare hashes.\n- Inspect the child process: if it is cmd/powershell/curl/node/rundll32/etc., review command line and network/file activity; if it is a recently created executable (e.g. Code.exe, Lightshot), check path (e.g. %TEMP%\\Lightshot) and code signature.\n- Correlate with network events (C2 domains, Dropbox/URL downloads) and with [Fake Clawdbot VS Code Extension](https://www.aikido.dev/blog/fake-clawdbot-vscode-extension-malware) IOCs if relevant.\n\n### False positive analysis\n\n- Legitimate extensions that run scripts or tools (e.g. linters, formatters, task runners) can spawn cmd, node, or PowerShell. Tune by excluding known extension ids or by requiring additional conditions (e.g. outbound to unknown IPs).\n- Extension development: running/debugging an extension from a workspace will spawn processes from `.vscode\\extensions\\`; consider excluding dev machines or specific parent paths.\n\n### Response and remediation\n\n- Uninstall the suspicious extension and restart VS Code.\n- If payload was executed: check for ScreenConnect (or similar) installation paths and services, remove persisted artifacts, block IOCs at firewall/DNS, rotate any API keys or secrets that may have been entered into the extension.\n",
+        "query": "process where host.os.type == \"windows\" and event.action == \"start\" and\n  process.parent.name : (\"node.exe\", \"Code.exe\") and\n  process.parent.command_line != null and\n  process.parent.command_line : (\"*vscode*extensions*\", \"*extensionHost*\") and\n  (\n    process.name : (\n      \"cmd.exe\", \"powershell.exe\", \"pwsh.exe\", \"rundll32.exe\", \"msiexec.exe\",\n      \"curl.exe\", \"bitsadmin.exe\", \"wscript.exe\", \"cscript.exe\", \"mshta.exe\",\n      \"node.exe\"\n    ) or\n\t\n\t// recently dropped PE\n    process.Ext.relative_file_creation_time <= 500\n  ) and \n  not (process.name : \"cmd.exe\" and process.args : (\"npm.cmd config get prefix\", \"code -v\", \"chcp\")) and \n  not (process.name : \"python.exe\" and process.parent.command_line : \"*ms-python.vscode-*\")\n",
+        "references": [
+            "https://www.aikido.dev/blog/fake-clawdbot-vscode-extension-malware",
+            "https://attack.mitre.org/techniques/T1204/",
+            "https://attack.mitre.org/techniques/T1195/002/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.relative_file_creation_time",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c3d4e5f6-a7b8-6c9d-0e1f-2a3b4c5d6e7f",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1195",
+                        "name": "Supply Chain Compromise",
+                        "reference": "https://attack.mitre.org/techniques/T1195/",
+                        "subtechnique": [
+                            {
+                                "id": "T1195.002",
+                                "name": "Compromise Software Supply Chain",
+                                "reference": "https://attack.mitre.org/techniques/T1195/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            },
+                            {
+                                "id": "T1059.003",
+                                "name": "Windows Command Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/003/"
+                            },
+                            {
+                                "id": "T1059.007",
+                                "name": "JavaScript",
+                                "reference": "https://attack.mitre.org/techniques/T1059/007/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1204",
+                        "name": "User Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1204/",
+                        "subtechnique": [
+                            {
+                                "id": "T1204.002",
+                                "name": "Malicious File",
+                                "reference": "https://attack.mitre.org/techniques/T1204/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/",
+                        "subtechnique": [
+                            {
+                                "id": "T1218.005",
+                                "name": "Mshta",
+                                "reference": "https://attack.mitre.org/techniques/T1218/005/"
+                            },
+                            {
+                                "id": "T1218.007",
+                                "name": "Msiexec",
+                                "reference": "https://attack.mitre.org/techniques/T1218/007/"
+                            },
+                            {
+                                "id": "T1218.011",
+                                "name": "Rundll32",
+                                "reference": "https://attack.mitre.org/techniques/T1218/011/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 2
+    },
+    "id": "c3d4e5f6-a7b8-6c9d-0e1f-2a3b4c5d6e7f_2",
+    "type": "security-rule"
+}

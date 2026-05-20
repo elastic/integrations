@@ -57,7 +57,24 @@ The CloudWatch integration offers the `latency` setting to address this scenario
 
 If you are collecting log events from multiple log groups using `log_group_name_prefix`, you should review the value of the `number_of_workers`.
 
-The `number_of_workers` setting defines the number of workers assigned to reading from log groups. Each log group matching the `log_group_name_prefix` requires a worker to keep log ingestion as close to real-time as possible. For example, if `log_group_name_prefix` matches five log groups, then `number_of_workers` should be set to `5`. The default value is `1`.
+The `number_of_workers` setting defines the number of workers assigned to reading from log groups. **Do not set `number_of_workers` higher than the AWS API rate limit.** The CloudWatch Logs APIs (DescribeLogGroups, FilterLogEvents) are limited to 5 transactions per second (TPS) per AWS account and per region; this limit is shared across all API callers in that account and region. If you run multiple integrations or data streams that collect CloudWatch logs from the same account and region, their workers share the same 5 TPS—so even 5 workers per data stream can cause throttling when combined. Exceeding the limit causes `ThrottlingException: Rate exceeded` errors and may report DEGRADED status in Fleet.
+
+**Recommendation:** Set `number_of_workers` to **5 or less** and `scan_frequency` to **5m or more**, regardless of how many log groups match `log_group_name_prefix`. Workers will iterate through the matching log groups within each scan interval. The default value is `1`.
+
+#### S3 polling mode considerations
+
+When using the "Collect logs via S3 Bucket" option in polling mode, the integration lists and processes all objects in the bucket. For buckets containing large volumes of historical logs, this can cause high memory usage and potential out-of-memory (OOM) errors.
+
+**Important:** If you provide both a bucket ARN and an SQS Queue URL, the integration ignores the SQS URL and operates in polling mode, attempting to process the entire bucket. To use SQS mode, disable "Collect logs via S3 Bucket" and provide only the SQS Queue URL.
+
+**Recommendation:** Use SQS mode when possible to avoid scanning the entire bucket. 
+
+If you must use polling mode, configure these advanced options to limit which S3 objects are processed:
+
+- **Ignore Older Timespan** (`ignore_older`): Skip S3 objects older than the specified duration (for example, `48h`, `30d`).
+- **Start Timestamp** (`start_timestamp`): Only process objects newer than the specified time (`YYYY-MM-DDTHH:MM:SSZ`).
+
+If you experience timeouts (`ListObjectsV2, context canceled`), also consider increasing `bucket_list_interval` to reduce listing frequency.
 
 ## Logs reference
 

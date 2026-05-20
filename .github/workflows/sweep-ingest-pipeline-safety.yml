@@ -1,0 +1,95 @@
+name: "Sweeper: Ingest Pipeline Null-Safety and Grok Robustness"
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-quality-audit.lock.yml@v0
+    with:
+      title-prefix: "[ingest-pipeline-safety]"
+      severity-threshold: "high"
+      additional-instructions: |
+        You are auditing ingest pipelines in the elastic/integrations repository for
+        robustness against real-world log variation. Produce findings that would impress a
+        senior engineer: a small number of thoroughly investigated cases where a log variant
+        that actually occurs in production causes a document to fail indexing silently. One
+        confirmed failure with a concrete triggering document is worth more than a list of
+        processors that look suspicious.
+
+        ## What ingest pipelines guarantee
+
+        Every ingest pipeline under `packages/<pkg>/data_stream/<stream>/elasticsearch/ingest_pipeline/`
+        processes raw log documents before indexing. The guarantee is: every document either
+        parses successfully and is indexed, or fails and is captured by the `on_failure`
+        handler in a degraded-but-visible state. Silent loss — a document that is neither
+        indexed correctly nor surfaced as a failure — is the failure mode to find.
+
+        ## How to investigate
+
+        Pick 3-5 pipelines from high-traffic integrations (`cisco_asa`, `crowdstrike`, `aws`,
+        `panw`, `fortinet_fortigate`) and read them thoroughly. Before looking for bugs,
+        understand what logs this pipeline actually processes: what does a normal document
+        look like, and what format variations does the source system produce? Then trace the
+        pipeline against those variations.
+
+        **Painless scripts.** Read every `script` processor and trace every dot-path access.
+        The question is not "is there a null check somewhere" but "does the null check cover
+        every level of the path for every log variant this integration receives?" A guard on
+        `ctx.cisco` does not protect `ctx.cisco.asa.message_id` when the `asa` object is
+        absent in certain message types. Read the vendor documentation or look at the
+        integration's own test fixtures in `_dev/test/pipeline/` to understand which fields
+        are actually optional.
+
+        **Grok patterns.** For each `grok` processor on a variable field — IP addresses,
+        timestamps, user agents, status codes — ask whether the source system ever produces
+        this field in a format the pattern does not match. A pattern handling only IPv4 will
+        fail silently on IPv6 addresses. A fixed-field dissection will fail on log lines with
+        optional trailing fields. If the test fixtures do not cover the variant, the pipeline
+        has probably never been tested against it.
+
+        **Type conversions.** For each `convert` processor without `ignore_failure: true`,
+        check whether the field is always the expected type. Status codes, byte counts, and
+        duration fields frequently arrive as strings in some firmware versions and as numbers
+        in others.
+
+        Before filing any finding, check the git history for the pipeline file:
+        `git log --oneline -p -- packages/<pkg>/data_stream/<stream>/elasticsearch/ingest_pipeline/`
+
+        A null guard that was present and then removed in a recent refactor is a regression —
+        the commit message will usually confirm whether it was intentional. A recently added
+        script processor that accesses new fields is a candidate if those fields are not
+        guaranteed to be present. Regressions are higher priority than original omissions
+        because they affect users who were previously working correctly.
+
+        These patterns are starting points. If you understand a pipeline well enough to find
+        a failure mode not described here, that is exactly what we want.
+
+        ## The reproduction is the argument
+
+        When you think you have found something, construct the exact document that triggers
+        the failure. Trace it through the pipeline step by step — which processor throws,
+        what the exception is, what the resulting indexed document looks like, and why that
+        is incorrect. If you can express this as an Elasticsearch Simulate API call
+        (`POST /_ingest/pipeline/<id>/_simulate`), include it.
+
+        If you cannot construct a concrete document that fails, keep investigating. You may
+        find that a prior processor guarantees the field is present, that the log source
+        never actually omits it, or that `ignore_failure` on a preceding processor already
+        handles the variant.
+
+        ## Output
+
+        File a single issue containing:
+        - Each confirmed bug: the pipeline file, the processor, the exact triggering document,
+          what the failure looks like, and the one-line fix
+        - Pipelines you read thoroughly and found safe, with what protects them
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

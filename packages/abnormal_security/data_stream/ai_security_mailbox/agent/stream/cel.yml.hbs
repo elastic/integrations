@@ -18,102 +18,216 @@ state:
   initial_interval: {{initial_interval}}
   page_size: {{page_size}}
   access_token: {{access_token}}
+  scanning_timeout: {{scanning_timeout}}
   next_page: 1
 redact:
   fields:
     - access_token
-program: |
+program: |-
   (
-    has(state.worklist) && size(state.worklist) > 0 ?
+    (has(state.worklist) && size(state.worklist) > 0) ?
       state
     :
       (
         state.?want_more.orValue(false) ?
           state
         :
-          state.with({
-            "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
-            "end_time": now.format(time_layout.RFC3339),
-          })
-      ).as(state, state.with(
+          state.?cursor.scanning.orValue([]).as(scanning,
+            (size(scanning) > 0) ?
+              state.with(
+                {
+                  "recheck": true,
+                  "worklist": scanning.map(e, e.id),
+                  "scan_first_seen": scanning.map(e, e.first_seen),
+                  "updated_scanning": [],
+                  "next": 0,
+                  "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+                  "end_time": now.format(time_layout.RFC3339),
+                }
+              )
+            :
+              state.with(
+                {
+                  "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+                  "end_time": now.format(time_layout.RFC3339),
+                }
+              )
+          )
+      ).as(state,
+        state.?recheck.orValue(false) ?
+          state
+        :
+          state.with(
+            request(
+              "GET",
+              state.url.trim_right("/") + "/v1/abusecampaigns?" + {
+                "pageSize": [string(state.page_size)],
+                "pageNumber": [string(state.next_page)],
+                "filter": ["lastReportedTime gte " + state.start_time + " lte " + state.end_time],
+              }.format_query()
+            ).with(
+              {
+                "Header": {
+                  "Authorization": ["Bearer " + string(state.access_token)],
+                },
+              }
+            ).do_request().as(resp, (resp.StatusCode == 200) ?
+              bytes(resp.Body).decode_json().as(body,
+                {
+                  "worklist": body.campaigns.map(e, e.campaignId),
+                  "next": 0,
+                }
+              )
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "GET:" + (
+                      (size(resp.Body) != 0) ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                    ),
+                  },
+                },
+                "want_more": false,
+              }
+            )
+          )
+      )
+  ).as(state,
+    state.with(
+      !has(state.worklist) ?
+        state
+      : (state.next < size(state.worklist)) ?
         request(
           "GET",
-          state.url.trim_right("/") + "/v1/abusecampaigns?" + {
-            "pageSize": [string(state.page_size)],
-            "pageNumber": [string(state.next_page)],
-            "filter":["lastReportedTime gte " + state.start_time + " lte " + state.end_time]
-          }.format_query()
-        ).with({
-          "Header":{
-            "Authorization": ["Bearer " + string(state.access_token)],
+          state.url.trim_right("/") + "/v1/abusecampaigns/" + state.worklist[state.next]
+        ).with(
+          {
+            "Header": {
+              "Authorization": ["Bearer " + string(state.access_token)],
+            },
           }
-        }).do_request().as(resp, resp.StatusCode == 200 ?
-            bytes(resp.Body).decode_json().as(body, {
-              "worklist": body.campaigns.map(e, e.campaignId),
-              "next": 0,
-            })
+        ).do_request().as(resp,
+          state.?recheck.orValue(false) ?
+            (
+              // Re-check a previously-scanning item.
+              (resp.StatusCode == 200) ?
+                bytes(resp.Body).decode_json().as(body,
+                  (string(body.?judgementStatus.orValue("")) == "Scanning") ?
+                    (
+                      (timestamp(state.scan_first_seen[int(state.next)]) + duration(state.scanning_timeout) <= now) ?
+                        // Expired — publish as-is.
+                        {
+                          "events": [{"message": body.encode_json()}],
+                          "next": int(state.next) + 1,
+                          "want_more": true,
+                        }
+                      :
+                        // Retain for next cycle.
+                        {
+                          "events": [{"retry": true}],
+                          "updated_scanning": state.updated_scanning + [{"id": state.worklist[int(state.next)], "first_seen": state.scan_first_seen[int(state.next)]}],
+                          "next": int(state.next) + 1,
+                          "want_more": true,
+                        }
+                    )
+                  :
+                    // Resolved — publish.
+                    {
+                      "events": [{"message": body.encode_json()}],
+                      "next": int(state.next) + 1,
+                      "want_more": true,
+                    }
+                )
+              : (resp.StatusCode == 404) ?
+                // Deleted — drop silently.
+                {
+                  "events": [{"retry": true}],
+                  "next": int(state.next) + 1,
+                  "want_more": true,
+                }
+              :
+                // Transient error — retain for retry.
+                {
+                  "events": [{"retry": true}],
+                  "updated_scanning": state.updated_scanning + [{"id": state.worklist[int(state.next)], "first_seen": state.scan_first_seen[int(state.next)]}],
+                  "next": int(state.next) + 1,
+                  "want_more": true,
+                }
+            )
+          : // Normal collection — fetch campaign detail.
+          (resp.StatusCode == 200) ?
+            bytes(resp.Body).decode_json().as(body,
+              (string(body.?judgementStatus.orValue("")) == "Scanning") ?
+                // Defer to scanning list.
+                {
+                  "events": [{"retry": true}],
+                  "cursor": {
+                    "last_timestamp": state.end_time,
+                    "scanning": state.?cursor.scanning.orValue([]).exists(e, e.id == state.worklist[int(state.next)]) ?
+                      state.?cursor.scanning.orValue([])
+                    :
+                      state.?cursor.scanning.orValue([]) + [{"id": state.worklist[int(state.next)], "first_seen": now.format(time_layout.RFC3339)}],
+                  },
+                  "worklist": (int(state.next) + 1 < size(state.worklist)) ? state.worklist : [],
+                  "next": (int(state.next) + 1 < size(state.worklist)) ? (int(state.next) + 1) : 0,
+                  "next_page": (int(state.next) + 1 < size(state.worklist)) ? state.next_page : (int(state.next_page) + 1),
+                  "want_more": true,
+                }
+              :
+                // Publish resolved event.
+                {
+                  "events": [{"message": body.encode_json()}],
+                  "cursor": {
+                    "last_timestamp": state.end_time,
+                    "scanning": state.?cursor.scanning.orValue([]),
+                  },
+                  "worklist": (int(state.next) + 1 < size(state.worklist)) ? state.worklist : [],
+                  "next": (int(state.next) + 1 < size(state.worklist)) ? (int(state.next) + 1) : 0,
+                  "next_page": (int(state.next) + 1 < size(state.worklist)) ? state.next_page : (int(state.next_page) + 1),
+                  "want_more": true,
+                }
+            )
           :
             {
               "events": {
                 "error": {
                   "code": string(resp.StatusCode),
                   "id": string(resp.Status),
-                  "message": "GET:"+(
-                    size(resp.Body) != 0 ?
+                  "message": "GET:" + (
+                    (size(resp.Body) != 0) ?
                       string(resp.Body)
                     :
-                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
                   ),
                 },
               },
               "want_more": false,
             }
         )
-      ))
-  ).as(state, state.with(
-    !has(state.worklist) ? state : // Exit early due to GET failure.
-      state.next < size(state.worklist) ?
-        request("GET",
-          state.url.trim_right("/") + "/v1/abusecampaigns/" + state.worklist[state.next]
-        ).with({
-          "Header":{
-            "Authorization": ["Bearer " + string(state.access_token)],
-          }
-        }).do_request().as(resp, resp.StatusCode == 200 ?
-          bytes(resp.Body).decode_json().as(body,{
-            "events": [{
-              "message": body.encode_json(),
-            }],
-            "cursor": {
-              "last_timestamp": state.end_time
-            },
-            "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
-            "next": int(state.next) + 1 < size(state.worklist) ? int(state.next) + 1 : 0,
-            "next_page": int(state.next) + 1 < size(state.worklist) ? state.next_page : int(state.next_page) + 1,
-            "want_more": true,
-          })
-        :
-          {
-            "events": {
-              "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "GET:"+(
-                  size(resp.Body) != 0 ?
-                    string(resp.Body)
-                  :
-                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                ),
-              },
-            },
-            "want_more": false,
-          }
-        )
+      : // Worklist exhausted.
+      state.?recheck.orValue(false) ?
+        // End of re-check — save updated scanning list and start collection.
+        {
+          "events": [{"retry": true}],
+          "cursor": {
+            "last_timestamp": state.?cursor.last_timestamp.orValue(state.start_time),
+            "scanning": state.?updated_scanning.orValue([]),
+          },
+          "worklist": [],
+          "recheck": false,
+          "want_more": true,
+          "next_page": 1,
+        }
       :
         {
           "events": [],
           "want_more": false,
-          "next_page": 1
+          "next_page": 1,
         }
     )
   )
@@ -130,7 +244,11 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- drop_event:
+    when:
+      equals:
+        retry: true
+{{#if processors}}
 {{processors}}
 {{/if}}

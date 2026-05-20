@@ -1,0 +1,116 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the modification of a file creation time for executable files in sensitive system directories. Adversaries may modify file time attributes to blend malicious executables with legitimate system files. Timestomping is a technique that modifies the timestamps of a file often to mimic files that are in trusted directories.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.domain",
+                "file.path",
+                "file.name",
+                "host.name",
+                "host.id",
+                "process.executable",
+                "winlog.event_data.CreationUtcTime",
+                "winlog.event_data.PreviousCreationUtcTime"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Timestomp in Executable Files",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This guide was created by humans with the assistance of generative AI. While its contents have been manually curated to include the most valuable information, always validate assumptions and adjust procedures to match your internal runbooks and incident triage and response policies.\n\n### Investigating Potential Timestomp in Executable Files\n\nThis alert indicates that a process modified the creation timestamp of a file with an executable extension in a sensitive Windows directory or a common persistence location. Timestomping can be used to make recently created or modified files appear older and blend in with legitimate system content.\n\n#### Possible investigation steps\n- Establish scope and validate context:\n  - Identify the affected endpoint using `host.name` and `host.id`, and determine whether similar alerts or related file-timestamp changes are occurring on the same host.\n  - Review `user.name`, `user.domain`, and `user.id` to understand whether the account typically performs administrative or software management activities on this endpoint.\n  - Use `@timestamp` to bound a focused time window for pivots (for example, shortly before and after the change).\n\n- Assess the timestamp change behavior:\n  - Compare `winlog.event_data.PreviousCreationUtcTime` to `winlog.event_data.CreationUtcTime` and note whether the timestamp was backdated, forward-dated, or aligned to an apparent baseline.\n  - Identify whether multiple files were modified in the same window by searching for additional events on the same `host.id` and `process.entity_id`.\n\n- Evaluate the target file:\n  - Review `file.path`, `file.directory`, `file.name`, and `file.extension` to determine whether the target is expected in that location and whether the name resembles a legitimate component for the directory.\n  - If the file is in a Startup location, treat it as a potential persistence artifact and prioritize determining whether it later executed on the host.\n  - If the file is in a system directory, assess whether the host role and recent maintenance activity could reasonably explain changes to that specific file.\n\n- Investigate the process responsible for the change:\n  - Review `process.executable` and `process.name` for signs of an unusual execution location, unexpected binary name, or a process that does not normally manage files in the target directory.\n  - Pivot using `process.entity_id` (or `process.pid` within a narrow time range) to reconstruct process ancestry and command context using your available process telemetry.\n  - Look for additional activity by the same process in the same time window, such as other file modifications involving the same `file.path` or other executable files in similar directories.\n\n- Check for follow-on execution and related activity:\n  - Search for subsequent activity on the same `host.id` where `process.executable` matches the alerted `file.path`, which can indicate the modified file was executed after timestomping.\n  - If the target is a shortcut (`file.extension` such as `lnk`), look for later execution on the host that aligns with user logon activity for `user.id` and the alert timeline.\n  - Identify whether the same `file.name` and `file.path` appear on other endpoints, which may indicate propagation, a shared deployment mechanism, or a broader intrusion set.\n\n### False positive analysis\n- Enterprise software deployment, patching, and self-update mechanisms can rewrite binaries and adjust file metadata as part of normal operations.\n- Backup, restore, profile reset, and file synchronization workflows can preserve or reapply timestamps when placing executables into directories.\n- Administrative troubleshooting or recovery activities (for example, repairing installations or restoring components) may result in unexpected timestamp changes for legitimate files.\n\n### Response and remediation\n- If the activity is unexpected or suspicious:\n  - Contain the host to limit further tampering and reduce the risk of execution or persistence.\n  - Preserve evidence for the alert by capturing the values of `file.path`, `process.executable`, `process.entity_id`, `user.id`, and the before/after timestamps, and collect related events on the same `host.id` in the surrounding window.\n  - Determine whether the affected file executed after the change by correlating activity on the same `host.id` and comparing `process.executable` to the alerted `file.path`.\n  - Acquire and analyze the target file and the modifying process binary using your standard tooling to assess reputation, integrity, and suspected origin.\n  - Remove or quarantine malicious files and remediate unauthorized persistence, especially for items placed in Startup locations.\n  - Scope across the environment for the same `file.path`, `file.name`, and `process.executable`, and apply containment actions to additional affected hosts as needed.\n  - If compromise is suspected, review access associated with `user.id` and follow incident response procedures for account containment and recovery.\n\n- If the activity is confirmed benign:\n  - Document the legitimate software or workflow responsible for the timestamp change, including the expected `process.executable` and target paths, to support consistent triage and future tuning.\n",
+        "query": "file where host.os.type == \"windows\" and\n  event.provider == \"Microsoft-Windows-Sysmon\" and event.code == \"2\" and\n  file.extension : (\n    \"exe\", \"dll\", \"sys\", \"msi\", \"scr\", \"pif\", \"lnk\"\n  ) and\n  file.path : (\n    \"?:\\\\Windows\\\\System32\\\\*\",\n    \"?:\\\\Windows\\\\SysWOW64\\\\*\",\n    \"?:\\\\ProgramData\\\\*\",\n    \"?:\\\\Users\\\\Public\\\\*\",\n    \"?:\\\\Users\\\\*\\\\AppData\\\\Roaming\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs\\\\Startup\\\\*\",\n    \"?:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs\\\\Startup\\\\*\"\n  ) and\n  not process.executable : (\n    \"?:\\\\Program Files\\\\*\",\n    \"?:\\\\Program Files (x86)\\\\*\",\n    \"?:\\\\Windows\\\\system32\\\\cleanmgr.exe\",\n    \"?:\\\\Windows\\\\system32\\\\msiexec.exe\",\n    \"?:\\\\Windows\\\\syswow64\\\\msiexec.exe\",\n    \"?:\\\\Windows\\\\system32\\\\svchost.exe\",\n    \"?:\\\\Windows\\\\System32\\\\Robocopy.exe\",\n    \"?:\\\\Windows\\\\SysWOW64\\\\Robocopy.exe\"\n  ) and\n  not (process.executable : \"?:\\\\Windows\\\\System32\\\\spoolsv.exe\" and file.path : \"?:\\\\Windows\\\\System32\\\\spool\\\\*\") and\n  not user.name : (\"SYSTEM\", \"Local Service\", \"Network Service\")\n",
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.extension",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "166727ab-6768-4e26-b80c-948b228ffc06",
+        "setup": "## Setup\n\nSysmon must be installed and configured to generate the events used by this rule (Event ID 2).\nSetup instructions: https://ela.st/sysmon-event-2-setup\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1070",
+                        "name": "Indicator Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1070/",
+                        "subtechnique": [
+                            {
+                                "id": "T1070.006",
+                                "name": "Timestomp",
+                                "reference": "https://attack.mitre.org/techniques/T1070/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 110
+    },
+    "id": "166727ab-6768-4e26-b80c-948b228ffc06_110",
+    "type": "security-rule"
+}

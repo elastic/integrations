@@ -2,6 +2,22 @@
 
 Microsoft Foundry provides a comprehensive suite of AI services that enable developers to build, deploy, and manage AI solutions efficiently. The Microsoft Foundry integration collects metrics through Azure Monitor, facilitating robust monitoring and operational insights.
 
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/docs/reference/fleet/install-elastic-agents). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to collect data from Azure and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+### Agentless deployment
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html)
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+> **Note:** Agentless deployment is currently supported for Microsoft Foundry metrics only. Log collection is not available via agentless and requires a traditional Elastic Agent deployment.
+
 ## Data streams
 
 ### Logs
@@ -17,6 +33,8 @@ The Microsoft Foundry logs data stream captures the gateway log events. These ar
 #### Requirements and setup
 
 Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information on how to set up and use this integration.
+
+**Authentication (Event Hub):** The Event Hub input supports two authentication methods: **connection string** (default) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
 
 #### Native logging
 
