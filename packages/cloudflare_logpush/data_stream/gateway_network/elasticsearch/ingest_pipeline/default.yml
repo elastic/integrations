@@ -171,6 +171,11 @@ processors:
       field: host.id
       copy_from: cloudflare_logpush.gateway_network.host.id
       ignore_empty_value: true
+  - set:
+      tag: set_device_id_from_host_id
+      field: device.id
+      copy_from: cloudflare_logpush.gateway_network.host.id
+      ignore_empty_value: true
   - rename:
       tag: rename_json_DeviceName_to_cloudflare_logpush_gateway_network_host_name_bfa47a8b
       field: json.DeviceName
@@ -343,6 +348,11 @@ processors:
       field: json.DetectedProtocol
       target_field: cloudflare_logpush.gateway_network.detected_protocol
       ignore_missing: true
+  - set:
+      tag: set_network_protocol_4337a94d
+      field: network.protocol
+      copy_from: cloudflare_logpush.gateway_network.detected_protocol
+      ignore_empty_value: true
   - convert:
       field: json.OverrideIP
       tag: convert_overrideip_to_ip
@@ -462,6 +472,12 @@ processors:
       if: ctx.cloudflare_logpush?.gateway_network?.host?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_51c8674c
+      field: related.hosts
+      value: "{{{cloudflare_logpush.gateway_network.sni}}}"
+      if: ctx.cloudflare_logpush?.gateway_network?.sni != null
+      allow_duplicates: false
+  - append:
       tag: append_related_user_7f407fef
       field: related.user
       value: '{{{cloudflare_logpush.gateway_network.user.id}}}'
@@ -495,6 +511,7 @@ processors:
         - cloudflare_logpush.gateway_network.transport
         - cloudflare_logpush.gateway_network.user.id
         - cloudflare_logpush.gateway_network.user.email
+        - cloudflare_logpush.gateway_network.detected_protocol
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_missing: true
   - script:

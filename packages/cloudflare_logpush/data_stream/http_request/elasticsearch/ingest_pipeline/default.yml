@@ -377,11 +377,21 @@ processors:
       field: json.ClientCity
       target_field: cloudflare_logpush.http_request.client.city
       ignore_missing: true
+  - set:
+      tag: set_source_geo_city_name_3c4b6278
+      field: source.geo.city_name
+      copy_from: cloudflare_logpush.http_request.client.city
+      ignore_empty_value: true
   - rename:
       tag: rename_json_ClientDeviceType_to_cloudflare_logpush_http_request_client_device_type_1a6d51fa
       field: json.ClientDeviceType
       target_field: cloudflare_logpush.http_request.client.device.type
       ignore_missing: true
+  - set:
+      tag: set_device_type_from_client_device_type
+      field: device.type
+      copy_from: cloudflare_logpush.http_request.client.device.type
+      ignore_empty_value: true
   - rename:
       tag: rename_json_ClientIPClass_to_cloudflare_logpush_http_request_client_ip_class_5adb6839
       field: json.ClientIPClass
@@ -402,6 +412,15 @@ processors:
       field: json.ClientMTLSAuthCertFingerprint
       target_field: cloudflare_logpush.http_request.client.mtls.auth.fingerprint
       ignore_missing: true
+  - set:
+      tag: set_tls_client_hash_sha256_51c97217
+      field: tls.client.hash.sha256
+      copy_from: cloudflare_logpush.http_request.client.mtls.auth.fingerprint
+      ignore_empty_value: true
+  - uppercase:
+      tag: uppercase_tls_client_hash_sha256_f21a9195
+      field: tls.client.hash.sha256
+      ignore_missing: true
   - rename:
       tag: rename_json_ClientMTLSAuthStatus_to_cloudflare_logpush_http_request_client_mtls_auth_status_b0179374
       field: json.ClientMTLSAuthStatus
@@ -412,6 +431,11 @@ processors:
       field: json.ClientRegionCode
       target_field: cloudflare_logpush.http_request.client.region_code
       ignore_missing: true
+  - set:
+      tag: set_source_geo_region_iso_code_2e276b60
+      field: source.geo.region_iso_code
+      copy_from: cloudflare_logpush.http_request.client.region_code
+      ignore_empty_value: true
   - convert:
       tag: convert_json_ClientRequestBytes_to_cloudflare_logpush_http_request_client_request_bytes_7aa1b76a
       field: json.ClientRequestBytes
@@ -424,6 +448,11 @@ processors:
             tag: append_error_message_55ff3d97
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_http_request_bytes_from_client_request_bytes
+      field: http.request.bytes
+      copy_from: cloudflare_logpush.http_request.client.request.bytes
+      ignore_empty_value: true
   - rename:
       tag: rename_json_ContentScanObjResults_to_cloudflare_logpush_http_request_content_scan_results_9bec8ee2
       field: json.ContentScanObjResults
@@ -545,6 +574,11 @@ processors:
       field: json.ClientRequestReferer
       target_field: cloudflare_logpush.http_request.client.request.referer
       ignore_missing: true
+  - set:
+      tag: set_http_request_referrer_6ac5fe94
+      field: http.request.referrer
+      copy_from: cloudflare_logpush.http_request.client.request.referer
+      ignore_empty_value: true
   - rename:
       tag: rename_json_ClientRequestScheme_to_cloudflare_logpush_http_request_client_request_scheme_349d1500
       field: json.ClientRequestScheme
@@ -615,6 +649,11 @@ processors:
             tag: append_error_message_9dc529f2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_source_port_from_client_src_port
+      field: source.port
+      copy_from: cloudflare_logpush.http_request.client.src.port
+      ignore_empty_value: true
   - convert:
       tag: convert_json_ClientTCPRTTMs_to_cloudflare_logpush_http_request_client_tcp_rtt_ms_d65b4e12
       field: json.ClientTCPRTTMs
@@ -714,6 +753,11 @@ processors:
             tag: append_error_message_21b4d334
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_http_response_body_bytes
+      field: http.response.body.bytes
+      copy_from: cloudflare_logpush.http_request.edge.response.body_bytes
+      ignore_empty_value: true
   - convert:
       tag: convert_json_EdgeResponseBytes_to_cloudflare_logpush_http_request_edge_response_bytes_ae183152
       field: json.EdgeResponseBytes
@@ -726,6 +770,11 @@ processors:
             tag: append_error_message_cce99f2d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_http_response_bytes_from_edge_response_bytes
+      field: http.response.bytes
+      copy_from: cloudflare_logpush.http_request.edge.response.bytes
+      ignore_empty_value: true
   - convert:
       tag: convert_json_EdgeResponseCompressionRatio_to_cloudflare_logpush_http_request_edge_response_compression_ratio_14ec9748
       field: json.EdgeResponseCompressionRatio
@@ -800,6 +849,11 @@ processors:
       field: json.JA3Hash
       target_field: cloudflare_logpush.http_request.ja3_hash
       ignore_missing: true
+  - set:
+      tag: set_tls_client_ja3_from_ja3_hash
+      field: tls.client.ja3
+      copy_from: cloudflare_logpush.http_request.ja3_hash
+      ignore_empty_value: true
   - rename:
       tag: rename_json_JA4_to_cloudflare_logpush_http_request_ja4_59bce106
       field: json.JA4
@@ -936,6 +990,11 @@ processors:
   - set:
       tag: set_event_id_a8495d8d
       field: event.id
+      copy_from: cloudflare_logpush.http_request.ray.id
+      ignore_empty_value: true
+  - set:
+      tag: set_http_request_id_from_ray_id
+      field: http.request.id
       copy_from: cloudflare_logpush.http_request.ray.id
       ignore_empty_value: true
   - rename:
@@ -1211,6 +1270,36 @@ processors:
       if: ctx.cloudflare_logpush?.http_request?.ja3_hash != null
       allow_duplicates: false
   - append:
+      tag: append_client_mtls_auth_fingerprint_into_related_hash
+      field: related.hash
+      value: '{{{cloudflare_logpush.http_request.client.mtls.auth.fingerprint}}}'
+      if: ctx.cloudflare_logpush?.http_request?.client?.mtls?.auth?.fingerprint != null
+      allow_duplicates: false
+  - append:
+      tag: append_ja4_into_related_hash
+      field: related.hash
+      value: '{{{cloudflare_logpush.http_request.ja4}}}'
+      if: ctx.cloudflare_logpush?.http_request?.ja4 != null
+      allow_duplicates: false
+  - append:
+      tag: append_client_request_host_into_related_hosts
+      field: related.hosts
+      value: '{{{cloudflare_logpush.http_request.client.request.host}}}'
+      if: ctx.cloudflare_logpush?.http_request?.client?.request?.host != null
+      allow_duplicates: false
+  - append:
+      tag: append_edge_request_host_into_related_hosts
+      field: related.hosts
+      value: '{{{cloudflare_logpush.http_request.edge.request.host}}}'
+      if: ctx.cloudflare_logpush?.http_request?.edge?.request?.host != null
+      allow_duplicates: false
+  - append:
+      tag: append_edge_server_ip_into_related_ip
+      field: related.ip
+      value: '{{{cloudflare_logpush.http_request.edge.server.ip}}}'
+      if: ctx.cloudflare_logpush?.http_request?.edge?.server?.ip != null
+      allow_duplicates: false
+  - append:
       tag: append_related_ip_30d15214
       field: related.ip
       value: '{{{cloudflare_logpush.http_request.client.ip}}}'
@@ -1240,6 +1329,12 @@ processors:
         - cloudflare_logpush.http_request.client.ip
         - cloudflare_logpush.http_request.client.request.user.agent
         - cloudflare_logpush.http_request.client.ssl.cipher
+        - cloudflare_logpush.http_request.client.device.type
+        - cloudflare_logpush.http_request.client.request.bytes
+        - cloudflare_logpush.http_request.edge.response.bytes
+        - cloudflare_logpush.http_request.client.src.port
+        - cloudflare_logpush.http_request.ja3_hash
+        - cloudflare_logpush.http_request.client.request.referer
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_missing: true
   - script:

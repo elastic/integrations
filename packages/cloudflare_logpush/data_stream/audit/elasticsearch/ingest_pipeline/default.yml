@@ -221,6 +221,18 @@ processors:
       if: ctx.cloudflare_logpush?.audit?.actor?.id != null
       allow_duplicates: false
   - append:
+      tag: append_user_email_into_related_user
+      field: related.user
+      value: '{{{cloudflare_logpush.audit.actor.email}}}'
+      if: ctx.cloudflare_logpush?.audit?.actor?.email != null
+      allow_duplicates: false
+  - append:
+      tag: append_owner_id_into_related_user
+      field: related.user
+      value: '{{{cloudflare_logpush.audit.owner.id}}}'
+      if: ctx.cloudflare_logpush?.audit?.owner?.id != null
+      allow_duplicates: false
+  - append:
       tag: append_related_ip
       field: related.ip
       value: '{{{cloudflare_logpush.audit.actor.ip}}}'

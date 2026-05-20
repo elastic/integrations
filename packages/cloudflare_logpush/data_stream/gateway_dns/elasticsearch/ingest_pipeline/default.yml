@@ -101,6 +101,11 @@ processors:
       field: host.id
       copy_from: cloudflare_logpush.gateway_dns.host.id
       ignore_empty_value: true
+  - set:
+      tag: set_device_id_from_host_id
+      field: device.id
+      copy_from: cloudflare_logpush.gateway_dns.host.id
+      ignore_empty_value: true
   - rename:
       tag: rename_json_DeviceName_to_cloudflare_logpush_gateway_dns_host_name_f807b974
       field: json.DeviceName
@@ -736,6 +741,18 @@ processors:
       if: ctx.cloudflare_logpush?.gateway_dns?.host?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_342de5b5
+      field: related.hosts
+      value: "{{{cloudflare_logpush.gateway_dns.question.name}}}"
+      if: ctx.cloudflare_logpush?.gateway_dns?.question?.name != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_hosts_87118242
+      field: related.hosts
+      value: "{{{cloudflare_logpush.gateway_dns.cname}}}"
+      if: ctx.cloudflare_logpush?.gateway_dns?.cname != null
+      allow_duplicates: false
+  - append:
       tag: append_related_user_7f407fef
       field: related.user
       value: '{{{cloudflare_logpush.gateway_dns.user.id}}}'
@@ -751,6 +768,24 @@ processors:
       tag: foreach_cloudflare_logpush_gateway_dns_initial_resolved_ips_1a8b4c4e
       field: cloudflare_logpush.gateway_dns.initial_resolved_ips
       if: ctx.cloudflare_logpush?.gateway_dns?.initial_resolved_ips instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_cloudflare_logpush_gateway_dns_resolved_ip_4eab0aa2
+      field: cloudflare_logpush.gateway_dns.resolved_ip
+      if: ctx.cloudflare_logpush?.gateway_dns?.resolved_ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_cloudflare_logpush_gateway_dns_authoritative_name_server_ip_7a2900cc
+      field: cloudflare_logpush.gateway_dns.authoritative_name_server_ip
+      if: ctx.cloudflare_logpush?.gateway_dns?.authoritative_name_server_ip instanceof List
       processor:
         append:
           field: related.ip
