@@ -6,7 +6,7 @@ This integration uses `http` metricbeat module to collect above metrics.
 
 ## Compatibility
 
-This integration has been tested against `CouchDB version 3.2.2` and `CouchDB version 3.5.2`.
+This integration has been tested against `CouchDB version 3.2.2` and `CouchDB version 3.5.1`.
 
 ## Requirements
 
