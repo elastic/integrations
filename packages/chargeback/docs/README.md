@@ -127,18 +127,15 @@ If you built your own ES|QL, dashboards, or automation against the lookup indice
 
 ## Deployment Groups
 
-The integration supports organizing deployments into logical groups using the `chargeback_group` tag on ESS Billing deployments. This enables cost allocation and filtering by teams, projects, or any organizational structure.
+The integration supports organizing deployments into logical groups using a deployment tag whose **key** is `chargeback_group`. This enables cost allocation and filtering by teams, projects, or any organizational structure.
 
-To assign a deployment to a chargeback group, add a tag to your deployment in the Elastic Cloud console in the format:
-```
-chargeback_group:<group-name>
-```
+In the **Elastic Cloud** console (deployment → settings → tags), add a tag with **key** `chargeback_group` and **value** set to your group name—for example key `chargeback_group` and value `Americas` or `team-search`. You do not enter a literal `chargeback_group:...` string in one field; the console uses separate key and value. The Elasticsearch Service Billing integration records tags as `key:value` strings in `ess.billing.deployment_tags`, and the `billing_cluster_cost` transform matches values that start with `chargeback_group:` to populate `deployment_group`.
 
-For example: `chargeback_group:team-search` or `chargeback_group:project-analytics`
+For deployment groups to appear in chargeback data, **Elasticsearch Service Billing v1.7.0+** must be installed and the billing data stream must have **Add deployment tags** enabled in Fleet (otherwise `ess.billing.deployment_tags` is empty and `deployment_group` stays blank). After tags or policy change, allow time for the billing collection interval and the `billing_cluster_cost` transform schedule before expecting updated groups in the dashboard.
 
-The `billing_cluster_cost` transform automatically extracts these tags from the `deployment_tags` field in ESS Billing data using runtime mappings. The dashboard includes a deployment group filter to view costs by specific groups, making it easy to track expenses per team or project.
+The dashboard includes a deployment group filter to view costs by specific groups, making it easy to track expenses per team or project.
 
-**Note:** Each deployment should have only one `chargeback_group` tag. Having multiple tags can cause issues and lead to unpredictable cost allocation.
+**Note:** Each deployment should have only one tag with key `chargeback_group`. Multiple such tags can cause unpredictable cost allocation.
 
 ## Observability Alerting
 
@@ -189,3 +186,7 @@ To use this integration, the following prerequisites must be met:
 4. Dashboard queries the resulting lookup indices using ES|QL
 
 **Note:** This integration must be installed on a centralized monitoring cluster that has visibility to both billing and usage data from your deployments.
+
+## Troubleshooting
+
+If transforms appear healthy but the **[Chargeback] Cost and Consumption breakdown** dashboard shows no data, see **[troubleshooting.md](troubleshooting.md)** for a step-by-step checklist (upstream billing/usage data, `index_pivot`, lookup indices, configuration date ranges, ES|QL checks, and common failure patterns).
