@@ -27,14 +27,14 @@ request.transforms:
       target: body.SortCriteria
       value: '[{"Field":"UpdatedAt","SortOrder":"asc"}]'
       value_type: json
-{{!-- The upper time bound (End) has been removed from UpdatedAt because httpjson
-      re-evaluates (now) on every pagination page. When the value crosses an hour
-      boundary, AWS rejects the NextToken. A CEL rewrite can reintroduce the upper
-      bound safely since it can pin the value once per collection interval. --}}
+{{!-- AWS requires UpdatedAt filters to contain either DateRange or both Start
+      and End. End must be static because httpjson re-evaluates request
+      transforms on every pagination page; a dynamic now-based End can
+      invalidate NextToken. --}}
   - set:
       target: body.Filters.UpdatedAt
-      value: '[{ "Start": "[[formatDate (parseDate .cursor.last_execution_datetime "RFC3339") "2006-01-02T15"]]" }]'
-      default: '[{ "Start": "[[formatDate (now (parseDuration "-{{initial_interval}}")) "2006-01-02T15"]]" }]'
+      value: '[{ "Start": "[[formatDate (parseDate .cursor.last_execution_datetime "RFC3339") "2006-01-02T15"]]", "End": "2099-01-01T00" }]'
+      default: '[{ "Start": "[[formatDate (now (parseDuration "-{{initial_interval}}")) "2006-01-02T15"]]", "End": "2099-01-01T00" }]'
       value_type: json
   - set:
       target: header.Authorization
