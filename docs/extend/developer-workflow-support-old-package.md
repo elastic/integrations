@@ -5,7 +5,7 @@ mapped_pages:
 
 # Release a bug fix for supporting older package version [developer-workflow-support-old-package]
 
-In some cases, when we drop the support for an older version of the stack and later on find out needing to add a bug fix to some old package version, we have to make some manual changes to release the bug fix to users. For example: in this [PR](https://github.com/elastic/integrations/pull/3688) (AWS package version 1.23.4), support for Kibana version 7.x was dropped and bumped the AWS package version from 1.19.5 to 1.20.0. But we found a bug in the EC2 dashboard that needs to be fixed with Kibana version 7.x, so instead of adding a new AWS package version 1.23.5, we need to fix it between 1.19.5 and 1.20.0. This means creating a new version (e.g. 1.19.6) based on 1.19.5.
+Sometimes, when we drop the support for an earlier version of the stack and later on find out needing to add a bug fix to some old package version, we have to make some manual changes to release the bug fix to users. For example: in this [PR](https://github.com/elastic/integrations/pull/3688) (AWS package version 1.23.4), support for Kibana version 7.x was dropped and bumped the AWS package version from 1.19.5 to 1.20.0. But we found a bug in the EC2 dashboard that needs to be fixed with Kibana version 7.x, so instead of adding a new AWS package version 1.23.5, we need to fix it between 1.19.5 and 1.20.0. This means creating a new version (for example, 1.19.6) based on 1.19.5.
 
 **Overview of the process:**
 
@@ -80,7 +80,7 @@ In some cases, when we drop the support for an older version of the stack and la
 
 2. Run the **integrations-backport** pipeline [https://buildkite.com/elastic/integrations-backport](https://buildkite.com/elastic/integrations-backport) for creating the backport branch. ![buildkite build](images/build.png "")
 
-    **Please, pay attention!**, if you just run the pipeline it’ll wait for your inputs, nothing will happen without that.
+    **Pay attention:** if you just run the pipeline it’ll wait for your inputs, nothing will happen without that.
 
     ![waiting input step](images/backport_input_step.png)
 
