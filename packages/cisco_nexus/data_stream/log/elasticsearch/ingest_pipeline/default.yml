@@ -226,6 +226,11 @@ processors:
       tag: "set_host_hostname"
       ignore_empty_value: true
   - append:
+      field: related.hosts
+      value: "{{{host.hostname}}}"
+      allow_duplicates: false
+      if: ctx.host?.hostname != null
+  - append:
       field: observer.ip
       value: "{{{cisco_nexus.log.ip_address}}}"
       tag: "append_observer_ip"
