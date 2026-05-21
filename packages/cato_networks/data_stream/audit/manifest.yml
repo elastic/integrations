@@ -1,16 +1,26 @@
-title: Cato Networks Event
+title: Cato Networks Audit
 type: logs
 streams:
   - input: cel
-    title: Event
+    title: Audit
     enabled: true
-    description: Collect event logs from Cato Networks via API.
+    description: Collect audit logs from Cato Networks via API.
     template_path: cel.yml.hbs
     vars:
+      - name: initial_interval
+        type: text
+        title: Initial interval
+        description: >-
+          How far back to pull the logs from Cato Networks API. Supported units for this parameter are h/m. The maximum allowed value is 2160h (90 days) or 129600m. Any value exceeding this limit will automatically be capped to the maximum allowed duration.
+        default: 24h
+        multi: false
+        required: true
+        show_user: true
       - name: interval
         type: text
         title: Interval
-        description: Duration between requests to the Cato Networks API. Supported units for this parameter are h/m/s.
+        description: >-
+          Duration between requests to the Cato Networks API. Supported units for this parameter are h/m/s. It is recommended to use interval value less than 2160h (90days) to avoid any data loss.
         default: 5m
         multi: false
         required: true
@@ -25,8 +35,8 @@ streams:
       - name: resource_rate_limit_limit
         type: text
         title: Resource Rate Limit
-        description: Maximum request rate per second. The Cato Networks API has a limit of 100 requests per minute (~1.67 req/sec).
-        default: '1.6'
+        description: Maximum request rate per second. The Cato Networks API has a limit of 5 requests per minute (~0.083 req/sec).
+        default: '0.080'
         show_user: false
         multi: false
         required: true
@@ -68,7 +78,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - cato_networks-event
+          - cato_networks-audit
       - name: preserve_original_event
         required: false
         show_user: true
