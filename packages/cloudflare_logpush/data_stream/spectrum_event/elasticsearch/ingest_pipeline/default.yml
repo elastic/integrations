@@ -45,34 +45,60 @@ processors:
         must be removed.
       if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
       ignore_missing: true
+  - convert:
+      tag: convert_json_Timestamp_7242ddce
+      field: json.Timestamp
+      type: long
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      ignore_failure: true
+  - convert:
+      tag: convert_json_ConnectTimestamp_be5367bc
+      field: json.ConnectTimestamp
+      type: long
+      if: ctx.json?.ConnectTimestamp != null && ctx.json.ConnectTimestamp != ''
+      ignore_failure: true
+  - convert:
+      tag: convert_json_DisconnectTimestamp_84281438
+      field: json.DisconnectTimestamp
+      type: long
+      if: ctx.json?.DisconnectTimestamp != null && ctx.json.DisconnectTimestamp != ''
+      ignore_failure: true
   - script:
       lang: painless
       tag: painless_timestamp_to_milli
-      if: ctx.json?.Timestamp != null
       source: |
-        try {
-          long t;
-          if (ctx.json.Timestamp instanceof String) {
-            t = Long.parseLong(ctx.json.Timestamp);
-          } else if (ctx.json.Timestamp instanceof Number) {
-            t = (long)(ctx.json.Timestamp);
-          } else {
-            return;
+        def convertToMillis(long timestamp) {
+          if (timestamp > (long)(1e18)) {
+            return timestamp/(long)(1e6)
+          } else if (timestamp < (long)(1e10))  {
+            return timestamp*(long)(1e3)
           }
-          if (t > (long)(1e18)) {
-            ctx.json.Timestamp = t/(long)(1e6)
-          } else if (t < (long)(1e10))  {
-            ctx.json.Timestamp = t*(long)(1e3)
+          return timestamp
+        }
+        if (ctx.json?.Timestamp != null && ctx.json.Timestamp instanceof Number) {
+          ctx.json.Timestamp = convertToMillis(ctx.json.Timestamp);
+        }
+        if (ctx.json?.ConnectTimestamp != null && ctx.json.ConnectTimestamp instanceof Number) {
+          if (ctx.json.ConnectTimestamp == 0) {
+            ctx.json.ConnectTimestamp = null;
+          } else {
+            ctx.json.ConnectTimestamp = convertToMillis(ctx.json.ConnectTimestamp);
           }
         }
-        catch (Exception e) {}
+        if (ctx.json?.DisconnectTimestamp != null && ctx.json.DisconnectTimestamp instanceof Number) {
+          if (ctx.json.DisconnectTimestamp == 0) {
+            ctx.json.DisconnectTimestamp = null;
+          } else {
+            ctx.json.DisconnectTimestamp = convertToMillis(ctx.json.DisconnectTimestamp);
+          }
+        }
       on_failure:
         - append:
-            tag: append_error_message_3a16db2c
+            tag: append_error_message_1608873d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_json_Timestamp_772fbe7f
+      tag: date_json_Timestamp_70be028a
       field: json.Timestamp
       if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
       formats:
@@ -82,7 +108,7 @@ processors:
       timezone: UTC
       on_failure:
         - append:
-            tag: append_error_message_2e342a9c
+            tag: append_error_message_d6556db8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -90,38 +116,6 @@ processors:
       field: cloudflare_logpush.spectrum_event.timestamp
       copy_from: '@timestamp'
       ignore_empty_value: true
-  - script:
-      lang: painless
-      tag: painless_connect_timestamp_to_milli
-      if: ctx.json?.ConnectTimestamp != null
-      source: |
-        if (ctx.json.ConnectTimestamp == "0" || 
-            ctx.json.ConnectTimestamp == 0 ||
-            ctx.json.ConnectTimestamp == "") {
-          ctx.json.ConnectTimestamp = null;
-          return;
-        }
-        try {
-          long t;
-          if (ctx.json.ConnectTimestamp instanceof String) {
-            t = Long.parseLong(ctx.json.ConnectTimestamp);
-          } else if (ctx.json.ConnectTimestamp instanceof Number) {
-            t = (long)(ctx.json.ConnectTimestamp);
-          } else {
-            return;
-          }
-          if (t > (long)(1e18)) {
-            ctx.json.ConnectTimestamp = t/(long)(1e6)
-          } else if (t < (long)(1e10))  {
-            ctx.json.ConnectTimestamp = t*(long)(1e3)
-          }
-        }
-        catch (Exception e) {}
-      on_failure:
-        - append:
-            tag: append_error_message_f2e35839
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       tag: date_json_ConnectTimestamp_to_cloudflare_logpush_spectrum_event_connect_time_2d3e71a3
       field: json.ConnectTimestamp
@@ -145,38 +139,6 @@ processors:
       field: event.start
       copy_from: cloudflare_logpush.spectrum_event.connect.time
       ignore_empty_value: true
-  - script:
-      lang: painless
-      tag: painless_disconnect_timestamp_to_milli
-      if: ctx.json?.DisconnectTimestamp != null
-      source: |
-        if (ctx.json?.DisconnectTimestamp == "0" || 
-            ctx.json?.DisconnectTimestamp == 0 || 
-            ctx.json?.DisconnectTimestamp == "") {
-          ctx.json.DisconnectTimestamp = null;
-          return;
-        }
-        try {
-          long t;
-          if (ctx.json.DisconnectTimestamp instanceof String) {
-            t = Long.parseLong(ctx.json.DisconnectTimestamp);
-          } else if (ctx.json.DisconnectTimestamp instanceof Number) {
-            t = (long)(ctx.json.DisconnectTimestamp);
-          } else {
-            return;
-          }
-          if (t > (long)(1e18)) {
-            ctx.json.DisconnectTimestamp = t/(long)(1e6)
-          } else if (t < (long)(1e10))  {
-            ctx.json.DisconnectTimestamp = t*(long)(1e3)
-          }
-        }
-        catch (Exception e) {}
-      on_failure:
-        - append:
-            tag: append_error_message_246f093e
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       tag: date_json_DisconnectTimestamp_to_cloudflare_logpush_spectrum_event_disconnect_time_73e74811
       field: json.DisconnectTimestamp

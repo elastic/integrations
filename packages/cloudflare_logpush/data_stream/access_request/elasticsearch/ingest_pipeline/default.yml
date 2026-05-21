@@ -46,34 +46,30 @@ processors:
       if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
       ignore_missing: true
   # ECS fields
+  - convert:
+      tag: convert_json_CreatedAt_4a713653
+      field: json.CreatedAt
+      type: long
+      if: ctx.json?.CreatedAt != null && ctx.json.CreatedAt != ''
+      ignore_failure: true
   - script:
       lang: painless
       tag: painless_created_at_to_milli
-      if: ctx.json?.CreatedAt != null
+      if: ctx.json?.CreatedAt != null && ctx.json.CreatedAt instanceof Number
       source: |
-        try {
-          long t;
-          if (ctx.json.CreatedAt instanceof String) {
-            t = Long.parseLong(ctx.json.CreatedAt);
-          } else if (ctx.json.CreatedAt instanceof Number) {
-            t = (long)(ctx.json.CreatedAt);
-          } else {
-            return;
-          }
-          if (t > (long)(1e18)) {
-            ctx.json.CreatedAt = t/(long)(1e6)
-          } else if (t < (long)(1e10))  {
-            ctx.json.CreatedAt = t*(long)(1e3)
-          }
+        long t = (long)(ctx.json.CreatedAt);
+        if (t > (long)(1e18)) {
+          ctx.json.CreatedAt = t/(long)(1e6)
+        } else if (t < (long)(1e10))  {
+          ctx.json.CreatedAt = t*(long)(1e3)
         }
-        catch (Exception e) {}
       on_failure:
         - append:
-            tag: append_error_message_de6444e3
+            tag: append_error_message_5fa1003d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_json_CreatedAt_71066ccc
+      tag: date_json_CreatedAt_58cc069b
       field: json.CreatedAt
       if: ctx.json?.CreatedAt != null && ctx.json.CreatedAt != ''
       formats:
@@ -83,7 +79,7 @@ processors:
       timezone: UTC
       on_failure:
         - append:
-            tag: append_error_message_54b30f36
+            tag: append_error_message_0f15ed2d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:

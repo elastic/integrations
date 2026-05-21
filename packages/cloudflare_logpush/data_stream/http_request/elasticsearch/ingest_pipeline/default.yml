@@ -45,34 +45,52 @@ processors:
         must be removed.
       if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
       ignore_missing: true
+  - convert:
+      tag: convert_json_EdgeStartTimestamp_3a05abf9
+      field: json.EdgeStartTimestamp
+      type: long
+      if: ctx.json?.EdgeStartTimestamp != null && ctx.json.EdgeStartTimestamp != ''
+      ignore_failure: true
+  - convert:
+      tag: convert_json_EdgeEndTimestamp_56e7554c
+      field: json.EdgeEndTimestamp
+      type: long
+      if: ctx.json?.EdgeEndTimestamp != null && ctx.json.EdgeEndTimestamp != ''
+      ignore_failure: true
+  - convert:
+      tag: convert_json_Datetime_712ea5a9
+      field: json.Datetime
+      type: long
+      if: ctx.json?.Datetime != null && ctx.json.Datetime != ''
+      ignore_failure: true
   - script:
       lang: painless
       tag: painless_edge_start_timestamp_to_milli
-      if: ctx.json?.EdgeStartTimestamp != null
       source: |
-        try {
-          long t;
-          if (ctx.json.EdgeStartTimestamp instanceof String) {
-            t = Long.parseLong(ctx.json.EdgeStartTimestamp);
-          } else if (ctx.json.EdgeStartTimestamp instanceof Number) {
-            t = (long)(ctx.json.EdgeStartTimestamp);
-          } else {
-            return;
+        def convertToMillis(long timestamp) {
+          if (timestamp > (long)(1e18)) {
+            return timestamp/(long)(1e6)
+          } else if (timestamp < (long)(1e10))  {
+            return timestamp*(long)(1e3)
           }
-          if (t > (long)(1e18)) {
-            ctx.json.EdgeStartTimestamp = t/(long)(1e6)
-          } else if (t < (long)(1e10))  {
-            ctx.json.EdgeStartTimestamp = t*(long)(1e3)
-          }
+          return timestamp
         }
-        catch (Exception e) {}
+        if (ctx.json?.EdgeStartTimestamp != null && ctx.json.EdgeStartTimestamp instanceof Number) {
+          ctx.json.EdgeStartTimestamp = convertToMillis(ctx.json.EdgeStartTimestamp);
+        }
+        if (ctx.json?.EdgeEndTimestamp != null && ctx.json.EdgeEndTimestamp instanceof Number) {
+          ctx.json.EdgeEndTimestamp = convertToMillis(ctx.json.EdgeEndTimestamp);
+        }
+        if (ctx.json?.Datetime != null && ctx.json.Datetime instanceof Number) {
+          ctx.json.Datetime = convertToMillis(ctx.json.Datetime);
+        }
       on_failure:
         - append:
-            tag: append_error_message_c2725332
+            tag: append_error_message_edcb660c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_json_EdgeStartTimestamp_to_cloudflare_logpush_http_request_edge_start_time_e2106ccb
+      tag: date_json_EdgeStartTimestamp_to_cloudflare_logpush_http_request_edge_start_time_6e9e517a
       field: json.EdgeStartTimestamp
       if: ctx.json?.EdgeStartTimestamp != null && ctx.json.EdgeStartTimestamp != ''
       formats:
@@ -83,11 +101,26 @@ processors:
       target_field: cloudflare_logpush.http_request.edge.start_time
       on_failure:
         - append:
-            tag: append_error_message_172be258
+            tag: append_error_message_0749b228
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      tag: date_json_Datetime_to_cloudflare_logpush_http_request_datetime_aa973639
+      tag: date_json_EdgeEndTimestamp_to_cloudflare_logpush_http_request_edge_end_time_b977f372
+      field: json.EdgeEndTimestamp
+      if: ctx.json?.EdgeEndTimestamp != null && ctx.json.EdgeEndTimestamp != ''
+      formats:
+        - UNIX_MS
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      target_field: cloudflare_logpush.http_request.edge.end_time
+      on_failure:
+        - append:
+            tag: append_error_message_d27501b8
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_json_Datetime_to_cloudflare_logpush_http_request_datetime_9a7be6f2
       field: json.Datetime
       if: ctx.json?.Datetime != null && ctx.json.Datetime != ''
       formats:
@@ -98,7 +131,7 @@ processors:
       target_field: cloudflare_logpush.http_request.datetime
       on_failure:
         - append:
-            tag: append_error_message_08b2e7e8
+            tag: append_error_message_bb7462c8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -111,47 +144,6 @@ processors:
       field: '@timestamp'
       copy_from: cloudflare_logpush.http_request.edge.start_time
       ignore_empty_value: true
-  - script:
-      lang: painless
-      tag: painless_edge_end_timestamp_to_milli
-      if: ctx.json?.EdgeEndTimestamp != null
-      source: |
-        try {
-          long t;
-          if (ctx.json.EdgeEndTimestamp instanceof String) {
-            t = Long.parseLong(ctx.json.EdgeEndTimestamp);
-          } else if (ctx.json.EdgeEndTimestamp instanceof Number) {
-            t = (long)(ctx.json.EdgeEndTimestamp);
-          } else {
-            return;
-          }
-          if (t > (long)(1e18)) {
-            ctx.json.EdgeEndTimestamp = t/(long)(1e6)
-          } else if (t < (long)(1e10))  {
-            ctx.json.EdgeEndTimestamp = t*(long)(1e3)
-          }
-        }
-        catch (Exception e) {}
-      on_failure:
-        - append:
-            tag: append_error_message_3b06d18c
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - date:
-      tag: date_json_EdgeEndTimestamp_to_cloudflare_logpush_http_request_edge_end_time_a93397bd
-      field: json.EdgeEndTimestamp
-      if: ctx.json?.EdgeEndTimestamp != null && ctx.json.EdgeEndTimestamp != ''
-      formats:
-        - UNIX_MS
-        - ISO8601
-        - yyyy-MM-dd'T'HH:mm:ssZ
-      timezone: UTC
-      target_field: cloudflare_logpush.http_request.edge.end_time
-      on_failure:
-        - append:
-            tag: append_error_message_98b3b972
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       tag: date_json_OriginResponseHTTPExpires_to_cloudflare_logpush_http_request_origin_response_http_expires_5fcc3d5b
       field: json.OriginResponseHTTPExpires
