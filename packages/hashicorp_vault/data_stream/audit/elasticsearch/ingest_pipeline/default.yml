@@ -119,9 +119,13 @@ processors:
   - convert:
       tag: convert_hashicorp_vault_audit_request_remote_port_to_source_port_1efe5263
       field: hashicorp_vault.audit.request.remote_port
-      target_field: source.port
       type: long
-      ignore_missing: true
+      if: "ctx.hashicorp_vault?.audit?.request?.remote_port != null && ctx.hashicorp_vault.audit.request.remote_port instanceof String"
+  - set:
+      tag: set_source_port_from_hashicorp_remote_port
+      field: source.port
+      copy_from: hashicorp_vault.audit.request.remote_port
+      ignore_empty_value: true
 
   # OIDC auth metadata.
   - set:
