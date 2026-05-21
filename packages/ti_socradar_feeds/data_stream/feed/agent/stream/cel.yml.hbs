@@ -61,12 +61,12 @@ program: |-
               !cc.has_checkpoint ?
                 (
                   (has(item.latest_seen_date) && size(string(item.latest_seen_date)) > 0) ?
-                    (string(item.latest_seen_date) >= (now - duration(state.initial_interval)).format("2006-01-02 15:04:05"))
+                    (string(item.latest_seen_date).parse_time("2006-01-02 15:04:05") >= now - duration(state.initial_interval))
                   :
                     true
                 )
               : (has(item.latest_seen_date) && size(string(item.latest_seen_date)) > 0) ?
-                (string(item.latest_seen_date) > cc.last_date)
+                (string(item.latest_seen_date).parse_time("2006-01-02 15:04:05") > cc.last_date.parse_time("2006-01-02 15:04:05"))
               :
                 true
             )
