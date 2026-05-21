@@ -64,12 +64,12 @@ echo "Done."
 echo "--- Get from and to changesets"
 from="$(get_from_changeset)"
 if [[ "${from}" == "" ]]; then
-    echo "Missing \"from\" changset".
+    echo "Missing \"from\" changeset".
     exit 1
 fi
 to="$(get_to_changeset)"
 if [[ "${to}" == "" ]]; then
-    echo "Missing \"to\" changset".
+    echo "Missing \"to\" changeset".
     exit 1
 fi
 echo "Checking with commits: from: '${from}' to: '${to}'"
