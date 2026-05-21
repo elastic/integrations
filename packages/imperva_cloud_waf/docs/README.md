@@ -74,26 +74,26 @@ An example event for `event` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-05-21T13:20:58.190Z",
+    "@timestamp": "2025-08-26T09:17:33.442Z",
     "agent": {
-        "ephemeral_id": "d9df220e-4486-45af-878f-d184bf0bc3b2",
-        "id": "f5ea3ed5-786e-4e4a-9c81-0f8fd1517e2b",
-        "name": "elastic-agent-29732",
+        "ephemeral_id": "c2af9640-ea28-4ab7-b766-c5391d82b759",
+        "id": "f8329c43-eb4d-4aab-a20e-a39db67260a4",
+        "name": "elastic-agent-34907",
         "type": "filebeat",
-        "version": "9.2.8"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "imperva_cloud_waf.event",
-        "namespace": "88199",
+        "namespace": "44486",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f5ea3ed5-786e-4e4a-9c81-0f8fd1517e2b",
+        "id": "f8329c43-eb4d-4aab-a20e-a39db67260a4",
         "snapshot": false,
-        "version": "9.2.8"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -103,9 +103,8 @@ An example event for `event` looks as following:
         "code": "1",
         "dataset": "imperva_cloud_waf.event",
         "end": "2019-08-20T11:31:10.892Z",
-        "ingested": "2026-05-21T13:21:01Z",
+        "ingested": "2025-08-26T09:17:36Z",
         "kind": "event",
-        "module": "imperva_cloud_waf",
         "original": "CEF:0|Incapsula|SIEMintegration|1|1|Normal|0| sourceServiceName=site123.abcd.info siteid=1509732 suid=50005477 requestClientApplication=Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0 deviceFacility=mia ccode=IL tag=www.elvis.com cicode=Rehovot cs7=31.8969 cs7Label=latitude cs8=34.8186 cs8Label=longitude Customer=CEFcustomer123 siteTag=my-site-tag start=1453290121336 request=site123.abcd.info/main.css ref=www.incapsula.com/lama requestmethod=GET cn1=200 app=HTTP deviceExternalID=33411452762204224 in=54 xff=44.44.44.44 cpt=443 src=12.12.12.12 ver=TLSv1.2 ECDHE-RSA-AES128-GCM-SHA256 end=1566300670892 additionalReqHeaders=[{\"Accept\":\"*/*\"},{\"x-v\":\"1\"},{\"x-fapi-interaction-id\":\"10.10.10.10\"}] additionalResHeaders=[{\"Content-Type\":\"text/html; charset\\=UTF-8\"}]",
         "severity": 0,
         "start": "2016-01-20T11:42:01.336Z",
@@ -131,14 +130,22 @@ An example event for `event` looks as following:
             },
             "extensions": {
                 "additional": {
-                    "req_headers": {
-                        "Accept": "*/*",
-                        "x-fapi-interaction-id": "10.10.10.10",
-                        "x-v": "1"
-                    },
-                    "res_headers": {
-                        "Content-Type": "text/html; charset=UTF-8"
-                    }
+                    "req_headers": [
+                        {
+                            "Accept": "*/*"
+                        },
+                        {
+                            "x-v": "1"
+                        },
+                        {
+                            "x-fapi-interaction-id": "10.10.10.10"
+                        }
+                    ],
+                    "res_headers": [
+                        {
+                            "Content-Type": "text/html; charset=UTF-8"
+                        }
+                    ]
                 },
                 "application_protocol": "HTTP",
                 "bytes_in": 54,
@@ -174,7 +181,9 @@ An example event for `event` looks as following:
                 "start_time": "2016-01-20T11:42:01.336Z",
                 "tag": "www.elvis.com",
                 "ver": "TLSv1.2 ECDHE-RSA-AES128-GCM-SHA256",
-                "xff": "44.44.44.44"
+                "xff": [
+                    "44.44.44.44"
+                ]
             },
             "name": "Normal",
             "severity": 0,
@@ -187,7 +196,9 @@ An example event for `event` looks as following:
     "message": "Normal",
     "network": {
         "application": "http",
-        "forwarded_ip": "44.44.44.44"
+        "forwarded_ip": [
+            "44.44.44.44"
+        ]
     },
     "observer": {
         "product": "SIEMintegration",
@@ -208,11 +219,8 @@ An example event for `event` looks as following:
         "geo": {
             "country_iso_code": "IL",
             "location": {
-                "coordinates": [
-                    34.818599950522184,
-                    31.896899971179664
-                ],
-                "type": "Point"
+                "lat": 31.8969,
+                "lon": 34.8186
             }
         },
         "ip": "12.12.12.12",
