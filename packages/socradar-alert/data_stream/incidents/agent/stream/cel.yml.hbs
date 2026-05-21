@@ -17,7 +17,7 @@ program: |
   state.?cursor.last_requested_at.orValue("").as(last_cursor,
     (last_cursor != ""
       ? last_cursor
-      : (now - duration(state.initial_lookback)).format("2006-01-02T15:04:05.000000")
+      : (now - duration(state.initial_lookback)).format("2006-01-02 15:04:05")
     ).as(start_date,
     state.?current_page.orValue(1).as(page,
       request("GET", state.url + "?" + {
@@ -35,11 +35,9 @@ program: |
       }).do_request().as(resp,
         resp.StatusCode == 200 ?
           bytes(resp.Body).decode_json().as(body,
-            body.?data.?alarms.orValue([]).as(alarms,
-              body.?data.?total_pages.orValue(1).as(total_pages,
-                page < int(total_pages) ?
+                page < int(body.?data.?total_pages.orValue(1)) ?
                   {
-                    "events": alarms.map(a, {"message": a.encode_json()}),
+                    "events": body.?data.alarms.orValue([]).map(a, {"message": a.encode_json()}),
                     "want_more": true,
                     "current_page": page + 1,
                     "url": state.url,
@@ -50,7 +48,7 @@ program: |
                   }
                 :
                   {
-                    "events": alarms.map(a, {"message": a.encode_json()}),
+                    "events": body.?data.alarms.orValue([]).map(a, {"message": a.encode_json()}),
                     "want_more": false,
                     "current_page": 1,
                     "url": state.url,
@@ -58,11 +56,9 @@ program: |
                     "limit": state.limit,
                     "initial_lookback": state.initial_lookback,
                     "cursor": {
-                      "last_requested_at": now.format("2006-01-02T15:04:05.000000"),
+                      "last_requested_at": now.format("2006-01-02 15:04:05"),
                     },
                   }
-              )
-            )
           )
         :
           {
@@ -89,8 +85,3 @@ program: |
       )
     ))
   ))
-processors:
-  - decode_json_fields:
-      fields: ["message"]
-      target: "alarm"
-      overwrite_keys: true
