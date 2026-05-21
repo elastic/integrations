@@ -2,13 +2,14 @@
 
 This section describes the CI pipelines available in this repository.
 
-Currently, there are five different pipelines:
+Currently, this repository uses the following Buildkite pipelines and GitHub Actions workflows:
 - https://buildkite.com/elastic/integrations: pipeline in charge of testing all packages using a local Elastic stack. More info at [section](#pull-requests-and-pushes-to-specific-branches).
 - https://buildkite.com/elastic/integrations-serverless: pipeline in charge of testing all packages using a Elastic Serverless project. More info at [section](#serverless-pipeline).
 - https://buildkite.com/elastic/integrations-publish: pipeline to publish the new versions of packages. More info at [section](#publish-packages).
 - https://buildkite.com/elastic/integrations-schedule-daily/: pipeline running every night to test packages in different scenarios. More info at [section](#daily-job).
 - https://buildkite.com/elastic/integrations-schedule-weekly/: pipeline running once per week to test packages in different scenarios. More info at [section](#weekly-job).
 - https://buildkite.com/elastic/integrations-backport/: pipeline to create backport branches (just from UI). More info at [section](#backport-branches-pipeline).
+- [CI Trigger Security-ML Package Tests](https://github.com/elastic/integrations/blob/main/.github/workflows/trigger-package-tests-security-ml.yml): GitHub Actions workflow that dispatches Security-ML package tests for selected packages. More info at [section](#security-ml-package-tests).
 
 ## Pull Requests and pushes to specific branches
 
@@ -95,6 +96,21 @@ More details about this CI pipeline:
   | `8.12.0` | `^8.13.0`             | No  |
   | `8.14.0` | `^8.13.0`             | Yes |
 
+
+## Security-ML package tests
+
+The [CI Trigger Security-ML Package Tests](https://github.com/elastic/integrations/blob/main/.github/workflows/trigger-package-tests-security-ml.yml) GitHub Actions workflow runs on Pull Requests targeting `main` when they are opened, synchronized, or reopened and change one of the following paths:
+
+- `packages/beaconing/**`
+- `packages/ded/**`
+- `packages/dga/**`
+- `packages/hta/**`
+- `packages/lmd/**`
+- `packages/pad/**`
+- `packages/problemchild/**`
+- `.github/workflows/trigger-package-tests-security-ml.yml`
+
+The workflow only runs for Pull Requests from branches in this repository. Pull Requests from forks are skipped because the job condition requires `github.event.pull_request.head.repo.full_name == github.repository`. For matching same-repository Pull Requests, the workflow detects which of the supported packages changed and dispatches `itp-dispatch-integrations.yml` in `elastic/security-ml` on `main`. If the workflow file itself changed, all supported Security-ML packages are dispatched. The downstream Security-ML run reports its results back to the Pull Request, so contributors may see those results outside the Buildkite pipeline output.
 
 ## Publish packages
 
