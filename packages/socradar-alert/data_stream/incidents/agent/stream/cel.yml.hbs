@@ -1,0 +1,87 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+resource.url: {{api_url}}/api/company/{{company_id}}/incidents/v4
+state:
+  api_key: {{api_key}}
+  limit: {{limit}}
+  initial_lookback: {{initial_lookback}}
+redact:
+  fields:
+    - api_key
+program: |
+  state.with(
+  state.?cursor.last_requested_at.orValue("").as(last_cursor,
+    (last_cursor != ""
+      ? last_cursor
+      : (now - duration(state.initial_lookback)).format("2006-01-02 15:04:05")
+    ).as(start_date,
+    state.?current_page.orValue(1).as(page,
+      request("GET", state.url + "?" + {
+        "limit": [string(state.limit)],
+        "include_total_records": ["true"],
+        "show_page_in_response": ["true"],
+        "page": [string(page)],
+        "include_alarm_details": ["true"],
+        "include_company_id": ["true"],
+        "start_date": [start_date],
+      }.format_query()).with({
+        "Header": {
+          "Api-Key": [state.api_key],
+        }
+      }).do_request().as(resp,
+        resp.StatusCode == 200 ?
+          bytes(resp.Body).decode_json().as(body,
+                page < int(body.?data.?total_pages.orValue(1)) ?
+                  {
+                    "events": body.?data.alarms.orValue([]).map(a, {"message": a.encode_json()}),
+                    "want_more": true,
+                    "current_page": page + 1,
+                    "url": state.url,
+                    "api_key": state.api_key,
+                    "limit": state.limit,
+                    "initial_lookback": state.initial_lookback,
+                    "cursor": {"last_requested_at": last_cursor},
+                  }
+                :
+                  {
+                    "events": body.?data.alarms.orValue([]).map(a, {"message": a.encode_json()}),
+                    "want_more": false,
+                    "current_page": 1,
+                    "url": state.url,
+                    "api_key": state.api_key,
+                    "limit": state.limit,
+                    "initial_lookback": state.initial_lookback,
+                    "cursor": {
+                      "last_requested_at": now.format("2006-01-02 15:04:05"),
+                    },
+                  }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET:" + (
+                  size(bytes(resp.Body)) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+            "current_page": 1,
+            "url": state.url,
+            "api_key": state.api_key,
+            "limit": state.limit,
+            "initial_lookback": state.initial_lookback,
+            "cursor": state.?cursor.orValue({}),
+          }
+      )
+    ))
+  ))

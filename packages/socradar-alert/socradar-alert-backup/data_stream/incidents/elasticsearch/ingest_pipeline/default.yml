@@ -1,0 +1,52 @@
+---
+description: Pipeline for processing alarm events
+processors:
+  - drop:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: Skip pipeline processing for CEL input collection errors.
+  - json:
+      field: message
+      target_field: alarm
+      ignore_failure: true
+  - date:
+      field: alarm.date
+      target_field: '@timestamp'
+      formats:
+        - "yyyy-MM-dd HH:mm:ss"
+      timezone: UTC
+      ignore_failure: false
+  - set:
+      field: alarm.alarm_sub_type
+      copy_from: alarm.alarm_type_details.alarm_sub_type
+      ignore_empty_value: true
+      ignore_failure: true
+  - set:
+      field: alarm.alarm_main_type
+      copy_from: alarm.alarm_type_details.alarm_main_type
+      ignore_empty_value: true
+      ignore_failure: true
+  - set:
+      field: alarm.alarm_generic_title
+      copy_from: alarm.alarm_type_details.alarm_generic_title
+      ignore_empty_value: true
+      ignore_failure: true
+  - set:
+      field: alarm.alarm_default_risk_level
+      copy_from: alarm.alarm_type_details.alarm_default_risk_level
+      ignore_empty_value: true
+      ignore_failure: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
