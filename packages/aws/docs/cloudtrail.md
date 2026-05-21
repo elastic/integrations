@@ -47,7 +47,7 @@ For step-by-step instructions on how to set up an integration, see the
 
 If your Elastic Agent runs outside AWS (for example, on on-premises servers), you can use [AWS IAM Roles Anywhere](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/introduction.html) to authenticate the integration without long-term access keys. IAM Roles Anywhere issues temporary AWS credentials based on an X.509 certificate from a trusted Certificate Authority.
 
-**Prerequisites:** complete the [IAM Roles Anywhere setup](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/getting-started.html) in your AWS account: create a Trust Anchor, a Profile, and an IAM role with the necessary CloudTrail permissions.
+**Prerequisites:** complete the [IAM Roles Anywhere setup](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/getting-started.html) in your AWS account — create a Trust Anchor, a Profile, and an IAM role with the necessary CloudTrail permissions.
 
 **Steps:**
 
