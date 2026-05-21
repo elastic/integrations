@@ -35,6 +35,36 @@ services:
       - --config=/files/device_task-config.yml
       - --tls-cert=/files/device_task-certificate.crt
       - --tls-key=/files/device_task-private.key
+  eset_protect-device:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: xx.device-management.eset.systems
+    ports:
+      - 443
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: "443"
+    command:
+      - http-server
+      - --addr=:443
+      - --config=/files/device-config.yml
+      - --tls-cert=/files/device-certificate.crt
+      - --tls-key=/files/device-private.key
+  eset_protect-device_vulnerability:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: xx.vulnerability-management.eset.systems
+    ports:
+      - 443
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: "443"
+    command:
+      - http-server
+      - --addr=:443
+      - --config=/files/device_vulnerability-config.yml
+      - --tls-cert=/files/device_vulnerability-certificate.crt
+      - --tls-key=/files/device_vulnerability-private.key
   eset_protect-oauth:
     image: docker.elastic.co/observability/stream:v0.18.0
     hostname: xx.business-account.iam.eset.systems
