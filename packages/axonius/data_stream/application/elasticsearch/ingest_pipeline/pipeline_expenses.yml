@@ -2,63 +2,70 @@
 description: Pipeline for processing expenses logs.
 processors:
   - convert:
-      field: axonius.application.event.data.amount
-      tag: convert_event_data_amount_to_long
+      field: axonius.application.amount
+      tag: convert_amount_to_long
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            field: axonius.application.amount
+            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.user
-      tag: append_application_event_data_related_user_email_into_related_user
-      value: '{{{axonius.application.event.data.related_user.email}}}'
+      tag: append_application_related_user_email_into_related_user
+      value: '{{{axonius.application.related_user.email}}}'
       allow_duplicates: false
-      if: ctx.axonius?.application?.event?.data?.related_user?.email != null
+      if: ctx.axonius?.application?.related_user?.email != null
   - set:
       field: user.id
-      tag: set_user_id_from_application_event_data_related_user_remote_id
-      copy_from: axonius.application.event.data.related_user.remote_id
+      tag: set_user_id_from_application_related_user_remote_id
+      copy_from: axonius.application.related_user.remote_id
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_application_event_data_related_user_remote_id_into_related_user
-      value: '{{{axonius.application.event.data.related_user.remote_id}}}'
+      tag: append_application_related_user_remote_id_into_related_user
+      value: '{{{axonius.application.related_user.remote_id}}}'
       allow_duplicates: false
-      if: ctx.axonius?.application?.event?.data?.related_user?.remote_id != null
+      if: ctx.axonius?.application?.related_user?.remote_id != null
   - set:
       field: user.name
-      tag: set_user_name_from_application_event_data_related_user_username
-      copy_from: axonius.application.event.data.related_user.username
+      tag: set_user_name_from_application_related_user_username
+      copy_from: axonius.application.related_user.username
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_application_event_data_related_user_username_into_related_user
-      value: '{{{axonius.application.event.data.related_user.username}}}'
+      tag: append_application_related_user_username_into_related_user
+      value: '{{{axonius.application.related_user.username}}}'
       allow_duplicates: false
-      if: ctx.axonius?.application?.event?.data?.related_user?.username != null
+      if: ctx.axonius?.application?.related_user?.username != null
   - date:
-      field: axonius.application.event.data.transaction_time
-      tag: date_event_data_transaction_time
+      field: axonius.application.transaction_time
+      tag: date_transaction_time
+      target_field: axonius.application.transaction_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.axonius?.application?.event?.data?.transaction_time != null && ctx.axonius.application.event.data.transaction_time != ''
+      if: ctx.axonius?.application?.transaction_time != null && ctx.axonius.application.transaction_time != ''
       on_failure:
+        - remove:
+            field: axonius.application.transaction_time
+            ignore_missing: true
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
-      tag: set_event_start_from_application_event_data_transaction_time
-      copy_from: axonius.application.event.data.transaction_time
+      tag: set_event_start_from_application_transaction_time
+      copy_from: axonius.application.transaction_time
       ignore_empty_value: true
   - set:
       field: user.email
-      tag: set_user_email_from_application_event_data_user_email
-      copy_from: axonius.application.event.data.user_email
+      tag: set_user_email_from_application_user_email
+      copy_from: axonius.application.user_email
       ignore_empty_value: true
   - dissect:
       tag: dissect_user_email
@@ -67,10 +74,10 @@ processors:
       pattern: '%{}@%{user.domain}'
   - append:
       field: related.user
-      tag: append_application_event_data_user_email_into_related_user
-      value: '{{{axonius.application.event.data.user_email}}}'
+      tag: append_application_user_email_into_related_user
+      value: '{{{axonius.application.user_email}}}'
       allow_duplicates: false
-      if: ctx.axonius?.application?.event?.data?.user_email != null
+      if: ctx.axonius?.application?.user_email != null
 on_failure:
   - append:
       field: error.message
