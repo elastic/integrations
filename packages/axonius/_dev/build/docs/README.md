@@ -17,7 +17,8 @@ This integration collects log messages of the following type:
 
 - `Adapter`: Collect details of all adapters (endpoint: `/api/v2/adapters`).
 
-- `User`: Collect details of all users (endpoint: `/api/v2/users`).
+- `User`: Collect details of all user
+55s (endpoint: `/api/v2/users`).
 
 - `Gateway`: Collect details of all Gateway (endpoint: `/api/v2/gateway`).
 
@@ -64,17 +65,18 @@ This integration collects log messages of the following type:
     - access_review_campaign_instances (endpoint: `/api/v2/access_review_campaign_instances`)
     - access_review_approval_items (endpoint: `/api/v2/access_review_approval_items`)
 
+- `Compute`: Collect details of all compute assets including:
+    - devices (endpoint: `/api/v2/devices`)
+    - compute_services (endpoint: `/api/v2/compute_services`)
+    - databases (endpoint: `/api/v2/databases`)
+    - containers (endpoint: `/api/v2/containers`)
+    - serverless_functions (endpoint: `/api/v2/serverless_functions`)
+    - compute_images (endpoint: `/api/v2/compute_images`)
+    - configurations (endpoint: `/api/v2/configurations`)
+
 ### Supported use cases
 
-Integrating the Axonius Identity Datastream with Elastic SIEM provides a unified view of users, groups, roles, organizational units, accounts, permissions, certificates, profiles, and access review activity. Metrics and breakdowns help teams quickly assess identity posture by highlighting active, inactive, suspended, and external users, as well as patterns across user types and departments.
-
-Tables showing top email addresses and cloud providers add context into frequently used identities and their sources. These insights help security and IAM teams detect identity anomalies, validate account hygiene, and maintain strong visibility into access across the organization.
-
-### Supported use cases
-
-Integrating the Axonius Adapter, User, Gateway, Exposure, Alert, Incident, Storage, Ticket, and Network data streams with Elastic SIEM provides centralized, end-to-end visibility across data ingestion, identity posture, network configuration, vulnerability exposure, security events, storage assets, ticketing, and network activity. Together, these data streams help analysts understand how data flows into the platform, how it maps to users and access, how gateways and network assets operate, where risks and exposures exist, and how alerts evolve into incidents and tracked issues.
-
-The dashboards surface insights into integration health, connection behavior, user roles, routing context, vulnerability severity, alert and incident trends, storage distribution, ticket activity, and network asset posture. Network-specific views highlight protocols, device states, exposure levels, and communication paths, while ticket insights provide context on priorities, statuses, and workload patterns. By correlating operational, identity, exposure, incident, storage, ticket, and network data in one place, security teams can detect anomalies, identify misconfigurations, prioritize remediation, and streamline investigations with comprehensive, end-to-end context across the environment.
+Integrating the Axonius Adapter, User, Gateway, Exposure, Alert, Incident, Storage, Ticket, Network, and Identity data streams with Elastic SIEM summarizes adapter and ingestion health, gateway and network behavior, exposure and vulnerability context, alerts progressing into incidents, storage and ticket workloads, and identity posture in one workspace. Coverage spans users, groups, roles, organizational units, accounts, permissions, certificates, profiles, and access reviews—plus breakdowns of active, suspended, and external accounts, user types and departments, and top identities by email and cloud source alongside network protocols, device states, exposure levels, communication paths, and ticket priorities, statuses, and queues. The bundled dashboards blend those signals so security and IAM teams can monitor integrations, size risk and backlog, validate access hygiene, prioritize remediation, and investigate with correlated operational, identity, asset, and event context instead of switching between disconnected tools.
 
 ## What do I need to use this integration?
 
@@ -160,10 +162,10 @@ Destinations indices are aliased to `logs-axonius_latest.<data_stream_name>`.
 | `logs-axonius.ticket-*`            | `logs-axonius_latest.dest_ticket-*`              | `logs-axonius_latest.ticket`            |
 | `logs-axonius.network-*`           | `logs-axonius_latest.dest_network-*`             | `logs-axonius_latest.network`           |
 | `logs-axonius.identity-*`          | `logs-axonius_latest.dest_identity-*`            | `logs-axonius_latest.identity`          |
-
+| `logs-axonius.compute-*`          | `logs-axonius_latest.dest_compute-*`            | `logs-axonius_latest.compute`          |
 
 **Note:** Assets deleted from Axonius may reappear in a future discovery cycle if they are still present in connected data sources and get re-detected. Because the exact duration for which a deleted asset may remain dormant before being rediscovered is unknown, the transform retention period is set to **90 days** to reduce the risk of data loss for such assets. This means deleted assets will continue to appear in dashboards for up to 90 days after deletion.
-The network and identity destination indices are a content-based deduplicated view, not an entity-level latest-state view like the other data streams (for example `user` and `gateway`), which rely on a unique entity identifier and reflect the latest state of each entity.
+The assets destination indices are a content-based deduplicated view, not an entity-level latest-state view like the other data streams (for example `user` and `gateway`), which rely on a unique entity identifier and reflect the latest state of each entity.
 
 ## Troubleshooting
 
@@ -275,6 +277,16 @@ The `identity` data stream provides identity asset logs from axonius.
 
 {{event "identity"}}
 
+### Compute
+
+The `compute` data stream provides compute asset logs from axonius.
+
+#### compute fields
+
+{{ fields "compute" }}
+
+{{event "compute"}}
+
 ### Inputs used
 {{/* All inputs used by this package will be automatically listed here. */}}
 {{ inputDocs }}
@@ -322,7 +334,15 @@ These APIs are used with this integration:
     * job_titles (endpoint: `/api/v2/job_titles`)
     * access_review_campaign_instances (endpoint: `/api/v2/access_review_campaign_instances`)
     * access_review_approval_items (endpoint: `/api/v2/access_review_approval_items`)
+* Compute:
+    * devices (endpoint: `/api/v2/devices`)
+    * compute_services (endpoint: `/api/v2/compute_services`)
+    * databases (endpoint: `/api/v2/databases`)
+    * containers (endpoint: `/api/v2/containers`)
+    * serverless_functions (endpoint: `/api/v2/serverless_functions`)
+    * compute_images (endpoint: `/api/v2/compute_images`)
+    * configurations (endpoint: `/api/v2/configurations`)
 
 ### ILM Policy
 
-To facilitate adapter, user, gateway and assets data including exposures, alert findings, incidents, storage and ticket, network and identity source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*`, `.ds-logs-axonius.gateway-*`, `.ds-logs-axonius.exposure-*`, `.ds-logs-axonius.alert_finding-*`, `.ds-logs-axonius.incident-*`, `.ds-logs-axonius.storage-*`, `.ds-logs-axonius.ticket-*`, `.ds-logs-axonius.network-*` and `.ds-logs-axonius.identity-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy`, `logs-axonius.gateway-default_policy`, `logs-axonius.exposure-default_policy`,  `logs-axonius.alert_finding-default_policy`, `logs-axonius.incident-default_policy`, `logs-axonius.storage-default_policy`, `logs-axonius.ticket-default_policy`, `logs-axonius.network-default_policy` and `logs-axonius.identity-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+To facilitate adapter, user, gateway and assets data including exposures, alert findings, incidents, storage and ticket, network and identity source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*`, `.ds-logs-axonius.gateway-*`, `.ds-logs-axonius.exposure-*`, `.ds-logs-axonius.alert_finding-*`, `.ds-logs-axonius.incident-*`, `.ds-logs-axonius.storage-*`, `.ds-logs-axonius.ticket-*`, `.ds-logs-axonius.network-*`, `.ds-logs-axonius.identity-*` and `.ds-logs-axonius.compute-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy`, `logs-axonius.gateway-default_policy`, `logs-axonius.exposure-default_policy`,  `logs-axonius.alert_finding-default_policy`, `logs-axonius.incident-default_policy`, `logs-axonius.storage-default_policy`, `logs-axonius.ticket-default_policy`, `logs-axonius.network-default_policy`, `logs-axonius.identity-default_policy` and`logs-axonius.compute-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
