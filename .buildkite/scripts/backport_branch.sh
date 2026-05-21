@@ -284,7 +284,7 @@ fi
 echo "--- Check if the base commit exists."
 if [ ! -z "$BASE_COMMIT" ]; then
   if ! commitExists "$BASE_COMMIT" "$SOURCE_BRANCH"; then
-    buildkite-agent annotate "The entered commit hasn't found in the **${SOURCE_BRANCH}** branch" --style "error"
+    buildkite-agent annotate "The entered commit was not found in the **${SOURCE_BRANCH}** branch" --style "error"
     exit 1
   fi
 fi
