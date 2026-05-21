@@ -1,11 +1,6 @@
 ---
 description: Pipeline for processing audit activities logs.
 processors:
-  - rename:
-      field: json.event.data.action.name
-      tag: rename_event_data_action_name
-      target_field: axonius.application.event.data.action.name
-      ignore_missing: true
   - set:
       field: event.action
       tag: set_event_action_from_application_event_data_action_name
@@ -35,28 +30,17 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      field: json.event.data.action.timestamp
+      field: axonius.application.event.data.action.timestamp
       tag: date_event_data_action_timestamp
-      target_field: axonius.application.event.data.action.timestamp
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.json?.event?.data?.action?.timestamp != null && ctx.json.event.data.action.timestamp != ''
+      if: ctx.axonius?.application?.event?.data?.action?.timestamp != null && ctx.axonius.application.event.data.action.timestamp != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.action.type
-      tag: rename_event_data_action_type
-      target_field: axonius.application.event.data.action.type
-      ignore_missing: true
-  - rename:
-      field: json.event.data.actor.username
-      tag: rename_event_data_actor_username
-      target_field: axonius.application.event.data.actor.username
-      ignore_missing: true
   - set:
       field: user.name
       tag: set_user_name_from_application_event_data_actor_username
@@ -68,23 +52,17 @@ processors:
       value: '{{{axonius.application.event.data.actor.username}}}'
       allow_duplicates: false
       if: ctx.axonius?.application?.event?.data?.actor?.username != null
-  - rename:
-      field: json.event.data.actor_state.location.country
-      tag: rename_event_data_actor_state_location_country
-      target_field: axonius.application.event.data.actor_state.location.country
-      ignore_missing: true
   - set:
       field: host.geo.country_name
       tag: set_host_geo_country_name_from_application_event_data_actor_state_location_country
       copy_from: axonius.application.event.data.actor_state.location.country
       ignore_empty_value: true
   - convert:
-      field: json.event.data.actor_state.location.remote_ip
+      field: axonius.application.event.data.actor_state.location.remote_ip
       tag: convert_event_data_actor_state_location_remote_ip_to_ip
-      target_field: axonius.application.event.data.actor_state.location.remote_ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.event?.data?.actor_state?.location?.remote_ip != ''
+      if: ctx.axonius?.application?.event?.data?.actor_state?.location?.remote_ip != ''
       on_failure:
         - append:
             field: error.message
@@ -96,12 +74,11 @@ processors:
       allow_duplicates: false
       if: ctx.axonius?.application?.event?.data?.actor_state?.location?.remote_ip != null
   - convert:
-      field: json.event.data.actor_state.remote_ip
+      field: axonius.application.event.data.actor_state.remote_ip
       tag: convert_event_data_actor_state_remote_ip_to_ip
-      target_field: axonius.application.event.data.actor_state.remote_ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.event?.data?.actor_state?.remote_ip != ''
+      if: ctx.axonius?.application?.event?.data?.actor_state?.remote_ip != ''
       on_failure:
         - append:
             field: error.message
@@ -113,9 +90,8 @@ processors:
       allow_duplicates: false
       if: ctx.axonius?.application?.event?.data?.actor_state?.remote_ip != null
   - convert:
-      field: json.event.data.custom_properties.is_identity
+      field: axonius.application.event.data.custom_properties.is_identity
       tag: convert_event_data_custom_properties_is_identity_to_boolean
-      target_field: axonius.application.event.data.custom_properties.is_identity
       type: boolean
       ignore_missing: true
       on_failure:

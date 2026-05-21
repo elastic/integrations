@@ -1,0 +1,230 @@
+---
+description: Pipeline for processing nat rules logs.
+processors:
+  - foreach:
+      field: axonius.network.destination_ips
+      tag: foreach_destination_ips
+      if: ctx.axonius?.network?.destination_ips instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_destination_ips_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.network.destination_ips
+      tag: foreach_destination_ips
+      if: ctx.axonius?.network?.destination_ips instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_destination_ips_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - convert:
+      field: axonius.network.destination_port
+      tag: convert_destination_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: axonius.network.destination_port
+            ignore_missing: true
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_destination_port
+      copy_from: axonius.network.destination_port
+      ignore_empty_value: true
+  - convert:
+      field: axonius.network.is_enabled
+      tag: convert_is_enabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.network.is_enabled
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.network.nat_translations
+      tag: foreach_nat_translations_from_destination_integer_ip
+      if: ctx.axonius?.network?.nat_translations instanceof List
+      processor:
+        convert:
+          field: _ingest._value.from_destination_integer_ip
+          tag: convert_nat_translations_from_destination_integer_ip_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.from_destination_integer_ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.network.nat_translations
+      tag: foreach_nat_translations_from_source_integer_ip
+      if: ctx.axonius?.network?.nat_translations instanceof List
+      processor:
+        convert:
+          field: _ingest._value.from_source_integer_ip
+          tag: convert_nat_translations_from_source_integer_ip_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.from_source_integer_ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.network.nat_translations
+      tag: foreach_nat_translations_is_destination_ip_range_public
+      if: ctx.axonius?.network?.nat_translations instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_destination_ip_range_public
+          tag: convert_nat_translations_is_destination_ip_range_public_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_destination_ip_range_public
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.network.nat_translations
+      tag: foreach_nat_translations_is_source_ip_range_public
+      if: ctx.axonius?.network?.nat_translations instanceof List
+      processor:
+        convert:
+          field: _ingest._value.is_source_ip_range_public
+          tag: convert_nat_translations_is_source_ip_range_public_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_source_ip_range_public
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.network.nat_translations
+      tag: foreach_nat_translations_to_destination_integer_ip
+      if: ctx.axonius?.network?.nat_translations instanceof List
+      processor:
+        convert:
+          field: _ingest._value.to_destination_integer_ip
+          tag: convert_nat_translations_to_destination_integer_ip_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.to_destination_integer_ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.network.nat_translations
+      tag: foreach_nat_translations_to_source_integer_ip
+      if: ctx.axonius?.network?.nat_translations instanceof List
+      processor:
+        convert:
+          field: _ingest._value.to_source_integer_ip
+          tag: convert_nat_translations_to_source_integer_ip_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.to_source_integer_ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.network.public_ips
+      tag: foreach_public_ips
+      if: ctx.axonius?.network?.public_ips instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_public_ips_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.network.public_ips
+      tag: foreach_public_ips
+      if: ctx.axonius?.network?.public_ips instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_public_ips_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: axonius.network.source_ips
+      tag: foreach_source_ips
+      if: ctx.axonius?.network?.source_ips instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_source_ips_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.network.source_ips
+      tag: foreach_source_ips
+      if: ctx.axonius?.network?.source_ips instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_source_ips_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

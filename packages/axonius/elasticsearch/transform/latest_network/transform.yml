@@ -1,0 +1,42 @@
+# Use of '*' to use all namespaces defined.
+source:
+  index:
+    - 'logs-axonius.network-*'
+dest:
+  index: 'logs-axonius_latest.dest_network-1'
+  aliases:
+    - alias: 'logs-axonius_latest.network'
+      move_on_creation: true
+# Unique key for latest transform:
+# - The Axonius API does not provide a stable unique identifier for network assets.
+# - axonius.network.transform_unique_id is a fingerprint of event.original (the full raw document).
+# - Per the vendor, network assets are only created or deleted, not updated in place.
+# - If the API response shape changes (field ordering, new fields, etc.), the fingerprint can differ and duplicate rows may appear in the destination index.
+latest:
+  unique_key:
+    - event.dataset
+    - axonius.network.transform_unique_id
+  sort: '@timestamp'
+description: >-
+  Deduplicates network asset documents produced by repeated Axonius API polling: identical payloads (same fingerprint in axonius.network.transform_unique_id) collapse to one row per event.dataset, keeping the document with the latest @timestamp. This is content-based deduplication, not tracking mutable entity state per the vendor, assets are created and deleted rather than updated in place.
+frequency: 5m
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: 'event.ingested'
+    # Updated to 120s because of refresh delay in Serverless. With default 60s,
+    # sometimes transform wouldn't process all documents.
+    delay: 120s
+retention_policy:
+  time:
+    field: '@timestamp'
+    max_age: 90d
+_meta:
+  managed: false
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation.
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false

@@ -40,7 +40,7 @@ processors:
   - json:
       field: event.original
       tag: json_event_original
-      target_field: json
+      target_field: axonius.application
   - fingerprint:
       fields:
         - event.original
@@ -53,34 +53,22 @@ processors:
       value: event
 
   - convert:
-      field: json.adapter_list_length
+      field: axonius.application.adapter_list_length
       tag: convert_adapter_list_length_to_long
-      target_field: axonius.application.adapter_list_length
       type: long
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.adapters
-      tag: rename_adapters
-      target_field: axonius.application.adapters
-      ignore_missing: true
-  - rename:
-      field: json.asset_type
-      tag: rename_asset_type
-      target_field: axonius.application.asset_type
-      ignore_missing: true
   - date:
-      field: json.event.accurate_for_datetime
+      field: axonius.application.event.accurate_for_datetime
       tag: date_event_accurate_for_datetime
-      target_field: axonius.application.event.accurate_for_datetime
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.json?.event?.accurate_for_datetime != null && ctx.json.event.accurate_for_datetime != ''
+      if: ctx.axonius?.application?.event?.accurate_for_datetime != null && ctx.axonius.application.event.accurate_for_datetime != ''
       on_failure:
         - append:
             field: error.message
@@ -90,11 +78,6 @@ processors:
       tag: set_@timestamp_from_application_event_accurate_for_datetime
       copy_from: axonius.application.event.accurate_for_datetime
       ignore_empty_value: true
-  - rename:
-      field: json.event.action_if_exists
-      tag: rename_event_action_if_exists
-      target_field: axonius.application.event.action_if_exists
-      ignore_missing: true
   - set:
       field: event.action
       tag: set_event_action_from_application_event_action_if_exists
@@ -104,48 +87,21 @@ processors:
       field: event.action
       tag: lowercase_event_action
       ignore_missing: true
-  - rename:
-      field: json.event.adapter_categories
-      tag: rename_event_adapter_categories
-      target_field: axonius.application.event.adapter_categories
-      ignore_missing: true
-  - rename:
-      field: json.event.associated_adapter_plugin_name
-      tag: rename_event_associated_adapter_plugin_name
-      target_field: axonius.application.event.associated_adapter_plugin_name
-      ignore_missing: true
-  - rename:
-      field: json.event.association_type
-      tag: rename_event_association_type
-      target_field: axonius.application.event.association_type
-      ignore_missing: true
-  - rename:
-      field: json.event.client_used
-      tag: rename_event_client_used
-      target_field: axonius.application.event.client_used
-      ignore_missing: true
   - date:
-      field: json.event.data.accurate_for_datetime
+      field: axonius.application.event.data.accurate_for_datetime
       tag: date_event_data_accurate_for_datetime
-      target_field: axonius.application.event.data.accurate_for_datetime
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.json?.event?.data?.accurate_for_datetime != null && ctx.json.event.data.accurate_for_datetime != ''
+      if: ctx.axonius?.application?.event?.data?.accurate_for_datetime != null && ctx.axonius.application.event.data.accurate_for_datetime != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.activity_status
-      tag: rename_event_data_activity_status
-      target_field: axonius.application.event.data.activity_status
-      ignore_missing: true
   - convert:
-      field: json.event.data.activity_status_active
+      field: axonius.application.event.data.activity_status_active
       tag: convert_event_data_activity_status_active_to_long
-      target_field: axonius.application.event.data.activity_status_active
       type: long
       ignore_missing: true
       on_failure:
@@ -153,9 +109,9 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.activity_status_active_hyperlink
+      field: axonius.application.event.data.activity_status_active_hyperlink
       tag: foreach_event_data_activity_status_active_hyperlink_bracketWeight
-      if: ctx.json?.event?.data?.activity_status_active_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.activity_status_active_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.bracketWeight
@@ -170,9 +126,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.activity_status_active_hyperlink
+      field: axonius.application.event.data.activity_status_active_hyperlink
       tag: foreach_event_data_activity_status_active_hyperlink_leftBracket
-      if: ctx.json?.event?.data?.activity_status_active_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.activity_status_active_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.leftBracket
@@ -187,9 +143,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.activity_status_active_hyperlink
+      field: axonius.application.event.data.activity_status_active_hyperlink
       tag: foreach_event_data_activity_status_active_hyperlink_not
-      if: ctx.json?.event?.data?.activity_status_active_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.activity_status_active_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.not
@@ -204,9 +160,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.activity_status_active_hyperlink
+      field: axonius.application.event.data.activity_status_active_hyperlink
       tag: foreach_event_data_activity_status_active_hyperlink_rightBracket
-      if: ctx.json?.event?.data?.activity_status_active_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.activity_status_active_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.rightBracket
@@ -220,15 +176,9 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.activity_status_active_hyperlink
-      tag: rename_event_data_activity_status_active_hyperlink
-      target_field: axonius.application.event.data.activity_status_active_hyperlink
-      ignore_missing: true
   - convert:
-      field: json.event.data.activity_status_inactive
+      field: axonius.application.event.data.activity_status_inactive
       tag: convert_event_data_activity_status_inactive_to_long
-      target_field: axonius.application.event.data.activity_status_inactive
       type: long
       ignore_missing: true
       on_failure:
@@ -236,9 +186,9 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.activity_status_inactive_hyperlink
+      field: axonius.application.event.data.activity_status_inactive_hyperlink
       tag: foreach_event_data_activity_status_inactive_hyperlink_bracketWeight
-      if: ctx.json?.event?.data?.activity_status_inactive_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.activity_status_inactive_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.bracketWeight
@@ -253,9 +203,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.activity_status_inactive_hyperlink
+      field: axonius.application.event.data.activity_status_inactive_hyperlink
       tag: foreach_event_data_activity_status_inactive_hyperlink_leftBracket
-      if: ctx.json?.event?.data?.activity_status_inactive_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.activity_status_inactive_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.leftBracket
@@ -270,9 +220,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.activity_status_inactive_hyperlink
+      field: axonius.application.event.data.activity_status_inactive_hyperlink
       tag: foreach_event_data_activity_status_inactive_hyperlink_not
-      if: ctx.json?.event?.data?.activity_status_inactive_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.activity_status_inactive_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.not
@@ -287,9 +237,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.activity_status_inactive_hyperlink
+      field: axonius.application.event.data.activity_status_inactive_hyperlink
       tag: foreach_event_data_activity_status_inactive_hyperlink_rightBracket
-      if: ctx.json?.event?.data?.activity_status_inactive_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.activity_status_inactive_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.rightBracket
@@ -303,55 +253,14 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.activity_status_inactive_hyperlink
-      tag: rename_event_data_activity_status_inactive_hyperlink
-      target_field: axonius.application.event.data.activity_status_inactive_hyperlink
-      ignore_missing: true
-  - rename:
-      field: json.event.data.app_id
-      tag: rename_event_data_app_id
-      target_field: axonius.application.event.data.app_id
-      ignore_missing: true
-  - rename:
-      field: json.event.data.application_and_account_name
-      tag: rename_event_data_application_and_account_name
-      target_field: axonius.application.event.data.application_and_account_name
-      ignore_missing: true
-  - rename:
-      field: json.event.data.application_resource_id
-      tag: rename_event_data_application_resource_id
-      target_field: axonius.application.event.data.application_resource_id
-      ignore_missing: true
-  - rename:
-      field: json.event.data.application_resource_type
-      tag: rename_event_data_application_resource_type
-      target_field: axonius.application.event.data.application_resource_type
-      ignore_missing: true
-  - rename:
-      field: json.event.data.approval_status
-      tag: rename_event_data_approval_status
-      target_field: axonius.application.event.data.approval_status
-      ignore_missing: true
-  - rename:
-      field: json.event.data.association_scope
-      tag: rename_event_data_association_scope
-      target_field: axonius.application.event.data.association_scope
-      ignore_missing: true
-  - rename:
-      field: json.event.data.auth_type
-      tag: rename_event_data_auth_type
-      target_field: axonius.application.event.data.auth_type
-      ignore_missing: true
   - date:
-      field: json.event.data.created
+      field: axonius.application.event.data.created
       tag: date_event_data_created
-      target_field: axonius.application.event.data.created
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.json?.event?.data?.created != null && ctx.json.event.data.created != ''
+      if: ctx.axonius?.application?.event?.data?.created != null && ctx.axonius.application.event.data.created != ''
       on_failure:
         - append:
             field: error.message
@@ -361,15 +270,9 @@ processors:
       tag: set_event_created_from_application_event_data_created
       copy_from: axonius.application.event.data.created
       ignore_empty_value: true
-  - rename:
-      field: json.event.data.department
-      tag: rename_event_data_department
-      target_field: axonius.application.event.data.department
-      ignore_missing: true
   - convert:
-      field: json.event.data.excessive_read
+      field: axonius.application.event.data.excessive_read
       tag: convert_event_data_excessive_read_to_long
-      target_field: axonius.application.event.data.excessive_read
       type: long
       ignore_missing: true
       on_failure:
@@ -377,9 +280,9 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.excessive_read_link
+      field: axonius.application.event.data.excessive_read_link
       tag: foreach_event_data_excessive_read_link_bracketWeight
-      if: ctx.json?.event?.data?.excessive_read_link instanceof List
+      if: ctx.axonius?.application?.event?.data?.excessive_read_link instanceof List
       processor:
         convert:
           field: _ingest._value.bracketWeight
@@ -394,9 +297,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.excessive_read_link
+      field: axonius.application.event.data.excessive_read_link
       tag: foreach_event_data_excessive_read_link_leftBracket
-      if: ctx.json?.event?.data?.excessive_read_link instanceof List
+      if: ctx.axonius?.application?.event?.data?.excessive_read_link instanceof List
       processor:
         convert:
           field: _ingest._value.leftBracket
@@ -411,9 +314,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.excessive_read_link
+      field: axonius.application.event.data.excessive_read_link
       tag: foreach_event_data_excessive_read_link_not
-      if: ctx.json?.event?.data?.excessive_read_link instanceof List
+      if: ctx.axonius?.application?.event?.data?.excessive_read_link instanceof List
       processor:
         convert:
           field: _ingest._value.not
@@ -428,9 +331,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.excessive_read_link
+      field: axonius.application.event.data.excessive_read_link
       tag: foreach_event_data_excessive_read_link_rightBracket
-      if: ctx.json?.event?.data?.excessive_read_link instanceof List
+      if: ctx.axonius?.application?.event?.data?.excessive_read_link instanceof List
       processor:
         convert:
           field: _ingest._value.rightBracket
@@ -444,15 +347,9 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.excessive_read_link
-      tag: rename_event_data_excessive_read_link
-      target_field: axonius.application.event.data.excessive_read_link
-      ignore_missing: true
   - convert:
-      field: json.event.data.excessive_write
+      field: axonius.application.event.data.excessive_write
       tag: convert_event_data_excessive_write_to_long
-      target_field: axonius.application.event.data.excessive_write
       type: long
       ignore_missing: true
       on_failure:
@@ -460,9 +357,9 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.excessive_write_link
+      field: axonius.application.event.data.excessive_write_link
       tag: foreach_event_data_excessive_write_link_bracketWeight
-      if: ctx.json?.event?.data?.excessive_write_link instanceof List
+      if: ctx.axonius?.application?.event?.data?.excessive_write_link instanceof List
       processor:
         convert:
           field: _ingest._value.bracketWeight
@@ -477,9 +374,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.excessive_write_link
+      field: axonius.application.event.data.excessive_write_link
       tag: foreach_event_data_excessive_write_link_leftBracket
-      if: ctx.json?.event?.data?.excessive_write_link instanceof List
+      if: ctx.axonius?.application?.event?.data?.excessive_write_link instanceof List
       processor:
         convert:
           field: _ingest._value.leftBracket
@@ -494,9 +391,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.excessive_write_link
+      field: axonius.application.event.data.excessive_write_link
       tag: foreach_event_data_excessive_write_link_not
-      if: ctx.json?.event?.data?.excessive_write_link instanceof List
+      if: ctx.axonius?.application?.event?.data?.excessive_write_link instanceof List
       processor:
         convert:
           field: _ingest._value.not
@@ -511,9 +408,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.excessive_write_link
+      field: axonius.application.event.data.excessive_write_link
       tag: foreach_event_data_excessive_write_link_rightBracket
-      if: ctx.json?.event?.data?.excessive_write_link instanceof List
+      if: ctx.axonius?.application?.event?.data?.excessive_write_link instanceof List
       processor:
         convert:
           field: _ingest._value.rightBracket
@@ -527,89 +424,54 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.excessive_write_link
-      tag: rename_event_data_excessive_write_link
-      target_field: axonius.application.event.data.excessive_write_link
-      ignore_missing: true
-  - rename:
-      field: json.event.data.extension_type
-      tag: rename_event_data_extension_type
-      target_field: axonius.application.event.data.extension_type
-      ignore_missing: true
   - date:
-      field: json.event.data.fetch_time
+      field: axonius.application.event.data.fetch_time
       tag: date_event_data_fetch_time
-      target_field: axonius.application.event.data.fetch_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.json?.event?.data?.fetch_time != null && ctx.json.event.data.fetch_time != ''
+      if: ctx.axonius?.application?.event?.data?.fetch_time != null && ctx.axonius.application.event.data.fetch_time != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      field: json.event.data.first_fetch_time
+      field: axonius.application.event.data.first_fetch_time
       tag: date_event_data_first_fetch_time
-      target_field: axonius.application.event.data.first_fetch_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.json?.event?.data?.first_fetch_time != null && ctx.json.event.data.first_fetch_time != ''
+      if: ctx.axonius?.application?.event?.data?.first_fetch_time != null && ctx.axonius.application.event.data.first_fetch_time != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      field: json.event.data.first_seen
+      field: axonius.application.event.data.first_seen
       tag: date_event_data_first_seen
-      target_field: axonius.application.event.data.first_seen
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.json?.event?.data?.first_seen != null && ctx.json.event.data.first_seen != ''
+      if: ctx.axonius?.application?.event?.data?.first_seen != null && ctx.axonius.application.event.data.first_seen != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.event.data.from_last_fetch
+      field: axonius.application.event.data.from_last_fetch
       tag: convert_event_data_from_last_fetch_to_boolean
-      target_field: axonius.application.event.data.from_last_fetch
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.grant_types
-      tag: rename_event_data_grant_types
-      target_field: axonius.application.event.data.grant_types
-      ignore_missing: true
-  - rename:
-      field: json.event.data.id
-      tag: rename_event_data_id
-      target_field: axonius.application.event.data.id
-      ignore_missing: true
-  - rename:
-      field: json.event.data.id_raw
-      tag: rename_event_data_id_raw
-      target_field: axonius.application.event.data.id_raw
-      ignore_missing: true
-  - rename:
-      field: json.event.data.integration_type
-      tag: rename_event_data_integration_type
-      target_field: axonius.application.event.data.integration_type
-      ignore_missing: true
   - convert:
-      field: json.event.data.is_admin
+      field: axonius.application.event.data.is_admin
       tag: convert_event_data_is_admin_to_long
-      target_field: axonius.application.event.data.is_admin
       type: long
       ignore_missing: true
       on_failure:
@@ -617,9 +479,9 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.is_admin_hyperlink
+      field: axonius.application.event.data.is_admin_hyperlink
       tag: foreach_event_data_is_admin_hyperlink_bracketWeight
-      if: ctx.json?.event?.data?.is_admin_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.is_admin_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.bracketWeight
@@ -634,9 +496,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.is_admin_hyperlink
+      field: axonius.application.event.data.is_admin_hyperlink
       tag: foreach_event_data_is_admin_hyperlink_leftBracket
-      if: ctx.json?.event?.data?.is_admin_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.is_admin_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.leftBracket
@@ -651,9 +513,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.is_admin_hyperlink
+      field: axonius.application.event.data.is_admin_hyperlink
       tag: foreach_event_data_is_admin_hyperlink_not
-      if: ctx.json?.event?.data?.is_admin_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.is_admin_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.not
@@ -668,9 +530,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.is_admin_hyperlink
+      field: axonius.application.event.data.is_admin_hyperlink
       tag: foreach_event_data_is_admin_hyperlink_rightBracket
-      if: ctx.json?.event?.data?.is_admin_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.is_admin_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.rightBracket
@@ -684,15 +546,9 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.is_admin_hyperlink
-      tag: rename_event_data_is_admin_hyperlink
-      target_field: axonius.application.event.data.is_admin_hyperlink
-      ignore_missing: true
   - convert:
-      field: json.event.data.is_fetched_from_adapter
+      field: axonius.application.event.data.is_fetched_from_adapter
       tag: convert_event_data_is_fetched_from_adapter_to_boolean
-      target_field: axonius.application.event.data.is_fetched_from_adapter
       type: boolean
       ignore_missing: true
       on_failure:
@@ -700,9 +556,8 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.event.data.is_identity
+      field: axonius.application.event.data.is_identity
       tag: convert_event_data_is_identity_to_long
-      target_field: axonius.application.event.data.is_identity
       type: long
       ignore_missing: true
       on_failure:
@@ -710,9 +565,9 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.is_identity_hyperlink
+      field: axonius.application.event.data.is_identity_hyperlink
       tag: foreach_event_data_is_identity_hyperlink_bracketWeight
-      if: ctx.json?.event?.data?.is_identity_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.is_identity_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.bracketWeight
@@ -727,9 +582,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.is_identity_hyperlink
+      field: axonius.application.event.data.is_identity_hyperlink
       tag: foreach_event_data_is_identity_hyperlink_leftBracket
-      if: ctx.json?.event?.data?.is_identity_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.is_identity_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.leftBracket
@@ -744,9 +599,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.is_identity_hyperlink
+      field: axonius.application.event.data.is_identity_hyperlink
       tag: foreach_event_data_is_identity_hyperlink_not
-      if: ctx.json?.event?.data?.is_identity_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.is_identity_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.not
@@ -761,9 +616,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.is_identity_hyperlink
+      field: axonius.application.event.data.is_identity_hyperlink
       tag: foreach_event_data_is_identity_hyperlink_rightBracket
-      if: ctx.json?.event?.data?.is_identity_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.is_identity_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.rightBracket
@@ -777,15 +632,9 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.is_identity_hyperlink
-      tag: rename_event_data_is_identity_hyperlink
-      target_field: axonius.application.event.data.is_identity_hyperlink
-      ignore_missing: true
   - convert:
-      field: json.event.data.is_operational
+      field: axonius.application.event.data.is_operational
       tag: convert_event_data_is_operational_to_boolean
-      target_field: axonius.application.event.data.is_operational
       type: boolean
       ignore_missing: true
       on_failure:
@@ -793,63 +642,44 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      field: json.event.data.last_access
+      field: axonius.application.event.data.last_access
       tag: date_event_data_last_access
-      target_field: axonius.application.event.data.last_access
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.json?.event?.data?.last_access != null && ctx.json.event.data.last_access != ''
+      if: ctx.axonius?.application?.event?.data?.last_access != null && ctx.axonius.application.event.data.last_access != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.last_fetch_connection_id
-      tag: rename_event_data_last_fetch_connection_id
-      target_field: axonius.application.event.data.last_fetch_connection_id
-      ignore_missing: true
-  - rename:
-      field: json.event.data.last_fetch_connection_label
-      tag: rename_event_data_last_fetch_connection_label
-      target_field: axonius.application.event.data.last_fetch_connection_label
-      ignore_missing: true
   - date:
-      field: json.event.data.last_seen
+      field: axonius.application.event.data.last_seen
       tag: date_event_data_last_seen
-      target_field: axonius.application.event.data.last_seen
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.json?.event?.data?.last_seen != null && ctx.json.event.data.last_seen != ''
+      if: ctx.axonius?.application?.event?.data?.last_seen != null && ctx.axonius.application.event.data.last_seen != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      field: json.event.data.last_used
+      field: axonius.application.event.data.last_used
       tag: date_event_data_last_used
-      target_field: axonius.application.event.data.last_used
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
         - yyyy-MM-dd
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
-      if: ctx.json?.event?.data?.last_used != null && ctx.json.event.data.last_used != ''
+      if: ctx.axonius?.application?.event?.data?.last_used != null && ctx.axonius.application.event.data.last_used != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.name
-      tag: rename_event_data_name
-      target_field: axonius.application.event.data.name
-      ignore_missing: true
   - convert:
-      field: json.event.data.never_accessed
+      field: axonius.application.event.data.never_accessed
       tag: convert_event_data_never_accessed_to_boolean
-      target_field: axonius.application.event.data.never_accessed
       type: boolean
       ignore_missing: true
       on_failure:
@@ -857,85 +687,41 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.event.data.not_fetched_count
+      field: axonius.application.event.data.not_fetched_count
       tag: convert_event_data_not_fetched_count_to_long
-      target_field: axonius.application.event.data.not_fetched_count
       type: long
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.owner
-      tag: rename_event_data_owner
-      target_field: axonius.application.event.data.owner
-      ignore_missing: true
   - append:
       field: related.user
       tag: append_application_event_data_owner_into_related_user
       value: '{{{axonius.application.event.data.owner}}}'
       allow_duplicates: false
       if: ctx.axonius?.application?.event?.data?.owner != null
-  - rename:
-      field: json.event.data.permissions.alias
-      tag: rename_event_data_permissions_alias
-      target_field: axonius.application.event.data.permissions.alias
-      ignore_missing: true
-  - rename:
-      field: json.event.data.permissions.hash_id
-      tag: rename_event_data_permissions_hash_id
-      target_field: axonius.application.event.data.permissions.hash_id
-      ignore_missing: true
   - convert:
-      field: json.event.data.permissions.is_admin
+      field: axonius.application.event.data.permissions.is_admin
       tag: convert_event_data_permissions_is_admin_to_boolean
-      target_field: axonius.application.event.data.permissions.is_admin
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.permissions.name
-      tag: rename_event_data_permissions_name
-      target_field: axonius.application.event.data.permissions.name
-      ignore_missing: true
-  - rename:
-      field: json.event.data.permissions.scope_tag
-      tag: rename_event_data_permissions_scope_tag
-      target_field: axonius.application.event.data.permissions.scope_tag
-      ignore_missing: true
   - convert:
-      field: json.event.data.permissions.users_amount
+      field: axonius.application.event.data.permissions.users_amount
       tag: convert_event_data_permissions_users_amount_to_long
-      target_field: axonius.application.event.data.permissions.users_amount
       type: long
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.pretty_id
-      tag: rename_event_data_pretty_id
-      target_field: axonius.application.event.data.pretty_id
-      ignore_missing: true
-  - rename:
-      field: json.event.data.redirect_uris
-      tag: rename_event_data_redirect_uris
-      target_field: axonius.application.event.data.redirect_uris
-      ignore_missing: true
-  - rename:
-      field: json.event.data.related_vendor_name
-      tag: rename_event_data_related_vendor_name
-      target_field: axonius.application.event.data.related_vendor_name
-      ignore_missing: true
   - convert:
-      field: json.event.data.scope_tag_calendar
+      field: axonius.application.event.data.scope_tag_calendar
       tag: convert_event_data_scope_tag_calendar_to_long
-      target_field: axonius.application.event.data.scope_tag_calendar
       type: long
       ignore_missing: true
       on_failure:
@@ -943,9 +729,9 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.scope_tag_calendar_hyperlink
+      field: axonius.application.event.data.scope_tag_calendar_hyperlink
       tag: foreach_event_data_scope_tag_calendar_hyperlink_bracketWeight
-      if: ctx.json?.event?.data?.scope_tag_calendar_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.scope_tag_calendar_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.bracketWeight
@@ -960,9 +746,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.scope_tag_calendar_hyperlink
+      field: axonius.application.event.data.scope_tag_calendar_hyperlink
       tag: foreach_event_data_scope_tag_calendar_hyperlink_leftBracket
-      if: ctx.json?.event?.data?.scope_tag_calendar_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.scope_tag_calendar_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.leftBracket
@@ -977,9 +763,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.scope_tag_calendar_hyperlink
+      field: axonius.application.event.data.scope_tag_calendar_hyperlink
       tag: foreach_event_data_scope_tag_calendar_hyperlink_not
-      if: ctx.json?.event?.data?.scope_tag_calendar_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.scope_tag_calendar_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.not
@@ -994,9 +780,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.scope_tag_calendar_hyperlink
+      field: axonius.application.event.data.scope_tag_calendar_hyperlink
       tag: foreach_event_data_scope_tag_calendar_hyperlink_rightBracket
-      if: ctx.json?.event?.data?.scope_tag_calendar_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.scope_tag_calendar_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.rightBracket
@@ -1010,15 +796,9 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.scope_tag_calendar_hyperlink
-      tag: rename_event_data_scope_tag_calendar_hyperlink
-      target_field: axonius.application.event.data.scope_tag_calendar_hyperlink
-      ignore_missing: true
   - convert:
-      field: json.event.data.scope_tag_drive
+      field: axonius.application.event.data.scope_tag_drive
       tag: convert_event_data_scope_tag_drive_to_long
-      target_field: axonius.application.event.data.scope_tag_drive
       type: long
       ignore_missing: true
       on_failure:
@@ -1026,9 +806,9 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.scope_tag_drive_hyperlink
+      field: axonius.application.event.data.scope_tag_drive_hyperlink
       tag: foreach_event_data_scope_tag_drive_hyperlink_bracketWeight
-      if: ctx.json?.event?.data?.scope_tag_drive_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.scope_tag_drive_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.bracketWeight
@@ -1043,9 +823,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.scope_tag_drive_hyperlink
+      field: axonius.application.event.data.scope_tag_drive_hyperlink
       tag: foreach_event_data_scope_tag_drive_hyperlink_leftBracket
-      if: ctx.json?.event?.data?.scope_tag_drive_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.scope_tag_drive_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.leftBracket
@@ -1060,9 +840,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.scope_tag_drive_hyperlink
+      field: axonius.application.event.data.scope_tag_drive_hyperlink
       tag: foreach_event_data_scope_tag_drive_hyperlink_not
-      if: ctx.json?.event?.data?.scope_tag_drive_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.scope_tag_drive_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.not
@@ -1077,9 +857,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.scope_tag_drive_hyperlink
+      field: axonius.application.event.data.scope_tag_drive_hyperlink
       tag: foreach_event_data_scope_tag_drive_hyperlink_rightBracket
-      if: ctx.json?.event?.data?.scope_tag_drive_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.scope_tag_drive_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.rightBracket
@@ -1093,15 +873,9 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.scope_tag_drive_hyperlink
-      tag: rename_event_data_scope_tag_drive_hyperlink
-      target_field: axonius.application.event.data.scope_tag_drive_hyperlink
-      ignore_missing: true
   - convert:
-      field: json.event.data.scope_tag_mail
+      field: axonius.application.event.data.scope_tag_mail
       tag: convert_event_data_scope_tag_mail_to_long
-      target_field: axonius.application.event.data.scope_tag_mail
       type: long
       ignore_missing: true
       on_failure:
@@ -1109,9 +883,9 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.scope_tag_mail_hyperlink
+      field: axonius.application.event.data.scope_tag_mail_hyperlink
       tag: foreach_event_data_scope_tag_mail_hyperlink_bracketWeight
-      if: ctx.json?.event?.data?.scope_tag_mail_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.scope_tag_mail_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.bracketWeight
@@ -1126,9 +900,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.scope_tag_mail_hyperlink
+      field: axonius.application.event.data.scope_tag_mail_hyperlink
       tag: foreach_event_data_scope_tag_mail_hyperlink_leftBracket
-      if: ctx.json?.event?.data?.scope_tag_mail_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.scope_tag_mail_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.leftBracket
@@ -1143,9 +917,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.scope_tag_mail_hyperlink
+      field: axonius.application.event.data.scope_tag_mail_hyperlink
       tag: foreach_event_data_scope_tag_mail_hyperlink_not
-      if: ctx.json?.event?.data?.scope_tag_mail_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.scope_tag_mail_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.not
@@ -1160,9 +934,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.scope_tag_mail_hyperlink
+      field: axonius.application.event.data.scope_tag_mail_hyperlink
       tag: foreach_event_data_scope_tag_mail_hyperlink_rightBracket
-      if: ctx.json?.event?.data?.scope_tag_mail_hyperlink instanceof List
+      if: ctx.axonius?.application?.event?.data?.scope_tag_mail_hyperlink instanceof List
       processor:
         convert:
           field: _ingest._value.rightBracket
@@ -1176,41 +950,6 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.scope_tag_mail_hyperlink
-      tag: rename_event_data_scope_tag_mail_hyperlink
-      target_field: axonius.application.event.data.scope_tag_mail_hyperlink
-      ignore_missing: true
-  - rename:
-      field: json.event.data.sm_entity_type
-      tag: rename_event_data_sm_entity_type
-      target_field: axonius.application.event.data.sm_entity_type
-      ignore_missing: true
-  - rename:
-      field: json.event.data.source_application
-      tag: rename_event_data_source_application
-      target_field: axonius.application.event.data.source_application
-      ignore_missing: true
-  - rename:
-      field: json.event.data.tenant_number
-      tag: rename_event_data_tenant_number
-      target_field: axonius.application.event.data.tenant_number
-      ignore_missing: true
-  - rename:
-      field: json.event.data.type
-      tag: rename_event_data_type
-      target_field: axonius.application.event.data.type
-      ignore_missing: true
-  - rename:
-      field: json.event.data.urls
-      tag: rename_event_data_urls
-      target_field: axonius.application.event.data.urls
-      ignore_missing: true
-  - rename:
-      field: json.event.data.user_account.email
-      tag: rename_event_data_user_account_email
-      target_field: axonius.application.event.data.user_account.email
-      ignore_missing: true
   - set:
       field: user.email
       tag: set_user_email_from_application_event_data_user_account_email
@@ -1227,16 +966,6 @@ processors:
       value: '{{{axonius.application.event.data.user_account.email}}}'
       allow_duplicates: false
       if: ctx.axonius?.application?.event?.data?.user_account?.email != null
-  - rename:
-      field: json.event.data.user_account.remote_id
-      tag: rename_event_data_user_account_remote_id
-      target_field: axonius.application.event.data.user_account.remote_id
-      ignore_missing: true
-  - rename:
-      field: json.event.data.user_account.username
-      tag: rename_event_data_user_account_username
-      target_field: axonius.application.event.data.user_account.username
-      ignore_missing: true
   - set:
       field: user.name
       tag: set_user_name_from_application_event_data_user_account_username
@@ -1249,9 +978,8 @@ processors:
       allow_duplicates: false
       if: ctx.axonius?.application?.event?.data?.user_account?.username != null
   - convert:
-      field: json.event.data.user_count
+      field: axonius.application.event.data.user_count
       tag: convert_event_data_user_count_to_long
-      target_field: axonius.application.event.data.user_count
       type: long
       ignore_missing: true
       on_failure:
@@ -1259,9 +987,9 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.user_count_link
+      field: axonius.application.event.data.user_count_link
       tag: foreach_event_data_user_count_link_bracketWeight
-      if: ctx.json?.event?.data?.user_count_link instanceof List
+      if: ctx.axonius?.application?.event?.data?.user_count_link instanceof List
       processor:
         convert:
           field: _ingest._value.bracketWeight
@@ -1276,9 +1004,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.user_count_link
+      field: axonius.application.event.data.user_count_link
       tag: foreach_event_data_user_count_link_leftBracket
-      if: ctx.json?.event?.data?.user_count_link instanceof List
+      if: ctx.axonius?.application?.event?.data?.user_count_link instanceof List
       processor:
         convert:
           field: _ingest._value.leftBracket
@@ -1293,9 +1021,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.user_count_link
+      field: axonius.application.event.data.user_count_link
       tag: foreach_event_data_user_count_link_not
-      if: ctx.json?.event?.data?.user_count_link instanceof List
+      if: ctx.axonius?.application?.event?.data?.user_count_link instanceof List
       processor:
         convert:
           field: _ingest._value.not
@@ -1310,9 +1038,9 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.user_count_link
+      field: axonius.application.event.data.user_count_link
       tag: foreach_event_data_user_count_link_rightBracket
-      if: ctx.json?.event?.data?.user_count_link instanceof List
+      if: ctx.axonius?.application?.event?.data?.user_count_link instanceof List
       processor:
         convert:
           field: _ingest._value.rightBracket
@@ -1327,100 +1055,33 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: json.event.data.user_count_link
+      field: axonius.application.event.data.user_count_link
       tag: foreach_event_data_user_count_link_value
-      if: ctx.json?.event?.data?.user_count_link instanceof List
+      if: ctx.axonius?.application?.event?.data?.user_count_link instanceof List
       processor:
         append:
           field: related.user
           tag: append_event_data_user_count_link_value_into_related_user
           value: '{{{_ingest._value.value}}}'
           allow_duplicates: false
-  - rename:
-      field: json.event.data.user_count_link
-      tag: rename_event_data_user_count_link
-      target_field: axonius.application.event.data.user_count_link
-      ignore_missing: true
-  - rename:
-      field: json.event.data.username_formats
-      tag: rename_event_data_username_formats
-      target_field: axonius.application.event.data.username_formats
-      ignore_missing: true
   - convert:
-      field: json.event.data.users_amount
+      field: axonius.application.event.data.users_amount
       tag: convert_event_data_users_amount_to_long
-      target_field: axonius.application.event.data.users_amount
       type: long
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.data.vendor_category
-      tag: rename_event_data_vendor_category
-      target_field: axonius.application.event.data.vendor_category
-      ignore_missing: true
-  - rename:
-      field: json.event.entity
-      tag: rename_event_entity
-      target_field: axonius.application.event.entity
-      ignore_missing: true
   - convert:
-      field: json.event.hidden_for_gui
+      field: axonius.application.event.hidden_for_gui
       tag: convert_event_hidden_for_gui_to_boolean
-      target_field: axonius.application.event.hidden_for_gui
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.event.initial_plugin_unique_name
-      tag: rename_event_initial_plugin_unique_name
-      target_field: axonius.application.event.initial_plugin_unique_name
-      ignore_missing: true
-  - rename:
-      field: json.event.name
-      tag: rename_event_name
-      target_field: axonius.application.event.name
-      ignore_missing: true
-  - rename:
-      field: json.event.plugin_name
-      tag: rename_event_plugin_name
-      target_field: axonius.application.event.plugin_name
-      ignore_missing: true
-  - rename:
-      field: json.event.plugin_type
-      tag: rename_event_plugin_type
-      target_field: axonius.application.event.plugin_type
-      ignore_missing: true
-  - rename:
-      field: json.event.plugin_unique_name
-      tag: rename_event_plugin_unique_name
-      target_field: axonius.application.event.plugin_unique_name
-      ignore_missing: true
-  - rename:
-      field: json.event.quick_id
-      tag: rename_event_quick_id
-      target_field: axonius.application.event.quick_id
-      ignore_missing: true
-  - rename:
-      field: json.event.type
-      tag: rename_event_type
-      target_field: axonius.application.event.type
-      ignore_missing: true
-  - rename:
-      field: json.internal_axon_id
-      tag: rename_internal_axon_id
-      target_field: axonius.application.internal_axon_id
-      ignore_missing: true
-  - rename:
-      field: json.labels
-      tag: rename_labels
-      target_field: axonius.application.labels
-      ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_application_settings" }}'
       tag: pipeline_application_settings
@@ -1496,10 +1157,6 @@ processors:
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
-  - remove:
-      field: json
-      tag: remove_json
-      ignore_missing: true
   - script:
       tag: script_to_drop_null_values
       lang: painless
