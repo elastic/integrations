@@ -88,7 +88,7 @@ processors:
       tag: append_event_type_02b5178b
       field: event.type
       value: end
-      if: ctx.cisco_ise?.log?.message?.code != null && ['5405','5411','5435'].contains(ctx.cisco_ise.log.message.code)
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5405','5411','5418','5435'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
   - append:
       tag: append_event_type_daec1823
@@ -214,6 +214,12 @@ processors:
       tag: append_event_type_user_5415
       field: event.type
       value: user
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5415'
+      ignore_failure: true
+  - append:
+      tag: append_event_type_change_5415
+      field: event.type
+      value: change
       if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '5415'
       ignore_failure: true
   - append:
