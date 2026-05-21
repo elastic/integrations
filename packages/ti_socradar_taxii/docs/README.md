@@ -95,12 +95,12 @@ The following STIX indicator types are supported and mapped to ECS fields:
 | `created` | `threat.indicator.first_seen` | When the indicator was first created |
 | `modified` | `threat.indicator.modified_at` | When the indicator was last modified |
 | `valid_from` | `threat.indicator.first_seen` | Start of indicator validity |
-| `valid_until` | `stix.ioc_expiration_date` | End of indicator validity |
+| `valid_until` | `ti_socradar_taxii.stix.ioc_expiration_date` | End of indicator validity |
 | `confidence` | `threat.indicator.confidence` | Confidence score (0-100) mapped to Low/Medium/High |
 | `description` | `threat.indicator.description` | Human-readable description |
 | `labels` | `tags` | STIX labels converted to tags |
-| `pattern` | `stix.pattern` | Original STIX pattern |
-| `spec_version` | `stix.spec_version` | STIX specification version |
+| `pattern` | `ti_socradar_taxii.stix.pattern` | Original STIX pattern |
+| `spec_version` | `ti_socradar_taxii.stix.spec_version` | STIX specification version |
 
 ### Confidence Mapping
 
@@ -120,16 +120,16 @@ By default, indicators expire 90 days after their last seen timestamp. This beha
 
 - If `valid_until` is present in the STIX object, it is used as the expiration date.
 - If `valid_until` is not present, the expiration is calculated as: `modified + ioc_expiration_duration`.
-- Expired indicators are marked in the `stix.ioc_expiration_reason` field.
+- Expired indicators are marked in the `ti_socradar_taxii.stix.ioc_expiration_reason` field.
 
 ## Transforms
 
 This integration includes a `latest_ioc` transform that:
 
-- Runs every 30 seconds
-- Maintains the latest unique IOC per `event.dataset` and `stix.id`
+- Runs every 60 seconds
+- Maintains the latest unique IOC per `event.dataset` and `ti_socradar_taxii.stix.id`
 - Stores results in `logs-ti_socradar_taxii_latest.indicator`
-- Retains data for 24 hours
+- Removes indicators 1 minute after their `ti_socradar_taxii.stix.ioc_expiration_date`
 
 Use the transform index for:
 - Indicator match rules
@@ -152,7 +152,7 @@ KPI metrics:
 
 Visualizations:
 - **Indicators by Type**: Donut chart breakdown (ipv4-addr, file, url, domain-name, etc.)
-- **Indicators by Feed Source**: Donut chart breakdown by `stix.threat_feed_source_name`
+- **Indicators by Feed Source**: Donut chart breakdown by `ti_socradar_taxii.stix.threat_feed_source_name`
 - **Indicators by Confidence**: Donut chart breakdown by ECS confidence (Low/Medium/High)
 - **Indicators Over Time**: Area chart, time series of indicator ingestion split by type
 - **Feed Source Breakdown**: Top 20 feed sources table with document counts
@@ -193,8 +193,8 @@ elastic-agent diagnostics collect
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| Indicator not parsed | Unsupported STIX type | Check `stix.type` field in logs |
-| Pattern extraction failed | Complex pattern | Check `stix.pattern` format |
+| Indicator not parsed | Unsupported STIX type | Check `ti_socradar_taxii.stix.type` field in logs |
+| Pattern extraction failed | Complex pattern | Check `ti_socradar_taxii.stix.pattern` format |
 | Missing ECS fields | Null values in STIX | Check STIX object completeness |
 
 ## Reference
@@ -217,93 +217,82 @@ elastic-agent diagnostics collect
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset | constant_keyword |
-| event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| stix.confidence | The confidence property identifies the confidence that the creator has in the correctness of their data. The confidence value MUST be a number in the range of 0-100. | integer |
-| stix.created | The time at which the STIX Indicator Object was originally created | date |
-| stix.created_by_ref | The created_by_ref property specifies the id property of the identity object that describes the entity that created this object. | keyword |
-| stix.date_added | Date when the indicator was added to the SOCRadar feed. | date |
-| stix.extensions | Specifies any extensions of the object, as a dictionary. | flattened |
-| stix.external_references | The external_references property specifies a list of external references which refers to non-STIX information. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems. | flattened |
-| stix.id | The ID of the indicator. | keyword |
-| stix.indicator_types |  | keyword |
-| stix.ioc_expiration_date | The expiration date of the indicator. It can be defined from the source event, by the revoked or valid_until fields, or from the integration configuration by ioc_expiration_duration. | date |
-| stix.ioc_expiration_duration | The configured expiration duration for the indicator. | keyword |
-| stix.ioc_expiration_reason | Reason why the indicator is expired. Defined by the integration in the ingest pipeline. | keyword |
-| stix.kill_chain_phases | Describes the various phases of the kill chain that the attacker undertakes. | flattened |
-| stix.lang | Feed language. | keyword |
-| stix.modified | Date of the last modification. | date |
-| stix.object_marking_refs | The object_marking_refs property specifies a list of id properties of marking-definition objects that apply to this object. | keyword |
-| stix.pattern | The detection pattern for the indicator. | keyword |
-| stix.pattern_type | The pattern language used in this indicator, which is always "stix". | keyword |
-| stix.pattern_version | The version of the pattern language that is used in this indicator. | keyword |
-| stix.revoked | The revoked property is only used by STIX Objects that support versioning and indicates whether the object has been revoked. Revoked objects are no longer considered valid by the object creator. Revoking an object is permanent; future versions of the object with this id must not be created. | boolean |
-| stix.spec_version | The version of the STIX specification used to represent this object. The value of this property must be 2.1. | keyword |
-| stix.threat_feed_source_name | SOCRadar threat feed source name. | keyword |
-| stix.type | Type of the STIX Object. | keyword |
-| stix.valid_from | The time from which the indicator is considered a valid indicator. | date |
-| stix.valid_until | The time at which the indicator should no longer be considered a valid indicator. | date |
-| stix.version | SOCRadar indicator version timestamp. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| threat.feed.name | Display friendly feed name. | constant_keyword |
-| threat.feed.reference | Feed reference URL. | keyword |
-| threat.indicator.as.number | Autonomous System number. | long |
-| threat.indicator.confidence | Indicator confidence rating. | keyword |
-| threat.indicator.description | Indicator description. | keyword |
-| threat.indicator.email.address | Indicator email address. | keyword |
+| threat.feed.name | The name of the threat feed in UI friendly format. | constant_keyword |
+| threat.feed.reference | Reference information for the threat feed in a UI friendly format. | keyword |
+| threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. | keyword |
+| threat.indicator.description | Describes the type of action conducted by the threat. | keyword |
+| threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
 | threat.indicator.file.hash.md5 | MD5 hash. | keyword |
 | threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
 | threat.indicator.file.hash.sha256 | SHA256 hash. | keyword |
 | threat.indicator.file.hash.sha384 | SHA384 hash. | keyword |
 | threat.indicator.file.hash.sha512 | SHA512 hash. | keyword |
-| threat.indicator.file.name | File name. | keyword |
-| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
-| threat.indicator.ip | Indicator IP address. | ip |
-| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
-| threat.indicator.marking.tlp | Traffic Light Protocol level. | keyword |
-| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
-| threat.indicator.name | Indicator display name. | keyword |
-| threat.indicator.provider | Indicator provider. | keyword |
-| threat.indicator.registry.key | Windows registry key. | keyword |
-| threat.indicator.registry.path | Windows registry path. | keyword |
-| threat.indicator.registry.value | Windows registry value. | keyword |
-| threat.indicator.type | Type of indicator. | keyword |
-| threat.indicator.url.domain | Domain extracted from a domain-name indicator. | keyword |
-| threat.indicator.url.full | Full URL. | keyword |
-| threat.indicator.url.original | Original URL. | wildcard |
-| threat.indicator.x509.issuer.common_name | X.509 issuer common name. | keyword |
-| threat.indicator.x509.issuer.country | X.509 issuer country. | keyword |
-| threat.indicator.x509.issuer.distinguished_name | X.509 issuer distinguished name. | keyword |
-| threat.indicator.x509.issuer.locality | X.509 issuer locality. | keyword |
-| threat.indicator.x509.issuer.organization | X.509 issuer organization. | keyword |
-| threat.indicator.x509.issuer.organizational_unit | X.509 issuer organizational unit. | keyword |
-| threat.indicator.x509.issuer.state_or_province | X.509 issuer state or province. | keyword |
-| threat.indicator.x509.not_after | X.509 certificate expiration date. | date |
-| threat.indicator.x509.not_before | X.509 certificate start date. | date |
-| threat.indicator.x509.serial_number | X.509 certificate serial number. | keyword |
-| threat.indicator.x509.signature_algorithm | X.509 signature algorithm. | keyword |
-| threat.indicator.x509.subject.common_name | X.509 subject common name. | keyword |
-| threat.indicator.x509.subject.country | X.509 subject country. | keyword |
-| threat.indicator.x509.subject.distinguished_name | X.509 subject distinguished name. | keyword |
-| threat.indicator.x509.subject.locality | X.509 subject locality. | keyword |
-| threat.indicator.x509.subject.organization | X.509 subject organization. | keyword |
-| threat.indicator.x509.subject.organizational_unit | X.509 subject organizational unit. | keyword |
-| threat.indicator.x509.subject.state_or_province | X.509 subject state or province. | keyword |
-| threat.indicator.x509.version_number | X.509 version number. | keyword |
+| threat.indicator.file.name | Name of the file including the extension, without the directory. | keyword |
+| threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
+| threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. | keyword |
+| threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
+| threat.indicator.provider | The name of the indicator's provider. | keyword |
+| threat.indicator.registry.key | Hive-relative path of keys. | keyword |
+| threat.indicator.registry.path | Full path, including hive, key and value | keyword |
+| threat.indicator.registry.value | Name of the value written. | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
+| threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| threat.indicator.url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| threat.indicator.url.full.text | Multi-field of `threat.indicator.url.full`. | match_only_text |
+| threat.indicator.url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| threat.indicator.url.original.text | Multi-field of `threat.indicator.url.original`. | match_only_text |
+| threat.indicator.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
+| threat.indicator.x509.issuer.country | List of country \(C) codes | keyword |
+| threat.indicator.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
+| threat.indicator.x509.issuer.locality | List of locality names (L) | keyword |
+| threat.indicator.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
+| threat.indicator.x509.issuer.organizational_unit | List of organizational units (OU) of issuing certificate authority. | keyword |
+| threat.indicator.x509.issuer.state_or_province | List of state or province names (ST, S, or P) | keyword |
+| threat.indicator.x509.not_after | Time at which the certificate is no longer considered valid. | date |
+| threat.indicator.x509.not_before | Time at which the certificate is first considered valid. | date |
+| threat.indicator.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, this should be encoded in base 16 and formatted without colons and uppercase characters. | keyword |
+| threat.indicator.x509.signature_algorithm | Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353. | keyword |
+| threat.indicator.x509.subject.common_name | List of common names (CN) of subject. | keyword |
+| threat.indicator.x509.subject.country | List of country \(C) code | keyword |
+| threat.indicator.x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
+| threat.indicator.x509.subject.locality | List of locality names (L) | keyword |
+| threat.indicator.x509.subject.organization | List of organizations (O) of subject. | keyword |
+| threat.indicator.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
+| threat.indicator.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
+| threat.indicator.x509.version_number | Version of x509 format. | keyword |
+| ti_socradar_taxii.stix.confidence | The confidence property identifies the confidence that the creator has in the correctness of their data. The confidence value MUST be a number in the range of 0-100. | integer |
+| ti_socradar_taxii.stix.created | The time at which the STIX Indicator Object was originally created | date |
+| ti_socradar_taxii.stix.created_by_ref | The created_by_ref property specifies the id property of the identity object that describes the entity that created this object. | keyword |
+| ti_socradar_taxii.stix.date_added | Date when the indicator was added to the SOCRadar feed. | date |
+| ti_socradar_taxii.stix.extensions | Specifies any extensions of the object, as a dictionary. | flattened |
+| ti_socradar_taxii.stix.external_references | The external_references property specifies a list of external references which refers to non-STIX information. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems. | flattened |
+| ti_socradar_taxii.stix.id | The ID of the indicator. | keyword |
+| ti_socradar_taxii.stix.indicator_types |  | keyword |
+| ti_socradar_taxii.stix.ioc_expiration_date | The expiration date of the indicator. It can be defined from the source event, by the revoked or valid_until fields, or from the integration configuration by ioc_expiration_duration. | date |
+| ti_socradar_taxii.stix.ioc_expiration_duration | The configured expiration duration for the indicator. | keyword |
+| ti_socradar_taxii.stix.ioc_expiration_reason | Reason why the indicator is expired. Defined by the integration in the ingest pipeline. | keyword |
+| ti_socradar_taxii.stix.kill_chain_phases | Describes the various phases of the kill chain that the attacker undertakes. | flattened |
+| ti_socradar_taxii.stix.lang | Feed language. | keyword |
+| ti_socradar_taxii.stix.modified | Date of the last modification. | date |
+| ti_socradar_taxii.stix.object_marking_refs | The object_marking_refs property specifies a list of id properties of marking-definition objects that apply to this object. | keyword |
+| ti_socradar_taxii.stix.pattern | The detection pattern for the indicator. | keyword |
+| ti_socradar_taxii.stix.pattern_type | The pattern language used in this indicator, which is always "stix". | keyword |
+| ti_socradar_taxii.stix.pattern_version | The version of the pattern language that is used in this indicator. | keyword |
+| ti_socradar_taxii.stix.revoked | The revoked property is only used by STIX Objects that support versioning and indicates whether the object has been revoked. Revoked objects are no longer considered valid by the object creator. Revoking an object is permanent; future versions of the object with this id must not be created. | boolean |
+| ti_socradar_taxii.stix.spec_version | The version of the STIX specification used to represent this object. The value of this property must be 2.1. | keyword |
+| ti_socradar_taxii.stix.threat_feed_source_name | SOCRadar threat feed source name. | keyword |
+| ti_socradar_taxii.stix.type | Type of the STIX Object. | keyword |
+| ti_socradar_taxii.stix.valid_from | The time from which the indicator is considered a valid indicator. | date |
+| ti_socradar_taxii.stix.valid_until | The time at which the indicator should no longer be considered a valid indicator. | date |
+| ti_socradar_taxii.stix.version | SOCRadar indicator version timestamp. | keyword |
 
 
 An example event for `indicator` looks as following:
@@ -353,24 +342,6 @@ An example event for `indicator` looks as following:
             "d7a8fbb307d7809469ca5ce888b23a65f06e4563cc956e73e82f5c72c865aab6"
         ]
     },
-    "stix": {
-        "confidence": 50,
-        "created": "2026-02-17T12:00:00.000Z",
-        "created_by_ref": "identity--socradar-taxii-feed",
-        "id": "indicator--c3d4e5f6-a7b8-9012-cdef-123456789012",
-        "ioc_expiration_date": "2026-08-17T12:00:00.000Z",
-        "ioc_expiration_duration": "90d",
-        "ioc_expiration_reason": "Expiration set from valid_until field",
-        "lang": "en",
-        "modified": "2026-02-17T12:15:00.000Z",
-        "pattern": "[file:hashes.'SHA-256' = 'd7a8fbb307d7809469ca5ce888b23a65f06e4563cc956e73e82f5c72c865aab6']",
-        "pattern_type": "stix",
-        "pattern_version": "2.1",
-        "spec_version": "2.1",
-        "type": "indicator",
-        "valid_from": "2026-02-17T12:00:00.000Z",
-        "valid_until": "2026-08-17T12:00:00.000Z"
-    },
     "tags": [
         "preserve_original_event",
         "forwarded",
@@ -379,7 +350,8 @@ An example event for `indicator` looks as following:
     ],
     "threat": {
         "feed": {
-            "name": "SOCRadar TAXII"
+            "name": "SOCRadar TAXII",
+            "reference": "https://platform.socradar.com"
         },
         "indicator": {
             "confidence": "High",
@@ -397,6 +369,26 @@ An example event for `indicator` looks as following:
             "name": "d7a8fbb307d7809469ca5ce888b23a65f06e4563cc956e73e82f5c72c865aab6",
             "provider": "SOCRadar",
             "type": "file"
+        }
+    },
+    "ti_socradar_taxii": {
+        "stix": {
+            "confidence": 50,
+            "created": "2026-02-17T12:00:00.000Z",
+            "created_by_ref": "identity--socradar-taxii-feed",
+            "id": "indicator--c3d4e5f6-a7b8-9012-cdef-123456789012",
+            "ioc_expiration_date": "2026-08-17T12:00:00.000Z",
+            "ioc_expiration_duration": "90d",
+            "ioc_expiration_reason": "Expiration set from valid_until field",
+            "lang": "en",
+            "modified": "2026-02-17T12:15:00.000Z",
+            "pattern": "[file:hashes.'SHA-256' = 'd7a8fbb307d7809469ca5ce888b23a65f06e4563cc956e73e82f5c72c865aab6']",
+            "pattern_type": "stix",
+            "pattern_version": "2.1",
+            "spec_version": "2.1",
+            "type": "indicator",
+            "valid_from": "2026-02-17T12:00:00.000Z",
+            "valid_until": "2026-08-17T12:00:00.000Z"
         }
     }
 }

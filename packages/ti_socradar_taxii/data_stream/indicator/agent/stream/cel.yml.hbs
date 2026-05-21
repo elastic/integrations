@@ -18,11 +18,11 @@ fields:
     ioc_expiration_duration: {{ioc_expiration_duration}}
 {{/if}}
 
-{{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
-resource.tracer.maxbackups: 5
-resource.tracer.maxsize: 5
-{{/if}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+  maxsize: 5
 
 state:
   base_url: {{base_url}}
@@ -39,7 +39,6 @@ state:
   collections:
     {{collections_config}}
   collection_index: 0
-  want_more: false
   next_url: ""
 
 redact:
@@ -54,48 +53,117 @@ redact:
 # advances collection_index by 1 (wraps around). Errors on a single
 # collection are isolated — the tick records the error event and rotates
 # to the next collection without halting the whole input.
-program: |
-    state.collections.size() == 0 ?
+program: |-
+  (state.collections.size() == 0) ?
+    {
+      "events": {
+        "error": {
+          "code": "config",
+          "id": "no_collections",
+          "message": "Collections Configuration is empty. Add at least one {api_root, collection_id} entry.",
+        },
+      },
+      "want_more": false,
+      "next_url": "",
+      "collection_index": 0,
+      "collections": state.collections,
+      "base_url": state.base_url,
+      "username": state.username,
+      "password": state.password,
+      "accept_header": state.accept_header,
+      "content_header": state.content_header,
+      ?"initial_interval": state.?initial_interval,
+      ?"limit": state.?limit,
+    }
+  :
+    state.collections[int(state.collection_index) % state.collections.size()].as(current,
+      {
+        "api_root": current.?api_root.orValue("radar_alpha"),
+        "cid": current.?collection_id.orValue(""),
+        "checkpoint": current.?last_added_after.orValue(""),
+      }
+    ).as(cc,
+      (cc.cid == "") ?
         {
-            "events": {
-                "error": {
-                    "code": "config",
-                    "id": "no_collections",
-                    "message": "Collections Configuration is empty. Add at least one {api_root, collection_id} entry.",
-                },
+          "events": {
+            "error": {
+              "code": "config",
+              "id": "missing_collection_id",
+              "message": "Collection at index " + string(state.collection_index) + " has empty collection_id; skipping.",
             },
-            "want_more": false,
-            "next_url": "",
-            "collection_index": 0,
-            "collections": state.collections,
-            "base_url": state.base_url,
-            "username": state.username,
-            "password": state.password,
-            "accept_header": state.accept_header,
-            "content_header": state.content_header,
-            ?"initial_interval": state.?initial_interval,
-            ?"limit": state.?limit,
+          },
+          "want_more": false,
+          "collection_index": (int(state.collection_index) + 1) % state.collections.size(),
+          "next_url": "",
+          "collections": state.collections,
+          "base_url": state.base_url,
+          "username": state.username,
+          "password": state.password,
+          "accept_header": state.accept_header,
+          "content_header": state.content_header,
+          ?"initial_interval": state.?initial_interval,
+          ?"limit": state.?limit,
         }
-    :
-    state.collections[int(state.collection_index) % state.collections.size()].as(current, {
-        "api_root": string(current.?api_root.orValue("radar_alpha")),
-        "cid": string(current.?collection_id.orValue("")),
-        "checkpoint": (has(current.last_added_after) && current.last_added_after != "") ?
-            string(current.last_added_after) : "",
-    }).as(cc,
-        cc.cid == "" ?
-            {
-                "events": {
-                    "error": {
-                        "code": "config",
-                        "id": "missing_collection_id",
-                        "message": "Collection at index " + string(state.collection_index) + " has empty collection_id; skipping.",
-                    },
-                },
-                "want_more": false,
-                "collection_index": (int(state.collection_index) + 1) % state.collections.size(),
-                "next_url": "",
-                "collections": state.collections,
+      :
+        request(
+          "GET",
+          (state.?next_url.orValue("") != "") ?
+            state.next_url
+          :
+            state.base_url.trim_right("/") + "/" + cc.api_root + "/collections/" + cc.cid + "/objects/?" + {
+              ?"added_after": (cc.checkpoint != "") ?
+                optional.of([cc.checkpoint])
+              : state.?initial_interval.optMap(i, [(now() - duration(i)).format(time_layout.RFC3339)]),
+              ?"limit": state.?limit.optMap(l, [string(int(l))]),
+            }.format_query()
+        ).with(
+          {
+            "Header": {
+              "Accept": [string(state.accept_header)],
+              ?"Content-Type": (state.?content_header.orValue("") != "") ?
+                optional.of([state.content_header])
+              :
+                optional.none(),
+              "Authorization": ["Basic " + (state.username + ":" + state.password).base64()],
+            },
+          }
+        ).do_request().as(resp,
+          (resp.StatusCode == 200 || resp.StatusCode == 206) ?
+            bytes(resp.Body).decode_json().as(body,
+              {
+                "events": (has(body.objects) && type(body.objects) == list) ?
+                  body.objects.map(e, {"message": e.encode_json()})
+                :
+                  [],
+                "want_more": has(body.next) && body.next != null && string(body.next) != "",
+                "next_url": (has(body.next) && body.next != null && string(body.next) != "") ?
+                  (
+                    state.base_url.trim_right("/") + "/" + cc.api_root + "/collections/" + cc.cid + "/objects/?" + {
+                      "next": [string(body.next)],
+                      ?"limit": state.?limit.optMap(l, [string(int(l))]),
+                    }.format_query()
+                  )
+                :
+                  "",
+                "collection_index": (has(body.next) && body.next != null && string(body.next) != "") ?
+                  state.collection_index
+                :
+                  (int(state.collection_index) + 1) % state.collections.size(),
+                "collections": (has(body.next) && body.next != null && string(body.next) != "") ?
+                  state.collections
+                :
+                  state.collections.map(c,
+                    (
+                      string(c.?collection_id.orValue("")) == cc.cid && string(c.?api_root.orValue("radar_alpha")) == cc.api_root
+                    ) ?
+                      {
+                        "api_root": cc.api_root,
+                        "collection_id": cc.cid,
+                        "last_added_after": (resp.Header[?"X-Taxii-Date-Added-Last"].optMap(v, string(v[0]))).orValue(now().format(time_layout.RFC3339)),
+                      }
+                    :
+                      c
+                  ),
                 "base_url": state.base_url,
                 "username": state.username,
                 "password": state.password,
@@ -103,101 +171,36 @@ program: |
                 "content_header": state.content_header,
                 ?"initial_interval": state.?initial_interval,
                 ?"limit": state.?limit,
-            }
-        :
-        request("GET",
-            state.?want_more.orValue(false) && state.?next_url.orValue("") != "" ?
-                state.next_url
-            :
-                state.base_url.trim_right("/") + "/" + cc.api_root + "/collections/" + cc.cid + "/objects/?" + {
-                    ?"added_after": cc.checkpoint != "" ?
-                        optional.of([cc.checkpoint])
-                    :
-                        state.?initial_interval.optMap(i, [(now() - duration(i)).format(time_layout.RFC3339)]),
-                    ?"limit": state.?limit.optMap(l, [string(int(l))]),
-                }.format_query()
-        ).with(
+              }
+            )
+          :
             {
-                "Header": {
-                    "Accept": [string(state.accept_header)],
-                    ?"Content-Type": state.?content_header.orValue("") != "" ?
-                        optional.of([state.content_header]) : optional.none(),
-                    "Authorization": ["Basic " + (state.username + ":" + state.password).base64()],
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET " + cc.api_root + "/" + cc.cid + ": " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
                 },
+              },
+              "want_more": false,
+              "next_url": "",
+              "collection_index": (int(state.collection_index) + 1) % state.collections.size(),
+              "collections": state.collections,
+              "base_url": state.base_url,
+              "username": state.username,
+              "password": state.password,
+              "accept_header": state.accept_header,
+              "content_header": state.content_header,
+              ?"initial_interval": state.?initial_interval,
+              ?"limit": state.?limit,
             }
-        ).do_request().as(resp,
-            (resp.StatusCode == 200 || resp.StatusCode == 206) ?
-                bytes(resp.Body).decode_json().as(body,
-                    {
-                        "events": (has(body.objects) && body.objects != null) ?
-                            body.objects.map(e, {"message": e.encode_json()})
-                        :
-                            [],
-                        "want_more": has(body.next) && body.next != null && string(body.next) != "",
-                        "next_url": (has(body.next) && body.next != null && string(body.next) != "") ?
-                            (
-                                state.base_url.trim_right("/") + "/" + cc.api_root + "/collections/" + cc.cid + "/objects/?" + {
-                                    "next": [string(body.next)],
-                                    ?"limit": state.?limit.optMap(l, [string(int(l))]),
-                                }.format_query()
-                            )
-                        :
-                            "",
-                        "collection_index": (has(body.next) && body.next != null && string(body.next) != "") ?
-                            int(state.collection_index)
-                        :
-                            (int(state.collection_index) + 1) % state.collections.size(),
-                        "collections": (has(body.next) && body.next != null && string(body.next) != "") ?
-                            state.collections
-                        :
-                            state.collections.map(c, (string(c.?collection_id.orValue("")) == cc.cid && string(c.?api_root.orValue("radar_alpha")) == cc.api_root) ?
-                                {
-                                    "api_root": cc.api_root,
-                                    "collection_id": cc.cid,
-                                    "last_added_after": resp.Header[?"X-Taxii-Date-Added-Last"].optMap(v, string(v[0])).orValue(now().format(time_layout.RFC3339)),
-                                }
-                            :
-                                c
-                            ),
-                        "base_url": state.base_url,
-                        "username": state.username,
-                        "password": state.password,
-                        "accept_header": state.accept_header,
-                        "content_header": state.content_header,
-                        ?"initial_interval": state.?initial_interval,
-                        ?"limit": state.?limit,
-                    }
-                )
-            :
-                {
-                    "events": {
-                        "error": {
-                            "code": string(resp.StatusCode),
-                            "id": string(resp.Status),
-                            "message": "GET " + cc.api_root + "/" + cc.cid + ": " +
-                            (
-                                (size(resp.Body) != 0) ?
-                                    string(resp.Body)
-                                :
-                                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                            ),
-                        },
-                    },
-                    "want_more": false,
-                    "next_url": "",
-                    "collection_index": (int(state.collection_index) + 1) % state.collections.size(),
-                    "collections": state.collections,
-                    "base_url": state.base_url,
-                    "username": state.username,
-                    "password": state.password,
-                    "accept_header": state.accept_header,
-                    "content_header": state.content_header,
-                    ?"initial_interval": state.?initial_interval,
-                    ?"limit": state.?limit,
-                }
         )
     )
-
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

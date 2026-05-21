@@ -4,7 +4,7 @@ processors:
   # Fail if error during the CEL program evaluation
   - terminate:
       tag: data_collection_error
-      if: ctx.error?.message != null
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
 
   - set:
@@ -47,50 +47,50 @@ processors:
   - json:
       tag: parse_stix_json
       field: event.original
-      target_field: stix
+      target_field: ti_socradar_taxii.stix
   - drop:
       tag: drop_non_indicator
       if: >-
-        ctx.stix.type != 'indicator'
+        ctx.ti_socradar_taxii.stix.type != 'indicator'
   - drop:
       tag: drop_non_stix_21
       if: >-
-        ctx.stix.spec_version != null && ctx.stix.spec_version != '2.1'
+        ctx.ti_socradar_taxii.stix.spec_version != null && ctx.ti_socradar_taxii.stix.spec_version != '2.1'
 
   - set:
       tag: set_event_id
       field: event.id
-      copy_from: stix.id
+      copy_from: ti_socradar_taxii.stix.id
       ignore_empty_value: true
   - fingerprint:
       tag: fingerprint_dedup
       fields:
-        - stix.id
-        - stix.modified
+        - ti_socradar_taxii.stix.id
+        - ti_socradar_taxii.stix.modified
       target_field: "_id"
       ignore_missing: true
 
   - date:
       tag: date_modified_timestamp
-      field: stix.modified
+      field: ti_socradar_taxii.stix.modified
       target_field: "@timestamp"
       formats:
         - "ISO8601"
-      if: ctx.stix.modified != null
+      if: ctx.ti_socradar_taxii.stix.modified != null
   - date:
       tag: date_created_fallback
-      field: stix.created
+      field: ti_socradar_taxii.stix.created
       target_field: "@timestamp"
       formats:
         - "ISO8601"
-      if: ctx.stix.modified == null && ctx.stix.created != null
+      if: ctx.ti_socradar_taxii.stix.modified == null && ctx.ti_socradar_taxii.stix.created != null
   - date:
       tag: date_modified
-      field: stix.modified
+      field: ti_socradar_taxii.stix.modified
       target_field: threat.indicator.last_seen
       formats:
         - ISO8601
-      if: ctx.stix.modified != null
+      if: ctx.ti_socradar_taxii.stix.modified != null
   - set:
       tag: set_modified_at
       field: threat.indicator.modified_at
@@ -98,14 +98,14 @@ processors:
       if: ctx.threat?.indicator?.last_seen != null
   - date:
       tag: date_valid_from
-      field: stix.valid_from
+      field: ti_socradar_taxii.stix.valid_from
       target_field: threat.indicator.first_seen
       formats:
         - "ISO8601"
-      if: ctx.stix.valid_from != null
+      if: ctx.ti_socradar_taxii.stix.valid_from != null
   - rename:
       tag: rename_name
-      field: stix.name
+      field: ti_socradar_taxii.stix.name
       target_field: threat.indicator.name
       ignore_missing: true
 
@@ -116,7 +116,7 @@ processors:
       value: ti_socradar_taxii.indicator
   - rename:
       tag: rename_description
-      field: stix.description
+      field: ti_socradar_taxii.stix.description
       target_field: threat.indicator.description
       ignore_missing: true
   - set:
@@ -128,10 +128,10 @@ processors:
       lang: painless
       description: Normalize confidence level, fallback to Low when absent.
       source: >
-        if (ctx.stix?.confidence == null) {
+        if (ctx.ti_socradar_taxii.stix?.confidence == null) {
           ctx.threat.indicator.confidence = "Low";
         } else {
-          def value = ctx.stix.confidence;
+          def value = ctx.ti_socradar_taxii.stix.confidence;
           if (value == 0) {
             ctx.threat.indicator.confidence = "None";
           } else if (value >= 1 && value <= 25) {
@@ -146,8 +146,8 @@ processors:
         }
   - foreach:
       tag: foreach_labels
-      field: stix.labels
-      if: ctx.stix.labels != null
+      field: ti_socradar_taxii.stix.labels
+      if: ctx.ti_socradar_taxii.stix.labels != null
       processor:
         append:
           field: tags
@@ -157,28 +157,30 @@ processors:
       ignore_failure: true
   - remove:
       tag: remove_labels
-      field: stix.labels
+      field: ti_socradar_taxii.stix.labels
       ignore_missing: true
 
   ## TLP mapping from STIX marking-definition references
+  # TLP marking-definition IDs are defined by the OASIS STIX 2.1 specification.
+  # See: https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_yd3ar14ekwrs
   - script:
       tag: script_tlp_mapping
       lang: painless
-      if: ctx.stix?.object_marking_refs != null
+      if: ctx.ti_socradar_taxii.stix?.object_marking_refs != null
       description: Map STIX TLP marking-definition IDs to TLP levels.
-      source: >
-        def tlp_map = [
-          'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9': 'WHITE',
-          'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da': 'GREEN',
-          'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82': 'AMBER',
+      params:
+        tlp_map:
+          'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9': 'WHITE'
+          'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da': 'GREEN'
+          'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82': 'AMBER'
           'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed': 'RED'
-        ];
-        for (def ref : ctx.stix.object_marking_refs) {
-          if (tlp_map.containsKey(ref)) {
+      source: >
+        for (def ref : ctx.ti_socradar_taxii.stix.object_marking_refs) {
+          if (params.tlp_map.containsKey(ref)) {
             if (ctx.threat.indicator.marking == null) {
               ctx.threat.indicator.marking = new HashMap();
             }
-            ctx.threat.indicator.marking.tlp = tlp_map[ref];
+            ctx.threat.indicator.marking.tlp = params.tlp_map[ref];
             break;
           }
         }
@@ -186,26 +188,27 @@ processors:
   ## IOC expiration
   - date:
       tag: date_ioc_expiration_valid_until
-      field: stix.valid_until
-      target_field: stix.ioc_expiration_date
+      field: ti_socradar_taxii.stix.valid_until
+      target_field: ti_socradar_taxii.stix.ioc_expiration_date
       formats:
         - ISO8601
-      if: ctx.stix.valid_until != null
+      if: ctx.ti_socradar_taxii.stix.valid_until != null
   - set:
       tag: set_ioc_expiration_revoked
-      field: stix.ioc_expiration_date
+      field: ti_socradar_taxii.stix.ioc_expiration_date
       copy_from: threat.indicator.modified_at
       ignore_empty_value: true
       if: >-
-        ctx.stix.ioc_expiration_date == null &&
-        ctx.stix.revoked != null &&
-        ctx.stix.revoked == true
+        ctx.ti_socradar_taxii.stix.ioc_expiration_date == null &&
+        ctx.ti_socradar_taxii.stix.revoked != null &&
+        ctx.ti_socradar_taxii.stix.revoked == true
 
   - script:
       tag: script_conf_ioc_expiration
       lang: painless
+      description: Calculate the IOC expiration date from the configured duration when STIX valid_until is absent.
       if: >-
-        ctx.stix.ioc_expiration_date == null &&
+        ctx.ti_socradar_taxii.stix.ioc_expiration_date == null &&
         ctx._conf?.ioc_expiration_duration != null &&
         ctx._conf.ioc_expiration_duration != '' &&
         (ctx.threat?.indicator?.last_seen != null || ctx.threat?.indicator?.first_seen != null)
@@ -243,7 +246,7 @@ processors:
             ioc_expiration_date = updated_at.plusDays(90L);
         }
 
-        ctx.stix.ioc_expiration_date = ioc_expiration_date;
+        ctx.ti_socradar_taxii.stix.ioc_expiration_date = ioc_expiration_date;
       on_failure:
         - append:
             field: error.message
@@ -252,24 +255,25 @@ processors:
   - script:
       tag: script_set_ioc_expiration_reason
       lang: painless
-      if: ctx.stix.ioc_expiration_date != null
+      description: Record which rule (valid_until, revoked, or configured duration) set the IOC expiration date.
+      if: ctx.ti_socradar_taxii.stix.ioc_expiration_date != null
       params:
         valid_until: "Expiration set from valid_until field"
         revoked: "Expiration set from revoked field"
         default: "Expiration set by Elastic from the integration's parameter `IOC Expiration Duration`"
       source: >
-        if (ctx.stix.valid_until != null) {
-          ctx.stix.ioc_expiration_reason = params.valid_until;
-        } else if (ctx.stix.revoked != null && ctx.stix.revoked == true) {
-          ctx.stix.ioc_expiration_reason = params.revoked;
+        if (ctx.ti_socradar_taxii.stix.valid_until != null) {
+          ctx.ti_socradar_taxii.stix.ioc_expiration_reason = params.valid_until;
+        } else if (ctx.ti_socradar_taxii.stix.revoked != null && ctx.ti_socradar_taxii.stix.revoked == true) {
+          ctx.ti_socradar_taxii.stix.ioc_expiration_reason = params.revoked;
         } else {
-          ctx.stix.ioc_expiration_reason = params.default;
+          ctx.ti_socradar_taxii.stix.ioc_expiration_reason = params.default;
         }
 
   - date:
       tag: date_ioc_expiration_date
-      field: stix.ioc_expiration_date
-      target_field: stix.ioc_expiration_date
+      field: ti_socradar_taxii.stix.ioc_expiration_date
+      target_field: ti_socradar_taxii.stix.ioc_expiration_date
       formats:
         - ISO8601
         - UNIX
@@ -283,7 +287,7 @@ processors:
   - rename:
       tag: rename_conf_ioc_expiration_duration
       field: _conf.ioc_expiration_duration
-      target_field: stix.ioc_expiration_duration
+      target_field: ti_socradar_taxii.stix.ioc_expiration_duration
       ignore_missing: true
 
   ## IOC type detection from STIX pattern
@@ -291,63 +295,58 @@ processors:
       tag: set_type_domain
       field: threat.indicator.type
       value: domain-name
-      if: ctx.stix.pattern?.startsWith('[domain-name') == true
+      if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[domain-name') == true
   - set:
       tag: set_type_email_addr
       field: threat.indicator.type
       value: email-addr
-      if: ctx.stix.pattern?.startsWith('[email-addr') == true
-  - set:
-      tag: set_type_email_message
-      field: threat.indicator.type
-      value: email-message
-      if: ctx.stix.pattern?.startsWith('[email-message') == true
+      if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[email-addr') == true || ctx.ti_socradar_taxii.stix.pattern?.startsWith('[email-message') == true
   - set:
       tag: set_type_file
       field: threat.indicator.type
       value: file
-      if: ctx.stix.pattern?.startsWith('[file') == true
+      if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[file') == true
   - set:
       tag: set_type_ipv4
       field: threat.indicator.type
       value: ipv4-addr
-      if: ctx.stix.pattern?.startsWith('[ipv4-addr') == true
+      if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[ipv4-addr') == true
   - set:
       tag: set_type_ipv6
       field: threat.indicator.type
       value: ipv6-addr
-      if: ctx.stix.pattern?.startsWith('[ipv6-addr') == true
+      if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[ipv6-addr') == true
   - set:
       tag: set_type_url
       field: threat.indicator.type
       value: url
-      if: ctx.stix.pattern?.startsWith('[url') == true
+      if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[url') == true
   - set:
       tag: set_type_asn
       field: threat.indicator.type
       value: autonomous-system
-      if: ctx.stix.pattern?.startsWith('[autonomous-system') == true
+      if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[autonomous-system') == true
   - set:
       tag: set_type_windows_registry
       field: threat.indicator.type
       value: windows-registry-key
-      if: ctx.stix.pattern?.startsWith('[windows-registry-key') == true
+      if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[windows-registry-key') == true
   - set:
       tag: set_type_x509
       field: threat.indicator.type
       value: x509-certificate
-      if: ctx.stix.pattern?.startsWith('[x509') == true
+      if: ctx.ti_socradar_taxii.stix.pattern?.startsWith('[x509') == true
 
   - split:
       tag: split_pattern
-      field: stix.pattern
-      target_field: stix._patterns
+      field: ti_socradar_taxii.stix.pattern
+      target_field: ti_socradar_taxii.stix._patterns
       separator: '\s+AND\s+|\s+OR\s+'
-      if: ctx.threat?.indicator?.type != null && ctx.stix.pattern != null
+      if: ctx.threat?.indicator?.type != null && ctx.ti_socradar_taxii.stix.pattern != null
 
   - foreach:
       tag: foreach_domain
-      field: stix._patterns
+      field: ti_socradar_taxii.stix._patterns
       if: ctx.threat?.indicator?.type == 'domain-name'
       ignore_missing: true
       processor:
@@ -356,8 +355,8 @@ processors:
 
   - foreach:
       tag: foreach_email
-      field: stix._patterns
-      if: ctx.threat?.indicator?.type == 'email-addr' || ctx.threat?.indicator?.type == 'email-message'
+      field: ti_socradar_taxii.stix._patterns
+      if: ctx.threat?.indicator?.type == 'email-addr'
       ignore_missing: true
       processor:
         pipeline:
@@ -365,7 +364,7 @@ processors:
 
   - foreach:
       tag: foreach_file
-      field: stix._patterns
+      field: ti_socradar_taxii.stix._patterns
       if: ctx.threat?.indicator?.type == 'file'
       ignore_missing: true
       processor:
@@ -374,7 +373,7 @@ processors:
 
   - foreach:
       tag: foreach_ip
-      field: stix._patterns
+      field: ti_socradar_taxii.stix._patterns
       if: ctx.threat?.indicator?.type?.startsWith('ip') == true
       ignore_missing: true
       processor:
@@ -383,7 +382,7 @@ processors:
 
   - foreach:
       tag: foreach_url
-      field: stix._patterns
+      field: ti_socradar_taxii.stix._patterns
       if: ctx.threat?.indicator?.type == 'url'
       ignore_missing: true
       processor:
@@ -392,7 +391,7 @@ processors:
 
   - foreach:
       tag: foreach_asn
-      field: stix._patterns
+      field: ti_socradar_taxii.stix._patterns
       if: ctx.threat?.indicator?.type == 'autonomous-system'
       ignore_missing: true
       processor:
@@ -411,7 +410,7 @@ processors:
 
   - foreach:
       tag: foreach_windows_registry
-      field: stix._patterns
+      field: ti_socradar_taxii.stix._patterns
       if: ctx.threat?.indicator?.type == 'windows-registry-key'
       ignore_missing: true
       processor:
@@ -420,7 +419,7 @@ processors:
 
   - foreach:
       tag: foreach_x509
-      field: stix._patterns
+      field: ti_socradar_taxii.stix._patterns
       if: ctx.threat?.indicator?.type == 'x509-certificate'
       ignore_missing: true
       processor:
@@ -431,7 +430,7 @@ processors:
       tag: remove_internal
       field:
         - _conf
-        - stix._patterns
+        - ti_socradar_taxii.stix._patterns
       ignore_missing: true
 
   - script:
@@ -466,6 +465,12 @@ processors:
           }
         }
         if (ctx.event != null && saved_original != null) ctx.event['original'] = saved_original;
+
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
+      ignore_missing: true
 
   - script:
       tag: drop_null_empty_values
