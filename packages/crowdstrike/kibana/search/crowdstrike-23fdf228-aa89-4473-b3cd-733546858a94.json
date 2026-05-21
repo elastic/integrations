@@ -1,9 +1,21 @@
 {
     "attributes": {
         "columns": [
-            "crowdstrike.event.Category",
+            "@timestamp",
+            "crowdstrike.idp.timeline.event_label",
             "event.action",
-            "message"
+            "event.severity",
+            "user.email",
+            "host.name",
+            "source.ip",
+            "source.geo.country_name",
+            "destination.domain",
+            "service.name",
+            "network.protocol",
+            "tls.version",
+            "crowdstrike.idp.timeline.network_type",
+            "crowdstrike.idp.timeline.ip_address_reputations",
+            "event.id"
         ],
         "description": "",
         "grid": {},
@@ -24,34 +36,13 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": {
-                                "query": "crowdstrike.falcon"
+                                "query": "crowdstrike.identity_protection_timeline"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "data_stream.dataset": "crowdstrike.falcon"
-                            }
-                        }
-                    },
-                    {
-                        "$state": {
-                            "store": "appState"
-                        },
-                        "meta": {
-                            "alias": null,
-                            "disabled": false,
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-                            "key": "crowdstrike.event.Category",
-                            "negate": false,
-                            "params": {
-                                "query": "Incidents"
-                            },
-                            "type": "phrase"
-                        },
-                        "query": {
-                            "match_phrase": {
-                                "crowdstrike.event.Category": "Incidents"
+                                "data_stream.dataset": "crowdstrike.identity_protection_timeline"
                             }
                         }
                     }
@@ -59,7 +50,7 @@
                 "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset : \"crowdstrike.falcon\""
+                    "query": ""
                 }
             }
         },
@@ -70,12 +61,11 @@
             ]
         ],
         "timeRestore": false,
-        "title": "[Crowdstrike] Newest Falcon Incidents",
-        "usesAdHocDataView": false
+        "title": "[CrowdStrike] Identity Protection timeline events"
     },
     "coreMigrationVersion": "8.8.0",
     "created_at": "2026-05-21T12:01:57.724Z",
-    "id": "crowdstrike-a9e7ff80-8212-11ee-bae0-937af575b750",
+    "id": "crowdstrike-23fdf228-aa89-4473-b3cd-733546858a94",
     "references": [
         {
             "id": "logs-*",
@@ -85,11 +75,6 @@
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         }
     ],
