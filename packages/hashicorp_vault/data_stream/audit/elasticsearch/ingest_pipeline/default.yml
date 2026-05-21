@@ -105,6 +105,11 @@ processors:
       field: message
       copy_from: hashicorp_vault.audit.error
       ignore_failure: true
+  - dissect:
+      tag: split_source_address_if_contains_port
+      field: hashicorp_vault.audit.request.remote_address
+      pattern: "%{hashicorp_vault.audit.request.remote_address}:%{hashicorp_vault.audit.request.remote_port}"
+      if: "ctx.hashicorp_vault?.audit?.request?.remote_address != null && ctx.hashicorp_vault.audit.request.remote_address.contains(':')"
   - convert:
       tag: convert_hashicorp_vault_audit_request_remote_address_to_source_ip_98cf868d
       field: hashicorp_vault.audit.request.remote_address
