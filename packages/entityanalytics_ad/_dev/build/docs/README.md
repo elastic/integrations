@@ -10,10 +10,11 @@ In v0.15.0 of the integration the user and device data was split into separate d
 
 ## Data streams
 
-The Active Directory Entity Analytics integration collects one type of data: user.
+The Active Directory Entity Analytics integration collects identity data.
 
 - **User** is used to retrieve all user entries available from an Active Directory server.
-- **Device** is used to retrieve all device logs available from an Active Directory server.
+- **Device** is used to retrieve all device entries available from an Active Directory server.
+- **Group** contains standalone documents for Active Directory groups that have no direct members, collected when the *Include empty groups* option is enabled. Groups with members are already represented through membership enrichment on user and device entities.
 
 ## Requirements
 
@@ -115,3 +116,9 @@ This is the `User` dataset.
 This is the `Device` dataset.
 
 {{fields "device"}}
+
+### Group
+
+This is the `Group` dataset. It contains standalone documents for Active Directory groups that have no direct members, collected when the *Include empty groups* option is enabled. Groups with members are already represented through membership enrichment on user and device entities.
+
+{{fields "group"}}
