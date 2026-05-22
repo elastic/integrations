@@ -362,7 +362,7 @@ processors:
   - set:
       field: doppel.darkweb.cred_leaks_password
       value: "[REDACTED]"
-      if: "ctx?.entity_content?.cred_leaks?.password != null"
+      if: ctx?.entity_content?.cred_leaks?.password != null
 
   # --- Hardcoded ECS Values ---
   - set:
@@ -407,13 +407,15 @@ processors:
 
   # --- (Ledger Style: Creates new row on update) ---
   - fingerprint:
-      fields: ["event.id", "last_activity_timestamp"]
+      fields:
+        - event.id
+        - last_activity_timestamp
       target_field: _id
       method: SHA-256
 
 # --- Safely preserve Doppel's real tags ---
   - set:
-      if: "ctx.containsKey('tags') && ctx.tags != null"
+      if: ctx.containsKey('tags') && ctx.tags != null
       field: doppel.tags
       copy_from: tags
       ignore_failure: true
@@ -422,13 +424,59 @@ processors:
   # --- Give Elastic the root tags array for its system requirements ---
   - set:
       field: tags
-      value: ["preserve_original_event"]
+      value:
+        - preserve_original_event
       ignore_failure: true
 
   # --- Final Cleanup ---
   - remove:
-      field: [raw_message, id, entity, brand, queue_state, entity_state, severity, product, platform, source, notes, screenshot_url, score, assignee, doppel_link, uploaded_by, entity_content, audit_logs, last_activity_timestamp, created_at]
+      field:
+        - raw_message
+        - id
+        - entity
+        - brand
+        - queue_state
+        - entity_state
+        - severity
+        - product
+        - platform
+        - source
+        - notes
+        - screenshot_url
+        - score
+        - assignee
+        - doppel_link
+        - uploaded_by
+        - entity_content
+        - audit_logs
+        - last_activity_timestamp
+        - created_at
       ignore_missing: true
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: remove_nulls
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
 
 on_failure:
   - append:
