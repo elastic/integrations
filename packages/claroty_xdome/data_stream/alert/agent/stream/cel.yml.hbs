@@ -337,7 +337,11 @@ program: |
                     },
                   ]
                 :
-                  [{}],
+                  [
+                    dyn({
+                      "retry": true,
+                    }),
+                  ],
                 "device_offset": 0,
                 "next": (int(state.next) + 1 < size(state.worklist.alerts)) ? (int(state.next) + 1) : 0,
                 "worklist": (int(state.next) + 1 < size(state.worklist.alerts)) ? state.worklist : {},
@@ -387,7 +391,8 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
 {{processors}}
 {{/if}}
