@@ -50,20 +50,6 @@ steps:
   - wait: ~
     continue_on_failure: false
 
-  - label: ":scroll: Check changelog PR links"
-    key: "check-changelog-pr-links"
-    command: ".buildkite/scripts/check_changelog_entries.sh"
-    agents:
-      image: "${LINUX_AGENT_IMAGE}"
-      cpu: "2"
-      memory: "1G"
-    plugins:
-      - elastic/vault-github-token#v0.1.0:
-    if: |
-      build.env('BUILDKITE_PULL_REQUEST') != "false"
-    if_changed:
-      - "**/changelog.yml"
-
   - label: ":white_check_mark: Check go sources"
     key: "check"
     command: ".buildkite/scripts/check_sources.sh"
@@ -101,6 +87,24 @@ steps:
           always-annotate: false
           run-in-docker: false
           context: junit-sources
+
+  - label: ":scroll: Check changelog PR links"
+    key: "check-changelog-pr-links"
+    command: ".buildkite/scripts/check_changelog_entries.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "2"
+      memory: "1G"
+    plugins:
+      - elastic/vault-github-token#v0.1.0:
+    depends_on:
+      - step: "check-shell-scripts"
+        allow_failure: false
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') != "false"
+    if_changed:
+      - "**/changelog.yml"
+
 
   - label: "Trigger integrations"
     key: "test-integrations"
