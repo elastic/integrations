@@ -105,12 +105,14 @@ main() {
                     --context "ctx-changelog-${changelog_file//\//-}" \
                     --style "error"
                 echo "${message}" > changelog-link-mismatch.txt
-                add_or_edit_gh_pr_comment \
+                if ! add_or_edit_gh_pr_comment \
                     "${BUILDKITE_ORGANIZATION_SLUG}" \
                     "integrations" \
                     "${BUILDKITE_PULL_REQUEST}" \
                     "changelog-link-mismatch" \
-                    "changelog-link-mismatch.txt" > /dev/null 2>&1 || true
+                    "changelog-link-mismatch.txt" ; then
+                    echo "Failed to add or edit GitHub PR comment"
+                fi
             fi
         fi
     done
