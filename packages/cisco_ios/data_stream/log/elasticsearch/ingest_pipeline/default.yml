@@ -207,17 +207,8 @@ processors:
       tag: grok_message
       patterns:
         - '%{DATA:cisco.ios.facility}-%{POSINT:event.severity}-%{DATA:event.code}:\s+(\w+\d+(/\d+)?\:\s+)?([a-zA-Z0-9_]+\:\s+)?%{GREEDYDATA:message}'
-        - '%{DATA:cisco.ios.facility}-(?<_temp_.severity_letter>[A-Z])-%{DATA:event.code}:\s+(\w+\d+(/\d+)?\:\s+)?([a-zA-Z0-9_]+\:\s+)?%{GREEDYDATA:message}'
+        - '%{DATA:cisco.ios.facility}-(?<cisco.ios.mnemonic>[A-Z])-%{DATA:event.code}:\s+(\w+\d+(/\d+)?\:\s+)?([a-zA-Z0-9_]+\:\s+)?%{GREEDYDATA:message}'
       ignore_missing: true
-  - script:
-      tag: script_severity_letter_mapping
-      lang: painless
-      if: ctx._temp_?.severity_letter != null
-      source: |-
-        Map m = ['A': 1, 'C': 2, 'E': 3, 'W': 4, 'N': 5, 'I': 6, 'D': 7];
-        if (m.containsKey(ctx._temp_.severity_letter)) {
-          ctx.event.severity = m[ctx._temp_.severity_letter];
-        }
   - grok:
       field: message
       tag: grok_child_message

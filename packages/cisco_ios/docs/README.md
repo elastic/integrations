@@ -349,6 +349,7 @@ The `log` data stream provides events from Cisco IOS devices of the following ty
 | cisco.ios.facility | The facility to which the message refers (for example, SNMP, SYS, and so forth). A facility can be a hardware device, a protocol, or a module of the system software. It denotes the source or the cause of the system message. | keyword |
 | cisco.ios.interface.name | The name of the network interface. | keyword |
 | cisco.ios.message_count | Message count number provided by the device when the device's service message-counter global configuration is set. | long |
+| cisco.ios.mnemonic | Single-letter severity mnemonic used by some Cisco devices (for example, A for Alert, W for Warning) instead of a numeric severity level. | keyword |
 | cisco.ios.outcome | The result of the event | keyword |
 | cisco.ios.pim.group.ip | Multicast group IP | ip |
 | cisco.ios.pim.source.ip | Multicast source IP | ip |
