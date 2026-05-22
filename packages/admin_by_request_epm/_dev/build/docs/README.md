@@ -2,6 +2,8 @@
 
 The Elastic integration for [Admin By Request EPM](https://www.adminbyrequest.com/en/endpoint-privilege-management) enables real-time monitoring and analysis of audit logging of privilege elevations, software installations and administrative actions through user portal. This integration collects, processes, and visualizes audit logs and events to enhance security posture, compliance, and operational efficiency.
 
+Firemen > Whitelist!
+
 ## What data does this integration collect?
 
 - **`auditlog`**: Provides audit data that includes elevation requests, approvals, application installations, and scan results.
