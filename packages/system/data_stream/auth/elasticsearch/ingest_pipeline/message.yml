@@ -35,6 +35,7 @@ processors:
       ignore_failure: true
       patterns:
         - 'for user %{QUOTE}?%{DATA:_temp.foruser}%{QUOTE}? by %{QUOTE}?%{DATA:_temp.byuser}%{QUOTE}?(?:\(uid=%{NUMBER:_temp.byuid}\))?$'
+        - 'pam_faillock\([^)]+\): %{DATA} for user %{USERNAME:_temp.foruser} account temporarily locked'
         - 'for user %{QUOTE}?%{DATA:_temp.foruser}%{QUOTE}?$'
         - 'by user %{QUOTE}?%{DATA:_temp.byuser}%{QUOTE}?$'
         - '%{BOUNDARY} user %{QUOTE}%{DATA:_temp.user}%{QUOTE}'
@@ -50,7 +51,8 @@ processors:
       ignore_failure: true
       patterns:
         - '^pam_unix(%{DATA}:%{WORD:_temp.category})'
-      if: ctx.message != null && ctx.message.contains('pam_unix(')
+        - '^pam_faillock(%{DATA}:%{WORD:_temp.category})'
+      if: ctx.message != null && (ctx.message.contains('pam_unix(') || ctx.message.contains('pam_faillock('))
   - grok:
       description: Extract rhost and user from PAM key-value messages.
       tag: grok-pam-kv
@@ -138,6 +140,11 @@ processors:
       field: event.outcome
       value: failure
       if: ctx.message != null && ctx.message.contains('authentication failure')
+  - set:
+      tag: set_outcome_failure_account_locked
+      field: event.outcome
+      value: failure
+      if: ctx.message != null && ctx.message.contains('account temporarily locked')
   - append:
       tag: append_category_authentication_2
       field: event.category
@@ -154,6 +161,11 @@ processors:
       field: event.action
       value: 'logged-off'
       if: ctx.message != null && ctx.message.contains('session closed')
+  - set:
+      tag: set_action_account_locked
+      field: event.action
+      value: account_locked
+      if: ctx.message != null && ctx.message.contains('pam_faillock(') && ctx.message.contains('account temporarily locked')
   - rename:
       tag: rename_byuser
       field: _temp.byuser
