@@ -120,22 +120,22 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-02-09T05:50:27.000Z",
     "agent": {
-        "ephemeral_id": "b8cf01ec-b781-447e-92b2-8f5718e052bc",
-        "id": "cc76ec1f-6316-44fc-9253-3b5e79ade96b",
-        "name": "elastic-agent-41375",
+        "ephemeral_id": "673d5468-31d6-4fbd-9620-144246698edd",
+        "id": "91b27281-9bde-42a5-a100-529612a7e293",
+        "name": "elastic-agent-35386",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "openai.audit",
-        "namespace": "57945",
+        "namespace": "91451",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "cc76ec1f-6316-44fc-9253-3b5e79ade96b",
+        "id": "91b27281-9bde-42a5-a100-529612a7e293",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -147,7 +147,7 @@ An example event for `audit` looks as following:
         ],
         "dataset": "openai.audit",
         "id": "audit_log-iakaJWnLdMLe89Ml5xayb4RJ",
-        "ingested": "2026-03-05T12:28:52Z",
+        "ingested": "2026-05-22T11:51:38Z",
         "kind": "event",
         "original": "{\"actor\":{\"session\":{\"ip_address\":\"163.116.213.142\",\"ip_address_details\":{\"asn\":\"55256\",\"city\":\"Mumbai\",\"country\":\"IN\",\"latitude\":\"19.07283\",\"longitude\":\"72.88261\",\"region\":\"Maharashtra\",\"region_code\":\"MH\"},\"ja3\":\"353a03072e841d5004dfaa78561ccc70\",\"ja4\":\"t13d691100_8b2139ff7677_f0e8fcc46740\",\"user\":{\"email\":\"muskan.agarwal@crestdata.ai\",\"id\":\"user-nuEwi8Vsrrddq53RTzEQ9p3c\"},\"user_agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"},\"type\":\"session\"},\"effective_at\":1770616227,\"id\":\"audit_log-iakaJWnLdMLe89Ml5xayb4RJ\",\"object\":\"organization.audit_log\",\"type\":\"login.succeeded\"}",
         "type": [

@@ -94,6 +94,32 @@ processors:
       tag: set_source_ip_from_audit_actor_session_ip_address
       copy_from: openai.audit.actor.session.ip_address
       ignore_empty_value: true
+  - geoip:
+      tag: geoip_source_ip_location
+      if: ctx.source?.ip != null
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      tag: geoip_source_ip_asn
+      if: ctx.source?.ip != null
+      field: source.ip
+      target_field: source.as
+      database_file: GeoLite2-ASN.mmdb
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      tag: rename_source_as_asn_to_source_as_number
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_source_as_organization_name
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
   - append:
       field: related.ip
       tag: append_audit_actor_session_ip_address_into_related_ip
@@ -114,16 +140,19 @@ processors:
       tag: set_source_as_number_from_audit_actor_session_ip_address_details_asn
       copy_from: openai.audit.actor.session.ip_address_details.asn
       ignore_empty_value: true
+      override: false
   - set:
       field: source.geo.city_name
       tag: set_source_geo_city_name_from_audit_actor_session_ip_address_details_city
       copy_from: openai.audit.actor.session.ip_address_details.city
       ignore_empty_value: true
+      override: false
   - set:
       field: source.geo.country_iso_code
       tag: set_source_geo_country_iso_code_from_audit_actor_session_ip_address_details_country
       copy_from: openai.audit.actor.session.ip_address_details.country
       ignore_empty_value: true
+      override: false
   - convert:
       field: openai.audit.actor.session.ip_address_details.latitude
       tag: convert_actor_session_ip_address_details_latitude_to_long
@@ -138,6 +167,7 @@ processors:
       tag: set_source_geo_location_from_audit_actor_session_ip_address_details_latitude
       copy_from: openai.audit.actor.session.ip_address_details.latitude
       ignore_empty_value: true
+      override: false
   - convert:
       field: openai.audit.actor.session.ip_address_details.longitude
       tag: convert_actor_session_ip_address_details_longitude_to_long
@@ -152,16 +182,19 @@ processors:
       tag: set_openai_audit_actor_session_ip_address_details_longitude_into_source_geo_location
       copy_from: openai.audit.actor.session.ip_address_details.longitude
       ignore_empty_value: true
+      override: false
   - set:
       field: source.geo.region_name
       tag: set_source_geo_region_name_from_audit_actor_session_ip_address_details_region
       copy_from: openai.audit.actor.session.ip_address_details.region
       ignore_empty_value: true
+      override: false
   - set:
       field: source.geo.region_iso_code
       tag: set_source_geo_region_iso_code_from_audit_actor_session_ip_address_details_region_code
       copy_from: openai.audit.actor.session.ip_address_details.region_code
-      ignore_empty_value: true
+      ignore_empty_value: true      
+      override: false
   - set:
       field: tls.client.ja3
       tag: set_tls_client_ja3_from_audit_actor_session_ja3
@@ -252,13 +285,6 @@ processors:
       field:
         - openai.audit.actor.api_key.service_account.id
         - openai.audit.actor.session.ip_address
-        - openai.audit.actor.session.ip_address_details.asn
-        - openai.audit.actor.session.ip_address_details.city
-        - openai.audit.actor.session.ip_address_details.country
-        - openai.audit.actor.session.ip_address_details.latitude
-        - openai.audit.actor.session.ip_address_details.longitude
-        - openai.audit.actor.session.ip_address_details.region
-        - openai.audit.actor.session.ip_address_details.region_code
         - openai.audit.actor.session.ja3
         - openai.audit.actor.session.user.email
         - openai.audit.actor.session.user.id
