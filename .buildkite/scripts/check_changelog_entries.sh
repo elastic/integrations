@@ -70,6 +70,14 @@ main() {
         exit 0
     fi
 
+    if running_on_buildkite; then
+        # Install required tools to post comments in Pull Requests
+        echo "--- Installing tools"
+        add_bin_path
+        with_jq         # containers do not have jq installed
+        with_github_cli # to post comments in Pull Requests
+    fi
+
     local repo_path
     repo_path=$(github_repo_path "${BUILDKITE_REPO}")
     local expected_pr_link="https://github.com/${repo_path}/pull/${BUILDKITE_PULL_REQUEST}"
