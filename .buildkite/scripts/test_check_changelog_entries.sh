@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Unit tests for check_changelog_entries.sh.
-# Run directly or via run_dev_scripts_tests.sh.
+# Run directly or via run_shell_scripts_tests.sh.
 
 set -euo pipefail
 

@@ -802,7 +802,7 @@ is_pr_affected() {
         'README\.md'
         '\.agents/skills/'
         'dev/scripts/'
-        '\.buildkite/scripts/run_dev_scripts_tests\.sh'
+        '\.buildkite/scripts/run_shell_scripts_tests\.sh'
     )
     local non_package_regex
     non_package_regex="^($(IFS='|'; echo "${non_package_patterns[*]}"))"
