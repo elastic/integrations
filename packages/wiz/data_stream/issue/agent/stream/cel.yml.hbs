@@ -148,9 +148,9 @@ max_executions: {{max_executions}}
 {{/if}}
 program: |
   state.with(
-    post_request(
+    request(
+      "POST",
       state.url.trim_right("/") + "/graphql",
-      "application/json",
       {
         "query": state.query,
         "variables": {
@@ -166,7 +166,12 @@ program: |
           }
         }
       }.encode_json()
-    ).do_request().as(resp, resp.StatusCode == 200 ?
+    ).with({
+      "Header": {
+        "Content-Type": ["application/json"],
+        "User-Agent": [useragent],
+      },
+    }).do_request().as(resp, resp.StatusCode == 200 ?
         bytes(resp.Body).decode_json().as(body, body.?data.issues.nodes.orValue(null) != null ?
           {
             "events": body.data.issues.nodes.map(e, {
