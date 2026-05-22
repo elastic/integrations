@@ -76,7 +76,7 @@ notify_changelog_mismatch() {
 
     local mention="${GITHUB_PR_USER:-""}"
     if [[ -n "${mention}" ]]; then
-        mention=" @${mention}"
+        mention=$'\n'"@${mention}"
     fi
     echo "${message}${mention}" > changelog-link-mismatch.txt
     if ! add_or_edit_gh_pr_comment \
