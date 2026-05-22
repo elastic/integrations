@@ -33,6 +33,60 @@ processors:
       ignore_missing: true
 
   #
+  # Handle KMIP events
+  #
+  - script:
+      tag: script_kmip_extraction
+      lang: painless
+      if: "['kmip-request', 'kmip-response'].contains(ctx.hashicorp_vault?.audit?.type)"
+      source: >
+        void handle_map(Map src, Map tgt) {
+          if (src.containsKey('type')) {
+            Map tmp = ['type':src.get('type'), 'value': src.get('value')];
+            tgt.put(src.get('tag'), tmp);
+          } else {
+            Map new_map = [:];
+            for (Map v: src.get('value')) {
+              handle_map(v, new_map);
+            }
+            tgt.put(src.get('tag'), new_map);
+          }
+        }
+        if (ctx.hashicorp_vault?.audit?.request?.data?.kmip_request != null) {
+          ctx.hashicorp_vault.audit.request.data.put('kmip_request_map', [:]);
+          handle_map(ctx.hashicorp_vault.audit.request.data.kmip_request, ctx.hashicorp_vault.audit.request.data.kmip_request_map);
+        }
+        if (ctx.hashicorp_vault?.audit?.response?.data?.kmip_response != null) {
+          ctx.hashicorp_vault.audit.response.data.put('kmip_response_map', [:]);
+          handle_map(ctx.hashicorp_vault.audit.response.data.kmip_response, ctx.hashicorp_vault.audit.response.data.kmip_response_map);
+        }
+  - rename:
+      tag: rename_kmip_request_headers_to_request_headers
+      field: hashicorp_vault.audit.request.data.kmip_request_map.RequestMessage.RequestHeader
+      target_field: hashicorp_vault.audit.request.headers
+      ignore_missing: true
+      override: true
+  - rename:
+      tag: rename_kmip_request_payload_to_request_data
+      field: hashicorp_vault.audit.request.data.kmip_request_map.RequestMessage
+      target_field: hashicorp_vault.audit.request.data
+      ignore_missing: true
+      override: true
+  - rename:
+      tag: rename_kmip_response_headers_to_response_headers
+      field: hashicorp_vault.audit.response.data.kmip_response_map.ResponseMessage.ResponseHeader
+      target_field: hashicorp_vault.audit.response.headers
+      ignore_missing: true
+      override: true
+  - rename:
+      tag: rename_kmip_response_payload_to_response_data
+      field: hashicorp_vault.audit.response.data.kmip_response_map.ResponseMessage
+      target_field: hashicorp_vault.audit.response.data
+      ignore_missing: true
+      override: true
+
+
+  #
   # event categorization.
   #
   - set:
