@@ -87,22 +87,25 @@ program: |
             }
           ).do_request().as(resp, (resp.StatusCode == 200) ?
             resp.Body.decode_json().as(body,
-              ((has(body.alerts) && body.alerts != null) ? body.alerts : []).as(alerts,
+              (has(body.alerts) && body.alerts != null && size(body.alerts) > 0) ?
                 {
                   "worklist": {
-                    "alerts": alerts,
+                    "alerts": body.alerts,
                   },
                   "next": 0,
-                  "offset": (size(alerts) > 0) ? (int(state.offset) + int(state.batch_size)) : 0,
-                  "want_more": size(alerts) > 0,
+                  "offset": int(state.offset) + int(state.batch_size),
+                  "want_more": true,
                   "cursor": {
-                    ?"last_timestamp": (size(alerts) > 0) ?
-                      optional.of(alerts[size(alerts) - 1].updated_time)
-                    :
-                      state.?cursor.last_timestamp,
+                    "last_timestamp": body.alerts[size(body.alerts) - 1].updated_time,
                   },
                 }
-              )
+              :
+                {
+                  "want_more": false,
+                  "cursor": {
+                    ?"last_timestamp": state.?cursor.last_timestamp,
+                  },
+                }
             )
           :
             {
