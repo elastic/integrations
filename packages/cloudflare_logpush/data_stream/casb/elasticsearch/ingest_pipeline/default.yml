@@ -126,8 +126,9 @@ processors:
       field: json.FindingTypeSeverity
       target_field: cloudflare_logpush.casb.finding.type.severity
       ignore_missing: true
-  # Set event.severity based on the incoming severity value ("low", "medium", "high", "critical")
+  # Normalize the vendor severity to Elastic's severity scale. Elastic Security detection rules follow the scale mentioned in https://github.com/elastic/integrations/issues/12662
   - script:
+      description: Normalize the vendor severity to Elastic's severity scale.
       tag: script_to_normalize_severity
       lang: painless
       if: ctx.cloudflare_logpush?.casb?.finding?.type?.severity != null
@@ -145,6 +146,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_b5f821e8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
