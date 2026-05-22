@@ -205,9 +205,9 @@ An example event for `access_request` looks as following:
 {
     "@timestamp": "2023-05-23T17:18:33.000Z",
     "agent": {
-        "ephemeral_id": "3c43110d-da0b-4e1b-adec-7031cdfb87a1",
-        "id": "57b2b3df-7f1f-49a9-8b35-90731f9b1b4e",
-        "name": "elastic-agent-50154",
+        "ephemeral_id": "f0010c2d-3cbd-4a2d-b16e-6955f424b07a",
+        "id": "4c375670-52ae-484b-8d02-53d8dbadf821",
+        "name": "elastic-agent-26061",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -226,15 +226,22 @@ An example event for `access_request` looks as following:
         },
         "ip": "67.43.156.93"
     },
-    "cloud": {
-        "provider": "google cloud"
-    },
     "cloudflare_logpush": {
         "access_request": {
+            "action": "login",
+            "allowed": true,
             "app": {
+                "domain": "partner-zt-logs.cloudflareaccess.com/warp",
                 "uuid": "123e4567-e89b-12d3-a456-426614174000"
             },
+            "client": {
+                "ip": "67.43.156.93"
+            },
             "connection": "onetimepin",
+            "country": "us",
+            "ray": {
+                "id": "00c0ffeeabc12345"
+            },
             "request": {
                 "prompt": "Please provide your reason for accessing the application.",
                 "response": "I need to access the application for work purposes."
@@ -245,19 +252,24 @@ An example event for `access_request` looks as following:
                     "approver2@example.com"
                 ],
                 "duration": 7200
+            },
+            "timestamp": "2023-05-23T17:18:33.000Z",
+            "user": {
+                "email": "user@example.com",
+                "id": "166befbb-00e3-5e20-bd6e-27245333949f"
             }
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.access_request",
-        "namespace": "33755",
+        "namespace": "90183",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "57b2b3df-7f1f-49a9-8b35-90731f9b1b4e",
+        "id": "4c375670-52ae-484b-8d02-53d8dbadf821",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -269,32 +281,16 @@ An example event for `access_request` looks as following:
         ],
         "dataset": "cloudflare_logpush.access_request",
         "id": "00c0ffeeabc12345",
-        "ingested": "2025-12-12T07:31:27Z",
+        "ingested": "2026-04-29T10:36:26Z",
         "kind": "event",
+        "original": "{\"Action\":\"login\",\"Allowed\":true,\"AppDomain\":\"partner-zt-logs.cloudflareaccess.com/warp\",\"AppUUID\":\"123e4567-e89b-12d3-a456-426614174000\",\"Connection\":\"onetimepin\",\"Country\":\"us\",\"CreatedAt\":1684862313000000000,\"Email\":\"user@example.com\",\"IPAddress\":\"67.43.156.93\",\"PurposeJustificationPrompt\":\"Please provide your reason for accessing the application.\",\"PurposeJustificationResponse\":\"I need to access the application for work purposes.\",\"RayID\":\"00c0ffeeabc12345\",\"TemporaryAccessApprovers\":[\"approver1@example.com\",\"approver2@example.com\"],\"TemporaryAccessDuration\":7200,\"UserUID\":\"166befbb-00e3-5e20-bd6e-27245333949f\"}",
         "type": [
             "access",
             "allowed"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "access_request.log"
-            }
-        }
-    },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/access_request.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
         "ip": [
@@ -308,6 +304,8 @@ An example event for `access_request` looks as following:
         ]
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-access_request"
     ],
@@ -378,20 +376,26 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-30T20:19:48.000Z",
     "agent": {
-        "ephemeral_id": "f6aa0050-d066-4e9f-ad0e-44e29655cb0a",
-        "id": "c88b6a8a-5b51-4f19-9386-d141ad8d5fd7",
-        "name": "elastic-agent-42667",
+        "ephemeral_id": "80483b8a-9947-4619-9e90-6de42a68547f",
+        "id": "e6a5dbd7-cd39-40e1-8e26-e716684ec282",
+        "name": "elastic-agent-17112",
         "type": "filebeat",
         "version": "8.17.1"
     },
-    "cloud": {
-        "provider": "google cloud"
-    },
     "cloudflare_logpush": {
         "audit": {
+            "action": {
+                "result": "success",
+                "type": "token_create"
+            },
             "actor": {
+                "email": "user@example.com",
+                "id": "enl3j9du8rnx2swwd9l32qots7l54t9s",
+                "ip": "81.2.69.142",
                 "type": "user"
             },
+            "id": "73fd39ed-5aab-4a2a-b93c-c9a4abf0c425",
+            "interface": "UI",
             "metadata": {
                 "token_name": "test",
                 "token_tag": "b7261c49a793a82678d12285f0bc1401"
@@ -410,19 +414,20 @@ An example event for `audit` looks as following:
             "resource": {
                 "id": "enl3j9du8rnx2swwd9l32qots7l54t9s",
                 "type": "account"
-            }
+            },
+            "timestamp": "2021-11-30T20:19:48.000Z"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.audit",
-        "namespace": "27343",
+        "namespace": "35968",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c88b6a8a-5b51-4f19-9386-d141ad8d5fd7",
+        "id": "e6a5dbd7-cd39-40e1-8e26-e716684ec282",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -434,33 +439,17 @@ An example event for `audit` looks as following:
         ],
         "dataset": "cloudflare_logpush.audit",
         "id": "73fd39ed-5aab-4a2a-b93c-c9a4abf0c425",
-        "ingested": "2025-12-12T07:37:27Z",
+        "ingested": "2026-04-29T10:37:35Z",
         "kind": "event",
+        "original": "{\"ActionResult\":true,\"ActionType\":\"token_create\",\"ActorEmail\":\"user@example.com\",\"ActorID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ActorIP\":\"81.2.69.142\",\"ActorType\":\"user\",\"ID\":\"73fd39ed-5aab-4a2a-b93c-c9a4abf0c425\",\"Interface\":\"UI\",\"Metadata\":{\"token_name\":\"test\",\"token_tag\":\"b7261c49a793a82678d12285f0bc1401\"},\"NewValue\":{\"key1\":\"value1\",\"key2\":\"value2\"},\"OldValue\":{\"key3\":\"value4\",\"key4\":\"value4\"},\"OwnerID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ResourceID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ResourceType\":\"account\",\"When\":\"2021-11-30T20:19:48Z\"}",
         "outcome": "success",
         "provider": "UI",
         "type": [
             "info"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "audit.log"
-            }
-        }
-    },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/audit.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
         "ip": [
@@ -474,6 +463,8 @@ An example event for `audit` looks as following:
         "ip": "81.2.69.142"
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-audit"
     ],
@@ -540,14 +531,11 @@ An example event for `casb` looks as following:
 {
     "@timestamp": "2023-05-16T10:00:00.000Z",
     "agent": {
-        "ephemeral_id": "941f6da3-676d-466a-817c-3d2b60cb0da8",
-        "id": "082d25a2-4d08-4619-9273-1bbf8ecda1ac",
-        "name": "elastic-agent-85424",
+        "ephemeral_id": "df9afc81-2e26-4e72-b6a2-dfa9c905e48a",
+        "id": "27cce7c3-9792-4119-84c4-478580a700d4",
+        "name": "elastic-agent-34295",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "casb": {
@@ -602,31 +590,35 @@ An example event for `casb` looks as following:
                         "url": "/services/data/userID"
                     }
                 },
-                "name": "John Doe"
+                "name": "John Doe",
+                "url": "https://example.com/resource"
             },
             "finding": {
+                "id": "6b187be4-2dd5-42c5-a37b-111111111111",
                 "type": {
                     "id": "a2790c4f-03f5-449f-b209-5f4447f417aa",
-                    "name": "Salesforce User Sending Email with Different Email Address"
+                    "name": "Salesforce User Sending Email with Different Email Address",
+                    "severity": "Medium"
                 }
             },
             "integration": {
                 "id": "c772678d-5cf1-4c73-bf3f-111111111111",
                 "name": "Salesforce Testing",
                 "policy_vendor": "Salesforce Connection"
-            }
+            },
+            "timestamp": "2023-05-16T10:00:00.000Z"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.casb",
-        "namespace": "79671",
+        "namespace": "54621",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "082d25a2-4d08-4619-9273-1bbf8ecda1ac",
+        "id": "27cce7c3-9792-4119-84c4-478580a700d4",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -637,34 +629,20 @@ An example event for `casb` looks as following:
         ],
         "dataset": "cloudflare_logpush.casb",
         "id": "6b187be4-2dd5-42c5-a37b-111111111111",
-        "ingested": "2025-12-12T11:49:37Z",
+        "ingested": "2026-04-29T10:38:35Z",
         "kind": "event",
+        "original": "{\"AssetDisplayName\":\"John Doe\",\"AssetExternalID\":\"0051N000004mG2LAAA\",\"AssetLink\":\"https://example.com/resource\",\"AssetMetadata\":{\"AccountId\":null,\"Address\":{\"city\":\"Singapore\",\"country\":\"Singapore\",\"countryCode\":\"SG\",\"geocodeAccuracy\":null,\"latitude\":null,\"longitude\":null,\"postalCode\":null,\"state\":null,\"stateCode\":null,\"street\":null},\"Alias\":\"JDoe\",\"BadgeText\":\"\",\"BannerPhotoUrl\":\"/profilephoto/001\",\"CallCenterId\":null,\"CommunityNickname\":\"Doe.John\",\"CompanyName\":\"MyCompany\",\"ContactId\":null,\"DefaultGroupNotificationFrequency\":\"N\",\"Department\":\"521\",\"DigestFrequency\":\"D\",\"Division\":null,\"Email\":\"user@example.com\",\"EmailEncodingKey\":\"UTF-8\",\"EmailPreferencesAutoBcc\":true,\"EmployeeNumber\":\"18124\",\"Extension\":null,\"Fax\":null,\"FederationIdentifier\":null,\"FirstName\":\"John\",\"ForecastEnabled\":false,\"FullPhotoUrl\":\"https://photos.com/profilephoto/001\",\"Id\":\"0051N000004mG2LAAA\",\"IsActive\":false,\"IsProfilePhotoActive\":false,\"LanguageLocaleKey\":\"en_US\",\"LastLoginDate\":\"2021-10-06T06:32:09.000+0000\",\"LastName\":\"Doe\",\"LastReferencedDate\":null,\"LastViewedDate\":null,\"LocaleSidKey\":\"en_SG\",\"MediumBannerPhotoUrl\":\"/profilephoto/001/E\",\"MobilePhone\":null,\"Name\":\"John Doe\",\"OfflineTrialExpirationDate\":null,\"Phone\":\"+3460000000\",\"ReceivesAdminInfoEmails\":true,\"ReceivesInfoEmails\":true,\"SenderEmail\":\"sender@example.com\",\"SenderName\":null,\"Signature\":null,\"SmallBannerPhotoUrl\":\"/profilephoto/001/D\",\"SmallPhotoUrl\":\"https://photos.com/photo/001\",\"TimeZoneSidKey\":\"Asia/Singapore\",\"Title\":\"Customer Solutions Engineer\",\"UserPermissionsCallCenterAutoLogin\":false,\"UserPermissionsInteractionUser\":true,\"UserPermissionsMarketingUser\":false,\"UserPermissionsOfflineUser\":false,\"UserPermissionsSupportUser\":false,\"UserRoleId\":\"00E2G000001E\",\"UserType\":\"Standard\",\"attributes\":{\"type\":\"User\",\"url\":\"/services/data/userID\"}},\"DetectedTimestamp\":\"2023-05-16T10:00:00Z\",\"FindingTypeDisplayName\":\"Salesforce User Sending Email with Different Email Address\",\"FindingTypeID\":\"a2790c4f-03f5-449f-b209-5f4447f417aa\",\"FindingTypeSeverity\":\"Medium\",\"InstanceID\":\"6b187be4-2dd5-42c5-a37b-111111111111\",\"IntegrationDisplayName\":\"Salesforce Testing\",\"IntegrationID\":\"c772678d-5cf1-4c73-bf3f-111111111111\",\"IntegrationPolicyVendor\":\"Salesforce Connection\"}",
         "severity": 2,
         "type": [
             "access"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "casb.log"
-            }
-        }
-    },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/casb.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-casb"
     ],
@@ -730,25 +708,11 @@ An example event for `device_posture` looks as following:
 {
     "@timestamp": "2023-05-17T12:00:00.000Z",
     "agent": {
-        "ephemeral_id": "edffd861-c70c-4011-9b8e-4bb37d718964",
-        "id": "c1433c6f-9bf4-4f42-b22e-10ef701c8969",
-        "name": "elastic-agent-95387",
+        "ephemeral_id": "abec37a3-76bf-418c-b954-87072f0a8743",
+        "id": "c4b61101-31fc-4aee-84b2-6f28eb129e9c",
+        "name": "elastic-agent-40405",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "aws": {
-        "s3": {
-            "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-device-posture-bucket-31257",
-                "name": "elastic-package-device-posture-bucket-31257"
-            },
-            "object": {
-                "key": "test-device-posture.log"
-            }
-        }
-    },
-    "cloud": {
-        "region": "us-east-1"
     },
     "cloudflare_logpush": {
         "device_posture": {
@@ -768,22 +732,39 @@ An example event for `device_posture` looks as following:
                 "result": true
             },
             "host": {
+                "id": "083a8354-d56c-11ed-9771-111111111",
                 "manufacturer": "Google Compute Engine",
                 "model": "Google Compute Engine",
+                "name": "zt-test-vm1",
+                "os": {
+                    "family": "linux",
+                    "version": "5.15.0"
+                },
                 "serial": "GoogleCloud-ABCD1234567890"
-            }
+            },
+            "rule": {
+                "category": "os_version",
+                "id": "policy-abcdefgh",
+                "name": "Ubuntu"
+            },
+            "timestamp": "2023-05-17T12:00:00.000Z",
+            "user": {
+                "email": "user@example.com",
+                "id": "user-abcdefgh"
+            },
+            "version": "2023.3.258"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.device_posture",
-        "namespace": "33464",
+        "namespace": "71954",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c1433c6f-9bf4-4f42-b22e-10ef701c8969",
+        "id": "c4b61101-31fc-4aee-84b2-6f28eb129e9c",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -793,9 +774,9 @@ An example event for `device_posture` looks as following:
             "host"
         ],
         "dataset": "cloudflare_logpush.device_posture",
-        "ingested": "2025-12-12T08:15:20Z",
+        "ingested": "2026-04-29T10:39:33Z",
         "kind": "event",
-        "original": "{\"ClientVersion\":\"2023.3.258\",\"DeviceID\":\"083a8354-d56c-11ed-9771-111111111\",\"DeviceManufacturer\":\"Google Compute Engine\",\"DeviceModel\":\"Google Compute Engine\",\"DeviceName\":\"zt-test-vm1\",\"DeviceSerialNumber\":\"GoogleCloud-ABCD1234567890\",\"DeviceType\":\"linux\",\"Email\":\"user@example.com\",\"OSVersion\":\"5.15.0\",\"PolicyID\":\"policy-abcdefgh\",\"PostureCheckName\":\"Ubuntu\",\"PostureCheckType\":\"os_version\",\"PostureEvaluatedResult\":true,\"PostureExpectedJSON\":{\"version\":\"5.15.0-1025-gcp\",\"operator\":\"==\",\"os_distro_name\":\"ubuntu\",\"os_distro_revision\":\"20.04\"},\"PostureReceivedJSON\":{\"version\":\"5.15.0-1025-gcp\",\"operator\":\"==\",\"os_distro_name\":\"ubuntu\",\"os_distro_revision\":\"20.04\"},\"Timestamp\":\"2023-05-17T12:00:00Z\",\"UserUID\":\"user-abcdefgh\"}",
+        "original": "{\"ClientVersion\":\"2023.3.258\",\"DeviceID\":\"083a8354-d56c-11ed-9771-111111111\",\"DeviceManufacturer\":\"Google Compute Engine\",\"DeviceModel\":\"Google Compute Engine\",\"DeviceName\":\"zt-test-vm1\",\"DeviceSerialNumber\":\"GoogleCloud-ABCD1234567890\",\"DeviceType\":\"linux\",\"Email\":\"user@example.com\",\"OSVersion\":\"5.15.0\",\"PolicyID\":\"policy-abcdefgh\",\"PostureCheckName\":\"Ubuntu\",\"PostureCheckType\":\"os_version\",\"PostureEvaluatedResult\":true,\"PostureExpectedJSON\":{\"operator\":\"==\",\"os_distro_name\":\"ubuntu\",\"os_distro_revision\":\"20.04\",\"version\":\"5.15.0-1025-gcp\"},\"PostureReceivedJSON\":{\"operator\":\"==\",\"os_distro_name\":\"ubuntu\",\"os_distro_revision\":\"20.04\",\"version\":\"5.15.0-1025-gcp\"},\"Timestamp\":\"2023-05-17T12:00:00Z\",\"UserUID\":\"user-abcdefgh\"}",
         "outcome": "success",
         "type": [
             "info"
@@ -810,13 +791,7 @@ An example event for `device_posture` looks as following:
         }
     },
     "input": {
-        "type": "aws-s3"
-    },
-    "log": {
-        "file": {
-            "path": "https://elastic-package-device-posture-bucket-31257.s3.us-east-1.amazonaws.com/test-device-posture.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
         "hosts": [
@@ -834,8 +809,8 @@ An example event for `device_posture` looks as following:
         "name": "Ubuntu"
     },
     "tags": [
-        "collect_sqs_logs",
         "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-device_posture"
     ],
@@ -907,25 +882,11 @@ An example event for `dlp_forensic_copies` looks as following:
 {
     "@timestamp": "2023-05-04T11:29:14.000Z",
     "agent": {
-        "ephemeral_id": "ac5a4097-8089-4aaa-86b6-7a2807d34abf",
-        "id": "f5cd4a36-a09b-49fe-8b0c-0148d4e98428",
-        "name": "elastic-agent-81829",
+        "ephemeral_id": "698be645-ef86-47e6-9089-9dfbd966825f",
+        "id": "0b854708-2754-4561-bf95-a02f8101cc03",
+        "name": "elastic-agent-23353",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "aws": {
-        "s3": {
-            "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-dlp-forensic-copies-bucket-19014",
-                "name": "elastic-package-dlp-forensic-copies-bucket-19014"
-            },
-            "object": {
-                "key": "test-dlp-forensic-copies.log"
-            }
-        }
-    },
-    "cloud": {
-        "region": "us-east-1"
     },
     "cloudflare_logpush": {
         "dlp_forensic_copies": {
@@ -944,14 +905,14 @@ An example event for `dlp_forensic_copies` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.dlp_forensic_copies",
-        "namespace": "64194",
+        "namespace": "31861",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f5cd4a36-a09b-49fe-8b0c-0148d4e98428",
+        "id": "0b854708-2754-4561-bf95-a02f8101cc03",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -961,28 +922,22 @@ An example event for `dlp_forensic_copies` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.dlp_forensic_copies",
-        "ingested": "2025-12-12T08:39:29Z",
+        "ingested": "2026-05-07T09:57:30Z",
         "kind": "event",
-        "original": "{\"AccountID\":\"acc-id\",\"ForensicCopyID\":\"copy-id\",\"GatewayRequestID\":\"req-id\",\"Payload\":\"Tm90aGluZyB0byBzZWUgaGVyZS4gTW92ZSBhbG9uZy4K\",\"Phase\":\"request\",\"TriggeredRuleID\":\"9\",\"Datetime\":\"2023-05-04T11:29:14Z\",\"Headers\":{\"key1\":\"val1\",\"key2\":\"val2\"}}",
+        "original": "{\"AccountID\":\"acc-id\",\"Datetime\":\"2023-05-04T11:29:14Z\",\"ForensicCopyID\":\"copy-id\",\"GatewayRequestID\":\"req-id\",\"Headers\":{\"key1\":\"val1\",\"key2\":\"val2\"},\"Payload\":\"Tm90aGluZyB0byBzZWUgaGVyZS4gTW92ZSBhbG9uZy4K\",\"Phase\":\"request\",\"TriggeredRuleID\":\"9\"}",
         "type": [
             "info"
         ]
     },
     "input": {
-        "type": "aws-s3"
-    },
-    "log": {
-        "file": {
-            "path": "https://elastic-package-dlp-forensic-copies-bucket-19014.s3.us-east-1.amazonaws.com/test-dlp-forensic-copies.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "rule": {
         "id": "9"
     },
     "tags": [
-        "collect_sqs_logs",
         "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-dlp_forensic_copies"
     ]
@@ -1038,14 +993,11 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2022-05-26T09:23:54.000Z",
     "agent": {
-        "ephemeral_id": "28ac7554-1d13-49b2-a05e-c28fff86aed2",
-        "id": "90e30034-7fa9-4654-9018-4c3f3605c19e",
-        "name": "elastic-agent-61553",
+        "ephemeral_id": "ae335802-6095-4f30-b103-05633a6f061c",
+        "id": "a8294493-6644-4bee-aa9f-c68b21c0f9e4",
+        "name": "elastic-agent-73083",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "dns": {
@@ -1057,17 +1009,22 @@ An example event for `dns` looks as following:
                 "subnet_length": 0
             },
             "query": {
+                "name": "example.com",
                 "type": 65535
             },
             "response": {
                 "cached": false,
                 "code": 0
-            }
+            },
+            "source": {
+                "ip": "175.16.199.0"
+            },
+            "timestamp": "2022-05-26T09:23:54.000Z"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.dns",
-        "namespace": "24004",
+        "namespace": "92485",
         "type": "logs"
     },
     "dns": {
@@ -1079,7 +1036,7 @@ An example event for `dns` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "90e30034-7fa9-4654-9018-4c3f3605c19e",
+        "id": "a8294493-6644-4bee-aa9f-c68b21c0f9e4",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -1089,33 +1046,20 @@ An example event for `dns` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.dns",
-        "ingested": "2025-12-12T08:46:14Z",
+        "ingested": "2026-04-29T10:41:36Z",
         "kind": "event",
+        "original": "{\"ColoCode\":\"MRS\",\"EDNSSubnet\":\"1.128.0.0\",\"EDNSSubnetLength\":0,\"QueryName\":\"example.com\",\"QueryType\":65535,\"ResponseCached\":false,\"ResponseCode\":0,\"SourceIP\":\"175.16.199.0\",\"Timestamp\":\"2022-05-26T09:23:54Z\"}",
         "type": [
             "info"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "dns.log"
-            }
-        }
-    },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/dns.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
+        "hosts": [
+            "example.com"
+        ],
         "ip": [
             "175.16.199.0",
             "1.128.0.0"
@@ -1125,6 +1069,8 @@ An example event for `dns` looks as following:
         "ip": "175.16.199.0"
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-dns"
     ]
@@ -1181,14 +1127,11 @@ An example event for `dns_firewall` looks as following:
 {
     "@timestamp": "2023-09-19T12:30:00.000Z",
     "agent": {
-        "ephemeral_id": "2f6c2025-b827-4b56-b9d7-5515c0e8ec22",
-        "id": "9cf56aad-c149-4ec4-b610-b508a6f3812d",
-        "name": "elastic-agent-80366",
+        "ephemeral_id": "36cb9665-94d7-4218-a407-83637a0e6039",
+        "id": "a1640693-1117-4f63-bfdc-26ed636bc594",
+        "name": "elastic-agent-45160",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "dns_firewall": {
@@ -1202,6 +1145,7 @@ An example event for `dns_firewall` looks as following:
             },
             "question": {
                 "dnssec_ok": true,
+                "name": "example.com",
                 "recursion_desired": true,
                 "size": 60,
                 "tcp": false,
@@ -1209,8 +1153,13 @@ An example event for `dns_firewall` looks as following:
             },
             "response": {
                 "cached": true,
-                "cached_stale": false
+                "cached_stale": false,
+                "code": "0"
             },
+            "source": {
+                "ip": "67.43.156.2"
+            },
+            "timestamp": "2023-09-19T12:30:00.000Z",
             "upstream": {
                 "ip": "81.2.69.144",
                 "response_code": "0",
@@ -1220,7 +1169,7 @@ An example event for `dns_firewall` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.dns_firewall",
-        "namespace": "97058",
+        "namespace": "79104",
         "type": "logs"
     },
     "dns": {
@@ -1233,7 +1182,7 @@ An example event for `dns_firewall` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9cf56aad-c149-4ec4-b610-b508a6f3812d",
+        "id": "a1640693-1117-4f63-bfdc-26ed636bc594",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -1243,31 +1192,15 @@ An example event for `dns_firewall` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.dns_firewall",
-        "ingested": "2025-12-12T08:52:06Z",
+        "ingested": "2026-04-29T10:42:35Z",
         "kind": "event",
+        "original": "{\"ClientResponseCode\":0,\"ClusterID\":\"CLUSTER-001\",\"ColoCode\":\"SFO\",\"EDNSSubnet\":\"67.43.156.0\",\"EDNSSubnetLength\":24,\"QueryDO\":true,\"QueryName\":\"example.com\",\"QueryRD\":true,\"QuerySize\":60,\"QueryTCP\":false,\"QueryType\":1,\"ResponseCached\":true,\"ResponseCachedStale\":false,\"SourceIP\":\"67.43.156.2\",\"Timestamp\":\"2023-09-19T12:30:00Z\",\"UpstreamIP\":\"81.2.69.144\",\"UpstreamResponseCode\":0,\"UpstreamResponseTimeMs\":30}",
         "type": [
             "info"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "dns_firewall.log"
-            }
-        }
-    },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/dns_firewall.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "network": {
         "transport": "udp"
@@ -1295,6 +1228,8 @@ An example event for `dns_firewall` looks as following:
         "ip": "67.43.156.2"
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-dns_firewall"
     ]
@@ -1361,14 +1296,11 @@ An example event for `email_security_alerts` looks as following:
 {
     "@timestamp": "2024-08-28T15:32:35.000Z",
     "agent": {
-        "ephemeral_id": "e482a27d-3e24-4212-8a06-620ac597d5af",
-        "id": "7bc49be7-d33e-43a3-bfec-1d4c34fbf105",
-        "name": "elastic-agent-95627",
+        "ephemeral_id": "3aa685e8-961f-48dc-81cf-ef10bc5d883b",
+        "id": "412c81c9-f582-4e1a-bfe0-c933e7ad02f4",
+        "name": "elastic-agent-41906",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "email_security_alerts": {
@@ -1412,6 +1344,7 @@ An example event for `email_security_alerts` looks as following:
             "smtp_envelope_to": [
                 "firstlast+env_to@cloudflare.com"
             ],
+            "smtp_helo_server_ip": "81.2.69.144",
             "smtp_helo_server_ip_as_name": "asn",
             "smtp_helo_server_ip_as_number": "42",
             "smtp_helo_server_ip_geo": "US/NV/Las Vegas",
@@ -1421,20 +1354,21 @@ An example event for `email_security_alerts` looks as following:
                 "CredentialHarvester",
                 "Dropper"
             ],
+            "timestamp": "2024-08-28T15:32:35.000Z",
             "to": "firstlast+to@cloudflare.com",
             "to_name": "First Last (to)"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.email_security_alerts",
-        "namespace": "91726",
+        "namespace": "73867",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7bc49be7-d33e-43a3-bfec-1d4c34fbf105",
+        "id": "412c81c9-f582-4e1a-bfe0-c933e7ad02f4",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -1445,8 +1379,9 @@ An example event for `email_security_alerts` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.email_security_alerts",
-        "ingested": "2025-12-12T08:58:27Z",
+        "ingested": "2026-04-29T10:43:34Z",
         "kind": "alert",
+        "original": "{\"AlertID\":\"4WtWkr6nlBz9sNH-2024-08-28T15:32:35\",\"AlertReasons\":[\"because\",\"said-so\"],\"Attachments\":[{\"ContentTypeComputed\":\"application/x-msi\",\"ContentTypeProvided\":\"image/gif\",\"Decrypted\":true,\"Encrypted\":true,\"Md5\":\"91f073bd208689ddbd248e8989ecae90\",\"Name\":\"attachment.gif\",\"Sha1\":\"62b77e14e2c43049c45b5725018e78d0f9986930\",\"Sha256\":\"3b57505305e7162141fd898ed87d08f92fc42579b5047495859e56b3275a6c06\",\"Ssdeep\":\"McAQ8tPlH25e85Q2OiYpD08NvHmjJ97UfPMO47sekO:uN9M553OiiN/OJ9MM+e3\"}],\"CC\":[\"firstlast+cc@cloudflare.com\"],\"CCName\":[\"First Last (cc)\"],\"FinalDisposition\":\"malicious\",\"From\":\"firstlast+from@cloudflare.com\",\"FromName\":\"First Last (from)\",\"Links\":[\"https://example.com\"],\"MessageDeliveryMode\":\"unset\",\"MessageID\":\"\\u003cMessage-ID\\u003e\",\"Origin\":\"unset\",\"OriginalSender\":\"firstlast+origin@cloudflare.com\",\"ReplyTo\":\"firstlast+reply@cloudflare.com\",\"ReplyToName\":\"First Last (reply)\",\"SMTPEnvelopeFrom\":\"firstlast+env_from@cloudflare.com\",\"SMTPEnvelopeTo\":[\"firstlast+env_to@cloudflare.com\"],\"SMTPHeloServerIP\":\"81.2.69.144\",\"SMTPHeloServerIPAsName\":\"asn\",\"SMTPHeloServerIPAsNumber\":\"42\",\"SMTPHeloServerIPGeo\":\"US/NV/Las Vegas\",\"SMTPHeloServerName\":\"servername\",\"Subject\":\"innocuous message: please read\",\"ThreatCategories\":[\"CredentialHarvester\",\"Dropper\"],\"Timestamp\":\"2024-08-28T15:32:35Z\",\"To\":\"firstlast+to@cloudflare.com\",\"ToName\":\"First Last (to)\"}",
         "type": [
             "info"
         ]
@@ -1463,25 +1398,8 @@ An example event for `email_security_alerts` looks as following:
             "name": "attachment.gif"
         }
     ],
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "email_security_alerts.log"
-            }
-        }
-    },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/email_security_alerts.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
         "hash": [
@@ -1525,6 +1443,8 @@ An example event for `email_security_alerts` looks as following:
         "ip": "81.2.69.144"
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-email_security_alerts"
     ]
@@ -1601,32 +1521,22 @@ An example event for `firewall_event` looks as following:
 {
     "@timestamp": "2022-05-31T05:23:43.000Z",
     "agent": {
-        "ephemeral_id": "37b1d591-989b-4113-b104-1f4212137e5a",
-        "id": "c39dd230-1d6b-4fa2-a12b-ae61fb5e7f5f",
-        "name": "elastic-agent-20484",
+        "ephemeral_id": "7ea3c7e8-4c90-4b5a-aeaf-3f18ade74af0",
+        "id": "7a10beb2-7c4b-4f9b-b45c-5ed275f1c7c6",
+        "name": "elastic-agent-33611",
         "type": "filebeat",
         "version": "8.17.1"
     },
-    "aws": {
-        "s3": {
-            "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-firewall-event-bucket-13780",
-                "name": "elastic-package-firewall-event-bucket-13780"
-            },
-            "object": {
-                "key": "test-firewall-event.log"
-            }
-        }
-    },
-    "cloud": {
-        "region": "us-east-1"
-    },
     "cloudflare_logpush": {
         "firewall_event": {
+            "action": "block",
             "client": {
                 "asn": {
-                    "description": "CLOUDFLARENET"
+                    "description": "CLOUDFLARENET",
+                    "value": 15169
                 },
+                "country": "us",
+                "ip": "175.16.199.0",
                 "ip_class": "searchEngine",
                 "referer": {
                     "host": "abc.example.com",
@@ -1636,6 +1546,7 @@ An example event for `firewall_event` looks as following:
                 },
                 "request": {
                     "host": "xyz.example.com",
+                    "method": "GET",
                     "path": "/abc/checkout",
                     "protocol": "HTTP/1.1",
                     "query": "?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))&timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))",
@@ -1648,6 +1559,9 @@ An example event for `firewall_event` looks as following:
             "edge": {
                 "colo": {
                     "code": "IAD"
+                },
+                "response": {
+                    "status": 403
                 }
             },
             "kind": "firewall",
@@ -1667,19 +1581,23 @@ An example event for `firewall_event` looks as following:
             "ray": {
                 "id": "713d477539b55c29"
             },
-            "source": "firewallrules"
+            "rule": {
+                "id": "7dc666e026974dab84884c73b3e2afe1"
+            },
+            "source": "firewallrules",
+            "timestamp": "2022-05-31T05:23:43.000Z"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.firewall_event",
-        "namespace": "63366",
+        "namespace": "18983",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c39dd230-1d6b-4fa2-a12b-ae61fb5e7f5f",
+        "id": "7a10beb2-7c4b-4f9b-b45c-5ed275f1c7c6",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -1691,9 +1609,9 @@ An example event for `firewall_event` looks as following:
         ],
         "dataset": "cloudflare_logpush.firewall_event",
         "id": "713d477539b55c29",
-        "ingested": "2025-12-12T09:03:48Z",
+        "ingested": "2026-04-29T10:44:33Z",
         "kind": "event",
-        "original": "{\"ClientRequestScheme\":\"https\",\"MatchIndex\":1,\"ClientRefererHost\":\"abc.example.com\",\"Source\":\"firewallrules\",\"ClientRequestUserAgent\":\"Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\",\"ClientRefererPath\":\"/abc/checkout\",\"Metadata\":{\"filter\":\"1ced07e066a34abf8b14f2a99593bc8d\",\"type\":\"customer\"},\"EdgeResponseStatus\":403,\"ClientRequestProtocol\":\"HTTP/1.1\",\"OriginatorRayID\":\"00\",\"RayID\":\"713d477539b55c29\",\"ClientRequestMethod\":\"GET\",\"ClientIP\":\"175.16.199.0\",\"ClientRequestPath\":\"/abc/checkout\",\"Action\":\"block\",\"Kind\":\"firewall\",\"RuleID\":\"7dc666e026974dab84884c73b3e2afe1\",\"ClientIPClass\":\"searchEngine\",\"ClientASNDescription\":\"CLOUDFLARENET\",\"ClientCountry\":\"us\",\"ClientRefererQuery\":\"?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))&timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))\",\"ClientRequestQuery\":\"?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))&timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))\",\"OriginResponseStatus\":0,\"EdgeColoCode\":\"IAD\",\"ClientRefererScheme\":\"referer URL scheme\",\"Datetime\":\"2022-05-31T05:23:43Z\",\"ClientRequestHost\":\"xyz.example.com\",\"ClientASN\":15169}",
+        "original": "{\"Action\":\"block\",\"ClientASN\":15169,\"ClientASNDescription\":\"CLOUDFLARENET\",\"ClientCountry\":\"us\",\"ClientIP\":\"175.16.199.0\",\"ClientIPClass\":\"searchEngine\",\"ClientRefererHost\":\"abc.example.com\",\"ClientRefererPath\":\"/abc/checkout\",\"ClientRefererQuery\":\"?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))\\u0026timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))\",\"ClientRefererScheme\":\"referer URL scheme\",\"ClientRequestHost\":\"xyz.example.com\",\"ClientRequestMethod\":\"GET\",\"ClientRequestPath\":\"/abc/checkout\",\"ClientRequestProtocol\":\"HTTP/1.1\",\"ClientRequestQuery\":\"?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))\\u0026timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))\",\"ClientRequestScheme\":\"https\",\"ClientRequestUserAgent\":\"Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\",\"Datetime\":\"2022-05-31T05:23:43Z\",\"EdgeColoCode\":\"IAD\",\"EdgeResponseStatus\":403,\"Kind\":\"firewall\",\"MatchIndex\":1,\"Metadata\":{\"filter\":\"1ced07e066a34abf8b14f2a99593bc8d\",\"type\":\"customer\"},\"OriginResponseStatus\":0,\"OriginatorRayID\":\"00\",\"RayID\":\"713d477539b55c29\",\"RuleID\":\"7dc666e026974dab84884c73b3e2afe1\",\"Source\":\"firewallrules\"}",
         "type": [
             "info"
         ]
@@ -1708,13 +1626,7 @@ An example event for `firewall_event` looks as following:
         "version": "1.1"
     },
     "input": {
-        "type": "aws-s3"
-    },
-    "log": {
-        "file": {
-            "path": "https://elastic-package-firewall-event-bucket-13780.s3.us-east-1.amazonaws.com/test-firewall-event.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "network": {
         "protocol": "http"
@@ -1741,8 +1653,8 @@ An example event for `firewall_event` looks as following:
         "ip": "175.16.199.0"
     },
     "tags": [
-        "collect_sqs_logs",
         "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-firewall_event"
     ],
@@ -1806,8 +1718,8 @@ An example event for `firewall_event` looks as following:
 | cloudflare_logpush.firewall_event.leaked_credential_check | Result of the check for leaked credentials. Possible results are: password_leaked | username_and_password_leaked | username_password_similar | username_leaked | clean. | keyword |
 | cloudflare_logpush.firewall_event.match_index | Rules match index in the chain. | long |
 | cloudflare_logpush.firewall_event.meta_data | Additional product-specific information. | flattened |
-| cloudflare_logpush.firewall_event.origin.ray.id | HTTP origin response status code returned to browser. | keyword |
-| cloudflare_logpush.firewall_event.origin.response.status | The RayID of the request that issued the challenge/jschallenge. | long |
+| cloudflare_logpush.firewall_event.origin.ray.id | The RayID of the request that issued the challenge/jschallenge. | keyword |
+| cloudflare_logpush.firewall_event.origin.response.status | HTTP origin response status code returned to browser. | long |
 | cloudflare_logpush.firewall_event.ray.id | The RayID of the request. | keyword |
 | cloudflare_logpush.firewall_event.ref | The user-defined identifier for the rule triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.rule.description | The Cloudflare security product-specific Description of the rule triggered by this request. | keyword |
@@ -1844,21 +1756,40 @@ An example event for `gateway_dns` looks as following:
 {
     "@timestamp": "2023-05-02T22:49:53.000Z",
     "agent": {
-        "ephemeral_id": "4b6b3e0f-122c-4c43-bc90-343c619d6b41",
-        "id": "57130e12-3aa9-4de1-8bab-eed6847b485d",
-        "name": "elastic-agent-76347",
+        "ephemeral_id": "1c3b663b-0c05-4eda-a264-e5fff8a1643e",
+        "id": "3849f512-e036-495f-808b-d21769ada35a",
+        "name": "elastic-agent-19241",
         "type": "filebeat",
         "version": "8.17.1"
     },
-    "cloud": {
-        "provider": "google cloud"
-    },
     "cloudflare_logpush": {
         "gateway_dns": {
+            "answers": [
+                {
+                    "data": "CHNlY3VyaXR5BnVidW50dQMjb20AAAEAAQAAAAgABLl9vic=",
+                    "type": "1"
+                },
+                {
+                    "data": "CHNlY3VyaXR5BnVidW50dQNjb20AAAEAABAAAAgABLl9viQ=",
+                    "type": "1"
+                },
+                {
+                    "data": "CHNlT3VyaXR5BnVidW50dQNjb20AAAEAAQAAAAgABFu9Wyc=",
+                    "type": "1"
+                }
+            ],
             "application_id": 0,
             "colo": {
                 "code": "ORD",
                 "id": 14
+            },
+            "destination": {
+                "ip": "89.160.20.129",
+                "port": 443
+            },
+            "host": {
+                "id": "083a8354-d56c-11ed-9771-6a842b111aaa",
+                "name": "zt-test-vm1"
             },
             "location": {
                 "id": "f233bd67-78c7-4050-9aff-ad63cce25732",
@@ -1880,6 +1811,7 @@ An example event for `gateway_dns` looks as following:
                 "id": "1412",
                 "name": "7bdc7a9c-81d3-4816-8e56-de1acad3dec5"
             },
+            "protocol": "https",
             "question": {
                 "category": {
                     "ids": [
@@ -1891,17 +1823,35 @@ An example event for `gateway_dns` looks as following:
                         "Technology"
                     ]
                 },
+                "name": "security.ubuntu.com",
                 "reversed": "com.ubuntu.security",
                 "size": 48,
+                "type": "A",
                 "type_id": 1
             },
+            "resolved_ip": [
+                "67.43.156.1",
+                "67.43.156.2",
+                "67.43.156.3"
+            ],
             "resolver_decision": "allowedOnNoPolicyMatch",
-            "timezone_inferred_method": "fromLocalTime"
+            "response_code": "0",
+            "source": {
+                "ip": "67.43.156.2",
+                "port": 0
+            },
+            "timestamp": "2023-05-02T22:49:53.000Z",
+            "timezone": "UTC",
+            "timezone_inferred_method": "fromLocalTime",
+            "user": {
+                "email": "user@test.com",
+                "id": "166befbb-00e3-5e20-bd6e-27245000000"
+            }
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.gateway_dns",
-        "namespace": "69154",
+        "namespace": "73427",
         "type": "logs"
     },
     "destination": {
@@ -1956,7 +1906,7 @@ An example event for `gateway_dns` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "57130e12-3aa9-4de1-8bab-eed6847b485d",
+        "id": "3849f512-e036-495f-808b-d21769ada35a",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -1966,37 +1916,21 @@ An example event for `gateway_dns` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.gateway_dns",
-        "ingested": "2025-12-12T09:10:08Z",
+        "ingested": "2026-05-07T09:59:42Z",
         "kind": "event",
+        "original": "{\"ApplicationID\":0,\"ColoCode\":\"ORD\",\"ColoID\":14,\"Datetime\":\"2023-05-02T22:49:53Z\",\"DeviceID\":\"083a8354-d56c-11ed-9771-6a842b111aaa\",\"DeviceName\":\"zt-test-vm1\",\"DstIP\":\"89.160.20.129\",\"DstPort\":443,\"Email\":\"user@test.com\",\"Location\":\"GCP default\",\"LocationID\":\"f233bd67-78c7-4050-9aff-ad63cce25732\",\"MatchedCategoryIDs\":[7,163],\"MatchedCategoryNames\":[\"Photography\",\"Weather\"],\"Policy\":\"7bdc7a9c-81d3-4816-8e56-de1acad3dec5\",\"PolicyID\":\"1412\",\"Protocol\":\"https\",\"QueryCategoryIDs\":[26,155],\"QueryCategoryNames\":[\"Technology\",\"Technology\"],\"QueryName\":\"security.ubuntu.com\",\"QueryNameReversed\":\"com.ubuntu.security\",\"QuerySize\":48,\"QueryType\":1,\"QueryTypeName\":\"A\",\"RCode\":0,\"RData\":[{\"data\":\"CHNlY3VyaXR5BnVidW50dQMjb20AAAEAAQAAAAgABLl9vic=\",\"type\":\"1\"},{\"data\":\"CHNlY3VyaXR5BnVidW50dQNjb20AAAEAABAAAAgABLl9viQ=\",\"type\":\"1\"},{\"data\":\"CHNlT3VyaXR5BnVidW50dQNjb20AAAEAAQAAAAgABFu9Wyc=\",\"type\":\"1\"}],\"ResolvedIPs\":[\"67.43.156.1\",\"67.43.156.2\",\"67.43.156.3\"],\"ResolverDecision\":\"allowedOnNoPolicyMatch\",\"SrcIP\":\"67.43.156.2\",\"SrcPort\":0,\"TimeZone\":\"UTC\",\"TimeZoneInferredMethod\":\"fromLocalTime\",\"UserID\":\"166befbb-00e3-5e20-bd6e-27245000000\"}",
         "outcome": "success",
         "timezone": "UTC",
         "type": [
             "info"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "gateway_dns.log"
-            }
-        }
-    },
     "host": {
         "id": "083a8354-d56c-11ed-9771-6a842b111aaa",
         "name": "zt-test-vm1"
     },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/gateway_dns.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "network": {
         "protocol": "https"
@@ -2032,6 +1966,8 @@ An example event for `gateway_dns` looks as following:
         "port": 0
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-gateway_dns"
     ],
@@ -2067,7 +2003,7 @@ An example event for `gateway_dns` looks as following:
 | cloudflare_logpush.gateway_dns.colo.id | The ID of the colo that received the DNS query. | long |
 | cloudflare_logpush.gateway_dns.custom_resolver.address | IP and port combo used to resolve the custom dns resolver query, if any. | keyword |
 | cloudflare_logpush.gateway_dns.custom_resolver.duration_milli | The time it took for the custom resolver to respond in milliseconds. | long |
-| cloudflare_logpush.gateway_dns.custom_resolver.policy.ids | Custom resolver policy UUID, if matched. | keyword |
+| cloudflare_logpush.gateway_dns.custom_resolver.policy.ids | Custom resolver policy UUIDs, if matched. | keyword |
 | cloudflare_logpush.gateway_dns.custom_resolver.policy.names | Custom resolver policy name, if matched. | keyword |
 | cloudflare_logpush.gateway_dns.custom_resolver.response | Status of the custom resolver response. | keyword |
 | cloudflare_logpush.gateway_dns.destination.ip | The destination IP address the DNS query was made to. | ip |
@@ -2105,7 +2041,7 @@ An example event for `gateway_dns` looks as following:
 | cloudflare_logpush.gateway_dns.resolved_ip_details.continent_codes | Continent code of each resolved IP, if any. | keyword |
 | cloudflare_logpush.gateway_dns.resolved_ip_details.country_codes | Country code of each resolved IP, if any. | keyword |
 | cloudflare_logpush.gateway_dns.resolved_ip_details.ips | The resolved IPs in the response, if any. | ip |
-| cloudflare_logpush.gateway_dns.resolver.policy.id | Resolver policy UUID, if any matched. | keyword |
+| cloudflare_logpush.gateway_dns.resolver.policy.ids | Resolver policy UUIDs, if any matched. | keyword |
 | cloudflare_logpush.gateway_dns.resolver.policy.names | Resolver policy name, if any matched. | keyword |
 | cloudflare_logpush.gateway_dns.resolver_decision | Result of the DNS query. | keyword |
 | cloudflare_logpush.gateway_dns.resource_records.json | String that represents the JSON array with the returned resource records. | match_only_text |
@@ -2149,24 +2085,26 @@ An example event for `gateway_http` looks as following:
 {
     "@timestamp": "2023-05-03T20:55:05.000Z",
     "agent": {
-        "ephemeral_id": "48652a2c-a69f-44aa-8c1c-cadb9863f0c9",
-        "id": "48f0311d-16dc-41e5-b2cf-40ae0743d746",
-        "name": "elastic-agent-46882",
+        "ephemeral_id": "bd73bd3a-7603-42f5-8954-36f29479b358",
+        "id": "7d1a5dea-3b66-4fff-9548-749ee57d9181",
+        "name": "elastic-agent-95974",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "gateway_http": {
             "account_id": "e1836771179f98aabb828da5ea69a348",
+            "action": "block",
             "blocked_file": {
                 "hash": "91dc1db739a705105e1c763bfdbdaa84c0de8",
                 "name": "downloaded_test",
                 "reason": "malware",
                 "size": 43,
                 "type": "bin"
+            },
+            "destination": {
+                "ip": "89.160.20.129",
+                "port": 443
             },
             "downloaded_files": [
                 "downloaded_file",
@@ -2184,28 +2122,47 @@ An example event for `gateway_http` looks as following:
                     }
                 ]
             },
+            "host": {
+                "id": "083a8354-d56c-11ed-9771-6a842b100cff",
+                "name": "zt-test-vm1"
+            },
             "isolated": false,
             "policy": {
                 "id": "85063bec-74cb-4546-85a3-e0cde2cdfda2",
                 "name": "Block Yahoo"
             },
             "request": {
-                "host": "guce.yahoo.com"
+                "host": "guce.yahoo.com",
+                "method": "GET",
+                "referrer": "https://www.example.com/",
+                "version": "HTTP/2"
             },
             "request_id": "1884fec9b600007fb06a299400000001",
-            "source": {
-                "internal_ip": "192.168.1.123"
+            "response": {
+                "status_code": 302
             },
+            "source": {
+                "internal_ip": "192.168.1.123",
+                "ip": "67.43.156.2",
+                "port": 47924
+            },
+            "timestamp": "2023-05-03T20:55:05.000Z",
             "untrusted_certificate_action": "none",
             "uploaded_files": [
                 "uploaded_file",
                 "uploaded_test"
-            ]
+            ],
+            "url": "https://test.com",
+            "user": {
+                "email": "user@example.com",
+                "id": "166befbb-00e3-5e20-bd6e-27245723949f"
+            },
+            "user_agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) Firefox/112.0"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.gateway_http",
-        "namespace": "27028",
+        "namespace": "14950",
         "type": "logs"
     },
     "destination": {
@@ -2234,7 +2191,7 @@ An example event for `gateway_http` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "48f0311d-16dc-41e5-b2cf-40ae0743d746",
+        "id": "7d1a5dea-3b66-4fff-9548-749ee57d9181",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -2245,23 +2202,13 @@ An example event for `gateway_http` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.gateway_http",
-        "ingested": "2025-12-12T09:16:06Z",
+        "ingested": "2026-05-06T10:52:15Z",
         "kind": "event",
+        "original": "{\"AccountID\":\"e1836771179f98aabb828da5ea69a348\",\"Action\":\"block\",\"BlockedFileHash\":\"91dc1db739a705105e1c763bfdbdaa84c0de8\",\"BlockedFileName\":\"downloaded_test\",\"BlockedFileReason\":\"malware\",\"BlockedFileSize\":43,\"BlockedFileType\":\"bin\",\"Datetime\":\"2023-05-03T20:55:05Z\",\"DestinationIP\":\"89.160.20.129\",\"DestinationPort\":443,\"DeviceID\":\"083a8354-d56c-11ed-9771-6a842b100cff\",\"DeviceName\":\"zt-test-vm1\",\"DownloadedFileNames\":[\"downloaded_file\",\"downloaded_test\"],\"Email\":\"user@example.com\",\"FileInfo\":{\"files\":[{\"name\":\"downloaded_file\",\"size\":43},{\"name\":\"downloaded_test\",\"size\":341}]},\"HTTPHost\":\"guce.yahoo.com\",\"HTTPMethod\":\"GET\",\"HTTPStatusCode\":302,\"HTTPVersion\":\"HTTP/2\",\"IsIsolated\":false,\"PolicyID\":\"85063bec-74cb-4546-85a3-e0cde2cdfda2\",\"PolicyName\":\"Block Yahoo\",\"Referer\":\"https://www.example.com/\",\"RequestID\":\"1884fec9b600007fb06a299400000001\",\"SourceIP\":\"67.43.156.2\",\"SourceInternalIP\":\"192.168.1.123\",\"SourcePort\":47924,\"URL\":\"https://test.com\",\"UntrustedCertificateAction\":\"none\",\"UploadedFileNames\":[\"uploaded_file\",\"uploaded_test\"],\"UserAgent\":\"Mozilla/5.0 (X11; Ubuntu; Linux x86_64) Firefox/112.0\",\"UserID\":\"166befbb-00e3-5e20-bd6e-27245723949f\"}",
         "type": [
             "info",
             "denied"
         ]
-    },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "gateway_http.log"
-            }
-        }
     },
     "host": {
         "id": "083a8354-d56c-11ed-9771-6a842b100cff",
@@ -2278,13 +2225,7 @@ An example event for `gateway_http` looks as following:
         "version": "HTTP/2"
     },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/gateway_http.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
         "hosts": [
@@ -2318,6 +2259,8 @@ An example event for `gateway_http` looks as following:
         "port": 47924
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-gateway_http"
     ],
@@ -2428,18 +2371,24 @@ An example event for `gateway_network` looks as following:
 {
     "@timestamp": "2023-05-18T21:12:57.058Z",
     "agent": {
-        "ephemeral_id": "e97e2537-55fc-411f-9d94-ee80a16b9840",
-        "id": "b7375e7f-8998-462f-8a35-45412fd644da",
-        "name": "elastic-agent-36424",
+        "ephemeral_id": "d71417a3-d888-4ce0-ba97-63c6026ea45a",
+        "id": "ebc82c7e-1496-4828-b2e0-0fdc859a362c",
+        "name": "elastic-agent-90140",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "gateway_network": {
             "account_id": "e1836771179f98aabb828da5ea69a111",
+            "action": "allowedOnNoRuleMatch",
+            "destination": {
+                "ip": "89.160.20.129",
+                "port": 443
+            },
+            "host": {
+                "id": "083a8354-d56c-11ed-9771-6a842b100cff",
+                "name": "zt-test-vm1"
+            },
             "override": {
                 "ip": "175.16.199.4",
                 "port": 8080
@@ -2448,14 +2397,24 @@ An example event for `gateway_network` looks as following:
                 "id": "85063bec-74cb-4546-85a3-e0cde2cdfda2",
                 "name": "My policy"
             },
+            "session_id": "5f2d04be-3512-11e8-b467-0ed5f89f718b",
+            "sni": "www.elastic.co",
             "source": {
-                "internal_ip": "192.168.1.3"
+                "internal_ip": "192.168.1.3",
+                "ip": "67.43.156.2",
+                "port": 47924
+            },
+            "timestamp": "2023-05-18T21:12:57.058Z",
+            "transport": "tcp",
+            "user": {
+                "email": "user@test.com",
+                "id": "166befbb-00e3-5e20-bd6e-27245723949f"
             }
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.gateway_network",
-        "namespace": "25906",
+        "namespace": "96293",
         "type": "logs"
     },
     "destination": {
@@ -2485,7 +2444,7 @@ An example event for `gateway_network` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b7375e7f-8998-462f-8a35-45412fd644da",
+        "id": "ebc82c7e-1496-4828-b2e0-0fdc859a362c",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -2497,35 +2456,19 @@ An example event for `gateway_network` looks as following:
         ],
         "dataset": "cloudflare_logpush.gateway_network",
         "id": "5f2d04be-3512-11e8-b467-0ed5f89f718b",
-        "ingested": "2025-12-12T09:23:26Z",
+        "ingested": "2026-05-06T10:53:10Z",
         "kind": "event",
+        "original": "{\"AccountID\":\"e1836771179f98aabb828da5ea69a111\",\"Action\":\"allowedOnNoRuleMatch\",\"Datetime\":1684444377058000000,\"DestinationIP\":\"89.160.20.129\",\"DestinationPort\":443,\"DeviceID\":\"083a8354-d56c-11ed-9771-6a842b100cff\",\"DeviceName\":\"zt-test-vm1\",\"Email\":\"user@test.com\",\"OverrideIP\":\"175.16.199.4\",\"OverridePort\":8080,\"PolicyID\":\"85063bec-74cb-4546-85a3-e0cde2cdfda2\",\"PolicyName\":\"My policy\",\"SNI\":\"www.elastic.co\",\"SessionID\":\"5f2d04be-3512-11e8-b467-0ed5f89f718b\",\"SourceIP\":\"67.43.156.2\",\"SourceInternalIP\":\"192.168.1.3\",\"SourcePort\":47924,\"Transport\":\"tcp\",\"UserID\":\"166befbb-00e3-5e20-bd6e-27245723949f\"}",
         "type": [
             "info"
         ]
-    },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "gateway_network.log"
-            }
-        }
     },
     "host": {
         "id": "083a8354-d56c-11ed-9771-6a842b100cff",
         "name": "zt-test-vm1"
     },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/gateway_network.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "network": {
         "transport": "tcp"
@@ -2564,6 +2507,8 @@ An example event for `gateway_network` looks as following:
         "port": 47924
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-gateway_network"
     ],
@@ -2651,9 +2596,9 @@ An example event for `http_request` looks as following:
 {
     "@timestamp": "2022-05-25T13:25:26.000Z",
     "agent": {
-        "ephemeral_id": "3cd010e7-a0bc-4a53-aff5-3af3c380387f",
-        "id": "3ce9b73c-faf9-42ad-a254-eb64a83a369c",
-        "name": "elastic-agent-80039",
+        "ephemeral_id": "5c30f62a-7113-4fb3-bc34-184a2fffbb14",
+        "id": "629ad3f2-1781-41b4-9fb6-008cff3ef87b",
+        "name": "elastic-agent-16148",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -2841,7 +2786,7 @@ An example event for `http_request` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.http_request",
-        "namespace": "73428",
+        "namespace": "16525",
         "type": "logs"
     },
     "destination": {
@@ -2851,7 +2796,7 @@ An example event for `http_request` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3ce9b73c-faf9-42ad-a254-eb64a83a369c",
+        "id": "629ad3f2-1781-41b4-9fb6-008cff3ef87b",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -2862,7 +2807,7 @@ An example event for `http_request` looks as following:
         ],
         "dataset": "cloudflare_logpush.http_request",
         "id": "710e98d9367f357d",
-        "ingested": "2026-01-20T11:31:07Z",
+        "ingested": "2026-05-06T10:54:13Z",
         "kind": "event",
         "original": "{\"BotDetectionIDs\":[7,8,9],\"BotScore\":20,\"BotScoreSrc\":\"Verified Bot\",\"BotTags\":[\"bing\",\"api\"],\"CacheCacheStatus\":\"dynamic\",\"CacheResponseBytes\":983828,\"CacheResponseStatus\":200,\"CacheTieredFill\":false,\"ClientASN\":43766,\"ClientCountry\":\"sa\",\"ClientDeviceType\":\"desktop\",\"ClientIP\":\"175.16.199.0\",\"ClientIPClass\":\"noRecord\",\"ClientMTLSAuthCertFingerprint\":\"Fingerprint\",\"ClientMTLSAuthStatus\":\"unknown\",\"ClientRequestBytes\":5800,\"ClientRequestHost\":\"xyz.example.com\",\"ClientRequestMethod\":\"POST\",\"ClientRequestPath\":\"/xyz/checkout\",\"ClientRequestProtocol\":\"HTTP/1.1\",\"ClientRequestReferer\":\"https://example.com/s/example/default?sourcerer=(default:(id:!n,selectedPatterns:!(example,%27logs-endpoint.*-example%27,%27logs-system.*-example%27,%27logs-windows.*-example%27)))\\u0026timerange=(global:(linkTo:!(),timerange:(from:%272022-05-16T06:26:36.340Z%27,fromStr:now-24h,kind:relative,to:%272022-05-17T06:26:36.340Z%27,toStr:now)),timeline:(linkTo:!(),timerange:(from:%272022-04-17T22:00:00.000Z%27,kind:absolute,to:%272022-04-18T21:59:59.999Z%27)))\\u0026timeline=(activeTab:notes,graphEventId:%27%27,id:%279844bdd4-4dd6-5b22-ab40-3cd46fce8d6b%27,isOpen:!t)\",\"ClientRequestScheme\":\"https\",\"ClientRequestSource\":\"edgeWorkerFetch\",\"ClientRequestURI\":\"/s/example/api/telemetry/v2/clusters/_stats\",\"ClientRequestUserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36\",\"ClientSSLCipher\":\"NONE\",\"ClientSSLProtocol\":\"TLSv1.2\",\"ClientSrcPort\":0,\"ClientTCPRTTMs\":0,\"ClientXRequestedWith\":\"Request With\",\"Cookies\":{\"key\":\"value\"},\"EdgeCFConnectingO2O\":false,\"EdgeColoCode\":\"RUH\",\"EdgeColoID\":339,\"EdgeEndTimestamp\":\"2022-05-25T13:25:32Z\",\"EdgePathingOp\":\"wl\",\"EdgePathingSrc\":\"macro\",\"EdgePathingStatus\":\"nr\",\"EdgeRateLimitAction\":\"unknown\",\"EdgeRateLimitID\":0,\"EdgeRequestHost\":\"abc.example.com\",\"EdgeResponseBodyBytes\":980397,\"EdgeResponseBytes\":981308,\"EdgeResponseCompressionRatio\":0,\"EdgeResponseContentType\":\"application/json\",\"EdgeResponseStatus\":200,\"EdgeServerIP\":\"1.128.0.0\",\"EdgeStartTimestamp\":\"2022-05-25T13:25:26Z\",\"EdgeTimeToFirstByteMs\":5333,\"OriginDNSResponseTimeMs\":3,\"OriginIP\":\"67.43.156.0\",\"OriginRequestHeaderSendDurationMs\":0,\"OriginResponseBytes\":0,\"OriginResponseDurationMs\":5319,\"OriginResponseHTTPExpires\":\"2022-05-27T13:25:26Z\",\"OriginResponseHTTPLastModified\":\"2022-05-26T13:25:26Z\",\"OriginResponseHeaderReceiveDurationMs\":5155,\"OriginResponseStatus\":200,\"OriginResponseTime\":5232000000,\"OriginSSLProtocol\":\"TLSv1.2\",\"OriginTCPHandshakeDurationMs\":24,\"OriginTLSHandshakeDurationMs\":53,\"ParentRayID\":\"710e98d93d50357d\",\"RayID\":\"710e98d9367f357d\",\"SecurityAction\":\"unknown\",\"SecurityLevel\":\"off\",\"SecurityRuleDescription\":\"matchad variable message\",\"SecurityRuleID\":\"98d93d5\",\"SmartRouteColoID\":20,\"UpperTierColoID\":0,\"WAFAttackScore\":50,\"WAFFlags\":\"0\",\"WAFMatchedVar\":\"example\",\"WAFProfile\":\"unknown\",\"WAFRCEAttackScore\":1,\"WAFSQLiAttackScore\":99,\"WAFXSSAttackScore\":90,\"WorkerCPUTime\":0,\"WorkerStatus\":\"unknown\",\"WorkerSubrequest\":true,\"WorkerSubrequestCount\":0,\"ZoneID\":393347122,\"ZoneName\":\"example.com\"}",
         "type": [
@@ -2952,8 +2897,8 @@ An example event for `http_request` looks as following:
 | cloudflare_logpush.http_request.bot.tag | Type of bot traffic (if available). Available in Logpush v2 only. | text |
 | cloudflare_logpush.http_request.cache.reserve_used | Cache Reserve was used to serve this request. | boolean |
 | cloudflare_logpush.http_request.cache.response.bytes | Number of bytes returned by the cache. | long |
-| cloudflare_logpush.http_request.cache.response.status | Cache status. | long |
-| cloudflare_logpush.http_request.cache.status | HTTP status code returned by the cache to the edge. | keyword |
+| cloudflare_logpush.http_request.cache.response.status | HTTP status code returned by the cache to the edge. | long |
+| cloudflare_logpush.http_request.cache.status | Cache status. | keyword |
 | cloudflare_logpush.http_request.cache.tiered_fill | Tiered Cache was used to serve this request. | boolean |
 | cloudflare_logpush.http_request.client.asn | Client AS number. | long |
 | cloudflare_logpush.http_request.client.city | Approximate city of the client. | keyword |
@@ -3076,31 +3021,39 @@ An example event for `magic_ids` looks as following:
 {
     "@timestamp": "2023-09-11T03:02:57.000Z",
     "agent": {
-        "ephemeral_id": "b4087b6e-9b59-4f1e-b4a1-8be9334146fb",
-        "id": "01cff4ad-3e8d-4819-a226-ad295d9fcb79",
-        "name": "elastic-agent-65074",
+        "ephemeral_id": "3cf03a09-21aa-4e8f-9c8a-4b40cd0b6b40",
+        "id": "98dd711d-222c-401f-8403-23c1f055fcfa",
+        "name": "elastic-agent-17419",
         "type": "filebeat",
         "version": "8.17.1"
     },
-    "cloud": {
-        "provider": "google cloud"
-    },
     "cloudflare_logpush": {
         "magic_ids": {
+            "action": "pass",
             "colo": {
                 "city": "Tokyo",
                 "code": "NRT"
+            },
+            "destination": {
+                "ip": "89.160.20.129",
+                "port": 80
             },
             "signature": {
                 "id": 2031296,
                 "message": "ET CURRENT_EVENTS [Fireeye] POSSIBLE HackTool.TCP.Rubeus.[User32LogonProcesss]",
                 "revision": 1
-            }
+            },
+            "source": {
+                "ip": "67.43.156.2",
+                "port": 44667
+            },
+            "timestamp": "2023-09-11T03:02:57.000Z",
+            "transport": "tcp"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.magic_ids",
-        "namespace": "22953",
+        "namespace": "60680",
         "type": "logs"
     },
     "destination": {
@@ -3129,7 +3082,7 @@ An example event for `magic_ids` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "01cff4ad-3e8d-4819-a226-ad295d9fcb79",
+        "id": "98dd711d-222c-401f-8403-23c1f055fcfa",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -3141,32 +3094,16 @@ An example event for `magic_ids` looks as following:
             "intrusion_detection"
         ],
         "dataset": "cloudflare_logpush.magic_ids",
-        "ingested": "2025-12-12T09:39:17Z",
+        "ingested": "2026-04-29T10:49:34Z",
         "kind": "event",
+        "original": "{\"Action\":\"pass\",\"ColoCity\":\"Tokyo\",\"ColoCode\":\"NRT\",\"DestinationIP\":\"89.160.20.129\",\"DestinationPort\":80,\"Protocol\":\"tcp\",\"SignatureID\":2031296,\"SignatureMessage\":\"ET CURRENT_EVENTS [Fireeye] POSSIBLE HackTool.TCP.Rubeus.[User32LogonProcesss]\",\"SignatureRevision\":1,\"SourceIP\":\"67.43.156.2\",\"SourcePort\":44667,\"Timestamp\":\"2023-09-11T03:02:57Z\"}",
         "type": [
             "info",
             "allowed"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "magic_ids.log"
-            }
-        }
-    },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/magic_ids.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "network": {
         "transport": "tcp"
@@ -3194,6 +3131,8 @@ An example event for `magic_ids` looks as following:
         "port": 44667
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-magic_ids"
     ]
@@ -3253,14 +3192,11 @@ An example event for `nel_report` looks as following:
 {
     "@timestamp": "2021-07-27T00:01:07.000Z",
     "agent": {
-        "ephemeral_id": "268e4658-b07c-4510-b437-dcbb422583b5",
-        "id": "7ccbc26d-a497-4fcf-8a84-93b0b1f3c120",
-        "name": "elastic-agent-51944",
+        "ephemeral_id": "337b5f34-8fa4-4b11-a305-c8dc28daab80",
+        "id": "b67bbe92-0fa7-4aee-bd88-6c5a3c3252df",
+        "name": "elastic-agent-90348",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "nel_report": {
@@ -3273,24 +3209,28 @@ An example event for `nel_report` looks as following:
                     "country": "US"
                 }
             },
+            "error": {
+                "type": "network-error"
+            },
             "last_known_good": {
                 "colo": {
                     "code": "SJC"
                 }
             },
-            "phase": "connection"
+            "phase": "connection",
+            "timestamp": "2021-07-27T00:01:07.000Z"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.nel_report",
-        "namespace": "32139",
+        "namespace": "58321",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7ccbc26d-a497-4fcf-8a84-93b0b1f3c120",
+        "id": "b67bbe92-0fa7-4aee-bd88-6c5a3c3252df",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -3303,33 +3243,19 @@ An example event for `nel_report` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.nel_report",
-        "ingested": "2025-12-12T09:45:27Z",
+        "ingested": "2026-04-29T10:50:33Z",
         "kind": "event",
+        "original": "{\"ClientIPASN\":\"13335\",\"ClientIPASNDescription\":\"CLOUDFLARENET\",\"ClientIPCountry\":\"US\",\"LastKnownGoodColoCode\":\"SJC\",\"Phase\":\"connection\",\"Timestamp\":\"2021-07-27T00:01:07Z\",\"Type\":\"network-error\"}",
         "type": [
             "info"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "nel_report.log"
-            }
-        }
-    },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/nel_report.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-nel_report"
     ]
@@ -3384,14 +3310,11 @@ An example event for `network_analytics` looks as following:
 {
     "@timestamp": "2021-07-27T00:01:07.000Z",
     "agent": {
-        "ephemeral_id": "0ed44bac-a86d-417a-83f6-06250aca48c5",
-        "id": "47e353e4-8ed7-44c4-b167-ad9581cbdeaf",
-        "name": "elastic-agent-13604",
+        "ephemeral_id": "9b08d485-cbbb-4519-b514-4c06cf30973c",
+        "id": "cf5a05f5-d378-4557-8060-1bf2dedbf247",
+        "name": "elastic-agent-86596",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "network_analytics": {
@@ -3414,10 +3337,14 @@ An example event for `network_analytics` looks as following:
                         "description": "asn description"
                     }
                 },
+                "asn": 1900,
                 "country": "AD",
                 "geo_hash": "gbuun",
-                "geo_location": "gbuun"
+                "geo_location": "gbuun",
+                "ip": "175.16.199.0",
+                "port": 0
             },
+            "direction": "ingress",
             "gre": {
                 "checksum": 10,
                 "ether": {
@@ -3451,6 +3378,7 @@ An example event for `network_analytics` looks as following:
                     "fragments": 1480
                 },
                 "protocol": {
+                    "name": "tcp",
                     "value": 6
                 },
                 "source": {
@@ -3478,7 +3406,9 @@ An example event for `network_analytics` looks as following:
             "ipv6": {
                 "dscp": 46,
                 "ecn": 1,
-                "extension_headers": "header",
+                "extension_headers": [
+                    "header"
+                ],
                 "flow_label": 1,
                 "identification": 1
             },
@@ -3487,8 +3417,10 @@ An example event for `network_analytics` looks as following:
                 "scope": "local",
                 "system": "flowtrackd"
             },
+            "outcome": "success",
             "protocol_state": "OPEN",
             "rule": {
+                "id": "rule1",
                 "set": {
                     "id": "3b64149bfa6e4220bbbc2bd6db589552",
                     "override": {
@@ -3503,9 +3435,12 @@ An example event for `network_analytics` looks as following:
                         "description": "Source ASN Description"
                     }
                 },
+                "asn": 1500,
                 "country": "AD",
                 "geo_hash": "gbuun",
-                "geo_location": "gbuun"
+                "geo_location": "gbuun",
+                "ip": "67.43.156.0",
+                "port": 0
             },
             "tcp": {
                 "acknowledgement_number": 1000,
@@ -3516,7 +3451,9 @@ An example event for `network_analytics` looks as following:
                     "value": 1
                 },
                 "mss": 512,
-                "options": "mss",
+                "options": [
+                    "mss"
+                ],
                 "sack": {
                     "blocks": [
                         1
@@ -3534,6 +3471,7 @@ An example event for `network_analytics` looks as following:
                     "size": 10
                 }
             },
+            "timestamp": "2021-07-27T00:01:07.000Z",
             "udp": {
                 "checksum": 10,
                 "payload_length": 10
@@ -3543,7 +3481,7 @@ An example event for `network_analytics` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.network_analytics",
-        "namespace": "16796",
+        "namespace": "25658",
         "type": "logs"
     },
     "destination": {
@@ -3557,7 +3495,7 @@ An example event for `network_analytics` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "47e353e4-8ed7-44c4-b167-ad9581cbdeaf",
+        "id": "cf5a05f5-d378-4557-8060-1bf2dedbf247",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -3567,32 +3505,16 @@ An example event for `network_analytics` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.network_analytics",
-        "ingested": "2025-12-12T09:51:57Z",
+        "ingested": "2026-05-20T03:02:06Z",
         "kind": "event",
+        "original": "{\"AttackCampaignID\":\"xyz987\",\"AttackID\":\"abc777\",\"ColoCountry\":\"AD\",\"ColoGeoHash\":\"gbuun\",\"ColoID\":46,\"ColoName\":\"SJC\",\"Datetime\":\"2021-07-27T00:01:07Z\",\"DestinationASN\":1900,\"DestinationASNDescription\":\"asn description\",\"DestinationCountry\":\"AD\",\"DestinationGeoHash\":\"gbuun\",\"DestinationPort\":0,\"Direction\":\"ingress\",\"GREChecksum\":10,\"GREEthertype\":10,\"GREHeaderLength\":1024,\"GREKey\":10,\"GRESequenceNumber\":10,\"GREVersion\":10,\"ICMPChecksum\":10,\"ICMPCode\":10,\"ICMPType\":10,\"IPDestinationAddress\":\"175.16.199.0\",\"IPDestinationSubnet\":\"/24\",\"IPFragmentOffset\":1480,\"IPHeaderLength\":20,\"IPMoreFragments\":1480,\"IPProtocol\":6,\"IPProtocolName\":\"tcp\",\"IPSourceAddress\":\"67.43.156.0\",\"IPSourceSubnet\":\"/24\",\"IPTotalLength\":1024,\"IPTotalLengthBuckets\":10,\"IPTtl\":240,\"IPTtlBuckets\":2,\"IPv4Checksum\":0,\"IPv4DontFragment\":0,\"IPv4Dscp\":46,\"IPv4Ecn\":1,\"IPv4Identification\":1,\"IPv4Options\":1,\"IPv6Dscp\":46,\"IPv6Ecn\":1,\"IPv6ExtensionHeaders\":\"header\",\"IPv6FlowLabel\":1,\"IPv6Identification\":1,\"MitigationReason\":\"BLOCKED\",\"MitigationScope\":\"local\",\"MitigationSystem\":\"flowtrackd\",\"Outcome\":\"pass\",\"ProtocolState\":\"OPEN\",\"RuleID\":\"rule1\",\"RulesetID\":\"3b64149bfa6e4220bbbc2bd6db589552\",\"RulesetOverrideID\":\"id1\",\"SampleInterval\":1,\"SourceASN\":1500,\"SourceASNDescription\":\"Source ASN Description\",\"SourceCountry\":\"AD\",\"SourceGeoHash\":\"gbuun\",\"SourcePort\":0,\"TCPAcknowledgementNumber\":1000,\"TCPChecksum\":10,\"TCPDataOffset\":0,\"TCPFlags\":1,\"TCPFlagsString\":\"Human-readable flags string\",\"TCPMss\":512,\"TCPOptions\":\"mss\",\"TCPSackBlocks\":1,\"TCPSacksPermitted\":1,\"TCPSequenceNumber\":100,\"TCPTimestampEcr\":100,\"TCPTimestampValue\":100,\"TCPUrgentPointer\":10,\"TCPWindowScale\":10,\"TCPWindowSize\":10,\"UDPChecksum\":10,\"UDPPayloadLength\":10,\"Verdict\":\"pass\"}",
         "outcome": "success",
         "type": [
             "info"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "network_analytics.log"
-            }
-        }
-    },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/network_analytics.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "network": {
         "direction": "ingress",
@@ -3618,6 +3540,8 @@ An example event for `network_analytics` looks as following:
         "port": 0
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-network_analytics"
     ]
@@ -3752,19 +3676,19 @@ An example event for `network_session` looks as following:
 {
     "@timestamp": "2023-05-04T11:29:14.000Z",
     "agent": {
-        "ephemeral_id": "ba4a058c-c545-42a7-a7fa-e33b4ff32fda",
-        "id": "70c5474a-4b38-40f2-a354-bf18bcdc45c9",
-        "name": "elastic-agent-55862",
+        "ephemeral_id": "74c71463-4481-467c-a0b0-ada5333bc2ad",
+        "id": "0b62f626-9c2d-46d0-82c7-0d496604aec3",
+        "name": "elastic-agent-70997",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "network_session": {
             "account_id": "e1836771179f98aabb828da5ea69a111",
             "destination": {
+                "bytes": 679,
+                "ip": "89.160.20.129",
+                "port": 80,
                 "tunnel_id": "00000000-0000-0000-0000-000000000000"
             },
             "egress": {
@@ -3776,6 +3700,10 @@ An example event for `network_session` looks as following:
                     "name": "Egress Rule 1"
                 }
             },
+            "host": {
+                "id": "083a8354-d56c-11ed-9771-6a842b100cff",
+                "name": "zt-test-vm1"
+            },
             "ingress": {
                 "colo_name": "ORD"
             },
@@ -3783,8 +3711,16 @@ An example event for `network_session` looks as following:
             "rule_evaluation": {
                 "time_ms": 10
             },
+            "session": {
+                "end": "2023-05-04T11:29:14.000Z",
+                "id": "18881f179300007fb0d06d6400000001",
+                "start": "2023-05-04T11:29:14.000Z"
+            },
             "source": {
-                "internal_ip": "1.128.0.1"
+                "bytes": 2333,
+                "internal_ip": "1.128.0.1",
+                "ip": "67.43.156.2",
+                "port": 52994
             },
             "tcp": {
                 "client": {
@@ -3795,6 +3731,7 @@ An example event for `network_session` looks as following:
                     "reuse": false
                 }
             },
+            "timestamp": "2023-05-04T11:29:14.000Z",
             "tls": {
                 "client": {
                     "cipher": "TLS_AES_128_GCM_SHA256",
@@ -3803,18 +3740,27 @@ An example event for `network_session` looks as following:
                 },
                 "server": {
                     "certificate": {
+                        "issuer": "DigiCert Inc",
                         "validation_result": "VALID"
                     },
                     "cipher": "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
                     "handshake_time_ms": 130,
                     "version": "TLS 1.2"
                 }
+            },
+            "transport": "TCP",
+            "user": {
+                "email": "user@test.com",
+                "id": "166befbb-00e3-5e20-bd6e-27245723949f"
+            },
+            "vlan": {
+                "id": "0ce99869-63d3-4d5d-bdaf-d4f33df964aa"
             }
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.network_session",
-        "namespace": "60780",
+        "namespace": "96780",
         "type": "logs"
     },
     "destination": {
@@ -3844,7 +3790,7 @@ An example event for `network_session` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "70c5474a-4b38-40f2-a354-bf18bcdc45c9",
+        "id": "0b62f626-9c2d-46d0-82c7-0d496604aec3",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -3857,36 +3803,20 @@ An example event for `network_session` looks as following:
         "dataset": "cloudflare_logpush.network_session",
         "end": "2023-05-04T11:29:14.000Z",
         "id": "18881f179300007fb0d06d6400000001",
-        "ingested": "2025-12-12T09:58:37Z",
+        "ingested": "2026-04-29T10:52:43Z",
         "kind": "event",
+        "original": "{\"AccountID\":\"e1836771179f98aabb828da5ea69a111\",\"BytesReceived\":679,\"BytesSent\":2333,\"ClientTCPHandshakeDurationMs\":12,\"ClientTLSCipher\":\"TLS_AES_128_GCM_SHA256\",\"ClientTLSHandshakeDurationMs\":125,\"ClientTLSVersion\":\"TLS 1.3\",\"ConnectionCloseReason\":\"CLIENT_CLOSED\",\"ConnectionReuse\":false,\"DestinationTunnelID\":\"00000000-0000-0000-0000-000000000000\",\"DeviceID\":\"083a8354-d56c-11ed-9771-6a842b100cff\",\"DeviceName\":\"zt-test-vm1\",\"EgressColoName\":\"ORD\",\"EgressIP\":\"2a02:cf40::23\",\"EgressPort\":41052,\"EgressRuleID\":\"00000000-0000-0000-0000-000000000000\",\"EgressRuleName\":\"Egress Rule 1\",\"Email\":\"user@test.com\",\"IngressColoName\":\"ORD\",\"Offramp\":\"INTERNET\",\"OriginIP\":\"89.160.20.129\",\"OriginPort\":80,\"OriginTLSCertificateIssuer\":\"DigiCert Inc\",\"OriginTLSCertificateValidationResult\":\"VALID\",\"OriginTLSCipher\":\"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384\",\"OriginTLSHandshakeDurationMs\":130,\"OriginTLSVersion\":\"TLS 1.2\",\"Protocol\":\"TCP\",\"RuleEvaluationDurationMs\":10,\"SessionEndTime\":\"2023-05-04T11:29:14Z\",\"SessionID\":\"18881f179300007fb0d06d6400000001\",\"SessionStartTime\":\"2023-05-04T11:29:14Z\",\"SourceIP\":\"67.43.156.2\",\"SourceInternalIP\":\"1.128.0.1\",\"SourcePort\":52994,\"UserID\":\"166befbb-00e3-5e20-bd6e-27245723949f\",\"VirtualNetworkID\":\"0ce99869-63d3-4d5d-bdaf-d4f33df964aa\"}",
         "start": "2023-05-04T11:29:14.000Z",
         "type": [
             "connection"
         ]
-    },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "network_session.log"
-            }
-        }
     },
     "host": {
         "id": "083a8354-d56c-11ed-9771-6a842b100cff",
         "name": "zt-test-vm1"
     },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/network_session.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "network": {
         "transport": "TCP",
@@ -3927,6 +3857,8 @@ An example event for `network_session` looks as following:
         "port": 52994
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-network_session"
     ],
@@ -4022,35 +3954,36 @@ An example event for `page_shield_events` looks as following:
 {
     "@timestamp": "2023-05-04T11:29:14.000Z",
     "agent": {
-        "ephemeral_id": "1dfb269c-1b6e-443c-8dd2-2cc980f787ff",
-        "id": "a717a65c-0d5d-44b7-ad3e-8459415f563c",
-        "name": "elastic-agent-55379",
+        "ephemeral_id": "884a2e34-efc9-4393-8d7b-2ced87306a3d",
+        "id": "64a169b1-18df-4d65-928b-f8b22c75c207",
+        "name": "elastic-agent-20918",
         "type": "filebeat",
         "version": "8.17.1"
     },
-    "cloud": {
-        "provider": "google cloud"
-    },
     "cloudflare_logpush": {
         "page_shield_events": {
+            "action": "log",
             "csp_directive": "directive",
+            "host": "hostymchost.face",
             "page_url": "http://example.com/?query=42",
             "policy_id": "9",
             "resource_type": "other",
+            "timestamp": "2023-05-04T11:29:14.000Z",
+            "url": "https://example.com/?query=hog",
             "url_contains_cdn_cgi_path": true,
             "url_host": "example.com"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.page_shield_events",
-        "namespace": "48764",
+        "namespace": "64713",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a717a65c-0d5d-44b7-ad3e-8459415f563c",
+        "id": "64a169b1-18df-4d65-928b-f8b22c75c207",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -4061,34 +3994,18 @@ An example event for `page_shield_events` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.page_shield_events",
-        "ingested": "2025-12-12T10:04:57Z",
+        "ingested": "2026-04-29T10:53:43Z",
         "kind": "event",
+        "original": "{\"Action\":\"log\",\"CSPDirective\":\"directive\",\"Host\":\"hostymchost.face\",\"PageURL\":\"http://example.com/?query=42\",\"PolicyID\":\"9\",\"ResourceType\":\"other\",\"Timestamp\":\"2023-05-04T11:29:14Z\",\"URL\":\"https://example.com/?query=hog\",\"URLContainsCDNCGIPath\":true,\"URLHost\":\"example.com\"}",
         "type": [
             "info"
         ]
-    },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "page_shield_events.log"
-            }
-        }
     },
     "host": {
         "name": "hostymchost.face"
     },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/page_shield_events.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
         "hosts": [
@@ -4096,6 +4013,8 @@ An example event for `page_shield_events` looks as following:
         ]
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-page_shield_events"
     ],
@@ -4124,7 +4043,6 @@ An example event for `page_shield_events` looks as following:
 | cloudflare_logpush.page_shield_events.action | The action which was taken against the violation. Possible values are (log, allow). | keyword |
 | cloudflare_logpush.page_shield_events.csp_directive | The violated directive in the report. | keyword |
 | cloudflare_logpush.page_shield_events.host | The host where the resource was seen. | keyword |
-| cloudflare_logpush.page_shield_events.page | The page URL the violation was seen on. | keyword |
 | cloudflare_logpush.page_shield_events.page_url | The page URL the violation was seen on. | keyword |
 | cloudflare_logpush.page_shield_events.policy_id | The ID of the policy which was violated. | keyword |
 | cloudflare_logpush.page_shield_events.resource_type | The resource type of the violated directive. Possible values are 'script', 'connection' or 'other' for unmonitored resource types. | keyword |
@@ -4161,33 +4079,52 @@ An example event for `sinkhole_http` looks as following:
 {
     "@timestamp": "2023-09-19T12:00:00.000Z",
     "agent": {
-        "ephemeral_id": "fe6f8be2-37c0-4f74-83b6-d6061fff286d",
-        "id": "97a57f01-e27c-4ad1-87e6-ef4b6d5e1e0e",
-        "name": "elastic-agent-25658",
+        "ephemeral_id": "41d6ed02-30b5-487f-b977-50f480f64233",
+        "id": "72bf15d4-3ddc-42f7-89fe-e7c23c7f40e5",
+        "name": "elastic-agent-78757",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "sinkhole_http": {
             "account_id": "AC123456",
+            "destination": {
+                "ip": "89.160.20.129"
+            },
+            "host": {
+                "name": "example.com"
+            },
             "request": {
+                "body": {
+                    "bytes": 39,
+                    "content": "{\"action\": \"login\", \"user\": \"john_doe\"}"
+                },
                 "headers": [
                     "Host: example.com",
                     "User-Agent: Mozilla/5.0",
                     "Accept: */*",
                     "Connection: keep-alive"
                 ],
-                "password": "password123"
+                "method": "POST",
+                "password": "password123",
+                "referrer": "https://searchengine.com/",
+                "uri": "/api/v1/login",
+                "url": "https://example.com/api/v1/login"
             },
-            "sinkhole_id": "SH001"
+            "sinkhole_id": "SH001",
+            "source": {
+                "ip": "67.43.156.2"
+            },
+            "timestamp": "2023-09-19T12:00:00.000Z",
+            "user": {
+                "name": "john_doe"
+            },
+            "user_agent": "Mozilla/5.0"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.sinkhole_http",
-        "namespace": "95284",
+        "namespace": "17322",
         "type": "logs"
     },
     "destination": {
@@ -4215,7 +4152,7 @@ An example event for `sinkhole_http` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "97a57f01-e27c-4ad1-87e6-ef4b6d5e1e0e",
+        "id": "72bf15d4-3ddc-42f7-89fe-e7c23c7f40e5",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -4225,22 +4162,12 @@ An example event for `sinkhole_http` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.sinkhole_http",
-        "ingested": "2025-12-12T10:10:56Z",
+        "ingested": "2026-04-29T10:54:43Z",
         "kind": "event",
+        "original": "{\"AccountID\":\"AC123456\",\"Body\":\"{\\\"action\\\": \\\"login\\\", \\\"user\\\": \\\"john_doe\\\"}\",\"BodyLength\":39,\"DestAddr\":\"89.160.20.129\",\"Headers\":\"Host: example.com\\nUser-Agent: Mozilla/5.0\\nAccept: */*\\nConnection: keep-alive\",\"Host\":\"example.com\",\"Method\":\"POST\",\"Password\":\"password123\",\"R2Path\":\"\",\"Referrer\":\"https://searchengine.com/\",\"SinkholeID\":\"SH001\",\"SrcAddr\":\"67.43.156.2\",\"Timestamp\":\"2023-09-19T12:00:00Z\",\"URI\":\"/api/v1/login\",\"URL\":\"https://example.com/api/v1/login\",\"UserAgent\":\"Mozilla/5.0\",\"Username\":\"john_doe\"}",
         "type": [
             "info"
         ]
-    },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "sinkhole_http.log"
-            }
-        }
     },
     "host": {
         "name": "example.com"
@@ -4256,13 +4183,7 @@ An example event for `sinkhole_http` looks as following:
         }
     },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/sinkhole_http.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
         "hosts": [
@@ -4292,6 +4213,8 @@ An example event for `sinkhole_http` looks as following:
         "ip": "67.43.156.2"
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-sinkhole_http"
     ],
@@ -4372,20 +4295,23 @@ An example event for `spectrum_event` looks as following:
 {
     "@timestamp": "2022-05-26T09:24:00.000Z",
     "agent": {
-        "ephemeral_id": "1e145e40-ba54-4666-86af-b8bbda38bfa6",
-        "id": "e7a01d20-2fff-4feb-bb44-7361b6bc648a",
-        "name": "elastic-agent-97143",
+        "ephemeral_id": "da7abeed-7832-41ab-a963-4b61a4faacfc",
+        "id": "5aa726d7-da73-46fe-a797-ca90b14265f2",
+        "name": "elastic-agent-95459",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "spectrum_event": {
             "action": "connect",
+            "application": "7ef659a2f8ef4810a9bade96fdad7c75",
             "client": {
+                "asn": 200391,
+                "bytes": 0,
+                "country": "bg",
+                "ip": "67.43.156.0",
                 "matched_ip_firewall": "UNKNOWN",
+                "port": 40456,
                 "protocol": "tcp",
                 "tcp_rtt": 0,
                 "tls": {
@@ -4406,6 +4332,9 @@ An example event for `spectrum_event` looks as following:
             },
             "ip_firewall": false,
             "origin": {
+                "bytes": 0,
+                "ip": "175.16.199.0",
+                "port": 3389,
                 "protocol": "tcp",
                 "tcp_rtt": 0,
                 "tls": {
@@ -4418,12 +4347,14 @@ An example event for `spectrum_event` looks as following:
             },
             "proxy": {
                 "protocol": "off"
-            }
+            },
+            "status": 0,
+            "timestamp": "2022-05-26T09:24:00.000Z"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.spectrum_event",
-        "namespace": "19575",
+        "namespace": "96159",
         "type": "logs"
     },
     "destination": {
@@ -4435,7 +4366,7 @@ An example event for `spectrum_event` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e7a01d20-2fff-4feb-bb44-7361b6bc648a",
+        "id": "5aa726d7-da73-46fe-a797-ca90b14265f2",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -4448,23 +4379,13 @@ An example event for `spectrum_event` looks as following:
         "dataset": "cloudflare_logpush.spectrum_event",
         "end": "1970-01-01T00:00:00.000Z",
         "id": "7ef659a2f8ef4810a9bade96fdad7c75",
-        "ingested": "2025-12-12T10:17:07Z",
+        "ingested": "2026-04-29T10:55:42Z",
         "kind": "event",
+        "original": "{\"Application\":\"7ef659a2f8ef4810a9bade96fdad7c75\",\"ClientAsn\":200391,\"ClientBytes\":0,\"ClientCountry\":\"bg\",\"ClientIP\":\"67.43.156.0\",\"ClientMatchedIpFirewall\":\"UNKNOWN\",\"ClientPort\":40456,\"ClientProto\":\"tcp\",\"ClientTcpRtt\":0,\"ClientTlsCipher\":\"UNK\",\"ClientTlsClientHelloServerName\":\"server name\",\"ClientTlsProtocol\":\"unknown\",\"ClientTlsStatus\":\"UNKNOWN\",\"ColoCode\":\"SOF\",\"ConnectTimestamp\":\"2022-05-26T09:24:00Z\",\"DisconnectTimestamp\":\"1970-01-01T00:00:00Z\",\"Event\":\"connect\",\"IpFirewall\":false,\"OriginBytes\":0,\"OriginIP\":\"175.16.199.0\",\"OriginPort\":3389,\"OriginProto\":\"tcp\",\"OriginTcpRtt\":0,\"OriginTlsCipher\":\"UNK\",\"OriginTlsFingerprint\":\"0000000000000000000000000000000000000000000000000000000000000000.\",\"OriginTlsMode\":\"off\",\"OriginTlsProtocol\":\"unknown\",\"OriginTlsStatus\":\"UNKNOWN\",\"ProxyProtocol\":\"off\",\"Status\":0,\"Timestamp\":\"2022-05-26T09:24:00Z\"}",
         "start": "2022-05-26T09:24:00.000Z",
         "type": [
             "info"
         ]
-    },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "spectrum_event.log"
-            }
-        }
     },
     "http": {
         "response": {
@@ -4472,13 +4393,7 @@ An example event for `spectrum_event` looks as following:
         }
     },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/spectrum_event.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "network": {
         "community_id": "1:X7lywUVKlduqRq5SyCRaBj4hLP0=",
@@ -4502,6 +4417,8 @@ An example event for `spectrum_event` looks as following:
         "port": 40456
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-spectrum_event"
     ]
@@ -4580,18 +4497,25 @@ An example event for `workers_trace` looks as following:
 {
     "@timestamp": "2023-07-20T11:35:46.804Z",
     "agent": {
-        "ephemeral_id": "7be35875-0716-4185-a715-56f4262e6677",
-        "id": "5de705c9-500f-4f23-b85e-94dfb165569e",
-        "name": "elastic-agent-35180",
+        "ephemeral_id": "cde69b5b-1abe-47f4-9e8d-d178c6690bbb",
+        "id": "37cee0fc-956b-4f26-9654-64bf74cd13d8",
+        "name": "elastic-agent-71274",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "workers_trace": {
             "dispatch_namespace": "my-worker-dispatch",
+            "event": {
+                "ray_id": "7e9ae7157ac0c33a",
+                "request": {
+                    "method": "GET",
+                    "url": "http://chat-gpt-little-butterfly-0c3d.example.workers.dev/v2/_catalog"
+                },
+                "response": {
+                    "status": 404
+                }
+            },
             "exceptions": [
                 {
                     "message": "Uncaught TypeError: Cannot read property 'x' of undefined",
@@ -4608,25 +4532,28 @@ An example event for `workers_trace` looks as following:
                     "message": "Something went wrong"
                 }
             ],
+            "outcome": "exception",
             "script": {
                 "name": "chat-gpt-little-butterfly-0c3d",
                 "tags": [
                     "api",
                     "chatgpt"
                 ]
-            }
+            },
+            "timestamp": "2023-07-20T11:35:46.804Z",
+            "type": "fetch"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.workers_trace",
-        "namespace": "22099",
+        "namespace": "72306",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5de705c9-500f-4f23-b85e-94dfb165569e",
+        "id": "37cee0fc-956b-4f26-9654-64bf74cd13d8",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -4638,24 +4565,14 @@ An example event for `workers_trace` looks as following:
         ],
         "dataset": "cloudflare_logpush.workers_trace",
         "id": "7e9ae7157ac0c33a",
-        "ingested": "2025-12-12T10:23:03Z",
+        "ingested": "2026-04-29T10:56:43Z",
         "kind": "event",
+        "original": "{\"DispatchNamespace\":\"my-worker-dispatch\",\"Event\":{\"RayID\":\"7e9ae7157ac0c33a\",\"Request\":{\"Method\":\"GET\",\"URL\":\"http://chat-gpt-little-butterfly-0c3d.example.workers.dev/v2/_catalog\"},\"Response\":{\"Status\":404}},\"EventTimestampMs\":1689852946804,\"EventType\":\"fetch\",\"Exceptions\":[{\"Message\":\"Uncaught TypeError: Cannot read property 'x' of undefined\",\"Stack\":\"TypeError: Cannot read property 'x' of undefined\\n    at fetchHandler (/workers/script.js:12:27)\\n    at handleRequest (/workers/script.js:6:13)\"}],\"Logs\":[{\"level\":\"info\",\"message\":\"Request received for /api/data\"},{\"level\":\"error\",\"message\":\"Something went wrong\"}],\"Outcome\":\"exception\",\"ScriptName\":\"chat-gpt-little-butterfly-0c3d\",\"ScriptTags\":[\"api\",\"chatgpt\"]}",
         "outcome": "failure",
         "type": [
             "info",
             "error"
         ]
-    },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "workers_trace.log"
-            }
-        }
     },
     "http": {
         "request": {
@@ -4666,15 +4583,11 @@ An example event for `workers_trace` looks as following:
         }
     },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/workers_trace.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-workers_trace"
     ],
