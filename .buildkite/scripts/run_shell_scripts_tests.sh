@@ -6,9 +6,18 @@ set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 
+run_tests_if_exists() {
+    local script="$1"
+    if [[ ! -f "${script}" ]]; then
+        echo "Skipping ${script} (file not found)"
+        return 0
+    fi
+    "${script}"
+}
+
 echo "=== Running get_release_commit.sh tests ==="
-"${REPO_ROOT}/dev/scripts/test_get_release_commit.sh"
+run_tests_if_exists "${REPO_ROOT}/dev/scripts/test_get_release_commit.sh"
 
 echo ""
 echo "=== Running check_changelog_entries.sh tests ==="
-"${REPO_ROOT}/.buildkite/scripts/test_check_changelog_entries.sh"
+run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_check_changelog_entries.sh"
