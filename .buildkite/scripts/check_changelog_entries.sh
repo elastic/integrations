@@ -112,7 +112,11 @@ main() {
                     "${message}" \
                     --context "ctx-changelog-${changelog_file//\//-}" \
                     --style "error"
-                echo "${message}" > changelog-link-mismatch.txt
+                mention="${GITHUB_PR_USER:-""}"
+                if [[ -n "${mention}" ]]; then
+                    mention=" @${mention}"
+                fi
+                echo "${message}${mention}" > changelog-link-mismatch.txt
                 if ! add_or_edit_gh_pr_comment \
                     "${BUILDKITE_ORGANIZATION_SLUG}" \
                     "integrations" \
