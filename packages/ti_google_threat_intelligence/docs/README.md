@@ -56,8 +56,8 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 - VirusTotal URL will work as the base URL for this integration: https://www.virustotal.com
 - An API key will be used to authenticate your request.
 - **Time Selection of Initial Interval and Interval**:
-  - Users need to specify the **initial interval** and **interval** in an hourly format, such as **2h**, **3h**, etc.
-**Note:** Please make sure both initial interval and interval are in hours and the initial interval is greater than 2 hours.
+  - Users need to specify the **initial interval** and **interval** as hourly durations, such as **2h** for the initial interval and **1h** for the interval.
+**Note:** Threat List streams enforce the Google Threat Intelligence availability delay before requesting hourly packages. Requests newer than the availability delay are clamped to the latest available package, so a **1h** interval safely checks each hourly package after it is available.
 
 ### Enabling the integration in Elastic:
 
@@ -163,7 +163,7 @@ These transforms are automatically started to populate `Threat Intelligence`, `A
 
 ## Troubleshooting
 
-1. If you see an error like `Package 2025031310 is not available until 2025-03-13 at 11:00 UTC because of privacy policy.`, ensure that your initial interval and interval are set in hours and the initial interval is greater than two hours.
+1. If you see an error like `Package 2025031310 is not available until 2025-03-13 at 11:00 UTC because of privacy policy.`, the requested hourly threat list package was not yet available from Google Threat Intelligence. Current Threat List streams enforce the configured availability delay and retry availability-delayed packages instead of requiring an initial interval greater than two hours.
 2. If events are not appearing in the transformed index, check if transforms are running without errors. If you encounter issues, refer to [Troubleshooting transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-troubleshooting.html).
 3. If detection rules take longer to run, ensure you have specified index patterns and applied queries to make your source events more specific.
    **Note:** More events in index patterns mean more time needed for detection rules to run.
