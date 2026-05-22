@@ -205,13 +205,6 @@ processors:
       target_field: user.email
       ignore_missing: true
       tag: rename_actor_unauthenticated_email_to_user_email
-
-  ##
-  ## Explicit anthropic.audit.* renames for well-known activity fields.
-  ## Each field listed here is declared in fields.yml as a typed keyword (or
-  ## equivalent), so we move it out of the JSON sub-object before the catch-all
-  ## metadata rename to preserve its mapping.
-  ##
   - rename:
       field: json.organization_uuid
       target_field: anthropic.audit.organization_uuid
@@ -1107,10 +1100,6 @@ processors:
         so no data is lost. For the documented activity set this rename is a
         no-op (json is empty at this point).
       if: ctx.json instanceof Map && !ctx.json.isEmpty()
-
-  ##
-  ## Enrichment
-  ##
   - dissect:
       field: user.email
       pattern: '%{user.name}@%{?user.domain}'
@@ -1660,10 +1649,6 @@ processors:
         ctx.event?.action == 'compliance_api_accessed' &&
         ctx.http?.response?.status_code != null &&
         ctx.http.response.status_code >= 500
-
-  ##
-  ## related.* fan-out
-  ##
   - append:
       field: related.ip
       tag: append_source_ip_to_related
@@ -1728,10 +1713,6 @@ processors:
       value: '{{{url.domain}}}'
       allow_duplicates: false
       if: ctx.url?.domain != null
-
-  ##
-  ## Cleanup
-  ##
   - remove:
       field: json
       ignore_missing: true
