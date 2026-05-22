@@ -85,7 +85,7 @@ TSDB indexes can be enabled in data streams by setting `elasticsearch.index_mode
 
 ## Logs and Metrics UI compatibility [_logs_and_metrics_ui_compatibility]
 
-When applicable an integrataion package should provide the relevant fields for the Logs and Metrics Apps. This is especially relevant for integrations that are focused on compute-resources (VMs, containers, etc.).
+When applicable an integration package should provide the relevant fields for the Logs and Metrics Apps. This is especially relevant for integrations that are focused on compute-resources (VMs, containers, etc.).
 
 * Keep the [Logs app fields](docs-content://reference/observability/fields-and-object-schemas/logs-app-fields.md) reference up to date.
 * Keep the [Infrastructure app fields](docs-content://reference/observability/fields-and-object-schemas/metrics-app-fields.md) reference up to date.
