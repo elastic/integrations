@@ -1229,6 +1229,35 @@ edit_gh_pr_comment_if_exists() {
         -f body="${contents}" | jq -r '.html_url'
 }
 
+delete_and_create_gh_pr_comment() {
+    local owner="$1"
+    local repo="$2"
+    local pr_number="$3"
+    local id="$4"
+    local comment_file="$5"
+    local metadata="<!--COMMENT_GENERATED_WITH_ID_${id}-->"
+
+    local comment_id
+    comment_id=$(get_comment_with_pattern "${owner}" "${repo}" "${pr_number}" "${metadata}")
+    if [[ -n "${comment_id}" ]]; then
+        echo "Deleting existing comment: ${comment_id}"
+        gh api \
+            --method DELETE \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/repos/${owner}/${repo}/issues/comments/${comment_id}"
+    fi
+
+    local contents
+    contents="$(cat "${comment_file}")"
+    printf -v contents '%s\n%s' "${contents}" "${metadata}"
+
+    echo "Creating new comment"
+    gh pr comment \
+        "${pr_number}" \
+        --body "${contents}"
+}
+
 # FIXME: In a Pull Request that there are more than 100 comments,
 # if the comment is older than those 100 comments, it won't be found due to pagination
 get_comment_with_pattern() {

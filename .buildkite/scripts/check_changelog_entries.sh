@@ -157,13 +157,13 @@ main() {
     if running_on_buildkite; then
         local resolved_message=":white_check_mark: All changelog entries have the correct PR link."
         echo "${resolved_message}" > changelog-link-resolved.txt
-        if ! edit_gh_pr_comment_if_exists \
+        if ! delete_and_create_gh_pr_comment \
             "${BUILDKITE_ORGANIZATION_SLUG}" \
             "integrations" \
             "${BUILDKITE_PULL_REQUEST}" \
             "changelog-link-mismatch" \
             "changelog-link-resolved.txt" ; then
-            echo "Failed to edit GitHub PR comment"
+            echo "Failed to update GitHub PR comment"
         fi
     fi
 }
