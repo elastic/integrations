@@ -96,15 +96,21 @@ This integration collects log messages of the following type:
 
 ### Supported use cases
 
-Integrating the Axonius Adapter, User, Gateway, Exposure, Alert, Incident, Storage, Ticket, Network, and Identity data streams with Elastic SIEM summarizes adapter and ingestion health, gateway and network behavior, exposure and vulnerability context, alerts progressing into incidents, storage and ticket workloads, and identity posture in one workspace. Coverage spans users, groups, roles, organizational units, accounts, permissions, certificates, profiles, and access reviews—plus breakdowns of active, suspended, and external accounts, user types and departments, and top identities by email and cloud source alongside network protocols, device states, exposure levels, communication paths, and ticket priorities, statuses, and queues. The bundled dashboards blend those signals so security and IAM teams can monitor integrations, size risk and backlog, validate access hygiene, prioritize remediation, and investigate with correlated operational, identity, asset, and event context instead of switching between disconnected tools.
+This integration brings Axonius asset and security data into Elastic so teams can search, correlate, and investigate in one place instead of moving between separate tools. Use it to maintain a current view of what Axonius is collecting, how adapters and ingestion are performing, and how that inventory connects to alerts, tickets, identity, and infrastructure context in Elastic Security and Kibana.
 
-### Supported use cases
+**Adapter and User** data streams support integration health and user-oriented reporting from Axonius. Adapter data helps confirm which sources are connected and ingesting as expected. User data supports population and account-oriented views that complement identity and access analysis elsewhere in the package.
 
-Integrating the Axonius Application Datastream with Elastic SIEM provides clear visibility into application related activity and usage across the environment. This datastream helps analysts understand how business applications and installed software are being used, where activity is occurring, and which applications are most active or impactful.
+**Compute, Network, Gateway, and Storage** data streams cover core infrastructure and connectivity. Compute includes devices, cloud services, databases, containers, and related configuration. Network covers networks, load balancers, services, devices, firewalls, routes, and NAT rules. Gateway adds gateway-level visibility. Storage covers object storage, file systems, and disks. Together they support asset inventory, segmentation review, and investigations that need host, cloud, or data-store context.
 
-It offers consolidated views of business applications, installed software, sources, users, and domains, enabling teams to quickly validate application activity, assess risk especially for SaaS applications and understand how events are distributed across asset types and actions. Time based trends and activity status insights help identify spikes, dormant applications, or unusual behavior patterns.
+**Exposure, Alert Finding, and Incident** data streams support vulnerability and security-operations workflows. Exposure brings vulnerability instances, vulnerability records, and repository context into Elastic. Alert Finding and Incident data help track detections, severity, status, and progression from alert to case so analysts can prioritize and respond with less context switching.
 
-These insights enable organizations to monitor application usage, detect risky or unauthorized application activity, maintain accurate application inventories, and support investigations where application related context is critical.
+**Ticket** data streams support IT and security operations processes with tickets and cases, including status, priority, and queue-oriented views for backlog and workload tracking.
+
+**Identity** data streams enrich access and governance use cases with users, groups, roles, organizational units, accounts, permissions, certificates, profiles, job titles, and access-review artifacts. Teams can review account states, role and permission patterns, and access-review activity alongside other security data.
+
+**Application** data streams focus on software and SaaS posture: business applications, installed software, licenses, expenses, extensions, audit activity, and related application assets. Use them to understand application usage and distribution, validate SaaS and business-application activity, spot unusual or dormant applications, and add application context to investigations.
+
+Bundled dashboards summarize these data streams for day-to-day monitoring, risk and backlog sizing, access hygiene checks, and incident investigation with correlated operational, identity, asset, and event context.
 
 ## What do I need to use this integration?
 
