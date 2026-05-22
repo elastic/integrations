@@ -69,6 +69,8 @@ notify_changelog_mismatch() {
     local message="$1"
     local pr_number="$2"
 
+    echo "--- :bell: Sending mismatch notifications"
+
     buildkite-agent annotate \
         "${message}" \
         --context "ctx-changelog-link-mismatch" \
@@ -155,6 +157,7 @@ main() {
     echo ""
     echo "All new changelog entries have the correct PR link."
     if running_on_buildkite; then
+        echo "--- :bell: Sending resolved notification"
         local resolved_message=":white_check_mark: All changelog entries have the correct PR link."
         echo "${resolved_message}" > changelog-link-resolved.txt
         if ! delete_and_create_gh_pr_comment \
