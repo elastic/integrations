@@ -1,0 +1,101 @@
+---
+description: Pipeline for processing empty group logs.
+processors:
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - set:
+      field: event.category
+      tag: set_event_category
+      value: ['iam']
+  - set:
+      field: event.type
+      tag: set_event_type
+      value: ['group','info']
+  - set:
+      field: asset.category
+      tag: set_asset_category
+      value: entity
+  - set:
+      field: asset.type
+      tag: set_asset_type
+      value: activedirectory_group
+
+  - pipeline:
+      name: '{{ IngestPipeline "common" }}'
+      tag: pipeline_common
+      ignore_missing_pipeline: true
+
+  - date:
+      field: activedirectory.group.when_created
+      target_field: asset.create_date
+      tag: date_group_created
+      formats:
+        - ISO8601
+      if: ctx.activedirectory?.group?.when_created != null && ctx.activedirectory.group.when_created != ''
+      on_failure:
+        - remove:
+            field: activedirectory.group.when_created
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: activedirectory.group.when_changed
+      target_field: asset.last_updated
+      tag: date_group_changed
+      formats:
+        - ISO8601
+      if: ctx.activedirectory?.group?.when_changed != null && ctx.activedirectory.group.when_changed != ''
+      on_failure:
+        - remove:
+            field: activedirectory.group.when_changed
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - set:
+      field: asset.name
+      copy_from: activedirectory.group.sam_account_name
+      ignore_empty_value: true
+  - set:
+      field: asset.id
+      copy_from: activedirectory.group.object_sid
+      ignore_empty_value: true
+  - set:
+      field: group.id
+      copy_from: activedirectory.group.object_sid
+      ignore_empty_value: true
+  - set:
+      field: group.name
+      copy_from: activedirectory.group.sam_account_name
+      ignore_empty_value: true
+  - gsub:
+      tag: gsub_group_dn
+      field: activedirectory.group.distinguished_name
+      pattern: '^.*?DC='
+      replacement: ''
+      target_field: group.domain
+      if: ctx.activedirectory?.group?.distinguished_name != null
+  - gsub:
+      tag: gsub_group_domain
+      field: group.domain
+      pattern: ',DC='
+      replacement: '.'
+      if: ctx.group?.domain != null
+
+  - rename:
+      field: activedirectory.id
+      target_field: activedirectory.group.object_dn
+
+  - rename:
+      field: activedirectory
+      target_field: entityanalytics_ad
+
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
