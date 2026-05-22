@@ -33,6 +33,7 @@ state:
          nodes {
           id
           analyzedAt
+          updatedAt
           severity
           result
           remediation
@@ -89,7 +90,7 @@ program: |
           "first": state.batch_size,
           "after": state.?end_cursor.value.orValue(null),
           "filterBy": {
-            "analyzedAt": {
+            "updatedAt": {
               "after": state.want_more ?
                   state.?cursor.first_timestamp.orValue(null)
                 :
@@ -111,7 +112,7 @@ program: |
             }),
             "cursor": {
               ?"last_timestamp": body.data.configurationFindings.nodes.size() > 0 ?
-                  optional.of(body.data.configurationFindings.nodes.map(e, timestamp(e.analyzedAt)).max().as(last,
+                  optional.of(body.data.configurationFindings.nodes.map(e, timestamp(e.updatedAt)).max().as(last,
                     has(state.?cursor.last_timestamp) && last < timestamp(state.cursor.last_timestamp) ?
                       state.cursor.last_timestamp
                     :
