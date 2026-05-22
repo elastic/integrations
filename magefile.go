@@ -23,6 +23,7 @@ import (
 	"github.com/elastic/integrations/dev/codeowners"
 	"github.com/elastic/integrations/dev/coverage"
 	"github.com/elastic/integrations/dev/packagenames"
+	"github.com/elastic/integrations/dev/requiresupdate"
 	"github.com/elastic/integrations/dev/testsreporter"
 )
 
@@ -334,4 +335,11 @@ func IsElasticPackageDependencyLessThan(version string) error {
 
 	fmt.Println(value)
 	return nil
+}
+
+// RequiresUpdate updates required package versions for all integration packages,
+// then adds a changelog entry per modified package. Set DRY_RUN=true to preview
+// without applying changes.
+func RequiresUpdate() error {
+	return requiresupdate.Run()
 }
