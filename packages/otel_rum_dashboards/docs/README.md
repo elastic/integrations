@@ -26,7 +26,7 @@ This package will show metrics only if you are monitoring web applications with 
 #### Dashboards populated
 
 1. In the top search bar in Kibana, search for **Dashboards**.
-2. In the search bar, type **OpenTelemetry RUM JS**.
+2. In the search bar, type **RUM OTel**.
 3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
 
 ## Troubleshooting
