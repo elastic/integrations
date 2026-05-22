@@ -79,13 +79,13 @@ notify_changelog_mismatch() {
         mention=$'\n'"@${mention}"
     fi
     echo "${message}${mention}" > changelog-link-mismatch.txt
-    if ! add_or_edit_gh_pr_comment \
+    if ! delete_and_create_gh_pr_comment \
         "${BUILDKITE_ORGANIZATION_SLUG}" \
         "integrations" \
         "${pr_number}" \
         "changelog-link-mismatch" \
         "changelog-link-mismatch.txt" ; then
-        echo "Failed to add or edit GitHub PR comment"
+        echo "Failed to post GitHub PR comment"
     fi
 }
 
