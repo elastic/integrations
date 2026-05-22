@@ -15,6 +15,14 @@ publisher_pipeline.disable_host: true
 allow_deprecated_use: true
 exclude_files: ['\.gz$']
 {{#if use_filebeat_parser}}
+{{!-- TODO(elastic/beats#50791): once the auditd filestream parser is released,
+     replace the unconditional parsers block below with this version-gated block
+     (fill in the actual minimum agent version that ships the parser):
+{{#semverSatisfies _meta.agent.version ">=TODO"}}
+parsers:
+  - auditd: ~
+{{/semverSatisfies}}
+--}}
 parsers:
   - auditd: ~
 {{/if}}
