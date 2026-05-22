@@ -62,6 +62,33 @@ check_changelog_file() {
     return "${errors}"
 }
 
+# Posts a Buildkite annotation and a GitHub PR comment for a changelog mismatch.
+# Usage: notify_changelog_mismatch <message> <changelog_file> <pr_number>
+notify_changelog_mismatch() {
+    local message="$1"
+    local changelog_file="$2"
+    local pr_number="$3"
+
+    buildkite-agent annotate \
+        "${message}" \
+        --context "ctx-changelog-${changelog_file//\//-}" \
+        --style "error"
+
+    local mention="${GITHUB_PR_USER:-""}"
+    if [[ -n "${mention}" ]]; then
+        mention=" @${mention}"
+    fi
+    echo "${message}${mention}" > changelog-link-mismatch.txt
+    if ! add_or_edit_gh_pr_comment \
+        "${BUILDKITE_ORGANIZATION_SLUG}" \
+        "integrations" \
+        "${pr_number}" \
+        "changelog-link-mismatch" \
+        "changelog-link-mismatch.txt" ; then
+        echo "Failed to add or edit GitHub PR comment"
+    fi
+}
+
 main() {
     set -euo pipefail
 
@@ -106,25 +133,9 @@ main() {
 
         if [[ "${file_errors}" -gt 0 ]]; then
             total_errors=$((total_errors + file_errors))
-            message="**Changelog link mismatch** in \`${changelog_file}\`. Expected: \`${expected_pr_link}\`"
+            local message="**Changelog link mismatch** in \`${changelog_file}\`. Expected: \`${expected_pr_link}\`"
             if running_on_buildkite; then
-                buildkite-agent annotate \
-                    "${message}" \
-                    --context "ctx-changelog-${changelog_file//\//-}" \
-                    --style "error"
-                mention="${GITHUB_PR_USER:-""}"
-                if [[ -n "${mention}" ]]; then
-                    mention=" @${mention}"
-                fi
-                echo "${message}${mention}" > changelog-link-mismatch.txt
-                if ! add_or_edit_gh_pr_comment \
-                    "${BUILDKITE_ORGANIZATION_SLUG}" \
-                    "integrations" \
-                    "${BUILDKITE_PULL_REQUEST}" \
-                    "changelog-link-mismatch" \
-                    "changelog-link-mismatch.txt" ; then
-                    echo "Failed to add or edit GitHub PR comment"
-                fi
+                notify_changelog_mismatch "${message}" "${changelog_file}" "${BUILDKITE_PULL_REQUEST}"
             fi
         fi
     done
