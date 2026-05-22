@@ -4,48 +4,49 @@
 
 ## Overview
 
-The HackerOne integration for Elastic enables collection of bug bounty reports from the [HackerOne Customer API](https://api.hackerone.com/) so that vulnerability disclosure activity can be analyzed alongside the rest of your security telemetry in Elastic.
+The HackerOne integration brings your bug bounty and vulnerability disclosure reports into Elastic Security. Use it to monitor submissions from security researchers, track report status, and analyze vulnerability data alongside your other security tools.
 
-The integration polls `GET /v1/reports` on a configurable interval, follows the JSON:API `links.next` cursor to walk all pages within a polling cycle, and persists the maximum `last_activity_at` watermark between cycles so that only new and updated reports are collected on subsequent polls.
+The integration checks HackerOne on a schedule you choose and pulls in new or updated reports. After the first run, it only collects reports that changed since the last check, so you stay up to date without duplicate data.
 
 ### Compatibility
 
-This integration is compatible with the HackerOne Customer API `v1` (`https://api.hackerone.com/v1/`). API tokens generated under **Organization Settings → API Tokens** for Professional, Community, or Enterprise programs (and the free Sandbox program) are supported.
+This integration works with the [HackerOne Customer API](https://api.hackerone.com/). You need an organization API token from a Professional, Community, or Enterprise program. You can also use the free [Sandbox program](https://hackerone.com/teams/new/sandbox) to test the integration.
 
 ### How it works
 
-The integration uses the Elastic Agent CEL input to:
+On each scheduled run, the integration:
 
-1. Authenticate against the HackerOne API using HTTP Basic auth (token identifier as username, token value as password).
-2. Issue a `GET /v1/reports` request scoped by one or more `program_handles` and/or `inbox_ids`, sorted by `reports.last_activity_at` ascending, filtered by `filter[last_activity_at__gt]=<cursor + 1ms>`, and parameterized with the configured `page[size]`. Adding 1 ms to the persisted cursor avoids re-collecting the boundary record and works around HackerOne API parsing edge cases on `__gt` comparisons.
-3. Walk paginated results by following the `links.next` URL returned in each response body. The first request includes only `page[size]` (no explicit page number); subsequent requests follow the absolute URL HackerOne returns in `links.next`.
-4. Persist the maximum `last_activity_at` value seen across the cycle as the cursor for the next poll.
+1. Connects to HackerOne using your API token.
+2. Fetches reports for the programs or inboxes you specify.
+3. Sends each report to Elasticsearch for search, dashboards, and alerting.
+
+When a report is updated in HackerOne (for example, triaged or resolved), the integration picks up the change on the next run.
 
 ## What data does this integration collect?
 
-The HackerOne integration collects bug bounty report records, including:
+Each report includes details such as:
 
-* Lifecycle state and timestamps (creation, triage, closure, disclosure, last activity).
-* Vulnerability metadata (title, description, severity rating + CVSS metrics, CWE/CAPEC weakness, CVE IDs).
-* Actors (reporter, assignee, program handle, collaborators).
-* Structured scope (asset under attack), bounty and swag awards, attachments, summaries, custom fields, inbox routing, and remediation guidance.
-* Activity timeline (one document per report; activity timeline is preserved on the report document).
+* **Status and timeline** — when the report was created, triaged, closed, disclosed, and last updated.
+* **Vulnerability details** — title, description, severity rating, CVSS score, weakness type, and CVE IDs when available.
+* **People involved** — the researcher who submitted the report, assignee, program, and collaborators.
+* **Scope and rewards** — the affected asset, bounty and swag awards, attachments, and remediation guidance.
 
 ### Supported use cases
 
-* Centralized monitoring of vulnerability disclosure programs across Elastic Security workflows.
-* SLA dashboards using the `hackerone.report.attributes.timer_*` fields delivered by the upstream API.
-* Bounty spend reporting using `hackerone.report.relationships.bounties.data.attributes.*` and bounty currency aggregations.
-* Correlation between HackerOne report URLs (`vulnerability.reference`) and other vulnerability scanner findings.
+* Monitor vulnerability disclosure programs from a single place in Elastic Security.
+* Build SLA dashboards using response-time and resolution-time metrics.
+* Track bounty spending across programs.
 
 ## What do I need to use this integration?
 
-You will need the following from your HackerOne organization before installing this integration:
+Before you install the integration, gather the following from your HackerOne organization:
 
-1. **API access entitlement.** API tokens are available to Professional, Community, and Enterprise programs. The free [Sandbox program](https://hackerone.com/teams/new/sandbox) is suitable for testing.
-2. **An organization API token** with the `report_management` permission. Generate it as an Organization Administrator under **Organization Settings → API Tokens**. Capture both the **identifier** and the **value** (the value is shown only once at creation).
-3. **One or more program handles** (the slug under `https://hackerone.com/<handle>`) **or** **inbox IDs** to scope collection.
-4. **(Optional) IP allowlist entry** for the Elastic Agent's egress IP if your organization has IP allowlisting enabled on API tokens.
+1. **API access.** API tokens are available on Professional, Community, and Enterprise programs. Use the free [Sandbox program](https://hackerone.com/teams/new/sandbox) for testing.
+2. **An organization API token** with **Report management** permission. As an Organization Administrator, go to **Organization Settings → API Tokens** to create one. Save both the **identifier** and the **value** when the token is created — the value is shown only once.
+3. **At least one program handle or inbox ID** to tell the integration which reports to collect.
+   * **Program handle** — the name in your program URL: `https://hackerone.com/<handle>` (for example, `acme`).
+   * **Inbox ID** — the numeric ID from your inbox settings page URL.
+4. **(Optional) IP allowlist entry** — if your organization restricts API access by IP, add the outbound IP address of the Elastic Agent host.
 
 ## How do I deploy this integration?
 
@@ -57,41 +58,41 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 1. In Kibana, go to **Integrations** and search for **HackerOne**.
 2. Click **Add HackerOne**.
-3. Configure the following required variables:
-   * **URL** — Base URL of the HackerOne API (default `https://api.hackerone.com`).
-   * **API token identifier** — The identifier portion of the HackerOne API token (used as Basic auth username).
-   * **API token value** — The secret value of the HackerOne API token (used as Basic auth password).
-   * **Program handles** and/or **Inbox IDs** — At least one of these must be set.
-   * **Interval** — How often to poll the API (default `5m`).
-   * **Initial lookback** — How far back to look on the first poll (default `24h`).
-   * **Page size** — Reports per page (default `100`, API maximum).
-4. Optionally restrict the collection scope using **State filter** and **Severity filter**.
+3. Fill in the required settings:
+   * **URL** — HackerOne API address (default: `https://api.hackerone.com`).
+   * **API token identifier** — the identifier from your API token.
+   * **API token value** — the secret value from your API token.
+   * **Program handles** and/or **Inbox IDs** — at least one is required.
+   * **Interval** — how often to check for new reports (default: every 5 minutes).
+   * **Initial lookback** — how far back to fetch reports on the first run (default: 24 hours).
+   * **Page size** — number of reports retrieved per request (default: 100).
+4. Optionally narrow what is collected with **State filter** and **Severity filter**.
 5. Save the integration policy and assign it to an Elastic Agent policy.
 
 ### Validation
 
-After the integration is enabled, navigate to **Discover** in Kibana and filter on `event.dataset: "hackerone.report"`. New documents should appear within one polling interval (default `5m`) of being created or updated in HackerOne.
+After the integration is running, open **Discover** in Kibana and search for `event.dataset: "hackerone.report"`. You should see reports within one polling interval (default: 5 minutes) after they are created or updated in HackerOne.
 
 ## Troubleshooting
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
-* **`401 Unauthorized`** — The API token identifier or value is incorrect, or the identifier was used as an email address instead of as the username. Use the token **identifier** as the Basic auth username.
-* **`403 Forbidden`** — The token is valid but the requesting IP address is not on the organization's IP allowlist, or the token does not have access to the requested program. Add the Elastic Agent's egress IP to the allowlist or grant the token's group `report_management` permission on the target program.
-* **`429 Too Many Requests`** — HackerOne rate-limits report list reads at 300 requests per minute. Increase the polling interval or reduce the number of programs collected by a single agent if you hit this limit.
-* **No documents indexed** — Verify at least one of `program_handles` or `inbox_ids` is set. The HackerOne API requires at least one scope filter and rejects calls without it.
+* **401 Unauthorized** — The API token identifier or value is wrong. Make sure you entered the token **identifier** (not your email address) in the identifier field.
+* **403 Forbidden** — The token is valid, but access was denied. Check that the Elastic Agent's IP address is on your organization's allowlist, and that the token has access to the programs you configured.
+* **429 Too Many Requests** — HackerOne limits how many requests you can make per minute. Try increasing the polling interval or collecting fewer programs with a single agent.
+* **No documents indexed** — Confirm that at least one **Program handle** or **Inbox ID** is set. The integration needs at least one to know which reports to collect.
 
 ## Scaling
 
-For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
+For guidance on scaling data ingestion, see [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures).
 
-A single agent comfortably handles dozens of programs at the default `5m` interval, since steady-state polling consumes one request per program per cycle. Backfill of large historical windows (`initial_interval: 30d` or more) may issue several requests per cycle until the cursor catches up.
+A single agent can handle many programs at the default 5-minute interval. If you set a long initial lookback (for example, 30 days or more), the first run may take longer while historical reports are collected.
 
 ## Reference
 
 ### report
 
-The `report` data stream collects HackerOne bug bounty reports via the `GET /v1/reports` Customer API endpoint. One document is emitted per report; updates to a report appear as new documents.
+The `report` data stream collects bug bounty reports from HackerOne. Each report is stored as one document. When a report is updated, a new document is indexed with the latest information.
 
 #### report fields
 
@@ -120,7 +121,7 @@ The `report` data stream collects HackerOne bug bounty reports via the `GET /v1/
 | event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
 | hackerone.report.attributes.bounty_awarded_at | Timestamp when a bounty award was recorded. | date |
 | hackerone.report.attributes.closed_at |  | date |
-| hackerone.report.attributes.created_at | Report creation time mirrored from attributes. | date |
+| hackerone.report.attributes.created_at | Report creation time from attributes. | date |
 | hackerone.report.attributes.cve_ids | Full CVE identifiers when present beyond the ECS vulnerability.id primary. | keyword |
 | hackerone.report.attributes.disclosed_at | Public disclosure timestamp. | date |
 | hackerone.report.attributes.first_program_activity_at | First program-side activity time. | date |
@@ -147,9 +148,9 @@ The `report` data stream collects HackerOne bug bounty reports via the `GET /v1/
 | hackerone.report.attributes.timer_report_resolved_miss_at |  | date |
 | hackerone.report.attributes.timer_report_triage_elapsed_time |  | long |
 | hackerone.report.attributes.timer_report_triage_miss_at |  | date |
-| hackerone.report.attributes.title | Report title mirrored alongside ECS message. | keyword |
+| hackerone.report.attributes.title | Report title stored alongside ECS message. | keyword |
 | hackerone.report.attributes.triaged_at |  | date |
-| hackerone.report.attributes.vulnerability_information | Raw Markdown narrative mirrored from the reporter submission. | match_only_text |
+| hackerone.report.attributes.vulnerability_information | Raw Markdown narrative from the reporter submission. | match_only_text |
 | hackerone.report.id | JSON:API resource identifier for the report. | keyword |
 | hackerone.report.relationships.activities.data.attributes.bonus_amount |  | keyword |
 | hackerone.report.relationships.activities.data.attributes.bounty_amount |  | keyword |
@@ -160,7 +161,7 @@ The `report` data stream collects HackerOne bug bounty reports via the `GET /v1/
 | hackerone.report.relationships.activities.data.attributes.updated_at |  | date |
 | hackerone.report.relationships.activities.data.id |  | keyword |
 | hackerone.report.relationships.activities.data.relationships.actor.data.attributes.created_at |  | date |
-| hackerone.report.relationships.activities.data.relationships.actor.data.attributes.disabled |  | boolean |
+| hackerone.report.relationships.activities.data.relationships.actor.data.attributes.disabled | Whether the HackerOne user account is deactivated. | boolean |
 | hackerone.report.relationships.activities.data.relationships.actor.data.attributes.name |  | keyword |
 | hackerone.report.relationships.activities.data.relationships.actor.data.attributes.username |  | keyword |
 | hackerone.report.relationships.activities.data.relationships.actor.data.id |  | keyword |
@@ -218,7 +219,7 @@ The `report` data stream collects HackerOne bug bounty reports via the `GET /v1/
 | hackerone.report.relationships.campaign.data.id |  | keyword |
 | hackerone.report.relationships.campaign.data.type |  | keyword |
 | hackerone.report.relationships.collaborators.data.user.attributes.created_at |  | date |
-| hackerone.report.relationships.collaborators.data.user.attributes.disabled |  | boolean |
+| hackerone.report.relationships.collaborators.data.user.attributes.disabled | Whether the HackerOne user account is deactivated. | boolean |
 | hackerone.report.relationships.collaborators.data.user.attributes.name |  | keyword |
 | hackerone.report.relationships.collaborators.data.user.attributes.username |  | keyword |
 | hackerone.report.relationships.collaborators.data.user.id |  | keyword |
@@ -233,7 +234,7 @@ The `report` data stream collects HackerOne bug bounty reports via the `GET /v1/
 | hackerone.report.relationships.custom_remediation_guidance.data.attributes.message |  | match_only_text |
 | hackerone.report.relationships.custom_remediation_guidance.data.id |  | keyword |
 | hackerone.report.relationships.custom_remediation_guidance.data.relationships.author.data.attributes.created_at |  | date |
-| hackerone.report.relationships.custom_remediation_guidance.data.relationships.author.data.attributes.disabled |  | boolean |
+| hackerone.report.relationships.custom_remediation_guidance.data.relationships.author.data.attributes.disabled | Whether the HackerOne user account is deactivated. | boolean |
 | hackerone.report.relationships.custom_remediation_guidance.data.relationships.author.data.attributes.name |  | keyword |
 | hackerone.report.relationships.custom_remediation_guidance.data.relationships.author.data.attributes.username |  | keyword |
 | hackerone.report.relationships.custom_remediation_guidance.data.relationships.author.data.id |  | keyword |
@@ -250,7 +251,7 @@ The `report` data stream collects HackerOne bug bounty reports via the `GET /v1/
 | hackerone.report.relationships.program.data.type |  | keyword |
 | hackerone.report.relationships.reporter.data.attributes.bio |  | match_only_text |
 | hackerone.report.relationships.reporter.data.attributes.created_at |  | date |
-| hackerone.report.relationships.reporter.data.attributes.disabled |  | boolean |
+| hackerone.report.relationships.reporter.data.attributes.disabled | Whether the HackerOne user account is deactivated. | boolean |
 | hackerone.report.relationships.reporter.data.attributes.hackerone_triager |  | boolean |
 | hackerone.report.relationships.reporter.data.attributes.impact |  | double |
 | hackerone.report.relationships.reporter.data.attributes.location |  | keyword |
@@ -317,7 +318,7 @@ The `report` data stream collects HackerOne bug bounty reports via the `GET /v1/
 | hackerone.report.relationships.summaries.data.relationships.attachments.data.id |  | keyword |
 | hackerone.report.relationships.summaries.data.relationships.attachments.data.type |  | keyword |
 | hackerone.report.relationships.summaries.data.relationships.user.data.attributes.created_at |  | date |
-| hackerone.report.relationships.summaries.data.relationships.user.data.attributes.disabled |  | boolean |
+| hackerone.report.relationships.summaries.data.relationships.user.data.attributes.disabled | Whether the HackerOne user account is deactivated. | boolean |
 | hackerone.report.relationships.summaries.data.relationships.user.data.attributes.name |  | keyword |
 | hackerone.report.relationships.summaries.data.relationships.user.data.attributes.username |  | keyword |
 | hackerone.report.relationships.summaries.data.relationships.user.data.id |  | keyword |
@@ -327,7 +328,7 @@ The `report` data stream collects HackerOne bug bounty reports via the `GET /v1/
 | hackerone.report.relationships.swag.data.attributes.sent |  | boolean |
 | hackerone.report.relationships.swag.data.id |  | keyword |
 | hackerone.report.relationships.swag.data.relationships.user.data.attributes.created_at |  | date |
-| hackerone.report.relationships.swag.data.relationships.user.data.attributes.disabled |  | boolean |
+| hackerone.report.relationships.swag.data.relationships.user.data.attributes.disabled | Whether the HackerOne user account is deactivated. | boolean |
 | hackerone.report.relationships.swag.data.relationships.user.data.attributes.name |  | keyword |
 | hackerone.report.relationships.swag.data.relationships.user.data.attributes.username |  | keyword |
 | hackerone.report.relationships.swag.data.relationships.user.data.id |  | keyword |
@@ -342,8 +343,8 @@ The `report` data stream collects HackerOne bug bounty reports via the `GET /v1/
 | hackerone.report.type | JSON:API resource type discriminator (typically `report`). | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| observer.product | The product name of the observer. | constant_keyword |
-| observer.vendor | Vendor name of the observer. | constant_keyword |
+| observer.product | The product name of the observer. | keyword |
+| observer.vendor | Vendor name of the observer. | keyword |
 | organization.id | Unique identifier for the organization. | keyword |
 | organization.name | Organization name. | keyword |
 | organization.name.text | Multi-field of `organization.name`. | match_only_text |
@@ -364,7 +365,7 @@ The `report` data stream collects HackerOne bug bounty reports via the `GET /v1/
 | vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id) | keyword |
 | vulnerability.reference | A resource that provides additional information, context, and mitigations for the identified vulnerability. | keyword |
 | vulnerability.report_id | The report or scan identification number. | keyword |
-| vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
+| vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | keyword |
 | vulnerability.score.base | Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Base scores cover an assessment for exploitability metrics (attack vector, complexity, privileges, and user interaction), impact metrics (confidentiality, integrity, and availability), and scope. For example (https://www.first.org/cvss/specification-document) | float |
 | vulnerability.score.version | The National Vulnerability Database (NVD) provides qualitative severity rankings of "Low", "Medium", and "High" for CVSS v2.0 base score ranges in addition to the severity ratings for CVSS v3.0 as they are defined in the CVSS v3.0 specification. CVSS is owned and managed by FIRST.Org, Inc. (FIRST), a US-based non-profit organization, whose mission is to help computer security incident response teams across the world. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
 | vulnerability.severity | The severity of the vulnerability can help with metrics and internal prioritization regarding remediation. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
@@ -376,22 +377,22 @@ An example event for `report` looks as following:
 {
     "@timestamp": "2026-05-06T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "083c5561-9927-482b-99dc-255252b052fd",
-        "id": "721146b2-15cc-4d83-abeb-3724ae17b70b",
-        "name": "elastic-agent-38195",
+        "ephemeral_id": "bd41f91d-507a-42b1-8b95-7e51ccc70643",
+        "id": "48192b07-5d91-4001-abab-ef7efa98907d",
+        "name": "elastic-agent-63871",
         "type": "filebeat",
         "version": "9.4.1"
     },
     "data_stream": {
         "dataset": "hackerone.report",
-        "namespace": "65034",
+        "namespace": "78344",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "721146b2-15cc-4d83-abeb-3724ae17b70b",
+        "id": "48192b07-5d91-4001-abab-ef7efa98907d",
         "snapshot": false,
         "version": "9.4.1"
     },
@@ -405,7 +406,7 @@ An example event for `report` looks as following:
         "dataset": "hackerone.report",
         "end": "2026-05-06T15:00:00.000Z",
         "id": "1003",
-        "ingested": "2026-05-20T07:50:13Z",
+        "ingested": "2026-05-22T15:00:22Z",
         "kind": "event",
         "module": "hackerone",
         "original": "{\"attributes\":{\"created_at\":\"2026-05-06T15:00:00.000Z\",\"cve_ids\":[],\"last_activity_at\":\"2026-05-06T15:00:00.000Z\",\"state\":\"triaged\",\"submitted_at\":\"2026-05-06T15:01:00.000Z\",\"title\":\"Second-page XSS example\",\"vulnerability_information\":\"Short stub description for tests.\"},\"id\":\"1003\",\"relationships\":{\"program\":{\"data\":{\"attributes\":{\"created_at\":\"2017-09-28T13:08:32.058Z\",\"handle\":\"acme\",\"updated_at\":\"2026-05-07T08:41:04.851Z\"},\"id\":\"9001\",\"type\":\"program\"}}},\"type\":\"report\"}",
@@ -423,19 +424,15 @@ An example event for `report` looks as following:
                 "last_activity_at": "2026-05-06T15:00:00.000Z",
                 "state": "triaged",
                 "submitted_at": "2026-05-06T15:01:00.000Z",
-                "title": "Second-page XSS example",
-                "vulnerability_information": "Short stub description for tests."
+                "title": "Second-page XSS example"
             },
-            "id": "1003",
             "relationships": {
                 "program": {
                     "data": {
                         "attributes": {
                             "created_at": "2017-09-28T13:08:32.058Z",
-                            "handle": "acme",
                             "updated_at": "2026-05-07T08:41:04.851Z"
                         },
-                        "id": "9001",
                         "type": "program"
                     }
                 }
@@ -479,7 +476,7 @@ An example event for `report` looks as following:
 ### Transforms used
 
 #### latest_report
-* Description: Latest Reports from HackerOne. As reports get updated, this transform stores only the latest state of each report inside the destination index. Thus the transform's destination index contains only the latest state of the report.
+* Description: Latest Reports from HackerOne. As reports get updated, this transform stores only the latest state of each report inside the destination index. The transform's destination index contains only the latest state of the report.
 * Source Index: logs-hackerone.report-\*
 * Destination Index: logs-hackerone_latest.dest_report-v1
 
@@ -790,6 +787,6 @@ To collect logs via API endpoint, configure the following parameters:
 
 ### API usage
 
-The following HackerOne Customer API endpoints are used by this integration:
+This integration uses the following HackerOne API endpoint:
 
-* [`GET /v1/reports`](https://api.hackerone.com/customer-resources/#reports-get-all-reports) — list and incrementally collect bug bounty reports.
+* [List reports](https://api.hackerone.com/customer-resources/#reports-get-all-reports) — retrieves bug bounty reports for the programs or inboxes you configure.
