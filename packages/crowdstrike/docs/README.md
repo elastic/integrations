@@ -399,6 +399,14 @@ FROM logs-crowdstrike.fdr-*
 
 **Ingest-time versus query-time:** The same **Enrich Host and User Metadata** option (`enrich_metadata`) that controls ingest-time host enrichment also controls ingest-time user enrichment from `userinfo` directory data. Query-time user enrichment via the transform is additive — it works regardless of whether ingest-time enrichment is enabled. If you rely on query-time enrichment only, set **Enrich Host and User Metadata** to **Off** so metadata is not applied twice. If both are active, user metadata may appear under `crowdstrike.info.user.*` from both the ingest-time cache and the query-time lookup; the values should be consistent but the ingest-time cache is populated from `userinfo` while the query-time lookup uses sensor events, so field availability may differ.
 
+#### ES|QL dashboard panels
+
+The **FDR Overview** dashboards include ES|QL visualizations that use `LOOKUP JOIN` for query-time enrichment. **Top 10 hostnames** and **Event rate over time by hostname** join against the aidmaster lookup; **Top 10 usernames** and **Event rate over time by username** join against the userinfo lookup. They are reference examples of **query-time enrichment** that you can reuse in your own dashboards.
+
+**ES|QL result row cap:** By default, Elasticsearch returns **at most 1000 rows** for an ES|QL query. If your query does not end with an explicit `LIMIT`, results are truncated at that cap. See [ES|QL limitations](https://www.elastic.co/docs/reference/query-languages/esql/limitations) for the authoritative limits.
+
+**What you can do:** Add an explicit `| LIMIT …` at the end of your ES|QL query when you need more rows than the default. Narrow the time range, filter hosts or indices, or clone a packaged visualization and tune the query for your environment.
+
 ## Logs
 
 ### Alert
