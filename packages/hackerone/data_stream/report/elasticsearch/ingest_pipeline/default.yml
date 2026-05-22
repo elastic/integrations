@@ -68,11 +68,11 @@ processors:
       type: string
       ignore_missing: true
       tag: convert_report_id_to_string
-  - set:
-      field: event.id
-      copy_from: hackerone.report.id
-      ignore_empty_value: true
-      tag: set_event_id
+  - rename:
+      field: hackerone.report.id
+      target_field: event.id
+      ignore_missing: true
+      tag: rename_event_id
   - set:
       field: event.url
       value: 'https://hackerone.com/reports/{{{event.id}}}'
@@ -80,7 +80,7 @@ processors:
       tag: set_event_url
   - set:
       field: vulnerability.report_id
-      copy_from: hackerone.report.id
+      copy_from: event.id
       ignore_empty_value: true
       tag: set_vulnerability_report_id
   - set:
@@ -101,11 +101,11 @@ processors:
   # ---------------------------------------------------------------------------
   # Vulnerability description and primary CVE
   # ---------------------------------------------------------------------------
-  - set:
-      field: vulnerability.description
-      copy_from: hackerone.report.attributes.vulnerability_information
-      ignore_empty_value: true
-      tag: set_vulnerability_description
+  - rename:
+      field: hackerone.report.attributes.vulnerability_information
+      target_field: vulnerability.description
+      ignore_missing: true
+      tag: rename_vulnerability_description
   - set:
       field: vulnerability.id
       value: '{{{hackerone.report.attributes.cve_ids.0}}}'
@@ -115,16 +115,16 @@ processors:
   # ---------------------------------------------------------------------------
   # Severity (relationships.severity.data.attributes)
   # ---------------------------------------------------------------------------
-  - set:
-      field: vulnerability.severity
-      copy_from: hackerone.report.relationships.severity.data.attributes.rating
-      ignore_empty_value: true
-      tag: set_vulnerability_severity
-  - set:
-      field: vulnerability.score.base
-      copy_from: hackerone.report.relationships.severity.data.attributes.score
-      ignore_empty_value: true
-      tag: set_vulnerability_score_base
+  - rename:
+      field: hackerone.report.relationships.severity.data.attributes.rating
+      target_field: vulnerability.severity
+      ignore_missing: true
+      tag: rename_vulnerability_severity
+  - rename:
+      field: hackerone.report.relationships.severity.data.attributes.score
+      target_field: vulnerability.score.base
+      ignore_missing: true
+      tag: rename_vulnerability_score_base
   - convert:
       field: vulnerability.score.base
       type: float
@@ -149,11 +149,11 @@ processors:
   # ---------------------------------------------------------------------------
   # Weakness (relationships.weakness.data.attributes)
   # ---------------------------------------------------------------------------
-  - set:
-      field: vulnerability.classification
-      copy_from: hackerone.report.relationships.weakness.data.attributes.name
-      ignore_empty_value: true
-      tag: set_vulnerability_classification
+  - rename:
+      field: hackerone.report.relationships.weakness.data.attributes.name
+      target_field: vulnerability.classification
+      ignore_missing: true
+      tag: rename_vulnerability_classification
   - set:
       field: vulnerability.enumeration
       value: CWE
@@ -168,56 +168,56 @@ processors:
   # ---------------------------------------------------------------------------
   # Reporter -> ECS user.*
   # ---------------------------------------------------------------------------
-  - set:
-      field: user.id
-      copy_from: hackerone.report.relationships.reporter.data.id
-      ignore_empty_value: true
-      tag: set_user_id
+  - rename:
+      field: hackerone.report.relationships.reporter.data.id
+      target_field: user.id
+      ignore_missing: true
+      tag: rename_user_id
   - convert:
       field: user.id
       type: string
       ignore_missing: true
       tag: convert_user_id
-  - set:
-      field: user.name
-      copy_from: hackerone.report.relationships.reporter.data.attributes.username
-      ignore_empty_value: true
-      tag: set_user_name
-  - set:
-      field: user.full_name
-      copy_from: hackerone.report.relationships.reporter.data.attributes.name
-      ignore_empty_value: true
-      tag: set_user_full_name
+  - rename:
+      field: hackerone.report.relationships.reporter.data.attributes.username
+      target_field: user.name
+      ignore_missing: true
+      tag: rename_user_name
+  - rename:
+      field: hackerone.report.relationships.reporter.data.attributes.name
+      target_field: user.full_name
+      ignore_missing: true
+      tag: rename_user_full_name
 
   # ---------------------------------------------------------------------------
   # Program -> ECS organization.*
   # ---------------------------------------------------------------------------
-  - set:
-      field: organization.id
-      copy_from: hackerone.report.relationships.program.data.id
-      ignore_empty_value: true
-      tag: set_organization_id
+  - rename:
+      field: hackerone.report.relationships.program.data.id
+      target_field: organization.id
+      ignore_missing: true
+      tag: rename_organization_id
   - convert:
       field: organization.id
       type: string
       ignore_missing: true
       tag: convert_organization_id
-  - set:
-      field: organization.name
-      copy_from: hackerone.report.relationships.program.data.attributes.handle
-      ignore_empty_value: true
-      tag: set_organization_name
+  - rename:
+      field: hackerone.report.relationships.program.data.attributes.handle
+      target_field: organization.name
+      ignore_missing: true
+      tag: rename_organization_name
 
   # ---------------------------------------------------------------------------
   # Structured scope -> ECS url.original + related.hosts
   # ---------------------------------------------------------------------------
   # URL asset → ECS url.original + related.hosts via uri_parts
-  - set:
-      field: url.original
-      copy_from: hackerone.report.relationships.structured_scope.data.attributes.asset_identifier
-      ignore_empty_value: true
+  - rename:
+      field: hackerone.report.relationships.structured_scope.data.attributes.asset_identifier
+      target_field: url.original
+      ignore_missing: true
       if: ctx.hackerone?.report?.relationships?.structured_scope?.data?.attributes?.asset_identifier != null && ctx.hackerone.report.relationships.structured_scope.data.attributes.asset_type instanceof String && ((String) ctx.hackerone.report.relationships.structured_scope.data.attributes.asset_type).toLowerCase() == 'url'
-      tag: set_url_original_from_scope
+      tag: rename_url_original_from_scope
   - uri_parts:
       field: url.original
       target_field: _temp.url_parts
@@ -233,12 +233,12 @@ processors:
       tag: append_related_host_from_url
 
   # Domain asset → strip leading "*." then add to related.hosts
-  - set:
-      field: _temp.domain_host
-      copy_from: hackerone.report.relationships.structured_scope.data.attributes.asset_identifier
-      ignore_empty_value: true
+  - rename:
+      field: hackerone.report.relationships.structured_scope.data.attributes.asset_identifier
+      target_field: _temp.domain_host
+      ignore_missing: true
       if: ctx.hackerone?.report?.relationships?.structured_scope?.data?.attributes?.asset_identifier != null && ctx.hackerone.report.relationships.structured_scope.data.attributes.asset_type instanceof String && ((String) ctx.hackerone.report.relationships.structured_scope.data.attributes.asset_type).toLowerCase() == 'domain'
-      tag: set_temp_domain_host
+      tag: rename_temp_domain_host
   - gsub:
       field: _temp.domain_host
       pattern: '^\*\.'
