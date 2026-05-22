@@ -1,0 +1,126 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects Auditd opened-file reads on sensitive root and cluster paths (Kubernetes token mounts, kubelet and admin kubeconfig, PKI material, shadow, root SSH keys, root cloud CLI and Docker config) when the process looks like common copy or scripting utilities or the binary runs from temp or run staging. User home paths are excluded so file watches stay explicit and aligned with auditd.",
+        "false_positives": [
+            "Backup, configuration management, and image scanners may open the same paths from scripted utilities; baseline trusted agents and narrow exclusions by process executable hash or parent chain.",
+            "Administrators reading kubeconfig or cloud profiles during migration can match; correlate with change tickets and bastion sessions.",
+            "Credential reads under non-root home trees are intentionally excluded; clone the rule with explicit per-user file.path values and optional process.executable prefixes if you must cover interactive accounts with matching audit -w lines for those paths."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-auditd_manager.auditd-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Sensitive Identity File Open by Suspicious Process via Auditd",
+        "note": "## Triage and analysis\n\n### Investigating Sensitive Identity File Open by Suspicious Process via Auditd\n\nReview which file.path matched, the process name and executable, parent command line, and the Linux user or audit\nidentity. Pivot on the same host for adjacent opens, network egress, or privilege changes. Compare against known\nmaintenance windows and automation identities.\n\n### Possible investigation steps\n\n- Confirm whether the workload is a Kubernetes node, jump host, or developer machine and whether the actor should read\n  the matched path at all.\n- For Kubernetes token paths, map the process to a container or host PID namespace and inspect pod security context and\n  projected volumes.\n- For cloud credential JSON or shared credentials files, check cloud audit logs for API or token activity shortly after\n  the open timestamp.\n- Capture file hash and process binary hash where possible for incident evidence.\n\n### False positive analysis\n\n- Legitimate kubelet or control plane components may touch admin.conf or PKI material on control plane nodes; scope the\n  rule to worker roles if noisy.\n- CI users running tests from /tmp with cat against a copied kubeconfig can match; tune process or user allowlists.\n\n### Response and remediation\n\n- If malicious, isolate the host, rotate exposed keys and tokens, invalidate cloud sessions, and review RBAC and file\n  permissions on shared credential stores.\n",
+        "query": "host.os.type:\"linux\" and \ndata_stream.dataset:\"auditd_manager.auditd\" and \nevent.category:\"file\" and \nevent.action:\"opened-file\" and \n(\n  process.name:(\n    cp or mv or ln or cat or head or tail or \n    base64 or xxd or od or \n    curl or wget or \n    tar or zip or gzip or scp or rsync or \n    python* or perl* or ruby* or node or bun or php* or lua* or \n    tee or dd or \n    nc or ncat or netcat or socat or \n    openssl or ssh or sftp or \n    busybox or jq or yq or \n    strings or xargs or sed or awk or grep or find or \n    .*\n  ) or \n  process.executable:(/tmp/* or /var/tmp/* or /dev/shm/* or /run/*) or \n  (process.name:(sh or bash or zsh or dash or fish or ksh) and process.args:(\"-c\" or \"-i\"))\n) and \nfile.path:(\n  \"/var/run/secrets/kubernetes.io/serviceaccount/token\" or\n  \"/var/run/secrets/kubernetes.io/serviceaccount/ca.crt\" or \n  \"/var/run/secrets/eks.amazonaws.com/serviceaccount/token\" or\n  \"/var/run/secrets/azure/tokens/azure-identity-token\" or\n  \"/var/run/secrets/tokens/azure-identity-token\" or\n  \"/var/lib/kubelet/kubeconfig\" or\n  \"/etc/kubernetes/admin.conf\" or\n  \"/etc/kubernetes/pki/ca.key\" or \n  \"/etc/kubernetes/pki/apiserver-kubelet-client.key\" or \n  \"/var/lib/kubelet/pki/kubelet-client-current.pem\" or \n  \"/etc/rancher/k3s/k3s.yaml\" or \n  \"/etc/shadow\" or\n  \"/root/.ssh/id_rsa\" or\n  \"/root/.ssh/id_ed25519\" or\n  \"/root/.ssh/id_ecdsa\" or\n  \"/root/.aws/credentials\" or\n  \"/root/.aws/config\" or\n  \"/root/.aws/cli/cache\" or\n  \"/root/.aws/sso/cache\" or\n  \"/root/.azure/accessTokens.json\" or\n  \"/root/.azure/azureProfile.json\" or\n  \"/root/.azure/msal_token_cache.json\" or\n  \"/root/.azure/msal_http_cache.bin\" or\n  \"/root/.config/gcloud/application_default_credentials.json\" or\n  \"/root/.config/gcloud/credentials.db\" or\n  \"/root/.config/gcloud/access_tokens.db\" or \n  \"/root/.config/gcloud/legacy_credentials\" or \n  \"/root/.kube/config\" or\n  \"/root/.docker/config.json\"\n)\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1552/001/",
+            "https://attack.mitre.org/techniques/T1552/007/"
+        ],
+        "related_integrations": [
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            },
+            {
+                "integration": "auditd",
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "e4c5d6e7-f8a9-4012-b3c4-d5e6f7a80912",
+        "setup": "## Setup\n\nThis rule expects the Elastic Agent Auditd Manager integration on Linux, with audit rules that emit file open events\nfor the paths you care about. Use Fleet to install and configure Auditd Manager, then paste custom rules into the\nintegration so opens are audited before they reach Elasticsearch.\n\n### Step 1: Add Auditd Manager in Fleet\n\n1. In Kibana, open Management, then Integrations.\n2. Search for Auditd Manager and open the integration card.\n3. Click Add Auditd Manager, assign a name, and add the integration to the Elastic Agent policy that runs on your\n   Linux hosts (nodes, jump boxes, or developer workstations as applicable).\n4. Save and deploy the policy so agents enroll or update.\n\n### Step 2: Paste audit rules into Auditd Manager\n\n1. Edit the same Auditd Manager integration policy.\n2. Open the Audit rules (or Auditd rule files) section used for free-form audit.rules content.\n3. Paste the block below into the audit rules text box, then save the integration policy again so agents reload rules.\n\nThe permission mask uses r (read) together with w (write) and a (attribute change) so auditd emits events on read\nopens such as cat or head, which align with opened-file in the detection query. Write and attribute bits still catch\nmodifications. If your site policy prefers read-only watches, you may narrow to -p r at the cost of missing write-side\ntelemetry on the same paths.\n\n```\n## Kubernetes and node identity material\n-w /var/run/secrets/kubernetes.io/serviceaccount/token -p rwa -k elastic_sensitive_identity\n-w /var/run/secrets/eks.amazonaws.com/serviceaccount/token -p rwa -k elastic_sensitive_identity\n-w /var/run/secrets/azure/tokens/azure-identity-token -p rwa -k elastic_sensitive_identity\n-w /var/run/secrets/tokens/azure-identity-token -p rwa -k elastic_sensitive_identity\n-w /var/lib/kubelet/kubeconfig -p rwa -k elastic_sensitive_identity\n-w /etc/kubernetes/admin.conf -p rwa -k elastic_sensitive_identity\n-w /etc/kubernetes/pki/ca.key -p rwa -k elastic_sensitive_identity\n-w /etc/kubernetes/pki/apiserver-kubelet-client.key -p rwa -k elastic_sensitive_identity\n-w /var/lib/kubelet/pki/kubelet-client-current.pem -p rwa -k elastic_sensitive_identity\n-w /etc/rancher/k3s/k3s.yaml -p rwa -k elastic_sensitive_identity\n\n## Host credential stores (root only)\n-w /etc/shadow -p rwa -k elastic_sensitive_identity\n-w /root/.ssh/id_rsa -p rwa -k elastic_sensitive_identity\n-w /root/.ssh/id_ed25519 -p rwa -k elastic_sensitive_identity\n-w /root/.ssh/id_ecdsa -p rwa -k elastic_sensitive_identity\n-w /root/.aws/credentials -p rwa -k elastic_sensitive_identity\n-w /root/.aws/config -p rwa -k elastic_sensitive_identity\n-w /root/.azure/accessTokens.json -p rwa -k elastic_sensitive_identity\n-w /root/.azure/azureProfile.json -p rwa -k elastic_sensitive_identity\n-w /root/.azure/msal_token_cache.json -p rwa -k elastic_sensitive_identity\n-w /root/.config/gcloud/application_default_credentials.json -p rwa -k elastic_sensitive_identity\n-w /root/.config/gcloud/credentials.db -p rwa -k elastic_sensitive_identity\n-w /root/.config/gcloud/access_tokens.db -p rwa -k elastic_sensitive_identity\n-w /root/.kube/config -p rwa -k elastic_sensitive_identity\n-w /root/.docker/config.json -p rwa -k elastic_sensitive_identity\n```\n\n### Step 3: Reload and verify\n\n1. Confirm auditd is active on the host and that auditctl -l (or equivalent) lists the new rules without syntax errors.\n2. Generate a harmless test open in a lab (for example cat of a non-production token file you control) and confirm\n   documents land in logs-auditd_manager.auditd-* with event.category file and event.action opened-file (or the closest\n   normalized action your stack maps for open syscalls).\n3. If event.action differs in your environment, adjust the rule query to include the mapped value while keeping the\n   same path and process logic.\n\nFurther background: https://docs.elastic.co/integrations/auditd_manager\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "Domain: Identity",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Auditd Manager",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.001",
+                                "name": "Credentials In Files",
+                                "reference": "https://attack.mitre.org/techniques/T1552/001/"
+                            },
+                            {
+                                "id": "T1552.007",
+                                "name": "Container API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "e4c5d6e7-f8a9-4012-b3c4-d5e6f7a80912_1",
+    "type": "security-rule"
+}

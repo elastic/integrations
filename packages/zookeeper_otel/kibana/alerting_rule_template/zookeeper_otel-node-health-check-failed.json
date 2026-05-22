@@ -1,40 +1,51 @@
 {
-    "id": "zookeeper_otel-node-health-check-failed",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[ZooKeeper OTel] Node health check failed",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "zookeeper"
-        ],
-        "schedule": {
-            "interval": "1m"
-        },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-generic.otel-default\n| WHERE metrics.zookeeper.ruok IS NOT NULL\n// Aggregate per node; MIN captures any unhealthy reading in the window\n| STATS min_ruok = MIN(metrics.zookeeper.ruok) BY host.name\n// ruok = 0 means the node failed its health check and is not serving requests\n// This is the most direct signal of ZooKeeper node availability\n| WHERE min_ruok == 0"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "host.name",
-            "termSize": 10
+  "id": "zookeeper_otel-node-health-check-failed",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when `zookeeper.ruok == 0`. Node failed its four-letter health check \u2014 not serving requests.",
+    "name": "[ZooKeeper OTel] Node health check failed",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "zookeeper"
+    ],
+    "schedule": {
+      "interval": "1m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "zookeeper_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## ZooKeeper node health check failed\n\n### What fired\n`zookeeper.ruok == 0` during the window.\n\n### Why it matters\n`ruok` is ZooKeeper's built-in liveness signal. A failed ruok means the node is unable to respond \u2014 loss of ensemble member.\n\n### Triage\n1. Check process state and logs.\n\n### Remediation\n- Restart the node after root-causing.\n\n### Tuning\n- Always P1.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-generic.otel-default\n| WHERE metrics.zookeeper.ruok IS NOT NULL\n// Aggregate per node; MIN captures any unhealthy reading in the window\n| STATS min_ruok = MIN(metrics.zookeeper.ruok) BY host.name\n// ruok = 0 means the node failed its health check and is not serving requests\n// This is the most direct signal of ZooKeeper node availability\n| WHERE min_ruok == 0"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 10
     }
+  }
 }
