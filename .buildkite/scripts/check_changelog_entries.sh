@@ -62,16 +62,16 @@ check_changelog_file() {
     return "${errors}"
 }
 
-# Posts a Buildkite annotation and a GitHub PR comment for a changelog mismatch.
-# Usage: notify_changelog_mismatch <message> <changelog_file> <pr_number>
+# Posts a single Buildkite annotation and GitHub PR comment listing all files
+# with changelog link mismatches.
+# Usage: notify_changelog_mismatch <message> <pr_number>
 notify_changelog_mismatch() {
     local message="$1"
-    local changelog_file="$2"
-    local pr_number="$3"
+    local pr_number="$2"
 
     buildkite-agent annotate \
         "${message}" \
-        --context "ctx-changelog-${changelog_file//\//-}" \
+        --context "ctx-changelog-link-mismatch" \
         --style "error"
 
     local mention="${GITHUB_PR_USER:-""}"
@@ -126,6 +126,7 @@ main() {
     echo ""
 
     local total_errors=0
+    local failed_files=()
 
     for changelog_file in ${changed_changelogs}; do
         local file_errors=0
@@ -133,16 +134,20 @@ main() {
 
         if [[ "${file_errors}" -gt 0 ]]; then
             total_errors=$((total_errors + file_errors))
-            local message="**Changelog link mismatch** in \`${changelog_file}\`. Expected: \`${expected_pr_link}\`"
-            if running_on_buildkite; then
-                notify_changelog_mismatch "${message}" "${changelog_file}" "${BUILDKITE_PULL_REQUEST}"
-            fi
+            failed_files+=("${changelog_file}")
         fi
     done
 
     if [[ "${total_errors}" -gt 0 ]]; then
         echo ""
         echo "${total_errors} changelog link(s) do not match this PR. Update the 'link:' field(s) in the changelog entries above to point to ${expected_pr_link}."
+        if running_on_buildkite; then
+            local message="**Changelog link mismatch** — expected \`${expected_pr_link}\` in the following file(s):"$'\n'
+            for f in "${failed_files[@]}"; do
+                message+="- \`${f}\`"$'\n'
+            done
+            notify_changelog_mismatch "${message}" "${BUILDKITE_PULL_REQUEST}"
+        fi
         exit 1
     fi
 
