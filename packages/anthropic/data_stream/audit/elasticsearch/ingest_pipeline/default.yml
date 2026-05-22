@@ -1,9 +1,6 @@
 ---
 description: Parse Anthropic compliance audit activities from the Activities API.
 processors:
-  ##
-  ## Standard opening
-  ##
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -43,10 +40,6 @@ processors:
       target_field: json
       tag: parse_event_original_json
       if: ctx.event?.original != null
-
-  ##
-  ## Top-level ECS renames
-  ##
   - rename:
       field: json.id
       target_field: event.id
@@ -93,11 +86,6 @@ processors:
       target_field: url.original
       ignore_missing: true
       tag: rename_url_original
-
-  ##
-  ## Target-user renames (root-level fields that describe the user being acted upon).
-  ## Cascade with `if: ctx.user?.target?.email == null` so the first match wins.
-  ##
   - rename:
       field: json.invited_email
       target_field: user.target.email
@@ -158,16 +146,6 @@ processors:
         revoked the role; move the ID into `user.target.id`. Only applies when
         `target_type` is `user` so we do not clobber non-user targets.
       if: ctx.user?.target?.id == null && ctx.json?.target_type == 'user'
-
-  ##
-  ## Actor handling
-  ##
-  ## Strategy: bulk-rename the whole `json.actor` object to `anthropic.audit.actor`,
-  ## then pull the ECS-mappable fields *out* of `anthropic.audit.actor` into their
-  ## ECS targets. Whatever is left (type, api_key_id, admin_api_key_id, directory_id,
-  ## idp_connection_type, workos_event_id, and any future field Anthropic adds)
-  ## stays at `anthropic.audit.actor.*` automatically.
-  ##
   - rename:
       field: json.actor
       target_field: anthropic.audit.actor
@@ -1082,12 +1060,6 @@ processors:
       target_field: anthropic.audit.version
       ignore_missing: true
       tag: rename_version
-
-  ##
-  ## Catch-all: move anything still left in `json` into `anthropic.audit.metadata`
-  ## (declared as `flattened` so any future activity-type-specific field is
-  ## preserved without needing a pipeline update).
-  ##
   - rename:
       field: json
       target_field: anthropic.audit.metadata
@@ -1143,14 +1115,6 @@ processors:
       target_field: source.as.organization.name
       ignore_missing: true
       tag: rename_source_as_org
-
-  ##
-  ## ECS categorization (event.kind/category/type/outcome) by activity action.
-  ## The params block declares the lookup tables once so Painless can cache the
-  ## compiled script. `exact` entries win, then `prefixes`, then generic suffix
-  ## rules. Unmapped actions fall back to `event.type: [info]`, `event.outcome:
-  ## unknown`.
-  ##
   - script:
       lang: painless
       tag: set_ecs_categorization
@@ -1619,10 +1583,6 @@ processors:
           ctx.event.outcome = mapping.outcome;
         }
 
-  ##
-  ## compliance_api_accessed has no static outcome — derive it from the response
-  ## status code that we renamed earlier.
-  ##
   - set:
       field: event.outcome
       value: success
