@@ -141,3 +141,7 @@ echo "--- Results: ${pass} passed, ${fail} failed"
 if [[ "${fail}" -gt 0 ]]; then
     exit 1
 fi
+
+echo ""
+echo "=== Running check_changelog_entries.sh tests ==="
+"${REPO_ROOT}/.buildkite/scripts/test_check_changelog_entries.sh"
