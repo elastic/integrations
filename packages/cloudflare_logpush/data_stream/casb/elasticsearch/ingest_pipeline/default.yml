@@ -126,27 +126,29 @@ processors:
       field: json.FindingTypeSeverity
       target_field: cloudflare_logpush.casb.finding.type.severity
       ignore_missing: true
-  # Set event.severity based on the incoming severity value ("low", "medium", "high", "critical")
-  - set:
-      tag: set_event_severity_114ed469
-      field: event.severity
-      value: 1
-      if: ctx.cloudflare_logpush?.casb?.finding?.type?.severity == "Low"
-  - set:
-      tag: set_event_severity_a8bcf8b1
-      field: event.severity
-      value: 2
-      if: ctx.cloudflare_logpush?.casb?.finding?.type?.severity == "Medium"
-  - set:
-      tag: set_event_severity_49e96e4b
-      field: event.severity
-      value: 3
-      if: ctx.cloudflare_logpush?.casb?.finding?.type?.severity == "High"
-  - set:
-      tag: set_event_severity_8f2d0035
-      field: event.severity
-      value: 4
-      if: ctx.cloudflare_logpush?.casb?.finding?.type?.severity == "Critical"
+  # Normalize the vendor severity to Elastic's severity scale. Elastic Security detection rules follow the scale mentioned in https://github.com/elastic/integrations/issues/12662
+  - script:
+      description: Normalize the vendor severity to Elastic's severity scale.
+      tag: script_to_normalize_severity
+      lang: painless
+      if: ctx.cloudflare_logpush?.casb?.finding?.type?.severity != null
+      source: |
+        def severity = ctx.cloudflare_logpush.casb.finding.type.severity.toLowerCase();
+        ctx.event = ctx.event ?: [:];
+        if (severity == "low") {
+          ctx.event.severity = 21;
+        } else if (severity == "medium") {
+          ctx.event.severity = 47;
+        } else if (severity == "high") {
+          ctx.event.severity = 73;
+        } else if (severity == "critical") {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_b5f821e8
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_json_InstanceID_to_cloudflare_logpush_casb_finding_id_ecd3a70b
       field: json.InstanceID
@@ -185,7 +187,6 @@ processors:
         - cloudflare_logpush.casb.timestamp
         - cloudflare_logpush.casb.asset.url
         - cloudflare_logpush.casb.finding.id
-        - cloudflare_logpush.casb.finding.type.severity
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_missing: true
   - script:
