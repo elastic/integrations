@@ -50,6 +50,18 @@ steps:
   - wait: ~
     continue_on_failure: false
 
+  - label: ":scroll: Check changelog PR links"
+    key: "check-changelog-pr-links"
+    command: ".buildkite/scripts/check_changelog_entries.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "2"
+      memory: "1G"
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') != "false"
+    if_changed:
+      - "**/changelog.yml"
+
   - label: ":white_check_mark: Check go sources"
     key: "check"
     command: ".buildkite/scripts/check_sources.sh"
