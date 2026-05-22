@@ -98,11 +98,19 @@ main() {
 
         if [[ "${file_errors}" -gt 0 ]]; then
             total_errors=$((total_errors + file_errors))
+            message="**Changelog link mismatch** in \`${changelog_file}\`. Expected: \`${expected_pr_link}\`"
             if running_on_buildkite; then
                 buildkite-agent annotate \
-                    "**Changelog link mismatch** in \`${changelog_file}\`. Expected: \`${expected_pr_link}\`" \
+                    "${message}" \
                     --context "ctx-changelog-${changelog_file//\//-}" \
                     --style "error"
+                echo "${message}" > changelog-link-mismatch.txt
+                add_or_edit_gh_pr_comment \
+                    "${BUILDKITE_ORGANIZATION_SLUG}" \
+                    "integrations" \
+                    "${BUILDKITE_PULL_REQUEST}" \
+                    "changelog-link-mismatch" \
+                    "changelog-link-mismatch.txt" > /dev/null 2>&1 || true
             fi
         fi
     done
