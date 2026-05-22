@@ -146,6 +146,7 @@ main() {
             for f in "${failed_files[@]}"; do
                 message+="- \`${f}\`"$'\n'
             done
+            message+=$'\n'"[View Buildkite build](${BUILDKITE_BUILD_URL})"
             notify_changelog_mismatch "${message}" "${BUILDKITE_PULL_REQUEST}"
         fi
         exit 1
