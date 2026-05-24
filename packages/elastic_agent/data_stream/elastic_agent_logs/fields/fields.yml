@@ -76,3 +76,13 @@
   index: false
   type: keyword
   description: Context of the log entry.
+# OTel Collector internal telemetry uses dotted field names (e.g. otelcol.signal or otelcol.signal.output)
+# that can conflict when a field is both a leaf value and a prefix of another field.
+# subobjects:false prevents Elasticsearch from interpreting dots as object nesting,
+# keeping each field independent regardless of shared prefixes.
+- name: otelcol.*
+  type: object
+  object_type: keyword
+  object_type_mapping_type: "*"
+  subobjects: false
+  description: OpenTelemetry Collector component telemetry attributes.
