@@ -12,14 +12,9 @@ processors:
 
   # drop CEL informational refresh-token messages
   - drop:
-      description: Drops CEL informational token-refresh success messages from the ingest stream.
-      tag: drop_cel_refresh_token_success
-      if: ctx.message instanceof String && ctx.message == 'Refresh token successful'
-  - drop:
-      description: Drops CEL informational expired-refresh messages from the ingest stream.
-      tag: drop_cel_refresh_token_force_reauth
-      if: ctx.message instanceof String && ctx.message == 'Refresh token expired, forcing re-auth'
-
+      description: Drops CEL retry messages from the ingest stream.
+      tag: drop_cel_retry_message
+      if: ctx.message instanceof String && ctx.message == 'retry'
   # remove agentless metadata
   - remove:
       description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.

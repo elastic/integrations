@@ -100,7 +100,7 @@ program: |-
                       string(body.paging.nextLink) != ""
                     ) ? optional.of(string(body.paging.nextLink)) : optional.none(),
                   },
-                  "want_more": has(body.paging) != null && has(body.paging.nextLink) && body.paging.nextLink != null &&
+                  "want_more": has(body.paging) && has(body.paging.nextLink) && body.paging.nextLink != null &&
                   string(body.paging.nextLink) != "",
                 }
               )
@@ -117,7 +117,7 @@ program: |-
                 (refResp.StatusCode == 200) ?
                   refResp.Body.decode_json().as(ro,
                     {
-                      "events": [{"message": "Refresh token successful"}],
+                      "events": [{"message": "retry"}],
                       "cursor": {
                         "access_token": string(ro.accessToken),
                         "refresh_token": string(ro.refreshToken),
@@ -128,7 +128,7 @@ program: |-
                   )
                 :
                   {
-                    "events": [{"message": "Refresh token expired, forcing re-auth"}],
+                    "events": [{"message": "retry"}],
                     "cursor": {
                       "access_token": "",
                       "refresh_token": "",
@@ -143,7 +143,8 @@ program: |-
                   "error": {
                     "code": string(resp.StatusCode),
                     "id": string(resp.Status),
-                    "message": "GET " + base + "/api/audit-trail/auditRecords: rate limited",
+                    "message": "GET " + base +
+                      "/api/audit-trail/auditRecords: rate limited",
                   },
                 },
                 "want_more": false,
@@ -154,7 +155,10 @@ program: |-
                   "error": {
                     "code": string(resp.StatusCode),
                     "id": string(resp.Status),
-                    "message": "GET " + base + "/api/audit-trail/auditRecords: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+                    "message": "GET " + base +
+                      "/api/audit-trail/auditRecords: " + (
+                        (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)
+                      ),
                   },
                 },
                 "want_more": false,
@@ -166,7 +170,8 @@ program: |-
               "error": {
                 "code": tok.err_code,
                 "id": tok.err_status,
-                "message": "POST " + base + "/api/auth: " + tok.err_body,
+                "message": "POST " + base +
+                  "/api/auth: " + tok.err_body,
               },
             },
             "want_more": false,

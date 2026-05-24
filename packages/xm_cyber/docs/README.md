@@ -96,7 +96,6 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
-| log.offset | Log offset. | long |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | xm_cyber.audit_trail._id | XM Cyber's unique audit record identifier. Preserved when the `preserve_duplicate_custom_fields` tag is set; otherwise mapped to ECS `event.id` and removed from this namespace. | keyword |
