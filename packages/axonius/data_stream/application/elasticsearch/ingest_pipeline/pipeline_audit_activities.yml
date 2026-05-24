@@ -1,6 +1,15 @@
 ---
 description: Pipeline for processing audit activities logs.
 processors:
+  - append:
+      field: event.category
+      value: authentication
+      tag: category_authentication
+  - append:
+      field: event.type
+      value: info
+      tag: type_info
+  # audit_activities carry action.name instead of event.action_if_exists; override the default pipeline mapping.
   - set:
       field: event.action
       tag: set_event_action_from_application_action_name
