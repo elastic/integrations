@@ -1191,8 +1191,8 @@ add_or_edit_gh_pr_comment() {
     if [[ "${comment_id}" == "" ]]; then
         echo "Creating new comment"
         gh pr comment \
-          --repo "${owner}/${repo}" \
           "${pr_number}" \
+          --repo "${owner}/${repo}" \
           --body "${contents}"
         return
     fi
