@@ -1,0 +1,49 @@
+{
+  "id": "mongodb_otel-cursor-timeouts",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "description": "Alerts when `mongodb.cursor.timeout.count` increases. Cursor timeouts mean clients can't consume result batches in time.",
+    "name": "[MongoDB OTel] Cursor timeouts",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "mongodb"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "mongodb_otel-operations"
+        },
+        {
+          "id": "mongodb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## MongoDB cursor timeouts\n\n### What fired\n`mongodb.cursor.timeout.count` increased during the window.\n\n### Why it matters\nMongoDB cursors expire after 10 minutes of inactivity. Timeouts mean the application did not iterate fast enough or held the cursor without use.\n\n### Triage\n1. Check application query patterns and batch sizes.\n2. Look for cursor leaks.\n\n### Remediation\n- Fix application to iterate cursors promptly or use `noCursorTimeout` carefully.\n\n### Tuning\n- Fires on any increase.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "FROM metrics-mongodbreceiver.otel-default\n// Scope to MongoDB OTel metrics\n| WHERE data_stream.dataset == \"mongodbreceiver.otel\"\n| WHERE metrics.mongodb.cursor.timeout.count IS NOT NULL\n// Delta over time window (metric is non-monotonic sum; increase indicates new timeouts)\n| STATS min_val = MIN(metrics.mongodb.cursor.timeout.count), max_val = MAX(metrics.mongodb.cursor.timeout.count) BY resource.attributes.server.address\n| EVAL new_timeouts = max_val - min_val\n// Alert on any new cursor timeouts (clients unable to consume results in time)\n| WHERE new_timeouts > 0\n| SORT new_timeouts DESC\n| LIMIT 20"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

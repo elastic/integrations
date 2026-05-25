@@ -1,0 +1,465 @@
+dashboards:
+  - id: apache_tomcat_otel-thread-pool-connections
+    name: '[Tomcat OTel] Thread Pool & Connections'
+    description: >-
+      Thread pool saturation and connection management for Apache Tomcat
+      connectors, including utilization ratios and capacity limits.
+
+    filters:
+      - field: data_stream.dataset
+        equals: tomcat.otel
+
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    controls:
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: resource.attributes.host.name
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: apache_tomcat_otel-overview
+            - label: Request Processing
+              dashboard: apache_tomcat_otel-request-processing
+            - label: Thread Pool & Connections
+              dashboard: apache_tomcat_otel-thread-pool-connections
+            - label: JVM Memory & GC
+              dashboard: apache_tomcat_otel-jvm-memory-gc
+            - label: Sessions & Applications
+              dashboard: apache_tomcat_otel-sessions-servlets
+            - label: JVM & OS Resources
+              dashboard: apache_tomcat_otel-jvm-os-resources
+
+      # ─── Dashboard Overview + KPIs ─────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [Tomcat OTel] Thread Pool & Connections
+
+            This dashboard monitors thread pool saturation and connection management:
+            - Busy vs. idle thread counts per connector
+            - Thread pool utilization as a ratio of maxThreads
+            - Active connections and keep-alive connection counts
+            - Connection utilization as a ratio of maxConnections
+
+      # KPI Row 1 (w:8 × 4 = 32)
+      - title: Busy Threads
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL
+            - STATS busy_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy))
+          primary:
+            field: busy_threads
+            label: Busy Threads
+            format:
+              type: number
+              decimals: 0
+
+      - title: Total Threads
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_currentThreadCount IS NOT NULL
+            - STATS total_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadCount))
+          primary:
+            field: total_threads
+            label: Total Threads
+            format:
+              type: number
+              decimals: 0
+
+      - title: Max Threads
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_maxThreads IS NOT NULL
+            - STATS max_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads))
+          primary:
+            field: max_threads
+            label: Max Threads
+            format:
+              type: number
+              decimals: 0
+
+      - title: Thread Utilization
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL
+            - STATS busy = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), max_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads))
+            - EVAL thread_util = CASE(max_threads > 0, busy / max_threads, 0)
+          primary:
+            field: thread_util
+            label: Thread Utilization
+            format:
+              type: percent
+              decimals: 1
+
+      # KPI Row 2 (w:8 × 4 = 32)
+      - title: Active Connections
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_connectionCount IS NOT NULL
+            - STATS connections = SUM(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount))
+          primary:
+            field: connections
+            label: Active Connections
+            format:
+              type: number
+              decimals: 0
+
+      - title: Max Connections
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_maxConnections IS NOT NULL
+            - STATS max_connections = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections))
+          primary:
+            field: max_connections
+            label: Max Connections
+            format:
+              type: number
+              compact: true
+
+      - title: Keep-Alive Connections
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_keepAliveCount IS NOT NULL
+            - STATS keepalive = SUM(LAST_OVER_TIME(Catalina_ThreadPool_keepAliveCount))
+          primary:
+            field: keepalive
+            label: Keep-Alive
+            format:
+              type: number
+              decimals: 0
+
+      - title: Connection Utilization
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_connectionCount IS NOT NULL
+            - STATS conns = SUM(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount)), max_conns = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections))
+            - EVAL conn_util = CASE(max_conns > 0, conns / max_conns, 0)
+          primary:
+            field: conn_util
+            label: Connection Utilization
+            format:
+              type: percent
+              decimals: 1
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Thread Pool'
+
+      - title: Thread Counts Over Time
+        description: Busy, total, and max threads per connector over time.
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL
+            - STATS busy = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), total = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadCount)), max_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: busy
+              label: Busy
+              format:
+                type: number
+                decimals: 0
+            - field: total
+              label: Current
+              format:
+                type: number
+                decimals: 0
+            - field: max_threads
+              label: Max
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+            position: right
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Current Utilization'
+
+      - title: Thread Pool Utilization % Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL
+            - STATS busy = MAX(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), max_threads = MAX(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name
+            - EVAL utilization = CASE(max_threads > 0, ROUND(busy / max_threads * 100, 1), 0)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: utilization
+              label: Utilization %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+          breakdown:
+            field: attributes.name
+          legend:
+            visible: show
+            position: right
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Connections'
+
+      - title: Connection Count Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_connectionCount IS NOT NULL
+            - STATS connections = MAX(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount)), keepalive = MAX(LAST_OVER_TIME(Catalina_ThreadPool_keepAliveCount)), max_connections = MAX(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: connections
+              label: Active
+              format:
+                type: number
+                decimals: 0
+            - field: keepalive
+              label: Keep-Alive
+              format:
+                type: number
+                decimals: 0
+            - field: max_connections
+              label: Max
+              format:
+                type: number
+                decimals: 0
+          legend:
+            visible: show
+            position: right
+
+      - title: Connection Utilization % Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_connectionCount IS NOT NULL
+            - STATS conns = MAX(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount)), max_conns = MAX(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.name
+            - EVAL utilization = CASE(max_conns > 0, ROUND(conns / max_conns * 100, 1), 0)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: utilization
+              label: Utilization %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+          breakdown:
+            field: attributes.name
+          legend:
+            visible: show
+            position: right
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Current Utilization'
+
+      - title: Thread Pool Utilization
+        size: {w: 24, h: 10}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL
+            - STATS busy = SUM(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), max_threads = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads))
+            - EVAL thread_util = CASE(max_threads > 0, ROUND(busy / max_threads * 100, 1), 0)
+            - EVAL gauge_min = 0
+            - EVAL gauge_max = 100
+            - EVAL gauge_goal = 80
+          metric:
+            field: thread_util
+            label: Thread Utilization
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+          minimum:
+            field: gauge_min
+          maximum:
+            field: gauge_max
+          goal:
+            field: gauge_goal
+          color:
+            range_type: number
+            range_min: 0
+            range_max: 100
+            thresholds:
+              - up_to: 60
+                color: '#54b399'
+              - up_to: 80
+                color: '#d6bf57'
+              - up_to: 100
+                color: '#cc5642'
+          appearance:
+            shape: arc
+
+      - title: Connection Utilization
+        size: {w: 24, h: 10}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_connectionCount IS NOT NULL
+            - STATS conns = SUM(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount)), max_conns = SUM(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections))
+            - EVAL conn_util = CASE(max_conns > 0, ROUND(conns / max_conns * 100, 1), 0)
+            - EVAL gauge_min = 0
+            - EVAL gauge_max = 100
+            - EVAL gauge_goal = 80
+          metric:
+            field: conn_util
+            label: Connection Utilization
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+          minimum:
+            field: gauge_min
+          maximum:
+            field: gauge_max
+          goal:
+            field: gauge_goal
+          color:
+            range_type: number
+            range_min: 0
+            range_max: 100
+            thresholds:
+              - up_to: 50
+                color: '#54b399'
+              - up_to: 80
+                color: '#d6bf57'
+              - up_to: 100
+                color: '#cc5642'
+          appearance:
+            shape: arc
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Thread Pool Configuration'
+
+      - title: Thread Pool Configuration Summary
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE Catalina_ThreadPool_maxThreads IS NOT NULL
+            - STATS busy = MAX(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadsBusy)), current = MAX(LAST_OVER_TIME(Catalina_ThreadPool_currentThreadCount)), max_threads = MAX(LAST_OVER_TIME(Catalina_ThreadPool_maxThreads)), min_spare = MAX(LAST_OVER_TIME(Catalina_ThreadPool_minSpareThreads)), connections = MAX(LAST_OVER_TIME(Catalina_ThreadPool_connectionCount)), max_conns = MAX(LAST_OVER_TIME(Catalina_ThreadPool_maxConnections)), keepalive = MAX(LAST_OVER_TIME(Catalina_ThreadPool_keepAliveCount)), accept_count = MAX(LAST_OVER_TIME(Catalina_ThreadPool_acceptCount)) BY attributes.name
+            - EVAL thread_util = CASE(max_threads > 0, ROUND(busy / max_threads * 100, 1), 0)
+            - EVAL conn_util = CASE(max_conns > 0, ROUND(connections / max_conns * 100, 1), 0)
+            - SORT attributes.name ASC
+          breakdowns:
+            - field: attributes.name
+              label: Connector
+          metrics:
+            - field: busy
+              label: Busy
+              format:
+                type: number
+            - field: current
+              label: Current
+              format:
+                type: number
+            - field: max_threads
+              label: Max Threads
+              format:
+                type: number
+            - field: thread_util
+              label: Thread Util %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: connections
+              label: Connections
+              format:
+                type: number
+            - field: max_conns
+              label: Max Conns
+              format:
+                type: number
+                compact: true
+            - field: conn_util
+              label: Conn Util %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: keepalive
+              label: Keep-Alive
+              format:
+                type: number
+            - field: accept_count
+              label: Accept Queue
+              format:
+                type: number

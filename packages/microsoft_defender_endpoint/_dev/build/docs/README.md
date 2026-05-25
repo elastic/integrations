@@ -6,7 +6,7 @@ Microsoft Defender for Endpoint integration collects data for Alert, Machine, Ma
 
 For a demo, refer to the following video (click to view).
 
-[![Microsoft Defender for Endpoint integration video](https://play.vidyard.com/fSxgBbf7QArpgX345x28v5.jpg)](https://videos.elastic.co/watch/fSxgBbf7QArpgX345x28v5)
+[![Microsoft Defender for Endpoint integration video](https://play.vidyard.com/fsxgbbf7qarpgx345x28v5.jpg)](https://videos.elastic.co/watch/fSxgBbf7QArpgX345x28v5)
 
 ## Data streams
 

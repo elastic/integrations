@@ -67,7 +67,7 @@ processors:
       ignore_failure: true
   - foreach:
       tag: foreach_cisco_ise_log_log_details_AVPair_c425b02e
-      if: "ctx.cisco_ise?.log?.log_details.AVPair != null && ctx.cisco_ise?.log?.log_details.AVPair instanceof List"
+      if: "ctx.cisco_ise?.log?.log_details?.AVPair != null && ctx.cisco_ise?.log?.log_details?.AVPair instanceof List"
       field: cisco_ise.log.log_details.AVPair
       processor:
         kv:
@@ -86,7 +86,7 @@ processors:
       ignore_missing: true
   - kv:
       tag: kv_cisco_ise_log_log_details_cisco-av-pair_to_cisco_ise_log_avpair_97a78c34
-      if: "ctx.cisco_ise?.log?.log_details['cisco-av-pair'] != null && !(ctx.cisco_ise?.log?.log_details['cisco-av-pair'] instanceof List)"
+      if: "ctx.cisco_ise?.log?.log_details != null && ctx.cisco_ise.log.log_details['cisco-av-pair'] != null && !(ctx.cisco_ise.log.log_details['cisco-av-pair'] instanceof List)"
       field: cisco_ise.log.log_details.cisco-av-pair
       target_field: cisco_ise.log.avpair
       field_split: ', '
@@ -201,20 +201,21 @@ processors:
       target_field: cisco_ise.log.port
       ignore_failure: true
       ignore_missing: true
-  - convert:
-      tag: convert_cisco_ise_log_log_details_Remote-Address_to_destination_ip_fdf00d37
+  - rename:
+      tag: rename_cisco_ise_log_log_details_Remote-Address_to_destination_address_50bf8043
       field: cisco_ise.log.log_details.Remote-Address
-      target_field: destination.ip
-      type: ip
+      target_field: destination.address
+      ignore_failure: true
       ignore_missing: true
-      on_failure:
-        - append:
-            tag: append_error_message_a36d7684
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - remove:
-      tag: remove_cisco_ise_log_log_details_Remote-Address_50bf8043
-      field: cisco_ise.log.log_details.Remote-Address
+  - grok:
+      tag: grok_destination_address_to_destination_ip_fdf00d37
+      field: destination.address
+      if: ctx.destination?.address != null && ctx.destination.address != ''
+      patterns:
+        - "^%{IPV4:destination.ip}$"
+        - "^%{IPV6:destination.ip}$"
+        - "^\\[%{IPV6:destination.ip}\\]$"
+      ignore_failure: true
       ignore_missing: true
   - append:
       tag: append_related_ip_51dd17d0

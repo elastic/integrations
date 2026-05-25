@@ -1,0 +1,163 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies suspicious renamed COMSVCS.DLL Image Load, which exports the MiniDump function that can be used to dump a process memory. This may indicate an attempt to dump LSASS memory while bypassing command-line based detection in preparation for credential access.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.name",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.command_line",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "file.path",
+                "file.name",
+                "file.pe.original_file_name",
+                "file.pe.imphash"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Credential Access via Renamed COM+ Services DLL",
+        "note": "## Triage and analysis\n\n### Investigating Potential Credential Access via Renamed COM+ Services DLL\n\n#### Possible investigation steps\n\n- What did the sequence source events prove about the loader and renamed COMSVCS image?\n  - Why: Timeline source events are required for grouped meaning; renamed COMSVCS can bypass command-line-only checks, so image-load PE identity matters.\n  - Focus: recover source events, confirm shared `process.entity_id`, and review the rundll32.exe start plus image-load `file.path`, `file.name`, `file.pe.original_file_name`, and `file.pe.imphash`.\n  - Implication: escalate when the same rundll32.exe instance loaded a renamed image whose original name or imphash maps to COMSVCS; lower suspicion only when source events and renamed path fit an authorized lab or debugging reproduction on the same `host.id` and `user.id`.\n\n- Does the rundll32 command line and launch context show MiniDump intent?\n  - Focus: recovered process-start `process.command_line`, `process.parent.executable`, `process.parent.command_line`, and `user.id`.\n  - Implication: escalate when the command line invokes MiniDump or MiniDumpW with target PID, dump path, and full, or the parent is an unexpected script, shell, archive, or remote tool; lower suspicion only when parent, user, and host match the authorized test context.\n\n- Was the renamed COMSVCS DLL staged or renamed immediately before rundll32 loaded it?\n  - Focus: loaded `file.path`, endpoint file telemetry on `host.id` and recovered `process.entity_id`, plus `process.executable`, `file.Ext.original.path`, and `file.Ext.original.name`. !{investigate{\"description\":\"\",\"label\":\"File activity for the alerting process and children\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: missing file-create or rename telemetry leaves provenance unresolved, not benign; bound findings to observed timing and lineage.\n  - Implication: escalate when a different suspicious process copied or renamed COMSVCS into a user-writable, temporary, or deceptive path shortly before the load; lower suspicion only when a lab or debugging tool created the same controlled artifact in an expected test path.\n\n- Did the same process produce dump artifacts or credential-staging evidence?\n  - Focus: child-process events where `process.parent.entity_id` matches the alerting `process.entity_id`, child `process.command_line`, and endpoint file telemetry when available for `file.path`, `file.extension`, and `file.size` dump, archive, or staging output. !{investigate{\"description\":\"\",\"label\":\"Child processes of the alerting process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the process or descendants write dump-like files, archives, or credential-access artifacts after MiniDump parameters; keep unresolved when telemetry is missing, and lower suspicion only when output stays confined to the authorized test target and path.\n\n- If local evidence is suspicious or incomplete, do related alerts expand the scope?\n  - Focus: recent alerts for `user.id`. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: compare with recent alerts for `host.id` to distinguish user-linked activity from host-local spread. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: expand response scope when the same user or host has related dumping, defense-evasion, or intrusion alerts; keep scope local only when related alerts are absent and the recovered loader evidence is fully resolved.\n\n- Escalate when source-event identity, MiniDump intent, parent lineage, provenance, artifacts, or related alerts support abuse; close only when recovered source events, available file evidence, and outside confirmation bind one exact authorized lab or debugging workflow; preserve and escalate when evidence is mixed or incomplete.\n\n### False positive analysis\n\n- Renaming COMSVCS for rundll32.exe loading is an operational anti-pattern. Close as benign only for authorized malware research, internal detonation, or debugging reproduction where source events, launcher parent, `user.id`, `host.id`, recovered renamed-DLL identity, and any dump output all align with the same test case. Without lab records, recurrence of the same loader chain, controlled artifact identity, host or user scope, and bounded follow-on pattern can support a candidate exception, but not closure. Do not close if any anchor diverges.\n- Build exceptions only from the minimum confirmed workflow: parent process, controlled renamed-DLL artifact identity, `host.id`, `user.id`, and bounded output path. Avoid exceptions on rundll32.exe, COMSVCS identity, or the imphash alone because those values also describe the abuse technique.\n\n### Response and remediation\n\n- If confirmed benign, reverse any temporary containment and document the parent process, controlled renamed-DLL artifact identity, output path, `host.id`, and `user.id` that proved the authorized test. Keep exceptions narrow and require recurrence of the same workflow.\n- If suspicious but unconfirmed, preserve the Timeline source events, recovered process identifiers, command line, parent context, renamed-DLL artifact details, staging evidence, and any dump or archive artifacts before containment. Apply reversible containment such as host isolation with criticality review or heightened monitoring on the affected `host.id`; avoid process termination or file deletion until evidence is preserved.\n- If confirmed malicious, isolate the affected `host.id` after preserving source events, process context, renamed DLL, dump artifacts, and related-alert evidence. If direct response is unavailable, escalate with the preserved evidence set to the team that can act.\n- Eradicate only the renamed DLL, dump files, archives, and staged artifacts identified during the investigation, then search the same host and related-alert scope for additional credential-dumping components. Reset or rotate credentials when dump artifacts, LSASS targeting, or privileged-host context indicate likely exposure.\n- Post-incident hardening: restrict COMSVCS dump testing to controlled lab hosts, retain Sysmon image-load and file-create telemetry where it limited the case, and document the confirmed workflow or malicious artifact set for future triage.\n",
+        "query": "sequence by process.entity_id with maxspan=1m\n [process where host.os.type == \"windows\" and event.type == \"start\" and process.name : \"rundll32.exe\"]\n [process where host.os.type == \"windows\" and event.code == \"7\" and\n   (file.pe.original_file_name : \"COMSVCS.DLL\" or file.pe.imphash : \"EADBCCBB324829ACB5F2BBE87E5549A8\") and\n   /* renamed COMSVCS */\n   not file.name : \"COMSVCS.DLL\"]\n",
+        "references": [
+            "https://modexp.wordpress.com/2019/08/30/minidumpwritedump-via-com-services-dll/"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.pe.imphash",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.pe.original_file_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "c5c9f591-d111-4cf8-baec-c26a39bc31ef",
+        "setup": "## Setup\n\nThis rule requires Sysmon telemetry to be enabled and ingested.\n\nSetup instructions: https://ela.st/sysmon-event-7-setup\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Defense Evasion",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.001",
+                                "name": "LSASS Memory",
+                                "reference": "https://attack.mitre.org/techniques/T1003/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1036",
+                        "name": "Masquerading",
+                        "reference": "https://attack.mitre.org/techniques/T1036/",
+                        "subtechnique": [
+                            {
+                                "id": "T1036.003",
+                                "name": "Rename Legitimate Utilities",
+                                "reference": "https://attack.mitre.org/techniques/T1036/003/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/",
+                        "subtechnique": [
+                            {
+                                "id": "T1218.011",
+                                "name": "Rundll32",
+                                "reference": "https://attack.mitre.org/techniques/T1218/011/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 214
+    },
+    "id": "c5c9f591-d111-4cf8-baec-c26a39bc31ef_214",
+    "type": "security-rule"
+}
