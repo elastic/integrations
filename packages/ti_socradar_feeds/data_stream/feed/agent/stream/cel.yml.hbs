@@ -38,13 +38,10 @@ redact:
 program: |-
   state.collections[state.collection_index].as(current_collection,
     {
-      "cid": string(current_collection.id),
-      "cname": string(current_collection.?name.orValue(string(current_collection.id))),
-      "has_checkpoint": has(current_collection.last_processed_date) && current_collection.last_processed_date != "",
-      "last_date": (has(current_collection.last_processed_date) && current_collection.last_processed_date != "") ?
-        string(current_collection.last_processed_date)
-      :
-        "",
+      "cid": current_collection.id,
+      "cname": current_collection.?name.orValue(current_collection.id),
+      "has_checkpoint": current_collection.?last_processed_date.orValue("") != "",
+      "last_date": current_collection.?last_processed_date.orValue(""),
     }
   ).as(cc,
     request(
@@ -60,13 +57,13 @@ program: |-
             has(item.feed) && size(string(item.feed)) > 0 && (
               !cc.has_checkpoint ?
                 (
-                  (has(item.latest_seen_date) && size(string(item.latest_seen_date)) > 0) ?
-                    (string(item.latest_seen_date).parse_time("2006-01-02 15:04:05") >= now - duration(state.initial_interval))
+                  item.?latest_seen_date.orValue("") != "" ?
+                    (item.latest_seen_date.parse_time("2006-01-02 15:04:05") >= now - duration(state.initial_interval))
                   :
                     true
                 )
-              : (has(item.latest_seen_date) && size(string(item.latest_seen_date)) > 0) ?
-                (string(item.latest_seen_date).parse_time("2006-01-02 15:04:05") > cc.last_date.parse_time("2006-01-02 15:04:05"))
+              : item.?latest_seen_date.orValue("") != "" ?
+                (item.latest_seen_date.parse_time("2006-01-02 15:04:05") > cc.last_date.parse_time("2006-01-02 15:04:05"))
               :
                 true
             )
@@ -82,7 +79,7 @@ program: |-
               "want_more": int(state.collection_index) + 1 < size(state.collections),
               "collection_index": (int(state.collection_index) + 1) % size(state.collections),
               "collections": state.collections.map(c,
-                (string(c.id) == cc.cid) ?
+                (c.id == cc.cid) ?
                   {
                     "id": cc.cid,
                     "name": cc.cname,
@@ -90,14 +87,14 @@ program: |-
                   }
                 :
                   {
-                    "id": string(c.id),
-                    "name": string(c.?name.orValue(string(c.id))),
-                    "last_processed_date": has(c.last_processed_date) ? string(c.last_processed_date) : "",
+                    "id": c.id,
+                    "name": c.?name.orValue(c.id),
+                    "last_processed_date": c.?last_processed_date.orValue(""),
                   }
               ),
-              "api_key": string(state.api_key),
-              "url": string(state.url),
-              "initial_interval": string(state.initial_interval),
+              "api_key": state.api_key,
+              "url": state.url,
+              "initial_interval": state.initial_interval,
             }
           )
         )
@@ -120,13 +117,13 @@ program: |-
           "collections": state.collections.map(c,
             {
               "id": string(c.id),
-              "name": string(c.?name.orValue(string(c.id))),
-              "last_processed_date": has(c.last_processed_date) ? string(c.last_processed_date) : "",
+              "name": c.?name.orValue(c.id),
+              "last_processed_date": c.?last_processed_date.orValue(""),
             }
           ),
-          "api_key": string(state.api_key),
-          "url": string(state.url),
-          "initial_interval": string(state.initial_interval),
+          "api_key": state.api_key,
+          "url": state.url,
+          "initial_interval": state.initial_interval,
         }
     )
   )
