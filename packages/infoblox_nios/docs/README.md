@@ -285,6 +285,9 @@ An example event for `log` looks as following:
 | infoblox_nios.log.dns.answers_policy |  | text |
 | infoblox_nios.log.dns.before_query |  | text |
 | infoblox_nios.log.dns.category |  | text |
+| infoblox_nios.log.dns.ecs_client_subnet.ip |  | ip |
+| infoblox_nios.log.dns.ecs_client_subnet.prefix_length |  | long |
+| infoblox_nios.log.dns.ecs_client_subnet.scope_prefix_length |  | long |
 | infoblox_nios.log.dns.failed_message |  | text |
 | infoblox_nios.log.dns.header_flags |  | keyword |
 | infoblox_nios.log.dns.message |  | text |
