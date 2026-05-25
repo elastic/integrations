@@ -76,14 +76,14 @@ program: |-
       ?"limit": state.?limit,
     }
   :
-    state.collections[int(state.collection_index) % state.collections.size()].as(current,
+    state.collections[int(state.collection_index)].as(current,
       {
         "api_root": current.?api_root.orValue("radar_alpha"),
-        "cid": current.?collection_id.orValue(""),
+        ?"cid": current.?collection_id,
         "checkpoint": current.?last_added_after.orValue(""),
       }
     ).as(cc,
-      (cc.cid == "") ?
+      !has(cc.cid) ?
         {
           "events": {
             "error": {
@@ -129,37 +129,37 @@ program: |-
           }
         ).do_request().as(resp,
           (resp.StatusCode == 200 || resp.StatusCode == 206) ?
-            bytes(resp.Body).decode_json().as(body,
+            resp.Body.decode_json().as(body,
               {
                 "events": (has(body.objects) && type(body.objects) == list) ?
                   body.objects.map(e, {"message": e.encode_json()})
                 :
                   [],
-                "want_more": has(body.next) && body.next != null && string(body.next) != "",
-                "next_url": (has(body.next) && body.next != null && string(body.next) != "") ?
+                "want_more": has(body.next) && body.next != null && body.next != "",
+                "next_url": (has(body.next) && body.next != null && body.next != "") ?
                   (
                     state.base_url.trim_right("/") + "/" + cc.api_root + "/collections/" + cc.cid + "/objects/?" + {
-                      "next": [string(body.next)],
+                      "next": [body.next],
                       ?"limit": state.?limit.optMap(l, [string(int(l))]),
                     }.format_query()
                   )
                 :
                   "",
-                "collection_index": (has(body.next) && body.next != null && string(body.next) != "") ?
+                "collection_index": (has(body.next) && body.next != null && body.next != "") ?
                   state.collection_index
                 :
                   (int(state.collection_index) + 1) % state.collections.size(),
-                "collections": (has(body.next) && body.next != null && string(body.next) != "") ?
+                "collections": (has(body.next) && body.next != null && body.next != "") ?
                   state.collections
                 :
                   state.collections.map(c,
                     (
-                      string(c.?collection_id.orValue("")) == cc.cid && string(c.?api_root.orValue("radar_alpha")) == cc.api_root
+                      c.?collection_id.orValue("") == cc.cid && c.?api_root.orValue("radar_alpha") == cc.api_root
                     ) ?
                       {
                         "api_root": cc.api_root,
                         "collection_id": cc.cid,
-                        "last_added_after": (resp.Header[?"X-Taxii-Date-Added-Last"].optMap(v, string(v[0]))).orValue(now().format(time_layout.RFC3339)),
+                        "last_added_after": (resp.Header[?"X-Taxii-Date-Added-Last"].optMap(v, v[0])).orValue(now().format(time_layout.RFC3339)),
                       }
                     :
                       c
