@@ -170,6 +170,28 @@ exit_code=0
 assert_exit_code "two wrong links returns 2" "2" "${exit_code}"
 
 # ---------------------------------------------------------------------------
+# Tests: get_pr_mention
+# ---------------------------------------------------------------------------
+echo ""
+echo "--- get_pr_mention tests"
+
+assert_equals "empty user returns empty string" \
+    "" \
+    "$(get_pr_mention "")"
+
+assert_equals "regular user returns mention" \
+    $'\n'"@johndoe" \
+    "$(get_pr_mention "johndoe")"
+
+assert_equals "github-actions[bot] returns elastic/ecosystem mention" \
+    $'\n'"@elastic/ecosystem" \
+    "$(get_pr_mention "github-actions[bot]")"
+
+assert_equals "no argument returns empty string" \
+    "" \
+    "$(get_pr_mention)"
+
+# ---------------------------------------------------------------------------
 echo ""
 echo "--- Results: ${pass} passed, ${fail} failed"
 if [[ "${fail}" -gt 0 ]]; then

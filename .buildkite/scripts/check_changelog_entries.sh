@@ -62,6 +62,21 @@ check_changelog_file() {
     return "${errors}"
 }
 
+# Returns the @mention string for the given user, substituting elastic/ecosystem
+# when the user is the github-actions[bot] automated user.
+# Usage: get_pr_mention <user>
+get_pr_mention() {
+    local user="${1:-""}"
+    if [[ -z "${user}" ]]; then
+        echo ""
+        return 0
+    fi
+    if [[ "${user}" == "github-actions[bot]" ]]; then
+        user="elastic/ecosystem"
+    fi
+    echo $'\n'"@${user}"
+}
+
 # Posts a single Buildkite annotation and GitHub PR comment listing all files
 # with changelog link mismatches.
 # Usage: notify_changelog_mismatch <message> <pr_number>
@@ -76,10 +91,8 @@ notify_changelog_mismatch() {
         --context "ctx-changelog-link-mismatch" \
         --style "error"
 
-    local mention="${GITHUB_PR_USER:-""}"
-    if [[ -n "${mention}" ]]; then
-        mention=$'\n'"@${mention}"
-    fi
+    local mention
+    mention="$(get_pr_mention "${GITHUB_PR_USER:-""}")"
     echo "${message}${mention}" > changelog-link-mismatch.txt
     if ! delete_and_create_gh_pr_comment \
         "${BUILDKITE_ORGANIZATION_SLUG}" \
