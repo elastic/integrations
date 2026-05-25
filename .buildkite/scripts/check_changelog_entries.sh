@@ -160,12 +160,13 @@ main() {
 
     if [[ "${total_errors}" -gt 0 ]]; then
         echo ""
-        echo "${total_errors} changelog link(s) do not match this PR. Update the 'link:' field(s) in the changelog entries above to point to ${expected_pr_link}."
+        echo "${total_errors} changelog link(s) do not match this PR:"
+        local message="**Changelog link mismatch** — expected \`${expected_pr_link}\` in the following file(s):"$'\n'
+        for f in "${failed_files[@]}"; do
+            message+="- \`${f}\`"$'\n'
+        done
+        echo "${message}"
         if running_on_buildkite; then
-            local message="**Changelog link mismatch** — expected \`${expected_pr_link}\` in the following file(s):"$'\n'
-            for f in "${failed_files[@]}"; do
-                message+="- \`${f}\`"$'\n'
-            done
             message+=$'\n'"[View Buildkite build](${BUILDKITE_BUILD_URL})"
             notify_changelog_mismatch "${message}" "${BUILDKITE_PULL_REQUEST}"
         fi
