@@ -62,6 +62,13 @@ check_changelog_file() {
     return "${errors}"
 }
 
+# Returns 0 (true) if the changelog link check should be skipped based on PR labels.
+# Usage: should_skip_changelog_check <labels>
+should_skip_changelog_check() {
+    local labels="${1:-""}"
+    [[ "${labels}" == *"changelog-link-check:skip"* ]]
+}
+
 # Returns the @mention string for the given user, substituting elastic/ecosystem
 # when the user is the github-actions[bot] automated user.
 # Usage: get_pr_mention <user>
@@ -112,7 +119,7 @@ main() {
         exit 0
     fi
 
-    if [[ "${GITHUB_PR_LABELS:-""}" == *"skip-changelog"* ]]; then
+    if should_skip_changelog_check "${GITHUB_PR_LABELS:-""}"; then
         echo "Skipping changelog link check: 'changelog-link-check:skip' label found."
         exit 0
     fi
@@ -148,7 +155,7 @@ main() {
     local total_errors=0
     local failed_files=()
 
-    for changelog_file in ${changed_changelogs}; do
+    while IFS= read -r changelog_file; do
         local file_errors=0
         check_changelog_file "${base_ref}" "${changelog_file}" "${expected_pr_link}" || file_errors=$?
 
@@ -156,7 +163,7 @@ main() {
             total_errors=$((total_errors + file_errors))
             failed_files+=("${changelog_file}")
         fi
-    done
+    done <<< "${changed_changelogs}"
 
     if [[ "${total_errors}" -gt 0 ]]; then
         echo ""

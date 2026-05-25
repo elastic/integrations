@@ -192,6 +192,28 @@ assert_equals "no argument returns empty string" \
     "$(get_pr_mention)"
 
 # ---------------------------------------------------------------------------
+# Tests: should_skip_changelog_check
+# ---------------------------------------------------------------------------
+echo ""
+echo "--- should_skip_changelog_check tests"
+
+exit_code=0
+should_skip_changelog_check "changelog-link-check:skip" || exit_code=$?
+assert_exit_code "exact label returns 0" "0" "${exit_code}"
+
+exit_code=0
+should_skip_changelog_check "foo,changelog-link-check:skip,bar" || exit_code=$?
+assert_exit_code "label in comma-separated list returns 0" "0" "${exit_code}"
+
+exit_code=0
+should_skip_changelog_check "skip-changelog" && exit_code=0 || exit_code=$?
+assert_exit_code "wrong label 'skip-changelog' returns non-zero" "1" "${exit_code}"
+
+exit_code=0
+should_skip_changelog_check "" && exit_code=0 || exit_code=$?
+assert_exit_code "empty labels returns non-zero" "1" "${exit_code}"
+
+# ---------------------------------------------------------------------------
 echo ""
 echo "--- Results: ${pass} passed, ${fail} failed"
 if [[ "${fail}" -gt 0 ]]; then

@@ -803,6 +803,8 @@ is_pr_affected() {
         '\.agents/skills/'
         'dev/scripts/'
         '\.buildkite/scripts/run_shell_scripts_tests\.sh'
+        '\.buildkite/scripts/check_changelog_entries\.sh'
+        '\.buildkite/scripts/test_check_changelog_entries\.sh'
     )
     local non_package_regex
     non_package_regex="^($(IFS='|'; echo "${non_package_patterns[*]}"))"
@@ -1227,6 +1229,7 @@ delete_and_create_gh_pr_comment() {
     echo "Creating new comment"
     gh pr comment \
         "${pr_number}" \
+        --repo "${owner}/${repo}" \
         --body "${contents}"
 }
 
