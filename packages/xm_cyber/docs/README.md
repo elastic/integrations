@@ -100,10 +100,10 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | xm_cyber.audit_trail._id | XM Cyber's unique audit record identifier. Preserved when the `preserve_duplicate_custom_fields` tag is set; otherwise mapped to ECS `event.id` and removed from this namespace. | keyword |
 | xm_cyber.audit_trail.details | Free-form details about the action. | keyword |
-| xm_cyber.audit_trail.event_sub_type | Finer-grained action detail (e.g. SettingsChanged, PasswordReset). | keyword |
-| xm_cyber.audit_trail.event_type | High-level action performed (e.g. Create, Update, Delete, Login). | keyword |
+| xm_cyber.audit_trail.event_sub_type | Finer-grained action detail (for example, SettingsChanged, PasswordReset). | keyword |
+| xm_cyber.audit_trail.event_type | High-level action performed (for example, Create, Update, Delete, Login). | keyword |
 | xm_cyber.audit_trail.object_name | The name or identifier of the object affected. | keyword |
-| xm_cyber.audit_trail.object_type | The type of object affected by the action (e.g. Policy, User, Scenario). | keyword |
+| xm_cyber.audit_trail.object_type | The type of object affected by the action (for example, Policy, User, Scenario). | keyword |
 | xm_cyber.audit_trail.tenant | XM Cyber tenant identifier. | keyword |
 | xm_cyber.audit_trail.terminal_id.hostname | Hostname of the terminal from which the action originated. | keyword |
 | xm_cyber.audit_trail.terminal_id.ip | IP address of the terminal from which the action originated. | ip |
