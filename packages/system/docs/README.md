@@ -914,10 +914,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.scheduled_task.actions.arguments | Arguments value from an Exec action in the task XML. | wildcard |
 | winlog.scheduled_task.actions.arguments.text | Multi-field of `winlog.scheduled_task.actions.arguments`. | match_only_text |
 | winlog.scheduled_task.actions.class_id | COM class ID from a ComHandler action in the task XML. This identifies the configured COM component, not a file path, and typically requires CLSID registry correlation during investigation. | keyword |
-| winlog.scheduled_task.actions.command | Command value from an Exec action in the task XML. This may be a bare command or executable name, full executable path, environment-variable path, or quoted command string. | wildcard |
+| winlog.scheduled_task.actions.command | Command value from an Exec action in the task XML. This value can be a bare command or executable name, full executable path, environment-variable path, or quoted command string. | wildcard |
 | winlog.scheduled_task.actions.command.text | Multi-field of `winlog.scheduled_task.actions.command`. | match_only_text |
 | winlog.scheduled_task.actions.context | Principal reference from the Actions Context attribute in the task XML. This value corresponds to a principals.id entry and indicates which principal the action is configured to run under. | keyword |
-| winlog.scheduled_task.actions.type | Action type parsed from the task XML, such as exec or com_handler. | keyword |
+| winlog.scheduled_task.actions.type | Action type parsed from the task XML, such as `exec` or `com_handler`. | keyword |
 | winlog.scheduled_task.actions.working_directory | WorkingDirectory value from an Exec action in the task XML. | wildcard |
 | winlog.scheduled_task.actions.working_directory.text | Multi-field of `winlog.scheduled_task.actions.working_directory`. | match_only_text |
 | winlog.scheduled_task.name | Task name from winlog.event_data.TaskName. This is the full Windows task path, including folder components such as \Microsoft\Windows. | keyword |
@@ -932,7 +932,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.scheduled_task.triggers.repetition.duration | Repetition duration from the trigger XML, represented as the original Task Scheduler duration string. | keyword |
 | winlog.scheduled_task.triggers.repetition.interval | Repetition interval from the trigger XML, represented as the original Task Scheduler duration string. | keyword |
 | winlog.scheduled_task.triggers.repetition.stop_at_duration_end | StopAtDurationEnd value from the trigger repetition XML, when present. | boolean |
-| winlog.scheduled_task.triggers.type | Trigger type parsed from the trigger element name, such as time, calendar, boot, logon, registration, event, idle, wnf_state_change, or session_state_change. | keyword |
+| winlog.scheduled_task.triggers.type | Trigger type parsed from the trigger element name, such as `time`, `calendar`, `boot`, `logon`, `registration`, `event`, `idle`, `wnf_state_change`, or `session_state_change`. | keyword |
 | winlog.scheduled_task.uri | Task URI from RegistrationInfo/URI in the scheduled task XML. This can complement winlog.event_data.TaskName when investigating masquerading or unusual task paths. | keyword |
 | winlog.task | The task defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. The category used by the Event Logging API (on pre Windows Vista operating systems) is written to this field. | keyword |
 | winlog.time_created | Time event was created | date |
