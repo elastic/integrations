@@ -377,22 +377,22 @@ An example event for `report` looks as following:
 {
     "@timestamp": "2026-05-06T15:00:00.000Z",
     "agent": {
-        "ephemeral_id": "bd41f91d-507a-42b1-8b95-7e51ccc70643",
-        "id": "48192b07-5d91-4001-abab-ef7efa98907d",
-        "name": "elastic-agent-63871",
+        "ephemeral_id": "a7695a43-0306-48e8-914a-e238120f982e",
+        "id": "fe486f40-745b-4d48-bf94-82c6afffb697",
+        "name": "elastic-agent-10839",
         "type": "filebeat",
         "version": "9.4.1"
     },
     "data_stream": {
         "dataset": "hackerone.report",
-        "namespace": "78344",
+        "namespace": "51555",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "48192b07-5d91-4001-abab-ef7efa98907d",
+        "id": "fe486f40-745b-4d48-bf94-82c6afffb697",
         "snapshot": false,
         "version": "9.4.1"
     },
@@ -406,7 +406,7 @@ An example event for `report` looks as following:
         "dataset": "hackerone.report",
         "end": "2026-05-06T15:00:00.000Z",
         "id": "1003",
-        "ingested": "2026-05-22T15:00:22Z",
+        "ingested": "2026-05-25T09:09:22Z",
         "kind": "event",
         "module": "hackerone",
         "original": "{\"attributes\":{\"created_at\":\"2026-05-06T15:00:00.000Z\",\"cve_ids\":[],\"last_activity_at\":\"2026-05-06T15:00:00.000Z\",\"state\":\"triaged\",\"submitted_at\":\"2026-05-06T15:01:00.000Z\",\"title\":\"Second-page XSS example\",\"vulnerability_information\":\"Short stub description for tests.\"},\"id\":\"1003\",\"relationships\":{\"program\":{\"data\":{\"attributes\":{\"created_at\":\"2017-09-28T13:08:32.058Z\",\"handle\":\"acme\",\"updated_at\":\"2026-05-07T08:41:04.851Z\"},\"id\":\"9001\",\"type\":\"program\"}}},\"type\":\"report\"}",
