@@ -84,7 +84,7 @@ program: |
   state.with(
     request(
       "POST",
-      state.url.trim_right("/") + "/graphql",
+      state.url.trim_right("/").trim_suffix("/graphql") + "/graphql",
       {
         "query": state.query,
         "variables": {
@@ -127,7 +127,7 @@ program: |
           "error": {
             "code": string(resp.StatusCode),
             "id": string(resp.Status),
-            "message": "POST " + state.url.trim_right("/") + "/graphql:" + (
+            "message": "POST " + state.url.trim_right("/").trim_suffix("/graphql") + "/graphql:" + (
               size(resp.Body) != 0 ?
                 string(resp.Body)
               :
