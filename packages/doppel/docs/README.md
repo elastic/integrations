@@ -133,6 +133,7 @@ An example event for `alerts` looks as following:
         "type": "logs"
     },
     "doppel": {
+        "alert_updated_at": "2025-01-15T09:00:00.000Z",
         "assignee": "analyst@example.com",
         "entity_state": "down",
         "notes": "Confirmed takedown",
@@ -145,7 +146,6 @@ An example event for `alerts` looks as following:
         ],
         "uploaded_by": "admin@example.com"
     },
-    "doppel_alert_updated_at": "2025-01-15T09:00:00.000Z",
     "ecs": {
         "version": "8.11.0"
     },
