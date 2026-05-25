@@ -778,7 +778,7 @@ An example event for `log` looks as following:
 | rsa.misc.workspace | This key captures Workspace Description | keyword |
 | rsa.network.ad_computer_dst | Deprecated, use host.dst | keyword |
 | rsa.network.addr |  | keyword |
-| rsa.network.alias_host | This key should be used when the source or destination context of a hostname is not clear.Also it captures the Device Hostname. Any Hostname that isnt ad.computer. | keyword |
+| rsa.network.alias_host | This key should be used when the source or destination context of a hostname is not clear. Also it captures the Device Hostname. Any Hostname that isn't ad.computer. | keyword |
 | rsa.network.dinterface | This key should only be used when it’s a Destination Interface | keyword |
 | rsa.network.dmask | This key is used for Destionation Device network mask | keyword |
 | rsa.network.dns_a_record |  | keyword |
