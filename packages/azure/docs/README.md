@@ -1,6 +1,6 @@
 # Azure Logs Integration
 
-The Azure Logs integration collects logs for specific Azure services like Microsoft Entra ID (Sign-in, Audit, Identity Protection, and Provisioning logs), Azure Spring Apps, Azure Firewall, Microsoft Graph Activity, and several others using the Activity and Platform logs.
+The Azure Logs integration collects logs for specific Azure services like Microsoft Entra ID (Sign-in, Audit, Identity Protection, and Provisioning logs), Azure Spring Apps, Azure Firewall, Microsoft Graph Activity, Azure AD Graph Activity, and several others using the Activity and Platform logs.
 
 You can then visualize that data in Kibana, create alerts if something goes wrong, and reference data when troubleshooting an issue.
 
@@ -16,7 +16,7 @@ fail to start due to an exceed quota limit.
 The Azure Logs integration collects logs.
 
 **Logs** help you keep a record of events that happen on your Azure account.
-Log data streams collected by the Azure Logs integration include Activity, Platform, Microsoft Entra ID (Sign-in, Audit, Identity Protection, Provisioning), Microsoft Graph Activity, and Spring Apps logs.
+Log data streams collected by the Azure Logs integration include Activity, Platform, Microsoft Entra ID (Sign-in, Audit, Identity Protection, Provisioning), Microsoft Graph Activity, Azure AD Graph Activity, and Spring Apps logs.
 
 ## Requirements
 

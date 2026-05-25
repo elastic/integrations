@@ -13,9 +13,11 @@ This module has been tested against the **Zscaler Internet Access version 6.1** 
 
 ### Agentless-enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/docs/manage-data/ingest/agentless/agentless-integrations) and the [Agentless integrations FAQ](https://www.elastic.co/docs/troubleshoot/security/agentless-integrations).
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+**NOTE:** When using an agentless deployment, only the **Sandbox Report** data stream is available. Sandbox Report uses the API-based CEL input, which is compatible with agentless mode. Other data streams (Alerts, Audit, DNS, Endpoint DLP, Firewall, Tunnel, Web) require TCP or HTTP Endpoint inputs, which are not supported in agentless deployments. To collect data from these data streams, use Elastic Agent.
 
 ### Agent-based installation
 
@@ -23,7 +25,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Collect data from Zscaler ZIA Sandbox Report API
 
-1. Go to the Zscaler ZIA Portal and login by entering your email address and password.
+1. Go to the Zscaler ZIA Portal and log in by entering your email address and password.
 2. Configure OAuth 2.0 for [Okta](https://help.zscaler.com/zia/oauth-2.0-configuration-guide-okta) or [Microsoft Entra ID](https://help.zscaler.com/zia/oauth-2.0-configuration-guide-microsoft-entra-id) for generating OAuth2.0 Credentials.
 3. Add [OAuth2.0 Authorization Server](https://help.zscaler.com/zia/managing-oauth-2.0-authorization-servers). 
 
