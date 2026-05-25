@@ -582,7 +582,7 @@ processors:
       field: "message"
       description: "305012"
       patterns:
-        - Teardown %{DATA} %{NOTSPACE:network.transport} translation from %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port}(\s*\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{IP:destination.address}/%{NUMBER:destination.port} duration %{DURATION:_temp_.duration_hms}
+        - Teardown %{DATA} %{NOTSPACE:network.transport} translation from %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port}(\s*\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}/%{NUMBER:destination.port} duration %{DURATION:_temp_.duration_hms}
       pattern_definitions:
         USERNAME: "[^@$]*"
         NOTCOLON: "[^:]*"
@@ -640,7 +640,10 @@ processors:
       field: "message"
       description: "305011"
       patterns:
-        - Built %{NOTSPACE} %{NOTSPACE:network.transport} translation from %{NOTSPACE:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port}(\(%{NOTSPACE:source.user.name}\))? to %{NOTSPACE:_temp_.cisco.destination_interface}:%{IP:destination.address}/%{NUMBER:destination.port}
+        - Built %{NOTSPACE} %{NOTSPACE:network.transport} translation from %{NOTSPACE:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port}(\(%{NOTSPACE:source.user.name}\))? to %{NOTSPACE:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}/%{NUMBER:destination.port}
+      pattern_definitions:
+        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
+        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '313001'"
       tag: parse_313001
