@@ -114,35 +114,31 @@ program: |-
                   "Header": {"Content-Type": ["application/json"]},
                 }
               ).do_request().as(refResp,
-                (refResp.StatusCode == 200) ?
-                  refResp.Body.decode_json().as(ro,
-                    {
-                      "events": [{"message": "retry"}],
-                      "cursor": {
+                refResp.Body.decode_json().as(ro,
+                  {
+                    "events": [{"message": "retry"}],
+                    "cursor": (refResp.StatusCode == 200) ?
+                      {
                         "access_token": string(ro.accessToken),
                         "refresh_token": string(ro.refreshToken),
                         "need_reauth": false,
+                      }
+                    :
+                      {
+                        "access_token": "",
+                        "refresh_token": "",
+                        "need_reauth": true,
                       },
-                      "want_more": true,
-                    }
-                  )
-                :
-                  {
-                    "events": [{"message": "retry"}],
-                    "cursor": {
-                      "access_token": "",
-                      "refresh_token": "",
-                      "need_reauth": true,
-                    },
                     "want_more": true,
                   }
+                )
               )
             : (resp.StatusCode == 429) ?
               {
                 "events": {
                   "error": {
                     "code": string(resp.StatusCode),
-                    "id": string(resp.Status),
+                    "id": resp.Status,
                     "message": "GET " + base +
                       "/api/audit-trail/auditRecords: rate limited",
                   },
@@ -154,7 +150,7 @@ program: |-
                 "events": {
                   "error": {
                     "code": string(resp.StatusCode),
-                    "id": string(resp.Status),
+                    "id": resp.Status,
                     "message": "GET " + base +
                       "/api/audit-trail/auditRecords: " + (
                         (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)
