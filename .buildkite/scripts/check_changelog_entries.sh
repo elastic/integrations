@@ -112,7 +112,7 @@ main() {
         exit 0
     fi
 
-    if [[ "${GITHUB_PR_LABELS:-""}" == *"changelog-link-check:skip"* ]]; then
+    if [[ "${GITHUB_PR_LABELS:-""}" == *"skip-changelog"* ]]; then
         echo "Skipping changelog link check: 'changelog-link-check:skip' label found."
         exit 0
     fi
