@@ -48,29 +48,24 @@ agent:
       MAX_SLEEP_SECONDS=30
       REQUIRED_FINAL_CONSECUTIVE=5
       PROBE_INTERVAL=5
-      # Oracle 12.2 cycles through listener service registrations in the minutes
-      # after startup. Probing for at least this long spans those cycles and
-      # prevents elastic-agent from connecting during a transient ORA-12541 window.
-      MIN_LOOP_SECONDS=120
       SLEEP_SECONDS="${INITIAL_SLEEP_SECONDS}"
       CONSECUTIVE_SUCCESSES=0
       LOOP_START=$(date +%s)
 
-      echo "Waiting for Oracle listener/service (minimum ${MIN_LOOP_SECONDS}s observation window)..."
+      # Oracle 12.2 can briefly drop service registration in the first minutes
+      # after startup, causing transient ORA-12541. Require several consecutive
+      # successful probes to avoid exiting during such a window.
+      echo "Waiting for Oracle listener/service..."
       for i in $(seq 1 "${MAX_RETRIES}"); do
         ELAPSED=$(( $(date +%s) - LOOP_START ))
         if OUTPUT=$(echo "select 1 from dual;" | sqlplus -s "${ORACLE_DSN}" 2>&1) && ! echo "${OUTPUT}" | grep -qE "ORA-|SP2-"; then
           CONSECUTIVE_SUCCESSES=$((CONSECUTIVE_SUCCESSES + 1))
-          echo "Oracle probe ok (${CONSECUTIVE_SUCCESSES} consecutive, ${ELAPSED}s elapsed) on attempt ${i}"
-          if [ "${ELAPSED}" -ge "${MIN_LOOP_SECONDS}" ] && [ "${CONSECUTIVE_SUCCESSES}" -ge "${REQUIRED_FINAL_CONSECUTIVE}" ]; then
+          echo "Oracle probe ok (${CONSECUTIVE_SUCCESSES}/${REQUIRED_FINAL_CONSECUTIVE} consecutive, ${ELAPSED}s elapsed) on attempt ${i}"
+          if [ "${CONSECUTIVE_SUCCESSES}" -ge "${REQUIRED_FINAL_CONSECUTIVE}" ]; then
             echo "Oracle is ready after ${ELAPSED}s with ${CONSECUTIVE_SUCCESSES} consecutive probes"
             break
           fi
-          if [ "${ELAPSED}" -ge "${MIN_LOOP_SECONDS}" ]; then
-            sleep 1
-          else
-            sleep "${PROBE_INTERVAL}"
-          fi
+          sleep "${PROBE_INTERVAL}"
           continue
         fi
 
