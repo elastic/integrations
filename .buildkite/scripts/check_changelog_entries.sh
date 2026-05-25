@@ -99,6 +99,11 @@ main() {
         exit 0
     fi
 
+    if [[ "${GITHUB_PR_LABELS:-""}" == *"changelog-link-check:skip"* ]]; then
+        echo "Skipping changelog link check: 'changelog-link-check:skip' label found."
+        exit 0
+    fi
+
     if running_on_buildkite; then
         # Install required tools to post comments in Pull Requests
         echo "--- Installing tools"
