@@ -802,7 +802,8 @@ is_pr_affected() {
         'README\.md'
         '\.agents/skills/'
         'dev/scripts/'
-        '\.buildkite/scripts/run_shell_scripts_tests\.sh'
+        '\.buildkite/scripts/run_buildkite_scripts_tests\.sh'
+        '\.buildkite/scripts/run_dev_scripts_tests\.sh'
         '\.buildkite/scripts/check_changelog_entries\.sh'
         '\.buildkite/scripts/test_check_changelog_entries\.sh'
     )
@@ -1189,6 +1190,7 @@ add_or_edit_gh_pr_comment() {
     if [[ "${comment_id}" == "" ]]; then
         echo "Creating new comment"
         gh pr comment \
+          --repo "${owner}/${repo}" \
           "${BUILDKITE_PULL_REQUEST}" \
           --body "${contents}"
         return
