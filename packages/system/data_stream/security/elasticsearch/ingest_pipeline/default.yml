@@ -14,6 +14,33 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "standard" }}'
       if: 'ctx.winlog?.provider_name != null && ["Microsoft-Windows-Eventlog", "Microsoft-Windows-Security-Auditing"].contains(ctx.winlog.provider_name)'
+  - pipeline:
+      name: '{{ IngestPipeline "scheduled_task" }}'
+      if: >-
+        ctx.winlog != null &&
+        ctx.winlog.provider_name == 'Microsoft-Windows-Security-Auditing' &&
+        ctx.event != null &&
+        ctx.winlog.event_data instanceof Map &&
+        (
+          (
+            ['4698', '4700', '4701'].contains(ctx.event.code) &&
+            ctx.winlog.event_data.TaskContent instanceof String
+          ) ||
+          (
+            ctx.event.code == '4702' &&
+            ctx.winlog.event_data.TaskContentNew instanceof String
+          )
+        )
+  - set:
+      field: winlog.scheduled_task.name
+      copy_from: winlog.event_data.TaskName
+      ignore_empty_value: true
+      if: >-
+        ctx.winlog?.provider_name == 'Microsoft-Windows-Security-Auditing' &&
+        ctx.winlog?.event_data instanceof Map &&
+        ctx.winlog.event_data.TaskName != null &&
+        ctx.event?.code != null &&
+        ['4698', '4699', '4700', '4701', '4702'].contains(ctx.event.code)
   - gsub:
       field: source.ip
       pattern: '^\[?::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)(?:\](?::[0-9]+)?)?$'

@@ -1,0 +1,470 @@
+---
+description: Pipeline for parsing Windows Security scheduled task XML.
+processors:
+  - script:
+      tag: parse_scheduled_task_xml
+      description: Extract scheduled task definition fields from Security event TaskContent XML.
+      lang: painless
+      params:
+        action_types:
+          Exec: exec
+          ComHandler: com_handler
+        trigger_types:
+          TimeTrigger: time
+          CalendarTrigger: calendar
+          BootTrigger: boot
+          LogonTrigger: logon
+          RegistrationTrigger: registration
+          WnfStateChangeTrigger: wnf_state_change
+          SessionStateChangeTrigger: session_state_change
+          EventTrigger: event
+          IdleTrigger: idle
+      source: |
+        // Purpose-built scanner for Windows Task Scheduler XML. This extracts
+        // only the fields mapped below and is not a general XML parser.
+        // Tags are matched by local name so default and prefixed namespaces work.
+        boolean isWs(String s, int i) {
+          int c = s.charAt(i);
+          return c == 32 || c == 9 || c == 10 || c == 13;
+        }
+
+        int qNameEnd(String s, int start) {
+          int i = start;
+          while (i < s.length()) {
+            int c = s.charAt(i);
+            if (isWs(s, i) || c == 47 || c == 62 || c == 61) {
+              return i;
+            }
+            i++;
+          }
+          return i;
+        }
+
+        String localName(String s, int start, int end) {
+          int localStart = start;
+          for (int i = start; i < end; i++) {
+            if (s.charAt(i) == 58) {
+              localStart = i + 1;
+            }
+          }
+          return s.substring(localStart, end);
+        }
+
+        String openLocalName(String xml, int lt) {
+          int start = lt + 1;
+          if (start >= xml.length()) {
+            return null;
+          }
+          int c = xml.charAt(start);
+          if (c == 47 || c == 33 || c == 63) {
+            return null;
+          }
+          int end = qNameEnd(xml, start);
+          if (end == start) {
+            return null;
+          }
+          return localName(xml, start, end);
+        }
+
+        boolean openMatches(String xml, int lt, String local) {
+          String found = openLocalName(xml, lt);
+          return found != null && found.equals(local);
+        }
+
+        boolean closeMatches(String xml, int lt, String local) {
+          int start = lt + 2;
+          if (lt + 1 >= xml.length() || xml.charAt(lt + 1) != 47 || start >= xml.length()) {
+            return false;
+          }
+          int end = qNameEnd(xml, start);
+          if (end == start) {
+            return false;
+          }
+          return localName(xml, start, end).equals(local);
+        }
+
+        boolean selfClosing(String xml, int gt) {
+          int i = gt - 1;
+          while (i >= 0 && isWs(xml, i)) {
+            i--;
+          }
+          return i >= 0 && xml.charAt(i) == 47;
+        }
+
+        int findOpen(String xml, String local, int from, int limit) {
+          int pos = from;
+          while (pos < limit) {
+            int lt = xml.indexOf("<", pos);
+            if (lt == -1 || lt >= limit) {
+              return -1;
+            }
+            if (openMatches(xml, lt, local)) {
+              return lt;
+            }
+            pos = lt + 1;
+          }
+          return -1;
+        }
+
+        // Find matching element bounds. This tracks nested elements with the same
+        // local name and supports self-closing tags.
+        HashMap blockAt(String xml, int open, String local, int limit) {
+          int gt = xml.indexOf(">", open);
+          if (gt == -1 || gt >= limit) {
+            throw new IllegalArgumentException("unterminated opening tag");
+          }
+
+          HashMap b = new HashMap();
+          b.put("open", open);
+          b.put("start", gt + 1);
+
+          if (selfClosing(xml, gt)) {
+            b.put("end", gt + 1);
+            b.put("after", gt + 1);
+            return b;
+          }
+
+          int depth = 1;
+          int pos = gt + 1;
+          while (pos < limit) {
+            int lt = xml.indexOf("<", pos);
+            if (lt == -1 || lt >= limit) {
+              break;
+            }
+            if (openMatches(xml, lt, local)) {
+              int nestedGt = xml.indexOf(">", lt);
+              if (nestedGt == -1 || nestedGt >= limit) {
+                throw new IllegalArgumentException("unterminated nested tag");
+              }
+              if (!selfClosing(xml, nestedGt)) {
+                depth++;
+              }
+              pos = nestedGt + 1;
+              continue;
+            }
+            if (closeMatches(xml, lt, local)) {
+              int closeGt = xml.indexOf(">", lt);
+              if (closeGt == -1 || closeGt >= limit) {
+                throw new IllegalArgumentException("unterminated closing tag");
+              }
+              depth--;
+              if (depth == 0) {
+                b.put("end", lt);
+                b.put("after", closeGt + 1);
+                return b;
+              }
+              pos = closeGt + 1;
+              continue;
+            }
+            pos = lt + 1;
+          }
+          throw new IllegalArgumentException("missing closing tag");
+        }
+
+        HashMap block(String xml, String local, int from, int limit) {
+          int open = findOpen(xml, local, from, limit);
+          if (open == -1) {
+            return null;
+          }
+          return blockAt(xml, open, local, limit);
+        }
+
+        String decodeEntities(String v) {
+          return v
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+            .replace("&quot;", "\"")
+            .replace("&apos;", "'")
+            .replace("&amp;", "&");
+        }
+
+        String cleanText(String value) {
+          if (value == null) {
+            return null;
+          }
+          String v = value.trim();
+          if (v.startsWith("<![CDATA[") && v.endsWith("]]>")) {
+            v = v.substring(9, v.length() - 3).trim();
+          }
+          v = decodeEntities(v).trim();
+          if (v.length() == 0) {
+            return null;
+          }
+          return v;
+        }
+
+        String textFor(String xml, String local, int from, int limit) {
+          HashMap b = block(xml, local, from, limit);
+          if (b == null) {
+            return null;
+          }
+          return cleanText(xml.substring((int)b.get("start"), (int)b.get("end")));
+        }
+
+        // Minimal attribute reader used for Principal id and Actions Context.
+        String attr(String xml, int open, String wanted) {
+          int gt = xml.indexOf(">", open);
+          if (gt == -1) {
+            throw new IllegalArgumentException("unterminated attribute tag");
+          }
+          int nameStart = open + 1;
+          int nameEnd = qNameEnd(xml, nameStart);
+          int i = nameEnd;
+          while (i < gt) {
+            while (i < gt && (isWs(xml, i) || xml.charAt(i) == 47)) {
+              i++;
+            }
+            if (i >= gt) {
+              break;
+            }
+            int attrStart = i;
+            while (i < gt && !isWs(xml, i) && xml.charAt(i) != 61 && xml.charAt(i) != 47) {
+              i++;
+            }
+            int attrEnd = i;
+            while (i < gt && isWs(xml, i)) {
+              i++;
+            }
+            if (i >= gt || xml.charAt(i) != 61) {
+              continue;
+            }
+            i++;
+            while (i < gt && isWs(xml, i)) {
+              i++;
+            }
+            if (i >= gt) {
+              break;
+            }
+            int quote = xml.charAt(i);
+            if (quote != 34 && quote != 39) {
+              continue;
+            }
+            i++;
+            int valueStart = i;
+            while (i < gt && xml.charAt(i) != quote) {
+              i++;
+            }
+            if (i >= gt) {
+              throw new IllegalArgumentException("unterminated attribute value");
+            }
+            String attrLocal = localName(xml, attrStart, attrEnd);
+            String value = xml.substring(valueStart, i);
+            i++;
+            if (attrLocal.equals(wanted)) {
+              return cleanText(value);
+            }
+          }
+          return null;
+        }
+
+        def boolText(String value) {
+          if (value == null) {
+            return null;
+          }
+          String v = value.trim().toLowerCase();
+          if (v.equals("true")) {
+            return true;
+          }
+          if (v.equals("false")) {
+            return false;
+          }
+          return null;
+        }
+
+        void putText(HashMap target, String field, String xml, String local, int from, int limit) {
+          String value = textFor(xml, local, from, limit);
+          if (value != null) {
+            target.put(field, value);
+          }
+        }
+
+        void putBool(HashMap target, String field, String xml, String local, int from, int limit) {
+          def value = boolText(textFor(xml, local, from, limit));
+          if (value != null) {
+            target.put(field, value);
+          }
+        }
+
+        try {
+          if (ctx.event == null || ctx.winlog == null || !(ctx.winlog.event_data instanceof Map)) {
+            return;
+          }
+
+          String code = ctx.event.code == null ? null : ctx.event.code.toString();
+          if (code == null || !["4698", "4700", "4701", "4702"].contains(code)) {
+            return;
+          }
+
+          // 4698/4700/4701 carry TaskContent. 4702 carries TaskContentNew.
+          // 4699 has no task XML and is handled by the TaskName set processor.
+          def raw = code.equals("4702") ? ctx.winlog.event_data.TaskContentNew : ctx.winlog.event_data.TaskContent;
+          if (!(raw instanceof String)) {
+            return;
+          }
+
+          String xml = raw;
+          // Keep parsing bounded. Oversized or malformed XML should not fail ingest.
+          if (xml.length() > 65536) {
+            return;
+          }
+
+          HashMap task = block(xml, "Task", 0, xml.length());
+          if (task == null) {
+            return;
+          }
+
+          int taskStart = (int)task.get("start");
+          int taskEnd = (int)task.get("end");
+          HashMap st = new HashMap();
+
+          HashMap reg = block(xml, "RegistrationInfo", taskStart, taskEnd);
+          if (reg != null) {
+            putText(st, "uri", xml, "URI", (int)reg.get("start"), (int)reg.get("end"));
+          }
+
+          // Keep principal sub-objects explicit because these fields have nested output shapes.
+          HashMap principalsBlock = block(xml, "Principals", taskStart, taskEnd);
+          if (principalsBlock != null) {
+            ArrayList principals = new ArrayList();
+            int pos = (int)principalsBlock.get("start");
+            int end = (int)principalsBlock.get("end");
+            while (pos < end) {
+              int pOpen = findOpen(xml, "Principal", pos, end);
+              if (pOpen == -1) {
+                break;
+              }
+              HashMap pb = blockAt(xml, pOpen, "Principal", end);
+              HashMap principal = new HashMap();
+              String id = attr(xml, pOpen, "id");
+              if (id != null) {
+                principal.put("id", id);
+              }
+              String userId = textFor(xml, "UserId", (int)pb.get("start"), (int)pb.get("end"));
+              if (userId != null) {
+                HashMap user = new HashMap();
+                user.put("identifier", userId);
+                principal.put("user", user);
+              }
+              String groupId = textFor(xml, "GroupId", (int)pb.get("start"), (int)pb.get("end"));
+              if (groupId != null) {
+                HashMap group = new HashMap();
+                group.put("identifier", groupId);
+                principal.put("group", group);
+              }
+              String logonType = textFor(xml, "LogonType", (int)pb.get("start"), (int)pb.get("end"));
+              if (logonType != null) {
+                HashMap logon = new HashMap();
+                logon.put("type", logonType);
+                principal.put("logon", logon);
+              }
+              String runLevel = textFor(xml, "RunLevel", (int)pb.get("start"), (int)pb.get("end"));
+              if (runLevel != null) {
+                principal.put("run_level", runLevel);
+              }
+              if (principal.size() > 0) {
+                principals.add(principal);
+              }
+              pos = (int)pb.get("after");
+            }
+            if (principals.size() > 0) {
+              st.put("principals", principals);
+            }
+          }
+
+          // Scope repeated element names to their parent block. For example, Enabled can
+          // appear under Settings and individual triggers.
+          HashMap settingsBlock = block(xml, "Settings", taskStart, taskEnd);
+          if (settingsBlock != null) {
+            HashMap settings = new HashMap();
+            putBool(settings, "enabled", xml, "Enabled", (int)settingsBlock.get("start"), (int)settingsBlock.get("end"));
+            putBool(settings, "hidden", xml, "Hidden", (int)settingsBlock.get("start"), (int)settingsBlock.get("end"));
+            if (settings.size() > 0) {
+              st.put("settings", settings);
+            }
+          }
+
+          HashMap triggersBlock = block(xml, "Triggers", taskStart, taskEnd);
+          if (triggersBlock != null) {
+            ArrayList triggers = new ArrayList();
+            int pos = (int)triggersBlock.get("start");
+            int end = (int)triggersBlock.get("end");
+            while (pos < end) {
+              int lt = xml.indexOf("<", pos);
+              if (lt == -1 || lt >= end) {
+                break;
+              }
+              String local = openLocalName(xml, lt);
+              // Only mapped Task Scheduler trigger types are emitted; unknown elements are skipped.
+              String type = local == null ? null : params.trigger_types.get(local);
+              if (type == null) {
+                pos = lt + 1;
+                continue;
+              }
+              HashMap tb = blockAt(xml, lt, local, end);
+              HashMap trigger = new HashMap();
+              trigger.put("type", type);
+              putBool(trigger, "enabled", xml, "Enabled", (int)tb.get("start"), (int)tb.get("end"));
+              HashMap repetitionBlock = block(xml, "Repetition", (int)tb.get("start"), (int)tb.get("end"));
+              if (repetitionBlock != null) {
+                HashMap repetition = new HashMap();
+                putText(repetition, "interval", xml, "Interval", (int)repetitionBlock.get("start"), (int)repetitionBlock.get("end"));
+                putText(repetition, "duration", xml, "Duration", (int)repetitionBlock.get("start"), (int)repetitionBlock.get("end"));
+                putBool(repetition, "stop_at_duration_end", xml, "StopAtDurationEnd", (int)repetitionBlock.get("start"), (int)repetitionBlock.get("end"));
+                if (repetition.size() > 0) {
+                  trigger.put("repetition", repetition);
+                }
+              }
+              triggers.add(trigger);
+              pos = (int)tb.get("after");
+            }
+            if (triggers.size() > 0) {
+              st.put("triggers", triggers);
+            }
+          }
+
+          // Actions Context is defined on the Actions element and applies to child actions.
+          HashMap actionsBlock = block(xml, "Actions", taskStart, taskEnd);
+          if (actionsBlock != null) {
+            ArrayList actions = new ArrayList();
+            String context = attr(xml, (int)actionsBlock.get("open"), "Context");
+            int pos = (int)actionsBlock.get("start");
+            int end = (int)actionsBlock.get("end");
+            while (pos < end) {
+              int lt = xml.indexOf("<", pos);
+              if (lt == -1 || lt >= end) {
+                break;
+              }
+              String local = openLocalName(xml, lt);
+              String type = local == null ? null : params.action_types.get(local);
+              if (type == null) {
+                pos = lt + 1;
+                continue;
+              }
+              HashMap ab = blockAt(xml, lt, local, end);
+              HashMap action = new HashMap();
+              action.put("type", type);
+              if (context != null) {
+                action.put("context", context);
+              }
+              if (type.equals("exec")) {
+                putText(action, "command", xml, "Command", (int)ab.get("start"), (int)ab.get("end"));
+                putText(action, "arguments", xml, "Arguments", (int)ab.get("start"), (int)ab.get("end"));
+                putText(action, "working_directory", xml, "WorkingDirectory", (int)ab.get("start"), (int)ab.get("end"));
+              } else if (type.equals("com_handler")) {
+                putText(action, "class_id", xml, "ClassId", (int)ab.get("start"), (int)ab.get("end"));
+              }
+              actions.add(action);
+              pos = (int)ab.get("after");
+            }
+            if (actions.size() > 0) {
+              st.put("actions", actions);
+            }
+          }
+
+          if (st.size() > 0) {
+            ctx.winlog.scheduled_task = st;
+          }
+        } catch (Exception e) {
+          // Fail open on unexpected XML shapes.
+          return;
+        }
