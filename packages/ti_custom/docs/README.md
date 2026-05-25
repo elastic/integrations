@@ -85,6 +85,14 @@ Some IOCs may never expire and will continue to stay in the latest destination i
 
 To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_custom.indicator-*` are allowed to contain duplicates from each polling interval. ILM policy is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date.
 
+## Troubleshooting
+
+### "exceeding maximum number of CEL executions"
+
+The CEL input limits how many pages it fetches during a single polling interval. The default is `1000`. High-volume TAXII feeds with large collections may exceed this limit, causing the integration to enter a DEGRADED state with this message.
+
+To resolve this, increase `Maximum Pages Per Interval` in the integration's advanced settings. The value must be a positive integer and should be large enough to allow the agent to paginate through the full result set within one interval. Alternatively, reduce the polling interval so each run has fewer pages to fetch.
+
 ## Logs reference
 
 ### indicator

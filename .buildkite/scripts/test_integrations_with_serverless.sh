@@ -22,7 +22,7 @@ if running_on_buildkite; then
 fi
 
 SERVERLESS_PROJECT=${SERVERLESS_PROJECT:-"observability"}
-echo "Running packages on Serverles project type: ${SERVERLESS_PROJECT}"
+echo "Running packages on Serverless project type: ${SERVERLESS_PROJECT}"
 if running_on_buildkite; then
     buildkite-agent annotate "Serverless Project: ${SERVERLESS_PROJECT}" --context "ctx-info-${SERVERLESS_PROJECT}" --style "info"
 fi
@@ -64,12 +64,12 @@ echo "Done."
 echo "--- Get from and to changesets"
 from="$(get_from_changeset)"
 if [[ "${from}" == "" ]]; then
-    echo "Missing \"from\" changset".
+    echo "Missing \"from\" changeset".
     exit 1
 fi
 to="$(get_to_changeset)"
 if [[ "${to}" == "" ]]; then
-    echo "Missing \"to\" changset".
+    echo "Missing \"to\" changeset".
     exit 1
 fi
 echo "Checking with commits: from: '${from}' to: '${to}'"

@@ -1,40 +1,51 @@
 {
-    "id": "zookeeper_otel-excessive-znode-count",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[ZooKeeper OTel] Excessive znode count",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "zookeeper"
-        ],
-        "schedule": {
-            "interval": "5m"
-        },
-        "alertDelay": {
-            "active": 3
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-generic.otel-default\n| WHERE metrics.zookeeper.znode.count IS NOT NULL\n// Peak znode count per node in the time window\n| STATS max_znodes = MAX(metrics.zookeeper.znode.count) BY host.name\n// Official ZooKeeper docs recommend alerting above 1,000,000 znodes\n// Excessive znodes cause memory pressure and slow startup/recovery\n// Adjust based on your expected data model size\n| WHERE max_znodes > 1000000"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "host.name",
-            "termSize": 10
+  "id": "zookeeper_otel-excessive-znode-count",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when znode count exceeds 1,000,000. Large counts slow startup and recovery.",
+    "name": "[ZooKeeper OTel] Excessive znode count",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "zookeeper"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "zookeeper_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## ZooKeeper excessive znode count\n\n### What fired\nZnode count exceeded 1,000,000 during the window.\n\n### Why it matters\nMillion-plus znodes stretch ZooKeeper beyond its design sweet spot \u2014 startup, snapshots, and replication all slow.\n\n### Triage\n1. Identify the clients producing many znodes.\n\n### Remediation\n- Redesign the data model.\n\n### Tuning\n- 1M threshold matches the documented guidance.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-generic.otel-default\n| WHERE metrics.zookeeper.znode.count IS NOT NULL\n// Peak znode count per node in the time window\n| STATS max_znodes = MAX(metrics.zookeeper.znode.count) BY host.name\n// Official ZooKeeper docs recommend alerting above 1,000,000 znodes\n// Excessive znodes cause memory pressure and slow startup/recovery\n// Adjust based on your expected data model size\n| WHERE max_znodes > 1000000"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 10
     }
+  }
 }

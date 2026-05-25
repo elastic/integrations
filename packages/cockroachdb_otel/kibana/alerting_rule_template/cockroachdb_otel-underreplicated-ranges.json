@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when any ranges have fewer replicas than the replication target (`ranges_underreplicated > 0`). The cluster is still serving traffic but has lost redundancy \u2014 further failures could cause unavailability.",
     "name": "[CockroachDB OTel] Under-replicated ranges detected",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cockroachdb_otel-replication"
+        },
+        {
+          "id": "cockroachdb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## CockroachDB under-replicated ranges\n\n### What fired\n`ranges_underreplicated` on at least one store exceeded 0 over the evaluation window.\n\n### Why it matters\nAn under-replicated range is still serving traffic but has fewer replicas than the replication factor specifies. The cluster has lost its safety margin: one more replica failure in the affected range(s) can cause unavailability.\n\n### Triage\n1. Check `liveness_livenodes`. Are any nodes down or decommissioning?\n2. Inspect `ranges_underreplicated` by `attributes.node_id` / `attributes.store` to see whether the issue is concentrated or spread.\n3. Look at `rebalancing_range_rebalances` \u2014 if up-replication is in flight, the metric will drain on its own.\n4. Check available capacity on surviving stores (`capacity_used / capacity`); full stores cannot host new replicas.\n\n### Remediation\n- If a node is down, bring it back or replace it.\n- If capacity is full, add nodes; CockroachDB will up-replicate automatically once capacity exists.\n- Check zone configs haven't accidentally been set to a replication factor exceeding the number of failure domains.\n\n### Tuning\n- The 10-minute window filters brief rebalancing dips. Extend to 15m+ if your cluster frequently rebalances.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND ranges_underreplicated IS NOT NULL\n  AND ranges_underreplicated > 0\n// Store-level metric\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NOT NULL\n| STATS underreplicated = MAX(ranges_underreplicated) BY attributes.node_id, attributes.store, host.name\n| SORT underreplicated DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 10,
