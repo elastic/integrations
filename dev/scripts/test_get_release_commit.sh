@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Unit tests for get_release_commit.sh.
-# Run directly or via .buildkite/scripts/run_shell_scripts_tests.sh.
+# Run directly or via .buildkite/scripts/run_dev_scripts_tests.sh.
 
 set -euo pipefail
 

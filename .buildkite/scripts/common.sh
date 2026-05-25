@@ -806,6 +806,7 @@ is_pr_affected() {
         '\.buildkite/scripts/run_dev_scripts_tests\.sh'
         '\.buildkite/scripts/check_changelog_entries\.sh'
         '\.buildkite/scripts/test_check_changelog_entries\.sh'
+        '\.buildkite/scripts/requirements-ci-python-scripts\.txt'
     )
     local non_package_regex
     non_package_regex="^($(IFS='|'; echo "${non_package_patterns[*]}"))"
@@ -1191,7 +1192,7 @@ add_or_edit_gh_pr_comment() {
         echo "Creating new comment"
         gh pr comment \
           --repo "${owner}/${repo}" \
-          "${BUILDKITE_PULL_REQUEST}" \
+          "${pr_number}" \
           --body "${contents}"
         return
     fi
