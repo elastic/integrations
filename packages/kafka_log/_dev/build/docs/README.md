@@ -6,7 +6,7 @@ The Custom Kafka integration is an **input** package for Elastic Agent. It runs 
 
 ### Compatibility
 
-This integration is intended for Kafka clusters where brokers speak the standard Kafka protocol. It is tested and supported for Kafka broker versions roughly between **0.11** and **2.8.0**. Earlier or later brokers can work but are not guaranteed.
+This integration is intended for Kafka clusters where brokers speak the standard Kafka protocol. It is tested and supported for Kafka broker versions roughly between **0.11** and **4.0.0**. Earlier or later brokers can work but are not guaranteed.
 
 ### How it works
 

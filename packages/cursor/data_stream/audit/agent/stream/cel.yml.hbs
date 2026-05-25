@@ -1,0 +1,126 @@
+interval: {{interval}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+resource.url: "{{url}}"
+state:
+  api_key: "{{api_key}}"
+  page_size: {{page_size}}
+  initial_interval: "{{initial_interval}}"
+  event_types: "{{event_types}}"
+redact:
+  fields:
+    - api_key
+program: |-
+  {
+    // The Cursor Admin API rejects startTime/endTime windows larger than 30
+    // days and does not serve data older than that. Clamp the effective start
+    // at now - 30 days so configurations or persisted cursors reaching further
+    // back still produce a valid request (best-effort 30-day lookback) instead
+    // of erroring out.
+    "start": timestamp(
+      max(
+        int(
+          timestamp(
+            state.?cursor.last_timestamp.orValue(
+              (now - duration(state.initial_interval)).format(time_layout.RFC3339Nano)
+            )
+          )
+        ),
+        int(now - duration("720h"))
+      )
+    ).format(time_layout.RFC3339Nano),
+    "end": state.?cursor.next.window_end.orValue(
+      now.format(time_layout.RFC3339Nano)
+    ),
+  }.as(time,
+    int(state.?cursor.next.page.orValue(1)).as(page,
+      state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + "/teams/audit-logs?" + {
+            "startTime": [time.start],
+            "endTime": [time.end],
+            "page": [string(page)],
+            "pageSize": [string(int(state.page_size))],
+            ?"eventTypes": (state.?event_types.orValue("") != "") ?
+              optional.of([state.event_types])
+            :
+              optional.none(),
+          }.format_query()
+        ).with(
+          {
+            "Header": {
+              "Accept": ["application/json"],
+              "Authorization": ["Basic " + bytes(state.api_key + ":").base64()],
+            },
+          }
+        ).do_request().as(resp,
+          (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              {
+                "events": body.?events.orValue([]).map(e, {"message": e.encode_json()}),
+                "want_more": body.?pagination.hasNextPage.orValue(false),
+                "cursor": body.?pagination.hasNextPage.orValue(false) ?
+                  {
+                    "last_timestamp": time.start,
+                    "next": {"page": page + 1, "window_end": time.end},
+                  }
+                :
+                  {
+                    "last_timestamp": (size(body.?events.orValue([])) > 0) ?
+                      body.events[size(body.events) - 1].?timestamp.orValue(time.end)
+                    :
+                      time.end,
+                  },
+              }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET " + state.url.trim_right("/") + "/teams/audit-logs: " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status)
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

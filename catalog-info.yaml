@@ -42,7 +42,7 @@ spec:
       name: integrations
       description: 'Pipeline for the Integrations project'
     spec:
-      branch_configuration: "main backport-*"
+      branch_configuration: "main backport-* feature/*"
       pipeline_file: ".buildkite/pipeline.yml"
       provider_settings:
         build_pull_request_forks: false
@@ -53,9 +53,9 @@ spec:
           build.pull_request.id == null || (build.creator.name == 'elasticmachine' && build.pull_request.id != null && build.source == 'api')
       repository: elastic/integrations
       cancel_intermediate_builds: true
-      cancel_intermediate_builds_branch_filter: '!main !backport-*'
+      cancel_intermediate_builds_branch_filter: '!main !backport-* !feature/*'
       skip_intermediate_builds: true
-      skip_intermediate_builds_branch_filter: '!main !backport-*'
+      skip_intermediate_builds_branch_filter: '!main !backport-* !feature/*'
       env:
         ELASTIC_PR_COMMENTS_ENABLED: 'true'
       teams:
@@ -183,7 +183,7 @@ spec:
       schedules:
         main_daily:
           branch: "main"
-          cronline: "30 0 * 1-5"
+          cronline: "30 0 * * 1-5"
           message: "Run the daily jobs"
           env:
             TEST_PACKAGES_7_BRANCH: "true"
@@ -191,19 +191,19 @@ spec:
             REPUBLISH_PACKAGES: "true"
         main_daily_8_version:
           branch: "main"
-          cronline: "30 1 * 1-5"
+          cronline: "30 1 * * 1-5"
           message: "Run the daily jobs for 8.x"
           env:
             TEST_PACKAGES_8_BRANCH: "true"
         main_daily_9_version:
           branch: "main"
-          cronline: "30 3 * 1-5"
+          cronline: "30 3 * * 1-5"
           message: "Run the daily jobs for 9.x"
           env:
             TEST_PACKAGES_9_BRANCH: "true"
         main_daily_basic_subscription:
           branch: "main"
-          cronline: "30 4 * 1-5"
+          cronline: "30 4 * * 1-5"
           message: "Run the daily jobs for basic subscription"
           env:
             TEST_PACKAGES_BASIC_SUBSCRIPTION: "true"
