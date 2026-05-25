@@ -582,12 +582,11 @@ processors:
       field: "message"
       description: "305012"
       patterns:
-        - Teardown %{DATA} %{NOTSPACE:network.transport} translation from %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port}(\s*\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}/%{NUMBER:destination.port} duration %{DURATION:_temp_.duration_hms}
+        - Teardown %{DATA} %{NOTSPACE:network.transport} translation from %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port}(\s*\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port} duration %{DURATION:_temp_.duration_hms}
       pattern_definitions:
         USERNAME: "[^@$]*"
         NOTCOLON: "[^:]*"
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
-        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(%{HOSTNAME}\\)?(?:%{USERNAME})\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?(?:%{NUMBER}:%{DATA})?))
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
   - grok:
