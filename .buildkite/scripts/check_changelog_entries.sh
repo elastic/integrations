@@ -160,7 +160,7 @@ main() {
 
     if [[ "${total_errors}" -gt 0 ]]; then
         echo ""
-        echo "${total_errors} changelog link(s) do not match this PR:"
+        echo "--- ${total_errors} changelog link(s) do not match this PR"
         local message="**Changelog link mismatch** — expected \`${expected_pr_link}\` in the following file(s):"$'\n'
         for f in "${failed_files[@]}"; do
             message+="- \`${f}\`"$'\n'
