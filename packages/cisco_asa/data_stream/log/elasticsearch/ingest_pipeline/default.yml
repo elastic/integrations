@@ -126,43 +126,65 @@ processors:
 
   - script:
       lang: painless
-      tag: script_tz_mapping
-      if: ctx._temp_?.tz != null && ctx._temp_?.tz != '' && ctx._conf?.tz_map != null
-      source: >-
-        for (def item : ctx._conf.tz_map) {
-          if (item.tz_short == ctx._temp_.tz) {
-            ctx._temp_.tz = item.tz_long;
-            break;
-          }
-        }
+      tag: script_timezone
+      description: >-
+        Resolve timezone abbreviations that may not be supported by Java
+        natively. Checks tz_map for user-configured mappings first, then
+        a built-in map of common abbreviations, then ZoneId.SHORT_IDS for
+        short abbreviations. Falls back to tz_offset config, event.timezone,
+        or UTC.
+      if: ctx._temp_?.raw_date != null
+      source: |-
+        Map abbrevs = new HashMap();
+        abbrevs.put('ACDT', '+10:30');
+        abbrevs.put('ACST', '+09:30');
+        abbrevs.put('AEDT', '+11:00');
+        abbrevs.put('AEST', '+10:00');
+        abbrevs.put('AWST', '+08:00');
+        abbrevs.put('BST', '+01:00');
+        abbrevs.put('CEST', '+02:00');
+        abbrevs.put('CET', '+01:00');
+        abbrevs.put('EEST', '+03:00');
+        abbrevs.put('EET', '+02:00');
+        abbrevs.put('GMT', '+00:00');
+        abbrevs.put('HKT', '+08:00');
+        abbrevs.put('IST', '+05:30');
+        abbrevs.put('JST', '+09:00');
+        abbrevs.put('KST', '+09:00');
+        abbrevs.put('NZDT', '+13:00');
+        abbrevs.put('NZST', '+12:00');
+        abbrevs.put('SGT', '+08:00');
+        abbrevs.put('UTC', '+00:00');
+        abbrevs.put('WEST', '+01:00');
+        abbrevs.put('WET', '+00:00');
 
-  # Time zone can come from three sources, choose in order: log, config, locale, default to UTC.
-  - set:
-      tag: set__temp__tz_aad5b1e3
-      field: _temp_.tz
-      value: UTC
-      if: ctx._temp_?.tz == 'Z'
-  - set:
-      tag: set__temp__tz_f9f73f5a
-      field: _temp_.tz
-      copy_from: _conf.tz_offset
-      override: false
-      if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
-  - set:
-      tag: set__temp__tz_c02c1420
-      field: _temp_.tz
-      copy_from: event.timezone
-      override: false
-      if: ctx.event?.timezone != null
-  - set:
-      tag: set__temp__tz_11a55a67
-      field: _temp_.tz
-      value: UTC
-      override: false
-  - set:
-      tag: set_event_timezone_035b9b5e
-      field: event.timezone
-      copy_from: _temp_.tz
+        String resolved = 'UTC';
+        if (ctx._temp_?.tz != null && ctx._temp_.tz != '') {
+          resolved = ctx._temp_.tz;
+          if (ctx._conf?.tz_map != null) {
+            for (def item : ctx._conf.tz_map) {
+              if (item.tz_short == ctx._temp_.tz) {
+                resolved = item.tz_long;
+                break;
+              }
+            }
+          }
+          if (resolved == ctx._temp_.tz) {
+            if (ctx._temp_.tz == 'Z') {
+              resolved = '+00:00';
+            } else {
+              String upper = ctx._temp_.tz.toUpperCase();
+              if (abbrevs.containsKey(upper)) {
+                resolved = abbrevs.get(upper);
+              }
+            }
+          }
+        } else if (ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local') {
+          resolved = ctx._conf.tz_offset;
+        } else if (ctx.event?.timezone != null) {
+          resolved = ctx.event.timezone;
+        }
+        ctx.event.timezone = resolved;
   #
   # Parse the date included in FTD logs
   #
