@@ -1,0 +1,1126 @@
+---
+description: >-
+  Cursor audit events — parse `event.original`, route S3-shaped events to the
+  normalizer sub-pipeline, then apply unified ECS categorization, field renames,
+  outcome derivation, URL parsing, and source enrichment.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: "9.3.0"
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original `message` field to `event.original` to store a copy of the original message.
+        The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is not required when the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json_from_event_original
+      if: ctx.event?.original != null
+  - pipeline:
+      name: '{{ IngestPipeline "s3" }}'
+      tag: route_s3_audit_events
+      if: ctx.json instanceof Map && ctx.json?.metadata != null
+      ignore_missing_pipeline: true
+
+  # Use the event_id (already normalized for both API and S3 inputs) as the
+  # document _id so re-deliveries dedupe on indexing.
+  - fingerprint:
+      fields:
+        - json.event_id
+      target_field: _id
+      tag: fingerprint_event_id
+      ignore_missing: true
+      if: ctx.json?.event_id != null
+
+  # ECS categorization derived from the normalized event_type.
+  - script:
+      lang: painless
+      tag: ecs_categorization_from_event_type
+      description: >-
+        Sets event.action, event.kind, event.category, event.type, and (when
+        applicable) event.outcome based on the normalized `json.event_type`.
+      if: ctx.json?.event_type != null
+      params:
+        mappings:
+          login:
+            category:
+              - authentication
+            type:
+              - start
+          logout:
+            category:
+              - authentication
+            type:
+              - end
+            outcome: success
+          add_user:
+            category:
+              - iam
+            type:
+              - user
+              - creation
+            outcome: success
+          remove_user:
+            category:
+              - iam
+            type:
+              - user
+              - deletion
+            outcome: success
+          update_user_role:
+            category:
+              - iam
+            type:
+              - user
+              - change
+            outcome: success
+          team_settings:
+            category:
+              - configuration
+            type:
+              - change
+            outcome: success
+          team_api_key:
+            category:
+              - iam
+              - configuration
+            type:
+              - admin
+            outcome: success
+          user_api_key:
+            category:
+              - iam
+              - configuration
+            type:
+              - admin
+            outcome: success
+          organization_api_key:
+            category:
+              - iam
+              - configuration
+            type:
+              - admin
+            outcome: success
+          api_key:
+            category:
+              - iam
+              - configuration
+            type:
+              - admin
+            outcome: success
+          service_account:
+            category:
+              - iam
+            type:
+              - admin
+            outcome: success
+          invite_link:
+            category:
+              - iam
+            type:
+              - user
+              - admin
+            outcome: success
+          invite_email_sent:
+            category:
+              - iam
+            type:
+              - user
+              - admin
+            outcome: success
+          cloud_agent_secret:
+            category:
+              - iam
+              - configuration
+            type:
+              - admin
+            outcome: success
+          cloud_agent_user_settings:
+            category:
+              - configuration
+            type:
+              - change
+            outcome: success
+          protected_git_scope:
+            category:
+              - configuration
+            type:
+              - change
+            outcome: success
+          protected_git_scope_access_check:
+            category:
+              - iam
+            type:
+              - info
+          privacy_mode:
+            category:
+              - configuration
+            type:
+              - change
+            outcome: success
+          mcp_server_config:
+            category:
+              - configuration
+            type:
+              - change
+            outcome: success
+          user_spend_limit:
+            category:
+              - configuration
+            type:
+              - change
+            outcome: success
+          team_rule:
+            category:
+              - configuration
+            type:
+              - change
+            outcome: success
+          team_repo:
+            category:
+              - configuration
+            type:
+              - change
+            outcome: success
+          team_hook:
+            category:
+              - configuration
+            type:
+              - change
+            outcome: success
+          team_command:
+            category:
+              - configuration
+            type:
+              - change
+            outcome: success
+          create_directory_group:
+            category:
+              - iam
+            type:
+              - group
+              - creation
+            outcome: success
+          delete_directory_group:
+            category:
+              - iam
+            type:
+              - group
+              - deletion
+            outcome: success
+          update_directory_group:
+            category:
+              - iam
+            type:
+              - group
+              - change
+            outcome: success
+          update_directory_group_permissions:
+            category:
+              - iam
+            type:
+              - group
+              - change
+            outcome: success
+          add_user_to_directory_group:
+            category:
+              - iam
+            type:
+              - user
+              - change
+            outcome: success
+          remove_user_from_directory_group:
+            category:
+              - iam
+            type:
+              - user
+              - change
+            outcome: success
+        bugbot:
+          category:
+            - configuration
+          type:
+            - change
+          outcome: success
+        defaults:
+          category:
+            - configuration
+          type:
+            - info
+          outcome: unknown
+      source: |-
+        def action = ctx.json.event_type;
+        ctx.event = ctx.event ?: [:];
+        ctx.event.action = action;
+        ctx.event.kind = 'event';
+        def mapping = params.mappings.get(action);
+        if (mapping == null && action.startsWith('bugbot_')) {
+          mapping = params.bugbot;
+        }
+        mapping = mapping ?: params.defaults;
+        def hm = new HashMap(mapping);
+        hm.forEach((k, v) -> ctx.event[k] = v);
+
+  # Common envelope renames.
+  - date:
+      field: json.timestamp
+      tag: date_parse_timestamp
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+      if: ctx.json?.timestamp != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_date_timestamp_on_failure
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event_id
+      tag: rename_event_id
+      target_field: event.id
+      ignore_missing: true
+  - remove:
+      field: json.event_type
+      tag: remove_consumed_event_type
+      ignore_missing: true
+  - rename:
+      field: json.ip_address
+      tag: rename_ip_address_to_source_ip
+      target_field: source.ip
+      ignore_missing: true
+      if: ctx.json?.ip_address != null && ctx.json.ip_address != "unknown"
+  - remove:
+      field: json.ip_address
+      tag: remove_ip_address_unknown
+      ignore_missing: true
+  - rename:
+      field: json.user_email
+      tag: rename_user_email_to_user_email
+      target_field: user.email
+      ignore_missing: true
+      if: ctx.json?.user_email != null && ctx.json.user_email != "unknown"
+  - remove:
+      field: json.user_email
+      tag: remove_user_email_unknown
+      ignore_missing: true
+  - rename:
+      field: json.team_id
+      tag: rename_team_id
+      target_field: cursor.audit.team_id
+      ignore_missing: true
+  - rename:
+      field: json.auth_id
+      tag: rename_auth_id
+      target_field: cursor.audit.auth_id
+      ignore_missing: true
+      if: ctx.json?.auth_id != null && ctx.json.auth_id != ""
+  - remove:
+      field: json.auth_id
+      tag: remove_auth_id_blank
+      ignore_missing: true
+  - rename:
+      field: json.ghost_mode
+      tag: rename_ghost_mode
+      target_field: cursor.audit.ghost_mode
+      ignore_missing: true
+  - rename:
+      field: json.request_id
+      tag: rename_request_id
+      target_field: cursor.audit.request_id
+      ignore_missing: true
+  - rename:
+      field: json.privacy_mode
+      tag: rename_privacy_mode
+      target_field: cursor.audit.privacy_mode
+      ignore_missing: true
+
+  # --- Event-specific ECS renames (operate on json.event_data.*) ---
+  # user.target.email — S3 variant
+  - rename:
+      field: json.event_data.user_email
+      tag: rename_event_data_user_email_to_user_target_email
+      target_field: user.target.email
+      ignore_missing: true
+      if: >-
+        ctx.event?.action != null &&
+        (ctx.event.action == "add_user" || ctx.event.action == "remove_user" || ctx.event.action == "update_user_role" ||
+        ctx.event.action == "add_user_to_directory_group" || ctx.event.action == "remove_user_from_directory_group") &&
+        ctx.json?.event_data?.user_email != null &&
+        ctx.json.event_data.user_email != "unknown"
+  # user.target.email — Admin API variant (`email`)
+  - rename:
+      field: json.event_data.email
+      tag: rename_event_data_email_to_user_target_email
+      target_field: user.target.email
+      ignore_missing: true
+      if: >-
+        ctx.event?.action != null &&
+        (ctx.event.action == "add_user" || ctx.event.action == "remove_user" || ctx.event.action == "update_user_role" ||
+        ctx.event.action == "add_user_to_directory_group" || ctx.event.action == "remove_user_from_directory_group") &&
+        ctx.user?.target?.email == null &&
+        ctx.json?.event_data?.email != null
+  # user.target.email — user_spend_limit (S3: target_user_email)
+  - rename:
+      field: json.event_data.target_user_email
+      tag: rename_event_data_target_user_email_to_user_target_email
+      target_field: user.target.email
+      ignore_missing: true
+      if: ctx.event?.action == "user_spend_limit" && ctx.json?.event_data?.target_user_email != null && ctx.json.event_data.target_user_email != "unknown"
+  # user.target.email — user_spend_limit (API: userEmail)
+  - rename:
+      field: json.event_data.userEmail
+      tag: rename_event_data_userEmail_to_user_target_email
+      target_field: user.target.email
+      ignore_missing: true
+      if: ctx.event?.action == "user_spend_limit" && ctx.user?.target?.email == null && ctx.json?.event_data?.userEmail != null
+  # user.target.email — invite_email_sent
+  - rename:
+      field: json.event_data.recipient_email
+      tag: rename_event_data_recipient_email_to_user_target_email
+      target_field: user.target.email
+      ignore_missing: true
+      if: ctx.event?.action == "invite_email_sent" && ctx.json?.event_data?.recipient_email != null && ctx.json.event_data.recipient_email != "unknown"
+  # user.target.group.id — S3 variant
+  - rename:
+      field: json.event_data.directory_group_id
+      tag: rename_event_data_directory_group_id_to_user_target_group_id
+      target_field: user.target.group.id
+      ignore_missing: true
+      if: >-
+        ctx.event?.action != null &&
+        (ctx.event.action == "add_user_to_directory_group" || ctx.event.action == "remove_user_from_directory_group")
+  # user.target.group.id — Admin API variant (`group_id`)
+  - rename:
+      field: json.event_data.group_id
+      tag: rename_event_data_group_id_to_user_target_group_id
+      target_field: user.target.group.id
+      ignore_missing: true
+      if: >-
+        ctx.event?.action != null &&
+        (ctx.event.action == "add_user_to_directory_group" || ctx.event.action == "remove_user_from_directory_group") &&
+        ctx.user?.target?.group?.id == null
+  # user.target.id — directory group events (API emits `user_id`)
+  - rename:
+      field: json.event_data.user_id
+      tag: rename_event_data_user_id_to_user_target_id
+      target_field: user.target.id
+      ignore_missing: true
+      if: >-
+        ctx.event?.action != null &&
+        (ctx.event.action == "add_user_to_directory_group" || ctx.event.action == "remove_user_from_directory_group")
+
+  # --- event.outcome derivation ---
+  - set:
+      field: event.outcome
+      tag: set_login_outcome_success_from_bool
+      value: success
+      if: ctx.event?.action == "login" && ctx.json?.event_data?.success == true
+  - set:
+      field: event.outcome
+      tag: set_login_outcome_failure_from_bool
+      value: failure
+      if: ctx.event?.action == "login" && ctx.json?.event_data?.success == false
+  - set:
+      field: event.outcome
+      tag: set_login_outcome_default_success
+      value: success
+      if: ctx.event?.action == "login" && ctx.json?.event_data?.success == null
+  - set:
+      field: event.outcome
+      tag: set_protected_git_scope_access_check_outcome_success
+      value: success
+      if: ctx.event?.action == "protected_git_scope_access_check" && ctx.json?.event_data?.result == "allowed"
+  - set:
+      field: event.outcome
+      tag: set_protected_git_scope_access_check_outcome_failure
+      value: failure
+      if: ctx.event?.action == "protected_git_scope_access_check" && ctx.json?.event_data?.result == "blocked"
+
+  # --- team_hook webhook URL → url.original (+ uri_parts) ---
+  - rename:
+      field: json.event_data.url
+      tag: rename_event_data_url_to_url_original
+      target_field: url.original
+      ignore_missing: true
+      if: ctx.event?.action == "team_hook" && ctx.json?.event_data?.url instanceof String
+  - uri_parts:
+      field: url.original
+      tag: uri_parts_url_original
+      keep_original: true
+      remove_if_successful: false
+      ignore_missing: true
+      if: ctx.url?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_uri_parts_on_failure
+            value: '{{{_ingest.on_failure_message}}}'
+
+  # --- Known event_data sub-fields → cursor.audit.* (ignore_missing is cheap) ---
+  - rename:
+      field: json.event_data.action
+      tag: rename_event_data_action
+      target_field: cursor.audit.action
+      ignore_missing: true
+  - rename:
+      field: json.event_data.method
+      tag: rename_event_data_method_to_cursor_audit_source
+      target_field: cursor.audit.source
+      ignore_missing: true
+  - rename:
+      field: json.event_data.source
+      tag: rename_event_data_source
+      target_field: cursor.audit.source
+      ignore_missing: true
+      if: ctx.cursor?.audit?.source == null
+  - rename:
+      field: json.event_data.setting_name
+      tag: rename_event_data_setting_name
+      target_field: cursor.audit.setting_name
+      ignore_missing: true
+  - rename:
+      field: json.event_data.setting
+      tag: rename_event_data_setting_to_setting_name
+      target_field: cursor.audit.setting_name
+      ignore_missing: true
+      if: ctx.cursor?.audit?.setting_name == null
+  - rename:
+      field: json.event_data.old_value
+      tag: rename_event_data_old_value
+      target_field: cursor.audit.old_value
+      ignore_missing: true
+  - rename:
+      field: json.event_data.new_value
+      tag: rename_event_data_new_value
+      target_field: cursor.audit.new_value
+      ignore_missing: true
+  - rename:
+      field: json.event_data.previous
+      tag: rename_event_data_previous_to_old_value
+      target_field: cursor.audit.old_value
+      ignore_missing: true
+      if: ctx.cursor?.audit?.old_value == null
+  - rename:
+      field: json.event_data.new
+      tag: rename_event_data_new_to_new_value
+      target_field: cursor.audit.new_value
+      ignore_missing: true
+      if: ctx.cursor?.audit?.new_value == null
+  - rename:
+      field: json.event_data.value
+      tag: rename_event_data_value_to_new_value
+      target_field: cursor.audit.new_value
+      ignore_missing: true
+      if: ctx.cursor?.audit?.new_value == null
+  - rename:
+      field: json.event_data.old_role
+      tag: rename_event_data_old_role
+      target_field: cursor.audit.old_role
+      ignore_missing: true
+  - rename:
+      field: json.event_data.new_role
+      tag: rename_event_data_new_role
+      target_field: cursor.audit.new_role
+      ignore_missing: true
+  - rename:
+      field: json.event_data.previous_role
+      tag: rename_event_data_previous_role_to_old_role
+      target_field: cursor.audit.old_role
+      ignore_missing: true
+      if: ctx.cursor?.audit?.old_role == null
+  - rename:
+      field: json.event_data.role
+      tag: rename_event_data_role
+      target_field: cursor.audit.role
+      ignore_missing: true
+  - lowercase:
+      field: cursor.audit.role
+      tag: lowercase_cursor_audit_role_add_user
+      ignore_missing: true
+      if: ctx.event?.action == "add_user" && ctx.cursor?.audit?.role != null
+  - rename:
+      field: json.event_data.rule_id
+      tag: rename_event_data_rule_id
+      target_field: cursor.audit.rule_id
+      ignore_missing: true
+  - rename:
+      field: json.event_data.rule_name
+      tag: rename_event_data_rule_name
+      target_field: cursor.audit.rule_name
+      ignore_missing: true
+  - rename:
+      field: json.event_data.command_id
+      tag: rename_event_data_command_id
+      target_field: cursor.audit.command_id
+      ignore_missing: true
+  - rename:
+      field: json.event_data.command_name
+      tag: rename_event_data_command_name
+      target_field: cursor.audit.command_name
+      ignore_missing: true
+  # context-dependent `name`
+  - rename:
+      field: json.event_data.name
+      tag: rename_event_data_name_to_rule_name
+      target_field: cursor.audit.rule_name
+      ignore_missing: true
+      if: >-
+        (ctx.event?.action == "team_rule" || ctx.event?.action == "bugbot_team_rule") &&
+        ctx.cursor?.audit?.rule_name == null
+  - rename:
+      field: json.event_data.name
+      tag: rename_event_data_name_to_command_name
+      target_field: cursor.audit.command_name
+      ignore_missing: true
+      if: ctx.event?.action == "team_command" && ctx.cursor?.audit?.command_name == null
+  - rename:
+      field: json.event_data.name
+      tag: rename_event_data_name_to_directory_group_name
+      target_field: cursor.audit.directory_group_name
+      ignore_missing: true
+      if: >-
+        (ctx.event?.action == "create_directory_group" || ctx.event?.action == "update_directory_group") &&
+        ctx.cursor?.audit?.directory_group_name == null
+  # hook fields
+  - rename:
+      field: json.event_data.hook_id
+      tag: rename_event_data_hook_id
+      target_field: cursor.audit.hook_id
+      ignore_missing: true
+  - rename:
+      field: json.event_data.hook_step
+      tag: rename_event_data_hook_step
+      target_field: cursor.audit.hook_step
+      ignore_missing: true
+  - rename:
+      field: json.event_data.hook_type
+      tag: rename_event_data_hook_type
+      target_field: cursor.audit.hook_type
+      ignore_missing: true
+  - rename:
+      field: json.event_data.script_name
+      tag: rename_event_data_script_name
+      target_field: cursor.audit.script_name
+      ignore_missing: true
+  - rename:
+      field: json.event_data.script_content
+      tag: rename_event_data_script_content
+      target_field: cursor.audit.script_content
+      ignore_missing: true
+  - rename:
+      field: json.event_data.operating_systems
+      tag: rename_event_data_operating_systems
+      target_field: cursor.audit.operating_systems
+      ignore_missing: true
+  - rename:
+      field: json.event_data.is_active
+      tag: rename_event_data_is_active
+      target_field: cursor.audit.is_active
+      ignore_missing: true
+  - rename:
+      field: json.event_data.is_required
+      tag: rename_event_data_is_required
+      target_field: cursor.audit.is_required
+      ignore_missing: true
+  - rename:
+      field: json.event_data.prompt_content
+      tag: rename_event_data_prompt_content
+      target_field: cursor.audit.prompt_content
+      ignore_missing: true
+  - rename:
+      field: json.event_data.prompt_model
+      tag: rename_event_data_prompt_model
+      target_field: cursor.audit.prompt_model
+      ignore_missing: true
+  # install / repo
+  - rename:
+      field: json.event_data.installation_id
+      tag: rename_event_data_installation_id
+      target_field: cursor.audit.installation_id
+      ignore_missing: true
+  - rename:
+      field: json.event_data.github_app_type
+      tag: rename_event_data_github_app_type
+      target_field: cursor.audit.github_app_type
+      ignore_missing: true
+  - rename:
+      field: json.event_data.github_hostname
+      tag: rename_event_data_github_hostname
+      target_field: cursor.audit.github_hostname
+      ignore_missing: true
+  - rename:
+      field: json.event_data.repo_url
+      tag: rename_event_data_repo_url
+      target_field: cursor.audit.repo_url
+      ignore_missing: true
+  - rename:
+      field: json.event_data.repo_node_id
+      tag: rename_event_data_repo_node_id
+      target_field: cursor.audit.repo_node_id
+      ignore_missing: true
+  - rename:
+      field: json.event_data.repo_name
+      tag: rename_event_data_repo_name
+      target_field: cursor.audit.repo_name
+      ignore_missing: true
+  - rename:
+      field: json.event_data.repos_updated
+      tag: rename_event_data_repos_updated
+      target_field: cursor.audit.repos_updated
+      ignore_missing: true
+  - rename:
+      field: json.event_data.repo_count
+      tag: rename_event_data_repo_count_to_repos_updated
+      target_field: cursor.audit.repos_updated
+      ignore_missing: true
+      if: ctx.cursor?.audit?.repos_updated == null
+  - rename:
+      field: json.event_data.bugbot_enabled
+      tag: rename_event_data_bugbot_enabled
+      target_field: cursor.audit.bugbot_enabled
+      ignore_missing: true
+  - rename:
+      field: json.event_data.operation
+      tag: rename_event_data_operation
+      target_field: cursor.audit.operation
+      ignore_missing: true
+  - rename:
+      field: json.event_data.provider
+      tag: rename_event_data_provider
+      target_field: cursor.audit.provider
+      ignore_missing: true
+  - rename:
+      field: json.event_data.enabled
+      tag: rename_event_data_enabled
+      target_field: cursor.audit.enabled
+      ignore_missing: true
+  # secrets / scope
+  - rename:
+      field: json.event_data.secret_name
+      tag: rename_event_data_secret_name
+      target_field: cursor.audit.secret_name
+      ignore_missing: true
+  - rename:
+      field: json.event_data.scope
+      tag: rename_event_data_scope
+      target_field: cursor.audit.scope
+      ignore_missing: true
+  - rename:
+      field: json.event_data.server_name
+      tag: rename_event_data_server_name
+      target_field: cursor.audit.server_name
+      ignore_missing: true
+  - rename:
+      field: json.event_data.server_type
+      tag: rename_event_data_server_type
+      target_field: cursor.audit.server_type
+      ignore_missing: true
+  - rename:
+      field: json.event_data.scoped_to_repos
+      tag: rename_event_data_scoped_to_repos
+      target_field: cursor.audit.scoped_to_repos
+      ignore_missing: true
+  # service accounts / api keys
+  - rename:
+      field: json.event_data.service_account_id
+      tag: rename_event_data_service_account_id
+      target_field: cursor.audit.service_account_id
+      ignore_missing: true
+  - rename:
+      field: json.event_data.service_account_name
+      tag: rename_event_data_service_account_name
+      target_field: cursor.audit.service_account_name
+      ignore_missing: true
+  - rename:
+      field: json.event_data.api_key_id
+      tag: rename_event_data_api_key_id
+      target_field: cursor.audit.api_key_id
+      ignore_missing: true
+  - rename:
+      field: json.event_data.api_key_name
+      tag: rename_event_data_api_key_name
+      target_field: cursor.audit.api_key_name
+      ignore_missing: true
+  - rename:
+      field: json.event_data.key_id
+      tag: rename_event_data_key_id_to_api_key_id
+      target_field: cursor.audit.api_key_id
+      ignore_missing: true
+      if: ctx.cursor?.audit?.api_key_id == null
+  - rename:
+      field: json.event_data.repo_scope
+      tag: rename_event_data_repo_scope
+      target_field: cursor.audit.repo_scope
+      ignore_missing: true
+  - rename:
+      field: json.event_data.repo_scope_enabled
+      tag: rename_event_data_repo_scope_enabled
+      target_field: cursor.audit.repo_scope_enabled
+      ignore_missing: true
+  - rename:
+      field: json.event_data.organization_id
+      tag: rename_event_data_organization_id
+      target_field: cursor.audit.organization_id
+      ignore_missing: true
+  # git scope
+  - rename:
+      field: json.event_data.scope_id
+      tag: rename_event_data_scope_id
+      target_field: cursor.audit.scope_id
+      ignore_missing: true
+  - rename:
+      field: json.event_data.git_org_owner
+      tag: rename_event_data_git_org_owner
+      target_field: cursor.audit.git_org_owner
+      ignore_missing: true
+  - rename:
+      field: json.event_data.git_provider
+      tag: rename_event_data_git_provider
+      target_field: cursor.audit.git_provider
+      ignore_missing: true
+  - rename:
+      field: json.event_data.git_enterprise_uuid
+      tag: rename_event_data_git_enterprise_uuid
+      target_field: cursor.audit.git_enterprise_uuid
+      ignore_missing: true
+      if: ctx.json?.event_data?.git_enterprise_uuid != null && ctx.json.event_data.git_enterprise_uuid != ""
+  - remove:
+      field: json.event_data.git_enterprise_uuid
+      tag: remove_event_data_git_enterprise_uuid_blank
+      ignore_missing: true
+  - rename:
+      field: json.event_data.user_id
+      tag: rename_event_data_user_id
+      target_field: cursor.audit.user_id
+      ignore_missing: true
+  - rename:
+      field: json.event_data.reason
+      tag: rename_event_data_reason
+      target_field: cursor.audit.reason
+      ignore_missing: true
+  - rename:
+      field: json.event_data.result
+      tag: rename_event_data_result
+      target_field: cursor.audit.result
+      ignore_missing: true
+  - rename:
+      field: json.event_data.success
+      tag: rename_event_data_success
+      target_field: cursor.audit.success
+      ignore_missing: true
+  - rename:
+      field: json.event_data.login_type
+      tag: rename_event_data_login_type
+      target_field: cursor.audit.login_type
+      ignore_missing: true
+  # invites
+  - rename:
+      field: json.event_data.invite_id
+      tag: rename_event_data_invite_id
+      target_field: cursor.audit.invite_id
+      ignore_missing: true
+      if: ctx.json?.event_data?.invite_id != null && ctx.json.event_data.invite_id != ""
+  - remove:
+      field: json.event_data.invite_id
+      tag: remove_event_data_invite_id_blank
+      ignore_missing: true
+  - rename:
+      field: json.event_data.invited_by_email
+      tag: rename_event_data_invited_by_email
+      target_field: cursor.audit.invited_by_email
+      ignore_missing: true
+      if: ctx.json?.event_data?.invited_by_email != null && ctx.json.event_data.invited_by_email != ""
+  - remove:
+      field: json.event_data.invited_by_email
+      tag: remove_event_data_invited_by_email_blank
+      ignore_missing: true
+  - rename:
+      field: json.event_data.invited_by_user_id
+      tag: rename_event_data_invited_by_user_id
+      target_field: cursor.audit.invited_by_user_id
+      ignore_missing: true
+      if: ctx.json?.event_data?.invited_by_user_id != null && ctx.json.event_data.invited_by_user_id != "0"
+  - remove:
+      field: json.event_data.invited_by_user_id
+      tag: remove_event_data_invited_by_user_id_zero
+      ignore_missing: true
+  - rename:
+      field: json.event_data.creator_email
+      tag: rename_event_data_creator_email
+      target_field: cursor.audit.creator_email
+      ignore_missing: true
+  - rename:
+      field: json.event_data.creator_user_id
+      tag: rename_event_data_creator_user_id
+      target_field: cursor.audit.creator_user_id
+      ignore_missing: true
+  - rename:
+      field: json.event_data.expires_in_seconds
+      tag: rename_event_data_expires_in_seconds
+      target_field: cursor.audit.expires_in_seconds
+      ignore_missing: true
+  - rename:
+      field: json.event_data.sender_email
+      tag: rename_event_data_sender_email
+      target_field: cursor.audit.sender_email
+      ignore_missing: true
+  - rename:
+      field: json.event_data.sender_user_id
+      tag: rename_event_data_sender_user_id
+      target_field: cursor.audit.sender_user_id
+      ignore_missing: true
+  - rename:
+      field: json.event_data.personal_message
+      tag: rename_event_data_personal_message
+      target_field: cursor.audit.personal_message
+      ignore_missing: true
+  # spend limit
+  - rename:
+      field: json.event_data.old_limit_cents
+      tag: rename_event_data_old_limit_cents
+      target_field: cursor.audit.old_limit_cents
+      ignore_missing: true
+  - rename:
+      field: json.event_data.new_limit_cents
+      tag: rename_event_data_new_limit_cents
+      target_field: cursor.audit.new_limit_cents
+      ignore_missing: true
+  - rename:
+      field: json.event_data.spendLimitDollars
+      tag: rename_event_data_spendLimitDollars
+      target_field: cursor.audit.spend_limit_dollars
+      ignore_missing: true
+  # privacy
+  - rename:
+      field: json.event_data.old_privacy_mode
+      tag: rename_event_data_old_privacy_mode
+      target_field: cursor.audit.old_privacy_mode
+      ignore_missing: true
+  - rename:
+      field: json.event_data.new_privacy_mode
+      tag: rename_event_data_new_privacy_mode
+      target_field: cursor.audit.new_privacy_mode
+      ignore_missing: true
+  # directory group
+  - rename:
+      field: json.event_data.directory_group_name
+      tag: rename_event_data_directory_group_name
+      target_field: cursor.audit.directory_group_name
+      ignore_missing: true
+  - rename:
+      field: json.event_data.permissions
+      tag: rename_event_data_permissions
+      target_field: cursor.audit.permissions
+      ignore_missing: true
+  # misc
+  - rename:
+      field: json.event_data.metadata
+      tag: rename_event_data_metadata
+      target_field: cursor.audit.metadata
+      ignore_missing: true
+
+  # Drop duplicates / envelope leaks from event_data.
+  - remove:
+      field: json.event_data.team_id
+      tag: remove_event_data_team_id_duplicate
+      ignore_missing: true
+  - remove:
+      field: json.event_data.ip_address
+      tag: remove_event_data_ip_address_duplicate
+      ignore_missing: true
+  - remove:
+      field: json.event_data.user_agent
+      tag: remove_event_data_user_agent
+      ignore_missing: true
+
+  # Coerce numeric-looking int64 payload fields (proto emits them as strings).
+  - convert:
+      field: cursor.audit.expires_in_seconds
+      tag: convert_cursor_audit_expires_in_seconds_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_convert_expires_in_seconds_on_failure
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cursor.audit.old_limit_cents
+      tag: convert_cursor_audit_old_limit_cents_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_convert_old_limit_cents_on_failure
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cursor.audit.new_limit_cents
+      tag: convert_cursor_audit_new_limit_cents_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_convert_new_limit_cents_on_failure
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cursor.audit.spend_limit_dollars
+      tag: convert_cursor_audit_spend_limit_dollars_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_convert_spend_limit_dollars_on_failure
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cursor.audit.repos_updated
+      tag: convert_cursor_audit_repos_updated_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_convert_repos_updated_on_failure
+            value: '{{{_ingest.on_failure_message}}}'
+
+  # Move any unknown leftovers into the flattened bag; if nothing is left, drop.
+  - rename:
+      field: json.event_data
+      tag: rename_event_data_to_cursor_audit_event_data
+      target_field: cursor.audit.event_data
+      ignore_missing: true
+      if: ctx.json?.event_data instanceof Map && !ctx.json.event_data.isEmpty()
+  - remove:
+      field: json.event_data
+      tag: remove_empty_event_data
+      ignore_missing: true
+
+  # --- Source enrichment (geoip + ASN + related) ---
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip
+      target_field: source.geo
+      ignore_missing: true
+      if: ctx.source?.ip != null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      tag: geoip_asn_source_ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      if: ctx.source?.ip != null
+  - rename:
+      field: source.as.asn
+      tag: rename_source_as_asn_to_number
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source_as_organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_source_ip_to_related_ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.user
+      tag: append_user_email_to_related_user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null && ctx.user.email != "unknown"
+  - append:
+      field: related.user
+      tag: append_user_target_email_to_related_user
+      value: '{{{user.target.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.target?.email != null && ctx.user.target.email != "unknown"
+  - append:
+      field: related.user
+      tag: append_creator_email_to_related_user
+      value: '{{{cursor.audit.creator_email}}}'
+      allow_duplicates: false
+      if: ctx.cursor?.audit?.creator_email != null && ctx.cursor.audit.creator_email != "unknown"
+  - append:
+      field: related.user
+      tag: append_sender_email_to_related_user
+      value: '{{{cursor.audit.sender_email}}}'
+      allow_duplicates: false
+      if: ctx.cursor?.audit?.sender_email != null && ctx.cursor.audit.sender_email != "unknown"
+  - append:
+      field: related.user
+      tag: append_sender_user_id_to_related_user
+      value: '{{{cursor.audit.sender_user_id}}}'
+      allow_duplicates: false
+      if: ctx.cursor?.audit?.sender_user_id != null && ctx.cursor.audit.sender_user_id != ""
+
+  # --- Finalization ---
+  - set:
+      field: event.provider
+      tag: set_event_provider_cursor
+      value: cursor
+  - remove:
+      field: json
+      tag: remove_json_after_processing
+      ignore_missing: true
+  - remove:
+      field: _temp
+      tag: remove_temp_fields
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_on_ingest_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_level_on_failure_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_on_pipeline_failure
+      value: preserve_original_event
+      allow_duplicates: false
