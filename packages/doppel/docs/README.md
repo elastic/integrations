@@ -58,6 +58,7 @@ The `alerts` data stream provides security events from the Doppel API.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| doppel.alert_updated_at | The timestamp when the alert was last updated. | date |
 | doppel.app.bundle_id | The unique bundle identifier of the application. | keyword |
 | doppel.app.developer_name | The listed developer name for the rogue application. | keyword |
 | doppel.app.platform | The app store platform (e.g., iOS, Android) hosting the app. | keyword |
@@ -84,7 +85,6 @@ The `alerts` data stream provides security events from the Doppel API.
 | doppel.telco.country_code | The country code associated with the telecommunications threat. | keyword |
 | doppel.telco.provider | The telecommunications provider or carrier. | keyword |
 | doppel.uploaded_by | The user or system account that uploaded the alert. | keyword |
-| doppel_alert_updated_at | The timestamp when the alert was last updated. | date |
 | ecs.version | ECS version this event conforms to. | keyword |
 | event.created | The time the alert was created in the Doppel system. | date |
 | event.dataset | Event dataset. | constant_keyword |
