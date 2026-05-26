@@ -174,7 +174,7 @@ func processPackage(pkgPath, pkgName, currentVersion string, dryRun bool) (*pack
 		if err != nil {
 			return nil, fmt.Errorf("computing next version: %w", err)
 		}
-		if err := addChangelog(pkgPath, nextVersion); err != nil {
+		if err := addChangelog(pkgPath, nextVersion, changelogType(applied)); err != nil {
 			return nil, fmt.Errorf("adding changelog: %w", err)
 		}
 		writtenFiles = []string{
@@ -294,12 +294,28 @@ func resolveOwner(pkgName, fallback string) (string, error) {
 	return primary, nil
 }
 
-func addChangelog(pkgPath, version string) error {
+// changelogType returns "breaking-change" if any applied proposal is a major
+// dep bump (the integration's public contract may change), "enhancement" otherwise.
+func changelogType(applied []proposal) string {
+	for _, p := range applied {
+		from, err1 := semver.NewVersion(p.Current)
+		to, err2 := semver.NewVersion(p.Proposed)
+		if err1 != nil || err2 != nil {
+			continue
+		}
+		if bumpTier(from, to) == 2 {
+			return "breaking-change"
+		}
+	}
+	return "enhancement"
+}
+
+func addChangelog(pkgPath, version, entryType string) error {
 	var stderr bytes.Buffer
 	cmd := exec.Command(elasticPackageBin(),
 		"changelog", "add",
 		"--description", "Update required package versions",
-		"--type", "enhancement",
+		"--type", entryType,
 		"--link", "https://github.com/elastic/integrations/pull/0",
 		"--version", version,
 	)
@@ -311,6 +327,16 @@ func addChangelog(pkgPath, version string) error {
 	return nil
 }
 
+// computeNextVersion bumps currentVersion by the largest semver tier found across
+// all applied dep proposals (major > minor > patch). The rationale: the integration's
+// own version must signal the highest severity change introduced by its dependencies.
+//
+//   - Any dep patch bump  → integration patch bump  (e.g. 1.2.3 → 1.2.4)
+//   - Any dep minor bump  → integration minor bump  (e.g. 1.2.3 → 1.3.0)
+//   - Any dep major bump  → integration major bump  (e.g. 1.2.3 → 2.0.0)
+//
+// When multiple deps update at different tiers in the same run, the largest tier
+// wins: a mix of patch and minor bumps yields a minor integration bump.
 func computeNextVersion(currentVersion string, applied []proposal) (string, error) {
 	current, err := semver.NewVersion(currentVersion)
 	if err != nil {
@@ -344,6 +370,8 @@ func computeNextVersion(currentVersion string, applied []proposal) (string, erro
 	return next.String(), nil
 }
 
+// bumpTier returns the semver tier of a single dep version change:
+// 2 = major, 1 = minor, 0 = patch.
 func bumpTier(from, to *semver.Version) int {
 	if to.Major() > from.Major() {
 		return 2
