@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `sqlserver.deadlock.rate > 0`. Sustained non-zero deadlock rate is a serious concurrency problem.",
     "name": "[SQL Server OTel] Deadlocks detected",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "microsoft_sqlserver_otel-concurrency-errors"
+        },
+        {
+          "id": "microsoft_sqlserver_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## SQL Server deadlocks detected\n\n### What fired\n`sqlserver.deadlock.rate > 0` during the window.\n\n### Why it matters\nDeadlocks abort one or more transactions to break a cycle. Sustained deadlocks point to inconsistent locking order or overly broad transactions.\n\n### Triage\n1. Examine deadlock XML graphs from Extended Events.\n2. Look for hot tables / indexes.\n\n### Remediation\n- Enforce consistent access order.\n- Use appropriate isolation levels and smaller transactions.\n\n### Tuning\n- Fires on any non-zero rate.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-sqlserverreceiver.otel-default\n// Any non-zero sustained deadlock rate is a serious concurrency problem\n| WHERE metrics.sqlserver.deadlock.rate IS NOT NULL\n| STATS max_deadlocks = MAX(metrics.sqlserver.deadlock.rate),\n       instance_id = MAX(resource.attributes.service.instance.id)\n  BY COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\")\n| WHERE max_deadlocks > 0\n| KEEP instance_id, max_deadlocks"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,
