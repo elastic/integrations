@@ -1,0 +1,109 @@
+---
+- name: dataminr_pulse
+  type: group
+  fields:
+    - name: alert_type
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Alert priority level (Alert, Urgent, Flash).
+    - name: categories
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Topic name.
+    - name: companies
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Company name.
+    - name: sectors
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Sector name.
+    - name: source
+      type: group
+      fields:
+        - name: href
+          type: keyword
+          description: URL to public post.
+        - name: channels
+          type: keyword
+          description: Source channels.
+        - name: media
+          type: group
+          description: Media attachments.
+          fields:
+            - name: href
+              type: keyword
+              description: Media attachment URL.
+    - name: intel_agents
+      type: group
+      description: AI-generated critical context.
+      fields:
+        - name: summary
+          type: keyword
+          description: Intel Agent summary.
+    - name: live_brief
+      type: group
+      fields:
+        - name: summary
+          type: keyword
+          description: Live Brief summary.
+        - name: version
+          type: keyword
+          description: Live Brief version.
+        - name: timestamp
+          type: date
+          description: Live Brief timestamp.
+    - name: watchlists_matched_by_type
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Watchlist name.
+    - name: ip
+      type: ip
+      description: Extracted IP addresses from discovered entities.
+    - name: url
+      type: keyword
+      description: Extracted URLs from discovered entities (refanged).
+    - name: malware
+      type: keyword
+      description: Extracted malware names from discovered entities.
+    - name: platforms
+      type: keyword
+      description: Affected platforms from malware entities.
+    - name: threatactor
+      type: group
+      description: Threat actors discovered in the alert.
+      fields:
+        - name: name
+          type: keyword
+          description: Threat actor name.
+        - name: alias
+          type: keyword
+          description: Threat actor aliases.
+        - name: country_of_origin
+          type: keyword
+          description: Threat actor countries of origin.
+    - name: vulnerability
+      type: group
+      description: Vulnerabilities discovered in the alert.
+      fields:
+        - name: name
+          type: keyword
+          description: Vulnerability identifiers (CVE IDs).
+
+- name: input.type
+  type: keyword
+  description: Type of input that generated the event.
+
+- name: aws.tags
+  type: flattened
+  description: AWS resource tags from the host environment.

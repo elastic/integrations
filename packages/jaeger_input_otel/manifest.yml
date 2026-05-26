@@ -1,0 +1,141 @@
+format_version: 3.5.0
+name: jaeger_input_otel
+title: "Jaeger OpenTelemetry Input Package"
+version: "0.1.0"
+source:
+  license: "Elastic-2.0"
+description: "Collect Jaeger traces via the OpenTelemetry jaegerreceiver (gRPC, Thrift HTTP, Thrift UDP). Enable only the protocols you need; at least one must be enabled."
+type: input
+categories:
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.4.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/jaeger_otellogo.svg
+    title: Jaeger OpenTelemetry logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: jaegerreceiver
+    type: traces
+    title: Jaeger OpenTelemetry Input
+    description: Collect Jaeger traces using OpenTelemetry Collector
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      - name: grpc_enabled
+        type: bool
+        required: false
+        title: Enable Jaeger gRPC
+        description: Listen for Jaeger over gRPC (typical port 14250). At least one Jaeger protocol must be enabled.
+        default: true
+        show_user: true
+      - name: grpc_endpoint
+        type: text
+        required: false
+        title: gRPC endpoint
+        description: Listen address for Jaeger gRPC when gRPC is enabled.
+        default: localhost:14250
+        show_user: true
+      - name: thrift_http_enabled
+        type: bool
+        required: false
+        title: Enable Jaeger Thrift HTTP
+        description: Listen for Jaeger Thrift over HTTP (typical port 14268).
+        default: false
+        show_user: true
+      - name: thrift_http_endpoint
+        type: text
+        required: false
+        title: Thrift HTTP endpoint
+        description: Listen address when Thrift HTTP is enabled.
+        default: localhost:14268
+        show_user: true
+      - name: thrift_compact_enabled
+        type: bool
+        required: false
+        title: Enable Jaeger Thrift compact (UDP)
+        description: Listen for Jaeger Thrift compact over UDP (typical port 6831).
+        default: false
+        show_user: true
+      - name: thrift_compact_endpoint
+        type: text
+        required: false
+        title: Thrift compact endpoint
+        description: Listen address when Thrift compact UDP is enabled.
+        default: localhost:6831
+        show_user: true
+      - name: thrift_binary_enabled
+        type: bool
+        required: false
+        title: Enable Jaeger Thrift binary (UDP)
+        description: Listen for Jaeger Thrift binary over UDP (typical port 6832).
+        default: false
+        show_user: true
+      - name: thrift_binary_endpoint
+        type: text
+        required: false
+        title: Thrift binary endpoint
+        description: Listen address when Thrift binary UDP is enabled.
+        default: localhost:6832
+        show_user: true
+      - name: udp_queue_size
+        type: integer
+        required: false
+        title: UDP queue size
+        description: Shared maximum queue size for enabled UDP protocols (thrift_compact, thrift_binary).
+        default: 1000
+        show_user: false
+      - name: udp_max_packet_size
+        type: integer
+        required: false
+        title: UDP max packet size
+        description: Shared maximum UDP packet size in bytes for enabled UDP protocols.
+        default: 65000
+        show_user: false
+      - name: udp_workers
+        type: integer
+        required: false
+        title: UDP workers
+        description: Shared worker count for enabled UDP protocols.
+        default: 10
+        show_user: false
+      - name: udp_socket_buffer_size
+        type: integer
+        required: false
+        title: UDP socket buffer size
+        description: Shared UDP socket buffer size in bytes (0 uses system default).
+        default: 0
+        show_user: false
+      - name: tls_enabled
+        type: bool
+        required: false
+        title: Enable TLS
+        description: Enable TLS on enabled gRPC and Thrift HTTP listeners (certificate path required).
+        default: false
+        show_user: true
+      - name: tls_cert_file
+        type: text
+        required: false
+        title: TLS Certificate File
+        description: Path to the TLS certificate file for the server. Required when TLS is enabled.
+        show_user: true
+      - name: tls_key_file
+        type: text
+        required: false
+        title: TLS Key File
+        description: Path to the TLS private key file for the server. Required when TLS is enabled.
+        show_user: true
+      - name: tls_client_ca_file
+        type: text
+        required: false
+        title: TLS Client CA File
+        description: Path to the CA certificate file for verifying client certificates (mTLS).
+        show_user: false
+owner:
+  github: elastic/ecosystem
+  type: elastic

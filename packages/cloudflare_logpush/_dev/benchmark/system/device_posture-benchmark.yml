@@ -1,0 +1,26 @@
+---
+description: Benchmark 10000 device_posture events ingested
+input: http_endpoint
+vars:
+  listen_address: 0.0.0.0
+data_stream:
+  name: device_posture
+  vars:
+    listen_port: 9560
+    url: /cloudflare_logpush/device_posture
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+warmup_time_period: 10s
+corpora:
+  input_service:
+    name: cloudflare-logpush-device-posture
+    signal: SIGHUP
+  generator:
+    total_events: 10000
+    template:
+      path: ./device_posture-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./device_posture-benchmark/config.yml
+    fields:
+      path: ./device_posture-benchmark/fields.yml
