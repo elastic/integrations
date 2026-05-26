@@ -6,7 +6,7 @@ services:
       - 127.0.0.1:1521:1521
       - 127.0.0.1:5500:5500
     healthcheck:
-      test: ["CMD", "bash", "-c", "SF=/tmp/oracle_stable_since; OH=/u01/app/oracle/product/12.2.0/dbhome_1; if OUT=$(echo 'select 1 from dual;' | ORACLE_HOME=$OH $OH/bin/sqlplus -s sys/Oradoc_db1@oracle:1521/ORCLCDB.localdomain as sysdba 2>&1) && ! echo \"$OUT\" | grep -qE 'ORA-|SP2-'; then NOW=$(date +%s); [ -f $SF ] || { echo $NOW > $SF; exit 1; }; [ $((NOW - $(cat $SF))) -ge 10 ]; else rm -f $SF; exit 1; fi"]
+      test: ["CMD", "bash", "-c", "SF=/tmp/oss; if OUT=$$(echo 'select 1 from dual;' | ORACLE_HOME=/u01/app/oracle/product/12.2.0/dbhome_1 /u01/app/oracle/product/12.2.0/dbhome_1/bin/sqlplus -s sys/Oradoc_db1@oracle:1521/ORCLCDB.localdomain as sysdba 2>&1) && ! echo \"$$OUT\" | grep -qE 'ORA-|SP2-'; then NOW=$$(date +%s); [ -f $$SF ] || { echo $$NOW > $$SF; exit 1; }; [ $$((NOW - $$(cat $$SF))) -ge 10 ]; else rm -f $$SF; exit 1; fi"]
       interval: 10s
       timeout: 30s
       retries: 80
