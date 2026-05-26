@@ -54,6 +54,20 @@ type packageSummary struct {
 	applied   []proposal
 	skipped   []proposal
 	codeowner string
+	files     []string // paths written to disk, relative to repo root; empty on dry-run
+}
+
+// teamJSON is the per-team record written by writeJSONReport.
+type teamJSON struct {
+	Slug     string        `json:"slug"`
+	Packages []packageJSON `json:"packages"`
+}
+
+type packageJSON struct {
+	Name    string     `json:"name"`
+	Files   []string   `json:"files"`
+	Applied []proposal `json:"applied"`
+	Skipped []proposal `json:"skipped"`
 }
 
 // Run walks all integration packages, runs elastic-package requires update,
@@ -93,6 +107,12 @@ func Run() error {
 	}
 
 	printSummary(summaries, dryRun)
+
+	if jsonOut := os.Getenv("REQUIRES_UPDATE_JSON_OUT"); jsonOut != "" {
+		if err := writeJSONReport(summaries, jsonOut); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: failed to write JSON report to %s: %v\n", jsonOut, err)
+		}
+	}
 
 	if len(errs) > 0 {
 		return fmt.Errorf("errors in %d package(s):\n  %s", len(errs), strings.Join(errs, "\n  "))
@@ -144,6 +164,7 @@ func processPackage(pkgPath, pkgName, currentVersion string, dryRun bool) (*pack
 		return nil, fmt.Errorf("resolving codeowner: %w", err)
 	}
 
+	var writtenFiles []string
 	if !dryRun && len(applied) > 0 {
 		manifestPath := filepath.Join(pkgPath, citools.ManifestFileName)
 		if err := patchManifestRequires(manifestPath, applied); err != nil {
@@ -156,6 +177,10 @@ func processPackage(pkgPath, pkgName, currentVersion string, dryRun bool) (*pack
 		if err := addChangelog(pkgPath, nextVersion); err != nil {
 			return nil, fmt.Errorf("adding changelog: %w", err)
 		}
+		writtenFiles = []string{
+			filepath.Join(pkgPath, citools.ManifestFileName),
+			filepath.Join(pkgPath, "changelog.yml"),
+		}
 	}
 
 	return &packageSummary{
@@ -164,6 +189,7 @@ func processPackage(pkgPath, pkgName, currentVersion string, dryRun bool) (*pack
 		applied:   applied,
 		skipped:   skipped,
 		codeowner: owner,
+		files:     writtenFiles,
 	}, nil
 }
 
@@ -326,6 +352,40 @@ func bumpTier(from, to *semver.Version) int {
 		return 1
 	}
 	return 0
+}
+
+func writeJSONReport(summaries []packageSummary, path string) error {
+	groups := make(map[string][]packageSummary)
+	for _, s := range summaries {
+		groups[s.codeowner] = append(groups[s.codeowner], s)
+	}
+
+	teams := make([]string, 0, len(groups))
+	for t := range groups {
+		teams = append(teams, t)
+	}
+	sort.Strings(teams)
+
+	out := make([]teamJSON, 0, len(teams))
+	for _, team := range teams {
+		slug := strings.TrimPrefix(team, "@elastic/")
+		pkgs := make([]packageJSON, 0, len(groups[team]))
+		for _, s := range groups[team] {
+			pkgs = append(pkgs, packageJSON{
+				Name:    s.name,
+				Files:   s.files,
+				Applied: s.applied,
+				Skipped: s.skipped,
+			})
+		}
+		out = append(out, teamJSON{Slug: slug, Packages: pkgs})
+	}
+
+	data, err := json.MarshalIndent(out, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, data, 0644)
 }
 
 func printSummary(summaries []packageSummary, dryRun bool) {
