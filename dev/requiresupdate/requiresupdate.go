@@ -77,6 +77,9 @@ func Run() error {
 		if manifest.Type != "integration" {
 			continue
 		}
+		if !manifest.HasRequires() {
+			continue
+		}
 
 		summary, err := processPackage(pkgPath, manifest.Name, manifest.Version, dryRun)
 		if err != nil {
