@@ -52,6 +52,15 @@ processors:
       tag: set_event_kind
       field: event.kind
       value: event
+  - append:
+      field: event.category
+      value: configuration
+      tag: category_configuration
+  - append:
+      field: event.type
+      value: info
+      tag: type_info
+
   - script:
       tag: script_rename_fields
       lang: painless
@@ -619,6 +628,40 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.application.ip_addresses
+      tag: foreach_ip_addresses
+      if: ctx.axonius?.application?.ip_addresses instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_ip_addresses_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.application.raw_ip_addresses
+      tag: foreach_raw_ip_addresses
+      if: ctx.axonius?.application?.raw_ip_addresses instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_raw_ip_addresses_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.application.is_identity
       tag: convert_is_identity_to_long
