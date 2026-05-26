@@ -613,6 +613,11 @@ processors:
             field: error.message
             value: |-
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - split:
+      field: json.IPv4Options
+      tag: split_IPv4Options
+      separator: ', *'
+      if: ctx.json?.IPv4Options instanceof String && ctx.json.IPv4Options != ''
   - convert:
       tag: convert_json_ipv4_options
       field: json.IPv4Options
@@ -677,6 +682,11 @@ processors:
             field: error.message
             value: |-
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - split:
+      field: json.IPv6ExtensionHeaders
+      tag: split_IPv6ExtensionHeaders
+      separator: ', *'
+      if: ctx.json?.IPv6ExtensionHeaders instanceof String && ctx.json.IPv6ExtensionHeaders != ''
   - rename:
       field: json.IPv6ExtensionHeaders
       target_field: cloudflare_logpush.network_analytics.ipv6.extension_headers
@@ -843,6 +853,11 @@ processors:
             field: error.message
             value: |-
               Processor "{{{ _ingest.on_failure_processor_type }}}" with tag {{{_ingest.on_failure_processor_tag}}} in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - split:
+      field: json.TCPOptions
+      tag: split_TCPOptions
+      separator: ', *'
+      if: ctx.json?.TCPOptions instanceof String && ctx.json.TCPOptions != ''
   - rename:
       field: json.TCPOptions
       target_field: cloudflare_logpush.network_analytics.tcp.options
