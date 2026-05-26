@@ -96,12 +96,10 @@ program: |-
                   },
                   "next_page": {
                     ?"link": (
-                      has(body.paging) && has(body.paging.nextLink) && body.paging.nextLink != null &&
-                      string(body.paging.nextLink) != ""
+                      has(body.paging) && has(body.paging.nextLink) && body.paging.nextLink != null
                     ) ? optional.of(string(body.paging.nextLink)) : optional.none(),
                   },
-                  "want_more": has(body.paging) && has(body.paging.nextLink) && body.paging.nextLink != null &&
-                  string(body.paging.nextLink) != "",
+                  "want_more": has(body.paging) && has(body.paging.nextLink) && body.paging.nextLink != null,
                 }
               )
             : (resp.StatusCode == 401 || resp.StatusCode == 419) ?
@@ -114,21 +112,21 @@ program: |-
                   "Header": {"Content-Type": ["application/json"]},
                 }
               ).do_request().as(refResp,
-                refResp.Body.decode_json().as(ro,
-                  {
+                  refResp.Body.decode_json().as(ro,
+                    {
                     "events": [{"message": "retry"}],
                     "cursor": (refResp.StatusCode == 200) ?
                       {
                         "access_token": string(ro.accessToken),
                         "refresh_token": string(ro.refreshToken),
                         "need_reauth": false,
-                      }
-                    :
-                      {
-                        "access_token": "",
-                        "refresh_token": "",
-                        "need_reauth": true,
-                      },
+                    }
+                :
+                  {
+                      "access_token": "",
+                      "refresh_token": "",
+                      "need_reauth": true,
+                    },
                     "want_more": true,
                   }
                 )
