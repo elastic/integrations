@@ -149,7 +149,8 @@
                 "titlesTextAlign": "left",
                 "titlesTextSize": "xxs",
                 "valueFontMode": "fit",
-                "valuesTextSize": "xs"
+                "valuesTextSize": "xs",
+                "primaryPosition": "top"
               },
               "adHocDataViews": {
                 "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
@@ -236,21 +237,20 @@
                 "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.namespace.name IS NOT NULL\n| KEEP k8s.namespace.name\n| RENAME k8s.namespace.name AS name\n| LIMIT 1"
               },
               "visualization": {
-                "applyColorTo": "background",
-                "color": "#61A2FF",
-                "colorMode": "background",
+                "colorMode": "none",
                 "icon": "popout",
                 "iconAlign": "left",
                 "layerId": "59cecc0b-bdd8-4ccd-a67e-92e17872fbc0",
                 "layerType": "data",
                 "metricAccessor": "946ca5f7-07db-4e54-b524-0438805e379b",
-                "primaryAlign": "center",
+                "primaryAlign": "left",
                 "showBar": false,
                 "titleWeight": "normal",
-                "titlesTextAlign": "center",
+                "titlesTextAlign": "left",
                 "titlesTextSize": "xxs",
                 "valueFontMode": "fit",
-                "valuesTextSize": "xs"
+                "valuesTextSize": "xs",
+                "primaryPosition": "top"
               }
             },
             "title": "",
@@ -332,7 +332,9 @@
                 "titleWeight": "normal",
                 "titlesTextSize": "xxs",
                 "valueFontMode": "fit",
-                "valuesTextSize": "xs"
+                "valuesTextSize": "xs",
+                "titlesTextAlign": "left",
+                "primaryPosition": "top"
               },
               "adHocDataViews": {
                 "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
@@ -543,7 +545,7 @@
             "version": 2
           },
           "title": "CPU usage vs requests & limits",
-          "description": "CPU usage over time with request (dashed yellow) and limit (dashed red) reference lines.",
+          "description": "Shows namespace CPU usage compared with requested and limited CPU over time. Usage near limits can indicate throttling risk.",
           "drilldowns": []
         },
         "panelIndex": "v3-nsd-enh-cpu-ts",
@@ -730,7 +732,7 @@
             "version": 2
           },
           "title": "Memory working set vs requests & limits",
-          "description": "Memory working set over time. Yellow dashed = requests, solid red = limits (OOMKill threshold).",
+          "description": "Shows namespace memory working set compared with requested and limited memory over time. Working set near limits can indicate OOM risk.",
           "drilldowns": []
         },
         "panelIndex": "v3-nsd-enh-mem-ts",
@@ -788,13 +790,14 @@
                 "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.container.cpu_limit IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.container.name IS NOT NULL\n  | STATS cpu_limit = MAX(k8s.container.cpu_limit),\n      last_seen = MAX(@timestamp)\n    BY k8s.pod.name, k8s.container.name\n  | INLINE STATS latest_ts = MAX(last_seen)\n  | WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n  | STATS total = SUM(cpu_limit)\n  | EVAL total_cores = ROUND(total, 2)\n  | KEEP total_cores"
               },
               "visualization": {
-                "applyColorTo": "background",
-                "color": "#61A2FF",
-                "colorMode": "background",
+                "colorMode": "none",
                 "layerId": "27c8778d-41d0-47b6-b0da-cb1478a5794f",
                 "layerType": "data",
                 "metricAccessor": "69cbd6aa-7904-4d5e-a9eb-90232c49ca11",
-                "showBar": false
+                "showBar": false,
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "primaryPosition": "top"
               },
               "adHocDataViews": {
                 "6fb2202346b4e6848e0f086deb403aa5f95c9700542f59ac209b22ac8962bf93": {
@@ -874,13 +877,14 @@
                 "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.container.memory_limit IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.container.name IS NOT NULL\n  | STATS mem_limit = MAX(k8s.container.memory_limit),\n      last_seen = MAX(@timestamp)\n    BY k8s.pod.name, k8s.container.name\n  | INLINE STATS latest_ts = MAX(last_seen)\n  | WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n  | STATS total = SUM(mem_limit)\n  | EVAL total_gb = ROUND(TO_DOUBLE(total) / 1073741824.0, 2)\n  | KEEP total_gb"
               },
               "visualization": {
-                "applyColorTo": "background",
-                "color": "#61A2FF",
-                "colorMode": "background",
+                "colorMode": "none",
                 "layerId": "27c8778d-41d0-47b6-b0da-cb1478a5794f",
                 "layerType": "data",
                 "metricAccessor": "69cbd6aa-7904-4d5e-a9eb-90232c49ca11",
-                "showBar": false
+                "showBar": false,
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "primaryPosition": "top"
               },
               "adHocDataViews": {
                 "6fb2202346b4e6848e0f086deb403aa5f95c9700542f59ac209b22ac8962bf93": {
@@ -960,13 +964,14 @@
                 "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.volume.capacity IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.volume.name IS NOT NULL\n  | STATS vol_cap = MAX(k8s.volume.capacity),\n      last_seen = MAX(@timestamp)\n    BY k8s.pod.name, k8s.volume.name\n  | INLINE STATS latest_ts = MAX(last_seen)\n  | WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n  | STATS total = SUM(vol_cap)\n  | EVAL total_gb = ROUND(TO_DOUBLE(total) / 1073741824.0, 2)\n  | KEEP total_gb"
               },
               "visualization": {
-                "applyColorTo": "background",
-                "color": "#61A2FF",
-                "colorMode": "background",
+                "colorMode": "none",
                 "layerId": "27c8778d-41d0-47b6-b0da-cb1478a5794f",
                 "layerType": "data",
                 "metricAccessor": "69cbd6aa-7904-4d5e-a9eb-90232c49ca11",
-                "showBar": false
+                "showBar": false,
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "primaryPosition": "top"
               },
               "adHocDataViews": {
                 "8b35a512f9659f273caebddf039213e5c70c00f64041bd60f4f82b92429b79d0": {
@@ -1038,11 +1043,22 @@
                               }
                             }
                           }
+                        },
+                        {
+                          "columnId": "max_val",
+                          "customLabel": false,
+                          "fieldName": "max_val",
+                          "inMetricDimension": true,
+                          "label": "Max",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          }
                         }
                       ],
                       "index": "940e9622ed5a553d64d70de28a6d22ade679d741e867ed5246ccd555c690adf4",
                       "query": {
-                        "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND (k8s.pod.cpu.usage IS NOT NULL OR k8s.container.cpu_limit IS NOT NULL)\n  | STATS cpu_usage = AVG(k8s.pod.cpu.usage), cpu_limit = AVG(k8s.container.cpu_limit)\n  | EVAL cpu_util = ROUND(cpu_usage / cpu_limit, 4)\n  | KEEP cpu_util"
+                        "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND (k8s.pod.cpu.usage IS NOT NULL OR k8s.container.cpu_limit IS NOT NULL)\n  | STATS cpu_usage = AVG(k8s.pod.cpu.usage), cpu_limit = AVG(k8s.container.cpu_limit)\n  | EVAL cpu_util = ROUND(cpu_usage / cpu_limit, 4)\n  | EVAL max_val = 1.0\n  | KEEP cpu_util, max_val"
                       },
                       "timeField": "@timestamp"
                     }
@@ -1051,13 +1067,63 @@
               },
               "filters": [],
               "query": {
-                "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND (k8s.pod.cpu.usage IS NOT NULL OR k8s.container.cpu_limit IS NOT NULL)\n  | STATS cpu_usage = AVG(k8s.pod.cpu.usage), cpu_limit = AVG(k8s.container.cpu_limit)\n  | EVAL cpu_util = ROUND(cpu_usage / cpu_limit, 4)\n  | KEEP cpu_util"
+                "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND (k8s.pod.cpu.usage IS NOT NULL OR k8s.container.cpu_limit IS NOT NULL)\n  | STATS cpu_usage = AVG(k8s.pod.cpu.usage), cpu_limit = AVG(k8s.container.cpu_limit)\n  | EVAL cpu_util = ROUND(cpu_usage / cpu_limit, 4)\n  | EVAL max_val = 1.0\n  | KEEP cpu_util, max_val"
               },
               "visualization": {
-                "color": "#61A2FF",
                 "layerId": "96b301d8-4cc2-4d82-a294-7e2f2fd54947",
                 "layerType": "data",
-                "metricAccessor": "cpu_util"
+                "metricAccessor": "cpu_util",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "primaryPosition": "top",
+                "applyColorTo": "bar",
+                "maxAccessor": "max_val",
+                "palette": {
+                  "name": "custom",
+                  "params": {
+                    "colorStops": [
+                      {
+                        "color": "#24c292",
+                        "stop": 0
+                      },
+                      {
+                        "color": "#fcd883",
+                        "stop": 0.6
+                      },
+                      {
+                        "color": "#f6726a",
+                        "stop": 0.8
+                      }
+                    ],
+                    "continuity": "above",
+                    "maxSteps": 5,
+                    "name": "custom",
+                    "progression": "fixed",
+                    "rangeMax": null,
+                    "rangeMin": 0,
+                    "rangeType": "number",
+                    "reverse": false,
+                    "steps": 3,
+                    "stops": [
+                      {
+                        "color": "#24c292",
+                        "stop": 0.6
+                      },
+                      {
+                        "color": "#fcd883",
+                        "stop": 0.8
+                      },
+                      {
+                        "color": "#f6726a",
+                        "stop": 1
+                      }
+                    ]
+                  },
+                  "type": "palette"
+                },
+                "progressDirection": "horizontal",
+                "showBar": true,
+                "subtitle": "Last value"
               },
               "adHocDataViews": {
                 "940e9622ed5a553d64d70de28a6d22ade679d741e867ed5246ccd555c690adf4": {
@@ -1131,11 +1197,22 @@
                               }
                             }
                           }
+                        },
+                        {
+                          "columnId": "max_val",
+                          "customLabel": false,
+                          "fieldName": "max_val",
+                          "inMetricDimension": true,
+                          "label": "Max",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          }
                         }
                       ],
                       "index": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
                       "query": {
-                        "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.volume.available IS NOT NULL AND k8s.volume.capacity IS NOT NULL\n  | STATS vol_avail = AVG(k8s.volume.available), vol_cap = AVG(k8s.volume.capacity)\n  | EVAL vol_util = ROUND(1.0 - TO_DOUBLE(vol_avail) / TO_DOUBLE(vol_cap), 4)\n  | KEEP vol_util"
+                        "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.volume.available IS NOT NULL AND k8s.volume.capacity IS NOT NULL\n  | STATS vol_avail = AVG(k8s.volume.available), vol_cap = AVG(k8s.volume.capacity)\n  | EVAL vol_util = ROUND(1.0 - TO_DOUBLE(vol_avail) / TO_DOUBLE(vol_cap), 4)\n  | EVAL max_val = 1.0\n  | KEEP vol_util, max_val"
                       },
                       "timeField": "@timestamp"
                     }
@@ -1144,13 +1221,63 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.volume.available IS NOT NULL AND k8s.volume.capacity IS NOT NULL\n  | STATS vol_avail = AVG(k8s.volume.available), vol_cap = AVG(k8s.volume.capacity)\n  | EVAL vol_util = ROUND(1.0 - TO_DOUBLE(vol_avail) / TO_DOUBLE(vol_cap), 4)\n  | KEEP vol_util"
+                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.volume.available IS NOT NULL AND k8s.volume.capacity IS NOT NULL\n  | STATS vol_avail = AVG(k8s.volume.available), vol_cap = AVG(k8s.volume.capacity)\n  | EVAL vol_util = ROUND(1.0 - TO_DOUBLE(vol_avail) / TO_DOUBLE(vol_cap), 4)\n  | EVAL max_val = 1.0\n  | KEEP vol_util, max_val"
               },
               "visualization": {
-                "color": "#61A2FF",
                 "layerId": "d957d892-68f9-485b-adda-b5e6e20691e0",
                 "layerType": "data",
-                "metricAccessor": "vol_util"
+                "metricAccessor": "vol_util",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "primaryPosition": "top",
+                "applyColorTo": "bar",
+                "maxAccessor": "max_val",
+                "palette": {
+                  "name": "custom",
+                  "params": {
+                    "colorStops": [
+                      {
+                        "color": "#24c292",
+                        "stop": 0
+                      },
+                      {
+                        "color": "#fcd883",
+                        "stop": 0.6
+                      },
+                      {
+                        "color": "#f6726a",
+                        "stop": 0.8
+                      }
+                    ],
+                    "continuity": "above",
+                    "maxSteps": 5,
+                    "name": "custom",
+                    "progression": "fixed",
+                    "rangeMax": null,
+                    "rangeMin": 0,
+                    "rangeType": "number",
+                    "reverse": false,
+                    "steps": 3,
+                    "stops": [
+                      {
+                        "color": "#24c292",
+                        "stop": 0.6
+                      },
+                      {
+                        "color": "#fcd883",
+                        "stop": 0.8
+                      },
+                      {
+                        "color": "#f6726a",
+                        "stop": 1
+                      }
+                    ]
+                  },
+                  "type": "palette"
+                },
+                "progressDirection": "horizontal",
+                "showBar": true,
+                "subtitle": "Last value"
               },
               "adHocDataViews": {
                 "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82": {
@@ -1223,11 +1350,22 @@
                               }
                             }
                           }
+                        },
+                        {
+                          "columnId": "max_val",
+                          "customLabel": false,
+                          "fieldName": "max_val",
+                          "inMetricDimension": true,
+                          "label": "Max",
+                          "meta": {
+                            "esType": "double",
+                            "type": "number"
+                          }
                         }
                       ],
                       "index": "940e9622ed5a553d64d70de28a6d22ade679d741e867ed5246ccd555c690adf4",
                       "query": {
-                        "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND (k8s.pod.memory.working_set IS NOT NULL OR k8s.container.memory_limit IS NOT NULL)\n  | STATS mem_ws = AVG(k8s.pod.memory.working_set), mem_limit = AVG(k8s.container.memory_limit)\n  | EVAL mem_util = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(mem_limit), 4)\n  | KEEP mem_util"
+                        "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND (k8s.pod.memory.working_set IS NOT NULL OR k8s.container.memory_limit IS NOT NULL)\n  | STATS mem_ws = AVG(k8s.pod.memory.working_set), mem_limit = AVG(k8s.container.memory_limit)\n  | EVAL mem_util = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(mem_limit), 4)\n  | EVAL max_val = 1.0\n  | KEEP mem_util, max_val"
                       },
                       "timeField": "@timestamp"
                     }
@@ -1236,13 +1374,63 @@
               },
               "filters": [],
               "query": {
-                "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND (k8s.pod.memory.working_set IS NOT NULL OR k8s.container.memory_limit IS NOT NULL)\n  | STATS mem_ws = AVG(k8s.pod.memory.working_set), mem_limit = AVG(k8s.container.memory_limit)\n  | EVAL mem_util = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(mem_limit), 4)\n  | KEEP mem_util"
+                "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND (k8s.pod.memory.working_set IS NOT NULL OR k8s.container.memory_limit IS NOT NULL)\n  | STATS mem_ws = AVG(k8s.pod.memory.working_set), mem_limit = AVG(k8s.container.memory_limit)\n  | EVAL mem_util = ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(mem_limit), 4)\n  | EVAL max_val = 1.0\n  | KEEP mem_util, max_val"
               },
               "visualization": {
-                "color": "#61A2FF",
                 "layerId": "2cf789b2-3204-44b2-bdeb-7023f1d7f840",
                 "layerType": "data",
-                "metricAccessor": "mem_util"
+                "metricAccessor": "mem_util",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "primaryPosition": "top",
+                "applyColorTo": "bar",
+                "maxAccessor": "max_val",
+                "palette": {
+                  "name": "custom",
+                  "params": {
+                    "colorStops": [
+                      {
+                        "color": "#24c292",
+                        "stop": 0
+                      },
+                      {
+                        "color": "#fcd883",
+                        "stop": 0.6
+                      },
+                      {
+                        "color": "#f6726a",
+                        "stop": 0.8
+                      }
+                    ],
+                    "continuity": "above",
+                    "maxSteps": 5,
+                    "name": "custom",
+                    "progression": "fixed",
+                    "rangeMax": null,
+                    "rangeMin": 0,
+                    "rangeType": "number",
+                    "reverse": false,
+                    "steps": 3,
+                    "stops": [
+                      {
+                        "color": "#24c292",
+                        "stop": 0.6
+                      },
+                      {
+                        "color": "#fcd883",
+                        "stop": 0.8
+                      },
+                      {
+                        "color": "#f6726a",
+                        "stop": 1
+                      }
+                    ]
+                  },
+                  "type": "palette"
+                },
+                "progressDirection": "horizontal",
+                "showBar": true,
+                "subtitle": "Last value"
               },
               "adHocDataViews": {
                 "940e9622ed5a553d64d70de28a6d22ade679d741e867ed5246ccd555c690adf4": {
@@ -1390,7 +1578,7 @@
                 ],
                 "legend": {
                   "isVisible": true,
-                  "position": "right"
+                  "position": "bottom"
                 },
                 "preferredSeriesType": "line",
                 "tickLabelsVisibilitySettings": {
@@ -1421,7 +1609,8 @@
             "version": 2
           },
           "title": "Volume usage over time",
-          "drilldowns": []
+          "drilldowns": [],
+          "description": "Shows persistent volume usage in this namespace over time. Watch for usage approaching capacity."
         },
         "panelIndex": "12f49afe-7554-48c0-a9b5-3a08c6af7715",
         "gridData": {
@@ -1537,7 +1726,7 @@
                 ],
                 "legend": {
                   "isVisible": true,
-                  "position": "right"
+                  "position": "bottom"
                 },
                 "preferredSeriesType": "line",
                 "tickLabelsVisibilitySettings": {
@@ -1568,7 +1757,8 @@
             "version": 2
           },
           "title": "Pod count over time",
-          "drilldowns": []
+          "drilldowns": [],
+          "description": "Shows pod count in this namespace over time. Sudden changes can indicate scaling, rollout, or crash/restart activity."
         },
         "panelIndex": "63db37e4-42a5-4e80-b1c4-b26fc7679459",
         "gridData": {
@@ -1758,7 +1948,7 @@
             "visualizationType": "lnsXY",
             "version": 2
           },
-          "description": "Memory composition over time. RSS, working set, and available memory as separate series. SUM per 1m bucket.",
+          "description": "Shows pod memory composition in this namespace over time: RSS, working set, and available memory. Watch for rising working set or falling available memory.",
           "drilldowns": [],
           "title": "Memory composition"
         },
@@ -1941,7 +2131,7 @@
             "visualizationType": "lnsXY",
             "version": 2
           },
-          "description": "Network I/O over time by direction (transmit/receive). SUM(RATE(k8s.pod.network.io)) per 1m bucket.",
+          "description": "Shows namespace pod network throughput in and out over time. Watch for unexpected spikes or sustained high throughput.",
           "drilldowns": [],
           "title": "Network I/O"
         },
@@ -2089,7 +2279,6 @@
                 ],
                 "legend": {
                   "isVisible": true,
-                  "layout": "list",
                   "position": "bottom"
                 },
                 "preferredSeriesType": "line",
@@ -2121,7 +2310,7 @@
             "version": 2
           },
           "title": "Top 10 pods by CPU usage",
-          "description": "CPU usage over time by pod. SUM(k8s.pod.cpu.usage) per 1m bucket, broken down by k8s.pod.name.",
+          "description": "Shows the top pods by CPU usage in this namespace over time. Use this to find pods consuming the most CPU.",
           "drilldowns": []
         },
         "panelIndex": "26a26e09-ba92-40bd-b4e7-7872aaaa9fea",
@@ -2268,7 +2457,6 @@
                 ],
                 "legend": {
                   "isVisible": true,
-                  "layout": "list",
                   "position": "bottom"
                 },
                 "preferredSeriesType": "line",
@@ -2300,7 +2488,7 @@
             "version": 2
           },
           "title": "Top 10 pods by memory usage",
-          "description": "Memory working set per pod over time. sum(k8s.pod.memory.working_set) split by k8s.pod.name.",
+          "description": "Shows the top pods by memory working set in this namespace over time. Use this to find pods consuming the most memory.",
           "drilldowns": []
         },
         "panelIndex": "45b019c4-a9e2-4af7-a574-a31eaaa2713b",
@@ -2439,7 +2627,6 @@
                 ],
                 "legend": {
                   "isVisible": true,
-                  "layout": "list",
                   "position": "bottom"
                 },
                 "preferredSeriesType": "line",
@@ -2471,7 +2658,7 @@
             "version": 2
           },
           "title": "Top 10 pods by container restarts",
-          "description": "Container restarts over time per pod. max(k8s.container.restarts) broken down by k8s.pod.name.",
+          "description": "Shows the top pods by container restarts in this namespace over time. Restart spikes can indicate unstable containers.",
           "drilldowns": []
         },
         "panelIndex": "6d1feb6f-03a0-451b-9f88-5b5bf4c4285c",
@@ -2526,8 +2713,8 @@
                           "inMetricDimension": true,
                           "label": "Phase",
                           "meta": {
-                            "esType": "long",
-                            "type": "number"
+                            "esType": "keyword",
+                            "type": "string"
                           }
                         },
                         {
@@ -2601,7 +2788,7 @@
                       ],
                       "index": "940e9622ed5a553d64d70de28a6d22ade679d741e867ed5246ccd555c690adf4",
                       "query": {
-                        "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.namespace.name IS NOT NULL\n  AND k8s.pod.name IS NOT NULL\n| STATS phase_num = LAST(k8s.pod.phase, CASE(k8s.pod.phase IS NOT NULL, @timestamp, NULL)),\n    node_name_values = VALUES(k8s.node.name),\n    cpu_usage = AVG(k8s.pod.cpu.usage),\n    mem_ws = AVG(k8s.pod.memory.working_set),\n    mem_limit_util = AVG(k8s.pod.memory_limit_utilization),\n    restarts = MAX(k8s.container.restarts),\n    last_seen = MAX(@timestamp)\n  BY k8s.pod.uid, k8s.pod.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| EVAL phase = CASE(\n    phase_num == 1, \"Pending\",\n    phase_num == 2, \"Running\",\n    phase_num == 3, \"Succeeded\",\n    phase_num == 4, \"Failed\",\n    phase_num == 5, \"Unknown\",\n    \"N/A\"\n  ),\n  k8s.node.name = MV_FIRST(node_name_values)\n| KEEP k8s.pod.name, k8s.node.name, phase, cpu_usage, mem_ws, mem_limit_util, restarts\n| SORT cpu_usage DESC"
+                        "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.namespace.name IS NOT NULL\n  AND k8s.pod.name IS NOT NULL\n| STATS phase_num = LAST(k8s.pod.phase, CASE(k8s.pod.phase IS NOT NULL, @timestamp, NULL)),\n    node_name_values = VALUES(k8s.node.name),\n    cpu_usage = AVG(k8s.pod.cpu.usage),\n    mem_ws = AVG(k8s.pod.memory.working_set),\n    mem_limit_util = AVG(k8s.pod.memory_limit_utilization),\n    restarts = MAX(k8s.container.restarts),\n    last_seen = MAX(@timestamp)\n  BY k8s.pod.uid, k8s.pod.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| EVAL phase = CASE(\n    phase_num == 1, \"Pending\",\n    phase_num == 2, \"Running\",\n    phase_num == 3, \"Succeeded\",\n    phase_num == 4, \"Failed\",\n    phase_num == 5, \"Unknown\",\n    \"N/A\"\n  ),\n  k8s.node.name = MV_FIRST(node_name_values)\n| KEEP k8s.pod.name, k8s.node.name, restarts, phase, cpu_usage, mem_ws, mem_limit_util\n| SORT restarts DESC, k8s.pod.name ASC"
                       },
                       "timeField": "@timestamp"
                     }
@@ -2610,7 +2797,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.namespace.name IS NOT NULL\n  AND k8s.pod.name IS NOT NULL\n| STATS phase_num = LAST(k8s.pod.phase, CASE(k8s.pod.phase IS NOT NULL, @timestamp, NULL)),\n    node_name_values = VALUES(k8s.node.name),\n    cpu_usage = AVG(k8s.pod.cpu.usage),\n    mem_ws = AVG(k8s.pod.memory.working_set),\n    mem_limit_util = AVG(k8s.pod.memory_limit_utilization),\n    restarts = MAX(k8s.container.restarts),\n    last_seen = MAX(@timestamp)\n  BY k8s.pod.uid, k8s.pod.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| EVAL phase = CASE(\n    phase_num == 1, \"Pending\",\n    phase_num == 2, \"Running\",\n    phase_num == 3, \"Succeeded\",\n    phase_num == 4, \"Failed\",\n    phase_num == 5, \"Unknown\",\n    \"N/A\"\n  ),\n  k8s.node.name = MV_FIRST(node_name_values)\n| KEEP k8s.pod.name, k8s.node.name, phase, cpu_usage, mem_ws, mem_limit_util, restarts\n| SORT cpu_usage DESC"
+                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.namespace.name IS NOT NULL\n  AND k8s.pod.name IS NOT NULL\n| STATS phase_num = LAST(k8s.pod.phase, CASE(k8s.pod.phase IS NOT NULL, @timestamp, NULL)),\n    node_name_values = VALUES(k8s.node.name),\n    cpu_usage = AVG(k8s.pod.cpu.usage),\n    mem_ws = AVG(k8s.pod.memory.working_set),\n    mem_limit_util = AVG(k8s.pod.memory_limit_utilization),\n    restarts = MAX(k8s.container.restarts),\n    last_seen = MAX(@timestamp)\n  BY k8s.pod.uid, k8s.pod.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| EVAL phase = CASE(\n    phase_num == 1, \"Pending\",\n    phase_num == 2, \"Running\",\n    phase_num == 3, \"Succeeded\",\n    phase_num == 4, \"Failed\",\n    phase_num == 5, \"Unknown\",\n    \"N/A\"\n  ),\n  k8s.node.name = MV_FIRST(node_name_values)\n| KEEP k8s.pod.name, k8s.node.name, restarts, phase, cpu_usage, mem_ws, mem_limit_util\n| SORT restarts DESC, k8s.pod.name ASC"
               },
               "visualization": {
                 "columns": [
@@ -2623,47 +2810,94 @@
                     "oneClickFilter": true
                   },
                   {
-                    "colorMode": "cell",
-                    "columnId": "phase",
+                    "colorMode": "badge",
+                    "columnId": "restarts",
                     "palette": {
-                      "name": "positive",
+                      "name": "custom",
                       "params": {
-                        "colorStops": [],
+                        "colorStops": [
+                          {
+                            "color": "#ffffff",
+                            "stop": 0
+                          },
+                          {
+                            "color": "#ffc9c2",
+                            "stop": 1
+                          }
+                        ],
                         "continuity": "above",
-                        "name": "positive",
+                        "name": "custom",
                         "progression": "fixed",
-                        "rangeMax": 100,
+                        "rangeMax": null,
                         "rangeMin": 0,
-                        "rangeType": "percent",
+                        "rangeType": "number",
                         "reverse": false,
-                        "steps": 5,
+                        "steps": 2,
                         "stops": [
                           {
-                            "color": "#d4efe6",
-                            "stop": 20
+                            "color": "#ffffff",
+                            "stop": 0
                           },
                           {
-                            "color": "#b1e4d1",
-                            "stop": 40
-                          },
-                          {
-                            "color": "#8cd9bb",
-                            "stop": 60
-                          },
-                          {
-                            "color": "#62cea6",
-                            "stop": 80
-                          },
-                          {
-                            "color": "#24c292",
-                            "stop": 100
+                            "color": "#ffc9c2",
+                            "stop": 1
                           }
                         ]
                       },
                       "type": "palette"
-                    },
+                    }
+                  },
+                  {
+                    "colorMode": "badge",
+                    "columnId": "phase",
                     "colorMapping": {
-                      "assignments": [],
+                      "assignments": [
+                        {
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#AEE8D2"
+                          },
+                          "rules": [
+                            {
+                              "type": "match",
+                              "pattern": "Running",
+                              "matchEntireWord": true,
+                              "matchCase": true
+                            }
+                          ],
+                          "touched": false
+                        },
+                        {
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#AEE8D2"
+                          },
+                          "rules": [
+                            {
+                              "type": "match",
+                              "pattern": "Succeeded",
+                              "matchEntireWord": true,
+                              "matchCase": true
+                            }
+                          ],
+                          "touched": false
+                        },
+                        {
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#ffc9c2"
+                          },
+                          "rules": [
+                            {
+                              "type": "match",
+                              "pattern": "Failed",
+                              "matchEntireWord": true,
+                              "matchCase": true
+                            }
+                          ],
+                          "touched": false
+                        }
+                      ],
                       "specialAssignments": [
                         {
                           "rules": [
@@ -2691,76 +2925,18 @@
                   },
                   {
                     "columnId": "mem_limit_util"
-                  },
-                  {
-                    "colorMode": "cell",
-                    "columnId": "restarts",
-                    "palette": {
-                      "name": "custom",
-                      "params": {
-                        "colorStops": [
-                          {
-                            "color": "#ffffff",
-                            "stop": 0
-                          },
-                          {
-                            "color": "#fec4bf",
-                            "stop": 20
-                          },
-                          {
-                            "color": "#feaaa2",
-                            "stop": 40
-                          },
-                          {
-                            "color": "#fb8f86",
-                            "stop": 60
-                          },
-                          {
-                            "color": "#f6726a",
-                            "stop": 80
-                          }
-                        ],
-                        "continuity": "above",
-                        "name": "custom",
-                        "progression": "fixed",
-                        "rangeMax": null,
-                        "rangeMin": 0,
-                        "rangeType": "percent",
-                        "reverse": false,
-                        "steps": 5,
-                        "stops": [
-                          {
-                            "color": "#ffffff",
-                            "stop": 20
-                          },
-                          {
-                            "color": "#fec4bf",
-                            "stop": 40
-                          },
-                          {
-                            "color": "#feaaa2",
-                            "stop": 60
-                          },
-                          {
-                            "color": "#fb8f86",
-                            "stop": 80
-                          },
-                          {
-                            "color": "#f6726a",
-                            "stop": 100
-                          }
-                        ]
-                      },
-                      "type": "palette"
-                    }
                   }
                 ],
                 "layerId": "aa4a147e-2995-414f-a07d-44b301dfb01d",
                 "layerType": "data",
                 "showRowNumbers": true,
                 "sorting": {
-                  "columnId": "cpu_usage",
+                  "columnId": "restarts",
                   "direction": "desc"
+                },
+                "paging": {
+                  "enabled": true,
+                  "size": 10
                 }
               },
               "adHocDataViews": {
@@ -2803,7 +2979,8 @@
               "use_time_range": true,
               "dashboardRefName": "dashboard_drilldown_kubernetes_otel-8c71876b-ee61-4bdf-b3a4-1abc848d9c33"
             }
-          ]
+          ],
+          "description": "Lists pods in this namespace. Phase and restart counts use the latest values in the selected time range; CPU usage, memory working set, and memory limit utilization are averaged across the range. Sorted by container restarts so noisy pods appear first."
         },
         "panelIndex": "ec26c2d2-35e5-49d5-b06d-bc2ac6a42637",
         "gridData": {
@@ -2863,42 +3040,10 @@
                 "layerId": "360a1e79-0889-4255-8a22-21fb1105f7e5",
                 "layerType": "data",
                 "metricAccessor": "count",
-                "palette": {
-                  "name": "custom",
-                  "type": "palette",
-                  "params": {
-                    "steps": 3,
-                    "name": "custom",
-                    "reverse": false,
-                    "rangeType": "number",
-                    "rangeMin": null,
-                    "rangeMax": null,
-                    "progression": "fixed",
-                    "stops": [
-                      {
-                        "color": "#BFDBFF",
-                        "stop": 1
-                      },
-                      {
-                        "color": "#24c292",
-                        "stop": 74
-                      }
-                    ],
-                    "colorStops": [
-                      {
-                        "color": "#BFDBFF",
-                        "stop": null
-                      },
-                      {
-                        "color": "#24c292",
-                        "stop": 1
-                      }
-                    ],
-                    "continuity": "all",
-                    "maxSteps": 5
-                  }
-                },
-                "applyColorTo": "background"
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "primaryPosition": "top",
+                "colorMode": "none"
               },
               "adHocDataViews": {
                 "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
@@ -2980,41 +3125,10 @@
                 "layerId": "360a1e79-0889-4255-8a22-21fb1105f7e5",
                 "layerType": "data",
                 "metricAccessor": "count",
-                "palette": {
-                  "name": "custom",
-                  "type": "palette",
-                  "params": {
-                    "steps": 3,
-                    "name": "custom",
-                    "reverse": false,
-                    "rangeType": "number",
-                    "rangeMin": null,
-                    "rangeMax": null,
-                    "progression": "fixed",
-                    "stops": [
-                      {
-                        "color": "#BFDBFF",
-                        "stop": 1
-                      },
-                      {
-                        "color": "#fcd883",
-                        "stop": 2
-                      }
-                    ],
-                    "colorStops": [
-                      {
-                        "color": "#BFDBFF",
-                        "stop": null
-                      },
-                      {
-                        "color": "#fcd883",
-                        "stop": 1
-                      }
-                    ],
-                    "continuity": "all",
-                    "maxSteps": 5
-                  }
-                }
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "primaryPosition": "top",
+                "colorMode": "none"
               },
               "adHocDataViews": {
                 "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
@@ -3097,7 +3211,10 @@
                 "layerId": "360a1e79-0889-4255-8a22-21fb1105f7e5",
                 "layerType": "data",
                 "metricAccessor": "count",
-                "color": "#61A2FF"
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "primaryPosition": "top",
+                "colorMode": "none"
               },
               "adHocDataViews": {
                 "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
@@ -3180,7 +3297,10 @@
                 "layerId": "360a1e79-0889-4255-8a22-21fb1105f7e5",
                 "layerType": "data",
                 "metricAccessor": "count",
-                "color": "#61A2FF"
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "primaryPosition": "top",
+                "colorMode": "none"
               },
               "adHocDataViews": {
                 "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
