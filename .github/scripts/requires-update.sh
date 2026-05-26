@@ -27,17 +27,17 @@ generate_pr_body() {
   local team_entry="$1"
   echo "## Packages updated"
   echo ""
-  echo "$team_entry" | jq -r '
+  jq -r '
     .packages[] |
-    "### `" + .name + "`\n" +
+    "### `\(.name)`\n" +
     (if (.applied | length) > 0 then
-      ([.applied[] | "- **" + .package + "** (`" + .kind + "`): `" + .current + "` → `" + .proposed + "`"] | join("\n"))
+      ([.applied[] | "- **\(.package)** (`\(.kind)`): `\(.current)` → `\(.proposed)`"] | join("\n"))
     else "" end) +
     (if (.skipped | length) > 0 then
-      "\n" + ([.skipped[] | "- ⚠️ **" + .package + "** skipped: " + .warning] | join("\n"))
+      "\n" + ([.skipped[] | "- ⚠️ **\(.package)** skipped: \(.warning)"] | join("\n"))
     else "" end) +
     "\n"
-  '
+  ' <<< "$team_entry"
 }
 
 generate_issue_body() {
@@ -45,18 +45,18 @@ generate_issue_body() {
   local slug="$2"
   echo "The following packages have dependency updates available but could not be applied automatically."
   echo ""
-  echo "$team_entry" | jq -r '
+  jq -r '
     .packages[] | select((.skipped | length) > 0) |
-    "### `" + .name + "`\n" +
-    ([.skipped[] | "- **" + .package + "**: " + .warning] | join("\n")) +
+    "### `\(.name)`\n" +
+    ([.skipped[] | "- **\(.package)**: \(.warning)"] | join("\n")) +
     "\n"
-  '
+  ' <<< "$team_entry"
   echo "/cc @elastic/${slug}"
 }
 
 while IFS= read -r team_entry; do
-  slug=$(echo "$team_entry" | jq -r '.slug')
-  files=$(echo "$team_entry" | jq -r '.packages[].files[]' | sort -u)
+  slug=$(jq -r '.slug' <<< "$team_entry")
+  files=$(jq -r '[.packages[].files[]] | unique | .[]' <<< "$team_entry")
 
   # No files written: all proposals were skipped — open an issue instead of a PR.
   if [ -z "$files" ]; then
@@ -131,12 +131,12 @@ while IFS= read -r team_entry; do
       --title "[automation] Update required package versions for @elastic/${slug}" \
       --body "$(generate_pr_body "$team_entry")")
   fi
-  pr_number=$(echo "$pr_url" | grep -oE '[0-9]+$')
+  pr_number="${pr_url##*/}"
 
   # Fixup pull/0 placeholder in this team's changelog files.
-  changelog_files=$(echo "$team_entry" | jq -r '.packages[].files[] | select(endswith("changelog.yml"))')
+  changelog_files=$(jq -r '.packages[].files[] | select(endswith("changelog.yml"))' <<< "$team_entry")
   if [ -n "$changelog_files" ] && [ -n "$pr_number" ]; then
-    echo "$changelog_files" | xargs sed -i "s|pull/0|pull/${pr_number}|g"
+    echo "$changelog_files" | xargs sed -i'' "s|pull/0|pull/${pr_number}|g"
     echo "$changelog_files" | xargs git add --
     git diff --cached --quiet || {
       git commit -m "Fix changelog PR links"
