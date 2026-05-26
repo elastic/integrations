@@ -41,10 +41,11 @@ type proposal struct {
 }
 
 type updateResult struct {
-	Package   string     `json:"package"`
-	Codeowner string     `json:"codeowner"`
-	Proposals []proposal `json:"proposals"`
-	Applied   bool       `json:"applied"`
+	Package    string     `json:"package"`
+	Codeowner  string     `json:"codeowner"`
+	Proposals  []proposal `json:"proposals"`
+	Applied    bool       `json:"applied"`
+	SkipReason string     `json:"skip_reason,omitempty"`
 }
 
 type packageSummary struct {
