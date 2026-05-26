@@ -33,6 +33,7 @@ set -euo pipefail
 readonly SECS_6_MONTHS=$((180 * 86400))
 readonly SECS_1_YEAR=$((365 * 86400))
 
+# Start the search from the path given as an argument, defaulting to the current working directory
 search_root="${1:-.}"
 
 error_count=0
@@ -123,13 +124,14 @@ if [ "$error_count" -gt 0 ]; then
     junit_dir="build/test-results"
     mkdir -p "$junit_dir"
     timestamp=$(date +%s%N 2>/dev/null || date +%s)
-    package_name="$(basename "$search_root")"
+    # Use the package name from the manifest instead of relying on folder names, which aren't forced to be unique
+    unique_package_name="$(yq -r '.name' "${search_root}/manifest.yml")"
+
 
     export _CERT_CHECK_CALLER="check_certificates.sh"
     python3 "$(dirname "$0")/write_junit_cert_report.py" \
         "$package_name" \
         "${junit_dir}/${package_name}-certcheck-${timestamp}.xml" \
         "${junit_errors[@]}"
-
     exit 1
 fi
