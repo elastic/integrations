@@ -38,7 +38,7 @@ processors:
         # Beginning with version 6.3, Firepower Threat Defense provides the option to enable timestamp as per RFC 5424.
         FTD_DATE: "(?:%{TIMESTAMP_ISO8601}|%{ASA_DATE})"
         ASA_DATE: "(?:%{DAY} )?%{MONTH}  *%{MONTHDAY}(?: %{YEAR})? %{TIME}(?: %{TZ:_temp_.tz})?"
-        TZ: "(?:[APMCE][SD]T|UTC)"
+        TZ: "[A-Z]{1,7}([+-]\\d{1,2}|[+-]\\d{2}:\\d{2})?"
         TIMESTAMP_ISO8601: "%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:_temp_.tz}?"
         ISO8601_TIMEZONE: "(?:Z|[+-]%{HOUR}(?::?%{MINUTE}))"
         PROCESS: "(?:[^%\\s:\\[]+)"
@@ -55,6 +55,7 @@ processors:
         - '%{GREEDYDATA:_temp_.full_message}'
       pattern_definitions:
         ASA_DATE: "(?:%{DAY} )?%{MONTH}  *%{MONTHDAY}(?: %{YEAR})? %{TIME}(?: %{TZ:_temp_.tz})?"
+        TZ: "[A-Z]{1,7}([+-]\\d{1,2}|[+-]\\d{2}:\\d{2})?"
   - script:
       lang: painless
       tag: script_log_syslog
