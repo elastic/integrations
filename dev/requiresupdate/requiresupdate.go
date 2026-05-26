@@ -121,10 +121,12 @@ func Run() error {
 }
 
 func processPackage(pkgPath, pkgName, currentVersion string, dryRun bool) (*packageSummary, error) {
-	// Always run in dry-run mode to get proposals without letting elastic-package
-	// rewrite the whole manifest (which reformats unrelated fields).
+	args := []string{"requires", "update", "--format", "json"}
+	if dryRun {
+		args = append(args, "--dry-run")
+	}
 	var stdout, stderr bytes.Buffer
-	cmd := exec.Command(elasticPackageBin(), "requires", "update", "--format", "json", "--dry-run")
+	cmd := exec.Command(elasticPackageBin(), args...)
 	cmd.Dir = pkgPath
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -166,10 +168,6 @@ func processPackage(pkgPath, pkgName, currentVersion string, dryRun bool) (*pack
 
 	var writtenFiles []string
 	if !dryRun && len(applied) > 0 {
-		manifestPath := filepath.Join(pkgPath, citools.ManifestFileName)
-		if err := patchManifestRequires(manifestPath, applied); err != nil {
-			return nil, fmt.Errorf("patching manifest requires: %w", err)
-		}
 		nextVersion, err := computeNextVersion(currentVersion, applied)
 		if err != nil {
 			return nil, fmt.Errorf("computing next version: %w", err)
@@ -193,89 +191,6 @@ func processPackage(pkgPath, pkgName, currentVersion string, dryRun bool) (*pack
 	}, nil
 }
 
-// patchManifestRequires updates only the version lines under the requires: block.
-// It scans line by line so no other field is touched or reformatted.
-func patchManifestRequires(manifestPath string, proposals []proposal) error {
-	updates := make(map[string]string, len(proposals))
-	for _, p := range proposals {
-		updates[p.Package] = p.Proposed
-	}
-
-	data, err := os.ReadFile(manifestPath)
-	if err != nil {
-		return err
-	}
-
-	lines := strings.Split(string(data), "\n")
-
-	const (
-		stateOutside      = iota
-		stateInRequires   // inside requires: block
-		stateAfterPackage // just saw "- package: <name>" with a pending update
-	)
-
-	state := stateOutside
-	requiresIndent := -1
-	currentPkg := ""
-
-	for i, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		if trimmed == "" {
-			continue
-		}
-		indent := len(line) - len(strings.TrimLeft(line, " \t"))
-
-		switch state {
-		case stateOutside:
-			if trimmed == "requires:" {
-				state = stateInRequires
-				requiresIndent = indent
-			}
-
-		case stateInRequires:
-			if indent <= requiresIndent {
-				// Left the requires block.
-				state = stateOutside
-				continue
-			}
-			if strings.HasPrefix(trimmed, "- package:") {
-				pkg := strings.TrimSpace(strings.TrimPrefix(trimmed, "- package:"))
-				if _, ok := updates[pkg]; ok {
-					currentPkg = pkg
-					state = stateAfterPackage
-				}
-			}
-
-		case stateAfterPackage:
-			if strings.HasPrefix(trimmed, "version:") {
-				leading := line[:indent]
-				proposed := updates[currentPkg]
-				if strings.Contains(line, `"`) {
-					lines[i] = leading + `version: "` + proposed + `"`
-				} else {
-					lines[i] = leading + "version: " + proposed
-				}
-				currentPkg = ""
-				state = stateInRequires
-			} else if strings.HasPrefix(trimmed, "- package:") {
-				// Next list entry appeared before a version: line — handle it inline.
-				currentPkg = ""
-				state = stateInRequires
-				pkg := strings.TrimSpace(strings.TrimPrefix(trimmed, "- package:"))
-				if _, ok := updates[pkg]; ok {
-					currentPkg = pkg
-					state = stateAfterPackage
-				}
-			} else if indent <= requiresIndent {
-				// Left the requires block entirely.
-				currentPkg = ""
-				state = stateOutside
-			}
-		}
-	}
-
-	return os.WriteFile(manifestPath, []byte(strings.Join(lines, "\n")), 0644)
-}
 
 func resolveOwner(pkgName, fallback string) (string, error) {
 	owners, err := codeowners.PackageOwners(pkgName, "", codeowners.DefaultCodeownersPath)
