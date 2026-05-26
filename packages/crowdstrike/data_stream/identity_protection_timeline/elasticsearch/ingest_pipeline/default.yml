@@ -37,11 +37,6 @@ processors:
       field: event.original
       tag: json_event_original
       target_field: crowdstrike.idp.timeline
-      on_failure:
-        - append:
-            tag: append_error_message_json_parse
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
       fields:
         - event.original
@@ -54,7 +49,7 @@ processors:
       tag: script_convert_camelcase_to_snake_case
       lang: painless
       description: Convert camelCase to snake_case.
-      if: ctx.crowdstrike?.idp != null
+      if: ctx.crowdstrike?.idp?.timeline != null
       source: |
         String camelToSnake(String str) {
           def result = "";
@@ -169,7 +164,7 @@ processors:
           type:
             - change
       source: |-
-        def m = params.get(ctx.crowdstrike?.idp?.timeline?.event_type);
+        def m = params.get(ctx.crowdstrike.idp.timeline.event_type);
         if (m != null) {
           m.forEach((k, v) -> {
             if (v instanceof List) {
@@ -317,15 +312,30 @@ processors:
       field: host.os.name
       copy_from: crowdstrike.idp.timeline.operating_system_info.name
       ignore_empty_value: true
-  - set:
-      tag: set_host_os_type_bf6e6112
-      field: host.os.type
-      copy_from: crowdstrike.idp.timeline.operating_system_info.family
-      ignore_empty_value: true
-  - lowercase:
-      tag: lowercase_host_os_type_b0e6b5a1
-      field: host.os.type
-      ignore_missing: true
+  - script:
+      tag: script_set_host_os_type_from_operating_system_info_family
+      description: Set host.os.type from operating_system_info.family.
+      lang: painless
+      if: ctx.crowdstrike?.idp?.timeline?.operating_system_info?.family != null
+      params:
+        WINDOWS: windows
+        OSX: macos
+        UNIX: unix
+        LINUX: linux
+        IOS: ios
+        ANDROID: android
+      source: |
+        def os = params[ctx.crowdstrike.idp.timeline.operating_system_info.family.toUpperCase()];
+        if (os != null) {
+          ctx.host = ctx.host ?: [:];
+          ctx.host.os = ctx.host.os ?: [:];
+          ctx.host.os.type = os;
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_set_host_os_type_script
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       tag: set_host_os_version_bdb32d76
       field: host.os.version
@@ -347,7 +357,7 @@ processors:
       lang: painless
       tag: set_user_email_from_email_addresses
       description: Take the first email from user_entity.email_addresses when present.
-      if: ctx.crowdstrike?.idp?.timeline?.user_entity != null && ctx.crowdstrike.idp.timeline.user_entity.email_addresses instanceof List
+      if: ctx.crowdstrike?.idp?.timeline?.user_entity?.email_addresses instanceof List
       source: |
         def emails = ctx.crowdstrike.idp.timeline.user_entity.email_addresses;
         if (emails.size() > 0 && emails[0] != null) {
@@ -420,6 +430,10 @@ processors:
       ignore_missing: true
       if: ctx.crowdstrike?.idp?.timeline?.ip_address != null && ctx.crowdstrike.idp.timeline.ip_address != ''
       on_failure:
+        - remove:
+            tag: remove_crowdstrike_idp_timeline_ip_address_e5d437d6
+            field: crowdstrike.idp.timeline.ip_address
+            ignore_missing: true
         - append:
             tag: append_error_message_convert_timeline_ip_address_to_source_ip
             field: error.message
@@ -456,11 +470,15 @@ processors:
   - date:
       field: crowdstrike.idp.timeline.timestamp
       tag: date_crowdstrike_idp_timestamp
-      target_field: '@timestamp'
+      target_field: crowdstrike.idp.timeline.timestamp
       formats:
         - ISO8601
       if: ctx.crowdstrike?.idp?.timeline?.timestamp != null && ctx.crowdstrike.idp.timeline.timestamp != ''
       on_failure:
+        - remove:
+            tag: remove_crowdstrike_idp_timeline_timestamp_106c6945
+            field: crowdstrike.idp.timeline.timestamp
+            ignore_missing: true
         - append:
             tag: append_error_message_date_crowdstrike_idp_timestamp
             field: error.message
@@ -468,11 +486,15 @@ processors:
   - date:
       field: crowdstrike.idp.timeline.start_time
       tag: date_crowdstrike_idp_start_time
-      target_field: event.start
+      target_field: crowdstrike.idp.timeline.start_time
       formats:
         - ISO8601
       if: ctx.crowdstrike?.idp?.timeline?.start_time != null && ctx.crowdstrike.idp.timeline.start_time != ''
       on_failure:
+        - remove:
+            tag: remove_crowdstrike_idp_timeline_start_time_484e7073
+            field: crowdstrike.idp.timeline.start_time
+            ignore_missing: true
         - append:
             tag: append_error_message_date_crowdstrike_idp_start_time
             field: error.message
@@ -480,16 +502,35 @@ processors:
   - date:
       field: crowdstrike.idp.timeline.end_time
       tag: date_crowdstrike_idp_end_time
-      target_field: event.end
+      target_field: crowdstrike.idp.timeline.end_time
       formats:
         - ISO8601
       if: ctx.crowdstrike?.idp?.timeline?.end_time != null && ctx.crowdstrike.idp.timeline.end_time != ''
       on_failure:
+        - remove:
+            tag: remove_crowdstrike_idp_timeline_end_time_987e69e5
+            field: crowdstrike.idp.timeline.end_time
+            ignore_missing: true
         - append:
             tag: append_error_message_date_crowdstrike_idp_end_time
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
+  - set:
+      tag: set_timestamp_22d4fb46
+      field: '@timestamp'
+      copy_from: crowdstrike.idp.timeline.timestamp
+      ignore_empty_value: true
+  - set:
+      tag: set_event_start_2b6031f0
+      field: event.start
+      copy_from: crowdstrike.idp.timeline.start_time
+      ignore_empty_value: true
+  - set:
+      tag: set_event_end_6ecaa9a2
+      field: event.end
+      copy_from: crowdstrike.idp.timeline.end_time
+      ignore_empty_value: true
   - append:
       field: related.user
       value: '{{{user.name}}}'
@@ -543,7 +584,6 @@ processors:
       field:
         - crowdstrike.idp.timeline.event_id
         - crowdstrike.idp.timeline.event_type
-        - crowdstrike.idp.timeline.event_severity
         - crowdstrike.idp.timeline.timestamp
         - crowdstrike.idp.timeline.start_time
         - crowdstrike.idp.timeline.end_time
@@ -561,11 +601,6 @@ processors:
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-  - remove:
-      field:
-        - _temp
-      tag: remove_temp_fields
-      ignore_missing: true
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
       tag: script_to_drop_null_values

@@ -3925,7 +3925,7 @@ An example event for `identity_protection_timeline` looks as following:
 | crowdstrike.idp.timeline.geo_location.city | City derived from GeoIP for ipAddress. | keyword |
 | crowdstrike.idp.timeline.geo_location.country | Country derived from GeoIP for ipAddress. | keyword |
 | crowdstrike.idp.timeline.host_name | The origin endpoint host name. | keyword |
-| crowdstrike.idp.timeline.ip_address | The origin endpoint IP address. | keyword |
+| crowdstrike.idp.timeline.ip_address | The origin endpoint IP address. | ip |
 | crowdstrike.idp.timeline.ip_address_reputations | Vendor IP reputation signals; exact shape depends on API schema. | keyword |
 | crowdstrike.idp.timeline.isp_classification | ISP or IP reputation category from vendor enrichment. | keyword |
 | crowdstrike.idp.timeline.isp_domain | ISP or organization domain string when provided. | keyword |
