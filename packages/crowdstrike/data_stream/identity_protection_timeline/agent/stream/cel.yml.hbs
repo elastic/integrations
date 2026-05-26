@@ -137,10 +137,7 @@ program: |-
           "variables": {
             "startTime": start_time,
             "first": int(state.batch_size),
-            ?"after": (state.?cursor.end_cursor.orValue("") != "") ?
-              optional.of(state.cursor.end_cursor)
-            :
-              optional.none(),
+            ?"after": state.?cursor.end_cursor,
           },
         }.encode_json()
       ).do_request().as(resp, (resp.StatusCode == 200) ?
@@ -155,9 +152,9 @@ program: |-
               },
               "want_more": false,
             }
-          : (has(body.data) && has(body.data.timeline)) ?
+          : has(body.?data.timeline) ?
             {
-              "events": body.data.timeline.nodes.orValue([]).map(node,
+              "events": body.data.timeline.?nodes.orValue([]).map(node,
                 {
                   "message": node.encode_json(),
                 }
@@ -168,8 +165,8 @@ program: |-
                   optional.of(body.data.timeline.pageInfo.endCursor)
                 :
                   optional.none(),
-                ?"last_timestamp": (!body.data.timeline.pageInfo.hasNextPage && body.data.timeline.nodes.orValue([]).size() > 0) ?
-                  optional.of(body.data.timeline.nodes[body.data.timeline.nodes.size() - 1].timestamp)
+                ?"last_timestamp": (!body.data.timeline.pageInfo.hasNextPage && body.data.timeline.?nodes.orValue([]).size() > 0) ?
+                  optional.of(body.data.timeline.nodes.last().timestamp),
                 :
                   state.?cursor.last_timestamp,
               },
