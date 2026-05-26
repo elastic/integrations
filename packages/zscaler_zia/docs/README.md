@@ -1345,22 +1345,22 @@ An example event for `saas_security_activity` looks as following:
 {
     "@timestamp": "2024-03-15T11:30:00.000Z",
     "agent": {
-        "ephemeral_id": "8681947d-75c5-4986-bf93-76e0be66d916",
-        "id": "7c414290-279e-4082-b25c-7650a0a1bb85",
-        "name": "elastic-agent-90558",
+        "ephemeral_id": "ef644476-52b2-48e6-b140-f20d461441eb",
+        "id": "15c2c467-ae9a-4397-8074-3876f254fa33",
+        "name": "elastic-agent-89758",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.saas_security_activity",
-        "namespace": "48302",
+        "namespace": "34524",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7c414290-279e-4082-b25c-7650a0a1bb85",
+        "id": "15c2c467-ae9a-4397-8074-3876f254fa33",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -1371,8 +1371,9 @@ An example event for `saas_security_activity` looks as following:
             "iam"
         ],
         "dataset": "zscaler_zia.saas_security_activity",
-        "ingested": "2026-05-13T09:34:49Z",
+        "ingested": "2026-05-26T07:19:59Z",
         "kind": "event",
+        "original": "{\"activity\":{\"count\":\"1\",\"type\":\"Upload\"},\"application\":{\"name\":\"GOOGLE_DRIVE\"},\"event_time\":\"Fri Mar 15 11:30:00 2024\",\"external_owner\":\"vendor@partner.example.org\",\"is_admin\":\"0\",\"object\":{\"names\":\"[invoice-2024-Q1.xlsx]\",\"subnames\":\"[Shared with Vendors]\",\"subtype\":\"Folder\",\"type\":\"File\"},\"sourcetype\":\"zscalernss-saas_security_activity\",\"src_ip\":\"89.160.20.112\",\"tenant\":\"example.com\",\"time\":\"Fri Mar 15 11:30:00 2024\",\"tz\":\"GMT\",\"user_name\":\"finance.robot@example.com\",\"version\":\"v1\"}",
         "provider": "Zscaler",
         "timezone": "GMT",
         "type": [
@@ -1411,6 +1412,7 @@ An example event for `saas_security_activity` looks as following:
         "ip": "89.160.20.112"
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "zscaler_zia-saas_security_activity"
     ],
