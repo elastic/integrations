@@ -582,12 +582,11 @@ processors:
       field: "message"
       description: "305012"
       patterns:
-        - Teardown %{DATA} %{NOTSPACE:network.transport} translation from %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port}(\s*\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{IP:destination.address}/%{NUMBER:destination.port} duration %{DURATION:_temp_.duration_hms}
+        - Teardown %{DATA} %{NOTSPACE:network.transport} translation from %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port}(\s*\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port} duration %{DURATION:_temp_.duration_hms}
       pattern_definitions:
         USERNAME: "[^@$]*"
         NOTCOLON: "[^:]*"
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
-        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(%{HOSTNAME}\\)?(?:%{USERNAME})\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?(?:%{NUMBER}:%{DATA})?))
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
   - grok:
@@ -640,7 +639,7 @@ processors:
       field: "message"
       description: "305011"
       patterns:
-        - Built %{NOTSPACE} %{NOTSPACE:network.transport} translation from %{NOTSPACE:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port}(\(%{NOTSPACE:source.user.name}\))? to %{NOTSPACE:_temp_.cisco.destination_interface}:%{IP:destination.address}/%{NUMBER:destination.port}
+        - Built %{NOTSPACE} %{NOTSPACE:network.transport} translation from %{NOTSPACE:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port}(\(%{NOTSPACE:source.user.name}\))? to %{NOTSPACE:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port}
   - dissect:
       if: "ctx._temp_.cisco.message_id == '313001'"
       tag: parse_313001
@@ -1092,6 +1091,7 @@ processors:
       tag: parse_725002
       patterns:
         - '^Device completed SSL handshake with %{NOTSPACE:_temp_.cisco.peer_type} %{DATA:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}/%{NOTSPACE:source.port} to %{NOTSPACE:destination.address}/%{NOTSPACE:destination.port} for %{NOTSPACE:_temp_.cisco.tls_version}'
+        - '^Device completed SSL handshake with %{NOTSPACE:_temp_.cisco.peer_type} %{DATA:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}/%{NOTSPACE:source.port}$'
   - grok:
       field: message
       if: "ctx._temp_.cisco.message_id == '725007'"

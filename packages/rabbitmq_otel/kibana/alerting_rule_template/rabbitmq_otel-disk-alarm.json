@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when a RabbitMQ node raises the disk free alarm (`rabbitmq.node.disk_free_alarm > 0`). Publishing is halted on the affected node.",
     "name": "[RabbitMQ OTel] Disk alarm triggered",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "rabbitmq_otel-nodes"
+        },
+        {
+          "id": "rabbitmq_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## RabbitMQ disk alarm triggered\n\n### What fired\n`rabbitmq.node.disk_free_alarm > 0` on at least one node.\n\n### Why it matters\nWhen a node's free disk drops below the configured threshold, RabbitMQ halts all publishing on that node to protect against running out of space entirely.\n\n### Triage\n1. Identify the affected node and check disk usage.\n2. Inspect queue depths and retention.\n\n### Remediation\n- Free disk space (archive / delete old data).\n- Grow the volume.\n\n### Tuning\n- Always P1.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-rabbitmqreceiver.otel-default\n// Disk alarm: when triggered (1), publishing is halted\n// Requires node-level metrics enabled in receiver config\n| WHERE metrics.rabbitmq.node.disk_free_alarm IS NOT NULL\n  AND metrics.rabbitmq.node.disk_free_alarm > 0\n| STATS alarm_count = COUNT(*)\n  BY resource.attributes.rabbitmq.node.name\n| WHERE alarm_count > 0"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,
