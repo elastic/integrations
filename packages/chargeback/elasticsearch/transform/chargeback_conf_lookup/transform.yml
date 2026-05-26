@@ -15,6 +15,14 @@ source:
       type: keyword
       script:
         source: "emit('EUR')"
+    conf_ecu_rate:
+      type: double
+      script:
+        source: "emit(0.85)"
+    conf_ecu_rate_unit:
+      type: keyword
+      script:
+        source: "emit('EUR')"
     conf_indexing_weight:
       type: long
       script:
@@ -37,6 +45,7 @@ source:
         source: "emit(2430518399999L)"  # 2046-12-31T23:59:59.999Z - 20 years from now
 dest:
   index: chargeback_conf_lookup
+  pipeline: 0.3.2-chargeback_conf_lookup
 pivot:
   group_by:
     config_join_key:
@@ -49,6 +58,9 @@ pivot:
     conf_chargeable_unit_rate:
       max:
         field: conf_chargeable_unit_rate
+    conf_ecu_rate:
+      max:
+        field: conf_ecu_rate
     conf_indexing_weight:
       max:
         field: conf_indexing_weight

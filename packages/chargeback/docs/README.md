@@ -121,9 +121,9 @@ Chargeback data can be viewed in the `[Chargeback] Cost and Consumption breakdow
 
 ### Upgrading from 0.3.0
 
-From **0.3.1** onward, configuration and billing fields use chargeable-unit names (for example `conf_chargeable_unit_rate` and `total_chargeable_units` instead of `conf_ecu_rate` and `total_ecu`). The dashboard queries accept both the new and the previous field names, so you do not need to change existing documents in the lookup indices for panels to work. New data from the updated transforms uses the new names over time.
+From **0.3.1** onward, configuration and billing fields use chargeable-unit names (for example `conf_chargeable_unit_rate` and `total_chargeable_units` instead of `conf_ecu_rate` and `total_ecu`). Dashboard ES|QL uses `COALESCE` across both names; **both columns must exist in the lookup index mapping** or panels fail at query time. From **0.3.2** onward, transforms and ingest pipelines write both names on lookup documents. After upgrading from **0.3.1**, restart the `billing_cluster_cost` and `chargeback_conf_lookup` transforms so existing lookup indices pick up the legacy alias fields.
 
-If you built your own ES|QL, dashboards, or automation against the lookup indices, update those to the new field names when convenient.
+If you built your own ES|QL, dashboards, or automation against the lookup indices, prefer the chargeable-unit field names when convenient.
 
 ## Deployment Groups
 
