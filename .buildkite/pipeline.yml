@@ -11,7 +11,7 @@ env:
 
   # Agent images used in pipeline steps
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
-  IMAGE_UBUNTU_X86_64: "family/core-ubuntu-2204"
+  IMAGE_UBUNTU_X86_64: "family/platform-obs-integrations-ubuntu-2204"
 
   # Elastic package settings
   # Manage docker output/logs
@@ -67,6 +67,10 @@ steps:
       # GCP VM used to match the same Python 3 version available in the steps that test packages
       provider: gcp
       image: "${IMAGE_UBUNTU_X86_64}"
+
+  - label: ":bash: Dev scripts unit tests"
+    key: "check-dev-scripts"
+    command: ".buildkite/scripts/run_dev_scripts_tests.sh"
 
   - label: ":junit: Sources Junit annotate"
     agents:

@@ -626,38 +626,45 @@ get_previous_successful_commit() {
 }
 
 get_from_changeset() {
-    local from=""
     if [ "${BUILDKITE_PULL_REQUEST}" != "false" ]; then
         echo "origin/${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
         return
     fi
 
-    local previous_commit
-    previous_commit=$(get_previous_commit "${BUILDKITE_PIPELINE_SLUG}" "${BUILDKITE_BRANCH}")
-
-    if [[ "${previous_commit}" != "null" ]] ; then
-        from="${previous_commit}"
-    else
-        from="${BUILDKITE_COMMIT}^"
-    fi
-
-    if [[ "${BUILDKITE_BRANCH}" == "main" || ${BUILDKITE_BRANCH} =~ ${LONG_RUNNING_BRANCH_PATTERN} ]]; then
-        local previous_successful_commit
-        previous_successful_commit=$(get_previous_successful_commit "${BUILDKITE_PIPELINE_SLUG}" "${BUILDKITE_BRANCH}")
-
-        from="${previous_successful_commit}"
-        if [[ "${previous_successful_commit}" == "null" ]]; then
-            if [[ "${BUILDKITE_BRANCH}" =~ ${LONG_RUNNING_BRANCH_PATTERN} ]]; then
-                # First push of a new long-running branch (matches LONG_RUNNING_BRANCH_PATTERN): only CI infrastructure files
-                # changed, no package code was modified — skip package testing.
-                from="${BUILDKITE_COMMIT}"
-            else
-                from="origin/${BUILDKITE_BRANCH}^"
-            fi
+    if [[ "${BUILDKITE_BRANCH}" != "main" && ! "${BUILDKITE_BRANCH}" =~ ${LONG_RUNNING_BRANCH_PATTERN} ]]; then
+        local previous_commit
+        previous_commit=$(get_previous_commit "${BUILDKITE_PIPELINE_SLUG}" "${BUILDKITE_BRANCH}")
+        if [[ "${previous_commit}" != "null" ]]; then
+            echo "${previous_commit}"
+        else
+            echo "${BUILDKITE_COMMIT}^"
         fi
+        return
     fi
 
-    echo "${from}"
+    local previous_successful_commit
+    previous_successful_commit=$(get_previous_successful_commit "${BUILDKITE_PIPELINE_SLUG}" "${BUILDKITE_BRANCH}")
+
+    if [[ "${previous_successful_commit}" != "null" ]]; then
+        echo "${previous_successful_commit}"
+        return
+    fi
+
+    if [[ "${BUILDKITE_BRANCH}" == "main" ]]; then
+        echo "origin/${BUILDKITE_BRANCH}^"
+        return
+    fi
+
+    # First push of a long-running branch: use merge-base with main to scope the diff to
+    # commits exclusive to this branch. Test them only if they contain package changes
+    # (e.g. a CI infra-only first commit should not trigger package testing).
+    local merge_base
+    merge_base=$(git merge-base "${BUILDKITE_COMMIT}" "origin/main")
+    if git diff --name-only "${merge_base}" "${BUILDKITE_COMMIT}" | grep -E '^packages/' > /dev/null; then
+        echo "${merge_base}"
+    else
+        echo "${BUILDKITE_COMMIT}"
+    fi
 }
 
 get_to_changeset() {
@@ -793,6 +800,9 @@ is_pr_affected() {
         'CODE_OF_CONDUCT\.md'
         'CONTRIBUTING\.md'
         'README\.md'
+        '\.agents/skills/'
+        'dev/scripts/'
+        '\.buildkite/scripts/run_dev_scripts_tests\.sh'
     )
     local non_package_regex
     non_package_regex="^($(IFS='|'; echo "${non_package_patterns[*]}"))"
