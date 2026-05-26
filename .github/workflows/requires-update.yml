@@ -1,0 +1,54 @@
+---
+name: Update required package versions
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  requires-update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: .go-version
+
+      - name: Install mage
+        run: go install github.com/magefile/mage
+
+      - name: Install elastic-package
+        run: |
+          # TODO: remove this pin once `requires update --format json` ships in a released elastic-package version
+          go install github.com/elastic/elastic-package@4e3065472c950dfe2c98adf936a7c71ba9e0a762
+          echo "ELASTIC_PACKAGE_BIN=$(go env GOPATH)/bin/elastic-package" >> $GITHUB_ENV
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch remote branch states
+        run: git fetch origin
+
+      - name: Run RequiresUpdate
+        env:
+          REQUIRES_UPDATE_JSON_OUT: /tmp/requires-update.json
+        run: |
+          mage RequiresUpdate 2>&1 | tee /tmp/requires-update-summary.txt
+        continue-on-error: true
+
+      - name: Group changes and open PRs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash .github/scripts/requires-update.sh /tmp/requires-update.json
