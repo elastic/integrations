@@ -93,8 +93,8 @@ processors:
       description: Normalize KMIP error reason as per https://docs.oasis-open.org/kmip/kmip-spec/v2.0/csd01/kmip-spec-v2.0-csd01.html#_Toc534980116
       tag: script_normalize_kmip_error
       lang: painless
-      if: ctx.hashicorp_vault?.audit?.response?.data?.BatchItem?.ResultReason != null
-      source: if (params.containsKey((ctx.hashicorp_vault.audit.response.data.BatchItem.ResultReason)) {ctx.hashicorp_vault.audit.put('error', params.get(ctx.hashicorp_vault.audit.response.data.BatchItem.ResultReason))}
+      if: ctx.hashicorp_vault?.audit?.response?.data?.BatchItem?.ResultReason?.value != null
+      source: if (params.containsKey((ctx.hashicorp_vault.audit.response.data.BatchItem.ResultReason.value)) {ctx.hashicorp_vault.audit.put('error', params.get(ctx.hashicorp_vault.audit.response.data.BatchItem.ResultReason.value))}
       params:
         "0x00000001": "Item Not Found"
         "0x00000002": "Response Too Large"
@@ -167,7 +167,66 @@ processors:
         "0x00000046": "PKCS#11 Invalid Function"
         "0x00000047": "PKCS#11 Invalid Interface"
         "0x00000100": "General Failure"
-
+  - script:
+      tag: script_translate_kmip_operation
+      description: Translate operation code to human-readable operation descrption, as per  https://docs.oasis-open.org/kmip/kmip-spec/v2.0/csd01/kmip-spec-v2.0-csd01.html#_Toc534980107
+      lang: painless
+      if: ctx.hashicorp_vault?.audit?.request?.data?.BatchItem?.Operation?.value != null
+      source: if (params.containsKey(ctx.hashicorp_vault.audit.request.data.BatchItem.Operation.value)) {ctx.hashicorp_vault.audit.request.put('operation', params.get(ctx.hashicorp_vault.audit.request.data.BatchItem.Operation.value))}
+      params:
+        "0x00000001": "Create"
+        "0x00000002": "Create Key Pair"
+        "0x00000003": "Register"
+        "0x00000004": "Re-key"
+        "0x00000005": "Derive Key"
+        "0x00000006": "Certify"
+        "0x00000007": "Re-certify"
+        "0x00000008": "Locate"
+        "0x00000009": "Check"
+        "0x0000000a": "Get"
+        "0x0000000b": "Get Attributes"
+        "0x0000000c": "Get Attribute List"
+        "0x0000000d": "Add Attribute"
+        "0x0000000e": "Modify Attribute"
+        "0x0000000f": "Delete Attribute"
+        "0x00000010": "Obtain Lease"
+        "0x00000011": "Get Usage Allocation"
+        "0x00000012": "Activate"
+        "0x00000013": "Revoke"
+        "0x00000014": "Destroy"
+        "0x00000015": "Archive"
+        "0x00000016": "Recover"
+        "0x00000017": "Validate"
+        "0x00000018": "Query"
+        "0x00000019": "Cancel"
+        "0x0000001a": "Poll"
+        "0x0000001b": "Notify"
+        "0x0000001c": "Put"
+        "0x0000001d": "Re-key Key Pair"
+        "0x0000001e": "Discover Versions"
+        "0x0000001f": "Encrypt"
+        "0x00000020": "Decrypt"
+        "0x00000021": "Sign"
+        "0x00000022": "Signature Verify"
+        "0x00000023": "MAC"
+        "0x00000024": "MAC Verify"
+        "0x00000025": "RNG Retrieve"
+        "0x00000026": "RNG Seed"
+        "0x00000027": "Hash"
+        "0x00000028": "Create Split Key"
+        "0x00000029": "Join Split Key"
+        "0x0000002a": "Import"
+        "0x0000002b": "Export"
+        "0x0000002c": "Log"
+        "0x0000002d": "Login"
+        "0x0000002e": "Logout"
+        "0x0000002f": "Delegated Login"
+        "0x00000030": "Adjust Attribute"
+        "0x00000031": "Set Attribute"
+        "0x00000032": "Set Endpoint Role"
+        "0x00000033": "PKCS#11"
+        "0x00000034": "Interop"
+        "0x00000035": "Re-Provision"
 
 
   #
