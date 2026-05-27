@@ -2,9 +2,9 @@
 
 This section describes the CI pipelines available in this repository.
 
-Currently, there are five different pipelines:
+Currently, there are six different pipelines:
 - https://buildkite.com/elastic/integrations: pipeline in charge of testing all packages using a local Elastic stack. More info at [section](#pull-requests-and-pushes-to-specific-branches).
-- https://buildkite.com/elastic/integrations-serverless: pipeline in charge of testing all packages using a Elastic Serverless project. More info at [section](#serverless-pipeline).
+- https://buildkite.com/elastic/integrations-serverless: pipeline in charge of testing all packages using an Elastic Serverless project. More info at [section](#serverless-pipeline).
 - https://buildkite.com/elastic/integrations-publish: pipeline to publish the new versions of packages. More info at [section](#publish-packages).
 - https://buildkite.com/elastic/integrations-schedule-daily/: pipeline running every night to test packages in different scenarios. More info at [section](#daily-job).
 - https://buildkite.com/elastic/integrations-schedule-weekly/: pipeline running once per week to test packages in different scenarios. More info at [section](#weekly-job).
