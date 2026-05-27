@@ -191,7 +191,6 @@ func processPackage(pkgPath, pkgName, currentVersion string, dryRun bool) (*pack
 	}, nil
 }
 
-
 func resolveOwner(pkgName, fallback string) (string, error) {
 	owners, err := codeowners.PackageOwners(pkgName, "", codeowners.DefaultCodeownersPath)
 	if err != nil || len(owners) == 0 {
