@@ -43,49 +43,48 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Go
-        if: steps.guard.outputs.proceed == 'true'
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: .go-version
-
-      - name: Install mage
-        if: steps.guard.outputs.proceed == 'true'
-        run: go install github.com/magefile/mage
-
-      - name: Resolve package directory
-        id: resolve
+      - name: Find and validate changed changelogs
+        id: find
         if: steps.guard.outputs.proceed == 'true'
         env:
           PACKAGE: ${{ steps.guard.outputs.package }}
-          BRANCH: ${{ github.ref_name }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
         run: |
-          # Disable checking backport active branches
-          # if ! python3 dev/scripts/backport_check_active.py --branch "$BRANCH" 2>/dev/null; then
-          #   echo "package_dir=" >> "$GITHUB_OUTPUT"
-          #   echo "Branch $BRANCH is inactive — skipping"
-          #   exit 0
-          # fi
-          # The package name in the branch refers to the `name` field in manifest.yml, which
-          # may differ from the directory name. Packages can live at packages/<name>/ (flat)
-          # or packages/<category>/<name>/ (one level of nesting).
-          if ! PACKAGE_DIR=$(python3 dev/scripts/backport_resolve_package_dir.py --package "$PACKAGE"); then
+          mapfile -t CHANGED < <(git diff --name-only "${BEFORE}..${AFTER}" -- '**/changelog.yml')
+          COUNT="${#CHANGED[@]}"
+
+          # For now: require exactly one changelog changed and it must belong to the package
+          # encoded in the branch name. Remove this guard when multi-package support is added.
+          if [[ "$COUNT" -ne 1 ]]; then
+            echo "Expected 1 changed changelog, got ${COUNT} — skipping"
             echo "package_dir=" >> "$GITHUB_OUTPUT"
-            echo "Package '$PACKAGE' not found in packages/ — skipping"
             exit 0
           fi
-          echo "package_dir=$PACKAGE_DIR" >> "$GITHUB_OUTPUT"
+
+          CHANGELOG_PATH="${CHANGED[0]}"
+          PACKAGE_DIR=$(dirname "$CHANGELOG_PATH")
+
+          MANIFEST_NAME=$(python3 -c "import yaml; print(yaml.safe_load(open('${PACKAGE_DIR}/manifest.yml')).get('name', ''))")
+          if [[ "$MANIFEST_NAME" != "$PACKAGE" ]]; then
+            echo "Manifest name '${MANIFEST_NAME}' does not match branch package '${PACKAGE}' — skipping"
+            echo "package_dir=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "package_dir=$PACKAGE_DIR"       >> "$GITHUB_OUTPUT"
+          echo "changelog_path=$CHANGELOG_PATH" >> "$GITHUB_OUTPUT"
           echo "Resolved '$PACKAGE' → $PACKAGE_DIR"
 
       - name: Diff changelog
         id: diff
-        if: steps.resolve.outputs.package_dir != ''
+        if: steps.find.outputs.package_dir != ''
         env:
-          PACKAGE_DIR: ${{ steps.resolve.outputs.package_dir }}
+          CHANGELOG_PATH: ${{ steps.find.outputs.changelog_path }}
           BEFORE: ${{ github.event.before }}
           AFTER: ${{ github.event.after }}
         run: |
-          CHANGELOG="${PACKAGE_DIR}/changelog.yml"
+          CHANGELOG="$CHANGELOG_PATH"
           DIFF=$(git diff "${BEFORE}..${AFTER}" -- "$CHANGELOG" || true)
           if [[ -z "$DIFF" ]]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
@@ -111,7 +110,7 @@ jobs:
         if: steps.extract.outputs.new_version != ''
         env:
           PACKAGE: ${{ steps.guard.outputs.package }}
-          PACKAGE_DIR: ${{ steps.resolve.outputs.package_dir }}
+          PACKAGE_DIR: ${{ steps.find.outputs.package_dir }}
           NEW_VERSION: ${{ steps.extract.outputs.new_version }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
