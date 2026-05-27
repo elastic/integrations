@@ -291,6 +291,11 @@ processors:
       if: ctx?.hashicorp_vault?.audit?.error != null
       field: event.outcome
       value: failure
+  - set:
+      tag: set_event_outcome_kmip_pending_or_unknown
+      if: ctx.hashicorp_vault?.audit?.type == 'kmip-response' && ctx.hashicorp_vault?.audit?.response?.data?.BatchItem?.ResultStatus?.value == '0x00000002'
+      field: event.outcome
+      value: unknown
 
   - set:
       tag: set_event_id_5845187a
