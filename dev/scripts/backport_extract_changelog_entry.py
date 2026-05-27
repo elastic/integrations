@@ -21,8 +21,18 @@ import sys
 import unittest
 
 
+_VERSION_RE = re.compile(
+    r'^- version: ["\']?([0-9]+\.[0-9]+\.[0-9][^\s"\']*)["\']?\s*$'
+)
+
+
 def extract_from_diff(diff_text):
-    """Return (version_str, entry_block) or (None, None) if no new entry is found."""
+    """Return (version_str, entry_block) or (None, None) if no new entry is found.
+
+    Only the first new version entry is extracted. Lines belonging to any
+    subsequent version entry in the same diff are excluded so that the caller
+    never inserts an oversized block containing multiple entries.
+    """
     added = [
         line[1:]
         for line in diff_text.splitlines()
@@ -31,17 +41,25 @@ def extract_from_diff(diff_text):
     if not added:
         return None, None
 
-    entry_block = "\n".join(added)
+    start = None
+    version_str = None
+    end = len(added)
 
-    m = re.search(
-        r'^- version: ["\']?([0-9]+\.[0-9]+\.[0-9][^\s"\']*)["\']?\s*$',
-        entry_block,
-        re.MULTILINE,
-    )
-    if not m:
+    for i, line in enumerate(added):
+        m = _VERSION_RE.match(line)
+        if m:
+            if start is None:
+                start = i
+                version_str = m.group(1).strip()
+            else:
+                # Second version entry starts — stop here to avoid including it.
+                end = i
+                break
+
+    if start is None:
         return None, None
 
-    return m.group(1).strip(), entry_block
+    return version_str, "\n".join(added[start:end])
 
 
 def main():
@@ -102,6 +120,26 @@ index abc..def 100644
  - version: "6.15.0"
 """
 
+_DIFF_TWO_VERSIONS = """\
+diff --git a/packages/aws/changelog.yml b/packages/aws/changelog.yml
+index abc..def 100644
+--- a/packages/aws/changelog.yml
++++ b/packages/aws/changelog.yml
+@@ -1,4 +1,14 @@
+ # newer versions go on top
++- version: "6.14.3"
++  changes:
++    - description: Fix CEL handling
++      type: bugfix
++      link: https://github.com/elastic/integrations/pull/19147
++- version: "6.14.2"
++  changes:
++    - description: Another fix
++      type: bugfix
++      link: https://github.com/elastic/integrations/pull/19100
+ - version: "6.15.0"
+"""
+
 
 class TestExtractFromDiff(unittest.TestCase):
 
@@ -125,6 +163,17 @@ class TestExtractFromDiff(unittest.TestCase):
         version, entry = extract_from_diff(diff)
         self.assertIsNone(version)
         self.assertIsNone(entry)
+
+    def test_two_version_entries_extracts_only_first(self):
+        version, entry = extract_from_diff(_DIFF_TWO_VERSIONS)
+        self.assertEqual(version, "6.14.3")
+        self.assertNotIn("6.14.2", entry)
+        self.assertNotIn("Another fix", entry)
+
+    def test_two_version_entries_entry_block_is_complete(self):
+        _, entry = extract_from_diff(_DIFF_TWO_VERSIONS)
+        self.assertIn('- version: "6.14.3"', entry)
+        self.assertIn("Fix CEL handling", entry)
 
     def test_entry_file_is_written(self):
         import pathlib
