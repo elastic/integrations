@@ -35,16 +35,6 @@ processors:
       field: cost_type
       value: 'datahot/datacontent'
       if: ctx.cost_type == 'datahot'
-  - script:
-      description: Mirror chargeable-unit fields to legacy ECU names for dashboard ES|QL COALESCE
-      ignore_failure: true
-      lang: painless
-      source: |
-        if (ctx.total_chargeable_units != null) {
-          ctx.total_ecu = ctx.total_chargeable_units;
-        } else if (ctx.total_ecu != null) {
-          ctx.total_chargeable_units = ctx.total_ecu;
-        }
   - pipeline:
       description: '[Fleet] Global pipeline for all data streams'
       ignore_missing_pipeline: true

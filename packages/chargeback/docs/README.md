@@ -121,12 +121,15 @@ Chargeback data can be viewed in the `[Chargeback] Cost and Consumption breakdow
 
 ### Upgrading from 0.3.0
 
-From **0.3.1** onward, configuration and billing fields use chargeable-unit names (for example `conf_chargeable_unit_rate` and `total_chargeable_units` instead of `conf_ecu_rate` and `total_ecu`). Dashboard ES|QL uses `COALESCE` across both names; **both columns must exist in the lookup index mapping** or panels fail at query time. From **0.3.2** onward, transforms and ingest pipelines write both names on new lookup documents.
+From **0.3.1** onward, configuration and billing fields use chargeable-unit names (for example `conf_chargeable_unit_rate` and `total_chargeable_units` instead of `conf_ecu_rate` and `total_ecu`). Dashboard ES|QL uses `COALESCE` across both names; **both columns must exist in the lookup index mapping** or panels fail at query time. From **0.3.2** onward, lookup mappings include legacy ECU names as **field aliases** that point to chargeable-unit fields.
 
 **Upgrading from 0.3.1 to 0.3.2:** Upgrading the Fleet package updates transform and ingest definitions, but **restarting transforms does not change mappings on lookup indices that already exist**, and it does not backfill legacy fields on existing documents unless the transform is reset or the destination index is recreated. After upgrading to **0.3.2**:
 
-1. For each affected lookup index (`billing_cluster_cost_lookup`, `chargeback_conf_lookup`), either add mappings for the legacy fields (`total_ecu`, `conf_ecu_rate`, `conf_ecu_rate_unit` — same types as in the 0.3.2 package field definitions) with `PUT <index>/_mapping`, or delete the lookup index and **reset** the corresponding transform so the index is recreated with 0.3.2 mappings (reprocesses historical data; plan for load and sync delay).
-2. Start or schedule the `billing_cluster_cost` and `chargeback_conf_lookup` transforms so new documents receive dual-written fields.
+1. For each affected lookup index (`billing_cluster_cost_lookup`, `chargeback_conf_lookup`), add field aliases for legacy names with `PUT <index>/_mapping`:
+   - `total_ecu` -> `total_chargeable_units`
+   - `conf_ecu_rate` -> `conf_chargeable_unit_rate`
+   - `conf_ecu_rate_unit` -> `conf_chargeable_unit_rate_unit`
+2. Or delete the lookup index and **reset** the corresponding transform so the index is recreated with 0.3.2 mappings (reprocesses historical data; plan for load and sync delay).
 
 If the dashboard was not replaced on upgrade, re-import the Chargeback dashboard saved objects.
 
