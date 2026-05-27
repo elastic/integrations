@@ -15,68 +15,101 @@ This integration periodically queries the Axonius API to retrieve logs.
 ## What data does this integration collect?
 This integration collects log messages of the following type:
 
-- `Adapter`: Collect details of all adapters (endpoint: `/api/v2/adapters`).
+- `Adapter`: Collect details of all adapters (endpoint: `/api/v2/assets/adapters`).
 
 - `User`: Collect details of all user
-55s (endpoint: `/api/v2/users`).
+55s (endpoint: `/api/v2/assets/users`).
 
-- `Gateway`: Collect details of all Gateway (endpoint: `/api/v2/gateway`).
+- `Gateway`: Collect details of all Gateway (endpoint: `/api/v2/assets/gateway`).
 
 - `Exposure`: Collect details of all exposure assets including:
-    - vulnerability_instances (endpoint: `/api/v2/vulnerability_instances`)
-    - vulnerabilities (endpoint: `/api/v2/vulnerabilities`)
-    - vulnerabilities_repository (endpoint: `/api/v2/vulnerabilities_repository`)
+    - vulnerability_instances (endpoint: `/api/v2/assets/vulnerability_instances`)
+    - vulnerabilities (endpoint: `/api/v2/assets/vulnerabilities`)
+    - vulnerabilities_repository (endpoint: `/api/v2/assets/vulnerabilities_repository`)
 
 - `Alert Findings`: Collect details of all alert findings and incident assets including:
-    - alert_findings (endpoint: `/api/v2/alert_findings`)
+    - alert_findings (endpoint: `/api/v2/assets/alert_findings`)
 
 - `Incidents`: Collect details of all incident assets including:
-    - incidents (endpoint: `/api/v2/incidents`)
+    - incidents (endpoint: `/api/v2/assets/incidents`)
 
 - `Storage`: Collect details of all storage assets including:
-    - object_storages (endpoint: `/api/v2/object_storages`)
-    - file_systems (endpoint: `/api/v2/file_systems`)
-    - disks (endpoint: `/api/v2/disks`)
+    - object_storages (endpoint: `/api/v2/assets/object_storages`)
+    - file_systems (endpoint: `/api/v2/assets/file_systems`)
+    - disks (endpoint: `/api/v2/assets/disks`)
 
 - `Ticket`: Collect details of all ticket assets including:
-    - tickets (endpoint: `/api/v2/tickets`)
-    - cases (endpoint: `/api/v2/cases`)
+    - tickets (endpoint: `/api/v2/assets/tickets`)
+    - cases (endpoint: `/api/v2/assets/cases`)
 
 - `Network`: Collect details of all identity assets including:
-    - networks (endpoint: `/api/v2/networks`)
-    - load_balancers (endpoint: `/api/v2/load_balancers`)
-    - network_services (endpoint: `/api/v2/network_services`)
-    - network_devices (endpoint: `/api/v2/network_devices`)
-    - firewalls (endpoint: `/api/v2/firewalls`)
-    - nat_rules (endpoint: `/api/v2/nat_rules`)
-    - network_routes (endpoint: `/api/v2/network_routes`)
+    - networks (endpoint: `/api/v2/assets/networks`)
+    - load_balancers (endpoint: `/api/v2/assets/load_balancers`)
+    - network_services (endpoint: `/api/v2/assets/network_services`)
+    - network_devices (endpoint: `/api/v2/assets/network_devices`)
+    - firewalls (endpoint: `/api/v2/assets/firewalls`)
+    - nat_rules (endpoint: `/api/v2/assets/nat_rules`)
+    - network_routes (endpoint: `/api/v2/assets/network_routes`)
 
 - `Identity`: Collect details of all identity assets including:
-    - users (endpoint: `/api/v2/users`)
-    - groups (endpoint: `/api/v2/groups`)
-    - security_roles (endpoint: `/api/v2/security_roles`)
-    - organizational_units (endpoint: `/api/v2/organizational_units`)
-    - accounts (endpoint: `/api/v2/accounts`)
-    - certificates (endpoint: `/api/v2/certificates`)
-    - permissions (endpoint: `/api/v2/permissions`)
-    - latest_rules (endpoint: `/api/v2/latest_rules`)
-    - profiles (endpoint: `/api/v2/profiles`)
-    - job_titles (endpoint: `/api/v2/job_titles`)
-    - access_review_campaign_instances (endpoint: `/api/v2/access_review_campaign_instances`)
-    - access_review_approval_items (endpoint: `/api/v2/access_review_approval_items`)
+    - users (endpoint: `/api/v2/assets/users`)
+    - groups (endpoint: `/api/v2/assets/groups`)
+    - security_roles (endpoint: `/api/v2/assets/security_roles`)
+    - organizational_units (endpoint: `/api/v2/assets/organizational_units`)
+    - accounts (endpoint: `/api/v2/assets/accounts`)
+    - certificates (endpoint: `/api/v2/assets/certificates`)
+    - permissions (endpoint: `/api/v2/assets/permissions`)
+    - latest_rules (endpoint: `/api/v2/assets/latest_rules`)
+    - profiles (endpoint: `/api/v2/assets/profiles`)
+    - job_titles (endpoint: `/api/v2/assets/job_titles`)
+    - access_review_campaign_instances (endpoint: `/api/v2/assets/access_review_campaign_instances`)
+    - access_review_approval_items (endpoint: `/api/v2/assets/access_review_approval_items`)
 
 - `Compute`: Collect details of all compute assets including:
-    - devices (endpoint: `/api/v2/devices`)
-    - compute_services (endpoint: `/api/v2/compute_services`)
-    - databases (endpoint: `/api/v2/databases`)
-    - containers (endpoint: `/api/v2/containers`)
-    - serverless_functions (endpoint: `/api/v2/serverless_functions`)
-    - compute_images (endpoint: `/api/v2/compute_images`)
-    - configurations (endpoint: `/api/v2/configurations`)
+    - devices (endpoint: `/api/v2/assets/devices`)
+    - compute_services (endpoint: `/api/v2/assets/compute_services`)
+    - databases (endpoint: `/api/v2/assets/databases`)
+    - containers (endpoint: `/api/v2/assets/containers`)
+    - serverless_functions (endpoint: `/api/v2/assets/serverless_functions`)
+    - compute_images (endpoint: `/api/v2/assets/compute_images`)
+    - configurations (endpoint: `/api/v2/assets/configurations`)
+
+- `Application`: Collect details of all application assets including:
+    - software (endpoint: `/api/v2/assets/software`)
+    - saas_applications (endpoint: `/api/v2/assets/saas_applications`)
+    - application_settings (endpoint: `/api/v2/assets/application_settings`)
+    - licenses (endpoint: `/api/v2/assets/licenses`)
+    - expenses (endpoint: `/api/v2/assets/expenses`)
+    - admin_managed_extensions (endpoint: `/api/v2/assets/admin_managed_extensions`)
+    - user_initiated_extensions (endpoint: `/api/v2/assets/user_initiated_extensions`)
+    - application_addons (endpoint: `/api/v2/assets/application_addons`)
+    - admin_managed_extension_instances (endpoint: `/api/v2/assets/admin_managed_extension_instances`)
+    - user_initiated_extension_instances (endpoint: `/api/v2/assets/user_initiated_extension_instances`)
+    - application_addon_instances (endpoint: `/api/v2/assets/application_addon_instances`)
+    - application_keys (endpoint: `/api/v2/assets/application_keys`)
+    - audit_activities (endpoint: `/api/v2/assets/audit_activities`)
+    - business_applications (endpoint: `/api/v2/assets/business_applications`)
+    - urls (endpoint: `/api/v2/assets/urls`)
+    - application_resources (endpoint: `/api/v2/assets/application_resources`)
+    - secrets (endpoint: `/api/v2/assets/secrets`)
 
 ### Supported use cases
 
-Integrating the Axonius Adapter, User, Gateway, Exposure, Alert, Incident, Storage, Ticket, Network, and Identity data streams with Elastic SIEM summarizes adapter and ingestion health, gateway and network behavior, exposure and vulnerability context, alerts progressing into incidents, storage and ticket workloads, and identity posture in one workspace. Coverage spans users, groups, roles, organizational units, accounts, permissions, certificates, profiles, and access reviews—plus breakdowns of active, suspended, and external accounts, user types and departments, and top identities by email and cloud source alongside network protocols, device states, exposure levels, communication paths, and ticket priorities, statuses, and queues. The bundled dashboards blend those signals so security and IAM teams can monitor integrations, size risk and backlog, validate access hygiene, prioritize remediation, and investigate with correlated operational, identity, asset, and event context instead of switching between disconnected tools.
+This integration brings Axonius asset and security data into Elastic so teams can search, correlate, and investigate in one place instead of moving between separate tools. Use it to maintain a current view of what Axonius is collecting, how adapters and ingestion are performing, and how that inventory connects to alerts, tickets, identity, and infrastructure context in Elastic Security and Kibana.
+
+**Adapter and User** data streams support integration health and user-oriented reporting from Axonius. Adapter data helps confirm which sources are connected and ingesting as expected. User data supports population and account-oriented views that complement identity and access analysis elsewhere in the package.
+
+**Compute, Network, Gateway, and Storage** data streams cover core infrastructure and connectivity. Compute includes devices, cloud services, databases, containers, and related configuration. Network covers networks, load balancers, services, devices, firewalls, routes, and NAT rules. Gateway adds gateway-level visibility. Storage covers object storage, file systems, and disks. Together they support asset inventory, segmentation review, and investigations that need host, cloud, or data-store context.
+
+**Exposure, Alert Finding, and Incident** data streams support vulnerability and security-operations workflows. Exposure brings vulnerability instances, vulnerability records, and repository context into Elastic. Alert Finding and Incident data help track detections, severity, status, and progression from alert to case so analysts can prioritize and respond with less context switching.
+
+**Ticket** data streams support IT and security operations processes with tickets and cases, including status, priority, and queue-oriented views for backlog and workload tracking.
+
+**Identity** data streams enrich access and governance use cases with users, groups, roles, organizational units, accounts, permissions, certificates, profiles, job titles, and access-review artifacts. Teams can review account states, role and permission patterns, and access-review activity alongside other security data.
+
+**Application** data streams focus on software and SaaS posture: business applications, installed software, licenses, expenses, extensions, audit activity, and related application assets. Use them to understand application usage and distribution, validate SaaS and business-application activity, spot unusual or dormant applications, and add application context to investigations.
+
+Bundled dashboards summarize these data streams for day-to-day monitoring, risk and backlog sizing, access hygiene checks, and incident investigation with correlated operational, identity, asset, and event context.
 
 ## What do I need to use this integration?
 
@@ -163,6 +196,7 @@ Destinations indices are aliased to `logs-axonius_latest.<data_stream_name>`.
 | `logs-axonius.network-*`           | `logs-axonius_latest.dest_network-*`             | `logs-axonius_latest.network`           |
 | `logs-axonius.identity-*`          | `logs-axonius_latest.dest_identity-*`            | `logs-axonius_latest.identity`          |
 | `logs-axonius.compute-*`          | `logs-axonius_latest.dest_compute-*`            | `logs-axonius_latest.compute`          |
+| `logs-axonius.application-*`          | `logs-axonius_latest.dest_application-*`            | `logs-axonius_latest.application`          |
 
 **Note:** Assets deleted from Axonius may reappear in a future discovery cycle if they are still present in connected data sources and get re-detected. Because the exact duration for which a deleted asset may remain dormant before being rediscovered is unknown, the transform retention period is set to **90 days** to reduce the risk of data loss for such assets. This means deleted assets will continue to appear in dashboards for up to 90 days after deletion.
 The assets destination indices are a content-based deduplicated view, not an entity-level latest-state view like the other data streams (for example `user` and `gateway`), which rely on a unique entity identifier and reflect the latest state of each entity.
@@ -287,6 +321,16 @@ The `compute` data stream provides compute asset logs from axonius.
 
 {{event "compute"}}
 
+### Application
+
+The `application` data stream provides application asset logs from axonius.
+
+#### application fields
+
+{{ fields "compute" }}
+
+{{event "application"}}
+
 ### Inputs used
 {{/* All inputs used by this package will be automatically listed here. */}}
 {{ inputDocs }}
@@ -295,54 +339,72 @@ The `compute` data stream provides compute asset logs from axonius.
 
 These APIs are used with this integration:
 
-* Adapter (endpoint: `/api/v2/adapters`)
-* User (endpoint: `/api/v2/users`)
-* Gateway (endpoint: `/api/v2/gateway`)
+* Adapter (endpoint: `/api/v2/assets/adapters`)
+* User (endpoint: `/api/v2/assets/users`)
+* Gateway (endpoint: `/api/v2/assets/gateway`)
 * Exposure:
-    * vulnerability_instances (endpoint: `/api/v2/vulnerability_instances`)
-    * vulnerabilities (endpoint: `/api/v2/vulnerabilities`)
-    * vulnerabilities_repository (endpoint: `/api/v2/vulnerabilities_repository`)
+    * vulnerability_instances (endpoint: `/api/v2/assets/vulnerability_instances`)
+    * vulnerabilities (endpoint: `/api/v2/assets/vulnerabilities`)
+    * vulnerabilities_repository (endpoint: `/api/v2/assets/vulnerabilities_repository`)
 * Alert Findings:
-    * alert_findings (endpoint: `/api/v2/alert_findings`)
+    * alert_findings (endpoint: `/api/v2/assets/alert_findings`)
 * Incidents:
-    * incidents (endpoint: `/api/v2/incidents`)
+    * incidents (endpoint: `/api/v2/assets/incidents`)
 * Storage:
-    * object_storages (endpoint: `/api/v2/object_storages`)
-    * file_systems (endpoint: `/api/v2/file_systems`)
-    * disks (endpoint: `/api/v2/disks`)
+    * object_storages (endpoint: `/api/v2/assets/object_storages`)
+    * file_systems (endpoint: `/api/v2/assets/file_systems`)
+    * disks (endpoint: `/api/v2/assets/disks`)
 * Ticket:
-    * tickets (endpoint: `/api/v2/tickets`)
-    * cases (endpoint: `/api/v2/cases`)
+    * tickets (endpoint: `/api/v2/assets/tickets`)
+    * cases (endpoint: `/api/v2/assets/cases`)
 * Network
-    * networks (endpoint: `/api/v2/networks`)
-    * load_balancers (endpoint: `/api/v2/load_balancers`)
-    * network_services (endpoint: `/api/v2/network_services`)
-    * network_devices (endpoint: `/api/v2/network_devices`)
-    * firewalls (endpoint: `/api/v2/firewalls`)
-    * nat_rules (endpoint: `/api/v2/nat_rules`)
-    * network_routes (endpoint: `/api/v2/network_routes`)
+    * networks (endpoint: `/api/v2/assets/networks`)
+    * load_balancers (endpoint: `/api/v2/assets/load_balancers`)
+    * network_services (endpoint: `/api/v2/assets/network_services`)
+    * network_devices (endpoint: `/api/v2/assets/network_devices`)
+    * firewalls (endpoint: `/api/v2/assets/firewalls`)
+    * nat_rules (endpoint: `/api/v2/assets/nat_rules`)
+    * network_routes (endpoint: `/api/v2/assets/network_routes`)
 * Identity:
-    * users (endpoint: `/api/v2/users`)
-    * groups (endpoint: `/api/v2/groups`)
-    * security_roles (endpoint: `/api/v2/security_roles`)
-    * organizational_units (endpoint: `/api/v2/organizational_units`)
-    * accounts (endpoint: `/api/v2/accounts`)
-    * certificates (endpoint: `/api/v2/certificates`)
-    * permissions (endpoint: `/api/v2/permissions`)
-    * latest_rules (endpoint: `/api/v2/latest_rules`)
-    * profiles (endpoint: `/api/v2/profiles`)
-    * job_titles (endpoint: `/api/v2/job_titles`)
-    * access_review_campaign_instances (endpoint: `/api/v2/access_review_campaign_instances`)
-    * access_review_approval_items (endpoint: `/api/v2/access_review_approval_items`)
+    * users (endpoint: `/api/v2/assets/users`)
+    * groups (endpoint: `/api/v2/assets/groups`)
+    * security_roles (endpoint: `/api/v2/assets/security_roles`)
+    * organizational_units (endpoint: `/api/v2/assets/organizational_units`)
+    * accounts (endpoint: `/api/v2/assets/accounts`)
+    * certificates (endpoint: `/api/v2/assets/certificates`)
+    * permissions (endpoint: `/api/v2/assets/permissions`)
+    * latest_rules (endpoint: `/api/v2/assets/latest_rules`)
+    * profiles (endpoint: `/api/v2/assets/profiles`)
+    * job_titles (endpoint: `/api/v2/assets/job_titles`)
+    * access_review_campaign_instances (endpoint: `/api/v2/assets/access_review_campaign_instances`)
+    * access_review_approval_items (endpoint: `/api/v2/assets/access_review_approval_items`)
 * Compute:
-    * devices (endpoint: `/api/v2/devices`)
-    * compute_services (endpoint: `/api/v2/compute_services`)
-    * databases (endpoint: `/api/v2/databases`)
-    * containers (endpoint: `/api/v2/containers`)
-    * serverless_functions (endpoint: `/api/v2/serverless_functions`)
-    * compute_images (endpoint: `/api/v2/compute_images`)
-    * configurations (endpoint: `/api/v2/configurations`)
+    * devices (endpoint: `/api/v2/assets/devices`)
+    * compute_services (endpoint: `/api/v2/assets/compute_services`)
+    * databases (endpoint: `/api/v2/assets/databases`)
+    * containers (endpoint: `/api/v2/assets/containers`)
+    * serverless_functions (endpoint: `/api/v2/assets/serverless_functions`)
+    * compute_images (endpoint: `/api/v2/assets/compute_images`)
+    * configurations (endpoint: `/api/v2/assets/configurations`)
+* Application:
+    * software (endpoint: `/api/v2/assets/software`)
+    * saas_applications (endpoint: `/api/v2/assets/saas_applications`)
+    * application_settings (endpoint: `/api/v2/assets/application_settings`)
+    * licenses (endpoint: `/api/v2/assets/licenses`)
+    * expenses (endpoint: `/api/v2/assets/expenses`)
+    * admin_managed_extensions (endpoint: `/api/v2/assets/admin_managed_extensions`)
+    * user_initiated_extensions (endpoint: `/api/v2/assets/user_initiated_extensions`)
+    * application_addons (endpoint: `/api/v2/assets/application_addons`)
+    * admin_managed_extension_instances (endpoint: `/api/v2/assets/admin_managed_extension_instances`)
+    * user_initiated_extension_instances (endpoint: `/api/v2/assets/user_initiated_extension_instances`)
+    * application_addon_instances (endpoint: `/api/v2/assets/application_addon_instances`)
+    * application_keys (endpoint: `/api/v2/assets/application_keys`)
+    * audit_activities (endpoint: `/api/v2/assets/audit_activities`)
+    * business_applications (endpoint: `/api/v2/assets/business_applications`)
+    * urls (endpoint: `/api/v2/assets/urls`)
+    * application_resources (endpoint: `/api/v2/assets/application_resources`)
+    * secrets (endpoint: `/api/v2/assets/secrets`)
 
 ### ILM Policy
 
-To facilitate adapter, user, gateway and assets data including exposures, alert findings, incidents, storage and ticket, network and identity source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*`, `.ds-logs-axonius.gateway-*`, `.ds-logs-axonius.exposure-*`, `.ds-logs-axonius.alert_finding-*`, `.ds-logs-axonius.incident-*`, `.ds-logs-axonius.storage-*`, `.ds-logs-axonius.ticket-*`, `.ds-logs-axonius.network-*`, `.ds-logs-axonius.identity-*` and `.ds-logs-axonius.compute-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy`, `logs-axonius.gateway-default_policy`, `logs-axonius.exposure-default_policy`,  `logs-axonius.alert_finding-default_policy`, `logs-axonius.incident-default_policy`, `logs-axonius.storage-default_policy`, `logs-axonius.ticket-default_policy`, `logs-axonius.network-default_policy`, `logs-axonius.identity-default_policy` and`logs-axonius.compute-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+To facilitate adapter, user, gateway and assets data including exposures, alert findings, incidents, storage and ticket, network and identity source data stream-backed indices `.ds-logs-axonius.adapter-*`, `.ds-logs-axonius.user-*`, `.ds-logs-axonius.gateway-*`, `.ds-logs-axonius.exposure-*`, `.ds-logs-axonius.alert_finding-*`, `.ds-logs-axonius.incident-*`, `.ds-logs-axonius.storage-*`, `.ds-logs-axonius.ticket-*`, `.ds-logs-axonius.network-*`, `.ds-logs-axonius.identity-*`, `.ds-logs-axonius.compute-*` and `.ds-logs-axonius.application-*` respectively are allowed to contain duplicates from each polling interval. ILM policies `logs-axonius.adapter-default_policy`, `logs-axonius.user-default_policy`, `logs-axonius.gateway-default_policy`, `logs-axonius.exposure-default_policy`,  `logs-axonius.alert_finding-default_policy`, `logs-axonius.incident-default_policy`, `logs-axonius.storage-default_policy`, `logs-axonius.ticket-default_policy`, `logs-axonius.network-default_policy`, `logs-axonius.identity-default_policy`, `logs-axonius.compute-default_policy`and `logs-axonius.application-default_policy` are added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
