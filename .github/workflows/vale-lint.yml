@@ -13,12 +13,12 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - 'packages/*/_dev/build/docs/README.md'
-      - 'packages/*/docs/README.md'
-      - 'packages/*/manifest.yml'
-      - 'packages/*/data_stream/*/fields/fields.yml'
-      - 'packages/*/data_stream/*/manifest.yml'
-      - 'packages/*/changelog.yml'
+      - 'packages/**/_dev/build/docs/README.md'
+      - 'packages/**/docs/README.md'
+      - 'packages/**/manifest.yml'
+      - 'packages/**/data_stream/*/fields/fields.yml'
+      - 'packages/**/data_stream/*/manifest.yml'
+      - 'packages/**/changelog.yml'
 
 permissions:
   contents: read
@@ -39,9 +39,11 @@ jobs:
         id: select-files
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           mapfile -t changed_files < <(
-            gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
+            gh api "repos/${GH_REPOSITORY}/pulls/${PR_NUMBER}/files" \
               --paginate \
               | jq -rs 'add // [] | .[] | select(.status != "removed") | .filename'
           )
@@ -49,14 +51,14 @@ jobs:
           files_to_lint=()
           for file in "${changed_files[@]}"; do
             case "$file" in
-              packages/*/_dev/build/docs/README.md|\
-              packages/*/manifest.yml|\
-              packages/*/data_stream/*/fields/fields.yml|\
-              packages/*/data_stream/*/manifest.yml|\
-              packages/*/changelog.yml)
+              packages/**/_dev/build/docs/README.md|\
+              packages/**/manifest.yml|\
+              packages/**/data_stream/*/fields/fields.yml|\
+              packages/**/data_stream/*/manifest.yml|\
+              packages/**/changelog.yml)
                 files_to_lint+=("$file")
                 ;;
-              packages/*/docs/README.md)
+              packages/**/docs/README.md)
                 package_dir="${file%/docs/README.md}"
                 if [ ! -f "$package_dir/_dev/build/docs/README.md" ]; then
                   files_to_lint+=("$file")
@@ -89,12 +91,12 @@ jobs:
           # Set to 'true' to enforce style as a required check
           fail_on_error: false
           vale-paths: |
-            packages/*/_dev/build/docs/README.md
-            packages/*/docs/README.md
-            packages/*/manifest.yml
-            packages/*/data_stream/*/fields/fields.yml
-            packages/*/data_stream/*/manifest.yml
-            packages/*/changelog.yml
+            packages/**/_dev/build/docs/README.md
+            packages/**/docs/README.md
+            packages/**/manifest.yml
+            packages/**/data_stream/*/fields/fields.yml
+            packages/**/data_stream/*/manifest.yml
+            packages/**/changelog.yml
 
           # Optional: Enable debug output for troubleshooting
           # debug: true

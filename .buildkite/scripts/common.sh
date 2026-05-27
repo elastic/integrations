@@ -795,6 +795,7 @@ is_pr_affected() {
         '\.github/ISSUE_TEMPLATE/'
         '\.github/PULL_REQUEST_TEMPLATE\.md'
         '\.mergify\.yml'
+        '\.vale-overrides\.ini'
         'catalog-info\.yaml'
         'docs/'
         'CODE_OF_CONDUCT\.md'
