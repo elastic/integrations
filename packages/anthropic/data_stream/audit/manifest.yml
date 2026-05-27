@@ -3,13 +3,13 @@ type: logs
 streams:
   - input: cel
     title: Compliance activity audit logs
-    description: Collect compliance activity audit events from the Anthropic Admin and Compliance API.
+    description: Collect compliance activity audit events from the Anthropic Compliance API.
     template_path: cel.yml.hbs
     vars:
       - name: api_key
         type: password
         title: API Key
-        description: Anthropic Admin API Key or Compliance Access Key with the `read:compliance_activities` scope.
+        description: Compliance Access Key (`sk-ant-api01-...`) or Admin API Key (`sk-ant-admin01-...`) with the `read:compliance_activities` scope. See Anthropic's guide to request access and create keys.
         multi: false
         required: true
         show_user: true
@@ -17,23 +17,67 @@ streams:
       - name: interval
         type: text
         title: Polling Interval
-        description: How often to poll for new compliance activities.
+        description: How frequently to poll for new compliance activities. The default of 5 minutes keeps usage well within the 600 requests per minute per organization rate limit.
         multi: false
         required: true
         show_user: true
         default: 5m
       - name: initial_interval
         type: text
-        title: Initial Interval
+        title: Initial Lookback Interval
         description: How far back to collect activities on the first run (for example `24h` or `7d`).
         multi: false
         required: false
         show_user: true
         default: 24h
+      - name: activity_types
+        type: text
+        title: Activity Types
+        description: Optional list of activity type values to collect (for example `user_login`, `api_key_created`). Leave empty to collect all activity types.
+        multi: true
+        required: false
+        show_user: true
+      - name: actor_ids
+        type: text
+        title: Actor IDs
+        description: Optional list of actor IDs to filter to (for example `user_01AbCdEfGhIjKlMnOpQrStUv`).
+        multi: true
+        required: false
+        show_user: true
+      - name: organization_ids
+        type: text
+        title: Organization IDs
+        description: Optional list of organization IDs or UUIDs to filter to (for example `org_01AbCdEfGhIjKlMnOpQrStUv`).
+        multi: true
+        required: false
+        show_user: true
+      - name: batch_size
+        type: integer
+        title: Page Size
+        description: Number of activities per API page (1–5000).
+        multi: false
+        required: false
+        show_user: true
+        default: 1000
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original activity JSON in the field `event.original`.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: proxy_url
+        type: url
+        title: Proxy URL
+        description: HTTP proxy URL for API requests, for example `http://proxy.example.com:8080`.
+        multi: false
+        required: false
+        show_user: true
       - name: url
         type: url
-        title: API URL
-        description: Base URL of the Anthropic API.
+        title: Anthropic API URL
+        description: Base URL for the Anthropic API.
         multi: false
         required: true
         show_user: false
@@ -46,78 +90,35 @@ streams:
         required: true
         show_user: false
         default: "2023-06-01"
-      - name: proxy_url
-        type: url
-        title: Proxy URL
-        description: URL of the HTTP proxy to use for all Anthropic API calls (for example `http://proxy.example.com:8080`).
-        multi: false
-        required: false
-        show_user: true
-      - name: ssl
-        type: yaml
-        title: SSL Configuration
-        description: SSL configuration options. See [SSL](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for details.
-        multi: false
-        required: false
-        show_user: false
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
-        description: Duration before declaring an HTTP request to the Anthropic API failed (for example `60s`).
+        description: Timeout for HTTP requests to the Anthropic Compliance API.
         multi: false
         required: false
         show_user: false
         default: 60s
-      - name: batch_size
-        type: integer
-        title: Batch Size
-        description: Number of activities per page (`limit` query parameter). Maximum 5000.
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: SSL configuration options. See [SSL](https://www.elastic.co/docs/reference/elastic-agent/agent-ssl-options) for details.
         multi: false
         required: false
-        show_user: true
-        default: 1000
-      - name: activity_types
-        type: text
-        title: Activity Types
-        description: Optional list of activity type values to filter to. Leave empty to collect all activity types.
-        multi: true
-        required: false
-        show_user: true
-      - name: actor_ids
-        type: text
-        title: Actor IDs
-        description: Optional list of `user_...` actor IDs to filter to.
-        multi: true
-        required: false
-        show_user: true
-      - name: organization_ids
-        type: text
-        title: Organization IDs
-        description: Optional list of `org_...` IDs or organization UUIDs to filter to.
-        multi: true
-        required: false
-        show_user: true
+        show_user: false
       - name: tags
         type: text
         title: Tags
         multi: true
         required: true
-        show_user: true
+        show_user: false
         default:
           - forwarded
           - anthropic-audit
-      - name: preserve_original_event
-        type: bool
-        title: Preserve Original Event
-        description: Preserves a raw copy of the original activity JSON under `event.original`.
-        multi: false
-        required: true
-        show_user: true
-        default: false
       - name: enable_request_tracer
         type: bool
-        title: Enable Request Tracer
-        description: The request tracer logs requests and responses to the agent's local filesystem for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging.
+        title: Enable request tracing
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/docs/reference/integrations/inputs/input-cel#_resource_tracer_filename) for details.
         multi: false
         required: false
         show_user: false
@@ -125,7 +126,8 @@ streams:
       - name: processors
         type: yaml
         title: Processors
-        description: Processors to apply to events before ingest pipeline processing.
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
         multi: false
         required: false
         show_user: false
