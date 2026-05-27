@@ -53,7 +53,7 @@ If your Elastic Agent runs outside AWS (for example, on on-premises servers), yo
 
 1. [Download and install `aws_signing_helper`](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html) on the host running Elastic Agent.
 
-2. Add a profile to `~/.aws/config` that uses the helper as a [`credential_process`](https://docs.aws.amazon.com/sdkref/latest/guide/feature-process-credentials.html):
+2. Add a profile to the AWS shared config file (`~/.aws/config` on Linux/macOS, `%USERPROFILE%\.aws\config` on Windows) that uses the helper as a [`credential_process`](https://docs.aws.amazon.com/sdkref/latest/guide/feature-process-credentials.html):
 
     ```ini
     [profile elastic-agent]
@@ -66,7 +66,11 @@ If your Elastic Agent runs outside AWS (for example, on on-premises servers), yo
     region = us-east-1
     ```
 
+    Replace `/path/to/` with the actual path to the binary on your operating system.
+
 3. In the CloudTrail integration configuration, set the **Credential Profile Name** field to the profile name you defined (for example, `elastic-agent`). If you configure the profile as `[default]`, you can leave the field blank.
+
+> **Note:** If the **Shared Credential File** field is set, the integration loads credentials only from that file and stops reading the default AWS shared config file. Ensure the profile with the `credential_process` entry is present in whichever file you specify, or leave the field blank to use the default config file location.
 
 The credentials are refreshed automatically before they expire. For the full list of `aws_signing_helper` options and examples, see the [IAM Roles Anywhere credential helper documentation](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html).
 
