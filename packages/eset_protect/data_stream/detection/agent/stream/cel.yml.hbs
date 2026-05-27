@@ -25,13 +25,8 @@ state:
   page_size: {{batch_size}}
   want_more: false
   initial_interval: {{initial_interval}}
-  page_token: ""
   device_url: https://{{region}}.device-management.eset.systems
   devices_fetched: false
-  device_keys: []
-  device_values: []
-  device_page_token: ""
-  device_response_id: ""
 redact:
   fields: ~
 program: |-
@@ -42,8 +37,9 @@ program: |-
       state.with(
         {
           "page_size": string(state.page_size),
-          "start_time": (has(state.cursor) && has(state.cursor.last_timestamp) &&
-          state.cursor.last_timestamp != null) ?
+          "start_time": (
+            has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null
+          ) ?
             state.cursor.last_timestamp
           :
             (now - duration(state.initial_interval)).format(time_layout.RFC3339),
@@ -66,7 +62,7 @@ program: |-
           "pageToken": [state.?device_page_token.orValue("")],
         }.format_query()
       ).as(request,
-        (has(state.device_response_id) && state.device_response_id != null && state.device_response_id != "") ?
+        (state.?device_response_id.orValue("") != "") ?
           request.with(
             {
               "Header": {
@@ -80,36 +76,26 @@ program: |-
       ).do_request().as(resp,
         (resp.StatusCode == 200) ?
           resp.Body.decode_json().as(body,
-            (has(body.nextPageToken) && body.nextPageToken != null && body.nextPageToken != "").as(has_more,
+            (body.nextPageToken != "").as(has_more,
               {
                 "events": [{"message": "retry"}],
                 "page_size": state.page_size,
                 "start_time": state.start_time,
                 "end_time": state.end_time,
-                "page_token": state.page_token,
+                "page_token": state.?page_token.orValue(""),
                 "want_more": true,
                 "initial_interval": state.initial_interval,
                 "cursor": state.?cursor.orValue({"last_timestamp": null, "response_id": null}),
                 "device_url": state.device_url,
-                "device_keys": state.?device_keys.orValue([]) + (
-                  (has(body.devices) && body.devices != null) ?
-                    body.devices.map(d, d.uuid)
-                  :
-                    []
-                ),
-                "device_values": state.?device_values.orValue([]) + (
-                  (has(body.devices) && body.devices != null) ?
-                    body.devices.map(d,
-                      {
-                        "displayName": d.?displayName.orValue(""),
-                        "primaryIp": d.?primaryLocalIpAddress.orValue(""),
-                        "publicIp": d.?publicIpAddress.orValue(""),
-                        "osFull": has(d.operatingSystem) ? d.operatingSystem.?displayName.orValue("") : "",
-                        "osVersion": (has(d.operatingSystem) && has(d.operatingSystem.version)) ? d.operatingSystem.version.?name.orValue("") : "",
-                      }
-                    )
-                  :
-                    []
+                "device_keys": state.?device_keys.orValue([]) + body.devices.map(d, d.uuid),
+                "device_values": state.?device_values.orValue([]) + body.devices.map(d,
+                  {
+                    "displayName": d.?displayName.orValue(""),
+                    "primaryIp": d.?primaryLocalIpAddress.orValue(""),
+                    "publicIp": d.?publicIpAddress.orValue(""),
+                    "osFull": has(d.operatingSystem) ? d.operatingSystem.?displayName.orValue("") : "",
+                    "osVersion": (has(d.operatingSystem) && has(d.operatingSystem.version)) ? d.operatingSystem.version.?name.orValue("") : "",
+                  }
                 ),
                 "device_page_token": has_more ? body.nextPageToken : "",
                 "device_response_id": "",
@@ -160,10 +146,10 @@ program: |-
             "page_size": [state.page_size],
             "start_time": [state.start_time],
             "end_time": [state.end_time],
-            "page_token": [state.page_token],
+            "page_token": [state.?page_token.orValue("")],
           }.format_query()
         ).as(request,
-          (has(state.cursor) && has(state.cursor.response_id) && state.cursor.response_id != null) ?
+          (has(state.?cursor.response_id) && state.cursor.response_id != null) ?
             request.with(
               {
                 "Header": {
@@ -178,66 +164,51 @@ program: |-
           (resp.StatusCode == 200) ?
             resp.Body.decode_json().as(body,
               {
-                "events": (has(body.detections) && body.detections != null) ?
-                  body.detections.map(e,
-                    {
-                      "message": e.with(
-                        {
-                          "deviceDisplayName": (has(e.context) && has(e.context.deviceUuid) &&
-                          e.context.deviceUuid in device_map) ?
-                            device_map[e.context.deviceUuid].displayName
-                          :
-                            "",
-                          "deviceInfo": (has(e.context) && has(e.context.deviceUuid) &&
-                          e.context.deviceUuid in device_map) ?
-                            (device_map[e.context.deviceUuid])
-                          :
-                            {},
-                        }
-                      ).encode_json(),
-                    }
-                  )
-                :
-                  [],
-                "page_token": (has(body.nextPageToken) && body.nextPageToken != null) ?
-                  body.nextPageToken
-                :
-                  "",
-                "want_more": has(body.nextPageToken) && body.nextPageToken != null &&
-                body.nextPageToken != "",
+                "events": body.detections.map(e,
+                  {
+                    "message": e.with(
+                      {
+                        "deviceDisplayName": (
+                          has(e.?context.deviceUuid) && e.context.deviceUuid in device_map
+                        ) ?
+                          device_map[e.context.deviceUuid].displayName
+                        :
+                          "",
+                        "deviceInfo": (
+                          has(e.?context.deviceUuid) && e.context.deviceUuid in device_map
+                        ) ?
+                          (device_map[e.context.deviceUuid])
+                        :
+                          {},
+                      }
+                    ).encode_json(),
+                  }
+                ),
+                "page_token": body.nextPageToken,
+                "want_more": body.nextPageToken != "",
                 "page_size": state.page_size,
                 "initial_interval": state.initial_interval,
                 "start_time": string(state.start_time),
                 "end_time": string(state.end_time),
                 "cursor": {
                   "response_id": null,
-                  "last_timestamp": (has(body.nextPageToken) && body.nextPageToken != null &&
-                  body.nextPageToken != "") ?
+                  "last_timestamp": (body.nextPageToken != "") ?
                     (
                       (has(state.cursor) && has(state.cursor.last_timestamp)) ?
                         state.cursor.last_timestamp
                       :
                         null
                     )
-                  : (has(body.detections) && body.detections != null && body.detections.size() > 0) ?
+                  : (body.detections.size() > 0) ?
                     body.detections.map(e, e.occurTime).max()
                   :
                     state.end_time,
                 },
                 "device_url": state.device_url,
-                "device_keys": (has(body.nextPageToken) && body.nextPageToken != null &&
-                body.nextPageToken != "") ?
-                  state.device_keys
-                :
-                  [],
-                "device_values": (has(body.nextPageToken) && body.nextPageToken != null &&
-                body.nextPageToken != "") ?
-                  state.device_values
-                :
-                  [],
+                "device_keys": (body.nextPageToken != "") ? state.device_keys : [],
+                "device_values": (body.nextPageToken != "") ? state.device_values : [],
                 "device_page_token": "",
-                "devices_fetched": has(body.nextPageToken) && body.nextPageToken != null &&
-                body.nextPageToken != "",
+                "devices_fetched": body.nextPageToken != "",
               }
             )
           : (resp.StatusCode == 202) ?
