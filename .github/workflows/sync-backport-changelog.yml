@@ -1,0 +1,223 @@
+---
+name: Sync backport changelog to main
+
+on:
+  push:
+    branches:
+      - 'backport-*'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Guard — zero-SHA check and branch name parse
+        id: guard
+        env:
+          BEFORE: ${{ github.event.before }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          # Branch-creation pushes have a zero before-SHA — nothing to diff.
+          if [[ "$BEFORE" == "0000000000000000000000000000000000000000" ]]; then
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping: branch-creation push"
+            exit 0
+          fi
+
+          # Only act on branches that follow the backport-<package>-<major.minor> convention.
+          if [[ "$BRANCH" =~ ^backport-(.+)-([0-9]+\.[0-9]+)$ ]]; then
+            echo "proceed=true"               >> "$GITHUB_OUTPUT"
+            echo "package=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping: '$BRANCH' does not match backport-<package>-<major.minor> convention"
+          fi
+
+      - uses: actions/checkout@v6
+        if: steps.guard.outputs.proceed == 'true'
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        if: steps.guard.outputs.proceed == 'true'
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: .go-version
+
+      - name: Install mage
+        if: steps.guard.outputs.proceed == 'true'
+        run: go install github.com/magefile/mage
+
+      - name: Resolve package directory
+        id: resolve
+        if: steps.guard.outputs.proceed == 'true'
+        env:
+          PACKAGE: ${{ steps.guard.outputs.package }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          # Disable checking backport active branches
+          # if ! python3 dev/scripts/backport_check_active.py --branch "$BRANCH" 2>/dev/null; then
+          #   echo "package_dir=" >> "$GITHUB_OUTPUT"
+          #   echo "Branch $BRANCH is inactive — skipping"
+          #   exit 0
+          # fi
+          # The package name in the branch refers to the `name` field in manifest.yml, which
+          # may differ from the directory name. Packages can live at packages/<name>/ (flat)
+          # or packages/<category>/<name>/ (one level of nesting).
+          if ! PACKAGE_DIR=$(python3 dev/scripts/backport_resolve_package_dir.py --package "$PACKAGE"); then
+            echo "package_dir=" >> "$GITHUB_OUTPUT"
+            echo "Package '$PACKAGE' not found in packages/ — skipping"
+            exit 0
+          fi
+          echo "package_dir=$PACKAGE_DIR" >> "$GITHUB_OUTPUT"
+          echo "Resolved '$PACKAGE' → $PACKAGE_DIR"
+
+      - name: Diff changelog
+        id: diff
+        if: steps.resolve.outputs.package_dir != ''
+        env:
+          PACKAGE_DIR: ${{ steps.resolve.outputs.package_dir }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
+        run: |
+          CHANGELOG="${PACKAGE_DIR}/changelog.yml"
+          DIFF=$(git diff "${BEFORE}..${AFTER}" -- "$CHANGELOG" || true)
+          if [[ -z "$DIFF" ]]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No changelog change detected in $CHANGELOG"
+            exit 0
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          printf '%s' "$DIFF" > /tmp/changelog.diff
+          echo "Changelog change detected in $CHANGELOG"
+
+      - name: Extract new version entry
+        id: extract
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          NEW_VERSION=$(python3 dev/scripts/backport_extract_changelog_entry.py \
+            /tmp/changelog.diff \
+            --entry-file /tmp/new_entry.txt)
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Extracted new version: $NEW_VERSION"
+
+      - name: Check idempotency and PR existence
+        id: checks
+        if: steps.extract.outputs.new_version != ''
+        env:
+          PACKAGE: ${{ steps.guard.outputs.package }}
+          PACKAGE_DIR: ${{ steps.resolve.outputs.package_dir }}
+          NEW_VERSION: ${{ steps.extract.outputs.new_version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CHANGELOG="${PACKAGE_DIR}/changelog.yml"
+          WORKING_BRANCH="changelog-sync/${PACKAGE}-${NEW_VERSION}"
+
+          # Idempotency: skip if this version already exists in main.
+          if git show "origin/main:${CHANGELOG}" 2>/dev/null \
+              | grep -qE "^- version: [\"']?${NEW_VERSION}[\"']?\s*$"; then
+            echo "Version ${NEW_VERSION} already exists in main — skipping"
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Deduplication: skip if a PR for this working branch already exists.
+          COUNT=$(gh pr list --head "$WORKING_BRANCH" --state all --json number | jq length)
+          if [[ "$COUNT" -gt 0 ]]; then
+            echo "PR already exists for ${WORKING_BRANCH} — skipping"
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "proceed=true"                   >> "$GITHUB_OUTPUT"
+          echo "working_branch=$WORKING_BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Create changelog sync PR
+        id: create
+        if: steps.checks.outputs.proceed == 'true'
+        env:
+          PACKAGE: ${{ steps.guard.outputs.package }}
+          NEW_VERSION: ${{ steps.extract.outputs.new_version }}
+          WORKING_BRANCH: ${{ steps.checks.outputs.working_branch }}
+          BACKPORT_BRANCH: ${{ github.ref_name }}
+          AFTER: ${{ github.event.after }}
+          REPOSITORY: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$WORKING_BRANCH" origin/main
+
+          # Re-resolve the package path on main by manifest name: the authoritative source
+          # after switching branches, and handles both flat and nested directory layouts.
+          if ! MAIN_PACKAGE_DIR=$(python3 dev/scripts/backport_resolve_package_dir.py --package "$PACKAGE"); then
+            echo "Package '$PACKAGE' not found on main — cannot sync" >&2
+            exit 1
+          fi
+          MAIN_CHANGELOG="${MAIN_PACKAGE_DIR}/changelog.yml"
+
+          python3 dev/scripts/backport_insert_changelog_entry.py \
+            --changelog "$MAIN_CHANGELOG" \
+            --version   "$NEW_VERSION" \
+            --entry-file /tmp/new_entry.txt
+
+          git add "$MAIN_CHANGELOG"
+          git commit -m "changelog: ${PACKAGE} ${NEW_VERSION} (backport)"
+          git push origin "$WORKING_BRANCH"
+
+          AFTER_SHORT="${AFTER:0:8}"
+          BACKPORT_PR_URL=$(gh api "repos/${REPOSITORY}/commits/${AFTER}/pulls" --jq '.[0].html_url // empty' 2>/dev/null || true)
+          BACKPORT_REF="${BACKPORT_PR_URL:-\`${BACKPORT_BRANCH}\`}"
+
+          printf '%s\n\n%s\n\n%s\n' \
+            "Automated changelog sync from backport branch ${BACKPORT_REF}." \
+            "This PR inserts version \`${NEW_VERSION}\` of package \`${PACKAGE}\` at the correct semver-descending position in \`main\`'s \`changelog.yml\`." \
+            "_Triggered by commit [\`${AFTER_SHORT}\`](https://github.com/${REPOSITORY}/commit/${AFTER}) on \`${BACKPORT_BRANCH}\`._" \
+            > /tmp/pr_body.txt
+
+          gh pr create \
+            --base main \
+            --head "$WORKING_BRANCH" \
+            --title "changelog: ${PACKAGE} ${NEW_VERSION} (backport)" \
+            --label "automation" \
+            --body-file /tmp/pr_body.txt
+
+      - name: Comment on backport PR
+        if: always() && steps.guard.outputs.proceed == 'true'
+        env:
+          AFTER: ${{ github.event.after }}
+          REPOSITORY: ${{ github.repository }}
+          PACKAGE: ${{ steps.guard.outputs.package }}
+          NEW_VERSION: ${{ steps.extract.outputs.new_version }}
+          DIFF_CHANGED: ${{ steps.diff.outputs.changed }}
+          CREATE_OUTCOME: ${{ steps.create.outcome }}
+          RUN_ID: ${{ github.run_id }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=$(gh api "repos/${REPOSITORY}/commits/${AFTER}/pulls" \
+            --jq '.[0].number // empty' 2>/dev/null || true)
+          if [[ -z "$PR_NUMBER" ]]; then
+            echo "No PR found for commit ${AFTER} — skipping comment"
+            exit 0
+          fi
+
+          if [[ -z "$NEW_VERSION" ]]; then
+            # No changelog change detected — nothing to report.
+            [[ "$DIFF_CHANGED" == "true" ]] \
+              && BODY="Changelog diff detected but no version entry could be extracted. See the [workflow run](https://github.com/${REPOSITORY}/actions/runs/${RUN_ID}) for details." \
+              || exit 0
+          elif [[ "$CREATE_OUTCOME" == "success" ]]; then
+            SYNC_PR_URL=$(gh pr list \
+              --head "changelog-sync/${PACKAGE}-${NEW_VERSION}" \
+              --state open --json url --jq '.[0].url')
+            BODY="Changelog sync PR created successfully: ${SYNC_PR_URL}"
+          elif [[ "$CREATE_OUTCOME" == "skipped" ]]; then
+            BODY="Changelog sync skipped: version \`${NEW_VERSION}\` is already present in \`main\` or a sync PR already exists."
+          else
+            BODY="Changelog sync PR creation failed. See the [workflow run](https://github.com/${REPOSITORY}/actions/runs/${RUN_ID}) for details."
+          fi
+
+          gh pr comment "$PR_NUMBER" --body "$BODY"

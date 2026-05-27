@@ -137,6 +137,17 @@ assert_equals "finds correct commit for packages/<group>/<p>/ (not the latest)" 
 
 teardown_dummy_repo "$DUMMY_REPO"
 
+echo "--- Running backport Python script tests"
+for script in backport_check_active backport_resolve_package_dir \
+              backport_extract_changelog_entry backport_insert_changelog_entry; do
+    echo "  Testing ${script}.py"
+    if python3 "${REPO_ROOT}/dev/scripts/${script}.py" --test 2>&1; then
+        (( pass++ )) || true
+    else
+        (( fail++ )) || true
+    fi
+done
+
 echo "--- Results: ${pass} passed, ${fail} failed"
 if [[ "${fail}" -gt 0 ]]; then
     exit 1
