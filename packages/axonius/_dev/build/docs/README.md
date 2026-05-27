@@ -90,7 +90,6 @@ This integration collects log messages of the following type:
     - audit_activities (endpoint: `/api/v2/assets/audit_activities`)
     - business_applications (endpoint: `/api/v2/assets/business_applications`)
     - urls (endpoint: `/api/v2/assets/urls`)
-    - application_services (endpoint: `/api/v2/assets/application_services`)
     - application_resources (endpoint: `/api/v2/assets/application_resources`)
     - secrets (endpoint: `/api/v2/assets/secrets`)
 
@@ -403,7 +402,6 @@ These APIs are used with this integration:
     * audit_activities (endpoint: `/api/v2/assets/audit_activities`)
     * business_applications (endpoint: `/api/v2/assets/business_applications`)
     * urls (endpoint: `/api/v2/assets/urls`)
-    * application_services (endpoint: `/api/v2/assets/application_services`)
     * application_resources (endpoint: `/api/v2/assets/application_resources`)
     * secrets (endpoint: `/api/v2/assets/secrets`)
 
