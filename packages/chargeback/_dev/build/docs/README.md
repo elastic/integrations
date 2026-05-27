@@ -121,9 +121,16 @@ Chargeback data can be viewed in the `[Chargeback] Cost and Consumption breakdow
 
 ### Upgrading from 0.3.0
 
-From **0.3.1** onward, configuration and billing fields use chargeable-unit names (for example `conf_chargeable_unit_rate` and `total_chargeable_units` instead of `conf_ecu_rate` and `total_ecu`). The dashboard queries accept both the new and the previous field names, so you do not need to change existing documents in the lookup indices for panels to work. New data from the updated transforms uses the new names over time.
+From **0.3.1** onward, configuration and billing fields use chargeable-unit names (for example `conf_chargeable_unit_rate` and `total_chargeable_units` instead of `conf_ecu_rate` and `total_ecu`). Dashboard ES|QL uses `COALESCE` across both names; **both columns must exist in the lookup index mapping** or panels fail at query time. From **0.3.2** onward, lookup mappings include legacy ECU names as **field aliases** that point to chargeable-unit fields.
 
-If you built your own ES|QL, dashboards, or automation against the lookup indices, update those to the new field names when convenient.
+**Upgrading from 0.3.1 to 0.3.2:** The package already defines these aliases in its transform field mappings. For **new installs** (or newly recreated lookup indices), no manual alias creation is required. Existing 0.3.1 lookup indices keep their old mappings, so after upgrading to **0.3.2**:
+
+1. Delete each affected lookup index (`billing_cluster_cost_lookup`, `chargeback_conf_lookup`) and **reset** the corresponding transform so the index is recreated with 0.3.2 mappings (reprocesses historical data; plan for load and sync delay).
+2. Start or schedule the `billing_cluster_cost` and `chargeback_conf_lookup` transforms.
+
+If the dashboard was not replaced on upgrade, re-import the Chargeback dashboard saved objects.
+
+If you built your own ES|QL, dashboards, or automation against the lookup indices, prefer the chargeable-unit field names when convenient.
 
 ## Deployment Groups
 
