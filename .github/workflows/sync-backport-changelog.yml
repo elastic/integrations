@@ -79,7 +79,11 @@ jobs:
 
           for CHANGELOG_PATH in "${CHANGED[@]}"; do
             PACKAGE_DIR=$(dirname "$CHANGELOG_PATH")
-            MANIFEST_NAME=$(python3 -c "import yaml; print(yaml.safe_load(open('${PACKAGE_DIR}/manifest.yml')).get('name', ''))" 2>/dev/null || true)
+            # Pass the path via env var rather than interpolating into Python source —
+            # interpolation breaks if PACKAGE_DIR contains a single quote.
+            MANIFEST_NAME=$(MANIFEST_PATH="${PACKAGE_DIR}/manifest.yml" python3 -c \
+              "import yaml, os; print(yaml.safe_load(open(os.environ['MANIFEST_PATH'])).get('name', ''))" \
+              2>/dev/null || true)
             if [[ -z "$MANIFEST_NAME" ]]; then
               echo "Could not read manifest for $PACKAGE_DIR — skipping"
               continue
