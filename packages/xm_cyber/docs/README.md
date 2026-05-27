@@ -123,22 +123,22 @@ An example event for `audit_trail` looks as following:
 {
     "@timestamp": "2023-01-03T19:13:54.358Z",
     "agent": {
-        "ephemeral_id": "48f59320-c66c-49c4-a540-f8703d0e615f",
-        "id": "f0870565-78f4-4a45-98ca-9bb1b9619124",
-        "name": "elastic-agent-38790",
+        "ephemeral_id": "264cd8ef-875d-4e14-a2c0-3b35c29827f8",
+        "id": "c7ed7c43-bba7-4c00-9d81-ef2ed5ea7d76",
+        "name": "elastic-agent-69092",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.audit_trail",
-        "namespace": "60192",
+        "namespace": "31658",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "f0870565-78f4-4a45-98ca-9bb1b9619124",
+        "id": "c7ed7c43-bba7-4c00-9d81-ef2ed5ea7d76",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -147,7 +147,7 @@ An example event for `audit_trail` looks as following:
         "agent_id_status": "verified",
         "dataset": "xm_cyber.audit_trail",
         "id": "63b47e72ee320700106d4381",
-        "ingested": "2026-05-05T12:29:18Z",
+        "ingested": "2026-05-27T06:51:07Z",
         "kind": "event",
         "original": "{\"_id\":\"63b47e72ee320700106d4381\",\"details\":\"john.doe@example.com Logged in via user\",\"eventSubType\":\"XM_LOGIN\",\"eventType\":\"ACCESS\",\"objectName\":\"User\",\"objectType\":\"USER\",\"tenant\":\"acme\",\"terminalId\":{\"hostname\":\"acme.clients.xmcyber.com\",\"ip\":\"192.0.2.0\"},\"timestamp\":\"2023-01-03T19:13:54.358Z\",\"userId\":{\"email\":\"john.doe@example.com\",\"name\":\"John Doe\"}}"
     },
