@@ -120,6 +120,24 @@ index abc..def 100644
  - version: "6.15.0"
 """
 
+_DIFF_MULTI_CHANGE = """\
+diff --git a/packages/aws/changelog.yml b/packages/aws/changelog.yml
+index abc..def 100644
+--- a/packages/aws/changelog.yml
++++ b/packages/aws/changelog.yml
+@@ -1,4 +1,13 @@
+ # newer versions go on top
++- version: "6.14.3"
++  changes:
++    - description: Fix CEL handling
++      type: bugfix
++      link: https://github.com/elastic/integrations/pull/19147
++    - description: Fix another thing
++      type: bugfix
++      link: https://github.com/elastic/integrations/pull/19148
+ - version: "6.15.0"
+"""
+
 _DIFF_TWO_VERSIONS = """\
 diff --git a/packages/aws/changelog.yml b/packages/aws/changelog.yml
 index abc..def 100644
@@ -163,6 +181,13 @@ class TestExtractFromDiff(unittest.TestCase):
         version, entry = extract_from_diff(diff)
         self.assertIsNone(version)
         self.assertIsNone(entry)
+
+    def test_all_changes_in_single_version_entry_are_included(self):
+        version, entry = extract_from_diff(_DIFF_MULTI_CHANGE)
+        self.assertEqual(version, "6.14.3")
+        self.assertIn("Fix CEL handling", entry)
+        self.assertIn("Fix another thing", entry)
+        self.assertEqual(entry.count("- description:"), 2)
 
     def test_two_version_entries_extracts_only_first(self):
         version, entry = extract_from_diff(_DIFF_TWO_VERSIONS)
