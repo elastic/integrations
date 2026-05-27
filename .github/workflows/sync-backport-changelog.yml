@@ -30,12 +30,14 @@ jobs:
           fi
 
           # Only act on branches that follow the backport-<package>-<major.minor> convention.
-          if [[ "$BRANCH" =~ ^backport-(.+)-([0-9]+\.[0-9]+)$ ]]; then
-            echo "proceed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "proceed=false" >> "$GITHUB_OUTPUT"
-            echo "Skipping: '$BRANCH' does not match backport-<package>-<major.minor> convention"
-          fi
+          # TODO: re-enable once branch naming convention is confirmed.
+          # if [[ "$BRANCH" =~ ^backport-(.+)-([0-9]+\.[0-9]+)$ ]]; then
+          #   echo "proceed=true" >> "$GITHUB_OUTPUT"
+          # else
+          #   echo "proceed=false" >> "$GITHUB_OUTPUT"
+          #   echo "Skipping: '$BRANCH' does not match backport-<package>-<major.minor> convention"
+          # fi
+          echo "proceed=true" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v6
         if: steps.guard.outputs.proceed == 'true'
