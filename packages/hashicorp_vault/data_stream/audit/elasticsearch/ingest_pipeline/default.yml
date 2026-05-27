@@ -84,6 +84,90 @@ processors:
       target_field: hashicorp_vault.audit.response.data
       ignore_missing: true
       override: true
+  # Normalize KMIP error if present
+  - lowercase:
+      tag: lowercase_kmip_error
+      field: hashicorp_vault.audit.response.data.BatchItem.ResultReason
+      ignore_missing: true
+  - script:
+      description: Normalize KMIP error reason as per https://docs.oasis-open.org/kmip/kmip-spec/v2.0/csd01/kmip-spec-v2.0-csd01.html#_Toc534980116
+      tag: script_normalize_kmip_error
+      lang: painless
+      if: ctx.hashicorp_vault?.audit?.response?.data?.BatchItem?.ResultReason != null
+      source: if (params.containsKey((ctx.hashicorp_vault.audit.response.data.BatchItem.ResultReason)) {ctx.hashicorp_vault.audit.put('error', params.get(ctx.hashicorp_vault.audit.response.data.BatchItem.ResultReason))}
+      params:
+        "0x00000001": "Item Not Found"
+        "0x00000002": "Response Too Large"
+        "0x00000003": "Authentication Not Successful"
+        "0x00000004": "Invalid Message"
+        "0x00000005": "Operation Not Supported"
+        "0x00000006": "Missing Data"
+        "0x00000007": "Invalid Field"
+        "0x00000008": "Feature Not Supported"
+        "0x00000009": "Operation Canceled By Requester"
+        "0x0000000a": "Cryptographic Failure"
+        "0x0000000b": "(Reserved)"
+        "0x0000000c": "Permission Denied"
+        "0x0000000d": "Object Archived"
+        "0x0000000e": "(Reserved)"
+        "0x0000000f": "Application Namespace Not Supported"
+        "0x00000010": "Key Format Type Not Supported"
+        "0x00000011": "Key Compression Type Not Supported"
+        "0x00000012": "Encoding Option Error"
+        "0x00000013": "Key Value Not Present"
+        "0x00000014": "Attestation Required"
+        "0x00000015": "Attestation Failed"
+        "0x00000016": "Sensitive"
+        "0x00000017": "Not Extractable"
+        "0x00000018": "Object Already Exists"
+        "0x00000019": "Invalid Ticket"
+        "0x0000001a": "Usage Limit Exceeded"
+        "0x0000001b": "Numeric Range"
+        "0x0000001c": "Invalid Data Type"
+        "0x0000001d": "Read Only Attribute"
+        "0x0000001e": "Multi Valued Attribute"
+        "0x0000001f": "Unsupported Attribute"
+        "0x00000020": "Attribute Instance Not Found"
+        "0x00000021": "Attribute Not Found"
+        "0x00000022": "Attribute Read Only"
+        "0x00000023": "Attribute Single Valued"
+        "0x00000024": "Bad Cryptographic Parameters"
+        "0x00000025": "Bad Password"
+        "0x00000026": "Codec Error"
+        "0x00000027": "(Reserved)"
+        "0x00000028": "Illegal Object Type"
+        "0x00000029": "Incompatible Cryptographic Usage Mask"
+        "0x0000002a": "Internal Server Error"
+        "0x0000002b": "Invalid Asynchronous Correlation Value"
+        "0x0000002c": "Invalid Attribute"
+        "0x0000002d": "Invalid Attribute Value"
+        "0x0000002e": "Invalid Correlation Value"
+        "0x0000002f": "Invalid CSR"
+        "0x00000030": "Invalid Object Type"
+        "0x00000031": "(Reserved)"
+        "0x00000032": "Key Wrap Type Not Supported"
+        "0x00000033": "(Reserved)"
+        "0x00000034": "Missing Initialization Vector"
+        "0x00000035": "Non Unique Name Attribute"
+        "0x00000036": "Object Destroyed"
+        "0x00000037": "Object Not Found"
+        "0x00000039": "Not Authorised"
+        "0x0000003a": "Server Limit Exceeded"
+        "0x0000003b": "Unknown Enumeration"
+        "0x0000003c": "Unknown Message Extension"
+        "0x0000003d": "Unknown Tag"
+        "0x0000003e": "Unsupported Cryptographic Parameters"
+        "0x0000003f": "Unsupported Protocol Version"
+        "0x00000040": "Wrapping Object Archived"
+        "0x00000041": "Wrapping Object Destroyed"
+        "0x00000042": "Wrapping Object Not Found"
+        "0x00000043": "Wrong Key Lifecycle State"
+        "0x00000044": "Protection Storage Unavailable"
+        "0x00000045": "PKCS#11 Codec Error"
+        "0x00000046": "PKCS#11 Invalid Function"
+        "0x00000047": "PKCS#11 Invalid Interface"
+        "0x00000100": "General Failure"
+
 
 
   #
