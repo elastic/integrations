@@ -1424,7 +1424,7 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-05-18T13:46:48.833Z",
+    "@timestamp": "2026-05-20T12:00:00.000Z",
     "agent": {
         "ephemeral_id": "5539665b-3fe9-49d8-a045-b6b8421bd6ed",
         "id": "ed1fd721-0d94-4537-9beb-9f449cd62e86",
@@ -1454,7 +1454,7 @@ An example event for `vulnerability` looks as following:
         "id": "1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226",
         "ingested": "2026-05-18T13:46:51Z",
         "kind": "event",
-        "original": "{\"cveId\":\"CVE-2022-49226\",\"deviceId\":\"1212121212121212121212\",\"deviceName\":\"sample-host-1\",\"diskPaths\":[],\"eventTimestamp\":\"2025-10-06 12:00:00\",\"exploitabilityLevel\":\"NoExploit\",\"firstSeenTimestamp\":\"2025-10-06 10:43:58\",\"id\":\"1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226\",\"lastSeenTimestamp\":\"2025-10-06 22:45:00\",\"osArchitecture\":\"x64\",\"osPlatform\":\"Linux\",\"osVersion\":\"enterprise_linux_9.4\",\"rbacGroupName\":\"Unassigned\",\"recommendationReference\":\"va-_-red_hat-_-kernel\",\"recommendedSecurityUpdate\":\"CVE-2022-49226_oval:com.redhat.rhsa:def:20249315\",\"recommendedSecurityUpdateId\":\"RHSA-2024:9315\",\"recommendedSecurityUpdateUrl\":null,\"registryPaths\":[],\"softwareName\":\"kernel\",\"softwareVendor\":\"red_hat\",\"softwareVersion\":\"0:5.14.0-427.42.1.el9_4\",\"status\":\"New\",\"vulnerabilitySeverityLevel\":\"Medium\"}",
+        "original": "{\"cveId\":\"CVE-2022-49226\",\"deviceId\":\"1212121212121212121212\",\"deviceName\":\"sample-host-1\",\"diskPaths\":[],\"eventTimestamp\":\"2026-05-20 12:00:00\",\"exploitabilityLevel\":\"NoExploit\",\"firstSeenTimestamp\":\"2026-05-20 10:43:58\",\"id\":\"1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226\",\"lastSeenTimestamp\":\"2026-05-20 22:45:00\",\"osArchitecture\":\"x64\",\"osPlatform\":\"Linux\",\"osVersion\":\"enterprise_linux_9.4\",\"rbacGroupName\":\"Unassigned\",\"recommendationReference\":\"va-_-red_hat-_-kernel\",\"recommendedSecurityUpdate\":\"CVE-2022-49226_oval:com.redhat.rhsa:def:20249315\",\"recommendedSecurityUpdateId\":\"RHSA-2024:9315\",\"recommendedSecurityUpdateUrl\":null,\"registryPaths\":[],\"softwareName\":\"kernel\",\"softwareVendor\":\"red_hat\",\"softwareVersion\":\"0:5.14.0-427.42.1.el9_4\",\"status\":\"New\",\"vulnerabilitySeverityLevel\":\"Medium\"}",
         "type": [
             "info"
         ]
@@ -1484,12 +1484,12 @@ An example event for `vulnerability` looks as following:
             "cvss_score": 5.5,
             "device_id": "1212121212121212121212",
             "device_name": "sample-host-1",
-            "event_timestamp": "2025-10-06T12:00:00.000Z",
+            "event_timestamp": "2026-05-20T12:00:00.000Z",
             "exploitability_level": "NoExploit",
-            "first_seen_timestamp": "2025-10-06T10:43:58.000Z",
+            "first_seen_timestamp": "2026-05-20T10:43:58.000Z",
             "id": "1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226",
             "is_onboarded": true,
-            "last_seen_timestamp": "2025-10-06T22:45:00.000Z",
+            "last_seen_timestamp": "2026-05-20T22:45:00.000Z",
             "os_architecture": "x64",
             "os_platform": "Linux",
             "os_version": "enterprise_linux_9.4",
