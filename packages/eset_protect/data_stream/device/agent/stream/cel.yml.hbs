@@ -27,79 +27,78 @@ state:
   page_token: ""
 redact:
   fields: ~
-program: |
-  (
-    request(
-      "GET",
-      state.url.trim_right("/") + "/v1/devices?" + {
-        "pageSize": [string(state.page_size)],
-        "pageToken": [state.page_token]
-      }.format_query()
-    ).as(request, (
-      has(state.cursor) && has(state.cursor.response_id) && state.cursor.response_id != null
-      ?
-        request.with({
-          "Header":{
+program: |-
+  request(
+    "GET",
+    state.url.trim_right("/") + "/v1/devices?" + {
+      "pageSize": [string(state.page_size)],
+      "pageToken": [state.page_token],
+    }.format_query()
+  ).as(request,
+    (has(state.cursor) && has(state.cursor.response_id) && state.cursor.response_id != null) ?
+      request.with(
+        {
+          "Header": {
             "response-id": [state.cursor.response_id],
             "3rd-integration": ["Elastic"],
-          }
-        })
-      :
-        request
-    )).do_request().as(resp, (
-      resp.StatusCode == 200
-      ?
-        resp.Body.decode_json().as(body, {
-          "events": (
-            has(body.devices) && body.devices != null
-            ?
-              body.devices.map(e, {
+          },
+        }
+      )
+    :
+      request
+  ).do_request().as(resp,
+    (resp.StatusCode == 200) ?
+      resp.Body.decode_json().as(body,
+        {
+          "events": (has(body.devices) && body.devices != null) ?
+            body.devices.map(e,
+              {
                 "message": e.encode_json(),
-              })
-            :
-              []
-          ),
-          "page_token": (
-            has(body.nextPageToken) && body.nextPageToken != null
-            ?
-              body.nextPageToken
-            :
-              ""
-          ),
+              }
+            )
+          :
+            [],
+          "page_token": (has(body.nextPageToken) && body.nextPageToken != null) ?
+            body.nextPageToken
+          :
+            "",
           "want_more": has(body.nextPageToken) && body.nextPageToken != null && body.nextPageToken != "",
           "page_size": state.page_size,
-          "cursor": {}
-        })
-      :
-        (
-          resp.StatusCode == 202 ?
-            state.with({
-              "events": [{"message":"retry"}],
-              "want_more": true,
-              "cursor": {
-                "response_id": resp.Header["Response-Id"][0]
-              }
-            })
-          :
-            state.with({
-              "events": [{
-                "error": {
-                  "code": string(resp.StatusCode),
-                  "id": string(resp.Status),
-                  "message": "GET " + state.url.trim_right("/") + "/v1/devices :" + (
-                    size(resp.Body) != 0 ?
-                      string(resp.Body)
-                    :
-                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                  ),
-                },
-              }],
-              "page_token": "",
-              "want_more": false,
-              "cursor": {}
-            })
-        )
-    ))
+          "cursor": {},
+        }
+      )
+    : (resp.StatusCode == 202) ?
+      state.with(
+        {
+          "events": [{"message": "retry"}],
+          "want_more": true,
+          "cursor": {
+            "response_id": resp.Header["Response-Id"][0],
+          },
+        }
+      )
+    :
+      state.with(
+        {
+          "events": [
+            {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_right("/") + "/v1/devices :" + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+          ],
+          "page_token": "",
+          "want_more": false,
+          "cursor": {},
+        }
+      )
   )
 tags:
 {{#if preserve_original_event}}
