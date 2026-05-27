@@ -149,17 +149,24 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # TODO: revert once dev/scripts/backport_*.py are merged to main.
+          # Copy scripts to /tmp before switching branches — they live on the backport branch
+          # and won't be present after checking out main.
+          cp dev/scripts/backport_resolve_package_dir.py  /tmp/backport_resolve_package_dir.py
+          cp dev/scripts/backport_insert_changelog_entry.py /tmp/backport_insert_changelog_entry.py
+
           git checkout -b "$WORKING_BRANCH" origin/main
 
           # Re-resolve the package path on main by manifest name: the authoritative source
           # after switching branches, and handles both flat and nested directory layouts.
-          if ! MAIN_PACKAGE_DIR=$(python3 dev/scripts/backport_resolve_package_dir.py --package "$PACKAGE"); then
+          if ! MAIN_PACKAGE_DIR=$(python3 /tmp/backport_resolve_package_dir.py --package "$PACKAGE"); then
             echo "Package '$PACKAGE' not found on main — cannot sync" >&2
             exit 1
           fi
           MAIN_CHANGELOG="${MAIN_PACKAGE_DIR}/changelog.yml"
 
-          python3 dev/scripts/backport_insert_changelog_entry.py \
+          python3 /tmp/backport_insert_changelog_entry.py \
             --changelog "$MAIN_CHANGELOG" \
             --version   "$NEW_VERSION" \
             --entry-file /tmp/new_entry.txt
