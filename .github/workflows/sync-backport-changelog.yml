@@ -169,7 +169,17 @@ jobs:
           BACKPORT_PR_URL="https://github.com/${REPOSITORY}/pull/${BACKPORT_PR_NUMBER}"
           TRIGGER_LINE="_Triggered by commit [\`${AFTER_SHORT}\`](https://github.com/${REPOSITORY}/commit/${AFTER}) on \`${BACKPORT_BRANCH}\`._"
 
-          git commit -m "changelog: backport sync from PR #${BACKPORT_PR_NUMBER} (${AFTER_SHORT})"
+          ENTRY_COUNT=$(wc -l < "$ENTRIES_TSV")
+          if [[ "$ENTRY_COUNT" -eq 1 ]]; then
+            IFS='|' read -r TITLE_PKG TITLE_VER _ < "$ENTRIES_TSV"
+            PR_TITLE="changelog: ${TITLE_PKG} ${TITLE_VER} (backport sync from PR #${BACKPORT_PR_NUMBER})"
+            COMMIT_MSG="changelog: ${TITLE_PKG} ${TITLE_VER} (backport sync from PR #${BACKPORT_PR_NUMBER}, ${AFTER_SHORT})"
+          else
+            PR_TITLE="changelog: backport sync from PR #${BACKPORT_PR_NUMBER}"
+            COMMIT_MSG="changelog: backport sync from PR #${BACKPORT_PR_NUMBER} (${AFTER_SHORT})"
+          fi
+
+          git commit -m "$COMMIT_MSG"
           git push origin "$WORKING_BRANCH"
 
           printf 'Automated changelog sync from [PR #%s](%s).\n\n**Packages synced:**\n%s\n%s\n' \
@@ -182,7 +192,7 @@ jobs:
           gh pr create \
             --base main \
             --head "$WORKING_BRANCH" \
-            --title "changelog: backport sync from PR #${BACKPORT_PR_NUMBER}" \
+            --title "$PR_TITLE" \
             --label "automation" \
             --body-file /tmp/pr_body.txt
 
