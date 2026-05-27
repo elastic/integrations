@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-container-high-cpu-usage",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Container High CPU Usage",
+        "tags": [
+            "Kubernetes",
+            "Container",
+            "CPU"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when container CPU usage exceeds 95% of its limit or node allocation.\n//\n// What triggers this alert:\n// Containers consuming more than 95% of CPU limits, indicating throttling risk.\n//\n// Grouped by cluster, container name, and namespace to identify the specific\n// container experiencing high CPU usage.\n//\n// To reduce noise, increase the threshold (e.g., doc_count > 5).\nTS metrics-kubernetes.container-*\n| WHERE `kubernetes.container.cpu.usage.limit.pct` > 0.95\n  OR `kubernetes.container.cpu.usage.node.pct` > 0.95\n| STATS doc_count = COUNT(*)\n  BY `orchestrator.cluster.name`, `kubernetes.container.name`, `kubernetes.namespace`\n| WHERE doc_count > 0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

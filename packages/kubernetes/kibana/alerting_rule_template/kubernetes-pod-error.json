@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-pod-error",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Pod Error",
+        "tags": [
+            "Kubernetes",
+            "Pod",
+            "Availability"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when pods are not ready and in a failed or pending state.\n//\n// What triggers this alert:\n// Pod status ready=false with phase failed or pending, excluding evicted pods.\n//\n// What it means:\n// Pods unable to serve traffic \u2014 potential service degradation.\n//\n// Common causes:\n// Image pull errors, resource constraints, crash loops, configuration issues.\n//\n// Grouped by cluster, pod name, and namespace for investigation.\nTS metrics-kubernetes.pod-*\n| WHERE `kubernetes.pod.status.ready` == \"false\"\n  AND (`kubernetes.pod.status.phase` == \"failed\" OR `kubernetes.pod.status.phase` == \"pending\")\n  AND (`kubernetes.pod.status.reason` IS NULL OR `kubernetes.pod.status.reason` != \"evicted\")\n| STATS doc_count = COUNT(*)\n  BY `orchestrator.cluster.name`, `kubernetes.pod.name`, `kubernetes.namespace`\n| WHERE doc_count > 0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-container-error",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Container Error",
+        "tags": [
+            "Kubernetes",
+            "Container",
+            "Availability"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when containers are in waiting phase with error reasons.\n//\n// What triggers this alert:\n// Container status phase=waiting, excluding normal states\n// (Completed, ContainerCreating, PodInitializing).\n//\n// What it means:\n// Container stuck in error state \u2014 unable to start or run.\n//\n// Common causes:\n// CrashLoopBackOff, ImagePullBackOff, ErrImagePull, RunContainerError.\n//\n// Action needed:\n// Check container status reason, review pod events, verify image availability.\nTS metrics-kubernetes.container-*\n| WHERE `kubernetes.container.status.phase` == \"waiting\"\n  AND (`kubernetes.container.status.reason` IS NULL\n    OR (`kubernetes.container.status.reason` != \"Completed\"\n      AND `kubernetes.container.status.reason` != \"ContainerCreating\"\n      AND `kubernetes.container.status.reason` != \"PodInitializing\"))\n| STATS doc_count = COUNT(*)\n  BY `orchestrator.cluster.name`, `kubernetes.container.name`, `kubernetes.namespace`\n| WHERE doc_count > 0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

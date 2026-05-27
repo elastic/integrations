@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-high-volume-usage",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] High Volume Usage",
+        "tags": [
+            "Kubernetes",
+            "Volume",
+            "Storage"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when Kubernetes volume filesystem usage exceeds 80%.\n//\n// What triggers this alert:\n// Volume used percentage above 0.8 (80%) \u2014 approaching capacity.\n//\n// What it means:\n// Volume nearing capacity may cause write failures, pod evictions, or outages.\n//\n// Action needed:\n// Expand volume, clean up data, or migrate workloads.\n//\n// Adjust threshold as needed (e.g., 0.9 for 90%).\nTS metrics-kubernetes.volume-*\n| WHERE `kubernetes.volume.fs.used.pct` > 0.8\n| STATS doc_count = COUNT(*)\n  BY `orchestrator.cluster.name`, `kubernetes.volume.name`, `kubernetes.namespace`\n| WHERE doc_count > 0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

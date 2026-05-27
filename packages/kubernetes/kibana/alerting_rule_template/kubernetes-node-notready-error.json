@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-node-notready-error",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Node NotReady Error",
+        "tags": [
+            "Kubernetes",
+            "Node",
+            "Availability"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when Kubernetes nodes report not ready status.\n//\n// What triggers this alert:\n// Node status ready=false \u2014 node offline, unable to accept workloads.\n//\n// What it means:\n// Node failed health checks \u2014 existing pods may be evicted.\n//\n// Common causes:\n// Kubelet crash, network issues, resource exhaustion, container runtime failure.\n//\n// Action needed:\n// Check node logs, kubelet status, system resources, and network connectivity.\n//\n// To scope to a cluster, add: AND `orchestrator.cluster.name` == \"YOUR_CLUSTER\"\nTS metrics-kubernetes.node-*\n| WHERE `kubernetes.node.status.ready` == \"false\"\n| STATS doc_count = COUNT(*)\n  BY `orchestrator.cluster.name`, `kubernetes.node.name`\n| WHERE doc_count > 0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

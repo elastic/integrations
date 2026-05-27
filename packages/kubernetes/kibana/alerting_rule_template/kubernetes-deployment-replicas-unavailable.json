@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-deployment-replicas-unavailable",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Deployment Replicas Unavailable",
+        "tags": [
+            "Kubernetes",
+            "Deployment",
+            "Availability"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when deployment available/desired replica ratio drops below 1.\n//\n// What triggers this alert:\n// AVG(available) / AVG(desired) < 1 means some replicas are unavailable.\n//\n// What it means:\n// Deployment not fully running \u2014 reduced capacity or degraded service.\n//\n// Common causes:\n// Image pull errors, resource constraints, scheduling failures, crash loops.\n//\n// Handles division by zero: filters out deployments with zero desired replicas.\nTS metrics-kubernetes.state_deployment-*\n| WHERE `kubernetes.deployment.replicas.available` IS NOT NULL\n| STATS\n    avg_available = AVG(`kubernetes.deployment.replicas.available`),\n    avg_desired = AVG(`kubernetes.deployment.replicas.desired`)\n  BY `orchestrator.cluster.name`, `kubernetes.deployment.name`, `kubernetes.namespace`\n| WHERE avg_desired IS NOT NULL AND avg_desired > 0\n| EVAL availability_ratio = ROUND(avg_available / avg_desired, 4)\n| WHERE availability_ratio < 1"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

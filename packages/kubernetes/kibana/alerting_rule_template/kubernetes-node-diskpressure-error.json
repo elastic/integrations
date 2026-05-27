@@ -1,0 +1,32 @@
+{
+    "id": "kubernetes-node-diskpressure-error",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Kubernetes] Node DiskPressure Error",
+        "tags": [
+            "Kubernetes",
+            "Node",
+            "Disk"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when Kubernetes nodes report disk pressure.\n//\n// What triggers this alert:\n// Node running out of disk space \u2014 may evict pods or become unschedulable.\n//\n// Common causes:\n// Log accumulation, image buildup, large temporary files, insufficient disk capacity.\n//\n// Action needed:\n// Clean up disk space, remove unused images, increase volume size, check pod logs.\n//\n// To scope to a cluster, add: AND `orchestrator.cluster.name` == \"YOUR_CLUSTER\"\nTS metrics-kubernetes.node-*\n| WHERE `kubernetes.node.status.disk_pressure` == \"true\"\n| STATS doc_count = COUNT(*)\n  BY `orchestrator.cluster.name`, `kubernetes.node.name`\n| WHERE doc_count > 0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}
