@@ -339,6 +339,17 @@ processors:
     target_field: aws.lambda.message
     ignore_missing: true
     ignore_failure: true
+    if: "ctx.parsed?.message instanceof Map"
+
+- set:
+    field: message
+    copy_from: parsed.message
+    if: "ctx.parsed?.message != null && !(ctx.parsed.message instanceof Map)"
+
+- set:
+    field: message
+    copy_from: event.original
+    if: "ctx.message == null && ctx.aws?.lambda?.message == null"
 
 - rename:
     field: parsed.users
@@ -411,12 +422,7 @@ processors:
     target_field: aws.lambda.message
     ignore_missing: true
     ignore_failure: true
-    if: "ctx.parsed instanceof Map && !(ctx.parsed.containsKey('message') || ctx.parsed.containsKey('record') || ctx.parsed.containsKey('_aws') || ctx.parsed.containsKey('time') || ctx.parsed.containsKey('timestamp'))"
-
-- set:
-    field: aws.lambda.message
-    copy_from: event.original
-    if: "ctx.parsed == null"
+    if: "ctx.parsed instanceof Map && !(ctx.parsed.containsKey('record') || ctx.parsed.containsKey('_aws') || ctx.parsed.containsKey('time') || ctx.parsed.containsKey('timestamp'))"
 
 - remove:
     field: parsed
