@@ -95,7 +95,9 @@ jobs:
 
             # Idempotency: skip if this version already exists in main.
             if git show "origin/main:${CHANGELOG_PATH}" 2>/dev/null \
-                | grep -qE "^- version: [\"']?${NEW_VERSION}[\"']?\s*$"; then
+                | grep -qFe "- version: ${NEW_VERSION}" \
+                            -e "- version: \"${NEW_VERSION}\"" \
+                            -e "- version: '${NEW_VERSION}'"; then
               echo "Version ${NEW_VERSION} of ${MANIFEST_NAME} already in main — skipping"
               continue
             fi
