@@ -39,6 +39,9 @@ def insert_entry(changelog_path, new_ver_str, entry_block):
     for i, line in enumerate(lines):
         m = re.match(r'^- version: ["\']?([^\s"\']+)["\']?\s*$', line)
         if m:
+            if m.group(1).strip().strip("'\"") == new_ver_str.strip().strip("'\""):
+                print(f"Version {new_ver_str} already present in {changelog_path} — skipping", file=sys.stderr)
+                return
             if parse_ver(m.group(1)) < new_ver:
                 insert_at = i
                 break
@@ -158,6 +161,19 @@ class TestInsertEntry(unittest.TestCase):
     def test_missing_changelog_raises(self):
         with self.assertRaises(FileNotFoundError):
             insert_entry("/nonexistent/changelog.yml", "6.14.3", _NEW_ENTRY)
+
+    def test_duplicate_version_is_skipped(self):
+        insert_entry(self._path, "6.14.3", _NEW_ENTRY)
+        insert_entry(self._path, "6.14.3", _NEW_ENTRY)
+        self.assertEqual(self._versions().count("6.14.3"), 1)
+
+    def test_duplicate_version_does_not_modify_file(self):
+        import pathlib
+        insert_entry(self._path, "6.14.3", _NEW_ENTRY)
+        content_after_first = pathlib.Path(self._path).read_text()
+        insert_entry(self._path, "6.14.3", _NEW_ENTRY)
+        content_after_second = pathlib.Path(self._path).read_text()
+        self.assertEqual(content_after_first, content_after_second)
 
 
 if __name__ == "__main__":
