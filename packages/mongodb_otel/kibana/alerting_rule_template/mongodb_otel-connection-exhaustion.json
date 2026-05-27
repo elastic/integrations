@@ -2,14 +2,35 @@
   "id": "mongodb_otel-connection-exhaustion",
   "type": "alerting_rule_template",
   "attributes": {
+    "description": "Alerts when `mongodb.connection.count (type=available) < 10`. Low available connections mean clients are about to hit the pool limit.",
     "name": "[MongoDB OTel] Connection exhaustion",
+    "ruleTypeId": ".es-query",
     "tags": [
       "observability",
       "mongodb"
     ],
-    "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "mongodb_otel-capacity"
+        },
+        {
+          "id": "mongodb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## MongoDB connection exhaustion\n\n### What fired\nMinimum `mongodb.connection.count` with `type=available` dropped below 10 during the window.\n\n### Why it matters\nEach Mongo host has a bounded connection pool. Running out means clients get connection errors and retry storms can overwhelm the server.\n\n### Triage\n1. Check client pool configuration.\n2. Identify clients holding many idle connections.\n\n### Remediation\n- Raise the pool limit.\n- Fix client-side connection leaks.\n\n### Tuning\n- Threshold 10; tune to your pool size.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",
@@ -20,13 +41,6 @@
       },
       "groupBy": "row",
       "timeField": "@timestamp"
-    },
-    "alertDelay": {
-      "active": 2
-    },
-    "flapping": {
-      "lookBackWindow": 10,
-      "statusChangeThreshold": 4
     }
   },
   "managed": true,
