@@ -255,7 +255,7 @@ func IsSubscriptionCompatible() error {
 func KibanaConstraintPackage() error {
 	constraint, err := citools.KibanaConstraintPackage("manifest.yml")
 	if err != nil {
-		return fmt.Errorf("failed to get Kibana constraint")
+		return fmt.Errorf("failed to get Kibana constraint: %w", err)
 	}
 	if constraint == nil {
 		fmt.Println("null")
