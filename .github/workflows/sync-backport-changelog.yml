@@ -136,6 +136,16 @@ jobs:
           echo "proceed=true"                   >> "$GITHUB_OUTPUT"
           echo "working_branch=$WORKING_BRANCH" >> "$GITHUB_OUTPUT"
 
+      - name: Set up Go
+        if: steps.checks.outputs.proceed == 'true'
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: .go-version
+
+      - name: Install mage
+        if: steps.checks.outputs.proceed == 'true'
+        run: go install github.com/magefile/mage
+
       - name: Create changelog sync PR
         id: create
         if: steps.checks.outputs.proceed == 'true'
