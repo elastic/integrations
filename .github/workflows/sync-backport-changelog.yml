@@ -150,9 +150,11 @@ jobs:
           git checkout -b "$WORKING_BRANCH" origin/main
 
           SUMMARY=""
+          NOT_FOUND=""
           while IFS='|' read -r PKG VER ENTRY_FILE; do
             if ! MAIN_PKG_DIR=$(python3 /tmp/backport_resolve_package_dir.py --package "$PKG"); then
               echo "Package '$PKG' not found on main — skipping" >&2
+              NOT_FOUND="${NOT_FOUND}\`${PKG}\`, "
               continue
             fi
             MAIN_CHANGELOG="${MAIN_PKG_DIR}/changelog.yml"
@@ -164,6 +166,14 @@ jobs:
             SUMMARY="${SUMMARY}- \`${PKG}\` ${VER}"$'\n'
             echo "Prepared $PKG $VER"
           done < "$ENTRIES_TSV"
+
+          # Expose skipped packages to the comment step.
+          echo "not_found_packages=${NOT_FOUND%, }" >> "$GITHUB_OUTPUT"
+
+          if [[ -z "$SUMMARY" ]]; then
+            echo "No changelogs applied — all packages missing on main. Skipping commit."
+            exit 0
+          fi
 
           AFTER_SHORT="${AFTER:0:8}"
           BACKPORT_PR_URL="https://github.com/${REPOSITORY}/pull/${BACKPORT_PR_NUMBER}"
@@ -202,6 +212,7 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           BACKPORT_PR_NUMBER: ${{ steps.collect.outputs.backport_pr_number }}
           WORKING_BRANCH: ${{ steps.collect.outputs.working_branch }}
+          NOT_FOUND_PACKAGES: ${{ steps.create.outputs.not_found_packages }}
           CREATE_OUTCOME: ${{ steps.create.outcome }}
           RUN_ID: ${{ github.run_id }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -218,7 +229,14 @@ jobs:
             SYNC_PR_URL=$(gh pr list \
               --head "$WORKING_BRANCH" \
               --state open --json url --jq '.[0].url')
-            BODY="Changelog sync PR created successfully: ${SYNC_PR_URL}"
+            if [[ -n "$SYNC_PR_URL" ]]; then
+              BODY="Changelog sync PR created successfully: ${SYNC_PR_URL}"
+              if [[ -n "$NOT_FOUND_PACKAGES" ]]; then
+                BODY="${BODY}"$'\n\n'"⚠️ The following packages were not found on \`main\` and were skipped: ${NOT_FOUND_PACKAGES}"
+              fi
+            else
+              BODY="Changelog sync could not be completed: the following packages were not found on \`main\`: ${NOT_FOUND_PACKAGES}"
+            fi
           elif [[ "$CREATE_OUTCOME" == "skipped" ]]; then
             BODY="Changelog sync skipped: all versions already present in \`main\` or a sync PR already exists."
           else
