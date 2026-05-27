@@ -166,6 +166,10 @@ func TestReadGithubOwners(t *testing.T) {
 			codeownersPath: "testdata/CODEOWNERS-invalid-override-wildcard",
 			valid:          false,
 		},
+		{
+			codeownersPath: "testdata/CODEOWNERS-owners-trailing-slash",
+			valid:          true,
+		},
 	}
 
 	for _, c := range cases {
@@ -195,6 +199,30 @@ func TestReturnPackageOwners(t *testing.T) {
 			packageName:    "aws",
 			datastream:     "",
 			expected:       []string{"@elastic/obs-infraobs-integrations", "@elastic/obs-ds-hosted-services", "@elastic/security-service-integrations"},
+			expectedError:  false,
+		},
+		{
+			title:          "package with trailing slash",
+			codeownersPath: "testdata/CODEOWNERS-owners-trailing-slash",
+			packageName:    "content",
+			datastream:     "",
+			expected:       []string{"@elastic/integrations"},
+			expectedError:  false,
+		},
+		{
+			title:          "data stream with trailing slash",
+			codeownersPath: "testdata/CODEOWNERS-owners-trailing-slash",
+			packageName:    "aws",
+			datastream:     "apigateway_logs",
+			expected:       []string{"@elastic/obs-infraobs-integrations"},
+			expectedError:  false,
+		},
+		{
+			title:          "nested package with trailing slash",
+			codeownersPath: "testdata/CODEOWNERS-owners-trailing-slash",
+			packageName:    "elastic_package_registry",
+			datastream:     "",
+			expected:       []string{"@elastic/integrations"},
 			expectedError:  false,
 		},
 		{
