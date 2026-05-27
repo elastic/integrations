@@ -62,7 +62,7 @@ program: |-
               "page_number": (has(body.pageCount) && int(state.page_number) < body.pageCount) ? (int(state.page_number) + 1) : 1,
               "want_more": has(body.pageCount) && int(state.page_number) < body.pageCount,
               "cursor": {
-                ?"max_ingested_time": (int(state.page_number) < body.pageCount) ?
+                ?"max_ingested_time": (has(body.pageCount) && int(state.page_number) < body.pageCount) ?
                   (
                     (size(body.events) != 0) ?
                       (
@@ -76,7 +76,7 @@ program: |-
                   )
                 :
                   optional.none(),
-                ?"last_timestamp": (int(state.page_number) >= body.pageCount) ?
+                ?"last_timestamp": (has(body.pageCount) && int(state.page_number) >= body.pageCount) ?
                   (
                     (size(body.events) != 0) ?
                       (
@@ -116,9 +116,6 @@ program: |-
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
-{{/if}}
-{{#if preserve_duplicate_custom_fields}}
-  - preserve_duplicate_custom_fields
 {{/if}}
 {{#each tags as |tag|}}
   - {{tag}}

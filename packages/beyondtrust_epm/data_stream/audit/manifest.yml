@@ -1,16 +1,16 @@
-title: Collect Event logs from BeyondTrust EPM
+title: Collect Audit logs from BeyondTrust EPM
 type: logs
 streams:
   - input: cel
-    title: BeyondTrust EPM Event Logs
-    enabled: true
-    description: Collect event logs from BeyondTrust EPM via the Events search API.
+    title: BeyondTrust EPM Audit Logs
+    enabled: false
+    description: Collect Audit logs from BeyondTrust EPM via the ActivityAudits API.
     template_path: cel.yml.hbs
     vars:
       - name: initial_interval
         type: text
         title: Initial Interval
-        description: How far back to pull the event data from BeyondTrust EPM on first run. Supported units for this parameter are h/m/s.
+        description: How far back to pull the logs from BeyondTrust EPM API. Supported units for this parameter are h/m/s.
         multi: false
         required: true
         show_user: true
@@ -23,29 +23,22 @@ streams:
         multi: false
         required: true
         show_user: true
-      - name: operating_system
-        type: text
-        title: Operating System
-        description: Operating system name for which events to be collected.
-        multi: false
-        required: true
-        show_user: true
-      - name: max_executions
-        type: integer
-        title: Maximum Pages Per Interval
-        description: Maximum Pages Per Interval is the maximum number of pages that can be collected at each interval.
-        default: 1000
-        multi: false
-        required: false
-        show_user: false
       - name: page_size
         type: integer
         title: Page Size
-        description: The number of records to request per page from the BeyondTrust EPM API. The maximum supported page size is 200.
+        description: Page size for the response of the BeyondTrust EPM API. The maximum supported page size is 200.
         default: 200
         multi: false
         required: true
         show_user: false
+      - name: max_executions
+        type: integer
+        title: Maximum Pages Per Interval
+        description: Maximum Pages Per Interval is the maximum number of pages that can be collected at each interval.
+        multi: false
+        required: false
+        show_user: false
+        default: 1000
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
@@ -62,7 +55,11 @@ streams:
         required: false
         show_user: false
         description: >-
-          The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+          Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+          tracer will delete any stored traces.
+          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable)
+          for details.
       - name: tags
         type: text
         title: Tags
@@ -72,7 +69,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - beyondtrust_epm-event
+          - beyondtrust_epm-audit
       - name: preserve_original_event
         required: false
         show_user: true
@@ -91,8 +88,8 @@ streams:
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
   - input: aws-s3
     template_path: aws-s3.yml.hbs
-    title: BeyondTrust EPM Event logs via AWS S3 or SQS
-    description: Collecting BeyondTrust EPM Event logs via AWS S3 or SQS input.
+    title: BeyondTrust EPM Audit logs via AWS S3 or SQS
+    description: Collecting BeyondTrust EPM Audit logs via AWS S3 or SQS input.
     enabled: false
     vars:
       - name: bucket_arn
@@ -199,7 +196,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - beyondtrust_epm-event
+          - beyondtrust_epm-audit
       - name: preserve_original_event
         required: false
         show_user: true

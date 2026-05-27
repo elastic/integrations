@@ -1,11 +1,16 @@
-# BeyondTrust EPM API supports query parameters that use dot notation and array-style indexing,
-# such as "Pagination.PageSize","TimePeriod.StartDate".
-# However, these formats do not appear to be handled correctly by the current mock server,
-# which is running via Docker with config.yml. As a result, only basic pagination
-# (single-page response) has been implemented for now.
+# The BeyondTrust EPM API uses dot-notation query parameter keys (e.g.
+# "Pagination.PageSize", "Sorts[0].order").  The stream mock server parses its
+# config with ucfg.PathSep("."), which interprets dots as nested-path separators,
+# so these keys cannot be used in query_params matching rules.
+#
+# To exercise pagination despite this, the Details rule omits query_params and
+# instead uses response cycling: the stream server rotates through the responses
+# list on successive requests to the same path (response index = request_count %
+# len(responses)).  Page 1 returns pageCount > pageNumber, causing the CEL
+# program to set want_more=true and request the next page.  Page 2 returns
+# pageNumber == pageCount, ending pagination.
 
 rules:
-  # OAuth2 token endpoint (built-in auth.oauth2 fetches token here)
   - path: /oauth/connect/token
     methods: ['POST']
     query_params:
@@ -21,12 +26,6 @@ rules:
   # Events search - Page 1
   - path: /management-api/v3/Events/search
     methods: ["GET"]
-    request_params:
-      TimePeriod.StartDate: "{TimePeriod.StartDate:.*}"
-      TimePeriod.EndDate: "{TimePeriod.EndDate:.*}"
-      Pagination.PageSize: 2
-      Pagination.PageNumber: 1
-      OperatingSystem: "Windows"
     request_headers:
       Authorization: "Bearer xxxx"
     responses:
@@ -38,8 +37,8 @@ rules:
           {{ minify_json `
           {
             "pageNumber": 1,
-            "pageSize": 2,
-            "pageCount": 1,
+            "pageSize": 1,
+            "pageCount": 2,
             "totalRecordCount": 2,
             "events": [
               {
@@ -345,7 +344,7 @@ rules:
                   "timezone": "America/Los_Angeles",
                   "created": "2026-04-15T06:49:55.541Z",
                   "start": "2026-04-15T06:49:55.541Z",
-                  "end": "2026-03-15T06:49:55.541Z",
+                  "end": "2026-04-15T06:49:55.541Z",
                   "risk_score": 1,
                   "risk_score_norm": 1,
                   "ingested": "2026-04-15T06:49:55.541Z",
@@ -355,7 +354,22 @@ rules:
                   "agent_id_status": "verified",
                   "ReceivedAt": "2026-04-15T06:49:55.541Z"
                 }
-              },
+              }
+            ]
+          }
+          `}}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "pageNumber": 2,
+            "pageSize": 1,
+            "pageCount": 2,
+            "totalRecordCount": 2,
+            "events": [
               {
                 "@timestamp": "2026-04-22T18:21:23.442Z",
                 "event": {

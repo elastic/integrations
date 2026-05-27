@@ -46,10 +46,10 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
 
 resource "aws_s3_object" "object" {
   bucket = aws_s3_bucket.bucket.id
-  key    = "event.log"
-  source = "./files/test-event.log"
+  key    = "audit.log"
+  source = "./files/test-audit.log"
 
-  depends_on = [aws_sqs_queue.queue]
+  depends_on = [aws_s3_bucket_notification.bucket_notification]
 }
 
 output "queue_url" {
