@@ -10,7 +10,7 @@ Logstash can push metrics directly to any OTLP-compatible backend — including 
 
 Logstash exports the following metric groups via OTLP:
 
-- **Global metrics** — total events in, out, filtered, and processing duration across all pipelines; total queue depth
+- **Global metrics** — total events in, out, filtered, and processing duration across all pipelines; total queue depth; cumulative pipeline reload successes and failures
 - **Pipeline metrics** — per-pipeline events in, out, filtered, duration, and queue push duration; pipeline configuration (workers, batch size, batch delay, queue type); current batch byte size and event count
 - **Persistent queue metrics** — queue capacity, page capacity, max size, max unread events, current size, and free disk space (when `queue.type: persisted`)
 - **Dead letter queue metrics** — DLQ size, max size, dropped events, and expired events
@@ -18,7 +18,35 @@ Logstash exports the following metric groups via OTLP:
 - **JVM metrics** — heap and non-heap memory usage, garbage collection count and time (by generation), thread count, process CPU usage and total time, uptime, and file descriptors
 - **cgroup metrics** — CPU usage, CFS period and quota, and throttle statistics when running in Linux containers
 
-All metrics carry resource attributes including `service.name`, `service.instance.id`, `host.name`, and `data_stream.dataset`.
+All metrics carry resource attributes including `service.name`, `service.version`, `service.instance.id`, `host.name`, `logstash.http.address`, and `data_stream.dataset`.
+
+## Dashboards
+
+This package includes six dashboards linked together via a navigation panel.
+
+### [Metrics Logstash] Logstash Overview (OTel)
+
+Top-level fleet view across all Logstash nodes. Shows node count, total JVM heap used, events received and emitted per second, and average event latency.
+
+### [Metrics Logstash] Nodes Overview (OTel)
+
+Summary datatable of all nodes with columns for CPU usage, JVM heap %, events received and emitted, reload successes and failures, and Logstash version. Useful for comparing health across multiple instances at a glance.
+
+### [Metrics Logstash] Single Node Overview (OTel)
+
+High-level view of a single node. Shows events received and emitted per second, JVM heap usage (MB), process CPU utilization, events latency, HTTP address, version, reload counts, uptime, and a drillable list of running pipelines.
+
+### [Metrics Logstash] Single Node Advanced View (OTel)
+
+Deep-dive into a single node. Includes a node summary table (host name, HTTP address, version, events, reloads, uptime), process CPU utilization, persistent queue utilization and size, file descriptors (open, peak, max), Java thread count, and cgroup CFS and CPU performance panels (Linux containers with CFS quota only).
+
+### [Metrics Logstash] Pipelines Overview (OTel)
+
+Cross-node pipelines view filtered by node. Shows per-pipeline event throughput (received and emitted per second), average processing time per event, persistent queue utilization and size, and batch event count and byte size.
+
+### [Metrics Logstash] Single Pipeline View (OTel)
+
+Per-pipeline deep-dive. Shows event rates, persistent queue utilization, batch stats, worker utilization, and per-plugin breakdown (inputs, filters, outputs) of events received and emitted per second and average processing time.
 
 ## Prerequisites
 
