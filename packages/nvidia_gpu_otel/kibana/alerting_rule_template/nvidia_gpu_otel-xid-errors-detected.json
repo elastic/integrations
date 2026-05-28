@@ -1,40 +1,51 @@
 {
-    "id": "nvidia_gpu_otel-xid-errors-detected",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[NVIDIA GPU OTel] XID errors detected",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "nvidia_gpu"
-        ],
-        "schedule": {
-            "interval": "1m"
-        },
-        "alertDelay": {
-            "active": 1
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-nvidia_gpu.otel-default\n| WHERE DCGM_FI_DEV_XID_ERRORS IS NOT NULL\n// Non-zero XID errors indicate GPU hardware or software faults\n// err_code identifies the specific XID error type\n| WHERE DCGM_FI_DEV_XID_ERRORS > 0\n| STATS\n    max_xid = MAX(DCGM_FI_DEV_XID_ERRORS),\n    occurrences = COUNT(*)\n  BY Hostname, UUID, modelName, err_code, err_msg\n| SORT occurrences DESC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "UUID",
-            "termSize": 50
+  "id": "nvidia_gpu_otel-xid-errors-detected",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when any NVIDIA XID errors are reported (`DCGM_FI_DEV_XID_ERRORS > 0`). XIDs indicate GPU hardware or software faults \u2014 often precede GPU failure.",
+    "name": "[NVIDIA GPU OTel] XID errors detected",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "nvidia_gpu"
+    ],
+    "schedule": {
+      "interval": "1m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "nvidia_gpu_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## NVIDIA GPU XID errors detected\n\n### What fired\n`DCGM_FI_DEV_XID_ERRORS > 0` on a GPU during the window.\n\n### Why it matters\nXID errors are NVIDIA's primary fault signal. Some XIDs (e.g. 13, 31) are application bugs; others (e.g. 79, 119) indicate driver / hardware faults that often precede GPU failure or node loss. Dimensioned by `err_code` and `err_msg`.\n\n### Triage\n1. Identify the affected GPU and the specific XID code from `err_code`.\n2. Cross-reference the XID code against NVIDIA's XID error documentation.\n3. Check `dmesg` and `nvidia-smi` for further context.\n4. Inspect host-level logs around the timestamp.\n\n### Remediation\n- Restart the affected workload (most application-class XIDs are recoverable).\n- Reset or RMA the GPU for hardware-class XIDs.\n- Drain workloads from the affected host.\n\n### Tuning\n- Fires on any XID. All XIDs warrant at least a glance \u2014 do not loosen the threshold.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-nvidia_gpu.otel-default\n| WHERE DCGM_FI_DEV_XID_ERRORS IS NOT NULL\n// Non-zero XID errors indicate GPU hardware or software faults\n// err_code identifies the specific XID error type\n| WHERE DCGM_FI_DEV_XID_ERRORS > 0\n| STATS\n    max_xid = MAX(DCGM_FI_DEV_XID_ERRORS),\n    occurrences = COUNT(*)\n  BY Hostname, UUID, modelName, err_code, err_msg\n| SORT occurrences DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "UUID",
+      "termSize": 50
     }
+  }
 }

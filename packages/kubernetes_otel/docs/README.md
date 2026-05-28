@@ -96,3 +96,28 @@ Alerts when pods are stuck in Pending phase (phase == 1). Pending pods cannot be
 
 Alerts when a StatefulSet has fewer ready pods than desired. StatefulSets manage stateful applications with stable identities, so missing replicas can cause data availability issues.
 
+
+
+### SLO Templates
+
+SLO templates provide pre-defined configurations for creating SLOs in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/solutions/observability/incident-management/service-level-objectives-slos).
+
+SLO templates require Elastic Stack version 9.4.0 or later.
+
+**The following SLO templates are available:**
+
+<details>
+<summary>View the SLO templates</summary>
+
+| Name | Description |
+|---|---|
+| [Kubernetes OTel] DaemonSet Scheduling Availability 99.0% Rolling 30 Days | This SLO tracks the scheduling availability of Kubernetes DaemonSets using OTel metrics, ensuring that 99.0% of time intervals have each DaemonSet running on all eligible nodes over a rolling period of 30 days. DaemonSets are critical for node-level infrastructure services (monitoring agents, log collectors, security agents, network plugins). |
+| [Kubernetes OTel] Deployment Replica Availability 99.5% Rolling 30 Days | This SLO tracks the availability of Kubernetes Deployments using OTel metrics, ensuring that 99.5% of time intervals have each Deployment meeting its desired replica count over a rolling period of 30 days to maintain reliable application serving capacity. When k8s.deployment.available \< k8s.deployment.desired, the Deployment has fewer healthy replicas than configured, indicating reduced capacity or total unavailability for the hosted application. |
+| [Kubernetes OTel] Job Completion Success Rate 99.0% Rolling 30 Days | This SLO tracks the success rate of Kubernetes Jobs using OTel metrics, ensuring that 99.0% of time intervals show Jobs completing without failures over a rolling period of 30 days. Jobs represent batch workloads (ETL, backups, data pipelines, scheduled tasks) with clear completion semantics. |
+| [Kubernetes OTel] StatefulSet Replica Availability 99.5% Rolling 30 Days | This SLO tracks the availability of Kubernetes StatefulSets using OTel metrics, ensuring that 99.5% of time intervals have each StatefulSet meeting its desired replica count over a rolling period of 30 days. StatefulSets manage stateful workloads (databases, message queues, caches) where pod identity and ordering matter — making availability critical for data integrity. |
+
+</details>
+
+
