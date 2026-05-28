@@ -26,8 +26,9 @@ The integration collects data from multiple sources within CrowdStrike Falcon an
 
 2. **CrowdStrike REST API** — Pulls alerts, host inventory, and vulnerability data (indexed into the `alert`, `host`, and `vulnerability` datasets).
 
-    **Identity Protection (GraphQL)** — Additional datasets use the CrowdStrike Identity Protection **GraphQL** API (`/identity-protection/combined/graphql/v1`).:
+    **Identity Protection (GraphQL)** — Additional datasets use the CrowdStrike Identity Protection **GraphQL** API (`/identity-protection/combined/graphql/v1`).
     - **Security assessments** (`identity_protection_assessment`) — Discovers domains, then ingests per-domain security assessment results.
+    - **Timeline** (`identity_protection_timeline`) — Collects identity protection timeline events including authentication, service access, LDAP search, account lifecycle, and privilege escalation activity.
 
     :::{note}
     GovCloud CID users must enable the GovCloud option in the integration configuration to query the `/devices/queries/devices/v1` endpoint instead of the unsupported `/devices/combined/devices/v1` endpoint.
@@ -44,6 +45,7 @@ The integration collects data from multiple sources within CrowdStrike Falcon an
 - **Vulnerability** (vulnerability dataset)
 - **Identity Protection (GraphQL)**:
     - **Security assessments** (identity_protection_assessment dataset)
+    - **Timeline** (identity_protection_timeline dataset)
 
 ## What do I need to use this integration?
 
@@ -125,6 +127,7 @@ The following parameters from your CrowdStrike instance are required:
     | Host          | read:host     |
     | Vulnerability | read:vulnerability |
     | Identity protection assessment | read:Identity Protection Assessment, write:Identity Protection GraphQL |
+    | Identity protection timeline | read:Identity Protection Timeline, write:Identity Protection GraphQL |
 
 ### Collect data using CrowdStrike Falcon Data Replicator (FDR)
 
@@ -466,3 +469,14 @@ This is the `identity_protection_assessment` dataset.
 {{event "identity_protection_assessment"}}
 
 {{fields "identity_protection_assessment"}}
+
+
+### Identity Protection Timeline
+
+This is the `identity_protection_timeline` dataset.
+
+#### Example
+
+{{event "identity_protection_timeline"}}
+
+{{fields "identity_protection_timeline"}}
