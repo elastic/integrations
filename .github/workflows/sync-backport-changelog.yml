@@ -144,24 +144,18 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # TODO: revert once dev/scripts/backport_*.py are merged to main.
-          # Copy scripts to /tmp before switching branches — they live on the backport branch
-          # and won't be present after checking out main.
-          cp dev/scripts/backport_resolve_package_dir.py   /tmp/backport_resolve_package_dir.py
-          cp dev/scripts/backport_insert_changelog_entry.py /tmp/backport_insert_changelog_entry.py
-
           git checkout -b "$WORKING_BRANCH" origin/main
 
           SUMMARY=""
           NOT_FOUND=""
           while IFS='|' read -r PKG VER ENTRY_FILE; do
-            if ! MAIN_PKG_DIR=$(python3 /tmp/backport_resolve_package_dir.py --package "$PKG"); then
+            if ! MAIN_PKG_DIR=$(python3 dev/scripts/backport_resolve_package_dir.py --package "$PKG"); then
               echo "Package '$PKG' not found on main — skipping" >&2
               NOT_FOUND="${NOT_FOUND}\`${PKG}\`, "
               continue
             fi
             MAIN_CHANGELOG="${MAIN_PKG_DIR}/changelog.yml"
-            python3 /tmp/backport_insert_changelog_entry.py \
+            python3 dev/scripts/backport_insert_changelog_entry.py \
               --changelog "$MAIN_CHANGELOG" \
               --version   "$VER" \
               --entry-file "$ENTRY_FILE"
@@ -202,11 +196,13 @@ jobs:
             "$TRIGGER_LINE" \
             > /tmp/pr_body.txt
 
+          # TODO: remove --reviewer once the sync process is validated.
           gh pr create \
             --base main \
             --head "$WORKING_BRANCH" \
             --title "$PR_TITLE" \
             --label "automation" \
+            --reviewer "elastic/ecosystem" \
             --body-file /tmp/pr_body.txt
 
       - name: Comment on backport PR
