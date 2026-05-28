@@ -1,38 +1,51 @@
 {
-    "id": "traefik_otel-stale-config-reload",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Traefik OTel] Stale config reload success",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "traefik",
-            "configuration"
-        ],
-        "schedule": {
-            "interval": "15m"
-        },
-        "alertDelay": {
-            "active": 1
-        },
-        "flapping": {
-            "lookBackWindow": 6,
-            "statusChangeThreshold": 3
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-traefik.otel-*\n// Limit to last successful reload timestamp (gauge, Unix epoch)\n| WHERE traefik_config_last_reload_success IS NOT NULL\n// Take latest value\n| STATS last_success_epoch = MAX(traefik_config_last_reload_success)\n// If last success was > 24h ago, config may be stuck or reloads failing\n// Adjust 24 to match expected reload frequency\n| EVAL last_success_dt = TO_DATETIME(last_success_epoch * 1000)\n| EVAL hours_since_reload = DATE_DIFF(\"hours\", last_success_dt, NOW())\n| WHERE hours_since_reload > 24"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 1,
-            "timeWindowUnit": "h",
-            "groupBy": "all",
-            "excludeHitsFromPreviousRun": false
+  "id": "traefik_otel-stale-config-reload",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the last successful config reload was more than 24 hours ago. Reloads may be stuck or failing.",
+    "name": "[Traefik OTel] Stale config reload success",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "traefik",
+      "configuration"
+    ],
+    "schedule": {
+      "interval": "15m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "traefik_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Traefik stale config reload\n\n### What fired\nLast successful reload was more than 24 hours ago.\n\n### Why it matters\nTraefik should reload promptly on config changes. A stale last-success timestamp indicates reloads are failing silently or the config source is broken.\n\n### Triage\n1. Check Traefik logs for reload errors.\n2. Verify the config source (Kubernetes Ingress / Docker labels).\n\n### Remediation\n- Fix the config source / restart Traefik.\n\n### Tuning\n- 24h threshold; tune to expected reload cadence.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-traefik.otel-*\n// Limit to last successful reload timestamp (gauge, Unix epoch)\n| WHERE traefik_config_last_reload_success IS NOT NULL\n// Take latest value\n| STATS last_success_epoch = MAX(traefik_config_last_reload_success)\n// If last success was > 24h ago, config may be stuck or reloads failing\n// Adjust 24 to match expected reload frequency\n| EVAL last_success_dt = TO_DATETIME(last_success_epoch * 1000)\n| EVAL hours_since_reload = DATE_DIFF(\"hours\", last_success_dt, NOW())\n| WHERE hours_since_reload > 24"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 1,
+      "timeWindowUnit": "h",
+      "groupBy": "all",
+      "excludeHitsFromPreviousRun": false
     }
+  }
 }

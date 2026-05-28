@@ -10,15 +10,11 @@ The following blog provides additional context. For the most current installatio
 - [Detect data exfiltration activity with Kibana’s new integration](https://www.elastic.co/blog/detect-data-exfiltration-activity-with-kibanas-new-integration)
 
 ## Installation
-1. **Upgrading**: If upgrading from a version below v2.0.0, see the section v2.0.0 and beyond.
+1. **Upgrading**: If upgrading from a version below v3.0.0, see the section v3.0.0 and beyond.
 1. **Add the Integration Package**: Install the package via **Management > Integrations > Add Data Exfiltration Detection**. Configure the integration name and agent policy. Click Save and Continue. (Note that this integration does not rely on an agent, and can be assigned to a policy without an agent.)
 1. **Install assets**: Install the assets by clicking **Settings > Install Data Exfiltration Detection assets**.
-1. **Check the health of the transform**: The transform is scheduled to run every 30 minutes. This transform creates the index `ml_network_ded-<VERSION>`. To check the health of the transform go to **Management > Stack Management > Data > Transforms** under `logs-ded.pivot_transform-default-<FLEET-TRANSFORM-VERSION>`. Follow the instructions under the header `Customize Data Exfiltration Detection Transform` below to adjust filters based on your environment's needs.
-1. **Create data views for anomaly detection jobs**: This package contains anomaly detection jobs that work on network events (e.g. `logs-endpoint.events.network-*`) and file events (`logs-endpoint.events.file-*`) respectively. See the _Anomaly Detection Jobs_ section below for more details. _Tip: If you only have one of the above data sources (network or file), you can only follow the steps pertaining to that index._ A separate designated index (`ml_network_ded.all`) collects network logs from a transform. Before enabling the anomaly detection jobs, create a data view with both index patterns.
-    1. Go to **Stack Management > Kibana > Data Views** and click **Create data view**.
-    1. Enter the name of your respective index patterns in the **Index pattern** box, i.e., `logs-endpoint.events.file-*`, `logs-endpoint.events.network-*` (depending which one(s) you have), `ml_network_ded.all`, and copy the same in the **Name** field.
-    1. Select `@timestamp` under the **Timestamp** field and click on **Save data view to Kibana**.
-    1. Use the new data view (`logs-endpoint.events.network-*`, `logs-endpoint.events.file-*`, `ml_network_ded.all`) to create anomaly detection jobs for this package.
+1. **Check the health of the transform**: The transform is scheduled to run every 30 minutes. This transform creates the index `ml_network_ded_ea-<VERSION>`. To check the health of the transform go to **Management > Stack Management > Data > Transforms** under `logs-ded.pivot_transform_ea-default-<FLEET-TRANSFORM-VERSION>`. Follow the instructions under the header `Customize Data Exfiltration Detection Transform` below to adjust filters based on your environment's needs.
+1. **Create a data view for anomaly detection jobs**: This package contains anomaly detection jobs that work on file events and network events respectively. See the _Anomaly Detection Jobs_ section below for more details. The network jobs use a designated index (`ml_network_ded_ea.all`) populated by the transform installed above, which is already pre-assigned to those jobs. Before enabling the anomaly detection jobs, create a data view for the file index pattern.
 1. **Add preconfigured anomaly detection jobs**: In **Stack Management -> Anomaly Detection Jobs**, you will see **Select data view or saved search**. Select the data view created in the previous step. Then under `Use preconfigured jobs` you will see **Data Exfiltration Detection**. If you do not see this card, events must be ingested from a source that matches the query specified in the [ded-ml file](https://github.com/elastic/integrations/blob/main/packages/ded/kibana/ml_module/ded-ml.json#L10), such as Elastic Defend. When you select the card, you will see pre-configured anomaly detection jobs that you can create depending on what makes the most sense for your environment. If you are using Elastic Defend to collect events, file events are in `logs-endpoint.events.file-*` and network events in `logs-endpoint.events.network-*`. If you are only collecting file or network events, select only the relevant jobs at this step.
 1. **Data view configuration for Dashboards**: For the dashboard to work as expected, the following settings need to be configured in Kibana. 
     1. You have started the above anomaly detection jobs.
@@ -31,7 +27,10 @@ The following blog provides additional context. For the most current installatio
 
     _**Warning**_: When creating the data views for the dashboards, ensure that the `Custom data view ID` is set to the value specified above and is not left empty. Omitting or misconfiguring this field may result in broken visualizations, as illustrated by the error message below.
     ![Dashboard Error](../img/dashboard-ded-error.png)
-1. **Enable detection rules**: You can also enable detection rules to alert on Data Exfiltration activity in your environment, based on anomalies flagged by the above ML jobs. As of version 2.0.0 of this package, these rules are available as part of the Detection Engine, and can be found using the tag `Use Case: Data Exfiltration Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
+
+### Enable detection rules
+
+You can also enable detection rules to alert on Data Exfiltration activity in your environment, based on anomalies flagged by the above ML jobs. As of version 2.0.0 of this package, these rules are available as part of the Detection Engine, and can be found using the tag `Use Case: Data Exfiltration Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
 
 ![Data Exfiltration Detection Rules](../img/dedrules.png)
 *In Security > Rules, filtering with the “Use Case: Data Exfiltration Detection” tag*
@@ -40,20 +39,20 @@ The following blog provides additional context. For the most current installatio
 
 To inspect the installed assets, you can navigate to **Stack Management > Data > Transforms**.
 
-| Transform name      | Purpose                                     | Source index | Destination index        | Alias              |
-| ------------------- | ------------------------------------------- | ------------ | ------------------------ | ------------------ |
-| ded.pivot_transform | Collects network logs from your environment | logs-*       | ml_network_ded-[version] | ml_network_ded.all |
+| Transform name         | Purpose                                     | Source index | Destination index           | Alias                 | Supported Platform | Event Category |
+|------------------------|---------------------------------------------|--------------|-----------------------------|-----------------------|--------------------|----------------|
+| ded.pivot_transform_ea | Collects network logs from your environment | logs-*       | ml_network_ded_ea-[version] | ml_network_ded_ea.all | Linux, Windows     | network        |
 
 **Note**: The transform applies only to network data and does not currently support macOS network logs.
 
-When querying the destination index (`ml_network_ded-<VERSION>`) for network logs, we advise using the alias for the destination index (`ml_network_ded.all`). In the event that the underlying package is upgraded, the alias will aid in maintaining the previous findings. 
+When querying the destination index (`ml_network_ded_ea-<VERSION>`) for network logs, we advise using the alias for the destination index (`ml_network_ded_ea.all`). In the event that the underlying package is upgraded, the alias will aid in maintaining the previous findings. 
 
 ## Customize Data Exfiltration Detection Transform
 
 To customize filters in the Data Exfiltration Detection transform, follow the below steps. You can use these instructions to update basic settings or to update filters for fields such as `process.name`, `source.ip`, `destination.ip`, and others.
 1. To update settings such as retention policy, frequency, or destination configuration, stop the transform, click **Edit** from the **Actions** bar, make the required changes, and start the transform again.
 ![Data Exfiltration Detection transform](../img/ded_transform_update.png)
-1. To update the query filters, go to **Stack Management > Data > Transforms > `logs-ded.pivot_transform-default-<FLEET-TRANSFORM-VERSION>`**.
+1. To update the query filters, go to **Stack Management > Data > Transforms > `logs-ded.pivot_transform_ea-default-<FLEET-TRANSFORM-VERSION>`**.
 1. Click on the **Actions** bar at the far right of the transform and select the **Clone** option.
 ![Data Exfiltration Detection transform](../img/ded_transform_1.png)
 1. In the new **Clone transform** window, go to the **Search filter** and update any field values you want to add or remove. Click on the **Apply changes** button on the right side to save these changes. **Note:** The image below shows an example of filtering a new `process.name` as `explorer.exe`. You can follow a similar example and update the field value list based on your environment to help reduce noise and potential false positives.
@@ -69,15 +68,15 @@ After the data view for the dashboard is configured, the **Data Exfiltration Det
 
 ### Anomaly Detection Jobs
 
-| Job                                                  | Description                                                                                                        | Supported Platform | Event Category |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------ | ----- |
-| ded_high_sent_bytes_destination_geo_country_iso_code | Detects data exfiltration to an unusual geo-location (by country iso code).                                        | Linux, Windows     | network |
-| ded_high_sent_bytes_destination_ip                   | Detects data exfiltration to an unusual geo-location (by IP address).                                              | Linux, Windows     | network |
-| ded_high_sent_bytes_destination_port                 | Detects data exfiltration to an unusual destination port.                                                          | Linux, Windows     | network |
-| ded_high_sent_bytes_destination_region_name          | Detects data exfiltration to an unusual geo-location (by region name).                                             | Linux, Windows     | network |
-| ded_high_bytes_written_to_external_device            | Detects data exfiltration activity by identifying high bytes written to an external device.                        | Windows            | file |
-| ded_rare_process_writing_to_external_device          | Detects data exfiltration activity by identifying a writing event started by a rare process to an external device. | Windows            | file |
-| ded_high_bytes_written_to_external_device_airdrop    | Detects data exfiltration activity by identifying high bytes written to an external device via Airdrop.            | macOS              | file |
+| Job                                                     | Description                                                                                                        | Supported Platform | Event Category |
+|---------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|--------------------|----------------|
+| ded_high_sent_bytes_destination_geo_country_iso_code_ea | Detects data exfiltration to an unusual geo-location (by country iso code).                                        | Linux, Windows     | network        |
+| ded_high_sent_bytes_destination_ip_ea                   | Detects data exfiltration to an unusual geo-location (by IP address).                                              | Linux, Windows     | network        |
+| ded_high_sent_bytes_destination_port_ea                 | Detects data exfiltration to an unusual destination port.                                                          | Linux, Windows     | network        |
+| ded_high_sent_bytes_destination_region_name_ea          | Detects data exfiltration to an unusual geo-location (by region name).                                             | Linux, Windows     | network        |
+| ded_high_bytes_written_to_external_device_ea            | Detects data exfiltration activity by identifying high bytes written to an external device.                        | Windows            | file           |
+| ded_rare_process_writing_to_external_device_ea          | Detects data exfiltration activity by identifying a writing event started by a rare process to an external device. | Windows            | file           |
+| ded_high_bytes_written_to_external_device_airdrop_ea    | Detects data exfiltration activity by identifying high bytes written to an external device via Airdrop.            | macOS              | file           |
 
 ## Customize ML jobs for Data Exfiltration Detection 
 
@@ -95,6 +94,41 @@ To customize the datafeed query and other settings such as model memory limit, f
 1. You can also modify the job configuration by adjusting the **Bucket span** and by adding or removing **Influencers** to improve anomaly attribution. 
 ![Data Exfiltration Detection jobs](../img/ded_ml_job_6.png)
 1. Finally, assign a new Job ID, and click on **Create job**, and start the datafeed to apply the updated settings.
+
+## v3.0.0 and beyond
+
+v3.0.0 of this package requires Elastic Stack version 9.4 or later. It introduces support for Entity Analytics (EA), adding new fields for proper entity resolution.
+
+- This package installs new ML jobs which include `_ea` suffix in their names, as outlined below. New transforms and detection rules are also included.
+- Previously installed ML jobs, transforms, and rules will continue to run, allowing time to transition to the new Entity Analytics assets.
+- **Important**: We recommend installing the new ML jobs and transforms and verifying that they are properly set up, collecting data, and generating anomalies **before** deleting the old jobs and upgrading to the new version of the detection rules available in 9.4. The new detection rules reference ML job IDs with the `_ea` suffix and are not compatible with older versions of the jobs.
+- The new Entity Analytics transforms write to separate destination indices postfixed with `_ea`. Create a new data view for the Entity Analytics anomaly detection jobs using the new destination indices/aliases listed below. Do not mix old and new transform destination indices in the same data view.
+- New dashboards are available in this version with the suffix "(Entity Analytics)" in the title. If you are still running jobs or transforms from before this version, the original dashboards without the suffix remain available.
+
+The new Entity Analytics ML job IDs are:
+- `ded_high_sent_bytes_destination_geo_country_iso_code_ea`
+- `ded_high_sent_bytes_destination_ip_ea`
+- `ded_high_sent_bytes_destination_port_ea`
+- `ded_high_sent_bytes_destination_region_name_ea`
+- `ded_high_bytes_written_to_external_device_ea`
+- `ded_rare_process_writing_to_external_device_ea`
+- `ded_high_bytes_written_to_external_device_airdrop_ea`
+
+The new Entity Analytics transforms are:
+- `ded.pivot_transform_ea` → destination index: `ml_network_ded_ea-3.0.0`, alias: `ml_network_ded_ea.latest`, `ml_network_ded_ea.all`
+
+After confirming the new Entity Analytics ML jobs and transforms are running correctly, you can remove the following deprecated assets that have been superseded by the new Entity Analytics versions (Elastic stack 9.4+):
+
+- Delete old ML jobs: Navigate to **Stack Management -> Anomaly Detection Jobs** and delete the following jobs:
+    - `ded_high_sent_bytes_destination_geo_country_iso_code`
+    - `ded_high_sent_bytes_destination_ip`
+    - `ded_high_sent_bytes_destination_port`
+    - `ded_high_sent_bytes_destination_region_name`
+    - `ded_high_bytes_written_to_external_device`
+    - `ded_rare_process_writing_to_external_device`
+    - `ded_high_bytes_written_to_external_device_airdrop`
+- Delete old transforms: Navigate to **Stack Management -> Data -> Transforms** and delete:
+    - `ded.pivot_transform`
 
 ## v2.0.0 and beyond
 

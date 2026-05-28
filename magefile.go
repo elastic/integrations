@@ -190,7 +190,7 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 		var err error
 		maxIssues, err = strconv.Atoi(maxIssuesString)
 		if err != nil {
-			return fmt.Errorf("failed to convert to int env. variable CI_MAX_TESTS_REPORTED %s: %w", maxIssuesString, err)
+			return fmt.Errorf("failed to convert env. variable CI_MAX_TESTS_REPORTED to int (%s): %w", maxIssuesString, err)
 		}
 	}
 
@@ -218,6 +218,19 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 	return testsreporter.Check(ctx, testResultsFolder, options)
 }
 
+// ListPackages lists all packages found under the packages directory.
+func ListPackages() error {
+	const packagesDir = "packages"
+	packages, err := citools.ListPackages(packagesDir)
+	if err != nil {
+		return fmt.Errorf("failed to list packages: %w", err)
+	}
+	for _, p := range packages {
+		fmt.Println(p)
+	}
+	return nil
+}
+
 // IsSubscriptionCompatible checks whether or not the package in the current directory allows to run with the given subscription (ELASTIC_SUBSCRIPTION env var).
 func IsSubscriptionCompatible() error {
 	subscription := os.Getenv("ELASTIC_SUBSCRIPTION")
@@ -242,7 +255,7 @@ func IsSubscriptionCompatible() error {
 func KibanaConstraintPackage() error {
 	constraint, err := citools.KibanaConstraintPackage("manifest.yml")
 	if err != nil {
-		return fmt.Errorf("faile")
+		return fmt.Errorf("failed to get Kibana constraint: %w", err)
 	}
 	if constraint == nil {
 		fmt.Println("null")
