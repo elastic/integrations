@@ -43,11 +43,11 @@ An example event for `web` looks as following:
 {
     "@timestamp": "2023-11-21T13:12:37.102Z",
     "agent": {
-        "ephemeral_id": "22fb9f42-0c3b-4c46-9fae-06cd89923a5b",
-        "id": "9a98930c-439d-4a0b-81f0-f4228f8c523f",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "bddb12b1-a632-4451-a86a-2b9c65366d00",
+        "id": "92c83619-8c8c-4500-ae81-e5b4d76cd0bf",
+        "name": "elastic-agent-11134",
         "type": "filebeat",
-        "version": "8.12.2"
+        "version": "8.19.0"
     },
     "client": {
         "geo": {
@@ -60,7 +60,7 @@ An example event for `web` looks as following:
     },
     "data_stream": {
         "dataset": "menlo.web",
-        "namespace": "ep",
+        "namespace": "95262",
         "type": "logs"
     },
     "destination": {
@@ -80,9 +80,9 @@ An example event for `web` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9a98930c-439d-4a0b-81f0-f4228f8c523f",
+        "id": "92c83619-8c8c-4500-ae81-e5b4d76cd0bf",
         "snapshot": false,
-        "version": "8.12.2"
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -92,8 +92,9 @@ An example event for `web` looks as following:
             "threat"
         ],
         "dataset": "menlo.web",
-        "ingested": "2024-03-28T13:32:25Z",
+        "ingested": "2025-11-30T23:39:23Z",
         "kind": "alert",
+        "original": "{\"event\":{\"browser_and_version\":\"Chrome_119\",\"categories\":\"Business and Economy\",\"content-type\":\"text/html; charset=UTF-8\",\"domain\":\"elastic.co\",\"dst\":\"192.18.1.1\",\"egress_country\":\"US\",\"egress_ip\":\"192.18.1.2\",\"event_time\":\"2023-11-21T13:12:37.102000\",\"file_size\":\"NA\",\"filename\":\"NA\",\"fullScanResult\":\"NA\",\"has_password\":\"false\",\"inconsistent_domain\":\"false\",\"is_iframe\":\"false\",\"magicName\":\"NA\",\"name\":\"page_request\",\"numSubfiles\":\"0\",\"origin_country\":\"US\",\"origin_ip\":\"192.18.1.1\",\"pe_reason\":\"a77757d5-d3be-47ab-9394-cfff5887ade4\",\"pe_rulename\":\"Business and Economy Category\",\"product\":\"MSIP\",\"protocol\":\"http\",\"region\":\"us-east-1c\",\"rendering_mode\":\"ACR1\",\"request_type\":\"GET\",\"response_code\":\"308\",\"risk_score\":\"low\",\"risk_tally\":\"-1\",\"sandboxActivity\":\"NA\",\"sandboxResult\":\"NA\",\"soph_dlp_ref\":\"NA\",\"tab_id\":\"1\",\"top_url\":\"http://elastic.co/\",\"ua_type\":\"supported_browser\",\"url\":\"http://elastic.co/\",\"user-agent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36\",\"userid\":\"example_user\",\"vendor\":\"Menlo Security\",\"version\":\"2.0\",\"x-client-country\":\"US\",\"x-client-ip\":\"192.18.1.3\",\"xff_ip\":\"NA\"}}",
         "outcome": "unknown",
         "reason": "a77757d5-d3be-47ab-9394-cfff5887ade4"
     },
@@ -157,6 +158,7 @@ An example event for `web` looks as following:
         "ip": "192.18.1.3"
     },
     "tags": [
+        "preserve_original_event",
         "menlo",
         "forwarded"
     ],
@@ -244,26 +246,26 @@ An example event for `dlp` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-06-03T13:29:06.251Z",
+    "@timestamp": "2025-11-30T23:37:30.347Z",
     "agent": {
-        "ephemeral_id": "b46aee26-1420-4f46-8e52-3bec2e7e48f6",
-        "id": "7af6091c-f1cb-4ddd-accf-48118fcd2a5a",
-        "name": "elastic-agent-94876",
+        "ephemeral_id": "9998f9dc-1878-4fdc-a74f-3906648b186c",
+        "id": "02dc436f-6c46-4084-9ba1-bf15f0b48d5e",
+        "name": "elastic-agent-90978",
         "type": "filebeat",
-        "version": "8.18.1"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "menlo.dlp",
-        "namespace": "71436",
+        "namespace": "57455",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7af6091c-f1cb-4ddd-accf-48118fcd2a5a",
+        "id": "02dc436f-6c46-4084-9ba1-bf15f0b48d5e",
         "snapshot": false,
-        "version": "8.18.1"
+        "version": "8.19.0"
     },
     "event": {
         "action": "block",
@@ -275,7 +277,7 @@ An example event for `dlp` looks as following:
         "created": "2020-03-09T17:17:22.227Z",
         "dataset": "menlo.dlp",
         "id": "a4c2161b3f81a287ec46d3c993a33f3b97ded5fd854fa184e7f50679303111ce",
-        "ingested": "2025-06-03T13:29:09Z",
+        "ingested": "2025-11-30T23:37:33Z",
         "kind": "alert",
         "original": "{\"event\":{\"action\":\"block\",\"alerted\":\"false\",\"categories\":\"Download Sites\",\"ccl_ids\":\"CreditordebitcardnumbersGlobal\",\"ccl_match_counts\":\"1\",\"ccl_scores\":\"1\",\"domain\":\"tinynewupload.com\",\"dst_url\":\"http://tinynewupload.com/\",\"event_id\":\"a4c2161b3f81a287ec46d3c993a33f3b97ded5fd854fa184e7f50679303111ce\",\"event_time\":\"2020-03-09T17:17:22.227000\",\"file_type\":\"CSV\",\"filename\":\"more_credit_cards.csv\",\"name\":\"file_upload\",\"product\":\"MSIP\",\"protocol\":\"http\",\"request_type\":\"GET\",\"rule_id\":\"1f3ef32c-ec62-42fb-8cad-e1fee3375099\",\"rule_name\":\"Credit card block rule\",\"severity\":\"5\",\"sha256\":\"fd1aee671d92aba0f9f0a8a6d5c6b843e09c8295ced9bb85e16d97360b4d7b3a\",\"src_url\":\"http://tinynewupload.com/\",\"status\":\"dirty\",\"stream_name\":\"/safefile-input/working_file\",\"user_input\":\"false\",\"userid\":\"admin@menlosecurity.com\",\"vendor\":\"Menlo Security\",\"version\":\"2.0\"}}",
         "outcome": "success",

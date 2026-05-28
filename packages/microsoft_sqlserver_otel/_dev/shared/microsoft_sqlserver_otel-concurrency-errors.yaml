@@ -1,0 +1,411 @@
+# SQL Server OTel Concurrency & Errors — deadlocks, locks, blocking, execution errors
+# Deep-dive: Is concurrency healthy? Any blocking chains?
+
+dashboards:
+- id: microsoft_sqlserver_otel-concurrency-errors
+  name: '[SQL Server OTel] Concurrency & errors'
+  description: Deadlocks, lock waits, timeouts, blocked processes, and execution errors.
+
+  settings:
+    margins: true
+    titles: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+
+  controls:
+  - type: options
+    label: Instance
+    data_view: metrics-*
+    field: resource.attributes.service.instance.id
+
+  panels:
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: microsoft_sqlserver_otel-overview
+      - label: Memory & saturation
+        dashboard: microsoft_sqlserver_otel-memory-saturation
+      - label: Concurrency & errors
+        dashboard: microsoft_sqlserver_otel-concurrency-errors
+      - label: Database I/O
+        dashboard: microsoft_sqlserver_otel-database-io
+      - label: Query performance
+        dashboard: microsoft_sqlserver_otel-query-performance
+
+  - hide_title: true
+    size: {w: 16, h: 12}
+    markdown:
+      content: |
+        ## [SQL Server OTel] Concurrency & errors
+
+        This dashboard tracks concurrency and error metrics:
+        - Deadlock rate (any sustained non-zero is critical)
+        - Lock wait rate and lock timeouts
+        - Blocked processes (active blocking chains)
+        - Execution errors from the engine
+        - OS wait durations by wait type
+
+  - title: Deadlocks/s
+    hide_title: true
+    size: {w: 6, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.deadlock.rate IS NOT NULL
+      - STATS rate = AVG(metrics.sqlserver.deadlock.rate)
+      primary:
+        field: rate
+        label: Deadlocks/s
+        format:
+          type: number
+          decimals: 0
+
+  - title: Lock wait rate
+    hide_title: true
+    size: {w: 5, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.lock.wait.rate IS NOT NULL
+      - STATS rate = AVG(metrics.sqlserver.lock.wait.rate)
+      primary:
+        field: rate
+        label: Lock wait/s
+        format:
+          type: number
+          decimals: 0
+
+  - title: Lock timeouts/s
+    hide_title: true
+    size: {w: 5, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.lock.timeout.rate IS NOT NULL
+      - STATS rate = AVG(metrics.sqlserver.lock.timeout.rate)
+      primary:
+        field: rate
+        label: Lock timeout/s
+        format:
+          type: number
+          decimals: 0
+
+  - title: Blocked processes
+    hide_title: true
+    size: {w: 6, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.processes.blocked IS NOT NULL
+      - STATS blocked = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.processes.blocked)))
+      primary:
+        field: blocked
+        label: Blocked processes
+        format:
+          type: number
+          decimals: 0
+
+  - title: Execution errors
+    hide_title: true
+    size: {w: 5, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.database.execution.errors IS NOT NULL
+      - STATS errors = SUM(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.database.execution.errors)))
+      primary:
+        field: errors
+        label: Execution errors
+        format:
+          type: number
+          decimals: 0
+
+  - title: Lock waits
+    hide_title: true
+    size: {w: 5, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.lock.wait.count IS NOT NULL
+      - STATS wait_delta = SUM(INCREASE(metrics.sqlserver.lock.wait.count))
+      primary:
+        field: wait_delta
+        label: Lock waits
+        format:
+          type: number
+          decimals: 0
+
+  - title: Deadlock rate over time
+    size: {w: 32, h: 8}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.deadlock.rate IS NOT NULL
+      - STATS rate = AVG(metrics.sqlserver.deadlock.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = 
+        COALESCE(resource.attributes.service.instance.id, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: rate
+        label: Deadlocks/s
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      legend:
+        visible: show
+        position: right
+
+  - title: Lock wait rate over time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.lock.wait.rate IS NOT NULL
+      - STATS rate = AVG(metrics.sqlserver.lock.wait.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = 
+        COALESCE(resource.attributes.service.instance.id, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: rate
+        label: Lock wait/s
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      legend:
+        visible: show
+        position: right
+
+  - title: Blocked processes over time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.processes.blocked IS NOT NULL
+      - STATS blocked = MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.processes.blocked))) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, 
+        ?_tend), instance = COALESCE(resource.attributes.service.instance.id, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: blocked
+        label: Blocked
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      legend:
+        visible: show
+        position: right
+
+  - title: Lock timeouts over time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.lock.timeout.rate IS NOT NULL
+      - STATS rate = AVG(metrics.sqlserver.lock.timeout.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = 
+        COALESCE(resource.attributes.service.instance.id, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: rate
+        label: Lock timeout/s
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      legend:
+        visible: show
+        position: right
+
+  - title: OS wait duration by wait type
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.os.wait.duration IS NOT NULL
+      - STATS wait_ms = SUM(INCREASE(metrics.sqlserver.os.wait.duration)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), wait_type
+        = COALESCE(attributes.wait.type, wait.type, "unknown")
+      - EVAL wait_ms = wait_ms * 1000
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: wait_ms
+        label: Wait time (ms)
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: wait_type
+      legend:
+        visible: show
+        position: right
+
+  - title: Top wait types by total duration
+    size: {w: 24, h: 12}
+    esql:
+      type: bar
+      mode: unstacked
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.os.wait.duration IS NOT NULL
+      - STATS wait_ms = SUM(INCREASE(metrics.sqlserver.os.wait.duration)) BY wait_type = COALESCE(attributes.wait.type, wait.type, "unknown")
+      - EVAL wait_ms = wait_ms * 1000
+      - SORT wait_ms DESC
+      - LIMIT 10
+      dimension:
+        field: wait_type
+      metrics:
+      - field: wait_ms
+        label: Wait time (ms)
+        format:
+          type: number
+          decimals: 0
+
+  - title: Compilation vs recompilation rate over time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.batch.sql_compilation.rate IS NOT NULL OR metrics.sqlserver.batch.sql_recompilation.rate IS NOT NULL
+      - STATS compile_rate = AVG(metrics.sqlserver.batch.sql_compilation.rate), recompile_rate = 
+        AVG(metrics.sqlserver.batch.sql_recompilation.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = 
+        COALESCE(resource.attributes.service.instance.id, "unknown")
+      - EVAL compile_rate = COALESCE(compile_rate, 0.0), recompile_rate = COALESCE(recompile_rate, 0.0)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: compile_rate
+        label: Compilation/s
+        format:
+          type: number
+          decimals: 0
+      - field: recompile_rate
+        label: Recompilation/s
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      appearance:
+        y_left_axis:
+          title: Rate (/s)
+      legend:
+        visible: show
+        position: right
+
+  - title: Full scan rate over time
+    size: {w: 48, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.database.full_scan.rate IS NOT NULL
+      - STATS scan_rate = AVG(metrics.sqlserver.database.full_scan.rate) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance
+        = COALESCE(resource.attributes.service.instance.id, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: scan_rate
+        label: Full scans/s
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      legend:
+        visible: show
+        position: right
+
+  - title: Instances with concurrency issues
+    size: {w: 48, h: 15}
+    esql:
+      type: datatable
+      query:
+      - TS metrics-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE metrics.sqlserver.deadlock.rate IS NOT NULL OR metrics.sqlserver.lock.wait.rate IS NOT NULL OR 
+        metrics.sqlserver.processes.blocked IS NOT NULL OR metrics.sqlserver.database.execution.errors IS NOT NULL
+      - STATS deadlock_rate = AVG(metrics.sqlserver.deadlock.rate), lock_wait_rate = AVG(metrics.sqlserver.lock.wait.rate), blocked = 
+        MAX(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.processes.blocked))), exec_errors = 
+        SUM(LAST_OVER_TIME(TO_LONG(metrics.sqlserver.database.execution.errors))) BY instance = 
+        COALESCE(resource.attributes.service.instance.id, "unknown")
+      - EVAL deadlock_rate = COALESCE(deadlock_rate, 0.0), lock_wait_rate = COALESCE(lock_wait_rate, 0.0), blocked = COALESCE(blocked, 0), 
+        exec_errors = COALESCE(exec_errors, 0)
+      - SORT deadlock_rate DESC, blocked DESC
+      - LIMIT 20
+      breakdowns:
+      - field: instance
+        label: Instance
+      metrics:
+      - field: deadlock_rate
+        label: Deadlocks/s
+        format:
+          type: number
+          decimals: 0
+      - field: lock_wait_rate
+        label: Lock wait/s
+        format:
+          type: number
+          decimals: 0
+      - field: blocked
+        label: Blocked processes
+        format:
+          type: number
+          decimals: 0
+      - field: exec_errors
+        label: Execution errors
+        format:
+          type: number
+          decimals: 0

@@ -136,3 +136,6 @@ The `statement` dataset periodically fetches metrics from PostgreSQL servers.
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "statement"}}
+
+## Alerting Rule Template
+{{alertRuleTemplates}}

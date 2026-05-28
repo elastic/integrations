@@ -98,16 +98,18 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
   - Vulnerability data is fetched for the previous day.
   - Custom headers are not supported in this integration. Only the standard Authorization header (for example, Bearer token) is used for API requests.
 
-### Troubleshooting
+### Transforms
 
-The transforms used in the Wiz integration depend on the presence of the `event.ingested` field to function correctly.
+The Wiz integration creates transforms to support [CDR](https://www.elastic.co/what-is/cloud-detection-response), for the following data streams:
 
-When using Fleet-managed Elastic Agents, the `.fleet_final_pipeline-1` is automatically executed and ensures that the `event.ingested` field is added to all events.
+| Data stream name                                      | Transform destination alias                     |
+|-------------------------------------------------------|-------------------------------------------------|
+| `logs-wiz.vulnerability-*`                            | `security_solution-wiz.vulnerability_latest`    |
+| `logs-wiz.cloud_configuration_finding_full_posture-*` | `security_solution-wiz.misconfiguration_latest` |
 
-However, when using standalone Elastic Agents, this pipeline is not applied, and the `event.ingested` field is not automatically added.
+The source data streams contain historical events and are suitable for most uses, while the aliased transform destination indexes provide a view of the current state of Wiz findings to support Elastic Security CDR workflows. The dashboards included in the Wiz integration use the source data streams.
 
-📌 Action Required (for standalone agents):
-You must manually add the `event.ingested` field, preferably via a custom ingest pipeline (e.g., using the @custom pipeline).
+The transforms use `event.ingested` as their sync field. Fleet-managed Elastic Agents add this field automatically but for other setups this field might need to be added separately.
 
 ## Logs reference
 

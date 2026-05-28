@@ -17,7 +17,7 @@ request.method: "GET"
 request.transforms:
   - set:
       target: url.params.stream_position
-      value: '[[if index .cursor "next_stream_position"]][[toInt .cursor.next_stream_position]][[else]][[0]][[end]]'
+      value: '[[if index .cursor "next_stream_position"]][[.cursor.next_stream_position]][[else]][["0"]][[end]]'
 {{#if stream_type}}
   - set:
       target: url.params.stream_type
@@ -34,8 +34,9 @@ response.split:
 response.pagination:
   - set:
       target: url.params.stream_position
-      value: '[[ if and (index .last_response.body "next_stream_position") (ge (len .last_response.body.entries) {{limit}}) ]][[toInt .last_response.body.next_stream_position]][[end]]'
+      value: '[[ if and (index .last_response.body "next_stream_position") (ge (len .last_response.body.entries) {{limit}}) ]][[.last_response.body.next_stream_position]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
 cursor:
   next_stream_position:
     value: '[[.last_response.body.next_stream_position]]'

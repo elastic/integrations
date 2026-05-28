@@ -1,9 +1,9 @@
 config_version: 2
 interval: {{interval}}
-{{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
-resource.tracer.maxbackups: 5
-{{/if}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
 {{/if}}
@@ -15,9 +15,6 @@ resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: https://{{region}}.automation.eset.systems
 auth.oauth2:
-  client.id: ' '
-  client.secret: ' '
-  # Client Credentials are required in the password grant type due to an oversight in the token authentication logic. This issue is set to be resolved in version 8.14.0.
   user: {{escape_string username}}
   password: {{escape_string password}}
   token_url: https://{{region}}.business-account.iam.eset.systems/oauth/token

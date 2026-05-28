@@ -1,0 +1,110 @@
+{
+    "attributes": {
+        "created_at": "2026-01-27T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Identifies third-party macOS launchd persistence mechanisms and Apple-signed services in suspicious locations. Enumerates non-Apple-signed services for threat hunting, flags Apple-signed binaries executing from user-writable paths (/Users/, /tmp/, hidden directories). Derives executable from program or program_arguments fields, enriches with code signature validation and file hashes. Excludes trusted system paths (/System/, /Library/Apple/).",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "web"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": [
+                        "info"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.launchd_services"
+                }
+            },
+            {
+                "key": "service.name",
+                "value": {
+                    "field": "label"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "path"
+                }
+            },
+            {
+                "key": "process.executable",
+                "value": {
+                    "field": "executable_path"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "program_arguments"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "username"
+                }
+            },
+            {
+                "key": "process.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "process.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "process.code_signature.subject_name",
+                "value": {
+                    "field": "signature_signer"
+                }
+            },
+            {
+                "key": "process.code_signature.status",
+                "value": {
+                    "field": "signature_status"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "persistence",
+                        "threat_hunting",
+                        "launchd",
+                        "macos"
+                    ]
+                }
+            }
+        ],
+        "id": "services_suspicious_darwin_elastic",
+        "interval": "3600",
+        "timeout": 120,
+        "platform": "darwin",
+        "query": "-- macOS LaunchD Persistence Detection\n-- Enumerates non-Apple and suspicious launchd services for threat hunting\n\nWITH services_base AS (\n  SELECT\n    l.label,\n    l.name,\n    l.path,\n    l.program,\n    l.program_arguments,\n    l.run_at_load,\n    l.keep_alive,\n    COALESCE(NULLIF(l.username, ''), 'root') AS username,\n    CASE\n      WHEN l.program IS NOT NULL AND l.program != '' THEN l.program\n      WHEN l.program_arguments IS NOT NULL AND l.program_arguments != '' THEN\n        CASE\n          WHEN INSTR(l.program_arguments, ' ') > 0\n            THEN SUBSTR(l.program_arguments, 1, INSTR(l.program_arguments, ' ') - 1)\n          ELSE l.program_arguments\n        END\n      ELSE NULL\n    END AS executable_path,\n    CASE\n      WHEN l.path LIKE '/Library/LaunchDaemons/%' THEN 'system_daemon'\n      WHEN l.path LIKE '/Library/LaunchAgents/%' THEN 'system_agent'\n      WHEN l.path LIKE '%/Library/LaunchAgents/%' THEN 'user_agent'\n      ELSE 'other'\n    END AS launchd_type\n  FROM launchd l\n  WHERE l.path IS NOT NULL\n    AND l.path != ''\n),\nservices_enriched AS (\n  SELECT\n    sb.*,\n    (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) AS signature_signer,\n    CASE\n      WHEN (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) IS NOT NULL\n        AND (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) != ''\n      THEN 1 ELSE 0\n    END AS is_signed,\n    CASE\n      WHEN (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) IS NOT NULL\n        AND (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) != ''\n      THEN 'signed' ELSE 'unsigned'\n    END AS signature_status,\n    (SELECT md5 FROM hash WHERE path = sb.executable_path LIMIT 1) AS md5,\n    (SELECT sha256 FROM hash WHERE path = sb.executable_path LIMIT 1) AS sha256,\n    concat('https://www.virustotal.com/gui/file/', (SELECT sha256 FROM hash WHERE path = sb.executable_path LIMIT 1)) AS vt_link\n  FROM services_base sb\n)\n\nSELECT *\nFROM services_enriched\nWHERE\n  regex_match(path, '^(/System/|/Library/Apple/|/usr/libexec/)', 0) IS NULL\n  AND (\n    regex_match(COALESCE(signature_signer, ''), '(Apple|Software Signing)', 0) IS NULL\n    OR regex_match(COALESCE(executable_path, ''), '(^/Users/|^/tmp/|^/var/tmp/|^/private/tmp/|/[.])', 0) IS NOT NULL\n  )\nORDER BY\n  is_signed ASC,\n  launchd_type,\n  label;",
+        "updated_at": "2026-01-27T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-5823a22e-5add-416d-a142-de323400edb0",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-01-27T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

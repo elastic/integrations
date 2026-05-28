@@ -8,6 +8,11 @@ Users of [Cloudflare](https://www.cloudflare.com/en-au/learning/what-is-cloudfla
 
 >  Note: Authenticating with API Key (Auth Key) using `X-AUTH-EMAIL` and `X-AUTH-KEY` is considered to be a legacy feature with several limitations that makes it less secure than API token (Auth Token). See [here](https://developers.cloudflare.com/fundamentals/api/get-started/keys/#limitations) for more information on API Key limitations.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Configuration
 
 ### Enabling the integration in Elastic
@@ -121,11 +126,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-30T13:42:04.000Z",
     "agent": {
-        "ephemeral_id": "c428c629-cf48-43b5-a87e-93c5add0d235",
-        "id": "33a24c77-05cc-4158-8802-466fcef333da",
-        "name": "elastic-agent-14587",
+        "ephemeral_id": "3c1b2b42-0ed4-4e3d-a006-3fdced104a81",
+        "id": "0392f7e6-a4ab-4de6-b9ef-514d77323416",
+        "name": "elastic-agent-20026",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.4"
     },
     "cloud": {
         "account": {
@@ -149,16 +154,16 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare.audit",
-        "namespace": "23666",
+        "namespace": "68685",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "33a24c77-05cc-4158-8802-466fcef333da",
+        "id": "0392f7e6-a4ab-4de6-b9ef-514d77323416",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.4"
     },
     "event": {
         "action": "rotate_api_key",
@@ -166,9 +171,10 @@ An example event for `audit` looks as following:
         "category": [
             "iam"
         ],
+        "created": "2025-12-22T12:51:07.996Z",
         "dataset": "cloudflare.audit",
         "id": "8d3396e8-c903-5a66-9421-00fc34570550",
-        "ingested": "2025-10-21T11:10:42Z",
+        "ingested": "2025-12-22T12:51:09Z",
         "kind": "event",
         "original": "{\"action\":{\"info\":\"key digest: c6b5d100d7ce492d24c5b13160fce1cc0092ce7e8d8430e9f5cf5468868be6f6\",\"result\":true,\"type\":\"rotate_API_key\"},\"actor\":{\"email\":\"user@example.com\",\"id\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ip\":\"52.91.36.10\",\"type\":\"user\"},\"id\":\"8d3396e8-c903-5a66-9421-00fc34570550\",\"interface\":\"\",\"metadata\":{},\"newValue\":\"\",\"oldValue\":\"\",\"owner\":{\"id\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\"},\"resource\":{\"id\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"type\":\"account\"},\"when\":\"2021-11-30T13:42:04Z\"}",
         "outcome": "success",
@@ -177,7 +183,7 @@ An example event for `audit` looks as following:
         ]
     },
     "input": {
-        "type": "cel"
+        "type": "httpjson"
     },
     "related": {
         "ip": [

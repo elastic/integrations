@@ -1,0 +1,171 @@
+---
+description: Pipeline for processing WithSecure Elements security events
+processors:
+  # Store original message
+  - set:
+      field: event.original
+      copy_from: message
+      if: ctx.event?.original == null && ctx.message != null
+      ignore_failure: true
+      tag: set_event_original
+  - remove:
+      field: message
+      if: ctx.event?.original != null && ctx.message != null && ctx.message == ctx.event.original
+      ignore_missing: true
+      tag: remove_message
+
+  # Parse JSON directly into custom namespace
+  - json:
+      field: event.original
+      target_field: withsecure_elements.security_events
+      if: ctx.event?.original != null && ctx.event.original instanceof String
+      on_failure:
+        - set:
+            field: error.message
+            value: 'Failed to parse JSON from event.original'
+      tag: json_decode
+      description: Decode JSON from event.original into withsecure_elements.security_events
+
+  # Set ECS version and basic fields
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+      tag: set_ecs_version
+  - set:
+      field: event.dataset
+      value: withsecure_elements.security_events
+      tag: set_event_dataset
+  - set:
+      field: event.module
+      value: withsecure_elements
+      tag: set_event_module
+  - set:
+      field: event.category
+      value: [threat]
+      tag: set_event_category
+  - set:
+      field: event.type
+      value: [info]
+      tag: set_event_type
+  - set:
+      field: event.kind
+      value: event
+      tag: set_event_kind
+  - set:
+      field: event.provider
+      value: withsecure_elements
+      tag: set_event_provider
+
+  # Generate unique _id for automatic deduplication
+  - fingerprint:
+      fields:
+        - withsecure_elements.security_events.id
+        - withsecure_elements.security_events.persistenceTimestamp
+      target_field: _id
+      ignore_missing: true
+      tag: generate_document_id
+  
+  # Map to ECS fields using copy_from
+  - set:
+      field: event.id
+      copy_from: withsecure_elements.security_events.id
+      if: ctx.withsecure_elements?.security_events?.id != null
+      ignore_failure: true
+      tag: set_event_id
+  - set:
+      field: event.action
+      copy_from: withsecure_elements.security_events.action
+      if: ctx.withsecure_elements?.security_events?.action != null
+      ignore_failure: true
+      tag: set_event_action
+  - script:
+      lang: painless
+      tag: normalize_security_event_severity
+      if: ctx.withsecure_elements?.security_events?.severity != null
+      source: >
+        def severityValue = ctx.withsecure_elements.security_events.severity;
+        if (severityValue == null) return;
+        if (severityValue instanceof Number) {
+          ctx.event.severity = ((Number) severityValue).intValue();
+          return;
+        }
+        def normalized = severityValue.toString().toLowerCase();
+        if (normalized == 'info') {
+          ctx.event.severity = 21;
+        } else if (normalized == 'warning') {
+          ctx.event.severity = 47;
+        } else if (normalized == 'critical') {
+          ctx.event.severity = 99;
+        }
+
+  # Set timestamps
+  - date:
+      field: withsecure_elements.security_events.serverTimestamp
+      target_field: "@timestamp"
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.withsecure_elements?.security_events?.serverTimestamp != null
+      tag: set_timestamp
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: withsecure_elements.security_events.persistenceTimestamp
+      target_field: withsecure_elements.security_events.persistence_timestamp
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.withsecure_elements?.security_events?.persistenceTimestamp != null
+      tag: convert_persistence_timestamp
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: withsecure_elements.security_events.clientTimestamp
+      target_field: withsecure_elements.security_events.client_timestamp
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.withsecure_elements?.security_events?.clientTimestamp != null
+      tag: convert_client_timestamp
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Remove raw timestamp fields after conversion
+  - remove:
+      field:
+        - withsecure_elements.security_events.serverTimestamp
+        - withsecure_elements.security_events.persistenceTimestamp
+        - withsecure_elements.security_events.clientTimestamp
+      ignore_missing: true
+      tag: remove_raw_timestamps
+
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - set:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

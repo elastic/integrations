@@ -1,0 +1,31 @@
+{
+    "id": "mongodb-replica-member-down",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[MongoDB] Replica member down",
+        "tags": [
+            "MongoDB"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when replica sets report members in the down state within the configured time window.\n// Groups by replica set name to isolate environments.\nFROM metrics-mongodb.replstatus-*\n| STATS members_down=MAX(mongodb.replstatus.members.down.count) BY mongodb.replstatus.set_name\n| WHERE members_down > 0"
+            },
+            "groupBy": "row",
+            "termSize": 5,
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

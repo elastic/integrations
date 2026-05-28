@@ -1,0 +1,17 @@
+version: '2.3'
+services:
+  cybereason:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: cybereason
+    ports:
+      - 8097
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8097'
+    command:
+      - http-server
+      - --addr=:8097
+      - --config=/files/config.yml
+      - --tls-cert=/files/cybereason.crt
+      - --tls-key=/files/cybereason.key

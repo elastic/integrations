@@ -24,6 +24,7 @@ state:
   access_token: {{access_token}}
   client_secret: {{client_secret}}
   initial_interval: {{initial_interval}}
+  recovery_interval: {{recovery_interval}}
   event_limit: {{event_limit}}
 
 redact:
@@ -37,7 +38,7 @@ program: |-
     (
       state.?cursor.recovery_mode.orValue(false) ?
         {
-          "from": int(now - duration("12h")),
+          "from": int(now - duration(state.recovery_interval)),
           "to": int(now - duration("1m")),
         }
       : state.?cursor.last_offset.hasValue() ?
@@ -109,15 +110,10 @@ program: |-
                           optional.none(),
                         "recovery_mode": false,
                       },
-                      "want_more": (lines.size() > 0) ?
-                        lines[lines.size() - 1].decode_json().as(lastEvent,
-                          has(lastEvent.offset) && lastEvent.offset != ""
-                        )
-                      :
-                        false,
+                      "want_more": lines.size() >= int(state.event_limit),
                     }
                   )
-                : (resp.StatusCode == 416) ?
+                : (resp.StatusCode == 416 || (resp.StatusCode == 400 && size(resp.Body) != 0 && bytes(resp.Body).decode_json().as(errorBody, has(errorBody.detail) && errorBody.detail.to_lower().contains("invalid timestamp")))) ?
                   {
                     "events": [
                       {
@@ -163,3 +159,18 @@ program: |-
       )
     )
   )
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

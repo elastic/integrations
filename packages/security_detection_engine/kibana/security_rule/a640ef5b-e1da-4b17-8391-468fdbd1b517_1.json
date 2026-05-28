@@ -1,0 +1,156 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects potentially dangerous commands spawned by the GitHub Actions Runner.Worker process on self-hosted runner machines. Adversaries who gain the ability to modify or trigger workflows in a linked GitHub repository can execute arbitrary commands on the runner host. This behavior may indicate malicious or unexpected workflow activity, including code execution, file manipulation, or network exfiltration initiated through a compromised repository or unauthorized workflow.",
+        "false_positives": [
+            "Authorized GitHub actions runner with no malicious workflow actions."
+        ],
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*",
+            "auditbeat-*",
+            "logs-auditd_manager.auditd-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Execution via GitHub Actions Runner",
+        "note": "## Triage and analysis\n\n### Investigating Execution via GitHub Actions Runner\n\nAdversaries who gain the ability to modify or trigger workflows in a linked GitHub repository can execute arbitrary commands on the runner host.\n\n### Possible investigation steps\n\n- Review the execution details like process.command_line and if it's expected or not.\n- Examine associated network and file activities and if there is any ingress tool transfer activity.\n- Verify if there is adjascent any sensitive file access or collection.\n- Correlate with other alerts and investiguate if this activity is related to a supply chain attack.\n\n### False positive analysis\n\n- Authorized github workflow actions.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized command execution and potential lateral movement.\n- Terminate any suspicious child processes that were initiated by the Github actions runner.\n- Conduct a thorough review of the affected system's logs and configurations to identify any unauthorized changes or additional indicators of compromise.\n- Restore the system from a known good backup if any unauthorized changes or malicious activities are confirmed.\n- Implement application whitelisting to prevent unauthorized execution.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to assess the potential impact on the broader network.",
+        "query": "process where event.type == \"start\" and event.action in (\"exec\", \"exec_event\", \"start\", \"ProcessRollup2\", \"executed\", \"process_started\") and\n process.parent.name in (\"Runner.Worker\", \"Runner.Worker.exe\") and\n (\n   process.name like (\"curl\", \"curl.exe\", \"wget\", \"wget.exe\", \"powershell.exe\", \"cmd.exe\", \"pwsh.exe\", \"certutil.exe\", \"rundll32.exe\", \"bash\", \"sh\", \"zsh\", \"tar\", \"rm\",\n                     \"sed\", \"osascript\", \"chmod\", \"nohup\", \"setsid\", \"dash\", \"ash\", \"tcsh\", \"csh\", \"ksh\", \"fish\", \"python*\", \"perl*\", \"ruby*\", \"lua*\", \"php*\", \"node\", \"node.exe\") or\n   process.executable : (\"/tmp/*\", \"/private/tmp/*\", \"/var/tmp/*\", \"/dev/shm/*\", \"/run/*\", \"/var/run/*\", \"?:\\\\Users\\\\*\")\n )\n",
+        "references": [
+            "https://www.elastic.co/blog/shai-hulud-worm-npm-supply-chain-compromise",
+            "https://socket.dev/blog/shai-hulud-strikes-again-v2"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "a640ef5b-e1da-4b17-8391-468fdbd1b517",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: Windows",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Tactic: Initial Access",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Data Source: Auditd Manager",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1195",
+                        "name": "Supply Chain Compromise",
+                        "reference": "https://attack.mitre.org/techniques/T1195/",
+                        "subtechnique": [
+                            {
+                                "id": "T1195.002",
+                                "name": "Compromise Software Supply Chain",
+                                "reference": "https://attack.mitre.org/techniques/T1195/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "a640ef5b-e1da-4b17-8391-468fdbd1b517_1",
+    "type": "security-rule"
+}

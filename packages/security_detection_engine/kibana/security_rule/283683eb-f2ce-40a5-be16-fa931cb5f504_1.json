@@ -1,0 +1,111 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects Palo Alto Network alerts that are observed for the first time in the previous 5 days of alert history. Analysts can use this to prioritize triage and response.",
+        "from": "now-7205m",
+        "interval": "5m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Newly Observed Palo Alto Network Alert",
+        "note": "## Triage and analysis\n\n### Investigating Newly Observed Palo Alto Network Alert\n\nThis rule surfaces newly observed, low-frequency high severity Palo Alto Network alert within the last 5 days.\n\nBecause the alert has not been seen previously for this rule and host, it should be prioritized for validation to determine\nwhether it represents a true compromise or rare benign activity.\n\n### Investigation Steps\n\n- Identify the source address, affected host and review the associated rule name to understand the behavior that triggered the alert.\n- Validate the source address under which the activity occurred and assess whether it aligns with normal behavior.\n- Refer to the specific alert details like event.original to get more context.\n\n### False Positive Considerations\n\n- Vulnerability scanners and pentesting.\n- Administrative scripts or automation tools can trigger detections when first introduced.\n- Development or testing environments may produce one-off behaviors that resemble malicious techniques.\n\n### Response and Remediation\n\n- If the activity is confirmed malicious, isolate the affected host to prevent further execution or lateral movement.\n- Terminate malicious processes and remove any dropped files or persistence mechanisms.\n- Collect forensic artifacts to understand initial access and execution flow.\n- Patch or remediate any vulnerabilities or misconfigurations that enabled the behavior.\n- If benign, document the finding and consider tuning or exception handling to reduce future noise.\n- Continue monitoring the host and environment for recurrence of the behavior or related alerts.",
+        "query": "FROM logs-panw.panos-*, filebeat-* metadata _id\n\n// exclude Informational and Low severity levels (4 and 5)\n| where event.dataset == \"panw.panos\" and TO_INTEGER(event.severity) <= 3 and event.action != \"flood_detected\"\n\n| STATS Esql.alerts_count = count(*),\n        Esql.first_time_seen = MIN(@timestamp),\n        Esql.distinct_count_src_ip = COUNT_DISTINCT(source.ip),\n        Esql.distinct_count_dst_ip = COUNT_DISTINCT(destination.ip),\n        src_ip = VALUES(source.ip),\n        dst_ip = VALUES(destination.ip),\n        url_dom = VALUES(url.domain),\n        url_path = VALUES(url.path) by rule.name, event.action, event.type, event.kind, event.severity\n\n// first time seen is within 10m of the rule execution time within last 5 days\n| eval Esql.recent = DATE_DIFF(\"minute\", Esql.first_time_seen, now())\n| where Esql.recent <= 10 and Esql.alerts_count <= 5 and Esql.distinct_count_src_ip <= 2 and Esql.distinct_count_dst_ip <= 2\n\n// move dynamic fields to ECS quivalent for rule exceptions\n| eval source.ip = MV_FIRST(src_ip),\n       destination.ip = MV_FIRST(dst_ip),\n       url.domain = MV_FIRST(url_dom),\n       url.path = MV_FIRST(url_path)\n| keep rule.name, event.*, Esql.*, source.ip, destination.ip, url.domain, url.path\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/panw"
+        ],
+        "related_integrations": [
+            {
+                "package": "panw",
+                "version": "^5.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.alerts_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.distinct_count_dst_ip",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.distinct_count_src_ip",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.first_time_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.recent",
+                "type": "integer"
+            },
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.kind",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.severity",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "rule.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "url.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "url.path",
+                "type": "wildcard"
+            }
+        ],
+        "risk_score": 99,
+        "rule_id": "283683eb-f2ce-40a5-be16-fa931cb5f504",
+        "severity": "critical",
+        "tags": [
+            "Use Case: Threat Detection",
+            "Rule Type: Higher-Order Rule",
+            "Resources: Investigation Guide",
+            "Domain: Network",
+            "Data Source: PAN-OS"
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "283683eb-f2ce-40a5-be16-fa931cb5f504_1",
+    "type": "security-rule"
+}

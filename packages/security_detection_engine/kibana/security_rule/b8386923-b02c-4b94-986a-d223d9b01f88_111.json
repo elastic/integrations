@@ -1,0 +1,150 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects PowerShell script block content containing Invoke-NinjaCopy or related Stealth* functions used for direct volume file access. Attackers use NinjaCopy to read locked system files such as NTDS.dit or registry hives for credential dumping.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-windows.powershell*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "powershell.file.script_block_text",
+                "powershell.file.script_block_id",
+                "powershell.sequence",
+                "powershell.total",
+                "file.path",
+                "file.directory",
+                "file.name",
+                "process.pid",
+                "host.name",
+                "host.id",
+                "powershell.file.script_block_length"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "PowerShell Invoke-NinjaCopy script",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating PowerShell Invoke-NinjaCopy script\n\nThis rule identifies PowerShell script block content referencing `Invoke-NinjaCopy` or related `Stealth*` helper functions. These functions are commonly used to perform direct volume file reads that can bypass normal file locking and access controls, enabling copies of sensitive credential stores (for example, `NTDS.dit` or registry hives like `SAM`, `SYSTEM`, and `SECURITY`). The presence of these strings can represent tool staging (definition/import) or active execution, so focus on determining intent, targeted artifacts, output locations, and surrounding activity.\n\n#### Key alert fields to review\n\n- `user.name`, `user.domain`, `user.id`: Account execution context for correlation, prioritization, and scoping.\n- `host.name`, `host.id`: Host execution context for correlation, prioritization, and scoping.\n- `powershell.file.script_block_text`: Script block content that matched the detection logic.\n- `powershell.file.script_block_id`, `powershell.sequence`, `powershell.total`: Script block metadata to pivot to other fragments or reconstruct full script content when split across multiple events.\n- `file.path`, `file.directory`, `file.name`: File-origin context when the script block is sourced from an on-disk file.\n- `powershell.file.script_block_length`: Script block length (size) context.\n\n#### Possible investigation steps\n\n- Triage the alert context:\n  - Identify the affected `host.name` / `host.id` and the account (`user.name`, `user.domain`, `user.id`).\n  - Determine whether the host is expected to store credential material (for example, a directory services server) and whether the user is expected to perform privileged maintenance on it.\n  - Use the alert time (`@timestamp`) to define an initial correlation window and expand as needed.\n\n- Analyze `powershell.file.script_block_text` to understand what was staged or executed:\n  - Determine whether the content is primarily function definitions/module code (tool load) or includes direct invocation of `Invoke-NinjaCopy` and `Stealth*` functions.\n  - Extract any referenced source artifacts (for example, `NTDS.dit` or registry hives) and any destination/output file names, directories, or remote paths.\n  - Look for indicators of direct volume access, such as device/volume path handling, low-level file handle usage, delegates, or logic intended to bypass normal file locking.\n  - Identify follow-on logic that would support collection and handling (copy loops, chunking, archiving, encoding, renaming, or cleanup).\n\n- Use script block metadata to reconstruct full content when logged in multiple parts:\n  - Pivot on `powershell.file.script_block_id` for the same `host.id`.\n  - Order fragments by `powershell.sequence` and confirm the final part count matches `powershell.total`.\n  - If parts are missing, treat the content as incomplete and continue scoping for additional fragments.\n  - Preserve the reconstructed content and the original fragment events for case evidence.\n\n- Determine script provenance when file context is present:\n  - Review `file.path` / `file.name` (and `file.directory` if populated) to identify where the script was executed from.\n  - Treat execution from user-writable or temporary locations as higher risk, and scope for other executions originating from the same path or directory on the host.\n  - If file context is not present, consider interactive execution or remote delivery and expand scoping to other script blocks from the same `host.id` and `user.id` around the alert time.\n\n- Scope for related PowerShell activity on the endpoint:\n  - Review additional Script Block Logging events for the same `host.id` and `user.id` around the alert time to identify staging, retries, and post-collection actions.\n  - Use `powershell.file.script_block_length` to prioritize larger blocks that may contain full tooling, embedded functions, or post-processing logic.\n  - Prioritize script blocks that reference the same artifact names or output locations observed in the matched content.\n\n- Assess prevalence across the environment:\n  - Search for the same keywords within `powershell.file.script_block_text` (for example, `Invoke-NinjaCopy` and `StealthOpenFile`) across other hosts to identify broader deployment.\n  - If `file.path` or `file.name` is present, use it to identify reuse of the same script file across multiple hosts or users.\n\n- Correlate with adjacent telemetry (if available) using `host.name`, `host.id`, `user.id`, and the alert time:\n  - Process activity to identify the PowerShell host process and the parent/source that initiated it, and whether execution aligns with expected administrative workflows.\n  - File activity to confirm whether copies of targeted artifacts were created, where they were written, and whether they were later archived or moved.\n  - Network activity to identify outbound transfers or remote access shortly after script execution.\n  - Authentication activity to identify suspicious logons, privilege use, or lateral movement following potential credential material collection.\n\n- Determine impact:\n  - If the script indicates attempted access to directory services database files or registry hives, treat this as potential credential exposure until corroborating telemetry shows otherwise and respond accordingly.\n\n### False positive analysis\n\n- Approved security testing, adversary emulation, or controlled red team activity that includes NinjaCopy-derived code.\n- Authorized incident response, forensic acquisition, or recovery workflows that require copying locked system files.\n- Administrative tooling that embeds similar helper functions for troubleshooting or backup operations (uncommon); validate ownership, expected hosts, and change control.\n\n### Response and remediation\n\n- If the activity is not expected or cannot be attributed to an approved task:\n  - Isolate the affected host to prevent additional collection, staging, or lateral movement.\n  - Take immediate steps to prevent further use of the implicated account (`user.id`) until legitimacy is confirmed.\n\n- Preserve and collect evidence:\n  - Save the full `powershell.file.script_block_text` and reconstruct missing fragments using `powershell.file.script_block_id`, `powershell.sequence`, and `powershell.total` where applicable.\n  - Record `@timestamp`, `host.name`, `host.id`, `user.name`, `user.domain`, `user.id`, and any available `file.path` / `file.name` context.\n  - Identify any destination/output locations referenced in the script content and preserve related artifacts (copied files, archives, temporary staging).\n\n- Assess credential exposure and potential follow-on activity:\n  - Use available endpoint telemetry to determine whether credential stores were successfully copied or staged.\n  - If credential stores may have been accessed or copied, follow your credential containment process and prioritize rotation of impacted and privileged credentials.\n\n- Eradicate and scope:\n  - Remove unauthorized scripts and supporting artifacts identified from `file.path` / `file.name` and from any output locations referenced in the script.\n  - Hunt for additional NinjaCopy-related script blocks across endpoints and for subsequent suspicious authentication activity associated with the same user and host context.\n\n- Recover and harden:\n  - Restore affected systems as needed and validate that no persistence remains.\n  - Reduce recurrence by tightening administrative scripting governance for PowerShell (least privilege, controlled script deployment locations, and application control where feasible) and by restricting access to systems that store credential material.\n",
+        "query": "event.category:process and host.os.type:windows and\n  powershell.file.script_block_text : (\n    \"StealthReadFile\" or\n    \"StealthReadFileAddr\" or\n    \"StealthCloseFileDelegate\" or\n    \"StealthOpenFile\" or\n    \"StealthCloseFile\" or\n    \"StealthReadFile\" or\n    \"Invoke-NinjaCopy\"\n   )\n  and not user.id : \"S-1-5-18\"\n  and not powershell.file.script_block_text : (\n    \"sentinelbreakpoints\" and \"Set-PSBreakpoint\" and \"PowerSploitIndicators\"\n  )\n",
+        "references": [
+            "https://github.com/BC-SECURITY/Empire/blob/main/empire/server/data/module_source/collection/Invoke-NinjaCopy.ps1"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_text",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "b8386923-b02c-4b94-986a-d223d9b01f88",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: PowerShell Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.002",
+                                "name": "Security Account Manager",
+                                "reference": "https://attack.mitre.org/techniques/T1003/002/"
+                            },
+                            {
+                                "id": "T1003.003",
+                                "name": "NTDS",
+                                "reference": "https://attack.mitre.org/techniques/T1003/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1006",
+                        "name": "Direct Volume Access",
+                        "reference": "https://attack.mitre.org/techniques/T1006/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 111
+    },
+    "id": "b8386923-b02c-4b94-986a-d223d9b01f88_111",
+    "type": "security-rule"
+}

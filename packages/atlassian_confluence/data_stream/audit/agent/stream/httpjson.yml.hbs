@@ -60,6 +60,7 @@ response.pagination:
       target: url.params.start
       value: '[[if (ne (len .last_response.body.results) 0)]][[add (toInt .last_response.body.start) (toInt .last_response.body.limit)]][[end]]'
       fail_on_template_error: true
+      do_not_log_failure: true
   - set:
       target: url.params.limit
       value: '{{limit}}'
@@ -105,8 +106,9 @@ response.split:
 response.pagination:
   - set:
       target: url.value
-      value: '[[ .last_response.body.pagingInfo.nextPageLink ]]'
+      value: '[[ if index .last_response.body.pagingInfo "nextPageLink" ]][[ .last_response.body.pagingInfo.nextPageLink ]][[ end ]]'
       fail_on_template_error: true
+      do_not_log_failure: true
 
 cursor:
   last_timestamp:

@@ -1,0 +1,124 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects PowerShell script block content that uses CopyFromScreen with .NET bitmap classes to capture screenshots. Attackers use screen capture to collect on-screen information and credentials.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-windows.powershell*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "powershell.file.script_block_text",
+                "powershell.file.script_block_id",
+                "powershell.sequence",
+                "powershell.total",
+                "file.path",
+                "file.directory",
+                "file.name",
+                "process.pid",
+                "host.name",
+                "host.id",
+                "powershell.file.script_block_length"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "PowerShell Suspicious Script with Screenshot Capabilities",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating PowerShell Suspicious Script with Screenshot Capabilities\n\nThis rule identifies PowerShell scripts that includes screenshot collection logic using `CopyFromScreen` together with bitmap classes. This pattern is commonly used to capture the interactive desktop and may indicate collection of sensitive on-screen data (for example, application content, authentication prompts, or remote session activity).\n\nPrioritize alerts on endpoints used for privileged administration or sensitive workflows, and alerts tied to accounts that do not typically run interactive PowerShell automation.\n\n#### Key alert fields to review\n\n- `user.name`, `user.domain`, `user.id`: Account execution context for correlation, prioritization, and scoping.\n- `host.name`, `host.id`: Host execution context for correlation, prioritization, and scoping.\n- `powershell.file.script_block_text`: Script block content that matched the detection logic.\n- `powershell.file.script_block_id`, `powershell.sequence`, `powershell.total`: Script block metadata to pivot to other fragments or reconstruct full script content when split across multiple events.\n- `file.path`, `file.directory`, `file.name`: File-origin context when the script block is sourced from an on-disk file.\n- `powershell.file.script_block_length`: Script block length (size) context.\n\n#### Possible investigation steps\n\n- Establish alert scope and execution context:\n  - Identify the affected system using `host.name` and `host.id`. Determine if the host is expected to have an interactive desktop session for the associated user at the time of the alert.\n  - Identify the initiating account using `user.name`, `user.domain`, and `user.id`. Assess whether the account is a typical interactive user for the host and whether the activity aligns with the user role.\n  - Review the alert time (`@timestamp`) and determine whether the timing aligns with normal business operations for the user and host.\n\n- Review and interpret the script block content:\n  - Examine `powershell.file.script_block_text` to understand what is being captured:\n    - Identify whether the capture targets the full screen or a specific region (for example, use of coordinates and dimensions passed into `CopyFromScreen`).\n    - Identify whether capture is repeated (for example, loops, timers, repeated invocations) which may indicate ongoing collection.\n    - Identify any logic that targets specific monitors, window bounds, or desktop layout.\n  - Determine how captured images are handled:\n    - Look for references indicating local image creation or saving (for example, image format usage such as PNG/JPEG/BMP, file extensions, or save routines).\n    - Look for encoding/staging behavior (for example, Base64 conversion, compression, or in-memory serialization) that could facilitate transfer.\n    - Note any referenced paths, filenames, or remote destinations embedded in the script, and capture unique strings for scoping and hunting.\n\n- Reconstruct full script logic when split across events:\n  - Use `powershell.file.script_block_id` to collect all related fragments.\n  - Order fragments using `powershell.sequence` and validate completeness using `powershell.total`.\n  - Re-review the reconstructed script for supporting capabilities beyond capture (for example, environment checks, staging, cleanup, or transfer logic).\n  - Use `powershell.file.script_block_length` to help identify unusually large or complex script blocks that may warrant deeper review.\n\n- Identify script source and provenance:\n  - If `file.path`, `file.directory`, or `file.name` are present, treat the script as file-backed:\n    - Validate whether the location is expected for administrative or support scripts in your environment.\n    - Collect the referenced file for review and compare it to known-good versions or approved repositories where applicable.\n  - If file fields are not present, treat the activity as potentially inline or dynamically generated:\n    - Pay close attention to download, decode, or dynamic compilation patterns visible in `powershell.file.script_block_text`.\n\n- Scope for related PowerShell activity using available pivots:\n  - On the same `host.id` and `user.id`, review surrounding script blocks near the alert time to identify related actions (for example, staging, transfer preparation, or artifact cleanup).\n  - Search for similar `powershell.file.script_block_text` patterns across other hosts to determine prevalence and potential lateral spread.\n  - If `file.name` or `file.path` are present, search for additional execution of the same script file across the environment.\n\n- Correlate with adjacent telemetry to determine initiation and outcomes:\n  - Using `host.id`, `host.name`, `user.id`, and the alert time window, correlate with available endpoint and security telemetry to identify:\n    - How PowerShell was initiated (interactive use vs. application-driven execution) and whether there is an unusual execution chain.\n    - Evidence of screenshot artifacts being written, moved, archived, or deleted, especially in locations referenced in `powershell.file.script_block_text`.\n    - Any outbound communication or data movement that could indicate transfer of captured images or related content.\n\n- Assess potential impact:\n  - Determine whether the host and user context suggests access to sensitive information that could have been exposed via screenshots.\n  - If screenshot artifacts are identified, preserve copies and metadata for exposure assessment and downstream response actions.\n\n### False positive analysis\n\n- Legitimate scenarios may include authorized troubleshooting, remote support workflows, UI testing, or automation that captures screenshots.\n- Validate benign explanations by confirming that the involved `user.name`/`user.id` and `host.name`/`host.id` align with expected operational ownership and that the script content in `powershell.file.script_block_text` matches known, approved implementations.\n- File-backed scripts with stable, approved locations (`file.path`/`file.name`) and consistent content are more likely to be benign. Inline or frequently changing script content, especially with staging or transfer logic, should be treated as higher risk even if screenshot capture is a documented capability.\n\n### Response and remediation\n\n- If the activity is confirmed malicious or remains suspicious after triage:\n  - Contain the affected host to limit further collection and potential data transfer.\n  - Preserve evidence:\n    - Export and retain all related script block fragments for the same `powershell.file.script_block_id` and reconstruct the full script using `powershell.sequence` and `powershell.total`.\n    - Collect any file-backed script referenced by `file.path`/`file.name`, along with any identified screenshot output paths from `powershell.file.script_block_text`.\n  - Scope and eradicate:\n    - Hunt for the same screenshot capture indicators across the environment using distinctive strings from `powershell.file.script_block_text`, as well as the involved `user.id` and `file.name` (if present).\n    - Review correlated telemetry for signs of staging or transfer and identify any additional affected hosts or accounts.\n  - Credential and access hygiene:\n    - If screenshots may have captured credentials or privileged activity, follow your incident response process for credential reset and access review for the involved account(s).\n    - Review access to sensitive systems from the affected host and user context during the relevant time window.\n\n- If the activity is confirmed benign:\n  - Document the legitimate business process, script ownership, and expected execution scope (approved users, hosts, and typical timing).\n  - Ensure the script source is controlled (when `file.path`/`file.name` are present) and that execution is limited to authorized accounts and systems.\n  - Continue monitoring for deviations in script content or execution context using the same pivots (`host.id`, `user.id`, and distinctive content in `powershell.file.script_block_text`).\n",
+        "query": "event.category:process and host.os.type:windows and\n  powershell.file.script_block_text : (\n    CopyFromScreen and\n    (\"System.Drawing.Bitmap\" or \"Drawing.Bitmap\")\n  ) and not user.id : \"S-1-5-18\"\n",
+        "references": [
+            "https://docs.microsoft.com/en-us/dotnet/api/system.drawing.graphics.copyfromscreen"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_text",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "959a7353-1129-4aa7-9084-30746b256a70",
+        "setup": "## Setup\n\nPowerShell Script Block Logging must be enabled to generate the events used by this rule (e.g., 4104).\nSetup instructions: https://ela.st/powershell-logging-setup\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Collection",
+            "Resources: Investigation Guide",
+            "Data Source: PowerShell Logs"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1113",
+                        "name": "Screen Capture",
+                        "reference": "https://attack.mitre.org/techniques/T1113/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 213
+    },
+    "id": "959a7353-1129-4aa7-9084-30746b256a70_213",
+    "type": "security-rule"
+}

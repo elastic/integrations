@@ -1,0 +1,45 @@
+{
+  "attributes": {
+    "name": "[MongoDB OTel] Cache hit ratio 99.5% rolling 30 days",
+    "description": "This SLO tracks the WiredTiger cache hit ratio of MongoDB via OTel metrics, ensuring that 99.5% of 1-minute time intervals maintain at least 95% cache hit rate over a rolling period of 30 days. A high cache miss rate indicates the working set exceeds available cache, leading to disk I/O and potential timeouts.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"mongodbreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {"name": "A", "aggregation": "max", "field": "metrics.mongodb.cache.operations", "filter": "attributes.type: \"hit\""},
+            {"name": "B", "aggregation": "min", "field": "metrics.mongodb.cache.operations", "filter": "attributes.type: \"hit\""},
+            {"name": "C", "aggregation": "max", "field": "metrics.mongodb.cache.operations", "filter": "attributes.type: \"miss\""},
+            {"name": "D", "aggregation": "min", "field": "metrics.mongodb.cache.operations", "filter": "attributes.type: \"miss\""}
+          ],
+          "equation": "(A-B)/((A-B)+(C-D))",
+          "comparator": "GT",
+          "threshold": 0.95
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": ["mongodb", "otel"],
+    "groupBy": ["resource.attributes.server.address"],
+    "artifacts": {
+      "dashboards": [
+        {"id": "mongodb_otel-overview"},
+        {"id": "mongodb_otel-capacity"}
+      ]
+    }
+  },
+  "id": "mongodb_otel-cache-hit-ratio-99.5-Rolling30Days",
+  "type": "slo_template"
+}

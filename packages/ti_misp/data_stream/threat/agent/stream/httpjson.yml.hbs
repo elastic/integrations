@@ -14,8 +14,10 @@ request.ssl: {{ssl}}
 {{#if http_client_timeout}}
 request.timeout: {{http_client_timeout}}
 {{/if}}
-{{#if http_request_rate_limit}}
-request.rate_limit.limit: "{{http_request_rate_limit}}"
+{{#if enable_rate_limit_headers}}
+request.rate_limit.limit: '[[ .last_response.header.Get "X-Rate-Limit-Limit" ]]'
+request.rate_limit.remaining: '[[ .last_response.header.Get "X-Rate-Limit-Remaining" ]]'
+request.rate_limit.reset: '[[ add (toInt (.last_response.header.Get "X-Rate-Limit-Reset")) ((now).Unix) ]]'
 {{/if}}
 {{#if proxy_url}}
 request.proxy_url: {{proxy_url}}
@@ -76,6 +78,7 @@ response.pagination:
     # Add 2 because the httpjson page counter is zero-based while the MISP page parameter starts at 1.
     value: '[[if (ne (len .last_response.body.response) 0)]][[add .last_response.page 2]][[end]]'
     fail_on_template_error: true
+    do_not_log_failure: true
 - set:
     target: body.timestamp
     value: '[[.last_response.url.params.Get "timestamp"]]'
@@ -84,7 +87,7 @@ response.pagination:
     value: '[[.last_response.url.params.Get "timestamp"]]'
 cursor:
   timestamp:
-    value: '[[.last_event.Event.timestamp]]'
+    value: '[[if index .last_event "Event"]][[.last_event.Event.timestamp]][[end]]'
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

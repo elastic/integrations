@@ -1,0 +1,121 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects multiple lateral movement alerts from a user that was observed for the first time in the previous 5 days of alerts history. Analysts can use this high-order detection to prioritize triage and response.",
+        "from": "now-7200m",
+        "interval": "9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Lateral Movement Alerts from a Newly Observed User",
+        "note": "## Triage and analysis\n\n### Investigating Lateral Movement Alerts from a Newly Observed User\n\nThis rule surfaces newly observed, low-frequency source user triggering multiple lateral movement alerts.\n\nBecause the alert has not been seen previously for this rule and host, it should be prioritized for validation to determine\nwhether it represents a true compromise or rare benign activity.\n\n### Investigation Steps\n\n- Identify the source user, affected hosts and review the associated rule name to understand the behavior that triggered the alert.\n- Validate the source address and user context under which the activity occurred and assess whether it aligns with normal behavior for that address.\n- Refer to the specific rule investigation guide for further actions.\n\n### False Positive Considerations\n\n- Administrative scripts or automation tools can trigger behavior-based detections when first introduced.\n- Security tooling, IT management agents, or EDR integrations may generate new behavior alerts during updates or configuration changes.\n- Development or testing environments may produce one-off behaviors that resemble malicious techniques.\n\n### Response and Remediation\n\n- If the activity is confirmed malicious, isolate the affected host to prevent further execution or lateral movement.\n- Terminate malicious processes and remove any dropped files or persistence mechanisms.\n- Collect forensic artifacts to understand initial access and execution flow.\n- Patch or remediate any vulnerabilities or misconfigurations that enabled the behavior.\n- If benign, document the finding and consider tuning or exception handling to reduce future noise.\n- Continue monitoring the host and environment for recurrence of the behavior or related alerts.",
+        "query": "FROM .alerts-security.* METADATA _index\n\n// Lateral Movement related rules\n| where kibana.alert.rule.threat.tactic.name is not null and user.id is not null and \n        (to_string(user.id) like \"S-1-5-21*\" or to_string(user.id) like \"S-1-12-*\") and\n        host.id is not null and KQL(\"\"\"kibana.alert.rule.threat.tactic.name : \"Lateral Movement\" \"\"\")\n\n// aggregate stats by user.id\n| stats  Esql.first_time_seen = MIN(@timestamp),\n         Esql.alerts_count = count(*),\n         Esql.unique_rules_count = COUNT_DISTINCT(kibana.alert.rule.name),\n         Esql.unique_count_host_id = COUNT_DISTINCT(host.id),\n         Esql.rule_name_values = VALUES(kibana.alert.rule.name),\n         Esql.host_id_values = VALUES(host.id),\n         Esql.host_ip_values = VALUES(host.ip),\n         Esql.source_ip_values = VALUES(source.ip),\n         Esql.process_cmd_line = VALUES(process.command_line),\n         Esql.tactic_name_values = VALUES(kibana.alert.rule.threat.tactic.name) by user.id, user.name\n\n// at least 2 unique lateral movement detection rules from same user.id and that was first seen in last 5 days\n| eval Esql.date_diff = DATE_DIFF(\"minute\", Esql.first_time_seen, now())\n| where Esql.unique_rules_count >= 2 and\n        // matches are within 10m of the rule execution time to avoid alert duplicates\n        Esql.date_diff <= 10\n| eval source.ip = MV_FIRST(Esql.source_ip_values),  host.id = MV_FIRST(Esql.host_id_values) \n| KEEP Esql.*, user.id, user.name, host.id, source.ip\n",
+        "references": [
+            "https://www.elastic.co/docs/solutions/security/detect-and-alert/about-detection-rules"
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "Esql.alerts_count",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.date_diff",
+                "type": "integer"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.first_time_seen",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.host_id_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.host_ip_values",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.process_cmd_line",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.rule_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.source_ip_values",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.tactic_name_values",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.unique_count_host_id",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "Esql.unique_rules_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "e819b7eb-c2d4-4adc-b0c9-658aeb140450",
+        "severity": "high",
+        "tags": [
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Rule Type: Higher-Order Rule",
+            "Tactic: Lateral Movement",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": []
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "e819b7eb-c2d4-4adc-b0c9-658aeb140450_1",
+    "type": "security-rule"
+}

@@ -46,6 +46,8 @@ Note:
 | keycloak.admin.resource.type | Type of keycloak resource being acted upon; Group, User, Client, Scope... | keyword |
 | keycloak.client.id | ID of the Keycloak client | keyword |
 | keycloak.event_type | Keycloak event type; Login or Admin | keyword |
+| keycloak.impersonator |  | keyword |
+| keycloak.impersonator_realm |  | keyword |
 | keycloak.login.auth_method | Keycloak authentication method (SAML or OpenID Connect) | keyword |
 | keycloak.login.auth_session_parent_id | Parent session ID | keyword |
 | keycloak.login.auth_session_tab_id | Session Tab ID | keyword |
@@ -54,6 +56,7 @@ Note:
 | keycloak.login.redirect_uri | Keycloak redirect URL | keyword |
 | keycloak.login.type | Event Type | keyword |
 | keycloak.realm.id | Keycloak Realm ID | keyword |
+| keycloak.session.id |  | keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |

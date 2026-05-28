@@ -1,0 +1,96 @@
+{
+    "attributes": {
+        "created_at": "2026-01-27T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Tracks filesystem changes via FSEvents including file creation, modification, deletion with cryptographic hashes (md5, sha256). Provides forensic evidence of file system activity with hash verification for IOC matching. REQUIRED CONFIG: Add to Kibana osquery integration: {\"options\":{\"disable_events\":\"false\",\"enable_file_events\":\"true\"},\"file_paths\":{\"users\":[\"/Users/%%\"],\"apps\":[\"/Applications/%%\"],\"tmp\":[\"/tmp/%%\"]},\"exclude_paths\":{\"var_folders\":[\"/private/var/folders/%\"]}}.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "file"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "field": "event_type"
+                }
+            },
+            {
+                "key": "event.kind",
+                "value": {
+                    "value": "event"
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.file_events"
+                }
+            },
+            {
+                "key": "event.created",
+                "value": {
+                    "field": "event_time"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "target_path"
+                }
+            },
+            {
+                "key": "file.hash.md5",
+                "value": {
+                    "field": "md5"
+                }
+            },
+            {
+                "key": "file.hash.sha1",
+                "value": {
+                    "field": "sha1"
+                }
+            },
+            {
+                "key": "file.hash.sha256",
+                "value": {
+                    "field": "sha256"
+                }
+            },
+            {
+                "key": "file.inode",
+                "value": {
+                    "field": "inode"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "file_events",
+                        "fsevents",
+                        "filesystem_forensics",
+                        "macos"
+                    ]
+                }
+            }
+        ],
+        "id": "file_system_events_darwin_elastic",
+        "interval": "3600",
+        "platform": "darwin",
+        "timeout": 180,
+        "query": "-- File System Events (macOS) via FSEvents\n-- Tracks filesystem changes including file creation, modification, deletion with hashes\n-- REQUIRED: Enable in Kibana osquery integration config:\n-- {\"options\":{\"disable_events\":\"false\",\"enable_file_events\":\"true\"},\"file_paths\":{\"users\":[\"/Users/%%\"],\"apps\":[\"/Applications/%%\"],\"tmp\":[\"/tmp/%%\"]},\"exclude_paths\":{\"var_folders\":[\"/private/var/folders/%\"]}}\nSELECT\n  action,\n  CASE\n    WHEN action = 'CREATED' THEN 'creation'\n    WHEN action = 'DELETED' THEN 'deletion'\n    ELSE 'change'\n  END AS event_type,\n  category,\n  target_path,\n  md5,\n  sha1,\n  sha256,\n  concat('https://www.virustotal.com/gui/file/', sha256) AS vt_link,\n  inode,\n  datetime(time, 'unixepoch') AS event_time,\n  transaction_id\nFROM file_events\nWHERE action IS NOT NULL\n  -- Exclude noisy system paths\n  AND target_path NOT LIKE '/private/var/folders/%'\n  AND target_path NOT LIKE '%/.DS_Store'\n  AND target_path NOT LIKE '/private/var/db/%'\n  AND target_path NOT LIKE '%.localized'",
+        "updated_at": "2026-01-27T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-6954690d-32c3-4c50-a973-3fae66114349",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-01-27T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

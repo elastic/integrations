@@ -1,0 +1,105 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic",
+            "Austin Songer"
+        ],
+        "description": "Identifies the first occurrence of SSO, SAML, or federated authentication errors for a user. These errors may indicate token manipulation, SAML assertion tampering, or OAuth phishing attempts. Modern adversaries often target SSO mechanisms through token theft, SAML response manipulation, or exploiting federated authentication weaknesses rather than traditional brute force attacks.",
+        "false_positives": [
+            "Initial SSO configuration issues or first-time federation setup errors for legitimate users may trigger this detection. Temporary federation service outages affecting multiple users simultaneously."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-10d",
+        "index": [
+            "logs-o365.audit-*",
+            "filebeat-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "M365 Identity Unusual SSO Authentication Errors for User",
+        "new_terms_fields": [
+            "o365.audit.UserId",
+            "o365.audit.ErrorNumber"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating M365 Identity Unusual SSO Authentication Errors for User\n\nSSO, SAML, and federated authentication mechanisms are critical infrastructure for modern identity access. Adversaries increasingly\ntarget these systems through token manipulation, SAML response tampering, OAuth phishing, and exploitation of federated trust\nrelationships rather than traditional credential brute forcing. This detection identifies when a user experiences SSO-related\nauthentication errors that are unusual for their typical behavior, which may indicate an attacker attempting to abuse stolen tokens or manipulate\nauthentication flows.\n\n### Possible investigation steps\n\n- Review the specific error code(s) in the `o365.audit.ErrorNumber` field to understand the nature of the authentication failure\n  (e.g., token signature failure, SAML assertion tampering, cross-tenant token misuse). Reference Microsoft's AADSTS error codes\n  at https://login.microsoftonline.com/error?code=<ErrorNumber> for detailed descriptions.\n- Examine the source IP address and geolocation of the authentication attempt - compare against the user's typical login patterns.\n- Check for concurrent authentication activity from the same user - multiple SSO errors alongside successful logins may indicate\n  token replay or session hijacking attempts.\n- Investigate recent OAuth application consent activity for this user - OAuth phishing campaigns often precede SSO manipulation attempts.\n- Review the target application or service principal being accessed during the failed authentication to identify potential attacker objectives.\n- Analyze the user's recent mailbox activity, particularly for phishing emails with OAuth consent links or suspicious authentication requests.\n- Check for any recent changes to the user's federation settings, registered devices, or authentication methods.\n- Correlate with Entra ID risky sign-in detections and risky user alerts for the same account.\n\n### False positive analysis\n\n- First-time SSO setup: Users configuring SSO access to a new federated application may encounter initial authentication errors.\n  Validate whether the errors occurred during expected onboarding windows.\n- Federation service outages: Widespread SSO errors affecting multiple users simultaneously often indicate infrastructure issues\n  rather than targeted attacks. Check for service health incidents in the same timeframe.\n- Certificate rotation: Federated authentication certificate renewals can temporarily cause signature validation errors. Verify\n  if the errors align with planned certificate maintenance.\n- Legitimate cross-tenant access: Users with business relationships across multiple tenants may encounter cross-tenant policy\n  errors during authorized access attempts.\n\n### Response and remediation\n\n- If token manipulation or SAML tampering is suspected, immediately revoke all active sessions and refresh tokens for the affected user.\n- Review and audit all OAuth application consents granted by the user - remove any suspicious or unrecognized applications.\n- Enable Conditional Access policies requiring compliant devices and MFA for SSO authentication if not already enforced.\n- If cross-tenant token misuse is detected, review and restrict external collaboration settings and cross-tenant access policies.\n- For SAML assertion or signature errors, validate the integrity of federation trust certificates and metadata.\n- Investigate whether the user's credentials have been compromised - enforce password reset if credential theft is suspected.\n- Review Entra ID audit logs for unusual application registrations, service principal modifications, or federation setting changes.\n- Escalate to the security operations team if evidence suggests active token theft, SAML Golden Ticket techniques, or OAuth phishing campaigns.",
+        "query": "event.dataset:o365.audit\n    and event.provider:AzureActiveDirectory\n    and event.category:authentication\n    and o365.audit.ErrorNumber:(\n        20001 or 20012 or 20033 or 40008 or 40009 or 40015 or\n        50006 or 50008 or 50012 or 50013 or 50027 or 50048 or\n        50099 or 50132 or 75005 or 75008 or 75011 or 75016 or\n        81004 or 81009 or 81010 or 399284 or 500212 or 500213 or\n        700005 or 5000819\n    )\n",
+        "references": [
+            "https://techcommunity.microsoft.com/blog/microsoft-entra-blog/understanding-and-mitigating-golden-saml-attacks/4418864",
+            "https://www.semperis.com/blog/meet-silver-saml/"
+        ],
+        "related_integrations": [
+            {
+                "package": "o365",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.ErrorNumber",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "2de10e77-c144-4e69-afb7-344e7127abd0",
+        "severity": "medium",
+        "tags": [
+            "Domain: Identity",
+            "Data Source: Microsoft 365",
+            "Data Source: Microsoft 365 Audit Logs",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.004",
+                                "name": "Cloud Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 213
+    },
+    "id": "2de10e77-c144-4e69-afb7-344e7127abd0_213",
+    "type": "security-rule"
+}

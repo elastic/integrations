@@ -13,7 +13,9 @@ resource.ssl: {{ssl}}
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
+{{#if max_executions}}
 max_executions: {{max_executions}}
+{{/if}}
 resource.url: {{api_host}}
 tags:
 {{#if preserve_original_event}}
@@ -51,6 +53,7 @@ program: |-
   						"op": "GreaterEqual",
   						"values": timeframe.startTime,
   					},
+  					?"after": state.?cursor.end_cursor,
   				},
   			}.encode_json(),
   		}
@@ -67,6 +70,10 @@ program: |-
   						),
   						"cursor": {
   							"end_time": (size(nodes) > 0) ? nodes[size(nodes) - 1].time : state.?cursor.end_time,
+  							?"end_cursor": body.data.events.pageInfo.hasNextPage ?
+  								optional.of(body.data.events.pageInfo.endCursor)
+  							:
+  								optional.none(),
   						},
   						"want_more": body.data.events.pageInfo.hasNextPage,
   					}
@@ -82,8 +89,8 @@ state:
   initial_interval: {{initial_interval}}
   preserve_original_event: {{preserve_original_event}}
   query: >-
-    query getEvents($first: Int, $filter: EventsExpressionsParams){
-      events(first: $first, filter: $filter ) {
+    query getEvents($first: Int, $after: String, $filter: EventsExpressionsParams){
+      events(first: $first, after: $after, filter: $filter ) {
         pageInfo {
           hasNextPage
           endCursor

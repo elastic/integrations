@@ -23,6 +23,19 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 #### Expiration of Indicators of Compromise (IOCs)
 The ingested IOCs expire after certain duration which is indicated by the `decayed` field. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates destination indices named `logs-ti_misp_latest.dest_threat_attributes-*` which only contains active and unexpired IOCs. The latest destination index also has an alias named `logs-ti_misp_latest.threat_attributes`. When querying for active indicators or setting up indicator match rules, only use the latest destination indices or the alias to avoid false positives from expired IOCs. Dashboards for `Threat Attributes` datastream are also pointing to the latest destination indices containing active IoCs. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source datastream `.ds-logs-ti_misp.threat_attributes-*` indices.
 
+#### Daily Refetch Mode
+By default, the integration uses incremental updates, only fetching attributes that have been modified since the last poll (tracked via an internal cursor). However, MISP's decay scores are dynamic and decrease over time, which means an attribute's decay status may change without the attribute itself being modified. In such cases, incremental updates would not capture the updated decay state.
+
+To address this, users can enable the `Enable Daily Refetch` toggle. When enabled, the integration will:
+1. **Perform a daily full refetch**: Every 24 hours, the cursor is reset and all attributes from the configured `Initial Interval` are re-fetched from MISP.
+2. **Update decay states**: Thanks to the re-ingest of all attributes with their current decay scores from MISP, it removes any that have since been marked as decayed from destination indices.
+
+This approach ensures that:
+- The destination indices stay aligned with MISP's current view of valid indicators
+- Attributes that become decayed in MISP are automatically removed in the next refetch cycle from destination indices
+
+**Note**: This mode will re-ingest all attributes within the `Initial Interval` window, which may result in higher data volume during the refetch period. The transform handles deduplication via unique keys. Attributes already marked as decayed by MISP's decay models during ingestion will be removed immediately.
+
 #### Handling Orphaned IOCs
 Some IOCs may never get decayed/expired and will continue to stay in the latest destination indices `logs-ti_misp_latest.dest_threat_attributes-*`. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter while setting up the integration. This parameter deletes all data inside the destination indices `logs-ti_misp_latest.dest_threat_attributes-*` after this specified duration is reached, defaults to `90d` after attribute's `max(last_seen, timestamp)`. Note that `IOC Expiration Duration` parameter only exists to add a fail-safe default expiration in case IOCs never expire.
 

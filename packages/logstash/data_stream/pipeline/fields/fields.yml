@@ -7,6 +7,7 @@
       description: Logstash Pipeline id/name
     - name: elasticsearch.cluster.id
       type: keyword
+      dimension: true
       description: Elasticsearch clusters this Logstash pipeline is attached to
     - name: info
       description: Information about a Logstash Pipeline
@@ -14,12 +15,15 @@
       fields:
         - name: batch_size
           type: long
+          metric_type: gauge
           description: Batch size for the running pipeline
         - name: batch_delay
           type: long
+          metric_type: gauge
           description: Batch delay for the running pipeline
         - name: workers
           type: long
+          metric_type: gauge
           description: Number of workers for the running pipeline
         - name: ephemeral_id
           type: keyword
@@ -31,6 +35,7 @@
       fields:
         - name: name
           type: keyword
+          dimension: true
           description: Host name of the node running logstash
         - name: address
           type: keyword
@@ -40,6 +45,24 @@
       type: group
       description: Total metrics on Logstash Pipeline
       fields:
+        - name: batch.event_count.current
+          type: long
+          description: Number of events contained in batch by the pipeline
+          metric_type: gauge
+        - name: batch.event_count.average.lifetime
+          type: long
+          description: Number of average events contained in batch by the pipeline (Lifetime)
+          metric_type: gauge
+        - name: batch.byte_size.current
+          type: long
+          unit: byte
+          description: Size in bytes of batch by the pipeline
+          metric_type: gauge
+        - name: batch.byte_size.average.lifetime
+          type: long
+          unit: byte
+          description: Average size in bytes of batch by the pipeline (Lifetime)
+          metric_type: gauge
         - name: events.filtered
           type: long
           description: Number of events filtered by the pipeline
@@ -143,11 +166,12 @@
           fields:
             - name: type
               type: keyword
+              dimension: true
               description: Type of queue - persistent or memory
             - name: events
               type: long
               description: Number of events in the PQ for this pipeline
-              metric_type: counter
+              metric_type: gauge
             - name: current_size.bytes
               type: long
               metric_type: gauge

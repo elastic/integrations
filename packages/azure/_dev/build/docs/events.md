@@ -47,16 +47,16 @@ The integration v2 preview avoids contention and inefficiencies from using multi
 
 ### Event Hub Processor v2 ✨
 
-The integration v2 preview offers a new processor v2 starting with integration version 1.23.0.
+As of version 1.23.0, the integration preview includes the new Processor v2.
 
-The processor v2 introduces several changes:
+Processor v2 introduces several key improvements:
 
-* It uses the latest Event Hubs SDK from Azure.
-* It uses a more efficient checkpoint store based on Azure Blob Storage metadata.
+* Built on the latest Azure Event Hubs SDK.
+* Features a more efficient checkpoint store leveraging Azure Blob Storage metadata.
 
-The processor v2 is in preview. Processor v1 is still the default and is recommended for typical use cases.
+Processor v2 is the default and the recommended standard for all use cases. Processor v1 is being retained as a legacy option to ensure backward compatibility until the next major release.
 
-See the "Event Hub Processor v2 only" section in the integration settings for more details about enabling the processor v2.
+For details on configuration, see the "Event Hub Processor v2 only" section in the integration settings.
 
 ### FAQ
 
@@ -104,13 +104,49 @@ Use the following table to identify the target data streams for each log categor
 | `logs-azure.graphactivitylog-*`    | `MicrosoftGraphActivityLogs`                                                                                                                                 |
 | `logs-azure.identity_protection-*` | `RiskyUsers`, `UserRiskEvents`                                                                                                                               |
 | `logs-azure.provisioning-*`        | `ProvisioningLogs`                                                                                                                                           |
-| `logs-azure.signinlogs-*`          | `SignInLogs`, `NonInteractiveUserSignInLogs`, `ServicePrincipalSignInLogs`, `ManagedIdentitySignInLogs`                                                      |
+| `logs-azure.signinlogs-*`          | `*SignInLogs`                                                      |
 | `logs-azure.springcloudlogs-*`     | `ApplicationConsole`, `SystemLogs`, `IngressLogs`, `BuildLogs`, `ContainerEventLogs`                                                                         |
 | `logs-azure.platformlogs-*`        | All other log categories                                                                                                                                     |
 
-### What about all other log categories?
+### Question: What about all other log categories?
 
 The integration indexes all other Azure logs categories using the `logs-azure.platformlogs-*` data stream.
+
+### Question: Can I route the log events to a different data stream?
+
+Yes, you can route the log events to a different data stream by creating a `logs-azure.events@custom` pipeline.
+
+The default pipeline extracts the `routing.category` field and hands it off to the custom pipeline, where you can implement your routing logic.
+
+You can create this pipeline via the integration settings (**Change defaults > Advanced options > Ingest pipelines**) or alternatively using **Dev Tools**.
+
+If you prefer using the Dev Tools, here is a sample configuration that routes the `SQLSecurityAuditEvents` category to a dedicated data stream.
+
+First, check for an existing `logs-azure.events@custom` pipeline:
+
+```text
+GET _ingest/pipeline/logs-azure.events@custom
+```
+
+If a pipeline already exists, you will need to update it to include the reroute processor.
+
+To define a new `logs-azure.events@custom` pipeline, use the following:
+
+```text
+PUT _ingest/pipeline/logs-azure.events@custom
+{
+  "processors": [
+    {
+      "reroute": {
+        "if": "ctx?.routing?.category == \"SQLSecurityAuditEvents\"",
+        "dataset": "azure.synapse"
+      }
+    }
+  ]
+}
+```
+
+You can target a new dataset (such as `azure.synapse` shown above) or any of the existing out-of-the-box datasets like `azure.activitylogs`.
 
 ## Requirements
 
@@ -347,9 +383,13 @@ Consumer groups allow multiple Elastic Agents assigned to the same agent policy 
 
 In most cases, you can use the default consumer group named `$Default`. If `$Default` is already used by other applications, you can create a consumer group dedicated to the Azure Logs integration.
 
-#### Connection string
+#### Authentication
 
-The Elastic Agent requires a connection string to access the event hub and fetch the exported logs. The connection string contains details about the event hub used and the credentials required to access it.
+The integration supports two authentication methods: **connection string** (shared access key) and **client secret** (Microsoft Entra ID). The same method is used for both Event Hub and Storage Account.
+
+##### Connection string authentication
+
+The Elastic Agent can use a connection string to access the event hub and fetch the exported logs. The connection string contains details about the event hub and the credentials required to access it.
 
 To get the connection string for your Event Hubs namespace:
 
@@ -366,6 +406,36 @@ Create a new Shared Access Policy (SAS):
 When the SAS Policy is ready, select it to display the information panel.
 
 Take note of the **Connection string–primary key**, which you will use later when specifying a **connection_string** in the integration settings.
+
+##### Client secret authentication (Microsoft Entra ID)
+
+Instead of a connection string, you can authenticate using a Microsoft Entra ID app registration (service principal) with a client secret. This uses Azure RBAC and is useful when you want to avoid shared keys or enforce role-based access.
+
+**Prerequisites:** An Event Hub, a Storage Account, and a Microsoft Entra ID app registration with a client secret.
+
+**Steps:**
+
+1. **Register an app in Microsoft Entra ID**
+   In the [Azure Portal](https://portal.azure.com/), go to **Microsoft Entra ID** > **App registrations** > **New registration**. Note the **Application (client) ID** and **Directory (tenant) ID**.
+
+2. **Create a client secret**
+   In the app, go to **Certificates & secrets** > **New client secret**. Copy the secret value; you will need it in the integration (e.g. `client_secret`). It is shown only once.
+
+3. **Assign required permissions to the app**
+   The service principal needs the following Azure RBAC permissions (see the [Filebeat azure-eventhub input reference](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) for the same requirements):
+
+   **For Azure Event Hubs:**
+   - **Azure Event Hubs Data Receiver** role on the Event Hubs namespace or Event Hub, or
+   - A custom role with: `Microsoft.EventHub/namespaces/eventhubs/read`, `Microsoft.EventHub/namespaces/eventhubs/consumergroups/read`
+
+   **For Azure Storage Account:**
+   - **Storage Blob Data Contributor** role on the Storage Account or container, or
+   - A custom role with: `Microsoft.Storage/storageAccounts/blobServices/containers/read`, `Microsoft.Storage/storageAccounts/blobServices/containers/write`, `Microsoft.Storage/storageAccounts/blobServices/containers/delete`, `Microsoft.Storage/storageAccounts/blobServices/generateUserDelegationKey/action`
+
+   For detailed setup, see the Microsoft documentation: [Create an Azure service principal with Azure CLI](https://learn.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli), [Create an Azure AD app registration using the Azure portal](https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal), [Assign Azure roles using Azure CLI](https://learn.microsoft.com/en-us/azure/role-based-access-control/role-assignments-cli), [Azure Event Hubs authentication and authorization](https://learn.microsoft.com/en-us/azure/event-hubs/authorize-access-azure-active-directory), [Authorize access to blobs using Azure Active Directory](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-access-azure-active-directory).
+
+4. **Configure the integration**
+   Set **Authentication type** to **Client Secret**. Provide **Tenant ID**, **Client ID**, **Client Secret**, and the fully qualified **Event Hub namespace** (e.g. `yournamespace.servicebus.windows.net`). Use the same Storage Account and container as for connection string authentication; the integration will use the client secret to access both Event Hubs and Storage.
 
 ### Create a diagnostic settings
 
@@ -453,7 +523,12 @@ The Elastic Agent can use a single Storage Account to store the checkpoint infor
 
 ### Running the integration behind a firewall
 
-When you run the Elastic Agent behind a firewall, you must allow traffic on ports `5671` and `5672` for the event hub and port `443` for the Storage Account container to ensure proper communication with the necessary components.
+When the Elastic Agent runs in an environment with network restrictions, you need to check if the required ports are open, depending on the transport protocol used by the integration.
+
+The Elastic agent requires access to the following Azure services:
+
+- Event Hubs
+- Storage Accounts
 
 ```text
 ┌────────────────────────────────┐  ┌───────────────────┐  ┌───────────────────┐
@@ -481,18 +556,31 @@ When you run the Elastic Agent behind a firewall, you must allow traffic on port
 └─Azure──────────────────────────┘
 ```
 
-#### Event Hub
+#### Event Hubs (AMQP)
 
-Port `5671` and `5672` are commonly used for secure communication with the event hub. These ports are used to receive events. The Elastic Agent can establish a secure connection with the event hub by allowing traffic on these ports. 
+By default, the integration uses AMQP to communicate with the event hub.
+
+AMQP uses port `5671` and `5672` for secure communication with the event hub. The Elastic Agent acts as a client and initiates **outbound TCP connections** to these ports on the Azure Event Hubs service. By allowing outgoing traffic to these ports, the Elastic Agent can establish a secure connection with the event hub to receive events. 
 
 For more information, check the following documents:
 
-* [What ports do I need to open on the firewall?](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall) from the [Event Hubs frequently asked questions](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall).
-* [AMQP outbound port requirements](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-protocol-guide#amqp-outbound-port-requirements)
+- [What ports do I need to open on the firewall?](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall) from the [Event Hubs frequently asked questions](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall).
+- [AMQP outbound port requirements](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-protocol-guide#amqp-outbound-port-requirements)
 
-#### Storage Account container
+#### Event Hubs (AMQP-over-Websockets)
 
-The Elastic Agent uses port `443` for secure communication with the Storage Account container. By allowing traffic on port 443, the Elastic Agent can securely access and interact with the Storage Account container, essential for storing and retrieving checkpoint data for each event hub partition.
+If ports `5671` / `5672` are blocked in your environment, the integration can use AMQP-over-WebSockets instead. This protocol tunnels AMQP over port `443` (HTTPS), which is typically allowed through firewalls.
+
+##### Requirements
+
+- **Elastic Agent version**: 8.19.10, 9.1.10, 9.2.4, or later.
+- **Processor version**: You must set the `Processor version` to `v2` in the integration settings
+
+To use AMQP-over-Websockets, set the **Event Hubs transport protocol** setting to "AMQP-over-WebSockets" in the **Advanced options** section of the integration.
+
+#### Storage Account
+
+The Elastic Agent initiates **outbound TCP connections** to port `443` (HTTPS) to communicate with the Azure Storage Account service. By allowing outgoing traffic to port `443`, the Elastic Agent can securely access and interact with the Storage Account service, which is essential for storing and retrieving checkpoint data for each event hub partition.
 
 #### DNS
 
@@ -504,9 +592,25 @@ Optionally, you can restrict the traffic to the following domain names:
 *.cloudapp.net
 ```
 
+#### Proxy Support
+
+When using AMQP-over-WebSockets, both Event Hubs and Storage Account traffic use HTTPS (port `443`), which enables proxy support.
+
+The integration supports proxying traffic to the Azure services using the `HTTPS_PROXY` environment variable.
+
+##### Requirements
+
+- **Transport protocol**: You need to set the **Event Hubs transport protocol** setting to "AMQP-over-WebSockets" when using a proxy.
+- **Elastic Agent version**: 8.19.10, 9.1.10, 9.2.4, or later.
+- **Processor version**: You must set the `Processor version` to `v2` in the integration settings
+
 ## Settings
 
 Use the following settings to configure the Azure Logs integration when you add it to Fleet.
+
+`auth_type` :
+_string_
+Authentication method for Event Hub and Storage Account. **Connection String** (default): use `connection_string` and `storage_account_key`. **Client Secret**: use Microsoft Entra ID with `tenant_id`, `client_id`, `client_secret`, and `eventhub_namespace` (RBAC); no connection string or storage key needed.
 
 `eventhub` :
 _string_
@@ -520,10 +624,7 @@ Default value: `$Default`
 
 `connection_string` :
 _string_
-
-The connection string is required to communicate with Event Hubs. See [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string) for more information.
-
-A Blob Storage account is required to store/retrieve/update the offset or state of the event hub messages. This allows the integration to start back up when it stopped processing messages.
+(Required when `auth_type` is **Connection String**.) The connection string required to communicate with Event Hubs. See [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string).
 
 `storage_account` :
 _string_
@@ -531,7 +632,27 @@ The name of the storage account that the state/offsets will be stored and update
 
 `storage_account_key` :
 _string_
-The storage account key. Used to authorize access to data in your storage account.
+(Required when `auth_type` is **Connection String**.) The storage account key used to authorize access to checkpoint data. Not used when `auth_type` is **Client Secret**; the integration uses the same client secret for Storage.
+
+`eventhub_namespace` :
+_string_
+(Required when `auth_type` is **Client Secret**.) The fully qualified Event Hubs namespace (e.g. `yournamespace.servicebus.windows.net`). Do not use the short namespace name.
+
+`tenant_id` :
+_string_
+(Required when `auth_type` is **Client Secret**.) Microsoft Entra ID (directory) tenant ID where the app is registered.
+
+`client_id` :
+_string_
+(Required when `auth_type` is **Client Secret**.) Microsoft Entra ID application (client) ID. The app's service principal must have **Azure Event Hubs Data Receiver** on the Event Hub and **Storage Blob Data Contributor** on the Storage Account.
+
+`client_secret` :
+_string_
+(Required when `auth_type` is **Client Secret**.) Microsoft Entra ID application client secret from the app's Certificates & secrets.
+
+`authority_host` :
+_string_
+(Optional, for client secret authentication.) Microsoft Entra ID authority endpoint. Defaults to `https://login.microsoftonline.com` (Azure Public Cloud). Use a different endpoint for other clouds (e.g. Azure Government, China, Germany).
 
 `storage_account_container` :
 _string_
@@ -556,7 +677,7 @@ The following settings are **event hub processor v2 only** and available in the 
 
 `processor_version` :
 _string_
-(processor v2 only) The processor version that the integration should use. Possible values are `v1` and `v2` (preview). The processor v2 is in preview. Using the processor v1 is recommended for typical use cases. Default is `v1`.
+(processor v2 only) The processor version that the integration should use. Possible values are `v1` (legacy) and `v2`. Using the processor v2 is recommended for typical use cases. Default is `v2`.
 
 `processor_update_interval` :
 _string_
@@ -573,9 +694,11 @@ Possible values are `earliest` and `latest`.
 
 `migrate_checkpoint` :
 _boolean_
-(processor v2 only) Flag to control whether the processor should perform the checkpoint information migration from v1 to v2 at startup. The checkpoint migration converts the checkpoint information from the v1 format to the v2 format.
+(processor v2 only) Controls processor behavior upon the initial transition from v1 to v2. If you are starting directly with v2, you can disregard this setting.
 
-Default is `false`, which means the processor will not perform the checkpoint migration.
+Defaults to `true`, which means the processor will automatically migrate checkpoint information from the v1 format to v2.
+
+If set to `false`, the processor will bypass existing v1 checkpoints and replay all events in the Event Hub from the start of the retention window. For example, if set to `false` on an Event Hub with a 1-hour retention period, the processor will replay the last hour's worth of data.
 
 `endpoint_suffix` :
 _string_
@@ -592,6 +715,15 @@ _string_
 (processor v2 only) Maximum number of messages from the event hub to wait for before processing them.
 
 The partition consumer waits up to a "receive count" or a "receive timeout", whichever comes first. Default is `100` messages.
+
+`transport` :
+_string_
+(processor v2 only) The transport protocol to use when connecting to the Event Hub. Possible values are:
+
+* `amqp` (default): Use AMQP protocol (ports 5671/5672).
+* `websocket`: Use AMQP over WebSockets (port 443). Use this option in environments where AMQP ports are blocked.
+
+When `websocket` is selected, all traffic flows over HTTPS (port 443), enabling proxy support via the `HTTPS_PROXY` environment variable.
 
 ## Handling Malformed JSON in Azure Logs
 

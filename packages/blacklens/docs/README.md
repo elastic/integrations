@@ -4,6 +4,11 @@ The [blacklens.io](https://blacklens.io) integration allows you to monitor alert
 
 Use the blacklens.io integration to fetch all related alerts about your Attack Surface. Then visualize that data in Kibana and create further alerts or enrich the data with other security solutions.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Data streams
 
 The blacklens.io integration collects one type of data streams: logs
@@ -54,64 +59,69 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "input": {
-        "type": "httpjson"
-    },
+    "@timestamp": "2026-02-03T06:17:57.260Z",
     "agent": {
-        "name": "example-agent",
-        "id": "example-agent-id-12345",
+        "ephemeral_id": "23a29ca3-cffa-4f55-9ef4-536308f22c95",
+        "id": "6bcec12d-6281-4434-99e0-eb2f7c014fbf",
+        "name": "elastic-agent-84667",
         "type": "filebeat",
-        "ephemeral_id": "ephemeral-id-12345",
-        "version": "8.15.2"
-    },
-    "@timestamp": "2024-11-07T08:09:22.094Z",
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "blacklens.alerts"
-    },
-    "elastic_agent": {
-        "id": "example-agent-id-12345",
-        "version": "8.15.2",
-        "snapshot": false
-    },
-    "host": {
-        "name": "example-host"
+        "version": "8.19.10"
     },
     "blacklens": {
         "alert": {
-            "severity": "info",
-            "type_id": 1001,
-            "details": [],
-            "updated_date": "2024-08-14T15:06:13.151Z",
-            "id": 12345,
-            "type": "Example Threat System (ETS)",
-            "title": "Example Threat Scan Notification",
-            "outcome": "undefined",
-            "status": "resolved"
+            "activities": [
+                {
+                    "category": "threat",
+                    "created_date": "2026-02-03T06:17:57.260Z",
+                    "description": "A Critical severity external vulnerability 'Blind SQL Injection via HTTP Header' has been detected on asset 'demo.example.com'",
+                    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa5",
+                    "trace_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "type": "ExternalVulnerabilityCreated",
+                    "updated_date": "2026-02-03T06:17:57.260Z"
+                }
+            ],
+            "analysis": "ongoing",
+            "category": "vulnerability",
+            "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "name": "External Vulnerability",
+            "severity": "medium",
+            "status": "new",
+            "updated_date": "2026-02-03T06:17:57.260Z"
         }
     },
-    "message": "{\"affected_entities\":null,\"alert_outcome\":\"undefined\",\"alert_payload\":[],\"reference\":\"https://example.com/reference123\"}],\"alert_status\":\"resolved\",\"created_date\":\"2024-11-07T08:09:22.094028Z\",\"customer_state\":\"open\",\"details\":{\"engine\":\"Example Threat System (ETS)\",\"id\":1001,\"title\":\"Example Threat Scan Notification\"},\"id\":12345,\"severity\":\"info\",\"type_id\":1001,\"updated_date\":\"2024-08-14T15:06:13.151728Z\"}",
+    "data_stream": {
+        "dataset": "blacklens.alerts",
+        "namespace": "43517",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "6bcec12d-6281-4434-99e0-eb2f7c014fbf",
+        "snapshot": false,
+        "version": "8.19.10"
+    },
     "event": {
-        "id": 12345,
         "agent_id_status": "verified",
-        "ingested": "2024-11-07T09:45:30Z",
-        "created": "2024-11-07T09:45:29.354Z",
-        "kind": "alert",
         "category": [
             "threat"
         ],
+        "created": "2026-03-31T08:58:43.557Z",
+        "dataset": "blacklens.alerts",
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "ingested": "2026-03-31T08:58:46Z",
+        "kind": "alert",
         "type": [
             "indicator"
-        ],
-        "dataset": "blacklens.alerts"
+        ]
+    },
+    "input": {
+        "type": "httpjson"
     },
     "tags": [
         "forwarded",
-        "example-alert"
+        "blacklens-alert"
     ]
 }
 ```
@@ -121,20 +131,26 @@ An example event for `alerts` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| blacklens.alert.details | Alert Details | nested |
-| blacklens.alert.id | Unique Alert ID | integer |
-| blacklens.alert.outcome | Determines whether the current alert triggers further events | keyword |
+| blacklens.alert.activities.category |  | keyword |
+| blacklens.alert.activities.created_date |  | date |
+| blacklens.alert.activities.data |  | nested |
+| blacklens.alert.activities.description |  | keyword |
+| blacklens.alert.activities.id |  | keyword |
+| blacklens.alert.activities.trace_id |  | keyword |
+| blacklens.alert.activities.type |  | keyword |
+| blacklens.alert.activities.updated_date |  | date |
+| blacklens.alert.analysis | Determines whether the current alert triggers further events | keyword |
+| blacklens.alert.category | Alert category | keyword |
+| blacklens.alert.id | Unique Alert ID | keyword |
+| blacklens.alert.name | Name of the given Alert | keyword |
 | blacklens.alert.severity | Alert Severity | keyword |
 | blacklens.alert.status | Current Status of the Alert | keyword |
-| blacklens.alert.title | Title/Description of the given Alert | keyword |
-| blacklens.alert.type | Alert Type (Engine) | keyword |
-| blacklens.alert.type_id | Alert Type ID (Engine) | integer |
 | blacklens.alert.updated_date | Activity last updated time (UTC). | date |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
-| event.kind |  | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | observer.product |  | constant_keyword |

@@ -22,36 +22,90 @@ redact:
     - access_key
     - secret_key
 program: |
-  request("GET", state.url.trim_right("/") + "/scans").with({
-    "Header":{
-      "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
-      "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/3.0.0)"]
-    }
-  }).do_request().as(resp,
-    resp.StatusCode == 200 ?
-      bytes(resp.Body).decode_json().as(body, {
-        "events": has(body.scans) ? body.scans.map(e, { "message": e.encode_json() }) : [{}],
-        "access_key": state.access_key,
-        "secret_key": state.secret_key
-      })
+  // Using worklist pattern: fetch scans, then process one at a time fetching details for each
+  state.with(
+    // If worklist has scans, skip fetching and proceed to details
+    (has(state.worklist) && size(state.worklist) > 0) ?
+      {}
     :
-      {
-        "events": {
-          "error": {
-            "code": string(resp.StatusCode),
-            "id": string(resp.Status),
-            "message": "GET:"+(
-              size(resp.Body) != 0 ?
-                string(resp.Body)
-              :
-                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-            ),
-          },
-        },
-        "access_key": state.access_key,
-        "secret_key": state.secret_key
-      }
+      // Fetch all scans and populate worklist
+      request("GET", state.url.trim_right("/") + "/scans").with({
+        "Header": {
+          "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
+          "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/3.0.0)"]
+        }
+      }).do_request().as(resp,
+        resp.StatusCode == 200 ?
+          bytes(resp.Body).decode_json().as(body, {
+            "worklist": has(body.scans) ? body.scans : [],
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /scans: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                )
+              }
+            },
+            "want_more": false
+          }
+      )
+  ).as(state,
+    // Process first scan in worklist
+    (has(state.worklist) && size(state.worklist) > 0) ?
+      state.worklist[0].as(scan,
+        state.with(
+          request("GET", state.url.trim_right("/") + "/was/v2/scans/" + string(scan.id)).with({
+            "Header": {
+              "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
+              "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/3.0.0)"]
+            }
+          }).do_request().as(details_resp,
+            details_resp.StatusCode == 200 ?
+              bytes(details_resp.Body).decode_json().as(scan_details, {
+                "events": [{"message": scan.with({"scan_details": scan_details}).encode_json()}],
+                "worklist": size(state.worklist) > 1 ? tail(state.worklist) : [],
+                "want_more": size(state.worklist) > 1
+              })
+            : details_resp.StatusCode == 404 ?
+              // 404 Not Found - skip this scan and continue immediately with remaining worklist
+              {
+                "events": [{"event": {"reason": "want_more"}}],
+                "worklist": size(state.worklist) > 1 ? tail(state.worklist) : [],
+                "want_more": size(state.worklist) > 1
+              }
+            :
+              // Other errors - emit error, keep worklist unchanged, sleep until next interval
+              {
+                "events": {
+                  "error": {
+                    "code": string(details_resp.StatusCode),
+                    "id": string(details_resp.Status),
+                    "message": "GET /was/v2/scans/" + string(scan.id) + ": " + (
+                      size(details_resp.Body) != 0 ?
+                        string(details_resp.Body)
+                      :
+                        string(details_resp.Status) + ' (' + string(details_resp.StatusCode) + ')'
+                    )
+                  }
+                },
+                "worklist": state.worklist,
+                "want_more": false
+              }
+          )
+        )
+      )
+    :
+      // No worklist or worklist is empty - pass through state
+      state
   )
+  
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

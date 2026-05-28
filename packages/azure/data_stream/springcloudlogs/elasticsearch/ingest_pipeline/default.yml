@@ -8,6 +8,10 @@ processors:
       field: azure
       target_field: azure-eventhub
       ignore_missing: true
+  - remove:
+      field: routing.category
+      ignore_missing: true
+      description: Remove the routing.category field if it exists.
   - script:
       source: ctx.message = ctx.message.replace(params.empty_field_name, '')
       params:
@@ -51,21 +55,38 @@ processors:
             value: 'Received invalid json from the Azure Cloud platform. Unable to parse the source log message'
             ignore_failure: true
   - drop:
-      if: "ctx.azure.springcloudlogs.category != 'SystemLogs' && ctx.azure.springcloudlogs.category != 'ApplicationConsole'"
+      if: 'ctx.azure.springcloudlogs.category != "SystemLogs" && ctx.azure.springcloudlogs.category != "ApplicationConsole" && ctx.azure.springcloudlogs.category != "IngressLogs" && ctx.azure.springcloudlogs.category != "BuildLogs" && ctx.azure.springcloudlogs.category != "ContainerEventLogs"'
       ignore_failure: true
   - date:
       field: azure.springcloudlogs.time
       target_field: '@timestamp'
       ignore_failure: true
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
         - ISO8601
+        - "M/d/yyyy h:mm:ss a XXX"
+        - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - date:
       field: azure.springcloudlogs.EventTimeString
       target_field: '@timestamp'
       ignore_failure: true
-      formats:
+      # Order is prioritized by observed frequency for this log
+      # category.
+      # We expect the first format to be used in 99% of cases.
+      # However, we include the other formats seen in other
+      # categories as a necessary fallback.
+      formats: 
         - ISO8601
         - "M/d/yyyy h:mm:ss a XXX"
+        - "M/d/yyyy h:mm:ss a"
+        - "M/d/yyyy H:mm:ss"
+        - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - remove:
       field: azure.springcloudlogs.time
       ignore_missing: true
@@ -301,8 +322,26 @@ processors:
       value: event
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
       field: error.message
-      value: |-
-        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'

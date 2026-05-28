@@ -160,3 +160,6 @@ The MySQL `status` dataset collects data from MySQL by running a `SHOW GLOBAL ST
 Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "status"}}
+
+## Alerting Rule Template
+{{alertRuleTemplates}}

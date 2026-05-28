@@ -1,0 +1,43 @@
+{
+  "id": "apache_otel-saturation-high-busy-workers",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "description": "Alerts when the busy-to-total worker ratio exceeds 0.85. The worker pool is close to exhaustion \u2014 new connections will be queued or refused shortly.",
+    "name": "[Apache OTel] High busy workers ratio",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "Apache",
+      "OTEL",
+      "Saturation"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "apache_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Apache high busy workers ratio\n\n### What fired\n`busy_workers / (busy_workers + idle_workers)` averaged above 0.85 during the evaluation window.\n\n### Why it matters\nApache handles concurrent connections with a fixed worker pool (`MaxRequestWorkers`). Once utilisation exceeds ~85% the remaining idle pool is too small to absorb short bursts, and once the pool reaches 100% new connections are either queued or rejected depending on MPM configuration.\n\n### Triage\n1. Overview dashboard: confirm per-host utilisation and trend.\n2. Check `apache.request.time` rate / `apache.requests` rate for latency increase \u2014 slow backends extend worker hold time and drive this metric.\n3. Inspect `apache.connections.async` (event MPM) \u2014 keep-alive accumulation is a common driver.\n4. Rule out traffic spikes (compare `apache.requests` rate to baseline).\n\n### Remediation\n- Increase `MaxRequestWorkers` (raising `ServerLimit` if needed).\n- Reduce per-request worker hold time by fixing slow backends or enabling mod_proxy / buffering.\n- Scale Apache horizontally.\n\n### Tuning\n- Threshold `> 0.85` is documented as the warning band. Use 0.80 for conservative tiers, 0.90 for aggressive.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert triggers when the ratio of busy workers to total workers exceeds the threshold.\n// High busy worker ratio indicates the server is near capacity and may start rejecting connections.\n// The alert is grouped by host name.\n// You can adjust the threshold value by modifying the busy_ratio in the WHERE clause (default: > 0.85 = 85%).\nFROM metrics-apachereceiver.otel-*\n| STATS busy_workers = AVG(metrics.apache.workers) WHERE attributes.state == \"busy\",\n        idle_workers = AVG(metrics.apache.workers) WHERE attributes.state == \"idle\"\n  BY resource.attributes.host.name\n| WHERE busy_workers IS NOT NULL AND idle_workers IS NOT NULL\n| EVAL total_workers = busy_workers + idle_workers\n| WHERE total_workers > 0\n| EVAL busy_ratio = busy_workers / total_workers\n| WHERE busy_ratio > 0.85\n| EVAL busy_ratio = ROUND(busy_ratio, 3)\n| KEEP resource.attributes.host.name, busy_workers, idle_workers, total_workers, busy_ratio\n| SORT busy_ratio DESC"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

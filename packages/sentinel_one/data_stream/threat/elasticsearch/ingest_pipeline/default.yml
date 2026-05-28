@@ -13,26 +13,32 @@ processors:
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
+      tag: set_ecs_version_b777da29
       field: ecs.version
-      value: '8.11.0'
+      value: '9.3.0'
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - script:
+      tag: script_098dfc3b
       description: Drops null/empty values from event recursively. Done to avoid work on empty values.
       lang: painless
       if: ctx.json != null
@@ -51,6 +57,7 @@ processors:
         }
         dropEmptyFields(ctx.json);
   - fingerprint:
+      tag: fingerprint_579f09ab
       fields:
         - json.threatInfo.createdAt
         - json.threatInfo.updatedAt
@@ -58,52 +65,64 @@ processors:
       target_field: _id
       ignore_missing: true
   - set:
+      tag: set_event_category_4a70693c
       field: event.category
       value: [threat]
       if: ctx.json?.threatInfo?.threatId != null && ctx.json.threatInfo.threatId != '' && ['exploit','pua'].contains(ctx.json?.threatInfo?.classification?.toLowerCase())
   - set:
+      tag: set_event_category_1f167047
       field: event.category
       value: [malware]
       if: ctx.json?.threatInfo?.threatId != null && ctx.json.threatInfo.threatId != '' && ['malware','ransomware','trojan','downloader'].contains(ctx.json?.threatInfo?.classification?.toLowerCase())
   - set:
+      tag: set_event_type_33c4282b
       field: event.type
       value: [indicator]
       if: ctx.json?.threatInfo?.threatId != null && ctx.json.threatInfo.threatId != '' && ['exploit','pua'].contains(ctx.json?.threatInfo?.classification?.toLowerCase())
   - set:
+      tag: set_event_type_3fd32bde
       field: event.type
       value: [info]
       if: ctx.json?.threatInfo?.threatId != null && ctx.json.threatInfo.threatId != '' && ['malware','ransomware','trojan','downloader'].contains(ctx.json?.threatInfo?.classification?.toLowerCase())
   - date:
+      tag: date_json_threatInfo_updatedAt_f0b375f7
       field: json.threatInfo.updatedAt
       if: ctx.json?.threatInfo?.updatedAt != null
       formats:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_4bc4663a
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
+      tag: join_json_threatInfo_engines_to_event_action_c01f0ea2
       field: json.threatInfo.engines
       target_field: event.action
       separator: ','
       ignore_failure: true
   - set:
+      tag: set_process_name_9495bed6
       field: process.name
       copy_from: json.threatInfo.originatorProcess
       ignore_empty_value: true
   - rename:
+      tag: rename_json_agentDetectionInfo_accountId_to_sentinel_one_threat_detection_account_id_de795184
       field: json.agentDetectionInfo.accountId
       target_field: sentinel_one.threat.detection.account.id
       ignore_missing: true
   - rename:
+      tag: rename_json_agentDetectionInfo_accountName_to_sentinel_one_threat_detection_account_name_e52fffc8
       field: json.agentDetectionInfo.accountName
       target_field: sentinel_one.threat.detection.account.name
       ignore_missing: true
   - rename:
+      tag: rename_json_agentDetectionInfo_agentDetectionState_to_sentinel_one_threat_detection_state_4dbe3476
       field: json.agentDetectionInfo.agentDetectionState
       target_field: sentinel_one.threat.detection.state
       ignore_missing: true
   - rename:
+      tag: rename_json_agentDetectionInfo_agentDomain_to_sentinel_one_threat_detection_agent_domain_9a1955f4
       field: json.agentDetectionInfo.agentDomain
       target_field: sentinel_one.threat.detection.agent.domain
       ignore_missing: true
@@ -122,12 +141,15 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_agentDetectionInfo_agentIpV4_39217800
             field: json.agentDetectionInfo.agentIpV4
             ignore_missing: true
         - append:
+            tag: append_error_message_dcf73e3f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_sentinel_one_threat_detection_agent_ipv4_8c7d49e1
       field: sentinel_one.threat.detection.agent.ipv4
       if: ctx.sentinel_one?.threat?.detection?.agent?.ipv4 != null
       processor:
@@ -152,12 +174,15 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_agentDetectionInfo_agentIpV6_e9569b06
             field: json.agentDetectionInfo.agentIpV6
             ignore_missing: true
         - append:
+            tag: append_error_message_3faa1a6b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_sentinel_one_threat_detection_agent_ipv6_f2ea39f5
       field: sentinel_one.threat.detection.agent.ipv6
       if: ctx.sentinel_one?.threat?.detection?.agent?.ipv6 != null
       processor:
@@ -168,41 +193,56 @@ processors:
           ignore_failure: true
       ignore_failure: true
   - rename:
+      tag: rename_json_agentDetectionInfo_agentLastLoggedInUpn_to_sentinel_one_threat_detection_agent_last_logged_in_upn_938f6282
       field: json.agentDetectionInfo.agentLastLoggedInUpn
       target_field: sentinel_one.threat.detection.agent.last_logged_in.upn
       ignore_missing: true
   - rename:
+      tag: rename_json_agentDetectionInfo_agentLastLoggedInUserMail_to_user_email_32425a33
       field: json.agentDetectionInfo.agentLastLoggedInUserMail
       target_field: user.email
       ignore_missing: true
   - rename:
+      tag: rename_json_agentDetectionInfo_agentLastLoggedInUserName_to_user_name_0e31527c
       field: json.agentDetectionInfo.agentLastLoggedInUserName
       target_field: user.name
       ignore_missing: true
   - set:
+      tag: set_user_name_16218757
       if: ctx.user?.name == null
       field: user.name
       copy_from: json.threatInfo.processUser
       ignore_empty_value: true
+  - dissect:
+      tag: dissect_user_name_ddeaade9
+      field: user.name
+      pattern: '%{user.domain}\%{user.name}'
+      if: ctx.user?.name?.contains('\\') == true
+      description: "Split user and domain"
   - append:
+      tag: append_related_user_3b423052
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_agentDetectionInfo_agentMitigationMode_to_sentinel_one_threat_detection_agent_mitigation_mode_cdd5494d
       field: json.agentDetectionInfo.agentMitigationMode
       target_field: sentinel_one.threat.detection.agent.mitigation_mode
       ignore_missing: true
   - rename:
+      tag: rename_json_agentDetectionInfo_agentOsName_to_sentinel_one_threat_detection_agent_os_name_75f100c4
       field: json.agentDetectionInfo.agentOsName
       target_field: sentinel_one.threat.detection.agent.os.name
       ignore_missing: true
   - rename:
+      tag: rename_json_agentDetectionInfo_agentOsRevision_to_sentinel_one_threat_detection_agent_os_version_6715ebb1
       field: json.agentDetectionInfo.agentOsRevision
       target_field: sentinel_one.threat.detection.agent.os.version
       ignore_missing: true
   - date:
+      tag: date_json_agentDetectionInfo_agentRegisteredAt_to_sentinel_one_threat_detection_agent_registered_at_a7199dfc
       field: json.agentDetectionInfo.agentRegisteredAt
       if: ctx.json?.agentDetectionInfo?.agentRegisteredAt != null
       target_field: sentinel_one.threat.detection.agent.registered_at
@@ -210,17 +250,21 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_49a07e5b
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_agentDetectionInfo_agentUuid_to_sentinel_one_threat_detection_agent_uuid_1e42ada0
       field: json.agentDetectionInfo.agentUuid
       target_field: sentinel_one.threat.detection.agent.uuid
       ignore_missing: true
   - rename:
+      tag: rename_json_agentDetectionInfo_agentVersion_to_sentinel_one_threat_detection_agent_version_7f4692ac
       field: json.agentDetectionInfo.agentVersion
       target_field: sentinel_one.threat.detection.agent.version
       ignore_missing: true
   - rename:
+      tag: rename_json_agentDetectionInfo_cloudProviders_to_sentinel_one_threat_detection_cloud_providers_bfa1c8cf
       field: json.agentDetectionInfo.cloudProviders
       target_field: sentinel_one.threat.detection.cloud_providers
       ignore_missing: true
@@ -231,155 +275,192 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_agentDetectionInfo_externalIp_2dbc480e
             field: json.agentDetectionInfo.externalIp
             ignore_missing: true
         - append:
+            tag: append_error_message_f01b939d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - geoip:
+      tag: geoip_json_agentDetectionInfo_externalIp_to_host_geo_412432a9
       field: json.agentDetectionInfo.externalIp
       target_field: host.geo
       ignore_missing: true
       if: ctx.json?.agentDetectionInfo?.externalIp != null
       on_failure:
         - append:
+            tag: append_error_message_e47f9102
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_host_ip_791d97bc
       field: host.ip
       value: '{{{json.agentDetectionInfo.externalIp}}}'
       if: ctx.json?.agentDetectionInfo?.externalIp != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_a146af3f
       field: related.ip
       value: '{{{json.agentDetectionInfo.externalIp}}}'
       if: ctx.json?.agentDetectionInfo?.externalIp != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_agentDetectionInfo_groupId_to_sentinel_one_threat_detection_agent_group_id_70922e13
       field: json.agentDetectionInfo.groupId
       target_field: sentinel_one.threat.detection.agent.group.id
       ignore_missing: true
   - rename:
+      tag: rename_json_agentDetectionInfo_groupName_to_sentinel_one_threat_detection_agent_group_name_f998c19f
       field: json.agentDetectionInfo.groupName
       target_field: sentinel_one.threat.detection.agent.group.name
       ignore_missing: true
   - rename:
+      tag: rename_json_agentDetectionInfo_siteId_to_sentinel_one_site_id_3cc55055
       field: json.agentDetectionInfo.siteId
       target_field: sentinel_one.site.id
       ignore_missing: true
   - rename:
+      tag: rename_json_agentDetectionInfo_siteName_to_sentinel_one_site_name_fb16a75d
       field: json.agentDetectionInfo.siteName
       target_field: sentinel_one.site.name
       ignore_missing: true
   - rename:
+      tag: rename_json_agentRealtimeInfo_accountId_to_sentinel_one_threat_agent_account_id_55549cb0
       field: json.agentRealtimeInfo.accountId
       target_field: sentinel_one.threat.agent.account.id
       ignore_missing: true
   - rename:
+      tag: rename_json_agentRealtimeInfo_accountName_to_sentinel_one_account_name_046febd7
       field: json.agentRealtimeInfo.accountName
       target_field: sentinel_one.account.name
       ignore_missing: true
   - convert:
+      tag: convert_json_agentRealtimeInfo_activeThreats_to_sentinel_one_threat_agent_active_threats_d3b4fd39
       field: json.agentRealtimeInfo.activeThreats
       target_field: sentinel_one.threat.agent.active_threats
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_agentRealtimeInfo_activeThreats_fcf1f8f9
             field: json.agentRealtimeInfo.activeThreats
             ignore_missing: true
         - append:
+            tag: append_error_message_f66ca046
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_agentRealtimeInfo_agentComputerName_to_host_name_15b5d4f4
       field: json.agentRealtimeInfo.agentComputerName
       target_field: host.name
       ignore_missing: true
   - append:
+      tag: append_related_hosts_0c50b474
       field: related.hosts
       value: '{{{host.name}}}'
       if: ctx.host?.name != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_agentRealtimeInfo_agentDecommissionedAt_to_sentinel_one_threat_agent_decommissioned_at_a2cf389e
       field: json.agentRealtimeInfo.agentDecommissionedAt
       target_field: sentinel_one.threat.agent.decommissioned_at
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_agentRealtimeInfo_agentDecommissionedAt_2504d57a
             field: json.agentRealtimeInfo.agentDecommissionedAt
             ignore_missing: true
         - append:
+            tag: append_error_message_49b1af55
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_agentRealtimeInfo_agentDomain_to_host_domain_c87dd6a3
       field: json.agentRealtimeInfo.agentDomain
       target_field: host.domain
       ignore_missing: true
   - rename:
+      tag: rename_json_agentRealtimeInfo_agentId_to_sentinel_one_threat_agent_id_5065fa13
       field: json.agentRealtimeInfo.agentId
       target_field: sentinel_one.threat.agent.id
       ignore_missing: true
   - set:
+      tag: set_host_id_578066b2
       field: host.id
       copy_from: sentinel_one.threat.agent.id
       if: ctx.sentinel_one?.threat?.agent?.id != null
   - convert:
+      tag: convert_json_agentRealtimeInfo_agentInfected_to_sentinel_one_threat_agent_infected_e0abe9a1
       field: json.agentRealtimeInfo.agentInfected
       target_field: sentinel_one.threat.agent.infected
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_agentRealtimeInfo_agentInfected_438b641f
             field: json.agentRealtimeInfo.agentInfected
             ignore_missing: true
         - append:
+            tag: append_error_message_f32a0b58
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_agentRealtimeInfo_agentIsActive_to_sentinel_one_threat_agent_is_active_4e60f134
       field: json.agentRealtimeInfo.agentIsActive
       target_field: sentinel_one.threat.agent.is_active
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_agentRealtimeInfo_agentIsActive_61206da8
             field: json.agentRealtimeInfo.agentIsActive
             ignore_missing: true
         - append:
+            tag: append_error_message_0b0034b7
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_agentRealtimeInfo_agentIsDecommissioned_to_sentinel_one_threat_agent_is_decommissioned_9b1e3491
       field: json.agentRealtimeInfo.agentIsDecommissioned
       target_field: sentinel_one.threat.agent.is_decommissioned
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_agentRealtimeInfo_agentIsDecommissioned_d5227434
             field: json.agentRealtimeInfo.agentIsDecommissioned
             ignore_missing: true
         - append:
+            tag: append_error_message_505ca6da
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_agentRealtimeInfo_agentMachineType_to_sentinel_one_threat_agent_machine_type_d14ba4d2
       field: json.agentRealtimeInfo.agentMachineType
       target_field: sentinel_one.threat.agent.machine_type
       ignore_missing: true
   - rename:
+      tag: rename_json_agentRealtimeInfo_agentMitigationMode_to_sentinel_one_threat_agent_mitigation_mode_555f2324
       field: json.agentRealtimeInfo.agentMitigationMode
       target_field: sentinel_one.threat.agent.mitigation_mode
       ignore_missing: true
   - rename:
+      tag: rename_json_agentRealtimeInfo_agentNetworkStatus_to_sentinel_one_threat_agent_network_status_06b702f0
       field: json.agentRealtimeInfo.agentNetworkStatus
       target_field: sentinel_one.threat.agent.network_status
       ignore_missing: true
   - rename:
+      tag: rename_json_agentRealtimeInfo_agentOsName_to_host_os_name_f768b3a7
       field: json.agentRealtimeInfo.agentOsName
       target_field: host.os.name
       ignore_missing: true
   - rename:
+      tag: rename_json_agentRealtimeInfo_agentOsRevision_to_sentinel_one_threat_agent_os_version_e31102f2
       field: json.agentRealtimeInfo.agentOsRevision
       target_field: sentinel_one.threat.agent.os.version
       ignore_missing: true
@@ -407,30 +488,37 @@ processors:
           }
         }
   - rename:
+      tag: rename_json_agentRealtimeInfo_agentUuid_to_sentinel_one_threat_agent_uuid_b0fed737
       field: json.agentRealtimeInfo.agentUuid
       target_field: sentinel_one.threat.agent.uuid
       ignore_missing: true
   - rename:
+      tag: rename_json_agentRealtimeInfo_agentVersion_to_observer_version_00aa1971
       field: json.agentRealtimeInfo.agentVersion
       target_field: observer.version
       ignore_missing: true
   - rename:
+      tag: rename_json_agentRealtimeInfo_groupId_to_sentinel_one_threat_agent_group_id_b9cbe8d0
       field: json.agentRealtimeInfo.groupId
       target_field: sentinel_one.threat.agent.group.id
       ignore_missing: true
   - set:
+      tag: set_group_id_c202c97d
       field: group.id
       copy_from: sentinel_one.threat.agent.group.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_agentRealtimeInfo_groupName_to_sentinel_one_threat_agent_group_name_2b90dc60
       field: json.agentRealtimeInfo.groupName
       target_field: sentinel_one.threat.agent.group.name
       ignore_missing: true
   - set:
+      tag: set_group_name_c89daedd
       field: group.name
       copy_from: sentinel_one.threat.agent.group.name
       ignore_empty_value: true
   - foreach:
+      tag: foreach_json_agentRealtimeInfo_networkInterfaces_90d35382
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
         foreach:
@@ -445,11 +533,12 @@ processors:
                     field: _ingest._value
                 - append:
                     field: error.message
-                    value: '{{{_ingest.on_failure_message}}}'
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
           ignore_failure: true
       ignore_failure: true
       if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json.agentRealtimeInfo.networkInterfaces instanceof List
   - foreach:
+      tag: foreach_json_agentRealtimeInfo_networkInterfaces_cae9fcfc
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
         foreach:
@@ -464,6 +553,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json.agentRealtimeInfo.networkInterfaces instanceof List
   - foreach:
+      tag: foreach_json_agentRealtimeInfo_networkInterfaces_4e10743e
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
         foreach:
@@ -478,11 +568,12 @@ processors:
                     field: _ingest._value
                 - append:
                     field: error.message
-                    value: '{{{_ingest.on_failure_message}}}'
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
           ignore_failure: true
       ignore_failure: true
       if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json.agentRealtimeInfo.networkInterfaces instanceof List
   - foreach:
+      tag: foreach_json_agentRealtimeInfo_networkInterfaces_d2eaa858
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
         foreach:
@@ -497,6 +588,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json.agentRealtimeInfo.networkInterfaces instanceof List
   - foreach:
+      tag: foreach_json_agentRealtimeInfo_networkInterfaces_87388be4
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
         append:
@@ -507,6 +599,7 @@ processors:
       ignore_failure: true
       if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json.agentRealtimeInfo.networkInterfaces instanceof List
   - foreach:
+      tag: foreach_json_agentRealtimeInfo_networkInterfaces_76804aa1
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
         remove:
@@ -516,34 +609,42 @@ processors:
       ignore_failure: true
       if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json.agentRealtimeInfo.networkInterfaces instanceof List
   - rename:
+      tag: rename_json_agentRealtimeInfo_networkInterfaces_to_sentinel_one_threat_agent_network_interface_ed537934
       field: json.agentRealtimeInfo.networkInterfaces
       target_field: sentinel_one.threat.agent.network_interface
       ignore_missing: true
   - gsub:
+      tag: gsub_host_mac_d1faae6a
       field: host.mac
       pattern: '[-:.]'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_host_mac_73cd4413
       field: host.mac
       ignore_missing: true
   - rename:
+      tag: rename_json_agentRealtimeInfo_operationalState_to_sentinel_one_threat_agent_operational_state_3cd61b01
       field: json.agentRealtimeInfo.operationalState
       target_field: sentinel_one.threat.agent.operational_state
       ignore_missing: true
   - convert:
+      tag: convert_json_agentRealtimeInfo_rebootRequired_to_sentinel_one_threat_agent_reboot_required_ec8a937c
       field: json.agentRealtimeInfo.rebootRequired
       target_field: sentinel_one.threat.agent.reboot_required
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_agentRealtimeInfo_rebootRequired_632d3b11
             field: json.agentRealtimeInfo.rebootRequired
             ignore_missing: true
         - append:
+            tag: append_error_message_5c550e03
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_agentRealtimeInfo_scanAbortedAt_to_sentinel_one_threat_agent_scan_aborted_at_e4e1a5b9
       field: json.agentRealtimeInfo.scanAbortedAt
       if: ctx.json?.agentRealtimeInfo?.scanAbortedAt != null
       target_field: sentinel_one.threat.agent.scan.aborted_at
@@ -551,9 +652,11 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_a638aaf6
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_agentRealtimeInfo_scanFinishedAt_to_sentinel_one_threat_agent_scan_finished_at_6694d470
       field: json.agentRealtimeInfo.scanFinishedAt
       if: ctx.json?.agentRealtimeInfo?.scanFinishedAt != null
       target_field: sentinel_one.threat.agent.scan.finished_at
@@ -561,9 +664,11 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_0e5a15e1
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_agentRealtimeInfo_scanStartedAt_to_sentinel_one_threat_agent_scan_started_at_5e11dc87
       field: json.agentRealtimeInfo.scanStartedAt
       if: ctx.json?.agentRealtimeInfo?.scanStartedAt != null
       target_field: sentinel_one.threat.agent.scan.started_at
@@ -571,61 +676,76 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_67c48670
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_agentRealtimeInfo_scanStatus_to_sentinel_one_threat_agent_scan_status_b5284790
       field: json.agentRealtimeInfo.scanStatus
       target_field: sentinel_one.threat.agent.scan.status
       ignore_missing: true
   - rename:
+      tag: rename_json_agentRealtimeInfo_siteId_to_sentinel_one_threat_agent_site_id_876bf0aa
       field: json.agentRealtimeInfo.siteId
       target_field: sentinel_one.threat.agent.site.id
       ignore_missing: true
   - rename:
+      tag: rename_json_agentRealtimeInfo_siteName_to_sentinel_one_threat_agent_site_name_f13dbc7e
       field: json.agentRealtimeInfo.siteName
       target_field: sentinel_one.threat.agent.site.name
       ignore_missing: true
   - rename:
+      tag: rename_json_agentRealtimeInfo_storageName_to_sentinel_one_threat_agent_storage_name_122f4698
       field: json.agentRealtimeInfo.storageName
       target_field: sentinel_one.threat.agent.storage.name
       ignore_missing: true
   - rename:
+      tag: rename_json_agentRealtimeInfo_storageType_to_sentinel_one_threat_agent_storage_type_dbde88f0
       field: json.agentRealtimeInfo.storageType
       target_field: sentinel_one.threat.agent.storage.type
       ignore_missing: true
   - rename:
+      tag: rename_json_agentRealtimeInfo_userActionsNeeded_to_sentinel_one_threat_agent_user_action_needed_c320cb3f
       field: json.agentRealtimeInfo.userActionsNeeded
       target_field: sentinel_one.threat.agent.user_action_needed
       ignore_missing: true
   - rename:
+      tag: rename_json_containerInfo_id_to_container_id_36d8e066
       field: json.containerInfo.id
       target_field: container.id
       ignore_missing: true
   - rename:
+      tag: rename_json_containerInfo_image_to_container_image_name_2d3b015f
       field: json.containerInfo.image
       target_field: container.image.name
       ignore_missing: true
   - rename:
+      tag: rename_json_containerInfo_labels_to_sentinel_one_threat_container_labels_904d35c7
       field: json.containerInfo.labels
       target_field: sentinel_one.threat.container.labels
       ignore_missing: true
   - rename:
+      tag: rename_json_containerInfo_name_to_container_name_17273822
       field: json.containerInfo.name
       target_field: container.name
       ignore_missing: true
   - rename:
+      tag: rename_json_description_to_sentinel_one_threat_description_6dcf93a7
       field: json.description
       target_field: sentinel_one.threat.description
       ignore_missing: true
   - set:
+      tag: set_event_id_f900bd24
       field: event.id
       copy_from: json.id
       if: ctx.json?.id != null
   - rename:
+      tag: rename_json_id_to_sentinel_one_threat_id_9e886567
       field: json.id
       target_field: sentinel_one.threat.id
       ignore_missing: true
   - foreach:
+      tag: foreach_json_indicators_81503932
       field: json.indicators
       processor:
         rename:
@@ -634,6 +754,7 @@ processors:
           ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_indicators_18023f27
       field: json.indicators
       processor:
         rename:
@@ -642,6 +763,7 @@ processors:
           ignore_missing: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_indicators_f66c4cf9
       field: json.indicators
       processor:
         foreach:
@@ -655,6 +777,21 @@ processors:
           ignore_failure: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_indicators_6665c6e8
+      field: json.indicators
+      if: ctx.json?.indicators instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.ids
+          ignore_missing: true
+          processor:
+            append:
+              field: threat.indicator.id
+              tag: append_indicators_ids_to_threat_indicator_id
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+  - foreach:
+      tag: foreach_json_indicators_01f56d75
       field: json.indicators
       processor:
         foreach:
@@ -668,6 +805,7 @@ processors:
           ignore_failure: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_indicators_f19778f0
       field: json.indicators
       processor:
         foreach:
@@ -681,6 +819,7 @@ processors:
           ignore_failure: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_indicators_6e1852d5
       field: json.indicators
       processor:
         foreach:
@@ -698,6 +837,7 @@ processors:
           ignore_failure: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_indicators_49840d54
       field: json.indicators
       processor:
         foreach:
@@ -715,6 +855,7 @@ processors:
           ignore_failure: true
       ignore_failure: true
   - foreach:
+      tag: foreach_json_indicators_01386efa
       field: json.indicators
       processor:
         remove:
@@ -724,46 +865,57 @@ processors:
           ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_indicators_to_sentinel_one_threat_indicators_75b35ccf
       field: json.indicators
       target_field: sentinel_one.threat.indicators
       ignore_missing: true
   - rename:
+      tag: rename_json_kubernetesInfo_cluster_to_sentinel_one_threat_kubernetes_cluster_baf0808f
       field: json.kubernetesInfo.cluster
       target_field: sentinel_one.threat.kubernetes.cluster
       ignore_missing: true
   - rename:
+      tag: rename_json_kubernetesInfo_controllerKind_to_sentinel_one_threat_kubernetes_controller_kind_ef0d7c87
       field: json.kubernetesInfo.controllerKind
       target_field: sentinel_one.threat.kubernetes.controller.kind
       ignore_missing: true
   - rename:
+      tag: rename_json_kubernetesInfo_controllerLabels_to_sentinel_one_threat_kubernetes_controller_labels_7eb81ff3
       field: json.kubernetesInfo.controllerLabels
       target_field: sentinel_one.threat.kubernetes.controller.labels
       ignore_missing: true
   - rename:
+      tag: rename_json_kubernetesInfo_controllerName_to_sentinel_one_threat_kubernetes_controller_name_e222527b
       field: json.kubernetesInfo.controllerName
       target_field: sentinel_one.threat.kubernetes.controller.name
       ignore_missing: true
   - rename:
+      tag: rename_json_kubernetesInfo_namespace_to_sentinel_one_threat_kubernetes_namespace_name_0f80534a
       field: json.kubernetesInfo.namespace
       target_field: sentinel_one.threat.kubernetes.namespace.name
       ignore_missing: true
   - rename:
+      tag: rename_json_kubernetesInfo_namespaceLabels_to_sentinel_one_threat_kubernetes_namespace_labels_5b8c1aad
       field: json.kubernetesInfo.namespaceLabels
       target_field: sentinel_one.threat.kubernetes.namespace.labels
       ignore_missing: true
   - rename:
+      tag: rename_json_kubernetesInfo_node_to_sentinel_one_threat_kubernetes_node_3b69025f
       field: json.kubernetesInfo.node
       target_field: sentinel_one.threat.kubernetes.node
       ignore_missing: true
   - rename:
+      tag: rename_json_kubernetesInfo_pod_to_sentinel_one_threat_kubernetes_pod_name_c7253312
       field: json.kubernetesInfo.pod
       target_field: sentinel_one.threat.kubernetes.pod.name
       ignore_missing: true
   - rename:
+      tag: rename_json_kubernetesInfo_podLabels_to_sentinel_one_threat_kubernetes_pod_labels_3505c1fd
       field: json.kubernetesInfo.podLabels
       target_field: sentinel_one.threat.kubernetes.pod.labels
       ignore_missing: true
   - foreach:
+      tag: foreach_json_mitigationStatus_c4dc1049
       field: json.mitigationStatus
       processor:
         convert:
@@ -774,10 +926,11 @@ processors:
           on_failure:
             - append:
                 field: error.message
-                value: '{{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_failure: true
       if: ctx.json.mitigationStatus instanceof List
   - foreach:
+      tag: foreach_json_mitigationStatus_3d02fc9a
       field: json.mitigationStatus
       processor:
         convert:
@@ -788,10 +941,11 @@ processors:
           on_failure:
             - append:
                 field: error.message
-                value: '{{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_failure: true
       if: ctx.json.mitigationStatus instanceof List
   - foreach:
+      tag: foreach_json_mitigationStatus_17d60ce0
       field: json.mitigationStatus
       processor:
         convert:
@@ -802,10 +956,11 @@ processors:
           on_failure:
             - append:
                 field: error.message
-                value: '{{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_failure: true
       if: ctx.json.mitigationStatus instanceof List
   - foreach:
+      tag: foreach_json_mitigationStatus_be42c321
       field: json.mitigationStatus
       processor:
         convert:
@@ -816,10 +971,11 @@ processors:
           on_failure:
             - append:
                 field: error.message
-                value: '{{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_failure: true
       if: ctx.json.mitigationStatus instanceof List
   - foreach:
+      tag: foreach_json_mitigationStatus_edba4f9f
       field: json.mitigationStatus
       processor:
         convert:
@@ -830,10 +986,11 @@ processors:
           on_failure:
             - append:
                 field: error.message
-                value: '{{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_failure: true
       if: ctx.json.mitigationStatus instanceof List
   - foreach:
+      tag: foreach_json_mitigationStatus_85aac8cb
       field: json.mitigationStatus
       processor:
         convert:
@@ -844,10 +1001,11 @@ processors:
           on_failure:
             - append:
                 field: error.message
-                value: '{{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_failure: true
       if: ctx.json.mitigationStatus instanceof List
   - foreach:
+      tag: foreach_json_mitigationStatus_b7ab7975
       field: json.mitigationStatus
       processor:
         convert:
@@ -858,10 +1016,11 @@ processors:
           on_failure:
             - append:
                 field: error.message
-                value: '{{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       ignore_failure: true
       if: ctx.json.mitigationStatus instanceof List
   - foreach:
+      tag: foreach_json_mitigationStatus_635fee60
       field: json.mitigationStatus
       processor:
         date:
@@ -873,6 +1032,7 @@ processors:
       ignore_failure: true
       if: ctx.json.mitigationStatus instanceof List
   - foreach:
+      tag: foreach_json_mitigationStatus_e91b2d72
       field: json.mitigationStatus
       processor:
         rename:
@@ -882,6 +1042,7 @@ processors:
       ignore_failure: true
       if: ctx.json.mitigationStatus instanceof List
   - foreach:
+      tag: foreach_json_mitigationStatus_73088298
       field: json.mitigationStatus
       processor:
         rename:
@@ -891,6 +1052,7 @@ processors:
       ignore_failure: true
       if: ctx.json.mitigationStatus instanceof List
   - foreach:
+      tag: foreach_json_mitigationStatus_4a515eb9
       field: json.mitigationStatus
       processor:
         date:
@@ -902,6 +1064,7 @@ processors:
       ignore_failure: true
       if: ctx.json.mitigationStatus instanceof List
   - foreach:
+      tag: foreach_json_mitigationStatus_25cb2987
       field: json.mitigationStatus
       processor:
         date:
@@ -913,6 +1076,7 @@ processors:
       ignore_failure: true
       if: ctx.json.mitigationStatus instanceof List
   - foreach:
+      tag: foreach_json_mitigationStatus_d5ec495a
       field: json.mitigationStatus
       processor:
         remove:
@@ -927,58 +1091,72 @@ processors:
       ignore_failure: true
       if: ctx.json.mitigationStatus instanceof List
   - rename:
+      tag: rename_json_mitigationStatus_to_sentinel_one_threat_mitigation_status_29c9bb32
       field: json.mitigationStatus
       target_field: sentinel_one.threat.mitigation_status
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_analystVerdict_to_sentinel_one_threat_analysis_verdict_63cacfed
       field: json.threatInfo.analystVerdict
       target_field: sentinel_one.threat.analysis.verdict
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_analystVerdictDescription_to_sentinel_one_threat_analysis_description_8582b2e2
       field: json.threatInfo.analystVerdictDescription
       target_field: sentinel_one.threat.analysis.description
       ignore_missing: true
   - convert:
+      tag: convert_json_threatInfo_automaticallyResolved_to_sentinel_one_threat_automatically_resolved_44bccd84
       field: json.threatInfo.automaticallyResolved
       target_field: sentinel_one.threat.automatically_resolved
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_threatInfo_automaticallyResolved_6ebba004
             field: json.threatInfo.automaticallyResolved
             ignore_missing: true
         - append:
+            tag: append_error_message_7c436799
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_threatInfo_browserType_to_sentinel_one_threat_browser_type_e192233a
       field: json.threatInfo.browserType
       target_field: sentinel_one.threat.browser_type
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_certificateId_to_sentinel_one_threat_certificate_id_be01e93d
       field: json.threatInfo.certificateId
       target_field: sentinel_one.threat.certificate.id
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_classification_to_sentinel_one_threat_classification_name_e9d35f55
       field: json.threatInfo.classification
       target_field: sentinel_one.threat_classification.name
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_classificationSource_to_sentinel_one_threat_classification_source_96895d26
       field: json.threatInfo.classificationSource
       target_field: sentinel_one.threat_classification.source
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_cloudFilesHashVerdict_to_sentinel_one_threat_cloudfiles_hash_verdict_52bd6853
       field: json.threatInfo.cloudFilesHashVerdict
       target_field: sentinel_one.threat.cloudfiles_hash_verdict
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_collectionId_to_sentinel_one_threat_collection_id_ea9fe735
       field: json.threatInfo.collectionId
       target_field: sentinel_one.threat.collection.id
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_confidenceLevel_to_sentinel_one_threat_confidence_level_54d80ad0
       field: json.threatInfo.confidenceLevel
       target_field: sentinel_one.threat.confidence_level
       ignore_missing: true
   - date:
+      tag: date_json_threatInfo_createdAt_to_sentinel_one_threat_created_at_0042c1e8
       field: json.threatInfo.createdAt
       if: ctx.json?.threatInfo?.createdAt != null
       target_field: sentinel_one.threat.created_at
@@ -986,81 +1164,101 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_4164cf51
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_threatInfo_detectionEngines_to_sentinel_one_threat_detection_engines_0327c07d
       field: json.threatInfo.detectionEngines
       target_field: sentinel_one.threat.detection.engines
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_detectionType_to_sentinel_one_threat_detection_type_1cd94d25
       field: json.threatInfo.detectionType
       target_field: sentinel_one.threat.detection.type
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_engines_to_sentinel_one_threat_engines_25e3d9a1
       field: json.threatInfo.engines
       target_field: sentinel_one.threat.engines
       ignore_missing: true
   - convert:
+      tag: convert_json_threatInfo_externalTicketExists_to_sentinel_one_threat_external_ticket_exist_e30127f5
       field: json.threatInfo.externalTicketExists
       target_field: sentinel_one.threat.external_ticket.exist
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_threatInfo_externalTicketExists_f61335d1
             field: json.threatInfo.externalTicketExists
             ignore_missing: true
         - append:
+            tag: append_error_message_b083888a
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_threatInfo_externalTicketId_to_sentinel_one_threat_external_ticket_id_7df45ec4
       field: json.threatInfo.externalTicketId
       target_field: sentinel_one.threat.external_ticket.id
       ignore_missing: true
   - convert:
+      tag: convert_json_threatInfo_failedActions_to_sentinel_one_threat_failed_actions_0c60d959
       field: json.threatInfo.failedActions
       target_field: sentinel_one.threat.failed_actions
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_threatInfo_failedActions_920d801a
             field: json.threatInfo.failedActions
             ignore_missing: true
         - append:
+            tag: append_error_message_260946bc
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_threatInfo_fileExtension_to_threat_indicator_file_extension_14ede205
       field: json.threatInfo.fileExtension
       target_field: threat.indicator.file.extension
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_fileExtensionType_to_sentinel_one_threat_file_extension_type_19908bff
       field: json.threatInfo.fileExtensionType
       target_field: sentinel_one.threat.file.extension.type
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_filePath_to_threat_indicator_file_path_7057f597
       field: json.threatInfo.filePath
       target_field: threat.indicator.file.path
       ignore_missing: true
   - set:
+      tag: set_file_path_2cacb1a2
       field: file.path
       copy_from: threat.indicator.file.path
       ignore_empty_value: true
   - convert:
+      tag: convert_json_threatInfo_fileSize_to_threat_indicator_file_size_39950d27
       field: json.threatInfo.fileSize
       target_field: threat.indicator.file.size
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_threatInfo_fileSize_af158e77
             field: json.threatInfo.fileSize
             ignore_missing: true
         - append:
+            tag: append_error_message_175c1d28
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_threatInfo_fileVerificationType_to_sentinel_one_threat_file_verification_type_ff405510
       field: json.threatInfo.fileVerificationType
       target_field: sentinel_one.threat.file.verification_type
       ignore_missing: true
   - date:
+      tag: date_json_threatInfo_identifiedAt_to_sentinel_one_threat_file_identified_at_6215ffe3
       field: json.threatInfo.identifiedAt
       if: ctx.json?.threatInfo?.identifiedAt != null
       target_field: sentinel_one.threat.file.identified_at
@@ -1068,188 +1266,233 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_1b933ae2
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_threatInfo_incidentStatus_to_sentinel_one_threat_incident_status_3600b9ef
       field: json.threatInfo.incidentStatus
       target_field: sentinel_one.threat.incident.status
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_incidentStatusDescription_to_sentinel_one_threat_incident_status_description_43e86618
       field: json.threatInfo.incidentStatusDescription
       target_field: sentinel_one.threat.incident.status_description
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_initiatedBy_to_sentinel_one_threat_initiated_name_5c4f144b
       field: json.threatInfo.initiatedBy
       target_field: sentinel_one.threat.initiated.name
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_initiatedByDescription_to_sentinel_one_threat_initiated_description_d8b0b244
       field: json.threatInfo.initiatedByDescription
       target_field: sentinel_one.threat.initiated.description
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_initiatingUserId_to_sentinel_one_threat_initiating_user_id_a2fafa32
       field: json.threatInfo.initiatingUserId
       target_field: sentinel_one.threat.initiating_user.id
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_initiatingUsername_to_sentinel_one_threat_initiating_user_name_bcbcb6fe
       field: json.threatInfo.initiatingUsername
       target_field: sentinel_one.threat.initiating_user.name
       ignore_missing: true
   - append:
+      tag: append_related_user_dd24c0a8
       field: related.user
       value: '{{{sentinel_one.threat.initiating_user.name}}}'
       if: ctx.sentinel_one?.threat?.initiating_user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_threatInfo_isFileless_to_sentinel_one_threat_is_fileless_f443788e
       field: json.threatInfo.isFileless
       target_field: sentinel_one.threat.is_fileless
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_threatInfo_isFileless_900de112
             field: json.threatInfo.isFileless
             ignore_missing: true
         - append:
+            tag: append_error_message_936fc85d
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_threatInfo_isValidCertificate_to_sentinel_one_threat_is_valid_certificate_64cf6ced
       field: json.threatInfo.isValidCertificate
       target_field: sentinel_one.threat.is_valid_certificate
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_threatInfo_isValidCertificate_f496a7ef
             field: json.threatInfo.isValidCertificate
             ignore_missing: true
         - append:
+            tag: append_error_message_bd265434
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_threatInfo_maliciousProcessArguments_to_sentinel_one_threat_malicious_process_arguments_95c48a8f
       field: json.threatInfo.maliciousProcessArguments
       target_field: sentinel_one.threat.malicious_process_arguments
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_md5_to_threat_indicator_file_hash_md5_4c242145
       field: json.threatInfo.md5
       target_field: threat.indicator.file.hash.md5
       ignore_missing: true
   - convert:
+      tag: convert_json_threatInfo_mitigatedPreemptively_to_sentinel_one_threat_mitigated_preemptively_33d6e67b
       field: json.threatInfo.mitigatedPreemptively
       target_field: sentinel_one.threat.mitigated_preemptively
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_threatInfo_mitigatedPreemptively_4e8d2bfe
             field: json.threatInfo.mitigatedPreemptively
             ignore_missing: true
         - append:
+            tag: append_error_message_6bfbe77a
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_threatInfo_mitigationStatus_to_sentinel_one_threat_mitigation_status_48474493
       field: json.threatInfo.mitigationStatus
       target_field: sentinel_one.threat.mitigation.status
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_mitigationStatusDescription_to_sentinel_one_threat_mitigation_description_92af4ea7
       field: json.threatInfo.mitigationStatusDescription
       target_field: sentinel_one.threat.mitigation.description
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_originatorProcess_to_sentinel_one_threat_originator_process_7280d7e0
       field: json.threatInfo.originatorProcess
       target_field: sentinel_one.threat.originator_process
       ignore_missing: true
   - convert:
+      tag: convert_json_threatInfo_pendingActions_to_sentinel_one_threat_pending_actions_c419435f
       field: json.threatInfo.pendingActions
       target_field: sentinel_one.threat.pending_actions
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_threatInfo_pendingActions_a555c75e
             field: json.threatInfo.pendingActions
             ignore_missing: true
         - append:
+            tag: append_error_message_a73b115c
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_threatInfo_processUser_to_sentinel_one_threat_process_user_4e15a998
       field: json.threatInfo.processUser
       target_field: sentinel_one.threat.process_user
       ignore_missing: true
   - append:
+      tag: append_related_user_842c8ad9
       field: related.user
       value: '{{{sentinel_one.threat.process_user}}}'
       if: ctx.sentinel_one?.threat?.process_user != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_threatInfo_publisherName_to_sentinel_one_threat_publisher_name_8bd333a3
       field: json.threatInfo.publisherName
       target_field: sentinel_one.threat.publisher.name
       ignore_missing: true
   - convert:
+      tag: convert_json_threatInfo_reachedEventsLimit_to_sentinel_one_threat_reached_events_limit_3486f536
       field: json.threatInfo.reachedEventsLimit
       target_field: sentinel_one.threat.reached_events_limit
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_threatInfo_reachedEventsLimit_796b6aa1
             field: json.threatInfo.reachedEventsLimit
             ignore_missing: true
         - append:
+            tag: append_error_message_366f78fb
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_threatInfo_rebootRequired_to_sentinel_one_threat_reboot_required_1c5cb85f
       field: json.threatInfo.rebootRequired
       target_field: sentinel_one.threat.reboot_required
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_threatInfo_rebootRequired_67ad2e20
             field: json.threatInfo.rebootRequired
             ignore_missing: true
         - append:
+            tag: append_error_message_1005acb0
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_threatInfo_sha1_to_threat_indicator_file_hash_sha1_a93e1773
       field: json.threatInfo.sha1
       target_field: threat.indicator.file.hash.sha1
       ignore_missing: true
   - append:
+      tag: append_related_hash_58f1b0e6
       field: related.hash
       value: '{{{threat.indicator.file.hash.sha1}}}'
       if: ctx.threat?.indicator?.file?.hash?.sha1 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_threatInfo_sha256_to_threat_indicator_file_hash_sha256_1effdd0f
       field: json.threatInfo.sha256
       target_field: threat.indicator.file.hash.sha256
       ignore_missing: true
   - append:
+      tag: append_related_hash_4f10b21a
       field: related.hash
       value: '{{{threat.indicator.file.hash.sha256}}}'
       if: ctx.threat?.indicator?.file?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_threatInfo_storyline_to_sentinel_one_threat_storyline_6fc8bba5
       field: json.threatInfo.storyline
       target_field: sentinel_one.threat.storyline
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_threatId_to_sentinel_one_threat_threat_id_9f8069b4
       field: json.threatInfo.threatId
       target_field: sentinel_one.threat.threat_id
       ignore_missing: true
   - rename:
+      tag: rename_json_threatInfo_threatName_to_sentinel_one_threat_name_84d46e47
       field: json.threatInfo.threatName
       target_field: sentinel_one.threat.name
       ignore_missing: true
   - set:
+      tag: set_message_9f7536a0
       field: message
       value: 'Threat Detected: {{{sentinel_one.threat.name}}} ({{{sentinel_one.threat.confidence_level}}})'
       if: ctx.sentinel_one?.threat.name != null && ctx.sentinel_one?.threat?.confidence_level != null
   - rename:
+      tag: rename_json_whiteningOptions_to_sentinel_one_threat_whitening_option_94ebf22d
       field: json.whiteningOptions
       target_field: sentinel_one.threat.whitening_option
       ignore_missing: true
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - script:
+      tag: script_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |

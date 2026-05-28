@@ -7,7 +7,7 @@ The `container_logs` data stream for containers' logs collection is enabled by d
 
 ## Compatibility
 
-The Docker integration is currently tested on Linux and Mac with the community edition engine, versions 1.11 and 17.09.0-ce. It is not tested on Windows, but it should also work there.
+The Docker integration is currently tested on Linux and Mac with the community edition engine, versions 1.11 and 17.09.0-ce.
 
 The Docker integration supports collection of metrics from Podman’s Docker-compatible API by Elastic Agent 8.16.2 or later versions. It has been tested on Linux and Mac with Podman Rest API v2.0.0 and above.
 
@@ -77,6 +77,20 @@ The Docker `cpu` data stream collects runtime CPU metrics.
 ### Diskio
 
 The Docker `diskio` data stream collects disk I/O metrics.
+
+#### Some diskio fields may report zero values
+
+When collecting container disk I/O metrics, some fields may consistently report zero values. This is a known behavior caused by limitations in Docker's stats API and the underlying Linux cgroups subsystem — not a bug in the integration. This also applies to stats collected from Podman.
+
+**Docker API limitations:** Fields such as `docker.diskio.read.service_time`, `docker.diskio.read.wait_time`, and `docker.diskio.read.queued` are always zero because Docker's stats API does not populate the underlying values (these fields are returned as empty arrays).
+
+**cgroups version differences:**
+- **cgroups v1** provides more detailed block I/O statistics. Fields like `docker.diskio.read.ops` and `docker.diskio.write.ops` are typically populated.
+- **cgroups v2** exposes fewer block I/O metrics through the Docker API. Most fields beyond basic read/write bytes remain zero, including ops, queued, service_time, and wait_time.
+
+**What remains available:** `docker.diskio.read.bytes`, `docker.diskio.write.bytes`, `docker.diskio.read.ops`, and `docker.diskio.write.ops` are the primary indicators of I/O activity and remain available regardless of cgroups version.
+
+**Recommendation:** To get a more complete picture of disk I/O, complement container-level metrics with the [System integration's](https://docs.elastic.co/integrations/system) `system.diskio.*` metrics (collected from `/proc/diskstats`), which are cgroup-version-independent and provide fields such as `io_time`, `iops_in_progress`, `read.time`, and `write.time`.
 
 {{fields "diskio"}}
 

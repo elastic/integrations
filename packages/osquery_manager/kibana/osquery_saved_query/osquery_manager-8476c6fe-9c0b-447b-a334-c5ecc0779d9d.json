@@ -1,0 +1,86 @@
+{
+    "attributes": {
+        "created_at": "2026-01-27T00:00:00.000Z",
+        "created_by": "elastic",
+        "description": "Retrieves shell command history for all users with anti-forensics detection. Uses LEFT JOIN to identify users with no shell history (potential evidence of history clearing). Review results for: (1) suspicious command patterns including reverse shells, encoded commands, credential access, (2) users with no_history_suspicious='yes' indicating missing history files.",
+        "ecs_mapping": [
+            {
+                "key": "event.category",
+                "value": {
+                    "value": [
+                        "process"
+                    ]
+                }
+            },
+            {
+                "key": "event.type",
+                "value": {
+                    "value": [
+                        "info"
+                    ]
+                }
+            },
+            {
+                "key": "event.action",
+                "value": {
+                    "value": "osquery.shell_history"
+                }
+            },
+            {
+                "key": "user.name",
+                "value": {
+                    "field": "username"
+                }
+            },
+            {
+                "key": "user.id",
+                "value": {
+                    "field": "uid"
+                }
+            },
+            {
+                "key": "user.group.id",
+                "value": {
+                    "field": "gid"
+                }
+            },
+            {
+                "key": "process.command_line",
+                "value": {
+                    "field": "command"
+                }
+            },
+            {
+                "key": "file.path",
+                "value": {
+                    "field": "history_file"
+                }
+            },
+            {
+                "key": "tags",
+                "value": {
+                    "value": [
+                        "osquery",
+                        "shell_history",
+                        "forensics",
+                        "linux",
+                        "macos"
+                    ]
+                }
+            }
+        ],
+        "id": "shell_history_linux_darwin_elastic",
+        "interval": "3600",
+        "platform": "linux,darwin",
+        "timeout": 180,
+        "query": "-- Shell History - Command Execution Forensics with Anti-Forensics Detection\n-- Platforms: Linux, macOS\n-- Uses LEFT JOIN to detect users with no shell history (anti-forensics indicator)\n-- Note: UID >= 500 captures regular users on both macOS (500+) and Linux (1000+)\n-- Note: Look for suspicious patterns and users with no_history_suspicious='yes'\nSELECT\n  u.username,\n  u.uid,\n  u.gid,\n  u.directory AS user_home,\n  sh.command,\n  sh.history_file,\n  CASE\n    WHEN sh.history_file LIKE '%bash_history%' THEN 'bash'\n    WHEN sh.history_file LIKE '%zsh_history%' THEN 'zsh'\n    WHEN sh.history_file LIKE '%fish_history%' THEN 'fish'\n    WHEN sh.history_file LIKE '%ash_history%' THEN 'ash'\n    WHEN sh.history_file LIKE '%ksh_history%' THEN 'ksh'\n    WHEN sh.history_file LIKE '%tcsh_history%' OR sh.history_file LIKE '%.history%' THEN 'tcsh'\n    WHEN sh.history_file LIKE '%csh_history%' THEN 'csh'\n    ELSE 'unknown'\n  END AS shell_type,\n  CASE\n    WHEN sh.command IS NULL THEN 'yes'\n    ELSE 'no'\n  END AS no_history_suspicious\nFROM users u\nLEFT JOIN shell_history sh ON sh.uid = u.uid\nWHERE (u.uid >= 500 OR sh.command IS NOT NULL)\n  AND (sh.command IS NULL OR sh.command != '')\nORDER BY u.username, sh.time DESC",
+        "updated_at": "2026-01-27T00:00:00.000Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-8476c6fe-9c0b-447b-a334-c5ecc0779d9d",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2026-01-27T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

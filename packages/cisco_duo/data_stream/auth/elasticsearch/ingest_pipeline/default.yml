@@ -52,6 +52,20 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.isotimestamp
+      tag: date_isotimestamp
+      target_field: cisco_duo.auth.isotimestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.isotimestamp != null && ctx.json.isotimestamp != ''
+      on_failure:
+        - remove:
+            field: json.isotimestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.category
       value: [authentication]
@@ -304,6 +318,11 @@ processors:
       target_field: cisco_duo.auth.alias
       ignore_missing: true
   - rename:
+      field: json.access_device.epkey
+      tag: rename_access_device_epkey
+      target_field: cisco_duo.auth.access_device.epkey
+      ignore_missing: true
+  - rename:
       field: json.access_device.flash_version
       target_field: cisco_duo.auth.access_device.flash_version
       ignore_missing: true
@@ -367,6 +386,11 @@ processors:
       target_field: cisco_duo.auth.access_device.security_agents
       ignore_missing: true
   - rename:
+      field: json.application.destination_name
+      tag: rename_application_destination_name
+      target_field: cisco_duo.auth.application.destination_name
+      ignore_missing: true
+  - rename:
       field: json.application.key
       target_field: cisco_duo.auth.application.key
       ignore_missing: true
@@ -377,6 +401,11 @@ processors:
   - rename:
       field: json.auth_device.ip
       target_field: cisco_duo.auth.auth_device.ip
+      ignore_missing: true
+  - rename:
+      field: json.auth_device.key
+      tag: rename_auth_device_key
+      target_field: cisco_duo.auth.auth_device.key
       ignore_missing: true
   - rename:
       field: json.auth_device.port
@@ -402,6 +431,176 @@ processors:
       field: json.trusted_endpoint_status
       target_field: cisco_duo.auth.trusted_endpoint_status
       ignore_missing: true
+  - rename:
+      field: json.trusted_session_info
+      tag: rename_trusted_session_info
+      target_field: cisco_duo.auth.trusted_session_info
+      ignore_missing: true
+  - rename:
+      field: json.adaptive_trust_assessments
+      tag: rename_adaptive_trust_assessments
+      target_field: cisco_duo.auth.adaptive_trust_assessments
+      ignore_missing: true
+  - convert:
+      field: cisco_duo.auth.adaptive_trust_assessments.more_secure_auth.features_version
+      tag: convert_adaptive_trust_assessments_more_secure_auth_features_version_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: cisco_duo.auth.adaptive_trust_assessments.remember_me.features_version
+      tag: convert_adaptive_trust_assessments_remember_me_features_version_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: cisco_duo.auth.adaptive_trust_assessments.more_secure_auth.model_version
+      tag: convert_adaptive_trust_assessments_more_secure_auth_model_version_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: cisco_duo.auth.adaptive_trust_assessments.remember_me.model_version
+      tag: convert_adaptive_trust_assessments_remember_me_model_version_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: cisco_duo.auth.adaptive_trust_assessments.more_secure_auth.policy_enabled
+      tag: convert_adaptive_trust_assessments_more_secure_auth_policy_enabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: cisco_duo.auth.adaptive_trust_assessments.more_secure_auth.policy_enabled
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cisco_duo.auth.adaptive_trust_assessments.remember_me.policy_enabled
+      tag: convert_adaptive_trust_assessments_remember_me_policy_enabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: cisco_duo.auth.adaptive_trust_assessments.remember_me.policy_enabled
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cisco_duo.auth.adaptive_trust_assessments.more_secure_auth.preview_mode_enabled
+      tag: convert_adaptive_trust_assessments_more_secure_auth_preview_mode_enabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: cisco_duo.auth.adaptive_trust_assessments.more_secure_auth.preview_mode_enabled
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cisco_duo.auth.adaptive_trust_assessments.remember_me.preview_mode_enabled
+      tag: convert_adaptive_trust_assessments_remember_me_preview_mode_enabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: cisco_duo.auth.adaptive_trust_assessments.remember_me.preview_mode_enabled
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.passport_assessment
+      tag: rename_passport_assessment
+      target_field: cisco_duo.auth.passport_assessment
+      ignore_missing: true
+  - convert:
+      field: cisco_duo.auth.passport_assessment.is_supported
+      tag: convert_passport_assessment_is_supported_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: cisco_duo.auth.passport_assessment.is_supported
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.rbfs_triggered_attacks
+      tag: rename_rbfs_triggered_attacks
+      target_field: cisco_duo.auth.rbfs_triggered_attacks
+      ignore_missing: true
+  - foreach:
+      field: cisco_duo.auth.rbfs_triggered_attacks
+      if: ctx.cisco_duo?.auth?.rbfs_triggered_attacks instanceof List
+      processor:
+        convert:
+          field: _ingest._value.detected_occurrences
+          tag: convert_rbfs_triggered_attacks_detected_occurrences_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.detected_occurrences
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cisco_duo.auth.rbfs_triggered_attacks
+      if: ctx.cisco_duo?.auth?.rbfs_triggered_attacks instanceof List
+      processor:
+        convert:
+          field: _ingest._value.shadow_mode
+          tag: convert_rbfs_triggered_attacks_shadow_mode_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.shadow_mode
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cisco_duo.auth.rbfs_triggered_attacks
+      if: ctx.cisco_duo?.auth?.rbfs_triggered_attacks instanceof List
+      processor:
+        convert:
+          field: _ingest._value.threshold_occurrences
+          tag: convert_rbfs_triggered_attacks_threshold_occurrences_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.threshold_occurrences
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cisco_duo.auth.rbfs_triggered_attacks
+      if: ctx.cisco_duo?.auth?.rbfs_triggered_attacks instanceof List
+      processor:
+        convert:
+          field: _ingest._value.threshold_time_frame
+          tag: convert_rbfs_triggered_attacks_threshold_time_frame_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.threshold_time_frame
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cisco_duo.auth.rbfs_triggered_attacks
+      if: ctx.cisco_duo?.auth?.rbfs_triggered_attacks instanceof List
+      processor:
+        convert:
+          field: _ingest._value.unrealistic_travel_velocity
+          tag: convert_rbfs_triggered_attacks_unrealistic_travel_velocity_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.unrealistic_travel_velocity
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{source.ip}}}'

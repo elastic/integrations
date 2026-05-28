@@ -1,0 +1,42 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "logs-aws_securityhub.finding-*"
+  query:
+    bool:
+      must_not:
+        - exists:
+            field: error.message
+dest:
+  index: "logs-aws_securityhub_latest.dest_finding-1"
+  aliases:
+    - alias: "logs-aws_securityhub_latest.finding"
+      move_on_creation: true
+latest:
+  unique_key:
+    - event.dataset
+    - aws_securityhub.finding.metadata.uid
+  sort: "@timestamp"
+description: >-
+  Latest Findings from AWS Security Hub. As Findings get updated, this transform stores only the latest state of each finding inside the destination index. Thus the transform's destination index contains only the latest state of the offense.
+frequency: 30s
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "event.ingested"
+    # Updated to 120s because of refresh delay in Serverless. With default 60s,
+    # sometimes transform wouldn't process all documents.
+    delay: 120s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 90d
+_meta:
+  managed: false
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation.
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false

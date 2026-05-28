@@ -4,6 +4,22 @@ The Azure OpenAI service provides flexibility to build your own copilot and AI a
 
 To fully populate the Azure OpenAI dashboard lenses, you have to enable both logs and metrics data streams and set up the Azure Billing integration in advance.
 
+## How do I deploy this integration?
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/docs/reference/fleet/install-elastic-agents). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to collect data from Azure and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+### Agentless deployment
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html)
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+> **Note:** Agentless deployment is currently supported for Azure OpenAI metrics only. Log collection is not available via agentless and requires a traditional Elastic Agent deployment.
+
 ## Data streams
 
 ### Logs
@@ -22,6 +38,8 @@ These are the supported Azure log categories:
 #### Requirements and setup
 
 Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information on how to set up and use this integration.
+
+**Authentication (Event Hub):** The Event Hub input supports two authentication methods: **connection string** (default) and **client secret** (Microsoft Entra ID). For setup steps, required RBAC roles (Azure Event Hubs Data Receiver, Storage Blob Data Contributor), and configuration options, see the [Azure Logs integration](https://docs.elastic.co/integrations/azure) or [Filebeat azure-eventhub input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) documentation.
 
 #### Default Logging
 
@@ -378,4 +396,26 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | dataset.name | Dataset name. | constant_keyword |  |  |
 | dataset.namespace | Dataset namespace. | constant_keyword |  |  |
 | dataset.type | Dataset type. | constant_keyword |  |  |
+
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+The following alert rule templates are available:
+
+**[Azure OpenAI] Latency high**
+
+
+
+**[Azure OpenAI] Provisioned Utilization above threshold**
+
+
+
+**[Azure OpenAI] Quota Error Rates above threshold**
+
+
 

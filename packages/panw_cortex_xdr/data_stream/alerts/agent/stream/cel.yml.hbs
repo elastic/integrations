@@ -15,7 +15,7 @@ state:
   path: /public_api/v2/alerts/get_alerts_multi_events
   want_more: false
   filter_time_field: server_creation_time
-  sort_time_field: creation_time
+  sort_time_field: server_creation_time
   sort_time_order: asc
   {{!-- dynamic batch_size is not supported by the API and defaults to 100 --}}
   batch_size: 100
@@ -45,8 +45,8 @@ program: |
             "operator": "gte",
             "value": f,
           }]),
-          ?"search_from": state.?search_from,
-          ?"search_to": state.?search_to,
+          ?"search_from": state.want_more ? optional.of(state.search_from) : optional.none(),
+          ?"search_to": state.want_more ? optional.of(state.search_to) : optional.none(),
         }
       }.encode_json()
     ).as(req, has(state.advanced_sec_level) ?
@@ -75,18 +75,22 @@ program: |
         (
           int(state.?search_from.orValue(0)) + body.reply.alerts.size() < body.reply.total_count
         ).as(want_more, {
-          ?"search_from": want_more ? optional.of(int(state.?search_from.orValue(0)) + body.reply.alerts.size()) : optional.none(),
-          ?"search_to": want_more ? optional.of(int(state.?search_from.orValue(0)) + body.reply.alerts.size() + int(state.batch_size)) : optional.none(),
+          "search_from": want_more ? int(state.?search_from.orValue(0)) + body.reply.alerts.size() : 0,
+          "search_to": want_more ? int(state.?search_from.orValue(0)) + body.reply.alerts.size() + int(state.batch_size) : 0,
           "want_more": want_more,
           "events": body.reply.alerts.map(e, {
             "message": e.encode_json(),
           }),
           "cursor": {
+            // local_insert_ts is the response field corresponding to the
+            // server_creation_time request filter/sort parameter.
             ?"last_timestamp": (
               body.?reply.alerts.orValue([]).size() > 0 ?
                 optional.of(body.reply.alerts.map(e, int(e.local_insert_ts)).max())
-              :
+              : want_more ?
                 state.?cursor.last_timestamp
+              :
+                filter_time
             ),
             ?"filter_time": filter_time,
           },
@@ -106,6 +110,8 @@ program: |
             ),
           },
         },
+        "search_from": 0,
+        "search_to": 0,
         "want_more": false,
       }
     )

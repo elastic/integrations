@@ -12,6 +12,14 @@ Then, you could view real-time updates to disk space used on your system in Kiba
 You could also set up a new rule in the Elastic Observability Metrics app to alert you when the percent free is
 less than 10% of the total disk space.
 
+## Choosing the right integration for Windows event logs
+
+If you're collecting Windows event logs, note that there are three related integrations:
+
+- **System integration** (this integration): Collects logs from the Windows `Application`, `System`, and `Security` channels with specialized ingest pipelines optimized for observability use cases.
+- **[Windows integration](https://www.elastic.co/docs/reference/integrations/windows)**: Collects logs from Windows-specific channels like PowerShell, Sysmon, Windows Defender, and AppLocker with specialized security-focused ingest pipelines. Use this for security monitoring and advanced Windows telemetry.
+- **[Custom Windows event log package](https://www.elastic.co/docs/reference/integrations/winlog)**: Collects logs from any user-defined Windows event log channel. Use this when you need to collect from channels not covered by the System or Windows integrations. Note that this integration does not include specialized ingest pipelines—you'll need to create custom pipelines if additional processing is required.
+  
 ## Data streams
 
 The System integration collects two types of data: logs and metrics.
@@ -1571,7 +1579,8 @@ An example event for `ntp` looks as following:
 ### Process
 
 The System `process` data stream provides process statistics. One document is
-provided for each process.
+provided for each process. 
+Refer to the [Configuration](beats://reference/metricbeat/metricbeat-metricset-system-process.md##_configuration_12) section for more details on how to change the process configuration.
 
 #### Supported operating systems
 
@@ -1752,6 +1761,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | system.process.memory.rss.pct | The percentage of memory the process occupied in main memory (RAM). | scaled_float | percent | gauge |
 | system.process.memory.share | The shared memory the process uses. | long | byte | gauge |
 | system.process.memory.size | The total virtual memory the process has. On Windows this represents the Commit Charge (the total amount of memory that the memory manager has committed for a running process) value in bytes for this process. | long | byte | gauge |
+| system.process.memory.swap | The swap memory used by the process (supported only on Linux kernel version 2.6.34+). | long | byte | gauge |
 | system.process.num_threads | Number of threads in the process | integer |  |  |
 | system.process.state | The process state. For example: "running". | keyword |  |  |
 
@@ -1916,4 +1926,38 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | system.uptime.duration.ms | The OS uptime in milliseconds. | long | ms | counter |
+
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+The following alert rule templates are available:
+
+**[System] CPU Utilization**
+
+
+
+**[System] Disk I/O Saturation**
+
+
+
+**[System] High Disk I/O Latency**
+
+
+
+**[System] High Network Error Rate**
+
+
+
+**[System] High Packet Drop Rate**
+
+
+
+**[System] Memory Utilization**
+
+
 

@@ -51,8 +51,9 @@ response.request_body_on_pagination: true
 response.pagination:
   - set:
       target: url.params.next
-      value: '[[ .last_response.body.next ]]'
+      value: '[[ if index .last_response.body "next" ]][[ .last_response.body.next ]][[ end ]]'
       fail_on_template_error: true
+      do_not_log_failure: true
 cursor:
   lastUpdateTime:
     value: '[[.last_response.url.params.Get "end_epoch"]]'
