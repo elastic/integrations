@@ -1,4 +1,11 @@
-ARG SERVICE_VERSION=${SERVICE_VERSION:-9.5.3}
+ARG SERVICE_VERSION=18.1
 FROM postgres:${SERVICE_VERSION}
+
 COPY docker-entrypoint-initdb.d /docker-entrypoint-initdb.d
-HEALTHCHECK --interval=10s --retries=6 CMD psql -h localhost -U postgres -l
+
+# Runtime fix for host-mounted /var/log/postgresql permissions.
+# Runs before the official entrypoint drops privileges to the postgres user.
+COPY docker-entrypoint-wrapper.sh /usr/local/bin/docker-entrypoint-wrapper.sh
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint-wrapper.sh"]
+
+HEALTHCHECK --interval=10s --retries=6 CMD pg_isready -U postgres
