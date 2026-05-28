@@ -367,23 +367,23 @@ processors:
       description: Build user.entity.relationships.owns from enrolled device list.
       if: ctx.entityanalytics_okta?.user?.devices instanceof List
       source: |
-        def owns = new ArrayList();
+        def ids = new ArrayList();
+        def names = new ArrayList();
         for (def device : ctx.entityanalytics_okta.user.devices) {
-          if (device == null) {
-            continue;
-          }
-          def entry = new HashMap();
-          def hostObj = new HashMap();
-          if (device.id != null) hostObj.put("id", device.id);
+          if (device == null) { continue; }
+          if (device.id != null) { ids.add(device.id); }
           def displayName = device?.profile?.displayName;
-          if (displayName != null) hostObj.put("name", displayName);
-          if (!hostObj.isEmpty()) entry.put("host", hostObj);
-          owns.add(entry);
+          if (displayName != null) { names.add(displayName); }
         }
-        ctx.user = ctx.user ?: new HashMap();
-        ctx.user.entity = ctx.user.entity ?: new HashMap();
-        ctx.user.entity.relationships = ctx.user.entity.relationships ?: new HashMap();
-        ctx.user.entity.relationships.put("owns", owns);
+        def hostObj = new HashMap();
+        if (!ids.isEmpty()) { hostObj.put("id", ids); }
+        if (!names.isEmpty()) { hostObj.put("name", names); }
+        if (!hostObj.isEmpty()) {
+          ctx.user = ctx.user ?: new HashMap();
+          ctx.user.entity = ctx.user.entity ?: new HashMap();
+          ctx.user.entity.relationships = ctx.user.entity.relationships ?: new HashMap();
+          ctx.user.entity.relationships.put("owns", ["host": hostObj]);
+        }
   - rename:
       field: supervises
       target_field: entityanalytics_okta.user.supervises
@@ -395,36 +395,38 @@ processors:
       description: Build user.entity.relationships.supervises from supervised user list.
       if: ctx.entityanalytics_okta?.user?.supervises instanceof List
       source: |
-        def supervises = new ArrayList();
+        def ids = new ArrayList();
+        def names = new ArrayList();
+        def emails = new ArrayList();
         def renamedSupervises = new ArrayList();
         for (def supervised : ctx.entityanalytics_okta.user.supervises) {
-          if (supervised == null) {
-            continue;
-          }
-          def entry = new HashMap();
+          if (supervised == null) { continue; }
           def raw = new HashMap();
-          def userObj = new HashMap();
           if (supervised?.user_id != null) {
-            userObj.put("id", supervised.user_id);
+            ids.add(supervised.user_id);
             raw.put("user.id", supervised.user_id);
           }
           if (supervised?.username != null) {
-            userObj.put("name", supervised.username);
+            names.add(supervised.username);
             raw.put("user.name", supervised.username);
           }
           if (supervised?.email != null) {
-            userObj.put("email", supervised.email);
+            emails.add(supervised.email);
             raw.put("user.email", supervised.email);
           }
-          if (!userObj.isEmpty()) entry.put("user", userObj);
-          supervises.add(entry);
           renamedSupervises.add(raw);
         }
         ctx.entityanalytics_okta.user.supervises = renamedSupervises;
-        ctx.user = ctx.user ?: new HashMap();
-        ctx.user.entity = ctx.user.entity ?: new HashMap();
-        ctx.user.entity.relationships = ctx.user.entity.relationships ?: new HashMap();
-        ctx.user.entity.relationships.put("supervises", supervises);
+        def userObj = new HashMap();
+        if (!ids.isEmpty()) { userObj.put("id", ids); }
+        if (!names.isEmpty()) { userObj.put("name", names); }
+        if (!emails.isEmpty()) { userObj.put("email", emails); }
+        if (!userObj.isEmpty()) {
+          ctx.user = ctx.user ?: new HashMap();
+          ctx.user.entity = ctx.user.entity ?: new HashMap();
+          ctx.user.entity.relationships = ctx.user.entity.relationships ?: new HashMap();
+          ctx.user.entity.relationships.put("supervises", ["user": userObj]);
+        }
   - rename:
       field: okta.transitioningToStatus
       target_field: entityanalytics_okta.user.transitioning_to_status
