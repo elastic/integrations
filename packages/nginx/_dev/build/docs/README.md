@@ -1,5 +1,7 @@
 # Nginx Integration
 
+<!-- Vale workflow sample: generated package documentation. -->
+
 The Nginx integration allows you to monitor [Nginx](https://nginx.org/) servers. Time series [index mode](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds.html) enabled for metrics data stream.
 
 Use the Nginx integration to collect metrics and logs from your server.

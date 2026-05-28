@@ -1,5 +1,7 @@
 # System OpenTelemetry Assets
 
+<!-- Vale workflow sample: fallback package documentation. -->
+
 System OpenTelemetry Assets provides dashboards for visualizing OpenTelemetry hosts' metrics and logs. 
 
 ## Requirements
