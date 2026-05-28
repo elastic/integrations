@@ -1,21 +1,23 @@
 {
     "expected": [
         {
-            "@timestamp": "2026-05-17T17:57:47.009Z",
+            "@timestamp": "2026-05-17T18:02:03.000Z",
             "ecs": {
                 "version": "8.11.0"
             },
             "event": {
-                "action": "password-changed",
                 "category": [
                     "iam"
                 ],
                 "kind": "event",
-                "original": "2026-05-17T17:57:47.009102+00:00 host12345 passwd[9999999]: pam_unix(passwd:chauthtok): password changed for user123",
+                "original": "2026-05-17T18:02:03.000000+00:00 host12345 gpasswd[3456789]: user alice added by root to group sudo",
                 "outcome": "success",
                 "type": [
                     "change"
                 ]
+            },
+            "group": {
+                "name": "sudo"
             },
             "host": {
                 "hostname": "host12345"
@@ -23,45 +25,48 @@
             "input": {
                 "type": "log"
             },
-            "message": "pam_unix(passwd:chauthtok): password changed for user123",
+            "message": "user alice added by root to group sudo",
             "process": {
-                "name": "passwd",
-                "pid": 9999999
+                "name": "gpasswd",
+                "pid": 3456789
             },
             "related": {
                 "hosts": [
                     "host12345"
                 ],
                 "user": [
-                    "user123"
+                    "root",
+                    "alice"
                 ]
             },
             "system": {
                 "auth": {}
             },
             "user": {
-                "name": "user123",
+                "name": "root",
                 "target": {
-                    "name": "user123"
+                    "name": "alice"
                 }
             }
         },
         {
-            "@timestamp": "2026-05-17T17:57:48.123Z",
+            "@timestamp": "2026-05-17T18:02:04.000Z",
             "ecs": {
                 "version": "8.11.0"
             },
             "event": {
-                "action": "password-changed",
                 "category": [
                     "iam"
                 ],
                 "kind": "event",
-                "original": "2026-05-17T17:57:48.123456+00:00 host12345 passwd[9999999]: pam_unix(passwd:chauthtok): new password not acceptable",
-                "outcome": "failure",
+                "original": "2026-05-17T18:02:04.000000+00:00 host12345 gpasswd[3456789]: user alice removed by root from group sudo",
+                "outcome": "success",
                 "type": [
                     "change"
                 ]
+            },
+            "group": {
+                "name": "sudo"
             },
             "host": {
                 "hostname": "host12345"
@@ -69,18 +74,28 @@
             "input": {
                 "type": "log"
             },
-            "message": "pam_unix(passwd:chauthtok): new password not acceptable",
+            "message": "user alice removed by root from group sudo",
             "process": {
-                "name": "passwd",
-                "pid": 9999999
+                "name": "gpasswd",
+                "pid": 3456789
             },
             "related": {
                 "hosts": [
                     "host12345"
+                ],
+                "user": [
+                    "root",
+                    "alice"
                 ]
             },
             "system": {
                 "auth": {}
+            },
+            "user": {
+                "name": "root",
+                "target": {
+                    "name": "alice"
+                }
             }
         }
     ]
