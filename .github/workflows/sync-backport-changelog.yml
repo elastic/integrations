@@ -29,14 +29,6 @@ jobs:
             exit 0
           fi
 
-          # Only act on branches that follow the backport-<package>-<major.minor> convention.
-          # TODO: re-enable once branch naming convention is confirmed.
-          # if [[ "$BRANCH" =~ ^backport-(.+)-([0-9]+\.[0-9]+)$ ]]; then
-          #   echo "proceed=true" >> "$GITHUB_OUTPUT"
-          # else
-          #   echo "proceed=false" >> "$GITHUB_OUTPUT"
-          #   echo "Skipping: '$BRANCH' does not match backport-<package>-<major.minor> convention"
-          # fi
           echo "proceed=true" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v6
@@ -75,6 +67,10 @@ jobs:
 
           mapfile -t CHANGED < <(git diff --name-only "${BEFORE}..${AFTER}" -- '**/changelog.yml')
 
+          # Pipe-delimited manifest|version|entry_file rows: one push may queue several packages,
+          # and each changelog block lives in its own temp file (multi-line YAML). A single TSV
+          # path is passed to the create step via GITHUB_OUTPUT; embedding entries in outputs
+          # would break on newlines and size limits.
           ENTRIES_TSV=$(mktemp /tmp/entries_XXXX.tsv)
 
           for CHANGELOG_PATH in "${CHANGED[@]}"; do
@@ -130,6 +126,7 @@ jobs:
 
       - name: Install mage
         if: steps.collect.outputs.has_changes == 'true'
+        # Required by backport_resolve_package_dir.py, which uses `mage listPackages`.
         run: go install github.com/magefile/mage
 
       - name: Create changelog sync PR
@@ -231,22 +228,29 @@ jobs:
           if [[ -z "$WORKING_BRANCH" ]]; then
             # Nothing to sync (no changelog changes or all versions already in main).
             exit 0
-          elif [[ "$CREATE_OUTCOME" == "success" ]]; then
-            SYNC_PR_URL=$(gh pr list \
-              --head "$WORKING_BRANCH" \
-              --state open --json url --jq '.[0].url')
-            if [[ -n "$SYNC_PR_URL" ]]; then
-              BODY="Changelog sync PR created successfully: ${SYNC_PR_URL}"
-              if [[ -n "$NOT_FOUND_PACKAGES" ]]; then
-                BODY="${BODY}"$'\n\n'"⚠️ The following packages were not found on \`main\` and were skipped: ${NOT_FOUND_PACKAGES}"
-              fi
-            else
-              BODY="Changelog sync could not be completed: the following packages were not found on \`main\`: ${NOT_FOUND_PACKAGES}"
-            fi
-          elif [[ "$CREATE_OUTCOME" == "skipped" ]]; then
-            BODY="Changelog sync skipped: all versions already present in \`main\` or a sync PR already exists."
-          else
-            BODY="Changelog sync PR creation failed. See the [workflow run](https://github.com/${REPOSITORY}/actions/runs/${RUN_ID}) for details."
           fi
+
+          RUN_URL="https://github.com/${REPOSITORY}/actions/runs/${RUN_ID}"
+          SKIPPED_WARN=$'\n\n'"⚠️ The following packages were not found on \`main\` and were skipped: ${NOT_FOUND_PACKAGES}"
+
+          case "$CREATE_OUTCOME" in
+            skipped)
+              BODY="Changelog sync skipped: all versions already present in \`main\` or a sync PR already exists."
+              ;;
+            success)
+              SYNC_PR_URL=$(gh pr list \
+                --head "$WORKING_BRANCH" \
+                --state open --json url --jq '.[0].url')
+              if [[ -n "$SYNC_PR_URL" ]]; then
+                BODY="Changelog sync PR created successfully: ${SYNC_PR_URL}"
+                [[ -n "$NOT_FOUND_PACKAGES" ]] && BODY+="${SKIPPED_WARN}"
+              else
+                BODY="Changelog sync could not be completed: the following packages were not found on \`main\`: ${NOT_FOUND_PACKAGES}"
+              fi
+              ;;
+            *)
+              BODY="Changelog sync PR creation failed. See the [workflow run](${RUN_URL}) for details."
+              ;;
+          esac
 
           gh pr comment "$BACKPORT_PR_NUMBER" --body "$BODY"
