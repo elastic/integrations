@@ -31,7 +31,7 @@ program: |-
     "GET",
     state.url.trim_right("/") + "/v1/devices?" + {
       "pageSize": [string(state.page_size)],
-      "pageToken": [has(state.page_token) ? state.page_token : ""],
+      "pageToken": [state.?page_token.orValue("")],
     }.format_query()
   ).as(request,
     (has(state.?cursor.response_id) && state.cursor.response_id != null) ?
