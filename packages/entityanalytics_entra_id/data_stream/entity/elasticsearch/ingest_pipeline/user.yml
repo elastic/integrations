@@ -239,21 +239,25 @@ processors:
       description: Build user.entity.relationships.supervises from direct reports list.
       if: ctx.entityanalytics_entra_id?.user?.direct_reports instanceof List
       source: |
-        def supervises = new ArrayList();
+        def ids = new ArrayList();
+        def names = new ArrayList();
+        def emails = new ArrayList();
         for (def report : ctx.entityanalytics_entra_id.user.direct_reports) {
           if (report == null) { continue; }
-          def entry = new HashMap();
-          def userObj = new HashMap();
-          if (report.id != null) { userObj.put("id", report.id); }
-          if (report.user_principal_name != null) { userObj.put("name", report.user_principal_name); }
-          if (report.mail != null) { userObj.put("email", report.mail); }
-          if (!userObj.isEmpty()) { entry.put("user", userObj); }
-          if (!entry.isEmpty()) { supervises.add(entry); }
+          if (report.id != null) { ids.add(report.id); }
+          if (report.user_principal_name != null) { names.add(report.user_principal_name); }
+          if (report.mail != null) { emails.add(report.mail); }
         }
-        ctx.user = ctx.user ?: new HashMap();
-        ctx.user.entity = ctx.user.entity ?: new HashMap();
-        ctx.user.entity.relationships = ctx.user.entity.relationships ?: new HashMap();
-        ctx.user.entity.relationships.put("supervises", supervises);
+        def userObj = new HashMap();
+        if (!ids.isEmpty()) { userObj.put("id", ids); }
+        if (!names.isEmpty()) { userObj.put("name", names); }
+        if (!emails.isEmpty()) { userObj.put("email", emails); }
+        if (!userObj.isEmpty()) {
+          ctx.user = ctx.user ?: new HashMap();
+          ctx.user.entity = ctx.user.entity ?: new HashMap();
+          ctx.user.entity.relationships = ctx.user.entity.relationships ?: new HashMap();
+          ctx.user.entity.relationships.put("supervises", ["user": userObj]);
+        }
   - foreach:
       field: entityanalytics_entra_id.user.app_role_assignments
       if: ctx.entityanalytics_entra_id?.user?.app_role_assignments instanceof List
