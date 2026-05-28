@@ -911,8 +911,9 @@ teardown_test_package() {
 }
 
 # list all directories that are packages from the root of the repository
+# TODO: remove filter once the sync process is validated beyond elastic_package_registry.
 list_all_directories() {
-    mage -d "${WORKSPACE}" listPackages
+    mage -d "${WORKSPACE}" listPackages | grep "elastic_package_registry"
 }
 
 check_package() {
