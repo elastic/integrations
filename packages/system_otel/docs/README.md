@@ -1,6 +1,6 @@
 # System OpenTelemetry Assets
 
-<!-- Vale workflow sample: fallback package documentation. -->
+This fallback README uses e.g. on purpose for the Vale workflow test.
 
 System OpenTelemetry Assets provides dashboards for visualizing OpenTelemetry hosts' metrics and logs. 
 
