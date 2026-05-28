@@ -34,7 +34,15 @@ program: |-
     state.want_more ?
       state
     :
-      state.with(
+      state.drop(
+        [
+          "page_token",
+          "device_keys",
+          "device_values",
+          "device_page_token",
+          "device_response_id",
+        ]
+      ).with(
         {
           "page_size": string(state.page_size),
           "start_time": (has(state.cursor) && has(state.cursor.last_timestamp) &&
@@ -43,12 +51,7 @@ program: |-
           :
             (now - duration(state.initial_interval)).format(time_layout.RFC3339),
           "end_time": now.format(time_layout.RFC3339),
-          "page_token": "",
           "devices_fetched": false,
-          "device_keys": [],
-          "device_values": [],
-          "device_page_token": "",
-          "device_response_id": "",
         }
       )
   ).as(state,
@@ -76,30 +79,26 @@ program: |-
         (resp.StatusCode == 200) ?
           resp.Body.decode_json().as(body,
             (body.nextPageToken != "").as(has_more,
-              {
-                "events": [{"message": "retry"}],
-                "page_size": state.page_size,
-                "start_time": state.start_time,
-                "end_time": state.end_time,
-                "page_token": state.?page_token.orValue(""),
-                "want_more": true,
-                "initial_interval": state.initial_interval,
-                "cursor": state.?cursor.orValue({"last_timestamp": null, "response_id": null}),
-                "device_url": state.device_url,
-                "device_keys": state.?device_keys.orValue([]) + body.devices.map(d, d.uuid),
-                "device_values": state.?device_values.orValue([]) + body.devices.map(d,
-                  {
-                    "displayName": d.?displayName.orValue(""),
-                    "primaryIp": d.?primaryLocalIpAddress.orValue(""),
-                    "publicIp": d.?publicIpAddress.orValue(""),
-                    "osFull": has(d.operatingSystem) ? d.operatingSystem.?displayName.orValue("") : "",
-                    "osVersion": (has(d.operatingSystem) && has(d.operatingSystem.version)) ? d.operatingSystem.version.?name.orValue("") : "",
-                  }
-                ),
-                "device_page_token": has_more ? body.nextPageToken : "",
-                "device_response_id": "",
-                "devices_fetched": !has_more,
-              }
+              state.drop(
+                "device_response_id"
+              ).with(
+                {
+                  "events": [{"message": "retry"}],
+                  "want_more": true,
+                  "device_keys": state.?device_keys.orValue([]) + body.devices.map(d, d.uuid),
+                  "device_values": state.?device_values.orValue([]) + body.devices.map(d,
+                    {
+                      "displayName": d.?displayName.orValue(""),
+                      "primaryIp": d.?primaryLocalIpAddress.orValue(""),
+                      "publicIp": d.?publicIpAddress.orValue(""),
+                      "osFull": has(d.operatingSystem) ? d.operatingSystem.?displayName.orValue("") : "",
+                      "osVersion": (has(d.operatingSystem) && has(d.operatingSystem.version)) ? d.operatingSystem.version.?name.orValue("") : "",
+                    }
+                  ),
+                  "device_page_token": has_more ? body.nextPageToken : "",
+                  "devices_fetched": !has_more,
+                }
+              )
             )
           )
         : (resp.StatusCode == 202) ?
@@ -111,7 +110,14 @@ program: |-
             }
           )
         :
-          state.with(
+          state.drop(
+            [
+              "device_keys",
+              "device_values",
+              "device_page_token",
+              "device_response_id",
+            ]
+          ).with(
             {
               "events": [
                 {
@@ -129,10 +135,6 @@ program: |-
               ],
               "want_more": true,
               "devices_fetched": true,
-              "device_keys": [],
-              "device_values": [],
-              "device_page_token": "",
-              "device_response_id": "",
             }
           )
       )
@@ -162,49 +164,47 @@ program: |-
         ).do_request().as(resp,
           (resp.StatusCode == 200) ?
             resp.Body.decode_json().as(body,
-              {
-                "events": body.detections.map(e,
-                  {
-                    "message": e.with(
-                      {
-                        "deviceDisplayName": has(e.?context.deviceUuid) ?
-                          device_map[?e.context.deviceUuid].displayName.orValue("")
+              state.drop(
+                "device_page_token"
+              ).with(
+                {
+                  "events": body.detections.map(e,
+                    {
+                      "message": e.with(
+                        {
+                          "deviceDisplayName": has(e.?context.deviceUuid) ?
+                            device_map[?e.context.deviceUuid].displayName.orValue("")
+                          :
+                            "",
+                          "deviceInfo": has(e.?context.deviceUuid) ?
+                            device_map[?e.context.deviceUuid].orValue({})
+                          :
+                            {},
+                        }
+                      ).encode_json(),
+                    }
+                  ),
+                  "page_token": body.nextPageToken,
+                  "want_more": body.nextPageToken != "",
+                  "cursor": {
+                    "response_id": null,
+                    "last_timestamp": (body.nextPageToken != "") ?
+                      (
+                        (has(state.cursor) && has(state.cursor.last_timestamp)) ?
+                          state.cursor.last_timestamp
                         :
-                          "",
-                        "deviceInfo": has(e.?context.deviceUuid) ?
-                          device_map[?e.context.deviceUuid].orValue({})
-                        :
-                          {},
-                      }
-                    ).encode_json(),
-                  }
-                ),
-                "page_token": body.nextPageToken,
-                "want_more": body.nextPageToken != "",
-                "page_size": state.page_size,
-                "initial_interval": state.initial_interval,
-                "start_time": string(state.start_time),
-                "end_time": string(state.end_time),
-                "cursor": {
-                  "response_id": null,
-                  "last_timestamp": (body.nextPageToken != "") ?
-                    (
-                      (has(state.cursor) && has(state.cursor.last_timestamp)) ?
-                        state.cursor.last_timestamp
-                      :
-                        null
-                    )
-                  : (body.detections.size() > 0) ?
-                    body.detections.map(e, e.occurTime).max()
-                  :
-                    state.end_time,
-                },
-                "device_url": state.device_url,
-                "device_keys": (body.nextPageToken != "") ? state.device_keys : [],
-                "device_values": (body.nextPageToken != "") ? state.device_values : [],
-                "device_page_token": "",
-                "devices_fetched": body.nextPageToken != "",
-              }
+                          null
+                      )
+                    : (body.detections.size() > 0) ?
+                      body.detections.map(e, e.occurTime).max()
+                    :
+                      state.end_time,
+                  },
+                  "device_keys": (body.nextPageToken != "") ? state.device_keys : [],
+                  "device_values": (body.nextPageToken != "") ? state.device_values : [],
+                  "devices_fetched": body.nextPageToken != "",
+                }
+              )
             )
           : (resp.StatusCode == 202) ?
             state.with(
@@ -218,7 +218,14 @@ program: |-
               }
             )
           :
-            state.with(
+            state.drop(
+              [
+                "page_token",
+                "device_keys",
+                "device_values",
+                "device_page_token",
+              ]
+            ).with(
               {
                 "events": [
                   {
@@ -234,16 +241,11 @@ program: |-
                     },
                   },
                 ],
-                "page_token": "",
                 "want_more": false,
                 "cursor": {
                   "last_timestamp": state.start_time,
                   "response_id": null,
                 },
-                "device_url": state.device_url,
-                "device_keys": [],
-                "device_values": [],
-                "device_page_token": "",
                 "devices_fetched": false,
               }
             )
