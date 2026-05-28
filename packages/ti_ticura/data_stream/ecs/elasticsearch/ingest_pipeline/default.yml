@@ -1,0 +1,341 @@
+---
+description: Pipeline for processing Ticura threat intelligence feed
+processors:
+
+  # Preserve the raw NDJSON line in event.original ONLY when the user enabled
+  # the preserve_original_event integration toggle. Avoids the older
+  # set-then-conditionally-remove pattern.
+  - set:
+      field: event.original
+      copy_from: message
+      tag: copy_original_message
+      if: ctx.tags?.contains('preserve_original_event') == true
+      ignore_empty_value: true
+
+  - json:
+      field: message
+      add_to_root: true
+      add_to_root_conflict_strategy: replace
+      ignore_failure: true
+
+  - remove:
+      field: message
+      ignore_missing: true
+
+  - drop:
+      if: ctx.ticura?.uuid == null
+      ignore_failure: true
+
+  - set:
+      field: ecs.version
+      value: '9.3.0'
+
+  - set:
+      field: _id
+      copy_from: ticura.uuid
+
+  - set:
+      field: ticura.feed_ingest_timestamp
+      value: "{{{_ingest.timestamp}}}"
+
+  # Activity classification for filtering and Elastic Security UI grouping.
+  - set:
+      field: event.action
+      value: indicator-update
+      override: false
+
+  # ----- @timestamp from event time -----
+  # ECS @timestamp must represent when the indicator was last relevant in the
+  # wild. Order of preference:
+  #   1. threat.indicator.last_seen — most ECS-semantic-correct (most-recent observation)
+  #   2. threat.indicator.first_seen — fallback when last_seen is missing
+  # We deliberately do NOT fall back to threat.indicator.modified_at: Ticura
+  # assigns modified_at per scoring-batch (all indicators in one poll share the
+  # same value), which gives Discover a useless single-spike time distribution.
+  # If neither last_seen nor first_seen is present, @timestamp keeps the
+  # Filebeat-supplied ingest time as a last resort.
+  - date:
+      field: threat.indicator.last_seen
+      target_field: '@timestamp'
+      formats: ['ISO8601']
+      if: ctx.threat?.indicator?.last_seen != null
+      ignore_failure: true
+  - date:
+      field: threat.indicator.first_seen
+      target_field: '@timestamp'
+      formats: ['ISO8601']
+      if: ctx.threat?.indicator?.last_seen == null && ctx.threat?.indicator?.first_seen != null
+      ignore_failure: true
+
+  # ----- Expired-indicator flag -----
+  # ticura.agesOut is the indicator's scheduled expiry; documents past that
+  # point are stale even if still in the hot index. Setting the canonical
+  # ECS flag lets detection rules and dashboards filter on threat.indicator.expired.
+  - script:
+      lang: painless
+      if: ctx.ticura?.agesOut != null
+      tag: set_threat_indicator_expired
+      source: |
+        long agesMs = ZonedDateTime.parse(ctx.ticura.agesOut).toInstant().toEpochMilli();
+        long nowMs  = new Date().getTime();
+        if (ctx.threat == null) ctx.threat = [:];
+        if (ctx.threat.indicator == null) ctx.threat.indicator = [:];
+        ctx.threat.indicator.expired = agesMs < nowMs;
+      ignore_failure: true
+
+  # ----- Document-level provenance -----
+  # Mark every event as a Ticura threat-intel document for cross-source
+  # filtering, Elastic Security UI grouping, and SOAR routing.
+  # NOTE: event.dataset is set automatically by Fleet from the data stream
+  # definition; we deliberately don't set it again here to avoid redundancy.
+  - set:
+      field: event.module
+      value: ti_ticura
+      override: false
+  - set:
+      field: event.provider
+      value: Ticura
+      override: false
+  - set:
+      field: observer.vendor
+      value: Ticura
+      override: false
+  - set:
+      field: observer.product
+      value: Ticura
+      override: false
+
+  # ----- ECS canonical severity -----
+  # Ticura's risk score is 0-100; ECS event.severity is documented 1-99.
+  # Clamp to 99 max so we never violate the ECS spec when risk == 100.
+  # override: false so any ECS-native value supplied by the source wins.
+  - script:
+      lang: painless
+      if: ctx.ticura?.risk != null && ctx.event?.severity == null
+      tag: set_event_severity_clamped
+      source: |
+        long r = ((Number) ctx.ticura.risk).longValue();
+        if (r > 99L) r = 99L;
+        if (r < 0L) r = 0L;
+        if (ctx.event == null) ctx.event = [:];
+        ctx.event.severity = r;
+      ignore_failure: true
+
+  # ----- MITRE ATT&CK: Ticura namespace -> ECS canonical fields -----
+  # Mirror with override: false so values Ticura already wrote into the ECS
+  # namespace are never replaced. The ticura.* fields are preserved as-is,
+  # giving customers a per-field provenance signal (see README).
+  - set:
+      field: threat.technique.id
+      copy_from: ticura.technique.id
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: threat.technique.name
+      copy_from: ticura.technique.name
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: threat.technique.reference
+      copy_from: ticura.technique.reference
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: threat.technique.subtechnique.id
+      copy_from: ticura.technique.subtechnique.id
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: threat.technique.subtechnique.name
+      copy_from: ticura.technique.subtechnique.name
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: threat.technique.subtechnique.reference
+      copy_from: ticura.technique.subtechnique.reference
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: threat.software.id
+      copy_from: ticura.software.id
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: threat.software.name
+      copy_from: ticura.software.name
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: threat.software.type
+      copy_from: ticura.software.type
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: threat.software.platforms
+      copy_from: ticura.software.platforms
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: threat.software.alias
+      copy_from: ticura.software.alias
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: threat.software.reference
+      copy_from: ticura.software.reference
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: threat.group.id
+      copy_from: ticura.group.id
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: threat.group.name
+      copy_from: ticura.group.name
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: threat.group.reference
+      copy_from: ticura.group.reference
+      override: false
+      ignore_empty_value: true
+
+  # ----- IP indicator: GeoIP + ASN enrichment -----
+  # Uses the GeoLite2 databases bundled with Elasticsearch (no external calls).
+  # Both processors are conditional on threat.indicator.ip so domain/URL/hash
+  # indicators skip them. Failures are tolerated (e.g., private/test IPs).
+  - geoip:
+      field: threat.indicator.ip
+      target_field: threat.indicator.geo
+      if: ctx.threat?.indicator?.ip != null
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: threat.indicator.geo
+            ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: threat.indicator.ip
+      target_field: threat.indicator.as
+      properties: [asn, organization_name]
+      if: ctx.threat?.indicator?.ip != null
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: threat.indicator.as
+            ignore_missing: true
+  # Rename GeoLite2-ASN raw fields to ECS-canonical names.
+  - rename:
+      field: threat.indicator.as.asn
+      target_field: threat.indicator.as.number
+      ignore_missing: true
+  - rename:
+      field: threat.indicator.as.organization_name
+      target_field: threat.indicator.as.organization.name
+      ignore_missing: true
+
+  # ----- URL indicator: parse URL components -----
+  # uri_parts splits threat.indicator.url.full into scheme, domain, port, path,
+  # query, fragment, etc. Lets URL-based detection rules filter on subfields.
+  # remove_if_successful: false keeps the source url.full intact alongside the
+  # parsed components. keep_original is left off — the source field already
+  # serves that purpose.
+  - uri_parts:
+      field: threat.indicator.url.full
+      target_field: threat.indicator.url
+      remove_if_successful: false
+      if: ctx.threat?.indicator?.url?.full != null
+      ignore_failure: true
+
+  # ----- Hash indicator: fall back to subType when source omits the hash field -----
+  # Ticura usually sets threat.indicator.file.hash.{sha256,md5} directly, but
+  # when only threat.indicator.name (= the hash string) is present, derive the
+  # ECS field from the subType. override: false so source-supplied hashes win.
+  - set:
+      field: threat.indicator.file.hash.sha256
+      copy_from: threat.indicator.name
+      override: false
+      if: ctx.ticura?.subType == 'HASHSHA256' && ctx.threat?.indicator?.name != null
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.hash.md5
+      copy_from: threat.indicator.name
+      override: false
+      if: ctx.ticura?.subType == 'HASHMD5' && ctx.threat?.indicator?.name != null
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.hash.sha1
+      copy_from: threat.indicator.name
+      override: false
+      if: ctx.ticura?.subType == 'HASHSHA1' && ctx.threat?.indicator?.name != null
+      ignore_empty_value: true
+
+  - script:
+      lang: painless
+      source: |
+        if (ctx.merged == null || !(ctx.merged instanceof Map)) {
+            ctx.merged = [:];
+        }
+
+        List mergedCountries = [];
+        if (ctx.ticura?.countries != null) {
+            if (ctx.ticura.countries instanceof List) {
+                mergedCountries.addAll(ctx.ticura.countries);
+            } else {
+                mergedCountries.add(ctx.ticura.countries);
+            }
+        }
+        if (ctx.additionalInfo?.countries != null) {
+            if (ctx.additionalInfo.countries instanceof List) {
+                mergedCountries.addAll(ctx.additionalInfo.countries);
+            } else {
+                mergedCountries.add(ctx.additionalInfo.countries);
+            }
+        }
+        ctx.merged.countries = new ArrayList(new HashSet(mergedCountries));
+        ctx.merged.countries.sort(null);
+
+        List mergedIndustries = [];
+        if (ctx.ticura?.industries != null) {
+            if (ctx.ticura.industries instanceof List) {
+                mergedIndustries.addAll(ctx.ticura.industries);
+            } else {
+                mergedIndustries.add(ctx.ticura.industries);
+            }
+        }
+        if (ctx.additionalInfo?.industries != null) {
+            if (ctx.additionalInfo.industries instanceof List) {
+                mergedIndustries.addAll(ctx.additionalInfo.industries);
+            } else {
+                mergedIndustries.add(ctx.additionalInfo.industries);
+            }
+        }
+        ctx.merged.industries = new ArrayList(new HashSet(mergedIndustries));
+        ctx.merged.industries.sort(null);
+
+        List mergedActors = [];
+        if (ctx.ticura?.actors != null) {
+            if (ctx.ticura.actors instanceof List) {
+                mergedActors.addAll(ctx.ticura.actors);
+            } else {
+                mergedActors.add(ctx.ticura.actors);
+            }
+        }
+        if (ctx.additionalInfo?.actors != null) {
+            if (ctx.additionalInfo.actors instanceof List) {
+                mergedActors.addAll(ctx.additionalInfo.actors);
+            } else {
+                mergedActors.add(ctx.additionalInfo.actors);
+            }
+        }
+        ctx.merged.actors = new ArrayList(new HashSet(mergedActors));
+        ctx.merged.actors.sort(null);
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

@@ -1,0 +1,39 @@
+{
+    "id": "ti_ticura-search-recently-added",
+    "type": "search",
+    "namespaces": [
+        "default"
+    ],
+    "migrationVersion": {
+        "search": "8.0.0"
+    },
+    "attributes": {
+        "title": "[Ticura] Recently first-seen indicators",
+        "description": "Newest indicators sorted by their `threat.indicator.first_seen` timestamp. Useful for monitoring fresh threat intel coming in.",
+        "columns": [
+            "threat.indicator.first_seen",
+            "threat.indicator.type",
+            "threat.indicator.name",
+            "event.severity",
+            "ticura.riskCategory",
+            "additionalInfo.threatTypes"
+        ],
+        "sort": [
+            [
+                "threat.indicator.first_seen",
+                "desc"
+            ]
+        ],
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": "{\"filter\": [], \"query\": {\"language\": \"kuery\", \"query\": \"_tier:\\\"data_hot\\\" and event.module:\\\"ti_ticura\\\" and not threat.indicator.expired:true\"}, \"indexRefName\": \"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+        }
+    },
+    "references": [
+        {
+            "id": "logs-ti_ticura_latest",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        }
+    ],
+    "coreMigrationVersion": "8.8.0"
+}

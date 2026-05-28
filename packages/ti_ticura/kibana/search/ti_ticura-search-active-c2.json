@@ -1,0 +1,40 @@
+{
+    "id": "ti_ticura-search-active-c2",
+    "type": "search",
+    "namespaces": [
+        "default"
+    ],
+    "migrationVersion": {
+        "search": "8.0.0"
+    },
+    "attributes": {
+        "title": "[Ticura] Active C2 indicators",
+        "description": "Command-and-control indicators currently active (not expired). Useful for outbound-connection detection rule scoping.",
+        "columns": [
+            "threat.indicator.type",
+            "threat.indicator.name",
+            "threat.indicator.ip",
+            "threat.indicator.url.domain",
+            "event.severity",
+            "ticura.group.name",
+            "threat.indicator.geo.country_iso_code"
+        ],
+        "sort": [
+            [
+                "event.severity",
+                "desc"
+            ]
+        ],
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": "{\"filter\": [], \"query\": {\"language\": \"kuery\", \"query\": \"_tier:\\\"data_hot\\\" and event.module:\\\"ti_ticura\\\" and not threat.indicator.expired:true and additionalInfo.threatTypes:\\\"Command and Control Server\\\"\"}, \"indexRefName\": \"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+        }
+    },
+    "references": [
+        {
+            "id": "logs-ti_ticura_latest",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        }
+    ],
+    "coreMigrationVersion": "8.8.0"
+}

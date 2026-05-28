@@ -1,0 +1,38 @@
+{
+    "id": "ti_ticura-search-expiring-soon",
+    "type": "search",
+    "namespaces": [
+        "default"
+    ],
+    "migrationVersion": {
+        "search": "8.0.0"
+    },
+    "attributes": {
+        "title": "[Ticura] Indicators expiring in next 24h",
+        "description": "Indicators whose Ticura `agesOut` falls within the next 24 hours. Worth a quick look in case any are still operationally relevant.",
+        "columns": [
+            "ticura.agesOut",
+            "threat.indicator.type",
+            "threat.indicator.name",
+            "event.severity",
+            "ticura.riskCategory"
+        ],
+        "sort": [
+            [
+                "ticura.agesOut",
+                "asc"
+            ]
+        ],
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": "{\"filter\": [], \"query\": {\"language\": \"kuery\", \"query\": \"_tier:\\\"data_hot\\\" and event.module:\\\"ti_ticura\\\" and not threat.indicator.expired:true and ticura.agesOut <= now+24h\"}, \"indexRefName\": \"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+        }
+    },
+    "references": [
+        {
+            "id": "logs-ti_ticura_latest",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        }
+    ],
+    "coreMigrationVersion": "8.8.0"
+}

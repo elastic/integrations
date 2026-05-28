@@ -1,0 +1,138 @@
+- name: ticura
+  type: group
+  description: Ticura-specific metadata enriching each indicator of compromise.
+  fields:
+    - name: uuid
+      type: keyword
+      description: Stable Ticura-assigned UUID for the indicator. Used as Elasticsearch document `_id` for deduplication.
+    - name: mainType
+      type: keyword
+      description: High-level indicator type (IPV4, IPV6, DOMAIN, URL, HASH).
+    - name: subType
+      type: keyword
+      description: Specific indicator subtype (e.g., IPV4PORT, HASHSHA256, HASHMD5, DOMAIN, URL).
+    - name: confidence
+      type: long
+      description: Numeric Ticura confidence score (0-100).
+    - name: confidenceCategory
+      type: keyword
+      description: Categorical confidence label (e.g., low, medium, high).
+    - name: risk
+      type: long
+      description: Numeric Ticura risk score (0-100). Higher values indicate greater threat.
+    - name: riskCategory
+      type: keyword
+      description: Categorical risk label (e.g., low, medium, high, critical).
+    - name: isInbound
+      type: boolean
+      description: Whether this indicator represents an inbound-only threat direction.
+    - name: agesOut
+      type: date
+      description: Timestamp at which the indicator is scheduled to expire from active feeds.
+    - name: feed_ingest_timestamp
+      type: date
+      description: Ingest-time timestamp added when the document is processed by the pipeline.
+    - name: countries
+      type: keyword
+      description: List of country codes associated with the indicator (as provided by Ticura).
+    - name: industries
+      type: keyword
+      description: List of industries associated with the indicator (as provided by Ticura).
+    - name: actors
+      type: keyword
+      description: List of threat-actor identifiers associated with the indicator (as provided by Ticura).
+    - name: cve
+      type: keyword
+      description: List of CVE identifiers associated with the indicator.
+    - name: filterCats
+      type: nested
+      description: Filter categorization metadata for the indicator.
+      fields:
+        - name: category
+          type: keyword
+          description: Filter category name.
+    - name: normalizations
+      type: group
+      description: Normalization metadata for the indicator score.
+      fields:
+        - name: feed
+          type: keyword
+          description: Feed identifier used in score normalization.
+        - name: measures
+          type: keyword
+          description: Normalization measures applied.
+    - name: technique
+      type: group
+      description: MITRE ATT&CK technique enrichment (Ticura-provided).
+      fields:
+        - name: id
+          type: keyword
+          description: MITRE technique ID (e.g., T1588).
+        - name: name
+          type: keyword
+          description: MITRE technique name.
+        - name: reference
+          type: keyword
+          description: MITRE technique reference URL.
+        - name: subtechnique
+          type: group
+          description: MITRE sub-technique.
+          fields:
+            - name: id
+              type: keyword
+              description: MITRE sub-technique ID (e.g., T1588.001).
+            - name: name
+              type: keyword
+              description: MITRE sub-technique name.
+            - name: reference
+              type: keyword
+              description: MITRE sub-technique reference URL.
+    - name: software
+      type: group
+      description: MITRE ATT&CK software/malware enrichment (Ticura-provided).
+      fields:
+        - name: id
+          type: keyword
+          description: MITRE software ID.
+        - name: name
+          type: keyword
+          description: MITRE software name.
+        - name: alias
+          type: keyword
+          description: Known software aliases.
+        - name: type
+          type: keyword
+          description: Software type classification.
+        - name: platforms
+          type: keyword
+          description: Platforms targeted by the software.
+        - name: reference
+          type: keyword
+          description: MITRE software reference URL.
+    - name: group
+      type: group
+      description: MITRE ATT&CK threat group enrichment (Ticura-provided).
+      fields:
+        - name: id
+          type: keyword
+          description: MITRE group ID.
+        - name: name
+          type: keyword
+          description: MITRE group name.
+        - name: reference
+          type: keyword
+          description: MITRE group reference URL.
+
+- name: merged
+  type: group
+  description: Merged enrichment metadata aggregated from both ticura.* and additionalInfo.*.
+  fields:
+    - name: countries
+      type: keyword
+      description: Deduplicated, sorted union of ticura.countries and additionalInfo.countries.
+    - name: industries
+      type: keyword
+      description: Deduplicated, sorted union of ticura.industries and additionalInfo.industries.
+    - name: actors
+      type: keyword
+      description: Deduplicated, sorted union of ticura.actors and additionalInfo.actors.

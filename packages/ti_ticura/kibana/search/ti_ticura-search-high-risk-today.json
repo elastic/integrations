@@ -1,0 +1,40 @@
+{
+    "id": "ti_ticura-search-high-risk-today",
+    "type": "search",
+    "namespaces": [
+        "default"
+    ],
+    "migrationVersion": {
+        "search": "8.0.0"
+    },
+    "attributes": {
+        "title": "[Ticura] High-risk indicators (last 24h)",
+        "description": "All Ticura indicators with severity >= 70 modified in the last 24 hours, excluding ones that have already aged out. Ranked by severity.",
+        "columns": [
+            "event.severity",
+            "threat.indicator.type",
+            "threat.indicator.name",
+            "ticura.riskCategory",
+            "additionalInfo.threatTypes",
+            "threat.indicator.geo.country_iso_code",
+            "threat.indicator.modified_at"
+        ],
+        "sort": [
+            [
+                "event.severity",
+                "desc"
+            ]
+        ],
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": "{\"filter\": [], \"query\": {\"language\": \"kuery\", \"query\": \"_tier:\\\"data_hot\\\" and event.module:\\\"ti_ticura\\\" and event.severity >= 70 and not threat.indicator.expired:true and @timestamp >= now-24h\"}, \"indexRefName\": \"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+        }
+    },
+    "references": [
+        {
+            "id": "logs-ti_ticura_latest",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        }
+    ],
+    "coreMigrationVersion": "8.8.0"
+}
