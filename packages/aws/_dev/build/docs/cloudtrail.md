@@ -70,7 +70,7 @@ If your Elastic Agent runs outside AWS (for example, on on-premises servers), yo
 
 3. In the CloudTrail integration configuration, set the **Credential Profile Name** field to the profile name you defined (for example, `elastic-agent`). If you configure the profile as `[default]`, you can leave the field blank.
 
-> **Note:** If the **Shared Credential File** field is set, the integration loads credentials only from that file and stops reading the default AWS shared config file. Ensure the profile with the `credential_process` entry is present in whichever file you specify, or leave the field blank to use the default config file location.
+> **Note:** If **Shared Credential File** is set, the integration loads credentials only from that file and stops reading the default AWS shared config file; ensure the profile with the `credential_process` entry is present in whichever file you specify, or leave the field blank to use the default config file location. **Credential Profile Name** and **Shared Credential File** are integration-wide settings: any value you set here applies to all AWS data streams in this integration, not just CloudTrail.
 
 The credentials are refreshed automatically before they expire. For the full list of `aws_signing_helper` options and examples, see the [IAM Roles Anywhere credential helper documentation](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html).
 
