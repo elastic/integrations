@@ -2,6 +2,7 @@
 description: "Parse AWS Lambda logs with fallback to raw message"
 processors:
   - grok:
+      tag: grok_event_original
       field: event.original
       pattern_definitions:
         GREEDYMULTILINE: "(.|\n|\t)*"
@@ -27,6 +28,7 @@ processors:
       ignore_failure: true
 
   - date:
+      tag: date_timestamp
       if: ctx.timestamp != null
       field: timestamp
       target_field: "@timestamp"
@@ -38,22 +40,26 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_timestamp
       if: "ctx['@timestamp'] == null"
       field: "@timestamp"
       value: "{{_ingest.timestamp}}"
       ignore_failure: true
 
   - remove:
+      tag: remove_timestamp
       field: timestamp
       ignore_missing: true
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - set:
+      tag: set_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
           {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-          {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+          {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'

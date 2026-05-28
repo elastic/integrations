@@ -3,20 +3,24 @@ description: "Pipeline for ELB logs"
 
 processors:
   - set:
+      tag: set_ecs_version
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - grok:
+      tag: grok_event_original
       field: event.original
       # Classic ELB patterns documented in https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/access-log-collection.html
       # ELB v2 Application load balancers https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html
@@ -122,86 +126,106 @@ processors:
         ELBV2TYPE: '%{WORD:aws.elb.type}'
         ELBV2LOGVERSION: '%{NOTSPACE}'  # Could be used to support different log versions, only 1.0 exists now
   - set:
+      tag: set_event_kind
       field: event.kind
       value: event
   - set:
+      tag: set_cloud_provider
       field: cloud.provider
       value: aws
   - set:
+      tag: set_aws_elb_protocol
       if: ctx.http != null
       field: aws.elb.protocol
       value: http
 
   - uri_parts:
+      tag: uri_parts_tmp_uri_orig
       if: 'ctx?._tmp?.uri_orig != null'
       field: _tmp.uri_orig
       ignore_failure: true
 
   - user_agent:
+      tag: user_agent_tmp_user_agent
       if: 'ctx?._tmp?.user_agent != null'
       field: _tmp.user_agent
       ignore_missing: true
 
   - set:
+      tag: set_event_category
       if: ctx.http != null
       field: event.category
       value: [web]
   - set:
+      tag: set_aws_elb_protocol_1
       field: aws.elb.protocol
       value: tcp
       if: ctx.http == null
   - set:
+      tag: set_event_category_1
       field: event.category
       value: [network]
       if: ctx.http == null
   - set:
+      tag: set_event_outcome
       field: event.outcome
       value: success
       if: 'ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400'
   - set:
+      tag: set_event_outcome_1
       field: event.outcome
       value: failure
       if: 'ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400'
   - set:
+      tag: set_trace_id
       field: trace.id
       value: '{{aws.elb.trace_id}}'
       if: ctx?.aws?.elb?.trace_id != null
   - split:
+      tag: split_tmp_actions_executed
       field: _tmp.actions_executed
       target_field: aws.elb.action_executed
       separator: ','
       ignore_missing: true
   - split:
+      tag: split_tmp_target_port
       field: _tmp.target_port
       target_field: aws.elb.target_port
       separator: ' '
       ignore_missing: true
   - split:
+      tag: split_tmp_target_status_code
       field: _tmp.target_status_code
       target_field: aws.elb.target_status_code
       separator: ' '
       ignore_missing: true
   - date:
+      tag: date_tmp_timestamp
       field: _tmp.timestamp
       formats:
         - ISO8601
   - set:
+      tag: set_event_end
       field: event.end
       value: '{{ @timestamp }}'
   - convert:
+      tag: convert_source_address
       field: source.address
       target_field: source.ip
       type: ip
       ignore_failure: true
   - convert:
+      tag: convert_source_port
       field: source.port
       type: long
       ignore_failure: true
   - geoip:
+      tag: geoip_source_ip
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_1
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -210,18 +234,22 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_tls_cipher
       field: tls.cipher
       value: '{{aws.elb.ssl_cipher}}'
       if: ctx.aws?.elb?.ssl_cipher != null
   - script:
+      tag: script
       lang: painless
       if: ctx.aws?.elb?.ssl_protocol != null
       source: >-
@@ -236,41 +264,49 @@ processors:
         }
         ctx.tls.version_protocol = parts[0].toLowerCase();
   - remove:
+      tag: remove
       field:
         - _tmp
       ignore_missing: true
   - date:
+      tag: date_aws_elb_tls_connection_creation_time_str
       field: aws.elb.tls_connection_creation_time_str
       target_field: aws.elb.tls_connection_creation_time
       formats:  ["ISO8601"]
       "if": "ctx.aws?.elb?.tls_connection_creation_time_str != null && ctx.aws?.elb?.tls_connection_creation_time_str != '-' && ctx.aws?.elb?.tls_connection_creation_time_str != ''"
   - remove:
+      tag: remove_aws_elb_tls_connection_creation_time_str
       field: aws.elb.tls_connection_creation_time_str
       ignore_missing: true
   
   - date:
+      tag: date_aws_elb_leaf_client_cert_not_after_str
       field: aws.elb.leaf_client_cert_not_after_str
       target_field: aws.elb.leaf_client_cert_not_after
       formats:  ["ISO8601"]
       "if": "ctx.aws?.elb?.leaf_client_cert_not_after_str != null && ctx.aws?.elb?.leaf_client_cert_not_after_str != '-' && ctx.aws?.elb?.leaf_client_cert_not_after_str != ''"
   
   - date:
+      tag: date_aws_elb_leaf_client_cert_not_before_str
       field: aws.elb.leaf_client_cert_not_before_str
       target_field: aws.elb.leaf_client_cert_not_before
       formats:  ["ISO8601"]
       "if": "ctx.aws?.elb?.leaf_client_cert_not_before_str != null && ctx.aws?.elb?.leaf_client_cert_not_before_str != '-' && ctx.aws?.elb?.leaf_client_cert_not_before_str != ''"
   
   - remove:
+      tag: remove_aws_elb_leaf_client_cert_not_after_str
       field: ["aws.elb.leaf_client_cert_not_after_str", "aws.elb.leaf_client_cert_not_before_str"]
       ignore_missing: true
 
 on_failure:
   - set:
+      tag: set_event_kind_1
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
