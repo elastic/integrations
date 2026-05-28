@@ -30,7 +30,7 @@ Note:
 
 ## Compatibility
 
-This integration has been tested against Spring Boot v2.7.17 with LTS JDK versions 8, 11, 17, and 21.
+This integration has been tested against Spring Boot 4.0.6 running on JDK 25. It remains compatible with Spring Boot 2.x for the `auditevents`, `gc`, `memory`, and `threading` data streams. For `httptrace`, the actuator endpoint was renamed in Spring Boot 3.0 to `httpexchanges`; the integration defaults to the new endpoint, and the data stream exposes `HTTP Exchanges path` and `Response split target` inputs that can be set back to `/actuator/httptrace` and `body.traces` respectively to continue collecting from Spring Boot 2.x.
 
 ## Requirements
 
@@ -38,7 +38,7 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
 
 In order to ingest data from Spring Boot:
 - You must know the host for Spring Boot application, add that host while configuring the integration package.
-- Add default path for jolokia.
+- Add the path for jolokia (the default is `/actuator/jolokia`).
 - Spring-boot-actuator module provides all Spring Boot's production-ready features. You also need to add the following dependency to the `pom.xml` file:
 ```
 <dependency>
@@ -46,15 +46,25 @@ In order to ingest data from Spring Boot:
     <artifactId>spring-boot-starter-actuator</artifactId>
 </dependency>
 ```
-- For access of jolokia add below dependency in `pom.xml` of Spring Boot Application.
-```
-<dependency>
-    <groupId>org.jolokia</groupId>
-    <artifactId>jolokia-core</artifactId>
-</dependency>
-```
-- To expose `HTTP Trace` metrics following class can be used [InMemoryHttpTraceRepository](https://docs.spring.io/spring-boot/docs/2.0.6.RELEASE/api/org/springframework/boot/actuate/trace/http/InMemoryHttpTraceRepository.html).
-- To expose `Audit Events` metrics following class can be used [InMemoryAuditEventRepository](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/actuate/audit/InMemoryAuditEventRepository.html).
+- For access of jolokia add the appropriate dependency in the `pom.xml` of the Spring Boot application:
+  - Spring Boot 2.x:
+    ```
+    <dependency>
+        <groupId>org.jolokia</groupId>
+        <artifactId>jolokia-core</artifactId>
+    </dependency>
+    ```
+  - Spring Boot 3.x / 4.x (Jolokia auto-configuration was removed from Spring Boot 3.0; use the dedicated Jolokia starter from Jolokia 2.5+):
+    ```
+    <dependency>
+        <groupId>org.jolokia</groupId>
+        <artifactId>jolokia-support-springboot</artifactId>
+    </dependency>
+    ```
+- To expose HTTP request/response exchanges:
+  - Spring Boot 2.x: expose `httptrace` and register an [`InMemoryHttpTraceRepository`](https://docs.spring.io/spring-boot/docs/2.7.x/api/org/springframework/boot/actuate/trace/http/InMemoryHttpTraceRepository.html) bean.
+  - Spring Boot 3.x / 4.x: expose `httpexchanges`, set `management.httpexchanges.recording.enabled=true`, and register an [`InMemoryHttpExchangeRepository`](https://docs.spring.io/spring-boot/api/org/springframework/boot/actuate/web/exchanges/InMemoryHttpExchangeRepository.html) bean.
+- To expose `Audit Events` metrics the following class can be used: [InMemoryAuditEventRepository](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/actuate/audit/InMemoryAuditEventRepository.html).
 
 ## Setup
 
@@ -82,35 +92,35 @@ An example event for `audit_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-18T07:15:52.565Z",
+    "@timestamp": "2026-05-28T22:40:25.209Z",
     "agent": {
-        "ephemeral_id": "5026de47-56bf-4ed7-996b-c574a7c0d140",
-        "id": "97400795-188c-4140-a1ee-0002078c785d",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "69620662-1ab0-4d61-ad55-5111588db240",
+        "id": "c93fa949-a34f-413f-9448-cdc70b43b908",
+        "name": "elastic-agent-51266",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "9.3.3"
     },
     "data_stream": {
         "dataset": "spring_boot.audit_events",
-        "namespace": "ep",
+        "namespace": "14359",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "97400795-188c-4140-a1ee-0002078c785d",
+        "id": "c93fa949-a34f-413f-9448-cdc70b43b908",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "9.3.3"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "web"
         ],
-        "created": "2024-06-18T07:15:52.565Z",
+        "created": "2026-05-28T22:40:25.209Z",
         "dataset": "spring_boot.audit_events",
-        "ingested": "2024-06-18T07:16:04Z",
+        "ingested": "2026-05-28T22:40:28Z",
         "kind": "event",
         "module": "spring_boot",
         "type": [
@@ -118,33 +128,29 @@ An example event for `audit_events` looks as following:
         ]
     },
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-51266",
         "ip": [
-            "192.168.245.7"
+            "172.19.0.2",
+            "172.18.0.7"
         ],
         "mac": [
-            "02-42-C0-A8-F5-07"
+            "16-64-2B-B6-87-B9",
+            "EE-78-1C-6F-5E-D2"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-51266",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "3.10.0-1160.102.1.el7.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "kernel": "6.8.0-64-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "spring_boot": {
         "audit_events": {
-            "data": {
-                "remote_address": "192.168.144.2"
-            },
-            "document_id": "Es32QTyIFsbGsH5nlZQxBDYnf18=",
+            "document_id": "pqq07k9MHdeXOo2Ow4y8zJXnn+o=",
             "principal": "actuator",
             "type": "AUTHENTICATION_SUCCESS"
         }
@@ -184,36 +190,36 @@ An example event for `http_trace` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-18T07:17:49.933Z",
+    "@timestamp": "2026-05-28T22:47:48.217Z",
     "agent": {
-        "ephemeral_id": "f957703f-c55c-49bb-81d4-ec742b088158",
-        "id": "97400795-188c-4140-a1ee-0002078c785d",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "1fd9ff5c-9f17-46d1-9d29-e05784e83488",
+        "id": "b2d9f05f-871b-4ae0-83d2-f2dc00fa4144",
+        "name": "elastic-agent-71463",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "9.3.3"
     },
     "data_stream": {
         "dataset": "spring_boot.http_trace",
-        "namespace": "ep",
+        "namespace": "43580",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "97400795-188c-4140-a1ee-0002078c785d",
+        "id": "b2d9f05f-871b-4ae0-83d2-f2dc00fa4144",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "9.3.3"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "web"
         ],
-        "created": "2024-06-18T07:17:49.933Z",
+        "created": "2026-05-28T22:47:48.217Z",
         "dataset": "spring_boot.http_trace",
         "duration": 3,
-        "ingested": "2024-06-18T07:18:01Z",
+        "ingested": "2026-05-28T22:47:51Z",
         "kind": "event",
         "module": "spring_boot",
         "type": [
@@ -221,25 +227,20 @@ An example event for `http_trace` looks as following:
         ]
     },
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "8259e024976a406e8a54cdbffeb84fec",
-        "ip": [
-            "{0=192.168.245.7}"
-        ],
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-71463",
         "mac": [
-            "02-42-C0-A8-F5-07"
+            "06-7C-2B-86-84-E1",
+            "26-D1-75-F3-43-20"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-71463",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "3.10.0-1160.102.1.el7.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "kernel": "6.8.0-64-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "http": {
@@ -285,26 +286,26 @@ An example event for `memory` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-18T07:18:47.122Z",
+    "@timestamp": "2026-05-28T22:45:20.870Z",
     "agent": {
-        "ephemeral_id": "2972904f-375b-4b83-9de9-e0c36d85d5de",
-        "id": "97400795-188c-4140-a1ee-0002078c785d",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "7f501985-d7fa-476b-bdc5-376621a93d74",
+        "id": "dd183e5b-8a17-47e6-a3ec-863a3fb28156",
+        "name": "elastic-agent-57840",
         "type": "metricbeat",
-        "version": "8.13.0"
+        "version": "9.3.3"
     },
     "data_stream": {
         "dataset": "spring_boot.memory",
-        "namespace": "ep",
+        "namespace": "21944",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "97400795-188c-4140-a1ee-0002078c785d",
+        "id": "dd183e5b-8a17-47e6-a3ec-863a3fb28156",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "9.3.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -312,8 +313,8 @@ An example event for `memory` looks as following:
             "web"
         ],
         "dataset": "spring_boot.memory",
-        "duration": 672110556,
-        "ingested": "2024-06-18T07:18:59Z",
+        "duration": 415374946,
+        "ingested": "2026-05-28T22:45:22Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": [
@@ -321,25 +322,25 @@ An example event for `memory` looks as following:
         ]
     },
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-57840",
         "ip": [
-            "192.168.245.7"
+            "172.19.0.2",
+            "172.18.0.7"
         ],
         "mac": [
-            "02-42-C0-A8-F5-07"
+            "3A-FF-3F-8B-5A-BD",
+            "56-15-DC-31-9E-CF"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-57840",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "3.10.0-1160.102.1.el7.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "family": "",
+            "kernel": "6.8.0-64-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
@@ -353,16 +354,16 @@ An example event for `memory` looks as following:
     "spring_boot": {
         "memory": {
             "heap": {
-                "committed": 587202560,
-                "init": 260046848,
-                "max": 3698851840,
-                "used": 158654888
+                "committed": 77594624,
+                "init": 262144000,
+                "max": 4183818240,
+                "used": 59466880
             },
             "non_heap": {
-                "committed": 63504384,
-                "init": 2555904,
+                "committed": 70451200,
+                "init": 7667712,
                 "max": -1,
-                "used": 58973664
+                "used": 67580248
             }
         }
     },
@@ -414,26 +415,26 @@ An example event for `threading` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-18T07:19:44.017Z",
+    "@timestamp": "2026-05-28T22:46:09.767Z",
     "agent": {
-        "ephemeral_id": "9e0f783a-f02b-4fc0-90c9-2d264b73e4bc",
-        "id": "97400795-188c-4140-a1ee-0002078c785d",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "066facbc-aa5d-40be-a04e-8d203df24ca8",
+        "id": "6b846525-96ba-41f5-8007-d869506d8722",
+        "name": "elastic-agent-12420",
         "type": "metricbeat",
-        "version": "8.13.0"
+        "version": "9.3.3"
     },
     "data_stream": {
         "dataset": "spring_boot.threading",
-        "namespace": "ep",
+        "namespace": "81161",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "97400795-188c-4140-a1ee-0002078c785d",
+        "id": "6b846525-96ba-41f5-8007-d869506d8722",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "9.3.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -441,8 +442,8 @@ An example event for `threading` looks as following:
             "web"
         ],
         "dataset": "spring_boot.threading",
-        "duration": 301437518,
-        "ingested": "2024-06-18T07:19:55Z",
+        "duration": 147974384,
+        "ingested": "2026-05-28T22:46:12Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": [
@@ -450,25 +451,25 @@ An example event for `threading` looks as following:
         ]
     },
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-12420",
         "ip": [
-            "192.168.245.7"
+            "172.19.0.2",
+            "172.18.0.7"
         ],
         "mac": [
-            "02-42-C0-A8-F5-07"
+            "16-51-4B-13-52-E0",
+            "FA-65-2E-EA-15-9D"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-12420",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "3.10.0-1160.102.1.el7.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "family": "",
+            "kernel": "6.8.0-64-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
@@ -482,16 +483,16 @@ An example event for `threading` looks as following:
     "spring_boot": {
         "threading": {
             "threads": {
-                "count": 20,
+                "count": 26,
                 "current": {
-                    "allocated_bytes": 29755720,
+                    "allocated_bytes": 25032448,
                     "time": {
-                        "cpu": 293039690,
-                        "user": 280000000
+                        "cpu": 126947117,
+                        "user": 110000000
                     }
                 },
-                "daemon": 16,
-                "started": 23
+                "daemon": 22,
+                "started": 29
             }
         }
     },
@@ -531,26 +532,26 @@ An example event for `gc` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-18T07:16:52.674Z",
+    "@timestamp": "2026-05-28T22:41:15.857Z",
     "agent": {
-        "ephemeral_id": "bfe8ee26-f9e4-4990-8790-7fbc2a8c075e",
-        "id": "97400795-188c-4140-a1ee-0002078c785d",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "f45626b7-9309-4973-a16f-1d125baf2b79",
+        "id": "d30ad1cc-17f6-48cd-827c-3813edc87d08",
+        "name": "elastic-agent-38595",
         "type": "metricbeat",
-        "version": "8.13.0"
+        "version": "9.3.3"
     },
     "data_stream": {
         "dataset": "spring_boot.gc",
-        "namespace": "ep",
+        "namespace": "30691",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "97400795-188c-4140-a1ee-0002078c785d",
+        "id": "d30ad1cc-17f6-48cd-827c-3813edc87d08",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "9.3.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -558,8 +559,8 @@ An example event for `gc` looks as following:
             "web"
         ],
         "dataset": "spring_boot.gc",
-        "duration": 347472291,
-        "ingested": "2024-06-18T07:17:04Z",
+        "duration": 157212383,
+        "ingested": "2026-05-28T22:41:17Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": [
@@ -567,25 +568,25 @@ An example event for `gc` looks as following:
         ]
     },
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-38595",
         "ip": [
-            "192.168.245.7"
+            "172.19.0.2",
+            "172.18.0.7"
         ],
         "mac": [
-            "02-42-C0-A8-F5-07"
+            "5E-87-BB-AF-C5-55",
+            "CE-FE-C8-29-78-95"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-38595",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "3.10.0-1160.102.1.el7.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "family": "",
+            "kernel": "6.8.0-64-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
@@ -599,93 +600,81 @@ An example event for `gc` looks as following:
     "spring_boot": {
         "gc": {
             "last_info": {
-                "id": 6,
+                "id": 10,
                 "memory_usage": {
                     "after": {
-                        "code_cache": {
-                            "committed": 14286848,
-                            "init": 2555904,
-                            "max": 251658240,
-                            "used": 14213056
-                        },
                         "compressed_class_space": {
-                            "committed": 4980736,
+                            "committed": 6619136,
                             "init": 0,
                             "max": 1073741824,
-                            "used": 4443120
+                            "used": 6361448
                         },
-                        "metaspace": {
-                            "committed": 36265984,
-                            "init": 0,
+                        "g1_eden_space": {
+                            "committed": 41943040,
+                            "init": 14680064,
                             "max": -1,
-                            "used": 33775552
-                        },
-                        "ps_eden_space": {
-                            "committed": 457703424,
-                            "init": 65536000,
-                            "max": 1354235904,
                             "used": 0
                         },
-                        "ps_old_gen": {
-                            "committed": 90177536,
-                            "init": 173539328,
-                            "max": 2774007808,
-                            "used": 10597560
+                        "g1_old_gen": {
+                            "committed": 31457280,
+                            "init": 247463936,
+                            "max": 4183818240,
+                            "used": 20239776
                         },
-                        "ps_survivor_space": {
-                            "committed": 16777216,
-                            "init": 10485760,
-                            "max": 16777216,
-                            "used": 8605776
+                        "g1_survivor_space": {
+                            "committed": 4194304,
+                            "init": 0,
+                            "max": -1,
+                            "used": 4151392
+                        },
+                        "metaspace": {
+                            "committed": 47579136,
+                            "init": 0,
+                            "max": -1,
+                            "used": 47018160
                         }
                     },
                     "before": {
-                        "code_cache": {
-                            "committed": 14286848,
-                            "init": 2555904,
-                            "max": 251658240,
-                            "used": 14213056
-                        },
                         "compressed_class_space": {
-                            "committed": 4980736,
+                            "committed": 6619136,
                             "init": 0,
                             "max": 1073741824,
-                            "used": 4443120
+                            "used": 6361448
                         },
-                        "metaspace": {
-                            "committed": 36265984,
+                        "g1_eden_space": {
+                            "committed": 39845888,
+                            "init": 14680064,
+                            "max": -1,
+                            "used": 37748736
+                        },
+                        "g1_old_gen": {
+                            "committed": 31457280,
+                            "init": 247463936,
+                            "max": 4183818240,
+                            "used": 18147032
+                        },
+                        "g1_survivor_space": {
+                            "committed": 6291456,
                             "init": 0,
                             "max": -1,
-                            "used": 33775552
+                            "used": 5434448
                         },
-                        "ps_eden_space": {
-                            "committed": 262144000,
-                            "init": 65536000,
-                            "max": 1359478784,
-                            "used": 10469928
-                        },
-                        "ps_old_gen": {
-                            "committed": 90177536,
-                            "init": 173539328,
-                            "max": 2774007808,
-                            "used": 10589368
-                        },
-                        "ps_survivor_space": {
-                            "committed": 10485760,
-                            "init": 10485760,
-                            "max": 10485760,
-                            "used": 10453056
+                        "metaspace": {
+                            "committed": 47579136,
+                            "init": 0,
+                            "max": -1,
+                            "used": 47018160
                         }
                     }
                 },
-                "thread_count": 10,
+                "thread_count": 5,
                 "time": {
-                    "duration": 8,
-                    "end": 3406,
-                    "start": 3398
+                    "duration": 6,
+                    "end": 4326,
+                    "start": 4320
                 }
             },
-            "name": "PS Scavenge"
+            "name": "G1 Young Generation"
         }
     },
     "tags": [

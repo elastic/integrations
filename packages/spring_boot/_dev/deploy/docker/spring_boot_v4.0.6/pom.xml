@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.0.6</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+
+	<groupId>com.demo</groupId>
+	<artifactId>actuator</artifactId>
+	<version>0.0.1-Release</version>
+	<packaging>jar</packaging>
+
+	<name>actuator-demo</name>
+	<description>Spring Boot Actuator Project</description>
+
+	<properties>
+		<java.version>25</java.version>
+		<jolokia.version>2.6.0</jolokia.version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.jolokia</groupId>
+				<artifactId>jolokia-bom</artifactId>
+				<version>${jolokia.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<!--
+			Spring Boot 4.0 modularized the starters:
+			  - `spring-boot-starter-web` was renamed to `spring-boot-starter-webmvc`.
+			  - `@EnableCaching` requires the explicit `spring-boot-starter-cache`.
+			  - Per-domain test starters replace the all-in-one `spring-boot-starter-test`.
+		-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
+		</dependency>
+
+		<!-- Micrometer Prometheus registry -->
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>
+
+		<!--
+			Jolokia auto-configuration was removed from Spring Boot starting with 3.0.
+			For Spring Boot 4.x we rely on the dedicated Jolokia starter (Jolokia 2.5+),
+			which keeps the `/actuator/jolokia` endpoint behavior the integration depends on.
+		-->
+		<dependency>
+			<groupId>org.jolokia</groupId>
+			<artifactId>jolokia-support-springboot</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

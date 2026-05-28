@@ -30,7 +30,7 @@ Note:
 
 ## Compatibility
 
-This integration has been tested against Spring Boot v2.7.17 with LTS JDK versions 8, 11, 17, and 21.
+This integration has been tested against Spring Boot 4.0.6 running on JDK 25. It remains compatible with Spring Boot 2.x for the `auditevents`, `gc`, `memory`, and `threading` data streams. For `httptrace`, the actuator endpoint was renamed in Spring Boot 3.0 to `httpexchanges`; the integration defaults to the new endpoint, and the data stream exposes `HTTP Exchanges path` and `Response split target` inputs that can be set back to `/actuator/httptrace` and `body.traces` respectively to continue collecting from Spring Boot 2.x.
 
 ## Requirements
 
@@ -38,7 +38,7 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
 
 In order to ingest data from Spring Boot:
 - You must know the host for Spring Boot application, add that host while configuring the integration package.
-- Add default path for jolokia.
+- Add the path for jolokia (the default is `/actuator/jolokia`).
 - Spring-boot-actuator module provides all Spring Boot's production-ready features. You also need to add the following dependency to the `pom.xml` file:
 ```
 <dependency>
@@ -46,15 +46,25 @@ In order to ingest data from Spring Boot:
     <artifactId>spring-boot-starter-actuator</artifactId>
 </dependency>
 ```
-- For access of jolokia add below dependency in `pom.xml` of Spring Boot Application.
-```
-<dependency>
-    <groupId>org.jolokia</groupId>
-    <artifactId>jolokia-core</artifactId>
-</dependency>
-```
-- To expose `HTTP Trace` metrics following class can be used [InMemoryHttpTraceRepository](https://docs.spring.io/spring-boot/docs/2.0.6.RELEASE/api/org/springframework/boot/actuate/trace/http/InMemoryHttpTraceRepository.html).
-- To expose `Audit Events` metrics following class can be used [InMemoryAuditEventRepository](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/actuate/audit/InMemoryAuditEventRepository.html).
+- For access of jolokia add the appropriate dependency in the `pom.xml` of the Spring Boot application:
+  - Spring Boot 2.x:
+    ```
+    <dependency>
+        <groupId>org.jolokia</groupId>
+        <artifactId>jolokia-core</artifactId>
+    </dependency>
+    ```
+  - Spring Boot 3.x / 4.x (Jolokia auto-configuration was removed from Spring Boot 3.0; use the dedicated Jolokia starter from Jolokia 2.5+):
+    ```
+    <dependency>
+        <groupId>org.jolokia</groupId>
+        <artifactId>jolokia-support-springboot</artifactId>
+    </dependency>
+    ```
+- To expose HTTP request/response exchanges:
+  - Spring Boot 2.x: expose `httptrace` and register an [`InMemoryHttpTraceRepository`](https://docs.spring.io/spring-boot/docs/2.7.x/api/org/springframework/boot/actuate/trace/http/InMemoryHttpTraceRepository.html) bean.
+  - Spring Boot 3.x / 4.x: expose `httpexchanges`, set `management.httpexchanges.recording.enabled=true`, and register an [`InMemoryHttpExchangeRepository`](https://docs.spring.io/spring-boot/api/org/springframework/boot/actuate/web/exchanges/InMemoryHttpExchangeRepository.html) bean.
+- To expose `Audit Events` metrics the following class can be used: [InMemoryAuditEventRepository](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/actuate/audit/InMemoryAuditEventRepository.html).
 
 ## Setup
 

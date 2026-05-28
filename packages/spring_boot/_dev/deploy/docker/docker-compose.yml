@@ -1,7 +1,19 @@
 version: '2.3'
 services:
+  # Spring Boot 4.0.6 on JDK 25, with Jolokia 2.x and the `httpexchanges` actuator endpoint.
   spring_boot:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.v4.0.6
     hostname: springboot
+    ports:
+      - 8090
+  # Spring Boot 2.3.12 on JDK 8, with Jolokia 1.x and the legacy `httptrace` actuator endpoint.
+  # Kept for backward-compatibility testing of the integration against Spring Boot 2.x.
+  spring_boot2x:
+    build:
+      context: .
+      dockerfile: Dockerfile.v2.3.12
+    hostname: springboot2x
     ports:
       - 8090
