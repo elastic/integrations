@@ -9,19 +9,22 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/elastic/integrations/dev/citools"
 )
 
 func TestNoDuplicates(t *testing.T) {
-	paths, err := walkPackagePaths("testdata/no_duplicates")
+	paths, err := citools.ListPackages("testdata/no_duplicates")
 	require.NoError(t, err)
 	assert.Len(t, paths, 2)
 
+	t.Logf("paths: %v", paths)
 	err = checkDuplicateNames(paths)
 	assert.NoError(t, err)
 }
 
 func TestDuplicates(t *testing.T) {
-	paths, err := walkPackagePaths("testdata/duplicates")
+	paths, err := citools.ListPackages("testdata/duplicates")
 	require.NoError(t, err)
 	assert.Len(t, paths, 2)
 
@@ -30,7 +33,7 @@ func TestDuplicates(t *testing.T) {
 }
 
 func TestInvalidManifestsIgnored(t *testing.T) {
-	paths, err := walkPackagePaths("testdata/invalid_manifests")
+	paths, err := citools.ListPackages("testdata/invalid_manifests")
 	require.NoError(t, err)
 	// p2 has no type field and must be ignored
 	assert.Len(t, paths, 1)
@@ -40,7 +43,7 @@ func TestInvalidManifestsIgnored(t *testing.T) {
 }
 
 func TestNestedNoDuplicates(t *testing.T) {
-	paths, err := walkPackagePaths("testdata/nested/no_duplicates")
+	paths, err := citools.ListPackages("testdata/nested/no_duplicates")
 	require.NoError(t, err)
 	// p3 at first level + technology/p1 and technology/p2 at second level
 	assert.Len(t, paths, 3)
@@ -50,7 +53,7 @@ func TestNestedNoDuplicates(t *testing.T) {
 }
 
 func TestNestedDuplicates(t *testing.T) {
-	paths, err := walkPackagePaths("testdata/nested/duplicates")
+	paths, err := citools.ListPackages("testdata/nested/duplicates")
 	require.NoError(t, err)
 	// p3 at first level + technology/p1 and technology/p2 at second level
 	assert.Len(t, paths, 3)

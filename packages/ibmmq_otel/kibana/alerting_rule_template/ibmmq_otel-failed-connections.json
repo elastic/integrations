@@ -1,36 +1,50 @@
 {
-    "id": "ibmmq_otel-failed-connections",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[IBM MQ OTel] Failed connection attempts",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "ibmmq"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "ibmmq_otel-failed-connections",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when any connect or open operations fail (`failed_mqconn_mqconnx_total` or `failed_mqopen_total`). Auth, resource, or network issues.",
+    "name": "[IBM MQ OTel] Failed connection attempts",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "ibmmq"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "ibmmq_otel-error-analysis"
         },
-        "alertDelay": {
-            "active": 2
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "TS metrics-ibmmq.otel-*\n| STATS\n    failed_conns = SUM(RATE(ibmmq_qmgr_failed_mqconn_mqconnx_total)),\n    failed_opens = SUM(RATE(ibmmq_qmgr_failed_mqopen_total))\n    BY attributes.qmgr\n| EVAL total_failed_access = COALESCE(failed_conns, 0) + COALESCE(failed_opens, 0)\n// Alert when connection or object-open failures are detected\n// Failures indicate authentication problems, resource exhaustion,\n// or network issues between clients and the queue manager\n// Adjust threshold based on your environment\n| WHERE total_failed_access > 0"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "attributes.qmgr",
-            "termSize": 10
+        {
+          "id": "ibmmq_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## IBM MQ failed connection attempts\n\n### What fired\nFailed MQCONN/MQCONNX/MQOPEN rates were > 0 during the window.\n\n### Why it matters\nConnect/open failures block applications from reaching queues. Common causes: auth changes, network rules, or resource exhaustion on the qmgr.\n\n### Triage\n1. Check qmgr error logs (AMQERR01.LOG) for RC codes.\n2. Inspect channel auth and TLS configuration.\n3. Confirm qmgr resources (log, storage, max connections).\n\n### Remediation\n- Fix credentials / auth / channel config.\n- Raise `MAXCHANNELS` or `MAXINST` limits.\n\n### Tuning\n- Fires on any increase.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-ibmmq.otel-*\n| STATS\n    failed_conns = SUM(RATE(ibmmq_qmgr_failed_mqconn_mqconnx_total)),\n    failed_opens = SUM(RATE(ibmmq_qmgr_failed_mqopen_total))\n    BY attributes.qmgr\n| EVAL total_failed_access = COALESCE(failed_conns, 0) + COALESCE(failed_opens, 0)\n// Alert when connection or object-open failures are detected\n// Failures indicate authentication problems, resource exhaustion,\n// or network issues between clients and the queue manager\n// Adjust threshold based on your environment\n| WHERE total_failed_access > 0"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.qmgr",
+      "termSize": 10
     }
+  }
 }
