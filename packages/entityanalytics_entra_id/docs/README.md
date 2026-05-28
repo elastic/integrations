@@ -360,19 +360,19 @@ An example event for `entity` looks as following:
 | event.message | Log message optimized for viewing in a log viewer. | text |
 | event.module | Name of the module this data is coming from. | constant_keyword |
 | event.provider | The event kind. | constant_keyword |
-| host.entity.attributes.managed |  | boolean |
-| host.entity.lifecycle.last_activity |  | date |
+| host.entity.attributes.managed | Indicates whether the entity is managed by an external administration or control system. Typically applicable to Host and Service entities. | boolean |
+| host.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
 | input.type | Type of Filebeat input. | keyword |
 | labels.identity_source |  | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | user.enabled |  | boolean |
-| user.entity.attributes.mfa_enabled |  | boolean |
-| user.entity.attributes.permissions |  | keyword |
-| user.entity.lifecycle.last_activity |  | date |
-| user.entity.relationships.supervises.user.email |  | keyword |
-| user.entity.relationships.supervises.user.id |  | keyword |
-| user.entity.relationships.supervises.user.name |  | keyword |
+| user.entity.attributes.mfa_enabled | Indicates whether multi-factor authentication is enabled for this entity. Typically applicable to User entities. | boolean |
+| user.entity.attributes.permissions | Action-level permissions associated with this entity (not roles or groups). Typically applicable to User, Host, and Service entities. | keyword |
+| user.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
+| user.entity.relationships.supervises.user.email | Referenced user email addresses. | keyword |
+| user.entity.relationships.supervises.user.id | Referenced user ids. | keyword |
+| user.entity.relationships.supervises.user.name | Referenced user short names or logins. | keyword |
 | user.first_name |  | keyword |
 | user.group.id |  | keyword |
 | user.group.name |  | keyword |

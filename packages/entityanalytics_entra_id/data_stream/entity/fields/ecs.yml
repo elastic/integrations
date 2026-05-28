@@ -1,21 +1,5 @@
 # Below are the fields that are on the ECS RFC or obtained from the entity-analytics input provider.
 # https://github.com/elastic/ecs/pull/2215/files?short_path=8adb310#diff-8adb310e2e999dfbc367080c85348dba3235fde4f30afaecc42fecc20f55aa82
-- name: host
-  type: group
-  fields:
-    - name: entity
-      type: group
-      fields:
-        - name: attributes
-          type: group
-          fields:
-            - name: managed
-              type: boolean
-        - name: lifecycle
-          type: group
-          fields:
-            - name: last_activity
-              type: date
 - name: asset
   type: group
   fields:
@@ -112,33 +96,6 @@
 - name: user
   type: group
   fields:
-    - name: entity
-      type: group
-      fields:
-        - name: attributes
-          type: group
-          fields:
-            - name: mfa_enabled
-              type: boolean
-            - name: permissions
-              type: keyword
-        - name: lifecycle
-          type: group
-          fields:
-            - name: last_activity
-              type: date
-        - name: relationships
-          type: group
-          fields:
-            - name: supervises
-              type: group
-              fields:
-                - name: user.id
-                  type: keyword
-                - name: user.email
-                  type: keyword
-                - name: user.name
-                  type: keyword
     - name: enabled
       type: boolean
     - name: first_name
@@ -161,3 +118,20 @@
       fields:
         - name: location_name
           type: keyword
+# Entity fields that are currently defined in ECS 9.4.0 but not included in dynamic templates:
+- name: host.entity.attributes.managed
+  external: ecs
+- name: host.entity.lifecycle.last_activity
+  external: ecs
+- name: user.entity.attributes.mfa_enabled
+  external: ecs
+- name: user.entity.attributes.permissions
+  external: ecs
+- name: user.entity.lifecycle.last_activity
+  external: ecs
+- name: user.entity.relationships.supervises.user.email
+  external: ecs
+- name: user.entity.relationships.supervises.user.id
+  external: ecs
+- name: user.entity.relationships.supervises.user.name
+  external: ecs
