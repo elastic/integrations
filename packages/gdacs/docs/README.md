@@ -114,12 +114,13 @@ The `events` data stream provides natural disaster alert events from the GDACS S
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.modified | Timestamp when the GDACS event was last modified. | date |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
 | event.reference | Reference URL linking to additional information about this event. This URL links to a static definition of this event. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
 | event.risk_score | Risk score or priority of the event (e.g. security solutions). Use your system's original value here. | float |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
-| event.type | The event fields are used for context information about the log or metric event itself. A log is defined as an event containing details of something that happened. Log events must include the time at which the thing happened. Examples of log events include a process starting on a host, a network packet being sent from a source to a destination, or a network connection between a client and a server being initiated or closed. A metric is defined as an event containing one or more numerical measurements and the time at which the measurement was taken. Examples of metric events include memory pressure measured on a host and device temperature. See the `event.kind` definition in this section for additional details about metric and state events. | group |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
 | gdacs.affected_area | GeoJSON polygon or multipolygon representing the affected area of the disaster. | geo_shape |
 | gdacs.affected_countries | Array of affected country objects with iso2, iso3, and countryname fields. | object |
@@ -167,24 +168,24 @@ An example event for `events` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-03-08T18:00:00.000Z",
+    "@timestamp": "2025-04-07T01:52:47.000Z",
     "agent": {
-        "ephemeral_id": "b632e3cb-4060-4337-b7b9-155d41e5c08e",
-        "id": "4ceb4ce9-8742-4500-a89d-068c312ff184",
-        "name": "elastic-agent-87725",
+        "ephemeral_id": "0eb75875-cd83-43c8-9279-0cfe84b9fc29",
+        "id": "4d924129-bedf-407a-907b-51d0020aeff2",
+        "name": "elastic-agent-67726",
         "type": "filebeat",
         "version": "9.3.1"
     },
     "data_stream": {
         "dataset": "gdacs.events",
-        "namespace": "67199",
+        "namespace": "86466",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4ceb4ce9-8742-4500-a89d-068c312ff184",
+        "id": "4d924129-bedf-407a-907b-51d0020aeff2",
         "snapshot": false,
         "version": "9.3.1"
     },
@@ -194,124 +195,339 @@ An example event for `events` looks as following:
             "threat"
         ],
         "dataset": "gdacs.events",
-        "end": "2025-03-16T00:00:00.000Z",
-        "id": "1001154-34",
-        "ingested": "2026-04-06T19:31:53Z",
+        "end": "2025-04-06T22:00:23.000Z",
+        "id": "1476137-1632460",
+        "ingested": "2026-05-28T17:39:53Z",
         "kind": "alert",
-        "modified": "2026-02-11T15:18:59.037Z",
+        "modified": "2025-04-07T01:52:47.000Z",
         "module": "gdacs",
         "provider": "gdacs",
-        "reference": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=TC&eventid=1001154",
-        "risk_score": 90,
-        "severity": 3,
-        "start": "2025-03-08T18:00:00.000Z",
+        "reference": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=EQ&eventid=1476137",
+        "risk_score": 30,
+        "severity": 1,
+        "start": "2025-04-06T22:00:23.000Z",
         "type": [
             "indicator"
         ],
-        "url": "https://www.gdacs.org/report.aspx?eventid=1001154&episodeid=34&eventtype=TC"
+        "url": "https://www.gdacs.org/report.aspx?eventid=1476137&episodeid=1632460&eventtype=EQ"
     },
     "gdacs": {
         "affected_area": {
             "coordinates": [
                 [
                     [
-                        51.04,
-                        -13.71
+                        163.364,
+                        -10.54
                     ],
                     [
-                        51.07,
-                        -13.68
+                        163.362,
+                        -10.477
                     ],
                     [
-                        51.04,
-                        -13.65
+                        163.35,
+                        -10.383
                     ],
                     [
-                        51.01,
-                        -13.68
+                        163.329,
+                        -10.291
                     ],
                     [
-                        51.04,
-                        -13.71
+                        163.297,
+                        -10.202
+                    ],
+                    [
+                        163.257,
+                        -10.117
+                    ],
+                    [
+                        163.207,
+                        -10.036
+                    ],
+                    [
+                        163.15,
+                        -9.961
+                    ],
+                    [
+                        163.084,
+                        -9.892
+                    ],
+                    [
+                        163.012,
+                        -9.83
+                    ],
+                    [
+                        162.933,
+                        -9.776
+                    ],
+                    [
+                        162.85,
+                        -9.73
+                    ],
+                    [
+                        162.761,
+                        -9.693
+                    ],
+                    [
+                        162.669,
+                        -9.666
+                    ],
+                    [
+                        162.575,
+                        -9.648
+                    ],
+                    [
+                        162.48,
+                        -9.639
+                    ],
+                    [
+                        162.384,
+                        -9.641
+                    ],
+                    [
+                        162.289,
+                        -9.652
+                    ],
+                    [
+                        162.195,
+                        -9.674
+                    ],
+                    [
+                        162.105,
+                        -9.704
+                    ],
+                    [
+                        162.018,
+                        -9.744
+                    ],
+                    [
+                        161.935,
+                        -9.793
+                    ],
+                    [
+                        161.859,
+                        -9.85
+                    ],
+                    [
+                        161.789,
+                        -9.914
+                    ],
+                    [
+                        161.726,
+                        -9.985
+                    ],
+                    [
+                        161.671,
+                        -10.062
+                    ],
+                    [
+                        161.624,
+                        -10.145
+                    ],
+                    [
+                        161.587,
+                        -10.232
+                    ],
+                    [
+                        161.559,
+                        -10.322
+                    ],
+                    [
+                        161.54,
+                        -10.414
+                    ],
+                    [
+                        161.531,
+                        -10.508
+                    ],
+                    [
+                        161.531,
+                        -10.54
+                    ],
+                    [
+                        161.532,
+                        -10.571
+                    ],
+                    [
+                        161.54,
+                        -10.665
+                    ],
+                    [
+                        161.559,
+                        -10.758
+                    ],
+                    [
+                        161.587,
+                        -10.848
+                    ],
+                    [
+                        161.624,
+                        -10.935
+                    ],
+                    [
+                        161.671,
+                        -11.017
+                    ],
+                    [
+                        161.726,
+                        -11.094
+                    ],
+                    [
+                        161.789,
+                        -11.166
+                    ],
+                    [
+                        161.859,
+                        -11.23
+                    ],
+                    [
+                        161.935,
+                        -11.287
+                    ],
+                    [
+                        162.018,
+                        -11.335
+                    ],
+                    [
+                        162.105,
+                        -11.375
+                    ],
+                    [
+                        162.195,
+                        -11.406
+                    ],
+                    [
+                        162.289,
+                        -11.427
+                    ],
+                    [
+                        162.384,
+                        -11.438
+                    ],
+                    [
+                        162.48,
+                        -11.44
+                    ],
+                    [
+                        162.575,
+                        -11.432
+                    ],
+                    [
+                        162.669,
+                        -11.414
+                    ],
+                    [
+                        162.761,
+                        -11.386
+                    ],
+                    [
+                        162.85,
+                        -11.349
+                    ],
+                    [
+                        162.933,
+                        -11.304
+                    ],
+                    [
+                        163.012,
+                        -11.25
+                    ],
+                    [
+                        163.084,
+                        -11.188
+                    ],
+                    [
+                        163.15,
+                        -11.119
+                    ],
+                    [
+                        163.207,
+                        -11.043
+                    ],
+                    [
+                        163.257,
+                        -10.963
+                    ],
+                    [
+                        163.297,
+                        -10.877
+                    ],
+                    [
+                        163.329,
+                        -10.788
+                    ],
+                    [
+                        163.35,
+                        -10.696
+                    ],
+                    [
+                        163.362,
+                        -10.603
+                    ],
+                    [
+                        163.364,
+                        -10.54
                     ]
                 ]
             ],
             "type": "Polygon"
         },
         "affected_countries": {
-            "countryname": [
-                "Mozambique",
-                "Madagascar"
-            ],
-            "iso2": [
-                "MZ",
-                "MG"
-            ],
-            "iso3": [
-                "MOZ",
-                "MDG"
-            ]
+            "countryname": "Solomon Is.",
+            "iso2": "SB",
+            "iso3": "SLB"
         },
-        "affected_country_iso2": [
-            "MZ",
-            "MG"
-        ],
-        "affected_country_iso3": [
-            "MOZ",
-            "MDG"
-        ],
-        "affected_country_names": [
-            "Mozambique",
-            "Madagascar"
-        ],
-        "alert_level": "Red",
-        "alert_score": 3,
-        "class": "Point_Polygon_Point_0",
-        "country": "Mozambique, Madagascar",
-        "description": "Tropical Cyclone JUDE-25",
+        "affected_country_iso2": "SB",
+        "affected_country_iso3": "SLB",
+        "affected_country_names": "Solomon Is.",
+        "alert_level": "Green",
+        "alert_score": 1,
+        "class": "Poly_Circle",
+        "country": "Solomon Islands",
+        "description": "Earthquake in Solomon Islands",
         "episode_alert_level": "Green",
-        "episode_alert_score": 1,
-        "episode_id": "34",
-        "event_id": "1001154",
-        "event_name": "JUDE-25",
-        "event_type": "TC",
-        "event_type_name": "Tropical Cyclone",
-        "glide": "TC-2025-000027-MOZ",
-        "html_description": "Red Tropical Cyclone JUDE-25 in Mozambique, Madagascar from: 08 Mar 2025  to: 16 Mar 2025 .",
-        "icon": "https://www.gdacs.org/images/gdacs_icons/maps/Green/TC.png",
+        "episode_alert_score": 0,
+        "episode_id": "1632460",
+        "event_id": "1476137",
+        "event_name": "",
+        "event_type": "EQ",
+        "event_type_name": "Earthquake",
+        "glide": "",
+        "html_description": "Green M 4.6 Earthquake in Solomon Islands at: 06 Apr 2025 22:00:23.",
+        "icon": "https://www.gdacs.org/images/gdacs_icons/maps/Green/EQ.png",
         "is_current": false,
         "is_temporary": false,
-        "iso3": "MOZ",
-        "name": "Tropical Cyclone JUDE-25",
-        "polygon_label": "07/03 18:00 UTC",
+        "iso3": "SLB",
+        "name": "Earthquake in Solomon Islands",
+        "polygon_label": "100km",
         "severity": {
-            "text": "Post-tropical Depression (maximum wind speed of 148 km/h)",
-            "unit": "km/h",
-            "value": 147.776832
+            "text": "Magnitude 4.6M, Depth:50.911km",
+            "unit": "M",
+            "value": 4.6
         },
-        "source": "RSMC",
-        "source_id": "",
+        "source": "NEIC",
+        "source_id": "us6000q4fn",
         "url": {
-            "details": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=TC&eventid=1001154",
-            "geometry": "http://svc-gdacs:8080/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001154&episodeid=34",
-            "report": "https://www.gdacs.org/report.aspx?eventid=1001154&episodeid=34&eventtype=TC"
+            "details": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=EQ&eventid=1476137",
+            "geometry": "http://svc-gdacs:8080/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1476137&episodeid=1632460",
+            "report": "https://www.gdacs.org/report.aspx?eventid=1476137&episodeid=1632460&eventtype=EQ"
         }
     },
     "geo": {
-        "country_iso_code": "MZ",
-        "country_name": "Mozambique",
+        "country_iso_code": "SB",
+        "country_name": "Solomon Is.",
         "location": {
             "coordinates": [
-                51.929999962449074,
-                -26.04000003542751
+                162.44779997505248,
+                -10.53970000706613
             ],
             "type": "Point"
         },
-        "name": "Tropical Cyclone JUDE-25"
+        "name": "Earthquake in Solomon Islands"
     },
     "input": {
         "type": "cel"
     },
+    "message": "Earthquake in Solomon Islands",
     "tags": [
         "forwarded",
         "gdacs-events"

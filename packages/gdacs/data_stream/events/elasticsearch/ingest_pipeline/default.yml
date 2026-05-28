@@ -1,17 +1,27 @@
 ---
 description: "Normalizes GDACS GeoJSON features to ECS + gdacs.* fields."
 processors:
-  #
-  # ── Parse raw JSON message into document fields ──
-  #
-  - json:
-      tag: json_parse_message
+  - rename:
+      tag: rename_message_to_event_original
       field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      tag: json_parse_event_original
+      field: event.original
       add_to_root: true
       add_to_root_conflict_strategy: replace
-  #
-  # ── Flatten properties.* into gdacs.* ──
-  #
+  - remove:
+      tag: remove_message
+      field: message
+      if: ctx.event?.original != null
+      ignore_missing: true
+  - remove:
+      tag: remove_event_original
+      field: event.original
+      if: "!ctx.tags.contains('preserve_original_event')"
+      ignore_missing: true
   - rename:
       tag: rename_eventid
       field: properties.eventid
@@ -113,6 +123,21 @@ processors:
       target_field: gdacs.polygon_label
       ignore_missing: true
   - rename:
+      tag: rename_geometry_doc
+      field: geometry_doc
+      target_field: gdacs.geometry_doc
+      ignore_missing: true
+  - rename:
+      tag: rename_geometry_id
+      field: geometry_id
+      target_field: gdacs.geometry_id
+      ignore_missing: true
+  - rename:
+      tag: rename_geometry_role
+      field: geometry_role
+      target_field: gdacs.geometry_role
+      ignore_missing: true
+  - rename:
       tag: rename_icon
       field: properties.icon
       target_field: gdacs.icon
@@ -142,10 +167,6 @@ processors:
       field: properties.affectedcountries
       target_field: gdacs.affected_countries
       ignore_missing: true
-
-  #
-  # ── Severity sub-fields ──
-  #
   - rename:
       tag: rename_severity_value
       field: gdacs.severity_raw.severity
@@ -165,10 +186,6 @@ processors:
       tag: remove_severity_raw
       field: gdacs.severity_raw
       ignore_missing: true
-
-  #
-  # ── Timestamps ──
-  #
   - date:
       tag: date_fromdate
       field: properties.fromdate
@@ -194,14 +211,16 @@ processors:
         - ISO8601
       ignore_failure: true
   - set:
-      tag: set_timestamp
+      tag: set_timestamp_modified
+      field: "@timestamp"
+      copy_from: event.modified
+      ignore_empty_value: true
+  - set:
+      tag: set_timestamp_start
+      if: ctx.event?.modified == null
       field: "@timestamp"
       copy_from: event.start
       ignore_empty_value: true
-
-  #
-  # ── Boolean coercion ──
-  #
   - script:
       tag: coerce_booleans
       lang: painless
@@ -215,16 +234,69 @@ processors:
           def val = ctx.gdacs.is_temporary.toString().toLowerCase();
           ctx.gdacs.is_temporary = (val == "true" || val == "1");
         }
-
-  #
-  # ── Geometry handling ──
-  # Extract geo.location (point) and gdacs.affected_area (shape) from GeoJSON.
-  #
   - script:
       tag: extract_geometry
       lang: painless
       description: "Extract centroid geo_point and optional polygon geo_shape."
       source: |
+        String gdacsRingToWkt(def ring) {
+          StringBuilder builder = new StringBuilder();
+          builder.append("(");
+          for (int i = 0; i < ring.size(); i++) {
+            if (i > 0) { builder.append(", "); }
+            def point = ring[i];
+            builder.append(point[0].toString());
+            builder.append(" ");
+            builder.append(point[1].toString());
+          }
+          builder.append(")");
+          return builder.toString();
+        }
+
+        String gdacsPolygonToWkt(def rings) {
+          StringBuilder builder = new StringBuilder();
+          builder.append("(");
+          for (int i = 0; i < rings.size(); i++) {
+            if (i > 0) { builder.append(", "); }
+            builder.append(gdacsRingToWkt(rings[i]));
+          }
+          builder.append(")");
+          return builder.toString();
+        }
+
+        String gdacsShapeToWkt(def geom) {
+          if (geom == null || geom.coordinates == null || geom.type == null) {
+            return null;
+          }
+          if (geom.type == "LineString") {
+            return "LINESTRING " + gdacsRingToWkt(geom.coordinates);
+          }
+          if (geom.type == "MultiLineString") {
+            StringBuilder builder = new StringBuilder();
+            builder.append("MULTILINESTRING (");
+            for (int i = 0; i < geom.coordinates.size(); i++) {
+              if (i > 0) { builder.append(", "); }
+              builder.append(gdacsRingToWkt(geom.coordinates[i]));
+            }
+            builder.append(")");
+            return builder.toString();
+          }
+          if (geom.type == "Polygon") {
+            return "POLYGON " + gdacsPolygonToWkt(geom.coordinates);
+          }
+          if (geom.type == "MultiPolygon") {
+            StringBuilder builder = new StringBuilder();
+            builder.append("MULTIPOLYGON (");
+            for (int i = 0; i < geom.coordinates.size(); i++) {
+              if (i > 0) { builder.append(", "); }
+              builder.append(gdacsPolygonToWkt(geom.coordinates[i]));
+            }
+            builder.append(")");
+            return builder.toString();
+          }
+          return null;
+        }
+
         if (ctx.geo == null) { ctx.geo = new HashMap(); }
 
         // Extract centroid from the event-level Point geometry.
@@ -240,19 +312,16 @@ processors:
         def polyGeom = ctx.polygon_geometry;
         if (polyGeom != null) {
           String polyType = polyGeom.type;
-          if (polyType == "Polygon" || polyType == "MultiPolygon") {
+          if (polyType == "Polygon" || polyType == "MultiPolygon" || polyType == "LineString" || polyType == "MultiLineString") {
             if (ctx.gdacs == null) { ctx.gdacs = new HashMap(); }
-            ctx.gdacs.affected_area = polyGeom;
+            ctx.gdacs.affected_area = gdacsShapeToWkt(polyGeom);
+            ctx.gdacs.geometry_type = polyType;
 
             // Update class and polygon_label from enrichment if present.
             if (ctx.polygon_class != null) { ctx.gdacs.class = ctx.polygon_class; }
             if (ctx.polygon_label != null && ctx.polygon_label != "") { ctx.gdacs.polygon_label = ctx.polygon_label; }
           }
         }
-
-  #
-  # ── Affected countries ──
-  #
   - script:
       tag: flatten_affected_countries
       lang: painless
@@ -282,10 +351,6 @@ processors:
         if (names.size() > 0) {
           ctx.geo.country_name = names[0];
         }
-
-  #
-  # ── Numeric coercion ──
-  #
   - convert:
       tag: convert_severity_value
       field: gdacs.severity.value
@@ -316,10 +381,6 @@ processors:
       type: string
       ignore_missing: true
       ignore_failure: true
-
-  #
-  # ── Map event type codes to human-readable names ──
-  #
   - script:
       tag: map_event_type_name
       lang: painless
@@ -337,10 +398,6 @@ processors:
         if (code != null && typeMap.containsKey(code)) {
           ctx.gdacs.event_type_name = typeMap[code];
         }
-
-  #
-  # ── Map alert level to ECS event.severity ──
-  #
   - script:
       tag: map_alert_severity
       lang: painless
@@ -359,10 +416,6 @@ processors:
           ctx.event.severity = 1;
           ctx.event.risk_score = 30.0;
         }
-
-  #
-  # ── ECS static fields ──
-  #
   - set:
       tag: set_ecs_version
       field: ecs.version
@@ -393,25 +446,25 @@ processors:
       tag: set_event_provider
       field: event.provider
       value: gdacs
-
-  #
-  # ── Composite event.id ──
-  #
-  - set:
+  - script:
       tag: set_event_id
-      field: event.id
-      value: "{{{gdacs.event_id}}}-{{{gdacs.episode_id}}}"
-      ignore_failure: true
+      lang: painless
+      description: "Build a stable event.id; geometry child docs include their GDACS geometry id."
+      source: |
+        if (ctx.event == null) { ctx.event = new HashMap(); }
+        def parts = new ArrayList();
+        if (ctx.gdacs?.event_id != null) { parts.add(ctx.gdacs.event_id.toString()); }
+        if (ctx.gdacs?.episode_id != null) { parts.add(ctx.gdacs.episode_id.toString()); }
+        if (ctx.gdacs?.geometry_id != null) { parts.add(ctx.gdacs.geometry_id.toString()); }
+        if (parts.size() > 0) {
+          ctx.event.id = String.join("-", parts);
+        }
   - fingerprint:
       tag: fingerprint_event_id
       fields:
         - event.id
       target_field: _id
       ignore_missing: true
-
-  #
-  # ── ECS mapped fields ──
-  #
   - set:
       tag: set_event_url
       field: event.url
@@ -432,10 +485,6 @@ processors:
       field: geo.name
       copy_from: gdacs.name
       ignore_empty_value: true
-
-  #
-  # ── Cleanup ──
-  #
   - remove:
       tag: remove_raw_fields
       field:
@@ -446,12 +495,14 @@ processors:
         - polygon_geometry
         - polygon_class
         - polygon_label
+        - geometry_doc
+        - geometry_id
+        - geometry_role
+        - gdacs.geometry_type
+        - gdacs.geometry_doc
+        - gdacs.geometry_id
+        - gdacs.geometry_role
       ignore_missing: true
-  - remove:
-      tag: remove_message
-      field: message
-      ignore_missing: true
-
 on_failure:
   - set:
       field: event.kind
