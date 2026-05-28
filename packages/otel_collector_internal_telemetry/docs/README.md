@@ -12,6 +12,8 @@ Furthermore, the package also contains dashboards to visualize metrics from the 
 
 The dashboards query metrics from the `collectortelemetry` dataset. Set the resource attribute `data_stream.dataset` to `collectortelemetry` on the collector that emits internal telemetry (see below).
 
+**Note**: The dashboards expect metrics without postfixes. In particular, Prometheus-format metrics—which apply unit suffixes by default—are not supported. The dashboards are designed for metrics exported via OTLP. If you use the Prometheus exporter, set `without_type_suffix` and `without_units` to `true`. For more information, see [the upstream documentation](https://opentelemetry.io/docs/collector/internal-telemetry/#metric-views).
+
 ### How it works
 
 The dashboards rely on field names defined in above documentations.
