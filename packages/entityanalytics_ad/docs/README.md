@@ -216,14 +216,14 @@ This is the `User` dataset.
 | user.account.status.password_expired |  | boolean |
 | user.account.status.recovery |  | boolean |
 | user.account.status.suspended |  | boolean |
-| user.entity.attributes.mfa_enabled |  | boolean |
-| user.entity.lifecycle.last_activity |  | date |
-| user.entity.relationships.administers.host.id |  | keyword |
-| user.entity.relationships.administers.host.name |  | keyword |
-| user.entity.relationships.administers.user.domain |  | keyword |
-| user.entity.relationships.supervises.user.domain |  | keyword |
-| user.entity.relationships.supervises.user.id |  | keyword |
-| user.entity.relationships.supervises.user.name |  | keyword |
+| user.entity.attributes.mfa_enabled | Indicates whether multi-factor authentication is enabled for this entity. Typically applicable to User entities. | boolean |
+| user.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
+| user.entity.relationships.administers.host.id | Referenced host ids. | keyword |
+| user.entity.relationships.administers.host.name | Referenced host names. | keyword |
+| user.entity.relationships.administers.user.domain | Referenced user directory or AD/LDAP domain names (same semantics as ECS `user.domain`). | keyword |
+| user.entity.relationships.supervises.user.domain | Referenced user directory or AD/LDAP domain names (same semantics as ECS `user.domain`). | keyword |
+| user.entity.relationships.supervises.user.id | Referenced user ids. | keyword |
+| user.entity.relationships.supervises.user.name | Referenced user short names or logins. | keyword |
 | user.geo.city_name |  | keyword |
 | user.geo.country_iso_code |  | keyword |
 | user.geo.name |  | keyword |
@@ -344,14 +344,14 @@ This is the `Device` dataset.
 | entityanalytics_ad.when_changed |  | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| host.entity.attributes.managed |  | boolean |
-| host.entity.lifecycle.last_activity |  | date |
-| host.entity.relationships.administers.host.id |  | keyword |
-| host.entity.relationships.administers.host.name |  | keyword |
-| host.entity.relationships.administers.user.domain |  | keyword |
-| host.entity.relationships.supervises.user.domain |  | keyword |
-| host.entity.relationships.supervises.user.id |  | keyword |
-| host.entity.relationships.supervises.user.name |  | keyword |
+| host.entity.attributes.managed | Indicates whether the entity is managed by an external administration or control system. Typically applicable to Host and Service entities. | boolean |
+| host.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
+| host.entity.relationships.administers.host.id | Referenced host ids. | keyword |
+| host.entity.relationships.administers.host.name | Referenced host names. | keyword |
+| host.entity.relationships.administers.user.domain | Referenced user directory or AD/LDAP domain names (same semantics as ECS `user.domain`). | keyword |
+| host.entity.relationships.supervises.user.domain | Referenced user directory or AD/LDAP domain names (same semantics as ECS `user.domain`). | keyword |
+| host.entity.relationships.supervises.user.id | Referenced user ids. | keyword |
+| host.entity.relationships.supervises.user.name | Referenced user short names or logins. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.identity_source |  | keyword |
 | user.account.activated_date |  | date |
