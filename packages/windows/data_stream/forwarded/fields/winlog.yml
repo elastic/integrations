@@ -548,6 +548,178 @@
       description: >
         A globally unique identifier that identifies the provider that logged the event.
 
+    - name: scheduled_task
+      type: group
+      description: >
+        Selected fields from Windows Security scheduled task events.
+        These fields expose high-value task metadata that may not be searchable
+        from the raw XML field when the value exceeds indexing limits.
+      fields:
+        - name: name
+          type: keyword
+          ignore_above: 4096
+          description: >
+            Task name from winlog.event_data.TaskName. This is the full Windows
+            task path, including folder components such as \Microsoft\Windows.
+        - name: uri
+          type: keyword
+          ignore_above: 4096
+          description: >
+            Task URI from RegistrationInfo/URI in the scheduled task XML. This can
+            complement winlog.event_data.TaskName when investigating masquerading or
+            unusual task paths.
+        - name: principals
+          type: group
+          description: >
+            Principals defined in the task XML. These describe the account or group the
+            task is configured to run as, not necessarily the subject that created or
+            updated the task.
+          fields:
+            - name: id
+              type: keyword
+              ignore_above: 1024
+              description: >
+                Principal id attribute from the task XML.
+            - name: user
+              type: group
+              description: >
+                User principal details from the task XML.
+              fields:
+                - name: identifier
+                  type: keyword
+                  ignore_above: 1024
+                  description: >
+                    User identifier from Principal/UserId in the task XML.
+            - name: group
+              type: group
+              description: >
+                Group principal details from the task XML.
+              fields:
+                - name: identifier
+                  type: keyword
+                  ignore_above: 1024
+                  description: >
+                    Group identifier from Principal/GroupId in the task XML.
+            - name: logon
+              type: group
+              description: >
+                Logon configuration for the principal in the task XML.
+              fields:
+                - name: type
+                  type: keyword
+                  ignore_above: 1024
+                  description: >
+                    Logon type from Principal/LogonType in the task XML. This field is
+                    only set when the XML contains an explicit LogonType.
+            - name: run_level
+              type: keyword
+              ignore_above: 1024
+              description: >
+                Run level from Principal/RunLevel in the task XML, such as
+                LeastPrivilege or HighestAvailable.
+        - name: actions
+          type: group
+          description: >
+            Actions defined in the task XML. These represent configured task behavior,
+            not observed process execution.
+          fields:
+            - name: type
+              type: keyword
+              ignore_above: 1024
+              description: >
+                Action type parsed from the task XML, such as `exec` or `com_handler`.
+            - name: context
+              type: keyword
+              ignore_above: 1024
+              description: >
+                Principal reference from the Actions Context attribute in the task XML.
+                This value corresponds to a principals.id entry and indicates which
+                principal the action is configured to run under.
+            - name: command
+              type: wildcard
+              description: >
+                Command value from an Exec action in the task XML. This value can be
+                a bare command or executable name, full executable path,
+                environment-variable path, or quoted command string.
+              multi_fields:
+                - name: text
+                  type: match_only_text
+            - name: arguments
+              type: wildcard
+              description: >
+                Arguments value from an Exec action in the task XML.
+              multi_fields:
+                - name: text
+                  type: match_only_text
+            - name: working_directory
+              type: wildcard
+              description: >
+                WorkingDirectory value from an Exec action in the task XML.
+              multi_fields:
+                - name: text
+                  type: match_only_text
+            - name: class_id
+              type: keyword
+              ignore_above: 1024
+              description: >
+                COM class ID from a ComHandler action in the task XML. This identifies
+                the configured COM component, not a file path, and typically requires
+                CLSID registry correlation during investigation.
+        - name: triggers
+          type: group
+          description: >
+            Triggers defined in the task XML. These describe configured task scheduling
+            or activation conditions.
+          fields:
+            - name: type
+              type: keyword
+              ignore_above: 1024
+              description: >
+                Trigger type parsed from the trigger element name, such as `time`,
+                `calendar`, `boot`, `logon`, `registration`, `event`, `idle`,
+                `wnf_state_change`, or `session_state_change`.
+            - name: enabled
+              type: boolean
+              description: >
+                Enabled value from the trigger XML, when present.
+            - name: repetition
+              type: group
+              description: >
+                Repetition configuration for the trigger in the task XML.
+              fields:
+                - name: interval
+                  type: keyword
+                  ignore_above: 1024
+                  description: >
+                    Repetition interval from the trigger XML, represented as the
+                    original Task Scheduler duration string.
+                - name: duration
+                  type: keyword
+                  ignore_above: 1024
+                  description: >
+                    Repetition duration from the trigger XML, represented as the
+                    original Task Scheduler duration string.
+                - name: stop_at_duration_end
+                  type: boolean
+                  description: >
+                    StopAtDurationEnd value from the trigger repetition XML, when
+                    present.
+        - name: settings
+          type: group
+          description: >
+            Selected task settings parsed from the task XML.
+          fields:
+            - name: enabled
+              type: boolean
+              description: >
+                Enabled value from task Settings in the XML. This describes the task
+                definition setting, not the lifecycle event action.
+            - name: hidden
+              type: boolean
+              description: >
+                Hidden value from task Settings in the XML. A value of true indicates
+                the task is hidden from default Task Scheduler GUI views.
+
     - name: process.pid
       type: long
       description: >
