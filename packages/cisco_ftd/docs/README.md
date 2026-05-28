@@ -163,7 +163,6 @@ The `log` data stream collects logs from Cisco Firepower Threat Defense (FTD) de
 | cisco.ftd.missed_updates_count | The number of Stateful Failover updates missed. | long |
 | cisco.ftd.privilege.new | When a users privilege is changed this is the new value | keyword |
 | cisco.ftd.privilege.old | When a users privilege is changed this is the old value | keyword |
-| cisco.ftd.rejection_reason | Reason for AAA user authentication rejection | keyword |
 | cisco.ftd.rule_name | Name of the Access Control List rule that matched this event. | keyword |
 | cisco.ftd.security | Cisco FTD security event fields. | flattened |
 | cisco.ftd.security_event.ac_policy |  | keyword |
