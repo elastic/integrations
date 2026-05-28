@@ -1,6 +1,5 @@
 # Cisco ISE Integration for Elastic
 
-> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
 
 ## Overview
 
@@ -423,6 +422,7 @@ The following table lists the exported fields for this data stream:
 | cisco_ise.log.category.name |  | keyword |
 | cisco_ise.log.cause |  | keyword |
 | cisco_ise.log.cisco_av_pair.AuthenticationIdentityStore |  | keyword |
+| cisco_ise.log.cisco_av_pair.FQSubjectName |  | keyword |
 | cisco_ise.log.cisco_av_pair.audit-session-id |  | keyword |
 | cisco_ise.log.cisco_av_pair.coa-push |  | boolean |
 | cisco_ise.log.cisco_av_pair.cts-device-capability |  | keyword |

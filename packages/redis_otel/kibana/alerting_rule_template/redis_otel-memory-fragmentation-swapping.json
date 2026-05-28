@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `redis.memory.fragmentation_ratio < 1.0`. RSS below used means Redis is swapping to disk.",
     "name": "[Redis OTel] Memory fragmentation indicates swapping",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "redis_otel-memory-persistence"
+        },
+        {
+          "id": "redis_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Redis memory fragmentation indicates swapping\n\n### What fired\n`redis.memory.fragmentation_ratio < 1.0` during the window.\n\n### Why it matters\nFragmentation ratio < 1.0 means the OS reports less RSS than Redis's logical used memory \u2014 Redis pages are in swap. Swap completely destroys Redis latency.\n\n### Triage\n1. Check host swap usage.\n2. Inspect memory pressure on the VM.\n\n### Remediation\n- Disable swap for Redis / add RAM.\n\n### Tuning\n- Always P1.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-redisreceiver.otel-*\n| WHERE data_stream.dataset == \"redisreceiver.otel\"\n  AND redis.memory.fragmentation_ratio IS NOT NULL\n// Fragmentation ratio < 1.0 means RSS < used memory: Redis is swapping to disk\n| STATS avg_frag = AVG(redis.memory.fragmentation_ratio)\n  BY server.address, server.port\n| WHERE avg_frag < 1.0\n| SORT avg_frag ASC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

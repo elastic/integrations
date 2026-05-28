@@ -1,0 +1,129 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects modifications to the aws-auth ConfigMap in Amazon EKS clusters. The aws-auth ConfigMap maps AWS IAM roles and users to Kubernetes RBAC groups, an attacker who modifies it can grant any IAM role cluster-admin access by adding a mapping to the system:masters group. This is a well-documented persistence technique that survives pod restarts, node replacements, and RBAC changes because the authentication mapping exists outside of normal Kubernetes Role objects. Modifications to aws-auth are rare in normal operations, the ConfigMap is typically set during cluster provisioning and updated only during node group or access configuration changes.",
+        "false_positives": [
+            "Legitimate node group lifecycle, cluster upgrades, or infrastructure-as-code (Terraform, CloudFormation, eksctl) may update aws-auth during expected change windows. Baseline automation identities and expand exclusions beyond eks:kms-storage-migrator if your environment uses additional known controllers."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-kubernetes.audit_logs-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "EKS Authentication Configuration Modified",
+        "note": "## Triage and analysis\n\n### Investigating EKS Authentication Configuration Modified\n\nConfirm who changed the mapping (user.name, groups, source.ip, user_agent.original) and whether the change aligns with\napproved cluster or node-group operations. Compare the new aws-auth mapRoles/mapUsers content to the prior revision if\nrequest/response capture is available in audit.\n\n### Possible investigation steps\n\n- Identify any new IAM role ARNs or users bound to system:masters or other privileged Kubernetes groups.\n- Correlate the timestamp with AWS CloudTrail for related EKS or IAM API activity and with GitOps or pipeline commits.\n- Review subsequent API activity from newly mapped IAM principals for secret access, RBAC changes, or workload deployment.\n- If Access Entries are enabled, also review CloudTrail for eks:CreateAccessEntry, eks:AssociateAccessPolicy, and similar\n  API calls around the same window.\n\n### Response and remediation\n\n- If unauthorized, revert aws-auth from a known-good backup, remove rogue map entries, and rotate or restrict IAM that\n  could have performed the change.\n- Audit IAM policies that allow eks:UpdateClusterConfig or broad ConfigMap write access to kube-system.\n- Escalate per incident policy when system:masters mappings appear from unexpected IAM identities.\n",
+        "query": "data_stream.dataset:\"kubernetes.audit_logs\" and \nkubernetes.audit.objectRef.resource:\"configmaps\" and \nkubernetes.audit.objectRef.name:\"aws-auth\" and \nkubernetes.audit.verb:(\"update\" or \"patch\" or \"delete\") and \nkubernetes.audit.objectRef.namespace:\"kube-system\" and \nkubernetes.audit.annotations.authorization_k8s_io/decision:\"allow\" and\nnot user.name:\"eks:kms-storage-migrator\"\n",
+        "references": [
+            "https://docs.aws.amazon.com/eks/latest/userguide/auth-configmap.html",
+            "https://docs.aws.amazon.com/eks/latest/userguide/access-entries.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "kubernetes",
+                "version": "^1.80.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.annotations.authorization_k8s_io/decision",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.namespace",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.resource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.verb",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "5202697c-313b-4bf0-9029-73fe78cd4b6d",
+        "severity": "high",
+        "tags": [
+            "Data Source: Kubernetes",
+            "Domain: Kubernetes",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "5202697c-313b-4bf0-9029-73fe78cd4b6d_1",
+    "type": "security-rule"
+}

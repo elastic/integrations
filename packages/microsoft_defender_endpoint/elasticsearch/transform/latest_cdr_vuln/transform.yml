@@ -12,7 +12,7 @@ source:
       must:
         - range:
             "@timestamp":
-              gte: "now-4h"
+              gte: "now-90d"
       must_not:
         - exists:
             field: error.message
@@ -21,7 +21,7 @@ source:
               - data_frozen
               - data_cold
 dest:
-  index: "security_solution-microsoft_defender_endpoint.vulnerability_latest-v2"
+  index: "security_solution-microsoft_defender_endpoint.vulnerability_latest-v3"
   aliases:
     - alias: "security_solution-microsoft_defender_endpoint.vulnerability_latest"
       move_on_creation: true
@@ -43,9 +43,9 @@ sync:
 retention_policy:
   time:
     field: "@timestamp"
-    max_age: 4h # Since source does a full sync every interval: 4h (default)
+    max_age: 2160h
 _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during package.
   # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.3.0
+  fleet_transform_version: 0.4.0
