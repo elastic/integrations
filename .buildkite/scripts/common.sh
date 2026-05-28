@@ -779,6 +779,7 @@ is_pr_affected() {
     # Same for ".buildkite/scripts/packages/.+.sh": this pattern must not be added to "skip_ci_on_only_changed" to allow triggering the tests of the given package.
     local non_package_patterns=(
         'packages/'
+        '\.agents/skills/'
         '\.buildkite/pipeline\.backport\.yml'
         '\.buildkite/pipeline\.publish\.yml'
         '\.buildkite/pipeline\.serverless\.yml'
@@ -788,6 +789,8 @@ is_pr_affected() {
         '\.buildkite/scripts/backport_branch\.sh'
         '\.buildkite/scripts/build_packages\.sh'
         '\.buildkite/scripts/packages/.+\.sh'
+        '\.buildkite/scripts/run_buildkite_scripts_tests\.sh'
+        '\.buildkite/scripts/run_dev_scripts_tests\.sh'
         '\.github/dependabot\.yml'
         '\.github/workflows/'
         '\.github/stale\.yml'
@@ -796,13 +799,11 @@ is_pr_affected() {
         '\.github/PULL_REQUEST_TEMPLATE\.md'
         '\.mergify\.yml'
         'catalog-info\.yaml'
+        'dev/scripts/'
         'docs/'
         'CODE_OF_CONDUCT\.md'
         'CONTRIBUTING\.md'
         'README\.md'
-        '\.agents/skills/'
-        'dev/scripts/'
-        '\.buildkite/scripts/run_dev_scripts_tests\.sh'
     )
     local non_package_regex
     non_package_regex="^($(IFS='|'; echo "${non_package_patterns[*]}"))"
