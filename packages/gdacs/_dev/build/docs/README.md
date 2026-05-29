@@ -54,19 +54,6 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 Elastic Agent is required to stream data from the GDACS API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
-### Onboard / configure
-
-1. In Kibana, navigate to **Management > Integrations** and search for "GDACS".
-2. Click **Add GDACS**.
-3. Configure the following settings:
-   - **Poll Interval**: How often to check for new events (default: `1h`).
-   - **Lookback Window**: Hours of history to fetch on first run (default: `168`, i.e. 7 days).
-   - **Event Types**: Semicolon-separated disaster type codes to collect (default: `EQ;TC;FL;VO;DR;WF`).
-   - **Alert Levels**: Semicolon-separated alert levels to collect (default: `red;orange;green`).
-   - **Country Filter**: Optional ISO3 country code to limit events to a specific country.
-   - **Page Size**: Number of events per API page (default: `100`, max: `100`).
-4. Save the integration policy and deploy it to your Elastic Agent.
-
 ### Validation
 
 After deploying, verify data is flowing:
@@ -80,11 +67,7 @@ After deploying, verify data is flowing:
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
-- **No events collected**: The GDACS API may have no events matching your configured alert levels and event types within the lookback window. Try increasing the lookback window or broadening the alert level filter.
-- **Missing polygon data**: Not all GDACS events have associated geometry polygons. Events without a geometry URL will be indexed with only the centroid point in `geo.location`.
-- **Rate limiting**: The GDACS API is public and does not document rate limits. If you experience errors, increase the poll interval.
-
-## Scaling
+## Performance and scaling
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 

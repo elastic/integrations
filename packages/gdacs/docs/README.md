@@ -55,19 +55,6 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 Elastic Agent is required to stream data from the GDACS API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
-### Onboard / configure
-
-1. In Kibana, navigate to **Management > Integrations** and search for "GDACS".
-2. Click **Add GDACS**.
-3. Configure the following settings:
-   - **Poll Interval**: How often to check for new events (default: `1h`).
-   - **Lookback Window**: Hours of history to fetch on first run (default: `168`, i.e. 7 days).
-   - **Event Types**: Semicolon-separated disaster type codes to collect (default: `EQ;TC;FL;VO;DR;WF`).
-   - **Alert Levels**: Semicolon-separated alert levels to collect (default: `red;orange;green`).
-   - **Country Filter**: Optional ISO3 country code to limit events to a specific country.
-   - **Page Size**: Number of events per API page (default: `100`, max: `100`).
-4. Save the integration policy and deploy it to your Elastic Agent.
-
 ### Validation
 
 After deploying, verify data is flowing:
@@ -81,11 +68,7 @@ After deploying, verify data is flowing:
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
-- **No events collected**: The GDACS API may have no events matching your configured alert levels and event types within the lookback window. Try increasing the lookback window or broadening the alert level filter.
-- **Missing polygon data**: Not all GDACS events have associated geometry polygons. Events without a geometry URL will be indexed with only the centroid point in `geo.location`.
-- **Rate limiting**: The GDACS API is public and does not document rate limits. If you experience errors, increase the poll interval.
-
-## Scaling
+## Performance and scaling
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
@@ -123,6 +106,8 @@ The `events` data stream provides natural disaster alert events from the GDACS S
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
 | gdacs.affected_area | GeoJSON polygon or multipolygon representing the affected area of the disaster. | geo_shape |
+| gdacs.affected_area.coordinates | Coordinates of the geo_shape geometry. | object |
+| gdacs.affected_area.type | GeoJSON geometry type (e.g. "Polygon", "MultiPolygon"). | keyword |
 | gdacs.affected_countries | Array of affected country objects with iso2, iso3, and countryname fields. | object |
 | gdacs.affected_country_iso2 | List of affected country ISO 3166-1 alpha-2 codes. | keyword |
 | gdacs.affected_country_iso3 | List of affected country ISO 3166-1 alpha-3 codes. | keyword |
@@ -158,6 +143,8 @@ The `events` data stream provides natural disaster alert events from the GDACS S
 | geo.country_iso_code | ISO 3166-1 alpha-2 country code of the primary affected country. | keyword |
 | geo.country_name | Name of the primary affected country. | keyword |
 | geo.location | Centroid coordinates of the event or affected area. | geo_point |
+| geo.location.coordinates | Coordinates of the geo_point as [lon, lat]. | object |
+| geo.location.type | GeoJSON type of the geo_point (always "Point"). | keyword |
 | geo.name | Human-readable name of the event location. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
@@ -170,22 +157,22 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2025-04-07T01:52:47.000Z",
     "agent": {
-        "ephemeral_id": "0eb75875-cd83-43c8-9279-0cfe84b9fc29",
-        "id": "4d924129-bedf-407a-907b-51d0020aeff2",
-        "name": "elastic-agent-67726",
+        "ephemeral_id": "41cd5e46-d6c8-4608-9d9b-8687b0f02a93",
+        "id": "77bcfd6c-f548-478d-a7a2-8b7e59c99467",
+        "name": "elastic-agent-20164",
         "type": "filebeat",
         "version": "9.3.1"
     },
     "data_stream": {
         "dataset": "gdacs.events",
-        "namespace": "86466",
+        "namespace": "73938",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4d924129-bedf-407a-907b-51d0020aeff2",
+        "id": "77bcfd6c-f548-478d-a7a2-8b7e59c99467",
         "snapshot": false,
         "version": "9.3.1"
     },
@@ -197,7 +184,7 @@ An example event for `events` looks as following:
         "dataset": "gdacs.events",
         "end": "2025-04-06T22:00:23.000Z",
         "id": "1476137-1632460",
-        "ingested": "2026-05-28T17:39:53Z",
+        "ingested": "2026-05-28T18:23:52Z",
         "kind": "alert",
         "modified": "2025-04-07T01:52:47.000Z",
         "module": "gdacs",
