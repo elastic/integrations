@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 9.2.0
+      value: 9.3.0
   - terminate:
       description: error message set and no data to process.
       tag: terminate_data_collection_error
@@ -38,6 +38,7 @@ processors:
       field: event.original
       tag: json_event_original
       target_field: axonius.ticket
+  # Fingerprint the full raw payload because the Axonius API does not expose a stable entity ID for ticket assets; the transform keys on this value for deduplication.
   - fingerprint:
       fields:
         - event.original
@@ -54,13 +55,17 @@ processors:
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            field: axonius.ticket.adapter_list_length
+            ignore_missing: true
+            tag: remove_adapter_list_length_to_long
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       tag: script_rename_event_data_fields
       lang: painless
-      description: Renames all event.data.* fields to root level (removes event.data prefix). Prefixes conflicting keys with 'data_' to avoid overwriting root-level fields.
+      description: Renames all axonius.ticket.event.data.* fields to root level (removes event.data prefix). Prefixes conflicting keys with 'data_' to avoid overwriting custom data-stream-root-level fields.
       source: |-
         if (ctx.axonius?.ticket?.event?.data instanceof Map) {
           Map eventData = ctx.axonius.ticket.event.data;
@@ -83,6 +88,10 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.ticket?.event?.accurate_for_datetime != null && ctx.axonius.ticket.event.accurate_for_datetime != ''
       on_failure:
+        - remove:
+            field: axonius.ticket.event.accurate_for_datetime
+            ignore_missing: true
+            tag: remove_event_accurate_for_datetime
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -96,6 +105,10 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.ticket?.accurate_for_datetime != null && ctx.axonius.ticket.accurate_for_datetime != ''
       on_failure:
+        - remove:
+            field: axonius.ticket.accurate_for_datetime
+            ignore_missing: true
+            tag: remove_event_data_accurate_for_datetime
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -109,6 +122,10 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.ticket?.closed != null && ctx.axonius.ticket.closed != ''
       on_failure:
+        - remove:
+            field: axonius.ticket.closed
+            ignore_missing: true
+            tag: remove_event_data_closed
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -127,6 +144,10 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.ticket?.created != null && ctx.axonius.ticket.created != ''
       on_failure:
+        - remove:
+            field: axonius.ticket.created
+            ignore_missing: true
+            tag: remove_event_data_created
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -150,6 +171,10 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.ticket?.fetch_time != null && ctx.axonius.ticket.fetch_time != ''
       on_failure:
+        - remove:
+            field: axonius.ticket.fetch_time
+            ignore_missing: true
+            tag: remove_event_data_fetch_time
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -163,6 +188,10 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.ticket?.first_fetch_time != null && ctx.axonius.ticket.first_fetch_time != ''
       on_failure:
+        - remove:
+            field: axonius.ticket.first_fetch_time
+            ignore_missing: true
+            tag: remove_event_data_first_fetch_time
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -172,6 +201,10 @@ processors:
       type: boolean
       ignore_missing: true
       on_failure:
+        - remove:
+            field: axonius.ticket.from_last_fetch
+            ignore_missing: true
+            tag: remove_event_data_from_last_fetch_to_boolean
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -181,6 +214,10 @@ processors:
       type: boolean
       ignore_missing: true
       on_failure:
+        - remove:
+            field: axonius.ticket.is_fetched_from_adapter
+            ignore_missing: true
+            tag: remove_event_data_is_fetched_from_adapter_to_boolean
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -207,6 +244,10 @@ processors:
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            field: axonius.ticket.not_fetched_count
+            ignore_missing: true
+            tag: remove_event_data_not_fetched_count_to_long
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -226,6 +267,10 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.ticket?.updated != null && ctx.axonius.ticket.updated != ''
       on_failure:
+        - remove:
+            field: axonius.ticket.updated
+            ignore_missing: true
+            tag: remove_event_data_updated
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -242,7 +287,6 @@ processors:
         - axonius.ticket.description
       tag: remove_custom_duplicate_fields
       ignore_missing: true
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - script:
       tag: script_to_drop_null_values
       lang: painless
