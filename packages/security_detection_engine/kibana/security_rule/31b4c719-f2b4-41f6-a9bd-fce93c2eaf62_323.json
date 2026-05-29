@@ -1,0 +1,161 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies User Account Control (UAC) bypass via eventvwr.exe. Attackers bypass UAC to stealthily execute code with elevated permissions.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.name",
+                "process.executable",
+                "process.command_line",
+                "process.hash.sha256",
+                "process.code_signature.trusted",
+                "process.Ext.token.integrity_level_name",
+                "process.parent.entity_id",
+                "process.parent.pid",
+                "process.parent.name",
+                "process.parent.executable"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Bypass UAC via Event Viewer",
+        "note": "## Triage and analysis\n\n### Investigating Bypass UAC via Event Viewer\n\n#### Possible investigation steps\n\n- What did Event Viewer launch in the alert?\n  - Focus: alert time, host/user scope, `process.parent.executable`, `process.executable`, `process.command_line`, and integrity level.\n  - Implication: escalate when eventvwr.exe launches an unexpected high-integrity child or script/LOLBIN command instead of the normal console or error-reporting helper; lower suspicion only when path normalization proves helper behavior or fields match controlled UAC testing.\n\n- Does the child payload identity and command line fit helper behavior or payload execution?\n  - Focus: `process.executable`, `process.hash.sha256`, `process.code_signature.subject_name`, `process.code_signature.trusted`, and `process.command_line`.\n  - Hint: use `process.pe.original_file_name` when path, filename, or signer conflicts suggest masquerading.\n  - Implication: escalate when the child is unsigned, rare, user-writable, signer-mismatched, or runs PowerShell, cmd.exe, rundll32.exe, mshta.exe, wscript.exe, regsvr32.exe, remote retrieval, encoded content, or admin-path writes; lower suspicion only when identity, signer, hash history, and command intent fit controlled testing or helper behavior.\n\n- What started Event Viewer, and did the session fit an interactive admin task?\n  - Focus: recover the Event Viewer start using `host.id` + `process.parent.entity_id`, then review executable, command line, and logon type. !{investigate{\"description\":\"\",\"label\":\"Event Viewer parent process event\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.entity_id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.pid}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: if `process.parent.entity_id` is absent, use `host.id` + `process.parent.pid` in a tight `@timestamp` window; PID-only recovery is weaker. Inspect `process.Ext.ancestry` only when direct lineage is incomplete.\n  - Implication: escalate when Office, browser, archive, scripting, RMM, or remote/noninteractive activity launched Event Viewer; lower suspicion only when launcher and session also support controlled testing or helper behavior. Routine Event Viewer use should open Microsoft Management Console, not an arbitrary child.\n\n- Is there corroborating current-user mscfile hijack evidence when process evidence stays suspicious?\n  - Focus: if registry telemetry exists, review current-user mscfile shell-open command content, creator/deleter process, and timing; HKCU may render as HKEY_USERS\\<user SID>\\Software\\Classes\\mscfile\\shell\\open\\command.\n  - Hint: use this as corroboration, not as a prerequisite for escalation. Missing registry telemetry is unresolved, not benign; absence of the key after the alert can mean cleanup.\n  - Implication: escalate or raise confidence when the value points to the alert child, a script interpreter, a temp/user path, or was created or removed around the alert; lower suspicion only when artifact evidence fits the same confirmed test or helper behavior already supported by process evidence.\n\n- What did the elevated child do next?\n  - Focus: child process events where `process.parent.entity_id` matches `process.entity_id`; review executable, command line, and integrity level. !{investigate{\"description\":\"\",\"label\":\"Process starts from the elevated child\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now\",\"relativeTo\":\"now\"}}\n  - Hint: prefer entity-ID matches; if only PID matches are available, keep them tightly anchored to `@timestamp`.\n  - Implication: escalate when the elevated child spawns shells, discovery, credential tools, droppers, installers, persistence helpers, or network-capable tooling; do not close on absent follow-on children when the original command, lineage, or mscfile evidence remains suspicious.\n\n- Does the same Event Viewer payload pattern recur beyond this host?\n  - Range: run only when local process, command, artifact, or lineage evidence remains suspicious or unresolved.\n  - Focus: `process.hash.sha256`, stable command-line fragments, and `process.executable`, scoped by host and user.\n    - !{investigate{\"description\":\"\",\"label\":\"Recent process starts with the same child identity\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.hash.sha256\",\"queryType\":\"phrase\",\"value\":\"{{process.hash.sha256}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.executable\",\"queryType\":\"phrase\",\"value\":\"{{process.executable}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n    - !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user or host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden when the same payload or Event Viewer child pattern appears for unrelated hosts or users; keep locally scoped when recurrence is limited to the same confirmed test cohort and no contradictory local evidence remains.\n\n- Based on the evidence gathered, what disposition is supported?\n  - Escalate on strong local abuse signals across child behavior, payload identity, command intent, launcher/session, mscfile artifacts, follow-on children, or scope; close only when process evidence and recovery prove helper normalization or controlled testing; preserve evidence and escalate when registry corroboration is unavailable or evidence is mixed.\n\n### False positive analysis\n\n- This behavior is an operational anti-pattern. Realistic benign paths are controlled UAC testing or a sensor/path-normalization miss for expected Microsoft Management Console (mmc.exe) or Windows Error Reporting (WerFault.exe) child activity. Confirm identity, launcher/session context, command line, and any recovered mscfile artifact support the same benign explanation; if any dimension contradicts it, do not close as benign.\n- Build exceptions from the minimum confirmed pattern: stable child hash or signer, exact Event Viewer parent-child relationship, bounded `user.id` and `host.id`, and test or normalization evidence. Avoid exceptions on `process.parent.name`, `process.name`, or `user.name` alone.\n\n### Response and remediation\n\n- If confirmed benign, document the exact evidence that resolved the alert, reverse temporary containment, and keep any exception scoped to the confirmed child identity, parent-child pattern, and host/user cohort.\n- If suspicious but unconfirmed, preserve the alert, process event exports, Event Viewer parent and child entity IDs, command lines, hashes/signers, recovered mscfile value/history, child process tree, and process-scoped file or network indicators when available.\n- After preservation, apply reversible containment tied to the findings, such as endpoint isolation for non-critical hosts or temporary egress restrictions for confirmed suspicious destinations. Weigh host criticality before isolation.\n- If confirmed malicious, preserve the confirmed hashes/domains/destinations and elevated child process details, then isolate the host as needed, block confirmed malicious indicators, and suspend or terminate malicious processes only after recording their evidence.\n- Eradicate only the artifacts found during triage: remove malicious payloads, restore the current-user mscfile handler to the expected mmc.exe behavior or remove the malicious override, clean related persistence, and remediate the entry vector that launched Event Viewer.\n- Reset credentials or disable accounts only when process/session evidence shows credential exposure, explicit misuse, or attacker use of the affected `user.id`.\n- After eradication, reduce repeat exposure by reviewing local administrator membership, using the highest feasible UAC prompt level, and patching affected Windows builds.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.parent.name : \"eventvwr.exe\" and\n  not process.executable : (\n        \"?:\\\\Windows\\\\SysWOW64\\\\mmc.exe\",\n        \"?:\\\\Windows\\\\System32\\\\mmc.exe\",\n        \"?:\\\\Windows\\\\SysWOW64\\\\WerFault.exe\",\n        \"?:\\\\Windows\\\\System32\\\\WerFault.exe\",\n\n        /* Crowdstrike specific exclusion as it uses NT Object paths */\n        \"\\\\Device\\\\HarddiskVolume*\\\\Windows\\\\Sys?????\\\\mmc.exe\",\n        \"\\\\Device\\\\HarddiskVolume*\\\\Windows\\\\Sys?????\\\\WerFault.exe\"\n  )\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "31b4c719-f2b4-41f6-a9bd-fce93c2eaf62",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/",
+                        "subtechnique": [
+                            {
+                                "id": "T1548.002",
+                                "name": "Bypass User Account Control",
+                                "reference": "https://attack.mitre.org/techniques/T1548/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/",
+                        "subtechnique": [
+                            {
+                                "id": "T1548.002",
+                                "name": "Bypass User Account Control",
+                                "reference": "https://attack.mitre.org/techniques/T1548/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 323
+    },
+    "id": "31b4c719-f2b4-41f6-a9bd-fce93c2eaf62_323",
+    "type": "security-rule"
+}

@@ -4,6 +4,11 @@
 
 The CyberArk EPM integration collects events (raw and aggregated), policy audit events (raw and aggregated), and admin audit logs using the REST API.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Compatibility
 
 This module has been tested against the CyberArk EPM version **24.12.0.4372**.
@@ -231,7 +236,7 @@ An example event for `raw_event` looks as following:
 | cyberark_epm.raw_event.defence_action_value |  | keyword |
 | cyberark_epm.raw_event.display_name | The file display name. | keyword |
 | cyberark_epm.raw_event.evidences | The evidence related to a Threat Protection event. | flattened |
-| cyberark_epm.raw_event.exposed_users | The users who were exposed in the threat protection event. | keyword |
+| cyberark_epm.raw_event.exposed_users | The users who were exposed in the threat protection event. | flattened |
 | cyberark_epm.raw_event.file_access_permission | The file access permission. | keyword |
 | cyberark_epm.raw_event.file_description | File description of the file that triggered the event. | keyword |
 | cyberark_epm.raw_event.file_name | The name of the event file that triggered the event. | keyword |

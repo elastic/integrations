@@ -26,7 +26,6 @@ state:
   want_more: false
   initial_interval: {{initial_interval}}
   page_token: ""
-  api_version: {{api_version}}
 redact:
   fields: ~
 program: |
@@ -50,7 +49,7 @@ program: |
   ).as(state,
     request(
       "GET",
-      state.url.trim_right("/") + "/" + state.api_version + "/detections?" + {
+      state.url.trim_right("/") + "/v1/detections?" + {
         "page_size": [state.page_size],
         "start_time": [state.start_time],
         "end_time": [state.end_time],
@@ -90,7 +89,6 @@ program: |
           "want_more": has(body.nextPageToken) && body.nextPageToken != null && body.nextPageToken != "",
           "page_size": state.page_size,
           "initial_interval": state.initial_interval,
-          "api_version": state.api_version,
           "start_time": string(state.start_time),
           "end_time": string(state.end_time),
           "cursor": {

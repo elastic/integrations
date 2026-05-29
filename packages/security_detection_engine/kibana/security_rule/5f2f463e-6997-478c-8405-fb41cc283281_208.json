@@ -1,0 +1,147 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies headless browser execution from a suspicious parent process with arguments consistent with scripted retrieval. Adversaries use browsers because they are trusted, signed binaries that proxy and application-control policies allow through, bypassing restrictions on direct download tools.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "process.entity_id",
+                "process.executable",
+                "process.command_line",
+                "process.pe.original_file_name",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "process.working_directory",
+                "process.hash.sha256"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential File Download via a Headless Browser",
+        "note": "## Triage and analysis\n\n### Investigating Potential File Download via a Headless Browser\n\n#### Possible investigation steps\n\n- What headless pattern does the command line express, and is the browser the installed product?\n  - Why: this rule fires on three distinct retrieval patterns -- remote URL fetch, inline base64 HTML decode (\"data:text/html;base64\"), or DOM dump (\"--dump-dom\") -- and each requires different follow-on evidence.\n  - Focus: `process.command_line` and `process.working_directory` to identify the retrieval pattern and output destination; confirm the browser is the installed product via `process.executable`, `process.code_signature.subject_name`, and `process.code_signature.trusted`.\n  - Implication: retrieval intent is stronger when the command line targets external content, decodes base64, or redirects output to unusual paths, especially when the browser is unsigned, portable, or renamed; more explainable when the arguments match a rendering or automation workflow and the browser is the standard signed installation.\n\n- Does the parent, ancestry, and user-host pattern explain why a browser is being driven headlessly?\n  - Why: the same browser arguments mean different things when launched by a web-rendering service than when launched by a script host, Office application, or interactive shell.\n  - Focus: `process.parent.executable`, `process.parent.command_line`, `process.Ext.ancestry`, and `process.Ext.session_info.logon_type`; also check whether `user.id` and `host.id` fit a role where headless browser automation is expected.\n  - Implication: more concerning if launched by a script host, Office process, MSI, WMI, or an unexpected interactive session, or when the user-host pair should not be running headless browsers; more explainable if the ancestry resolves to a recognized rendering service or automation component for that host role.\n\n- Do network events show the browser reaching destinations consistent with the claimed workflow?\n  - Focus: same-host network events scoped to the alert's `process.entity_id`, using `dns.resolved_ip` to bridge `dns.question.name` to `destination.ip` and treating `destination.as.organization.name` as ownership context rather than a verdict. !{investigate{\"description\":\"\",\"label\":\"Network activity for the alerting process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: if `process.entity_id` is not available, stay on the same `host.id` and alert window and use `dns.question.name`, `dns.resolved_ip`, and `destination.ip` to test whether the browser likely reached the fetched content.\n  - Implication: delivery risk increases when the browser reaches rare public destinations or infrastructure unrelated to the workflow, or when another process connects to an exposed debugging port; risk falls when destinations align with recognized internal services or known automation targets. Missing network telemetry is unresolved, not benign.\n\n- Do file events or child processes from the browser show downloaded, decoded, or staged artifacts?\n  - Focus: file events scoped to `process.entity_id` (`file.path`, `file.origin_url`, `file.Ext.windows.zone_identifier`, `file.Ext.header_bytes`), child process activity, and later `process.executable` reuse of a written path.\n  - Implication: more likely delivery when the browser writes scripts, executables, archives, or decoded content to user-writable or deceptive paths, spawns child processes, or the artifact later appears in execution telemetry; less concerning when output stays in a renderer cache or report directory with no suspicious reuse.\n\n- If the local browser, destination, or artifact evidence stays suspicious or unresolved, does related alert history show isolated automation or broader download activity on this user or host?\n  - Focus: related alerts for `host.id` and `user.id` in the last 48 hours, checking for sibling transfer tools, non-headless browser automation, or reuse of the same destinations across hosts.\n    - !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n    - !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden when the same user or host shows repeated delivery behavior across hosts or through sibling tools; keep narrow when both alert views stay within one recognized automation component.\n\n- Escalate when browser identity, command line, destinations, artifacts, or alert scope point to unauthorized headless retrieval or staging; close only when all evidence aligns with a recognized automation workflow; if mixed or incomplete, preserve and escalate.\n\n### False positive analysis\n\n- Server-side rendering, web testing, QA, or browser automation can legitimately start a headless browser with retrieval arguments. Confirm when `process.executable`, `process.parent.executable`, and the `dns.question.name` or `destination.ip` pattern all align with one automation component and no staged artifacts diverge from that workflow. If automation records are unavailable, require the same browser, parent, and destination pattern to recur across prior alerts.\n- Before creating an exception, build on `process.executable`, `process.parent.executable`, `process.code_signature.subject_name`, and `host.id` or `user.id`. Avoid exceptions on `process.name` alone, the \"--headless\" flag alone, or `host.id` alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse any temporary containment and document the `process.executable`, `process.parent.executable`, `process.command_line`, destination pattern from `dns.question.name` or `destination.ip`, and recurring `user.id` / `host.id` scope that proved the workflow. Create an exception only if that same pattern recurs consistently across prior alerts from this rule.\n- If suspicious but unconfirmed, first preserve the alert's `process.entity_id`, `process.command_line`, related `file.path` outputs, `file.origin_url` provenance, and any linked `dns.question.name`, `dns.resolved_ip`, or `destination.ip` values. Then apply reversible containment such as temporary egress blocks or tighter monitoring of the affected `user.id` or `host.id`. Escalate to host isolation only when the browser, network, or artifact evidence shows material delivery or staging risk.\n- If confirmed malicious, document the alert's `process.entity_id`, `process.command_line`, `process.parent.command_line`, written `file.path` artifacts, `process.hash.sha256`, and confirmed `dns.question.name` or `destination.ip` values before initiating response actions. Prefer endpoint isolation as the first containment step, weighing the host's role before isolating critical infrastructure such as servers, domain controllers, or build systems. If direct endpoint response is unavailable, escalate with the preserved artifact set to the team that can act.\n- After containment, review other `host.id` and `user.id` alerts for the same `dns.question.name`, `destination.ip`, or `process.executable` pattern before deleting artifacts or restoring access. Then block the malicious destinations and downloaded artifact hashes identified during the investigation, eradicate the scripts, archives, browsers, or persistence artifacts uncovered during the artifact and scope review, and remediate the launcher, automation component, or execution-control gap that allowed the headless browser to retrieve content.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.name : (\"chrome.exe\", \"msedge.exe\", \"brave.exe\", \"browser.exe\", \"dragon.exe\", \"vivaldi.exe\") and\n  process.args : \"--headless*\" and\n  process.args : (\"--dump-dom\", \"*http*\", \"data:text/html;base64,*\") and\n  process.parent.name :\n     (\"cmd.exe\", \"powershell.exe\", \"wscript.exe\", \"cscript.exe\", \"mshta.exe\", \"conhost.exe\", \"msiexec.exe\",\n      \"explorer.exe\", \"rundll32.exe\", \"winword.exe\", \"excel.exe\", \"onenote.exe\", \"hh.exe\", \"powerpnt.exe\", \"forfiles.exe\",\n      \"pcalua.exe\", \"wmiprvse.exe\") and\n  not process.executable : (\n        \"?:\\\\inetpub\\\\wwwroot\\\\*\\\\ext\\\\modules\\\\html2pdf\\\\bin\\\\chrome\\\\*\\\\chrome-win64\\\\chrome.exe\",\n        \"\\\\Device\\\\HarddiskVolume*\\\\inetpub\\\\wwwroot\\\\*\\\\ext\\\\modules\\\\html2pdf\\\\bin\\\\chrome\\\\*\\\\chrome-win64\\\\chrome.exe\"\n  )\n",
+        "references": [
+            "https://lolbas-project.github.io/lolbas/Binaries/Msedge/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "5f2f463e-6997-478c-8405-fb41cc283281",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide",
+            "Data Source: Windows",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Data Source: Sysmon",
+            "Data Source: Crowdstrike"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 208
+    },
+    "id": "5f2f463e-6997-478c-8405-fb41cc283281_208",
+    "type": "security-rule"
+}

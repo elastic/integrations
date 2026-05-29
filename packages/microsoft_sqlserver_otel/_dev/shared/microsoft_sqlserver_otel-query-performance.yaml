@@ -1,0 +1,378 @@
+# SQL Server OTel Query performance — query samples, top queries from logs
+# Deep-dive: What queries are running? CPU, reads, waits, blocking?
+
+dashboards:
+- id: microsoft_sqlserver_otel-query-performance
+  name: '[SQL Server OTel] Query performance'
+  description: Query samples and top queries from db.server.query_sample and db.server.top_query events.
+
+  settings:
+    margins: true
+    titles: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+
+  controls:
+  - type: options
+    label: Instance
+    data_view: logs-*
+    field: resource.attributes.service.instance.id
+
+  panels:
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: microsoft_sqlserver_otel-overview
+      - label: Memory & saturation
+        dashboard: microsoft_sqlserver_otel-memory-saturation
+      - label: Concurrency & errors
+        dashboard: microsoft_sqlserver_otel-concurrency-errors
+      - label: Database I/O
+        dashboard: microsoft_sqlserver_otel-database-io
+      - label: Query performance
+        dashboard: microsoft_sqlserver_otel-query-performance
+
+  - hide_title: true
+    size: {w: 16, h: 12}
+    markdown:
+      content: |
+        ## [SQL Server OTel] Query performance
+
+        This dashboard analyzes query-level observability from SQL Server receiver events:
+        - Query sample counts and session distribution
+        - CPU time, logical reads, elapsed time
+        - Blocking sessions and wait types
+        - Top queries by resource consumption
+
+  - title: Query events (last period)
+    hide_title: true
+    size: {w: 6, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM logs-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - STATS event_count = COUNT(*)
+      primary:
+        field: event_count
+        label: Query events
+        format:
+          type: number
+          compact: true
+
+  - title: Unique sessions
+    hide_title: true
+    size: {w: 5, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM logs-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE COALESCE(attributes.sqlserver.session_id, sqlserver.session_id) IS NOT NULL
+      - STATS unique_sessions = COUNT_DISTINCT(COALESCE(attributes.sqlserver.session_id, sqlserver.session_id))
+      primary:
+        field: unique_sessions
+        label: Sessions
+        format:
+          type: number
+          decimals: 0
+
+  - title: Blocked sessions
+    hide_title: true
+    size: {w: 5, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM logs-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE COALESCE(attributes.sqlserver.blocking_session_id, sqlserver.blocking_session_id) IS NOT NULL AND 
+        COALESCE(attributes.sqlserver.blocking_session_id, sqlserver.blocking_session_id) > 0
+      - STATS blocked_count = COUNT(*)
+      primary:
+        field: blocked_count
+        label: Blocked sessions
+        format:
+          type: number
+          decimals: 0
+
+  - title: Avg CPU time per query
+    hide_title: true
+    size: {w: 6, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM logs-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE COALESCE(attributes.sqlserver.cpu_time, sqlserver.cpu_time) IS NOT NULL
+      - STATS avg_cpu = AVG(COALESCE(attributes.sqlserver.cpu_time, sqlserver.cpu_time))
+      - EVAL avg_cpu_ms = avg_cpu * 1000
+      primary:
+        field: avg_cpu_ms
+        label: Avg CPU time (ms)
+        format:
+          type: number
+          decimals: 0
+          suffix: ' ms'
+
+  - title: Avg logical reads
+    hide_title: true
+    size: {w: 5, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM logs-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE COALESCE(attributes.sqlserver.logical_reads, sqlserver.logical_reads) IS NOT NULL
+      - STATS avg_reads = AVG(COALESCE(attributes.sqlserver.logical_reads, sqlserver.logical_reads))
+      primary:
+        field: avg_reads
+        label: Avg logical reads
+        format:
+          type: number
+          decimals: 0
+
+  - title: Median query elapsed time
+    hide_title: true
+    size: {w: 5, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM logs-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE COALESCE(attributes.sqlserver.total_elapsed_time, sqlserver.total_elapsed_time) IS NOT NULL
+      - STATS p50_elapsed = MEDIAN(COALESCE(attributes.sqlserver.total_elapsed_time, sqlserver.total_elapsed_time))
+      - EVAL p50_elapsed_ms = p50_elapsed * 1000
+      primary:
+        field: p50_elapsed_ms
+        label: P50 elapsed (ms)
+        format:
+          type: number
+          decimals: 0
+          suffix: ' ms'
+
+  - title: Query events over time
+    size: {w: 32, h: 8}
+    esql:
+      type: line
+      query:
+      - FROM logs-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - STATS event_count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), instance = 
+        COALESCE(resource.attributes.service.instance.id, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: event_count
+        label: Query events
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      legend:
+        visible: show
+        position: right
+
+  - title: Request status distribution
+    size: {w: 24, h: 12}
+    esql:
+      type: pie
+      query:
+      - FROM logs-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE COALESCE(attributes.sqlserver.request_status, sqlserver.request_status) IS NOT NULL
+      - STATS status_count = COUNT(*) BY status = COALESCE(attributes.sqlserver.request_status, sqlserver.request_status)
+      - SORT status_count DESC
+      - LIMIT 10
+      metrics:
+      - field: status_count
+      breakdowns:
+      - field: status
+        label: Request status
+      appearance:
+        donut: medium
+      legend:
+        visible: show
+
+  - title: Top wait types
+    size: {w: 24, h: 12}
+    esql:
+      type: bar
+      mode: unstacked
+      query:
+      - FROM logs-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE COALESCE(attributes.sqlserver.wait_type, sqlserver.wait_type) IS NOT NULL AND COALESCE(attributes.sqlserver.wait_type, 
+        sqlserver.wait_type) != ""
+      - STATS wait_count = COUNT(*) BY wait_type = COALESCE(attributes.sqlserver.wait_type, sqlserver.wait_type)
+      - SORT wait_count DESC
+      - LIMIT 10
+      dimension:
+        field: wait_type
+      metrics:
+      - field: wait_count
+        label: Count
+        format:
+          type: number
+          decimals: 0
+
+  - title: Top databases by query count
+    size: {w: 24, h: 12}
+    esql:
+      type: bar
+      mode: unstacked
+      query:
+      - FROM logs-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE COALESCE(attributes.db.namespace, db.namespace) IS NOT NULL
+      - STATS query_count = COUNT(*) BY db = COALESCE(attributes.db.namespace, db.namespace)
+      - SORT query_count DESC
+      - LIMIT 10
+      dimension:
+        field: db
+      metrics:
+      - field: query_count
+        label: Queries
+        format:
+          type: number
+          decimals: 0
+
+  - title: CPU time distribution over time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - FROM logs-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE COALESCE(attributes.sqlserver.cpu_time, sqlserver.cpu_time) IS NOT NULL
+      - STATS avg_cpu = AVG(COALESCE(attributes.sqlserver.cpu_time, sqlserver.cpu_time)), p95_cpu = 
+        PERCENTILE(COALESCE(attributes.sqlserver.cpu_time, sqlserver.cpu_time), 95.0) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, 
+        ?_tend), instance = COALESCE(resource.attributes.service.instance.id, "unknown")
+      - EVAL avg_cpu_ms = avg_cpu * 1000, p95_cpu_ms = p95_cpu * 1000
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: avg_cpu_ms
+        label: Avg CPU (ms)
+        format:
+          type: number
+          decimals: 0
+      - field: p95_cpu_ms
+        label: P95 CPU (ms)
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      appearance:
+        y_left_axis:
+          title: CPU time (ms)
+      legend:
+        visible: show
+        position: right
+
+  - title: Logical reads over time
+    size: {w: 48, h: 12}
+    esql:
+      type: line
+      query:
+      - FROM logs-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE COALESCE(attributes.sqlserver.logical_reads, sqlserver.logical_reads) IS NOT NULL
+      - STATS avg_reads = AVG(COALESCE(attributes.sqlserver.logical_reads, sqlserver.logical_reads)) BY time_bucket = BUCKET(@timestamp, 20,
+        ?_tstart, ?_tend), instance = COALESCE(resource.attributes.service.instance.id, "unknown")
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: avg_reads
+        label: Avg logical reads
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: instance
+      legend:
+        visible: show
+        position: right
+
+  - title: Top queries by CPU time (query hash)
+    size: {w: 48, h: 15}
+    esql:
+      type: datatable
+      query:
+      - FROM logs-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE COALESCE(attributes.sqlserver.cpu_time, sqlserver.cpu_time) IS NOT NULL
+      - STATS total_cpu = SUM(COALESCE(attributes.sqlserver.cpu_time, sqlserver.cpu_time)), total_reads = 
+        SUM(COALESCE(attributes.sqlserver.logical_reads, sqlserver.logical_reads)), query_count = COUNT(*) BY query_hash = 
+        COALESCE(attributes.sqlserver.query_hash, sqlserver.query_hash), db = COALESCE(attributes.db.namespace, db.namespace, "unknown")
+      - SORT total_cpu DESC
+      - LIMIT 20
+      breakdowns:
+      - field: query_hash
+        label: Query hash
+      - field: db
+        label: Database
+      metrics:
+      - field: total_cpu
+        label: Total CPU (s)
+        format:
+          type: number
+          decimals: 0
+      - field: total_reads
+        label: Total logical reads
+        format:
+          type: number
+          decimals: 0
+      - field: query_count
+        label: Samples
+        format:
+          type: number
+          decimals: 0
+
+  - title: Recent query samples with blocking
+    size: {w: 48, h: 15}
+    esql:
+      type: datatable
+      query:
+      - FROM logs-sqlserverreceiver.otel-*
+      - WHERE data_stream.dataset == "sqlserverreceiver.otel"
+      - WHERE COALESCE(attributes.sqlserver.blocking_session_id, sqlserver.blocking_session_id) IS NOT NULL AND 
+        COALESCE(attributes.sqlserver.blocking_session_id, sqlserver.blocking_session_id) > 0
+      - SORT @timestamp DESC
+      - LIMIT 50
+      breakdowns:
+      - field: "@timestamp"
+        label: Time
+      - field: resource.attributes.service.instance.id
+        label: Instance
+      - field: attributes.db.namespace
+        label: Database
+      - field: attributes.sqlserver.session_id
+        label: Session
+      - field: attributes.sqlserver.blocking_session_id
+        label: Blocked by
+      - field: attributes.sqlserver.wait_type
+        label: Wait type
+      metrics:
+      - field: attributes.sqlserver.cpu_time
+        label: CPU (s)
+        format:
+          type: number
+          decimals: 0
+      - field: attributes.sqlserver.logical_reads
+        label: Logical reads
+        format:
+          type: number
+          decimals: 0

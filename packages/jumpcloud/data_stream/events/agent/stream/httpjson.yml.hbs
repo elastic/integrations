@@ -48,8 +48,8 @@ request.transforms:
   - set:
       target: body.start_time
       value: >-
-        [[ if (gt (formatDate (parseDate .cursor.timestamp) "RFC3339") (formatDate (now (parseDuration "-{{source_lag_time}}")) "RFC3339"))
-          ]][[ formatDate (now (parseDuration "-{{source_lag_time}}")) "RFC3339" ]]
+        [[ if (gt (formatDate (parseDate .cursor.timestamp "RFC3339Nano") "RFC3339") (formatDate (now (parseDuration "-{{source_lag_time}}")) "RFC3339"))
+          ]][[ formatDate (now (parseDuration "-{{source_lag_time}}")) "RFC3339" -]]
         [[else
           ]][[.cursor.timestamp]][[end]]
       default: '[[ formatDate (now (parseDuration "{{starting_point}}")) "RFC3339" ]]'

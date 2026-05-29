@@ -1,0 +1,653 @@
+dashboards:
+  - id: ibmmq_otel-resources
+    name: '[IBM MQ OTel] Resources & Performance'
+    minimum_kibana_version: '8.18.0'
+    description: >-
+      Resource utilization and log subsystem performance for IBM MQ queue managers.
+      Covers log write latency, filesystem capacity, CPU load, RAM usage,
+      and log I/O efficiency.
+    time_range:
+      from: "now-1h"
+      to: "now"
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+    filters:
+      - field: data_stream.dataset
+        equals: ibmmq.otel
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: ibmmq_otel-overview
+            - label: Message Traffic
+              dashboard: ibmmq_otel-message-traffic
+            - label: Error Analysis
+              dashboard: ibmmq_otel-error-analysis
+            - label: Resources & Performance
+              dashboard: ibmmq_otel-resources
+
+      # ─── Dashboard Overview Panel ────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [IBM MQ OTel] Resources & Performance
+
+            This dashboard provides detailed infrastructure monitoring:
+            - Log write latency and peak latency tracking
+            - Log I/O efficiency (logical vs physical writes)
+            - Filesystem capacity for log, queue manager, errors, and trace areas
+            - Log space utilization (primary and workload)
+            - CPU load averages and host vs queue manager CPU
+            - RAM availability and queue manager memory estimate
+
+      # ─── KPI Row 1: Gauges ─────────────────────────────────────────────
+      - title: Log FS Free
+        size: {w: 8, h: 12}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_log_file_system_free_space_percentage IS NOT NULL
+            - STATS free_pct = AVG(LAST_OVER_TIME(ibmmq_qmgr_log_file_system_free_space_percentage))
+            - EVAL min_val = 0, max_val = 100
+          metric:
+            field: free_pct
+            label: Log FS Free
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+          minimum:
+            field: min_val
+          maximum:
+            field: max_val
+          color:
+            range_type: number
+            range_min: 0
+            range_max: 100
+            thresholds:
+              - up_to: 10
+                color: '#cc5642'
+              - up_to: 30
+                color: '#d6bf57'
+              - up_to: 100
+                color: '#54b399'
+          appearance:
+            shape: arc
+
+      - title: QMgr FS Free
+        size: {w: 8, h: 12}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_queue_manager_file_system_free_space_percentage IS NOT NULL
+            - STATS free_pct = AVG(LAST_OVER_TIME(ibmmq_qmgr_queue_manager_file_system_free_space_percentage))
+            - EVAL min_val = 0, max_val = 100
+          metric:
+            field: free_pct
+            label: QMgr FS Free
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+          minimum:
+            field: min_val
+          maximum:
+            field: max_val
+          color:
+            range_type: number
+            range_min: 0
+            range_max: 100
+            thresholds:
+              - up_to: 10
+                color: '#cc5642'
+              - up_to: 30
+                color: '#d6bf57'
+              - up_to: 100
+                color: '#54b399'
+          appearance:
+            shape: arc
+
+      - title: CPU 1m Load
+        size: {w: 8, h: 12}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_cpu_load_one_minute_average_percentage IS NOT NULL
+            - STATS cpu_pct = AVG(LAST_OVER_TIME(ibmmq_qmgr_cpu_load_one_minute_average_percentage))
+            - EVAL min_val = 0, max_val = 100
+          metric:
+            field: cpu_pct
+            label: CPU 1m Load
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+          minimum:
+            field: min_val
+          maximum:
+            field: max_val
+          color:
+            range_type: number
+            range_min: 0
+            range_max: 100
+            thresholds:
+              - up_to: 70
+                color: '#54b399'
+              - up_to: 85
+                color: '#d6bf57'
+              - up_to: 100
+                color: '#cc5642'
+          appearance:
+            shape: arc
+
+      - title: RAM Free
+        size: {w: 8, h: 12}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_ram_free_percentage IS NOT NULL
+            - STATS ram_pct = AVG(LAST_OVER_TIME(ibmmq_qmgr_ram_free_percentage))
+            - EVAL min_val = 0, max_val = 100
+          metric:
+            field: ram_pct
+            label: RAM Free
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+          minimum:
+            field: min_val
+          maximum:
+            field: max_val
+          color:
+            range_type: number
+            range_min: 0
+            range_max: 100
+            thresholds:
+              - up_to: 10
+                color: '#cc5642'
+              - up_to: 20
+                color: '#d6bf57'
+              - up_to: 100
+                color: '#54b399'
+          appearance:
+            shape: arc
+
+      # ─── Log Performance ────────────────────────────────────────────────
+      - title: Log Performance
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Log Subsystem Performance'
+
+      - title: Log Write Latency Over Time
+        description: Log write latency directly impacts persistent message throughput. Sub-millisecond is healthy; above 10ms is critical.
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_log_write_latency_seconds IS NOT NULL
+            - >-
+              STATS latency_s = MAX(LAST_OVER_TIME(ibmmq_qmgr_log_write_latency_seconds))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.qmgr
+            - EVAL latency_ms = ROUND(latency_s * 1000, 3)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: latency_ms
+              label: Log Write Latency
+              format:
+                type: number
+                decimals: 3
+                suffix: " ms"
+          breakdown:
+            field: attributes.qmgr
+          legend:
+            visible: show
+            position: right
+
+      - title: Slowest Write Since Restart
+        description: High-water mark for worst-case log write latency since queue manager restart.
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_log_slowest_write_since_restart_seconds IS NOT NULL
+            - >-
+              STATS slowest_s = MAX(LAST_OVER_TIME(ibmmq_qmgr_log_slowest_write_since_restart_seconds))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.qmgr
+            - EVAL slowest_ms = ROUND(slowest_s * 1000, 2)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: slowest_ms
+              label: Slowest Write
+              format:
+                type: number
+                decimals: 2
+                suffix: " ms"
+          breakdown:
+            field: attributes.qmgr
+          legend:
+            visible: show
+            position: right
+
+      - title: Log I/O — Logical vs Physical Write Rate
+        description: Logical exceeding physical writes indicates efficient log buffering. A ratio near 1:1 means no buffering benefit.
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              logical = SUM(RATE(ibmmq_qmgr_log_logical_written_bytes_total)),
+              physical = SUM(RATE(ibmmq_qmgr_log_physical_written_bytes_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: logical
+              label: Logical Writes
+              format:
+                type: bytes
+                suffix: "/s"
+            - field: physical
+              label: Physical Writes
+              format:
+                type: bytes
+                suffix: "/s"
+          legend:
+            visible: show
+            position: right
+
+      - title: Log Write Size Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_log_write_size_bytes IS NOT NULL
+            - >-
+              STATS write_size = AVG(AVG_OVER_TIME(ibmmq_qmgr_log_write_size_bytes))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.qmgr
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: write_size
+              label: Avg Write Size
+              format:
+                type: bytes
+          breakdown:
+            field: attributes.qmgr
+          legend:
+            visible: show
+            position: right
+
+      # ─── Filesystem ─────────────────────────────────────────────────────
+      - title: Filesystem
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Filesystem Utilization'
+
+      - title: All Filesystem Free Space Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              log_fs = AVG(LAST_OVER_TIME(ibmmq_qmgr_log_file_system_free_space_percentage)),
+              qmgr_fs = AVG(LAST_OVER_TIME(ibmmq_qmgr_queue_manager_file_system_free_space_percentage)),
+              errors_fs = AVG(LAST_OVER_TIME(ibmmq_qmgr_errors_file_system_free_space_percentage)),
+              trace_fs = AVG(LAST_OVER_TIME(ibmmq_qmgr_trace_file_system_free_space_percentage))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: log_fs
+              label: Log FS
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: qmgr_fs
+              label: QMgr FS
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: errors_fs
+              label: Errors FS
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: trace_fs
+              label: Trace FS
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+          legend:
+            visible: show
+            position: right
+
+      - title: Log Space Utilization Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              primary_pct = AVG(LAST_OVER_TIME(ibmmq_qmgr_log_primary_space_in_use_percentage)),
+              workload_pct = AVG(LAST_OVER_TIME(ibmmq_qmgr_log_workload_primary_space_utilization_percentage))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: primary_pct
+              label: Primary Space Used
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: workload_pct
+              label: Workload Utilization
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+          legend:
+            visible: show
+            position: right
+
+      - title: Log Filesystem Usage by Queue Manager
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_log_file_system_in_use_bytes IS NOT NULL
+            - >-
+              STATS in_use = MAX(LAST_OVER_TIME(ibmmq_qmgr_log_file_system_in_use_bytes))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.qmgr
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: in_use
+              label: Log FS In Use
+              format:
+                type: bytes
+          breakdown:
+            field: attributes.qmgr
+          legend:
+            visible: show
+            position: right
+
+      - title: Log Active Space by Queue Manager
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_log_in_use_bytes IS NOT NULL
+            - >-
+              STATS log_in_use = MAX(LAST_OVER_TIME(ibmmq_qmgr_log_in_use_bytes))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.qmgr
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: log_in_use
+              label: Log Active Space
+              format:
+                type: bytes
+          breakdown:
+            field: attributes.qmgr
+          legend:
+            visible: show
+            position: right
+
+      # ─── Compute ─────────────────────────────────────────────────────────
+      - title: Compute
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Compute Resources'
+
+      - title: CPU Load Averages Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              load_1m = AVG(AVG_OVER_TIME(ibmmq_qmgr_cpu_load_one_minute_average_percentage)),
+              load_5m = AVG(AVG_OVER_TIME(ibmmq_qmgr_cpu_load_five_minute_average_percentage)),
+              load_15m = AVG(AVG_OVER_TIME(ibmmq_qmgr_cpu_load_fifteen_minute_average_percentage))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: load_1m
+              label: 1 min
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: load_5m
+              label: 5 min
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: load_15m
+              label: 15 min
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+          legend:
+            visible: show
+            position: right
+
+      - title: Host vs Queue Manager CPU Over Time
+        description: Compare total host CPU usage with the estimated CPU consumed by the queue manager process.
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              host_system = AVG(AVG_OVER_TIME(ibmmq_qmgr_system_cpu_time_percentage)),
+              host_user = AVG(AVG_OVER_TIME(ibmmq_qmgr_user_cpu_time_percentage)),
+              qmgr_system = AVG(AVG_OVER_TIME(ibmmq_qmgr_system_cpu_time_estimate_for_queue_manager_percentage)),
+              qmgr_user = AVG(AVG_OVER_TIME(ibmmq_qmgr_user_cpu_time_estimate_for_queue_manager_percentage))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: host_system
+              label: Host System CPU
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: host_user
+              label: Host User CPU
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: qmgr_system
+              label: QMgr System CPU
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: qmgr_user
+              label: QMgr User CPU
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+          legend:
+            visible: show
+            position: right
+
+      - title: RAM Free & Queue Manager RAM Estimate
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_ram_free_percentage IS NOT NULL
+            - >-
+              STATS ram_free = AVG(AVG_OVER_TIME(ibmmq_qmgr_ram_free_percentage))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.qmgr
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: ram_free
+              label: RAM Free
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+          breakdown:
+            field: attributes.qmgr
+          legend:
+            visible: show
+            position: right
+
+      - title: Queue Manager RAM Estimate
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-ibmmq.otel-*
+            - WHERE ibmmq_qmgr_ram_usage_estimate_for_queue_manager_bytes IS NOT NULL
+            - >-
+              STATS qmgr_ram = MAX(LAST_OVER_TIME(ibmmq_qmgr_ram_usage_estimate_for_queue_manager_bytes))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.qmgr
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: qmgr_ram
+              label: QMgr RAM
+              format:
+                type: bytes
+          breakdown:
+            field: attributes.qmgr
+          legend:
+            visible: show
+            position: right
+
+      # ─── Resource Summary ────────────────────────────────────────────────
+      - title: Resource Summary by Queue Manager
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-ibmmq.otel-*
+            - >-
+              STATS
+              log_latency_s = MAX(LAST_OVER_TIME(ibmmq_qmgr_log_write_latency_seconds)),
+              log_fs_free = MAX(LAST_OVER_TIME(ibmmq_qmgr_log_file_system_free_space_percentage)),
+              qmgr_fs_free = MAX(LAST_OVER_TIME(ibmmq_qmgr_queue_manager_file_system_free_space_percentage)),
+              errors_fs_free = MAX(LAST_OVER_TIME(ibmmq_qmgr_errors_file_system_free_space_percentage)),
+              cpu_1m = MAX(LAST_OVER_TIME(ibmmq_qmgr_cpu_load_one_minute_average_percentage)),
+              ram_free = MAX(LAST_OVER_TIME(ibmmq_qmgr_ram_free_percentage)),
+              qmgr_ram = MAX(LAST_OVER_TIME(ibmmq_qmgr_ram_usage_estimate_for_queue_manager_bytes))
+              BY attributes.qmgr
+            - EVAL log_latency_ms = ROUND(log_latency_s * 1000, 3)
+            - KEEP attributes.qmgr, log_latency_ms, log_fs_free, qmgr_fs_free, errors_fs_free, cpu_1m, ram_free, qmgr_ram
+            - SORT log_fs_free ASC
+            - LIMIT 50
+          metrics:
+            - field: attributes.qmgr
+              label: Queue Manager
+            - field: log_latency_ms
+              label: Log Latency (ms)
+              format:
+                type: number
+                decimals: 3
+            - field: log_fs_free
+              label: Log FS Free %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: qmgr_fs_free
+              label: QMgr FS Free %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: errors_fs_free
+              label: Errors FS Free %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: cpu_1m
+              label: CPU 1m %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: ram_free
+              label: RAM Free %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: qmgr_ram
+              label: QMgr RAM
+              format:
+                type: bytes

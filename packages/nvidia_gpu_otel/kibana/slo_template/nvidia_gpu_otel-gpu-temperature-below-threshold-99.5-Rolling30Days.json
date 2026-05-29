@@ -1,0 +1,55 @@
+{
+    "id": "nvidia_gpu_otel-gpu-temperature-below-threshold-99.5-Rolling30Days",
+    "type": "slo_template",
+    "attributes": {
+        "name": "[NVIDIA GPU OTel] GPU temperature below threshold 99.5% rolling 30 days",
+        "description": "This SLO tracks that GPU core temperature remains below the 83°C thermal throttling threshold for at least 99.5% of 5-minute time intervals over a rolling 30-day period, ensuring GPUs operate within safe thermal limits and avoid performance-degrading throttling.",
+        "indicator": {
+            "type": "sli.metric.timeslice",
+            "params": {
+                "index": "metrics-*",
+                "filter": "data_stream.dataset: \"nvidia_gpu.otel\"",
+                "metric": {
+                    "metrics": [
+                        {
+                            "name": "A",
+                            "aggregation": "max",
+                            "field": "DCGM_FI_DEV_GPU_TEMP",
+                            "filter": ""
+                        }
+                    ],
+                    "equation": "A",
+                    "comparator": "LT",
+                    "threshold": 83
+                },
+                "timestampField": "@timestamp"
+            }
+        },
+        "budgetingMethod": "timeslices",
+        "timeWindow": {
+            "duration": "30d",
+            "type": "rolling"
+        },
+        "objective": {
+            "target": 0.995,
+            "timesliceTarget": 0.95,
+            "timesliceWindow": "5m"
+        },
+        "tags": [
+            "nvidia_gpu",
+            "otel",
+            "temperature",
+            "infrastructure"
+        ],
+        "groupBy": [
+            "resource.attributes.host.name"
+        ],
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "nvidia_gpu_otel-overview"
+                }
+            ]
+        }
+    }
+}

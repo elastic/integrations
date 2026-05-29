@@ -1,0 +1,517 @@
+dashboards:
+- id: redisenterprise_otel-proxy-listener
+  name: '[Redis Enterprise OTel] Proxy & Listener'
+  description: 'DMC proxy resource usage and listener-level performance metrics for Redis Enterprise endpoints: proxy CPU, memory, file descriptors, per-endpoint latency, throughput, and authentication activity.'
+  time_range:
+    from: now-15m
+    to: now
+  minimum_kibana_version: 8.14.0
+  filters:
+  - field: data_stream.dataset
+    equals: redisenterprise.otel
+  settings:
+    margins: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+  controls:
+  - type: options
+    label: Cluster
+    data_view: metrics-*
+    field: cluster
+  - type: options
+    label: Node
+    data_view: metrics-*
+    field: node
+  - type: options
+    label: Database
+    data_view: metrics-*
+    field: bdb
+  panels:
+  - title: Navigation
+    size:
+      w: 48
+      h: 2
+    links:
+      layout: horizontal
+      items:
+      - label: Cluster Overview
+        dashboard: redisenterprise_otel-overview
+      - label: Node Health
+        dashboard: redisenterprise_otel-node-health
+      - label: Database Performance
+        dashboard: redisenterprise_otel-database-performance
+      - label: Proxy & Listener
+        dashboard: redisenterprise_otel-proxy-listener
+      - label: Shard Diagnostics
+        dashboard: redisenterprise_otel-shard-diagnostics
+  - hide_title: true
+    size:
+      w: 16
+      h: 12
+    markdown:
+      content: '## [Redis Enterprise OTel] Proxy & Listener
+
+
+        Data-path monitoring for DMC proxies and listener endpoints:
+
+        - Proxy CPU utilisation and process memory
+
+        - File descriptor usage vs limits
+
+        - Per-endpoint latency and throughput breakdown
+
+        - Authentication errors and command counts
+
+        - Connection limit violations and active connections
+
+        - RESP protocol version distribution
+
+        '
+  - title: Avg Proxy CPU
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE dmcproxy_process_cpu_usage_percent IS NOT NULL
+      - STATS avg_cpu = AVG(dmcproxy_process_cpu_usage_percent)
+      primary:
+        field: avg_cpu
+        label: Avg Proxy CPU
+        format:
+          type: number
+          decimals: 1
+          suffix: '%'
+  - title: Total Proxy Memory
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE dmcproxy_process_resident_memory_bytes IS NOT NULL
+      - STATS rss = AVG(dmcproxy_process_resident_memory_bytes) BY node, proxy
+      - STATS total_rss = SUM(rss)
+      primary:
+        field: total_rss
+        label: Total Proxy Memory
+        format:
+          type: bytes
+  - title: FD Utilisation
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE dmcproxy_process_open_fds IS NOT NULL
+      - STATS open_fds = AVG(dmcproxy_process_open_fds), max_fds = AVG(dmcproxy_process_max_fds) BY node, proxy
+      - STATS total_open = SUM(open_fds), total_max = SUM(max_fds)
+      - EVAL fd_pct = ROUND((total_open / total_max) * 100, 1)
+      primary:
+        field: fd_pct
+        label: FD Utilisation
+        format:
+          type: number
+          decimals: 1
+          suffix: '%'
+  - title: Auth Errors
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE listener_auth_errors IS NOT NULL
+      - STATS total_auth_errors = SUM(listener_auth_errors)
+      primary:
+        field: total_auth_errors
+        label: Auth Errors
+        format:
+          type: number
+          compact: true
+  - title: Total Listener Requests
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE listener_total_req IS NOT NULL
+      - STATS total_req = SUM(listener_total_req)
+      primary:
+        field: total_req
+        label: Total Requests
+        format:
+          type: number
+          compact: true
+  - title: Avg Listener Latency
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE listener_acc_latency IS NOT NULL
+      - STATS avg_latency = AVG(listener_acc_latency)
+      - EVAL avg_latency_ms = avg_latency * 1000
+      primary:
+        field: avg_latency_ms
+        label: Listener Latency
+        format:
+          type: number
+          decimals: 3
+          suffix: ' ms'
+  - title: Max Conns Exceeded
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE listener_max_connections_exceeded IS NOT NULL
+      - STATS total_exceeded = SUM(listener_max_connections_exceeded)
+      primary:
+        field: total_exceeded
+        label: Conns Exceeded
+        format:
+          type: number
+          compact: true
+  - title: Active Listener Conns
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE listener_conns IS NOT NULL
+      - STATS avg_conns = AVG(listener_conns) BY bdb, endpoint
+      - STATS total_conns = SUM(avg_conns)
+      primary:
+        field: total_conns
+        label: Active Connections
+        format:
+          type: number
+          compact: true
+  - hide_title: true
+    size:
+      w: 48
+      h: 3
+    markdown:
+      content: '## DMC Proxy'
+  - title: Proxy CPU Over Time by Node
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE dmcproxy_process_cpu_usage_percent IS NOT NULL
+      - STATS cpu_pct = AVG(dmcproxy_process_cpu_usage_percent) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: cpu_pct
+        label: CPU %
+        format:
+          type: number
+          decimals: 1
+          suffix: '%'
+      breakdown:
+        field: node
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: CPU Usage %
+  - title: Proxy Resident Memory Over Time by Node
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE dmcproxy_process_resident_memory_bytes IS NOT NULL
+      - STATS rss = AVG(dmcproxy_process_resident_memory_bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: rss
+        label: Resident Memory
+        format:
+          type: bytes
+      breakdown:
+        field: node
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Resident Memory (bytes)
+  - title: Proxy File Descriptor Usage Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE dmcproxy_process_open_fds IS NOT NULL
+      - STATS open_fds = AVG(dmcproxy_process_open_fds), max_fds = AVG(dmcproxy_process_max_fds) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: open_fds
+        label: Open FDs
+        format:
+          type: number
+          decimals: 0
+      - field: max_fds
+        label: Max FDs
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: node
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: File Descriptors
+  - title: Proxy Virtual Memory Over Time by Node
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE dmcproxy_process_virtual_memory_bytes IS NOT NULL
+      - STATS virt = AVG(dmcproxy_process_virtual_memory_bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), node
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: virt
+        label: Virtual Memory
+        format:
+          type: bytes
+      breakdown:
+        field: node
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Virtual Memory (bytes)
+  - hide_title: true
+    size:
+      w: 48
+      h: 3
+    markdown:
+      content: '## Listener Performance'
+  - title: Listener Latency Over Time by Database
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE listener_acc_latency IS NOT NULL
+      - STATS latency = AVG(listener_acc_latency) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), bdb
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: latency
+        label: Latency (s)
+        format:
+          type: number
+          decimals: 5
+          suffix: ' s'
+      breakdown:
+        field: bdb
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Accumulated Latency (s)
+  - title: Listener Throughput Over Time by Database
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE listener_total_req IS NOT NULL
+      - STATS total_req = AVG(listener_total_req) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), bdb
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: total_req
+        label: Requests
+        format:
+          type: number
+          compact: true
+      breakdown:
+        field: bdb
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Requests / sec
+  - title: Auth Errors Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: bar
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE listener_auth_errors IS NOT NULL
+      - STATS auth_errors = SUM(listener_auth_errors) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), bdb
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: auth_errors
+        label: Auth Errors
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: bdb
+      color:
+        palette: eui_amsterdam_color_blind
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Auth Errors
+  - title: Connection Limit Violations Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: bar
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE listener_max_connections_exceeded IS NOT NULL
+      - STATS exceeded = SUM(listener_max_connections_exceeded) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), bdb
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: exceeded
+        label: Connections Exceeded
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: bdb
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Connections Exceeded
+  - hide_title: true
+    size:
+      w: 48
+      h: 3
+    markdown:
+      content: '## Detail'
+  - title: Listener Detail
+    size:
+      w: 48
+      h: 15
+    esql:
+      type: datatable
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE listener_total_req IS NOT NULL
+      - STATS `Latency` = AVG(listener_acc_latency), `Read Latency` = AVG(listener_acc_read_latency), `Write Latency` = AVG(listener_acc_write_latency), `Total Req` = SUM(listener_total_req), `Read Req` = SUM(listener_read_req), `Write Req` = SUM(listener_write_req), Connections = AVG(listener_conns), `Auth Errors` = SUM(listener_auth_errors), `Max Conn Exceeded` = SUM(listener_max_connections_exceeded) BY bdb, endpoint, node, port
+      - EVAL `Latency` = COALESCE(`Latency`, 0.0), `Read Latency` = COALESCE(`Read Latency`, 0.0), `Write Latency` = COALESCE(`Write Latency`, 0.0), `Total Req` = COALESCE(`Total Req`, 0), `Read Req` = COALESCE(`Read Req`, 0), `Write Req` = COALESCE(`Write Req`, 0), Connections = COALESCE(Connections, 0), `Auth Errors` = COALESCE(`Auth Errors`, 0), `Max Conn Exceeded` = COALESCE(`Max Conn Exceeded`, 0)
+      - SORT `Total Req` DESC
+      - LIMIT 100
+      breakdowns:
+      - field: bdb
+        label: Database
+      - field: endpoint
+        label: Endpoint
+      - field: node
+        label: Node
+      - field: port
+        label: Port
+      metrics:
+      - field: Latency
+        label: Latency (s)
+        format:
+          type: number
+          decimals: 5
+      - field: Total Req
+        label: Total Requests
+        format:
+          type: number
+          compact: true
+      - field: Read Req
+        label: Read Req
+        format:
+          type: number
+          compact: true
+      - field: Write Req
+        label: Write Req
+        format:
+          type: number
+          compact: true
+      - field: Connections
+        label: Conns
+        format:
+          type: number
+          decimals: 0
+      - field: Auth Errors
+        label: Auth Err
+        format:
+          type: number
+          decimals: 0

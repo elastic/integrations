@@ -17,7 +17,11 @@ rules:
             - "application/json"
         body: |-
           {"token_type":"Bearer","expires_in":3599,"ext_expires_in":3599,"access_token":"test-access-token"}
-  # data: checks that the first page is requested, the second page link is followed, a new request (empty resonse) may be done to be fully up to date, then no new request for a while.
+  # data: checks that the first page is requested with a broken skiptoken
+  # (double-quoted dates — Microsoft Graph beta API defect), the cleaned
+  # second page link is followed, the third page link (clean skiptoken with
+  # padding) is followed, and a new request (empty response) completes the
+  # time range.
   - path: /beta/admin/exchange/tracing/messageTraces
     methods: [GET]
     request_headers:
@@ -34,7 +38,7 @@ rules:
         body: |-
           {
             "@odata.context": "https://graph.microsoft.com/beta/$metadata#admin/exchange/tracing/messageTraces",
-            "@odata.nextLink": "http://svc-graph-api:8080/beta/admin/exchange/tracing/messageTraces?$skiptoken=eyJTdGFydERhdGUiOiIyMDI1LTExLTI3VDE0OjE4OjM3LjYwNzAzOTBaIiwiRW5kRGF0ZSI6IjIwMjUtMTItMDJUMDU6MzQ6MTIuMzczMDAwMFoiLCJTdGFydGluZ1JlY2lwaWVudEFkZHJlc3MiOiJrQGVsYXN0aWM1OTUub25taWNyb3NvZnQuY29tIiwiUmVzdWx0U2l6ZSI6IjQifQ==",
+            "@odata.nextLink": "http://svc-graph-api:8080/beta/admin/exchange/tracing/messageTraces?$skiptoken=eyJTdGFydERhdGUiOiJcIjIwMjUtMTEtMjdUMTQ6MTg6MzcuNjA3MDM5MFpcIiIsIkVuZERhdGUiOiJcIjIwMjUtMTItMDJUMDU6MzQ6MTIuMzczMDAwMFpcIiIsIlN0YXJ0aW5nUmVjaXBpZW50QWRkcmVzcyI6ImtAZWxhc3RpYzU5NS5vbm1pY3Jvc29mdC5jb20iLCJSZXN1bHRTaXplIjoiNCJ9",
             "value": [
               {"id":"ef9fe88a-8090-431e-8e32-0bb4e5a123f0","messageId":"<HCWQQ8CZ5ZX7.PYAQ1TEP85FR@2ijrkiv53719mlz>","status":"delivered","receivedDateTime":"2025-12-07T10:55:04.455Z","recipientAddress":"G@Elastic595.onmicrosoft.com","senderAddress":"MSSecurity-noreply@microsoft.com","subject":"Your weekly PIM digest for Elastic (ID: 2a66cc39-7e6b-48c7-9b0a-b9960f0150e4)","size":327283,"fromIP":"2a02:cf41:cf7a:429f:643d:3f00:7aa0:8c1f","toIP":""},
               {"id":"1027db27-3572-40e5-adb6-5ad5671a822f","messageId":"<U4U3Y2Y07N1N.R867ZA7MFBES@x5crlz184405uix>","status":"delivered","receivedDateTime":"2025-12-07T10:55:03.203Z","recipientAddress":"k@Elastic595.onmicrosoft.com","senderAddress":"MSSecurity-noreply@microsoft.com","subject":"Your weekly PIM digest for Elastic (ID: 2a66cc39-7e6b-48c7-9b0a-b9960f0150e4)","size":327401,"fromIP":"2a02:cf47:b5a9:cce6:efe5:3af4:16c:ebbd","toIP":""},
@@ -51,13 +55,36 @@ rules:
             "@odata.context": "https://graph.microsoft.com/beta/$metadata#admin/exchange/tracing/messageTraces",
             "value": []
           }
+  # page 2: matched after the broken skiptoken is cleaned (values unquoted, keys reordered).
   - path: /beta/admin/exchange/tracing/messageTraces
     methods: [GET]
     request_headers:
       Authorization:
         - "Bearer test-access-token"
     query_params:
-      $skiptoken: "eyJTdGFydERhdGUiOiIyMDI1LTExLTI3VDE0OjE4OjM3LjYwNzAzOTBaIiwiRW5kRGF0ZSI6IjIwMjUtMTItMDJUMDU6MzQ6MTIuMzczMDAwMFoiLCJTdGFydGluZ1JlY2lwaWVudEFkZHJlc3MiOiJrQGVsYXN0aWM1OTUub25taWNyb3NvZnQuY29tIiwiUmVzdWx0U2l6ZSI6IjQifQ=="
+      $skiptoken: "eyJFbmREYXRlIjoiMjAyNS0xMi0wMlQwNTozNDoxMi4zNzMwMDAwWiIsIlJlc3VsdFNpemUiOiI0IiwiU3RhcnREYXRlIjoiMjAyNS0xMS0yN1QxNDoxODozNy42MDcwMzkwWiIsIlN0YXJ0aW5nUmVjaXBpZW50QWRkcmVzcyI6ImtAZWxhc3RpYzU5NS5vbm1pY3Jvc29mdC5jb20ifQ=="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "@odata.context": "https://graph.microsoft.com/beta/$metadata#admin/exchange/tracing/messageTraces",
+            "@odata.nextLink": "http://svc-graph-api:8080/beta/admin/exchange/tracing/messageTraces?$skiptoken=eyJTdGFydERhdGUiOiIyMDI1LTExLTI3VDE0OjE4OjM3LjYwNzAzOTBaIiwiRW5kRGF0ZSI6IjIwMjUtMTItMDJUMDU6MzQ6MTIuMzczMDAwMFoiLCJTdGFydGluZ1JlY2lwaWVudEFkZHJlc3MiOiJncmVnY3Jpc3RAZWxhc3RpYzU5NS5vbm1pY3Jvc29mdC5jb20iLCJSZXN1bHRTaXplIjoiNCJ9==",
+            "value": [
+              {"id":"21043660-ed82-4361-84f6-64b636e4540c","messageId":"<GKOZ8REPH7BB.X3Y4IO0NW4CY@2io7f7545525rcf>","status":"delivered","receivedDateTime":"2025-12-02T05:34:11.587Z","recipientAddress":"cberkhout@elastic595.onmicrosoft.com","senderAddress":"MSSecurity-noreply@microsoft.com","subject":"Microsoft Entra ID Protection Weekly Digest","size":295688,"fromIP":"2a02:cf41:d675:a90d:c0ef:b23f:f053:947e","toIP":""},
+              {"id":"86b1a4da-fe88-4610-934c-cd9e4ecdf7d6","messageId":"<X7N66Q68OVNH.1T8JFAOO39LB@7ojcevr65724okb>","status":"delivered","receivedDateTime":"2025-12-02T05:34:11.218Z","recipientAddress":"gregcrist@elastic595.onmicrosoft.com","senderAddress":"MSSecurity-noreply@microsoft.com","subject":"Microsoft Entra ID Protection Weekly Digest","size":296107,"fromIP":"2a02:cf46:283e:94d6:7957:2014:2e0f:fe5c","toIP":""}
+            ]
+          }
+  # page 3: matched after the clean padded skiptoken is normalised (keys reordered).
+  - path: /beta/admin/exchange/tracing/messageTraces
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-access-token"
+    query_params:
+      $skiptoken: "eyJFbmREYXRlIjoiMjAyNS0xMi0wMlQwNTozNDoxMi4zNzMwMDAwWiIsIlJlc3VsdFNpemUiOiI0IiwiU3RhcnREYXRlIjoiMjAyNS0xMS0yN1QxNDoxODozNy42MDcwMzkwWiIsIlN0YXJ0aW5nUmVjaXBpZW50QWRkcmVzcyI6ImdyZWdjcmlzdEBlbGFzdGljNTk1Lm9ubWljcm9zb2Z0LmNvbSJ9"
     responses:
       - status_code: 200
         headers:
@@ -67,8 +94,6 @@ rules:
           {
             "@odata.context": "https://graph.microsoft.com/beta/$metadata#admin/exchange/tracing/messageTraces",
             "value": [
-              {"id":"21043660-ed82-4361-84f6-64b636e4540c","messageId":"<GKOZ8REPH7BB.X3Y4IO0NW4CY@2io7f7545525rcf>","status":"delivered","receivedDateTime":"2025-12-02T05:34:11.587Z","recipientAddress":"cberkhout@elastic595.onmicrosoft.com","senderAddress":"MSSecurity-noreply@microsoft.com","subject":"Microsoft Entra ID Protection Weekly Digest","size":295688,"fromIP":"2a02:cf41:d675:a90d:c0ef:b23f:f053:947e","toIP":""},
-              {"id":"86b1a4da-fe88-4610-934c-cd9e4ecdf7d6","messageId":"<X7N66Q68OVNH.1T8JFAOO39LB@7ojcevr65724okb>","status":"delivered","receivedDateTime":"2025-12-02T05:34:11.218Z","recipientAddress":"gregcrist@elastic595.onmicrosoft.com","senderAddress":"MSSecurity-noreply@microsoft.com","subject":"Microsoft Entra ID Protection Weekly Digest","size":296107,"fromIP":"2a02:cf46:283e:94d6:7957:2014:2e0f:fe5c","toIP":""},
               {"id":"48d3fcf5-2389-4390-926f-7f6e575b1fe6","messageId":"<123433a6-c7cb-473e-9c65-2ca41b93f2dd@az.westus3.microsoft.com>","status":"delivered","receivedDateTime":"2025-11-30T06:43:04.864Z","recipientAddress":"G@Elastic595.onmicrosoft.com","senderAddress":"MSSecurity-noreply@microsoft.com","subject":"Your weekly PIM digest for Elastic (ID: 60aa0e13-5d8c-4325-ad81-e22998b1649e)","size":327783,"fromIP":"2a02:cf47:648c:e1da:2155:5eb2:8ead:fb05","toIP":""}
             ]
           }
