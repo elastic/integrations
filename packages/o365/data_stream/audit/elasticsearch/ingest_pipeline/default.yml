@@ -26,7 +26,7 @@ processors:
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - script:
       tag: set_event_original
-      if: ctx.event?.original == null
+      if: ctx.event?.original == null && (ctx.tags != null && ctx.tags.contains('preserve_original_event'))
       source: |-
         ctx.event = ctx.event ?: [:];
         ctx.event.original = Json.dump(ctx.o365audit)
