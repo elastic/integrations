@@ -121,6 +121,8 @@ def create_sync_pr(entries_tsv, working_branch, backport_pr_number,
     finally:
         os.unlink(pr_body_file)
 
+    _git("checkout", backport_branch)
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -302,6 +304,30 @@ class TestCreateSyncPr(unittest.TestCase):
         title_idx = gh_create.index("--title") + 1
         self.assertNotIn("aws", gh_create[title_idx])
         self.assertIn("backport sync from PR #42", gh_create[title_idx])
+
+    def test_checkouts_back_to_backport_branch(self):
+        import unittest.mock
+        git_calls = []
+
+        pkg_dir = self._make_changelog("aws")
+        entry_file = self._make_entry_file(_ENTRY)
+        tsv = self._make_tsv([f"aws|6.14.3|{entry_file}"])
+
+        def fake_git(*args, check=True):
+            git_calls.append(args)
+
+        def fake_subprocess_run(cmd, **kwargs):
+            import subprocess as sp
+            return sp.CompletedProcess(cmd, 0, stdout="")
+
+        with unittest.mock.patch(f"{_MODULE}._git", side_effect=fake_git), \
+             unittest.mock.patch(f"{_MODULE}.find_package_dir", return_value=pkg_dir), \
+             unittest.mock.patch(f"{_MODULE}._write_output"), \
+             unittest.mock.patch("subprocess.run", side_effect=fake_subprocess_run):
+            create_sync_pr(tsv, "changelog/pr-42", "42", "backport-8.x", "abc12345ff", "org/repo")
+
+        last_git_call = git_calls[-1]
+        self.assertEqual(last_git_call, ("checkout", "backport-8.x"))
 
 
 if __name__ == "__main__":
