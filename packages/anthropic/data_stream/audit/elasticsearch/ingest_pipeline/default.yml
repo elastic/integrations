@@ -1118,455 +1118,1232 @@ processors:
   - script:
       lang: painless
       tag: set_ecs_categorization
-      description: Map Anthropic activity type to ECS categorization fields using exact and prefix lookups.
+      description: Map Anthropic activity type to ECS categorization fields using exact lookups.
       if: ctx.event?.action != null
       params:
         exact:
-          compliance_api_accessed:
-            category: [api]
-            type: [access]
-          sso_login_succeeded:
-            category: [authentication, session]
-            type: [start, info]
-            outcome: success
-          magic_link_login_succeeded:
-            category: [authentication, session]
-            type: [start, info]
-            outcome: success
-          social_login_succeeded:
-            category: [authentication, session]
-            type: [start, info]
-            outcome: success
-          sso_login_failed:
-            category: [authentication]
-            type: [start]
-            outcome: failure
-          magic_link_login_failed:
-            category: [authentication]
-            type: [start]
-            outcome: failure
-          sso_login_initiated:
-            category: [authentication]
-            type: [start, info]
-            outcome: unknown
-          magic_link_login_initiated:
-            category: [authentication]
-            type: [start, info]
-            outcome: unknown
-          anonymous_mobile_login_attempted:
-            category: [authentication]
-            type: [start, info]
-            outcome: unknown
-          user_logged_out:
-            category: [authentication, session]
-            type: [end]
-            outcome: success
-          session_revoked:
-            category: [authentication, session]
-            type: [end]
+          account_deleted:
+            category: ['iam']
+            type: ['deletion', 'user']
             outcome: success
           admin_api_key_created:
-            category: [iam]
-            type: [creation]
+            category: ['iam']
+            type: ['admin', 'creation']
             outcome: success
-          platform_api_key_created:
-            category: [iam]
-            type: [creation]
+          admin_api_key_deleted:
+            category: ['iam']
+            type: ['admin', 'deletion']
             outcome: success
+          admin_api_key_updated:
+            category: ['iam']
+            type: ['admin', 'change']
+            outcome: success
+          admin_connector_request_resolved:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          admin_request_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          age_verified:
+            category: ['iam']
+            type: ['user', 'info']
+            outcome: success
+          anonymous_mobile_login_attempted:
+            category: ['authentication']
+            type: ['start', 'info']
+            outcome: unknown
           api_key_created:
-            category: [iam]
-            type: [creation]
+            category: ['iam']
+            type: ['creation']
             outcome: success
-          rbac_role_assigned:
-            category: [iam]
-            type: [change]
-            outcome: success
-          org_user_invite_sent:
-            category: [iam]
-            type: [user, creation]
-            outcome: success
-          mcp_server_created:
-            category: [configuration]
-            type: [creation]
-            outcome: success
-          scim_user_created:
-            category: [iam]
-            type: [user, creation]
-            outcome: success
-          claude_artifact_published:
-            category: [file, web]
-            type: [creation]
-            outcome: success
-          org_data_export_completed:
-            category: [file]
-            type: [access, info]
+          audit_log_export_accessed:
+            category: ['file']
+            type: ['access', 'info']
             outcome: success
           audit_log_export_started:
-            category: [file]
-            type: [creation, info]
+            category: ['file']
+            type: ['creation', 'info']
             outcome: success
-          org_sso_connection_activated:
-            category: [iam, configuration]
-            type: [change]
+          billing_emails_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_artifact_access_failed:
+            category: ['file', 'web']
+            type: ['info']
+            outcome: failure
+          claude_artifact_created:
+            category: ['file', 'web']
+            type: ['creation']
+            outcome: success
+          claude_artifact_published:
+            category: ['file', 'web']
+            type: ['creation']
+            outcome: success
+          claude_artifact_sharing_updated:
+            category: ['file', 'web']
+            type: ['change']
+            outcome: success
+          claude_artifact_viewed:
+            category: ['file', 'web']
+            type: ['access']
+            outcome: success
+          claude_chat_access_failed:
+            category: ['web']
+            type: ['info']
+            outcome: failure
+          claude_chat_created:
+            category: ['web']
+            type: ['info']
+            outcome: success
+          claude_chat_deleted:
+            category: ['web']
+            type: ['info']
+            outcome: success
+          claude_chat_deletion_failed:
+            category: ['web']
+            type: ['info']
+            outcome: failure
+          claude_chat_settings_updated:
+            category: ['web']
+            type: ['info']
+            outcome: success
+          claude_chat_snapshot_created:
+            category: ['web']
+            type: ['info']
+            outcome: success
+          claude_chat_snapshot_viewed:
+            category: ['web']
+            type: ['info']
+            outcome: success
+          claude_chat_updated:
+            category: ['web']
+            type: ['info']
+            outcome: success
+          claude_chat_viewed:
+            category: ['web']
+            type: ['info']
+            outcome: success
+          claude_code_review_config_updated:
+            category: ['configuration']
+            type: ['change']
             outcome: success
           claude_code_review_repository_added:
-            category: [configuration]
-            type: [creation]
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          claude_code_review_repository_removed:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          claude_code_review_repository_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_code_security_center_config_updated:
+            category: ['configuration']
+            type: ['change']
             outcome: success
           claude_code_security_scan_cancelled:
-            category: [configuration]
-            type: [change]
+            category: ['configuration']
+            type: ['change']
             outcome: success
-        prefixes:
-          # --- Authentication / session (most specific first) ---
-          - prefix: sso_login_failed
-            category: [authentication]
-            type: [start]
+          claude_code_security_scan_project_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_code_security_scan_schedule_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          claude_code_security_scan_schedule_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_code_security_webhook_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          claude_code_security_webhook_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          claude_code_security_webhook_secret_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_code_security_webhook_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_code_team_memory_acl_updated:
+            category: ['iam']
+            type: ['change', 'group']
+            outcome: success
+          claude_command_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          claude_command_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          claude_command_replaced:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_file_access_failed:
+            category: ['file', 'web']
+            type: ['info']
             outcome: failure
-          - prefix: magic_link_login_failed
-            category: [authentication]
-            type: [start]
+          claude_file_deleted:
+            category: ['file', 'web']
+            type: ['deletion']
+            outcome: success
+          claude_file_uploaded:
+            category: ['file', 'web']
+            type: ['creation']
+            outcome: success
+          claude_file_viewed:
+            category: ['file', 'web']
+            type: ['access']
+            outcome: success
+          claude_gdrive_integration_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          claude_gdrive_integration_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          claude_gdrive_integration_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_github_integration_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          claude_github_integration_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          claude_github_integration_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_organization_settings_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_plugin_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          claude_plugin_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          claude_plugin_replaced:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_plugin_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_project_archived:
+            category: ['file', 'web']
+            type: ['deletion']
+            outcome: success
+          claude_project_created:
+            category: ['file', 'web']
+            type: ['creation']
+            outcome: success
+          claude_project_deleted:
+            category: ['file', 'web']
+            type: ['deletion']
+            outcome: success
+          claude_project_document_access_failed:
+            category: ['file', 'web']
+            type: ['info']
             outcome: failure
-          - prefix: sso_login_succeeded
-            category: [authentication, session]
-            type: [start, info]
+          claude_project_document_deleted:
+            category: ['file', 'web']
+            type: ['deletion']
             outcome: success
-          - prefix: magic_link_login_succeeded
-            category: [authentication, session]
-            type: [start, info]
+          claude_project_document_deletion_failed:
+            category: ['file', 'web']
+            type: ['info']
+            outcome: failure
+          claude_project_document_uploaded:
+            category: ['file', 'web']
+            type: ['creation']
             outcome: success
-          - prefix: social_login_succeeded
-            category: [authentication, session]
-            type: [start, info]
+          claude_project_document_viewed:
+            category: ['file', 'web']
+            type: ['access']
             outcome: success
-          - prefix: sso_login_
-            category: [authentication]
-            type: [start, info]
+          claude_project_file_access_failed:
+            category: ['file', 'web']
+            type: ['info']
+            outcome: failure
+          claude_project_file_deleted:
+            category: ['file', 'web']
+            type: ['deletion']
+            outcome: success
+          claude_project_file_deletion_failed:
+            category: ['file', 'web']
+            type: ['info']
+            outcome: failure
+          claude_project_file_uploaded:
+            category: ['file', 'web']
+            type: ['creation']
+            outcome: success
+          claude_project_reported:
+            category: ['file', 'web']
+            type: ['info']
+            outcome: success
+          claude_project_sharing_updated:
+            category: ['file', 'web']
+            type: ['change']
+            outcome: success
+          claude_project_viewed:
+            category: ['file', 'web']
+            type: ['access']
+            outcome: success
+          claude_published_artifact_deleted:
+            category: ['file']
+            type: ['deletion']
+            outcome: success
+          claude_pubsec_identity_configured:
+            category: ['iam']
+            type: ['admin', 'change']
+            outcome: success
+          claude_skill_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          claude_skill_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          claude_skill_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_skill_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_skill_replaced:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          claude_user_role_updated:
+            category: ['iam', 'configuration']
+            type: ['user', 'change']
+            outcome: success
+          claude_user_settings_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          cli_plugin_exec_policy_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          compliance_api_accessed:
+            category: ['api']
+            type: ['access']
+            outcome: success
+          desktop_extension_allowlisted:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          desktop_extension_blocklisted:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          desktop_extension_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          desktop_extension_removed_from_allowlist:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          desktop_extension_unblocked:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          desktop_extension_uploaded:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          desktop_extension_version_uploaded:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          domain_claim_initiated:
+            category: ['configuration']
+            type: ['change']
             outcome: unknown
-          - prefix: sso_second_factor_
-            category: [authentication]
-            type: [info]
-            outcome: success
-          - prefix: magic_link_login_
-            category: [authentication]
-            type: [start, info]
+          end_user_invite_requested:
+            category: ['iam']
+            type: ['user', 'creation']
             outcome: unknown
-          - prefix: phone_code_
-            category: [authentication]
-            type: [start, info]
+          extra_usage_billing_enabled:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: user_logged_out
-            category: [authentication, session]
-            type: [end]
+          extra_usage_credit_granted:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: session_
-            category: [session]
-            type: [info]
+          extra_usage_spend_limit_created:
+            category: ['configuration']
+            type: ['creation']
             outcome: success
-          # --- Claude-specific (more specific before more generic) ---
-          - prefix: claude_chat_
-            category: [web]
-            type: [info]
+          extra_usage_spend_limit_deleted:
+            category: ['configuration']
+            type: ['deletion']
             outcome: success
-          - prefix: claude_artifact_
-            category: [file, web]
-            type: [info]
+          extra_usage_spend_limit_increase_request_approved:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: claude_project_
-            category: [file, web]
-            type: [info]
+          extra_usage_spend_limit_increase_request_denied:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: claude_file_
-            category: [file, web]
-            type: [info]
+          extra_usage_spend_limit_updated:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: claude_code_review_
-            category: [configuration]
-            type: [change]
+          ghe_configuration_created:
+            category: ['configuration']
+            type: ['creation']
             outcome: success
-          - prefix: claude_code_security_
-            category: [configuration]
-            type: [change]
+          ghe_configuration_deleted:
+            category: ['configuration']
+            type: ['deletion']
             outcome: success
-          - prefix: claude_code_
-            category: [configuration]
-            type: [change]
+          ghe_configuration_updated:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: claude_skill_
-            category: [configuration]
-            type: [change]
+          ghe_user_connected:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: claude_command_
-            category: [configuration]
-            type: [change]
+          ghe_user_disconnected:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: claude_plugin_
-            category: [configuration]
-            type: [change]
+          ghe_webhook_signature_invalid:
+            category: ['configuration']
+            type: ['info']
             outcome: success
-          - prefix: claude_user_
-            category: [iam, configuration]
-            type: [change]
+          group_created:
+            category: ['iam']
+            type: ['group', 'creation']
             outcome: success
-          - prefix: claude_organization_
-            category: [configuration]
-            type: [change]
+          group_deleted:
+            category: ['iam']
+            type: ['deletion', 'group']
             outcome: success
-          - prefix: claude_gdrive_
-            category: [configuration]
-            type: [change]
+          group_list_viewed:
+            category: ['iam']
+            type: ['info', 'group']
             outcome: success
-          - prefix: claude_github_
-            category: [configuration]
-            type: [change]
+          group_member_added:
+            category: ['iam']
+            type: ['change', 'group']
             outcome: success
-          - prefix: claude_pubsec_
-            category: [configuration]
-            type: [change]
+          group_member_list_viewed:
+            category: ['iam']
+            type: ['info', 'group']
             outcome: success
-          # --- Organization / directory (must come before generic org_) ---
-          - prefix: organization_
-            category: [configuration]
-            type: [change]
+          group_member_removed:
+            category: ['iam']
+            type: ['change', 'group']
             outcome: success
-          - prefix: org_user_invite_
-            category: [iam]
-            type: [user, creation]
+          group_updated:
+            category: ['iam']
+            type: ['change', 'group']
             outcome: success
-          - prefix: org_user_
-            category: [iam]
-            type: [change, user]
-            noun: user
+          group_viewed:
+            category: ['iam']
+            type: ['info', 'group']
             outcome: success
-          - prefix: org_users_
-            category: [iam]
-            type: [info]
+          integration_user_connected:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: org_data_export_
-            category: [file]
-            type: [access, info]
+          integration_user_disconnected:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: audit_log_export_
-            category: [file]
-            type: [access, info]
+          invoice_collection_method_updated:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: org_sso_
-            category: [iam, configuration]
-            type: [change]
+          lti_launch_initiated:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: org_directory_
-            category: [iam, configuration]
-            type: [change]
+          lti_launch_success:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: org_domain_
-            category: [configuration]
-            type: [change]
+          lti_platform_created:
+            category: ['configuration']
+            type: ['creation']
             outcome: success
-          - prefix: org_ip_restriction_
-            category: [configuration]
-            type: [change]
+          lti_platform_updated:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: org_
-            category: [configuration]
-            type: [change]
-            outcome: success
-          - prefix: domain_
-            category: [configuration]
-            type: [change]
+          magic_link_login_failed:
+            category: ['authentication']
+            type: ['start']
+            outcome: failure
+          magic_link_login_initiated:
+            category: ['authentication']
+            type: ['start', 'info']
             outcome: unknown
-          - prefix: end_user_invite_
-            category: [iam]
-            type: [user, creation]
+          magic_link_login_succeeded:
+            category: ['authentication', 'session']
+            type: ['start', 'info']
+            outcome: success
+          managed_organization_setup_completed:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          marketplace_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          marketplace_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          marketplace_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          marketplace_webhook_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          marketplace_webhook_provisioned:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          mcp_server_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          mcp_server_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          mcp_server_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          mcp_tool_policy_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_analytics_api_capability_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_bulk_delete_initiated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_claude_code_data_sharing_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_claude_code_data_sharing_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_claude_code_desktop_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_claude_code_desktop_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_compliance_api_settings_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_cowork_agent_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_cowork_agent_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_cowork_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_cowork_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_creation_blocked:
+            category: ['configuration']
+            type: ['info']
+            outcome: success
+          org_data_export_accessed:
+            category: ['file']
+            type: ['access', 'info']
+            outcome: success
+          org_data_export_completed:
+            category: ['file']
+            type: ['access', 'info']
+            outcome: success
+          org_data_export_started:
+            category: ['file']
+            type: ['access', 'info']
+            outcome: success
+          org_deleted_via_bulk:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          org_deletion_requested:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_directory_resync_completed:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_directory_resync_failed:
+            category: ['iam', 'configuration']
+            type: ['info']
+            outcome: failure
+          org_directory_resync_started:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_directory_sync_activated:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_directory_sync_add_initiated:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_directory_sync_deleted:
+            category: ['iam', 'configuration']
+            type: ['deletion']
+            outcome: success
+          org_discoverability_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_discoverability_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_discoverability_settings_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_domain_add_initiated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_domain_removed:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_domain_verified:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_hipaa_self_serve_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_invite_link_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_invite_link_generated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_invite_link_regenerated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_invite_viewed:
+            category: ['configuration']
+            type: ['info']
+            outcome: success
+          org_invites_listed:
+            category: ['configuration']
+            type: ['access']
+            outcome: success
+          org_ip_restriction_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          org_ip_restriction_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          org_ip_restriction_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_join_proposal_decided:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_join_request_approved:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_join_request_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          org_join_request_dismissed:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_join_request_instant_approved:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_join_requests_bulk_dismissed:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_magic_link_second_factor_toggled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_member_invites_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_member_invites_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_members_exported:
+            category: ['configuration']
+            type: ['access']
+            outcome: success
+          org_parent_join_proposal_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          org_parent_search_performed:
+            category: ['configuration']
+            type: ['access']
+            outcome: success
+          org_sso_add_initiated:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_sso_connection_activated:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_sso_connection_deactivated:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_sso_connection_deleted:
+            category: ['iam', 'configuration']
+            type: ['deletion']
+            outcome: success
+          org_sso_group_role_mappings_updated:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_sso_provisioning_mode_changed:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_sso_seat_tier_assignment_toggled:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_sso_seat_tier_mappings_updated:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_sso_toggled:
+            category: ['iam', 'configuration']
+            type: ['change']
+            outcome: success
+          org_sync_deleting_synchronized_files_started:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_sync_synchronized_files_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          org_taint_added:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_taint_removed:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_user_deleted:
+            category: ['iam']
+            type: ['deletion', 'user']
+            outcome: success
+          org_user_invite_accepted:
+            category: ['iam']
+            type: ['user', 'creation']
+            outcome: success
+          org_user_invite_deleted:
+            category: ['iam']
+            type: ['deletion', 'user']
+            outcome: success
+          org_user_invite_re_sent:
+            category: ['iam']
+            type: ['user', 'creation']
+            outcome: success
+          org_user_invite_rejected:
+            category: ['iam']
+            type: ['user', 'creation']
+            outcome: success
+          org_user_invite_sent:
+            category: ['iam']
+            type: ['user', 'creation']
+            outcome: success
+          org_user_left:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          org_user_viewed:
+            category: ['iam']
+            type: ['info', 'user']
+            outcome: success
+          org_users_listed:
+            category: ['iam']
+            type: ['info']
+            outcome: success
+          org_work_across_apps_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          org_work_across_apps_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          organization_address_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          organization_icon_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          organization_icon_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          owned_projects_access_restored:
+            category: ['iam', 'file']
+            type: ['change']
+            outcome: success
+          payment_method_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          phone_code_sent:
+            category: ['authentication']
+            type: ['start', 'info']
+            outcome: success
+          phone_code_verified:
+            category: ['authentication']
+            type: ['start', 'info']
+            outcome: success
+          platform_api_key_created:
+            category: ['iam']
+            type: ['creation']
+            outcome: success
+          platform_api_key_updated:
+            category: ['iam']
+            type: ['change']
+            outcome: success
+          platform_cost_report_viewed:
+            category: ['configuration']
+            type: ['info']
+            outcome: success
+          platform_federation_issuer_archived:
+            category: ['iam', 'configuration']
+            type: ['admin', 'deletion']
+            outcome: success
+          platform_federation_issuer_updated:
+            category: ['iam', 'configuration']
+            type: ['admin', 'change']
+            outcome: success
+          platform_federation_rule_archived:
+            category: ['iam', 'configuration']
+            type: ['admin', 'deletion']
+            outcome: success
+          platform_federation_rule_updated:
+            category: ['iam', 'configuration']
+            type: ['admin', 'change']
+            outcome: success
+          platform_federation_rule_workspace_added:
+            category: ['iam', 'configuration']
+            type: ['admin', 'change']
+            outcome: success
+          platform_federation_rule_workspace_removed:
+            category: ['iam', 'configuration']
+            type: ['admin', 'change']
+            outcome: success
+          platform_file_content_downloaded:
+            category: ['file']
+            type: ['access']
+            outcome: success
+          platform_file_deleted:
+            category: ['file']
+            type: ['deletion']
+            outcome: success
+          platform_file_uploaded:
+            category: ['file']
+            type: ['creation']
+            outcome: success
+          platform_service_account_archived:
+            category: ['iam']
+            type: ['deletion', 'user']
+            outcome: success
+          platform_service_account_updated:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          platform_service_account_workspace_member_added:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          platform_service_account_workspace_member_removed:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          platform_service_account_workspace_member_updated:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          platform_signing_key_created:
+            category: ['configuration', 'iam']
+            type: ['creation']
+            outcome: success
+          platform_signing_key_deleted:
+            category: ['configuration', 'iam']
+            type: ['deletion']
+            outcome: success
+          platform_signing_key_rotated:
+            category: ['configuration', 'iam']
+            type: ['change']
+            outcome: success
+          platform_skill_version_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          platform_skill_version_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          platform_spend_limit_alert_emails_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          platform_spend_limit_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          platform_spend_limit_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          platform_spend_limit_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          platform_usage_report_claude_code_viewed:
+            category: ['configuration']
+            type: ['info']
+            outcome: success
+          platform_usage_report_messages_viewed:
+            category: ['configuration']
+            type: ['info']
+            outcome: success
+          platform_workspace_archived:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          platform_workspace_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          platform_workspace_member_added:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          platform_workspace_member_removed:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          platform_workspace_member_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          platform_workspace_member_viewed:
+            category: ['configuration']
+            type: ['info']
+            outcome: success
+          platform_workspace_members_listed:
+            category: ['configuration']
+            type: ['info']
+            outcome: success
+          platform_workspace_rate_limit_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          platform_workspace_rate_limit_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          platform_workspace_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          plugin_installation_preference_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          prepaid_auto_recharge_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          prepaid_auto_recharge_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          prepaid_extra_usage_auto_reload_disabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          prepaid_extra_usage_auto_reload_enabled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          prepaid_extra_usage_auto_reload_settings_updated:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          primary_owner_transferred:
+            category: ['iam', 'configuration']
+            type: ['change', 'user']
+            outcome: success
+          rbac_role_assigned:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          rbac_role_created:
+            category: ['iam']
+            type: ['creation']
+            outcome: success
+          rbac_role_deleted:
+            category: ['iam']
+            type: ['deletion']
+            outcome: success
+          rbac_role_permission_added:
+            category: ['iam']
+            type: ['change']
+            outcome: success
+          rbac_role_permission_removed:
+            category: ['iam']
+            type: ['change']
+            outcome: success
+          rbac_role_unassigned:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          rbac_role_updated:
+            category: ['iam']
+            type: ['change']
+            outcome: success
+          role_assignment_granted:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          role_assignment_revoked:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          scim_user_created:
+            category: ['iam']
+            type: ['user', 'creation']
+            outcome: success
+          scim_user_deleted:
+            category: ['iam']
+            type: ['deletion', 'user']
+            outcome: success
+          scim_user_updated:
+            category: ['iam']
+            type: ['change', 'user']
+            outcome: success
+          scoped_api_key_deleted:
+            category: ['iam']
+            type: ['deletion']
+            outcome: success
+          scoped_api_key_updated:
+            category: ['iam']
+            type: ['change']
+            outcome: success
+          seat_tier_changes_cancelled:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          seat_tiers_purchased:
+            category: ['configuration']
+            type: ['change']
+            outcome: success
+          service_created:
+            category: ['configuration']
+            type: ['creation']
+            outcome: success
+          service_deleted:
+            category: ['configuration']
+            type: ['deletion']
+            outcome: success
+          service_key_created:
+            category: ['iam']
+            type: ['creation']
+            outcome: success
+          service_key_revoked:
+            category: ['iam']
+            type: ['deletion']
+            outcome: success
+          session_revoked:
+            category: ['authentication', 'session']
+            type: ['end']
+            outcome: success
+          session_share_accessed:
+            category: ['session']
+            type: ['info']
+            outcome: success
+          session_share_created:
+            category: ['session']
+            type: ['info']
+            outcome: success
+          session_share_revoked:
+            category: ['session']
+            type: ['info']
+            outcome: success
+          social_login_succeeded:
+            category: ['authentication', 'session']
+            type: ['start', 'info']
+            outcome: success
+          sso_login_failed:
+            category: ['authentication']
+            type: ['start']
+            outcome: failure
+          sso_login_initiated:
+            category: ['authentication']
+            type: ['start', 'info']
             outcome: unknown
-          - prefix: managed_
-            category: [configuration]
-            type: [change]
+          sso_login_succeeded:
+            category: ['authentication', 'session']
+            type: ['start', 'info']
             outcome: success
-          # --- API keys / accounts ---
-          - prefix: platform_api_key_
-            category: [iam]
-            type: [creation]
+          sso_second_factor_magic_link:
+            category: ['authentication']
+            type: ['info']
             outcome: success
-          - prefix: admin_api_key_
-            category: [iam]
-            type: [creation]
+          subscription_cancellation_scheduled:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: admin_connector_
-            category: [iam]
-            type: [change]
+          subscription_quantity_updated:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: scoped_api_key_
-            category: [iam]
-            type: [creation]
+          subscription_renewed:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: service_key_
-            category: [iam]
-            type: [change]
+          subscription_resumed:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: platform_service_account_
-            category: [iam]
-            type: [change, user]
-            noun: user
+          subscription_started:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: platform_federation_
-            category: [iam, configuration]
-            type: [change]
+          subscription_upgraded:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: platform_signing_key_
-            category: [configuration, iam]
-            type: [change]
+          tunnel_token_minted:
+            category: ['iam', 'configuration']
+            type: ['creation']
             outcome: success
-          - prefix: platform_
-            category: [configuration]
-            type: [change]
+          tunnel_token_revoked:
+            category: ['iam', 'configuration']
+            type: ['deletion']
             outcome: success
-          # --- IAM / RBAC / SCIM ---
-          - prefix: rbac_role_
-            category: [iam]
-            type: [change]
+          user_consent_recorded:
+            category: ['iam']
+            type: ['change']
             outcome: success
-          - prefix: role_assignment_
-            category: [iam]
-            type: [change]
+          user_consent_revoked:
+            category: ['iam']
+            type: ['change']
             outcome: success
-          - prefix: group_
-            category: [iam]
-            type: [change, group]
-            noun: group
+          user_logged_out:
+            category: ['authentication', 'session']
+            type: ['end']
             outcome: success
-          - prefix: scim_user_
-            category: [iam]
-            type: [change, user]
-            noun: user
+          workspace_member_spend_limit_created:
+            category: ['configuration']
+            type: ['creation']
             outcome: success
-          - prefix: integration_user_
-            category: [iam, configuration]
-            type: [change]
+          workspace_member_spend_limit_deleted:
+            category: ['configuration']
+            type: ['deletion']
             outcome: success
-          - prefix: owned_projects_
-            category: [iam, file]
-            type: [change]
+          workspace_member_spend_limit_updated:
+            category: ['configuration']
+            type: ['change']
             outcome: success
-          - prefix: primary_owner_
-            category: [iam, configuration]
-            type: [change]
+          workspace_spend_limit_created:
+            category: ['configuration']
+            type: ['creation']
             outcome: success
-          - prefix: tunnel_
-            category: [iam, configuration]
-            type: [change]
+          workspace_spend_limit_deleted:
+            category: ['configuration']
+            type: ['deletion']
             outcome: success
-          - prefix: age_
-            category: [iam]
-            type: [info]
-            outcome: success
-          # --- MCP / marketplace / extensions / plugins ---
-          - prefix: mcp_server_
-            category: [configuration]
-            type: [change]
-            outcome: success
-          - prefix: mcp_tool_
-            category: [configuration]
-            type: [change]
-            outcome: success
-          - prefix: marketplace_
-            category: [configuration]
-            type: [change]
-            outcome: success
-          - prefix: desktop_extension_
-            category: [configuration]
-            type: [change]
-            outcome: success
-          - prefix: cli_plugin_
-            category: [configuration]
-            type: [change]
-            outcome: success
-          - prefix: plugin_
-            category: [configuration]
-            type: [change]
-            outcome: success
-          # --- Billing / subscription / spend / GitHub Enterprise / LTI ---
-          - prefix: subscription_
-            category: [configuration]
-            type: [change]
-            outcome: success
-          - prefix: billing_
-            category: [configuration]
-            type: [change]
-            outcome: success
-          - prefix: payment_
-            category: [configuration]
-            type: [change]
-            outcome: success
-          - prefix: invoice_
-            category: [configuration]
-            type: [change]
-            outcome: success
-          - prefix: extra_usage_
-            category: [configuration]
-            type: [change]
-            outcome: success
-          - prefix: prepaid_
-            category: [configuration]
-            type: [change]
-            outcome: success
-          - prefix: seat_
-            category: [configuration]
-            type: [change]
-            outcome: success
-          - prefix: workspace_
-            category: [configuration]
-            type: [change]
-            outcome: success
-          - prefix: ghe_
-            category: [configuration]
-            type: [change]
-            outcome: success
-          - prefix: lti_
-            category: [configuration]
-            type: [change]
-            outcome: success
-          # --- Account / consent (generic last) ---
-          - prefix: account_
-            category: [iam]
-            type: [change]
-            outcome: success
-          - prefix: user_consent_
-            category: [iam]
-            type: [change]
-            outcome: success
-        # Verb suffixes drive event.type. Ordered so more specific suffixes win.
-        verb_suffixes:
-          - suffix: _created
-            type: creation
-          - suffix: _deleted
-            type: deletion
-          - suffix: _archived
-            type: deletion
-          - suffix: _updated
-            type: change
-          - suffix: _changed
-            type: change
-          - suffix: _revoked
-            type: change
-          - suffix: _list_viewed
-            type: info
-          - suffix: _viewed
-            type: info
-        failed_suffix: _failed
-        failed:
-          category: [web]
-          type: [error]
-          outcome: failure
-        deleted_suffix: _deleted
-        deleted:
-          category: [file]
-          type: [deletion]
-          outcome: success
-        created_suffix: _created
-        created:
-          category: [configuration]
-          type: [creation]
-          outcome: success
+
+
         # ECS-allowed event.type values per event.category. The verb suffix only
         # overrides event.type when it is valid for the resolved category, so we
         # never emit an ECS-invalid category/type pair (e.g. web/creation).
@@ -1583,7 +2360,6 @@ processors:
         def action = ctx.event.action;
         ctx.event.kind = 'event';
 
-        // Exact lookups are fully authoritative; no verb logic is layered on them.
         if (params.exact.containsKey(action)) {
           def m = params.exact[action];
           ctx.event.category = m.category;
@@ -1591,79 +2367,6 @@ processors:
           if (m.containsKey('outcome')) {
             ctx.event.outcome = m.outcome;
           }
-          return;
-        }
-
-        // The verb suffix drives event.type and the failed suffix forces a failure outcome,
-        // both independent of the prefix that resolves event.category.
-        String verb = null;
-        for (def vs : params.verb_suffixes) {
-          if (action.endsWith(vs.suffix)) {
-            verb = vs.type;
-            break;
-          }
-        }
-        boolean failed = action.endsWith(params.failed_suffix);
-
-        // The prefix match drives event.category (and contributes the IAM noun plus a
-        // base type/outcome used when no verb suffix applies).
-        def matched = null;
-        if (params.prefixes instanceof List) {
-          for (def entry : params.prefixes) {
-            if (action.startsWith(entry.prefix)) {
-              matched = entry;
-              break;
-            }
-          }
-        }
-
-        if (matched != null) {
-          ctx.event.category = matched.category;
-          // Only let the verb drive event.type when it is ECS-valid for at least one
-          // of the resolved categories; otherwise keep the prefix's base type. This
-          // keeps web/session events (which cannot express creation/deletion/change)
-          // on their valid base type of [info].
-          boolean applyVerb = false;
-          if (verb != null) {
-            for (def cat : matched.category) {
-              def allowed = params.category_event_types.get(cat);
-              if (allowed != null && allowed.contains(verb)) {
-                applyVerb = true;
-                break;
-              }
-            }
-          }
-          if (applyVerb) {
-            def types = new ArrayList();
-            types.add(verb);
-            if (matched.containsKey('noun')) {
-              types.add(matched.noun);
-            }
-            ctx.event.type = types;
-          } else {
-            ctx.event.type = matched.type;
-          }
-          if (failed) {
-            ctx.event.outcome = 'failure';
-          } else if (matched.containsKey('outcome')) {
-            ctx.event.outcome = matched.outcome;
-          }
-          return;
-        }
-
-        // No prefix matched: fall back to the suffix tables, otherwise mark it unknown.
-        if (failed) {
-          ctx.event.category = params.failed.category;
-          ctx.event.type = params.failed.type;
-          ctx.event.outcome = params.failed.outcome;
-        } else if (action.endsWith(params.deleted_suffix)) {
-          ctx.event.category = params.deleted.category;
-          ctx.event.type = params.deleted.type;
-          ctx.event.outcome = params.deleted.outcome;
-        } else if (action.endsWith(params.created_suffix)) {
-          ctx.event.category = params.created.category;
-          ctx.event.type = params.created.type;
-          ctx.event.outcome = params.created.outcome;
         } else {
           ctx.event.category = [];
           ctx.event.type = ['info'];
