@@ -49,7 +49,7 @@ Compliance API access is enabled on request by Anthropic. Contact your Anthropic
 
 ### Create an API key
 
-This integration reads the Activity Feed only, so either key type below works as long as it carries `read:compliance_activities`. Choose the key type that matches your organization:
+This integration reads the Activity Feed only, so either key type in the following table works as long as it carries `read:compliance_activities`. Choose the key type that matches your organization:
 
 | Key type | Created by | Where to create | Key prefix |
 | --- | --- | --- | --- |
@@ -84,10 +84,10 @@ Elastic Agent polls the Anthropic Compliance API and ships collected events to E
 
 ### Onboard / configure
 
-Complete the Anthropic-side setup above first — request Compliance API access and create an API key with the `read:compliance_activities` scope. See [Get access to the Compliance API](https://platform.claude.com/docs/en/manage-claude/compliance-api-access) for key types, scope details, and rotation guidance.
+Complete the Anthropic-side setup before deploying — request Compliance API access and create an API key with the `read:compliance_activities` scope. See [Get access to the Compliance API](https://platform.claude.com/docs/en/manage-claude/compliance-api-access) for key types, scope details, and rotation guidance.
 
 1. In Kibana, navigate to **Management → Integrations** and search for **Anthropic**.
-2. Click **Add Anthropic** and enter the Compliance Access Key or Admin API Key obtained above.
+2. Click **Add Anthropic** and enter the Compliance Access Key or Admin API Key you created.
 3. Configure the polling interval (default: 5 minutes). The default initial lookback is 24 hours.
 4. Optionally filter collection by activity type, actor ID, or organization ID to scope events to specific users, event types, or child organizations.
 5. Save the integration policy and assign it to the Elastic Agent policy that should collect Anthropic data.

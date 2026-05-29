@@ -50,7 +50,7 @@ Compliance API access is enabled on request by Anthropic. Contact your Anthropic
 
 ### Create an API key
 
-This integration reads the Activity Feed only, so either key type below works as long as it carries `read:compliance_activities`. Choose the key type that matches your organization:
+This integration reads the Activity Feed only, so either key type in the following table works as long as it carries `read:compliance_activities`. Choose the key type that matches your organization:
 
 | Key type | Created by | Where to create | Key prefix |
 | --- | --- | --- | --- |
@@ -85,10 +85,10 @@ Elastic Agent polls the Anthropic Compliance API and ships collected events to E
 
 ### Onboard / configure
 
-Complete the Anthropic-side setup above first — request Compliance API access and create an API key with the `read:compliance_activities` scope. See [Get access to the Compliance API](https://platform.claude.com/docs/en/manage-claude/compliance-api-access) for key types, scope details, and rotation guidance.
+Complete the Anthropic-side setup before deploying — request Compliance API access and create an API key with the `read:compliance_activities` scope. See [Get access to the Compliance API](https://platform.claude.com/docs/en/manage-claude/compliance-api-access) for key types, scope details, and rotation guidance.
 
 1. In Kibana, navigate to **Management → Integrations** and search for **Anthropic**.
-2. Click **Add Anthropic** and enter the Compliance Access Key or Admin API Key obtained above.
+2. Click **Add Anthropic** and enter the Compliance Access Key or Admin API Key you created.
 3. Configure the polling interval (default: 5 minutes). The default initial lookback is 24 hours.
 4. Optionally filter collection by activity type, actor ID, or organization ID to scope events to specific users, event types, or child organizations.
 5. Save the integration policy and assign it to the Elastic Agent policy that should collect Anthropic data.
@@ -140,7 +140,7 @@ The `audit` data stream collects compliance activity events from the Anthropic C
 | anthropic.audit.actor.api_key_id | API key ID for API actors. | keyword |
 | anthropic.audit.actor.directory_id | Directory ID for SCIM directory sync actors. | keyword |
 | anthropic.audit.actor.idp_connection_type | IdP connection type for SCIM directory sync actors. | keyword |
-| anthropic.audit.actor.type | Actor discriminator (`user_actor`, `api_actor`, etc.). | keyword |
+| anthropic.audit.actor.type | Actor type that indicates which other actor fields are present (for example, `user_actor`, `api_actor`, or `admin_api_key_actor`). | keyword |
 | anthropic.audit.actor.workos_event_id | WorkOS event ID for SCIM directory sync actors. | keyword |
 | anthropic.audit.added_seats | Added seats as reported in the activity payload. | long |
 | anthropic.audit.admin_api_key_id | Admin API key ID on admin key lifecycle activities. | keyword |
@@ -377,9 +377,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-05-22T09:00:00.000Z",
     "agent": {
-        "ephemeral_id": "8332bfdc-b49d-4ccf-b1f8-f0451e89bb90",
-        "id": "6e5479f0-90d8-4d11-b135-a7b421eefe67",
-        "name": "elastic-agent-84437",
+        "ephemeral_id": "d84a5218-0865-4884-9cd9-2ab86e73ded7",
+        "id": "1190c0f1-9af2-44b8-8fb7-3b3c206a2212",
+        "name": "elastic-agent-85867",
         "type": "filebeat",
         "version": "8.19.0"
     },
@@ -395,14 +395,14 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "anthropic.audit",
-        "namespace": "31756",
+        "namespace": "52420",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "6e5479f0-90d8-4d11-b135-a7b421eefe67",
+        "id": "1190c0f1-9af2-44b8-8fb7-3b3c206a2212",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -410,15 +410,15 @@ An example event for `audit` looks as following:
         "action": "claude_chat_created",
         "agent_id_status": "verified",
         "category": [
-            "file"
+            "web"
         ],
         "dataset": "anthropic.audit",
         "id": "activity_01MOCKpage03a",
-        "ingested": "2026-05-27T08:46:41Z",
+        "ingested": "2026-05-29T04:58:11Z",
         "kind": "event",
         "outcome": "success",
         "type": [
-            "creation"
+            "info"
         ]
     },
     "input": {

@@ -1181,10 +1181,6 @@ processors:
             category: [iam]
             type: [change]
             outcome: success
-          claude_chat_created:
-            category: [file]
-            type: [creation]
-            outcome: success
           org_user_invite_sent:
             category: [iam]
             type: [user, creation]
@@ -1198,7 +1194,7 @@ processors:
             type: [user, creation]
             outcome: success
           claude_artifact_published:
-            category: [file]
+            category: [file, web]
             type: [creation]
             outcome: success
           org_data_export_completed:
@@ -1339,7 +1335,8 @@ processors:
             outcome: success
           - prefix: org_user_
             category: [iam]
-            type: [user]
+            type: [change, user]
+            noun: user
             outcome: success
           - prefix: org_users_
             category: [iam]
@@ -1366,7 +1363,7 @@ processors:
             type: [change]
             outcome: success
           - prefix: org_ip_restriction_
-            category: [configuration, network]
+            category: [configuration]
             type: [change]
             outcome: success
           - prefix: org_
@@ -1408,7 +1405,8 @@ processors:
             outcome: success
           - prefix: platform_service_account_
             category: [iam]
-            type: [user]
+            type: [change, user]
+            noun: user
             outcome: success
           - prefix: platform_federation_
             category: [iam, configuration]
@@ -1433,11 +1431,13 @@ processors:
             outcome: success
           - prefix: group_
             category: [iam]
-            type: [group]
+            type: [change, group]
+            noun: group
             outcome: success
           - prefix: scim_user_
             category: [iam]
-            type: [user]
+            type: [change, user]
+            noun: user
             outcome: success
           - prefix: integration_user_
             category: [iam, configuration]
@@ -1534,6 +1534,24 @@ processors:
             category: [iam]
             type: [change]
             outcome: success
+        # Verb suffixes drive event.type. Ordered so more specific suffixes win.
+        verb_suffixes:
+          - suffix: _created
+            type: creation
+          - suffix: _deleted
+            type: deletion
+          - suffix: _archived
+            type: deletion
+          - suffix: _updated
+            type: change
+          - suffix: _changed
+            type: change
+          - suffix: _revoked
+            type: change
+          - suffix: _list_viewed
+            type: info
+          - suffix: _viewed
+            type: info
         failed_suffix: _failed
         failed:
           category: [web]
@@ -1549,38 +1567,107 @@ processors:
           category: [configuration]
           type: [creation]
           outcome: success
+        # ECS-allowed event.type values per event.category. The verb suffix only
+        # overrides event.type when it is valid for the resolved category, so we
+        # never emit an ECS-invalid category/type pair (e.g. web/creation).
+        category_event_types:
+          api: [access, admin, allowed, change, creation, danger, deletion, denied, end, info, protocol, start, user]
+          authentication: [start, end, info]
+          configuration: [access, change, creation, deletion, info]
+          file: [access, change, creation, deletion, info]
+          iam: [admin, change, creation, deletion, group, info, user]
+          network: [access, allowed, connection, denied, end, info, protocol, start]
+          session: [start, end, info]
+          web: [access, error, info]
       source: |-
         def action = ctx.event.action;
         ctx.event.kind = 'event';
-        def mapping = null;
+
+        // Exact lookups are fully authoritative; no verb logic is layered on them.
         if (params.exact.containsKey(action)) {
-          mapping = params.exact[action];
+          def m = params.exact[action];
+          ctx.event.category = m.category;
+          ctx.event.type = m.type;
+          if (m.containsKey('outcome')) {
+            ctx.event.outcome = m.outcome;
+          }
+          return;
         }
-        if (mapping == null && params.prefixes instanceof List) {
+
+        // The verb suffix drives event.type and the failed suffix forces a failure outcome,
+        // both independent of the prefix that resolves event.category.
+        String verb = null;
+        for (def vs : params.verb_suffixes) {
+          if (action.endsWith(vs.suffix)) {
+            verb = vs.type;
+            break;
+          }
+        }
+        boolean failed = action.endsWith(params.failed_suffix);
+
+        // The prefix match drives event.category (and contributes the IAM noun plus a
+        // base type/outcome used when no verb suffix applies).
+        def matched = null;
+        if (params.prefixes instanceof List) {
           for (def entry : params.prefixes) {
             if (action.startsWith(entry.prefix)) {
-              mapping = entry;
+              matched = entry;
               break;
             }
           }
         }
-        if (mapping == null && action.endsWith(params.failed_suffix)) {
-          mapping = params.failed;
-        } else if (mapping == null && action.endsWith(params.deleted_suffix)) {
-          mapping = params.deleted;
-        } else if (mapping == null && action.endsWith(params.created_suffix)) {
-          mapping = params.created;
+
+        if (matched != null) {
+          ctx.event.category = matched.category;
+          // Only let the verb drive event.type when it is ECS-valid for at least one
+          // of the resolved categories; otherwise keep the prefix's base type. This
+          // keeps web/session events (which cannot express creation/deletion/change)
+          // on their valid base type of [info].
+          boolean applyVerb = false;
+          if (verb != null) {
+            for (def cat : matched.category) {
+              def allowed = params.category_event_types.get(cat);
+              if (allowed != null && allowed.contains(verb)) {
+                applyVerb = true;
+                break;
+              }
+            }
+          }
+          if (applyVerb) {
+            def types = new ArrayList();
+            types.add(verb);
+            if (matched.containsKey('noun')) {
+              types.add(matched.noun);
+            }
+            ctx.event.type = types;
+          } else {
+            ctx.event.type = matched.type;
+          }
+          if (failed) {
+            ctx.event.outcome = 'failure';
+          } else if (matched.containsKey('outcome')) {
+            ctx.event.outcome = matched.outcome;
+          }
+          return;
         }
-        if (mapping == null) {
+
+        // No prefix matched: fall back to the suffix tables, otherwise mark it unknown.
+        if (failed) {
+          ctx.event.category = params.failed.category;
+          ctx.event.type = params.failed.type;
+          ctx.event.outcome = params.failed.outcome;
+        } else if (action.endsWith(params.deleted_suffix)) {
+          ctx.event.category = params.deleted.category;
+          ctx.event.type = params.deleted.type;
+          ctx.event.outcome = params.deleted.outcome;
+        } else if (action.endsWith(params.created_suffix)) {
+          ctx.event.category = params.created.category;
+          ctx.event.type = params.created.type;
+          ctx.event.outcome = params.created.outcome;
+        } else {
           ctx.event.category = [];
           ctx.event.type = ['info'];
           ctx.event.outcome = 'unknown';
-          return;
-        }
-        ctx.event.category = mapping.category;
-        ctx.event.type = mapping.type;
-        if (mapping.containsKey('outcome')) {
-          ctx.event.outcome = mapping.outcome;
         }
 
   - set:
