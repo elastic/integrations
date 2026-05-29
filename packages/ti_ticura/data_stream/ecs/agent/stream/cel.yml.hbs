@@ -3,6 +3,10 @@ interval: {{interval}}
 
 resource.url: {{url}}
 resource.timeout: {{http_client_timeout}}
+# Disable HTTP keep-alive so each poll opens a fresh connection.
+# Without this, the server-side connection may be closed mid-read during
+# the large NDJSON download, causing "read on closed response body".
+resource.keep_alive.disable: true
 resource.retry:
   max_attempts: 3
   wait_min: 30s
