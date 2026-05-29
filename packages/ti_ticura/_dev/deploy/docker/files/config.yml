@@ -1,0 +1,18 @@
+rules:
+  # Ticura full-feed NDJSON download endpoint.
+  # The service name is "cel" (matches the docker-compose service name and
+  # the system test `service:` field). The CEL input polls this path and
+  # expects the x-api-key header — any non-empty value is accepted here.
+  - path: /v1/feeds/download/full
+    methods: ["GET"]
+    query_params:
+      targetFormat: "ECSV1"
+    request_headers:
+      x-api-key: "test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/x-ndjson"
+        body: |
+          {{file "/files/ticura-feed.ndjson"}}
