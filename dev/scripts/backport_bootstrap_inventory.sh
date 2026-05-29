@@ -168,57 +168,78 @@ HEADER
 
         echo "  Processing ${branch} ..." >&2
 
-        # --- base_commit: merge-base with upstream/main ---
-        base_commit=""
-        if ! base_commit="$(git merge-base "refs/remotes/${REMOTE}/main" "${ref}" 2>/dev/null)"; then
-            echo "    WARNING: merge-base failed for ${branch}" >&2
-            base_commit=""
-        fi
-        base_commit_short="${base_commit:0:10}"
-
-        # --- base_version: manifest version at base_commit (authoritative) ---
-        # Fallback to branch-tip manifest when:
-        #   a) The package didn't exist at the merge-base commit, OR
-        #   b) The merge-base is too old (version family doesn't match the branch name).
-        #      This happens for old branches whose entire repo history is shared with main,
-        #      making git merge-base return a much older commit than the actual BASE_COMMIT
-        #      used to create the backport branch.
-        base_version=""
-        version_warn=""
-
         # Major.minor from branch name (used to verify version family).
         ver_major_minor="$(echo "${ver_suffix}" | cut -d. -f1-2)"
 
-        if [[ -n "${base_commit}" ]]; then
-            manifest_path="$(find_manifest_path "${base_commit}" "${pkg}" 2>/dev/null)" || true
+        # --- base_commit resolution (three strategies, in order) ---
+        #
+        # 1. git merge-base: works when the original BASE_COMMIT is still reachable
+        #    from upstream/main (i.e. main hasn't been rebased past it).
+        #
+        # 2. Parent-of-first-CI-sync: when the branch was created by backport_branch.sh,
+        #    the script adds a "Update .buildkite folder from main" commit on top of
+        #    BASE_COMMIT. The parent of that commit IS the BASE_COMMIT.  Reliable for
+        #    semi-old branches that went through the backport script.
+        #
+        # 3. Branch tip: last resort when the above can't recover the right family.
+        #    base_commit stays as the (stale) merge-base in this case.
+
+        base_commit=""
+        base_version=""
+        version_warn=""
+
+        # Strategy 1: merge-base
+        merge_base_commit=""
+        if merge_base_commit="$(git merge-base "refs/remotes/${REMOTE}/main" "${ref}" 2>/dev/null)"; then
+            manifest_path="$(find_manifest_path "${merge_base_commit}" "${pkg}" 2>/dev/null)" || true
             if [[ -n "${manifest_path}" ]]; then
-                base_version="$(get_version_at "${base_commit}" "${manifest_path}")"
+                candidate_ver="$(get_version_at "${merge_base_commit}" "${manifest_path}")"
+                if echo "${candidate_ver}" | grep -qE "^${ver_major_minor//./\\.}(\.|\$)"; then
+                    base_commit="${merge_base_commit}"
+                    base_version="${candidate_ver}"
+                    echo "    base_commit: merge-base (version ${base_version})" >&2
+                fi
             fi
         fi
 
-        # Family mismatch check: if the base_version doesn't belong to the expected
-        # major.minor family (e.g., got 1.16.2 for a branch named backport-aws-1.51),
-        # the merge-base is too old — discard and fall back to branch tip.
-        if [[ -n "${base_version}" ]] && \
-           ! echo "${base_version}" | grep -qE "^${ver_major_minor//./\\.}\."; then
-            echo "    NOTE: base_version ${base_version} doesn't match family ${ver_major_minor}; using branch tip" >&2
-            base_version=""
+        # Strategy 2: parent of first CI-sync commit ("Update .buildkite folder from main")
+        if [[ -z "${base_commit}" ]]; then
+            first_ci="$(git log "${ref}" --format="%H %s" \
+                | grep -iE "Update .buildkite (folder )?from main|Copy .buildkite from main|Add .buildkite.*to backport branch" \
+                | tail -1 \
+                | awk '{print $1}')" || true
+            if [[ -n "${first_ci}" ]]; then
+                ci_parent="${first_ci}^"
+                manifest_path="$(find_manifest_path "${ci_parent}" "${pkg}" 2>/dev/null)" || true
+                if [[ -n "${manifest_path}" ]]; then
+                    candidate_ver="$(get_version_at "${ci_parent}" "${manifest_path}")"
+                    if echo "${candidate_ver}" | grep -qE "^${ver_major_minor//./\\.}(\.|\$)"; then
+                        base_commit="$(git rev-parse "${ci_parent}" 2>/dev/null)" || base_commit="${ci_parent}"
+                        base_version="${candidate_ver}"
+                        echo "    base_commit: CI-sync parent ${base_commit:0:10} (version ${base_version})" >&2
+                    fi
+                fi
+            fi
         fi
 
+        # Strategy 3: tip fallback (base_commit stays as stale merge-base if available)
         if [[ -z "${base_version}" ]]; then
-            # Fallback: read from branch tip
+            [[ -z "${base_commit}" ]] && base_commit="${merge_base_commit}"
             tip_manifest="$(find_manifest_path "${ref}" "${pkg}" 2>/dev/null)" || true
             if [[ -n "${tip_manifest}" ]]; then
                 base_version="$(get_version_at "${ref}" "${tip_manifest}")"
-                echo "    NOTE: base_version '${base_version}' read from branch tip (merge-base too old or package absent at merge-base)" >&2
+                echo "    NOTE: base_version '${base_version}' read from branch tip — verify base_commit manually" >&2
             fi
         fi
 
         if [[ -z "${base_version}" ]]; then
+            [[ -z "${base_commit}" ]] && base_commit="${merge_base_commit}"
             base_version="unknown"
             version_warn="  # WARN: could not determine base_version — fill in manually"
             echo "    WARNING: could not determine base_version for ${branch}" >&2
         fi
+
+        base_commit_short="${base_commit:0:10}"
 
         # --- archived: true if last commit is older than one year ---
         archived="false"
