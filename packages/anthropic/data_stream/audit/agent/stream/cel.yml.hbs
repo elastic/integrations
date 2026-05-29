@@ -33,108 +33,91 @@ redact:
   fields:
     - api_key
 program: |-
-  state.?cursor.first_id.orValue("").as(stored_first_id,
-    state.?cursor.page_id.orValue("").as(page_id,
-      (
-        stored_first_id != "" ?
-          {
-            "limit": [string(int(state.batch_size))],
-            ?"before_id": page_id == "" ?
-              optional.of([stored_first_id])
-            :
-              optional.of([page_id]),
-            ?"activity_types[]": size(state.?activity_types.orValue([])) != 0 ?
-              optional.of(state.activity_types)
-            :
-              optional.none(),
-            ?"actor_ids[]": size(state.?actor_ids.orValue([])) != 0 ?
-              optional.of(state.actor_ids)
-            :
-              optional.none(),
-            ?"organization_ids[]": size(state.?organization_ids.orValue([])) != 0 ?
-              optional.of(state.organization_ids)
-            :
-              optional.none(),
-          }
+  (
+    state.?cursor.first_id.hasValue() ?
+      {
+        ?"before_id": state.?cursor.page_id.hasValue() ?
+          (state.?cursor.page_id.optMap(id, [id]))
+        : state.?cursor.first_id.optMap(id, [id]),
+      }
+    :
+      {
+        "created_at.gte": [string(now - duration(state.initial_interval))],
+        "created_at.lt": [string(now)],
+        ?"after_id": state.?cursor.page_id.optMap(id, [id]),
+      }
+  ).with(
+    {
+      "limit": [string(int(state.batch_size))],
+      ?"activity_types[]": (size(state.?activity_types.orValue([])) != 0) ?
+        optional.of(state.activity_types)
+      :
+        optional.none(),
+      ?"actor_ids[]": (size(state.?actor_ids.orValue([])) != 0) ?
+        optional.of(state.actor_ids)
+      :
+        optional.none(),
+      ?"organization_ids[]": (size(state.?organization_ids.orValue([])) != 0) ?
+        optional.of(state.organization_ids)
+      :
+        optional.none(),
+    }
+  ).as(query,
+    state.with(
+      request(
+        "GET",
+        state.url.trim_right("/") + "/v1/compliance/activities?" + query.format_query()
+      ).with(
+        {
+          "Header": {
+            "x-api-key": [state.api_key],
+          },
+        }
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            {
+              "events": body.?data.orValue([]).map(e, {"message": e.encode_json()}),
+              "cursor": body.?has_more.orValue(false) ?
+                {
+                  ?"first_id": state.?cursor.first_id,
+                  "page_id": state.?cursor.first_id.hasValue() ?
+                    body.first_id
+                  :
+                    body.last_id,
+                  ?"run_first_id": (!state.?cursor.page_id.hasValue() && has(body.first_id)) ?
+                    optional.of(body.first_id)
+                  :
+                    state.?cursor.run_first_id,
+                }
+              :
+                {
+                  ?"first_id": state.?cursor.run_first_id.hasValue() ?
+                    state.?cursor.run_first_id
+                  : (!state.?cursor.page_id.hasValue() && has(body.first_id)) ?
+                    optional.of(body.first_id)
+                  :
+                    state.?cursor.first_id,
+                },
+              "want_more": body.?has_more.orValue(false),
+            }
+          )
         :
           {
-            "limit": [string(int(state.batch_size))],
-            "created_at.gte": [string(now - duration(state.initial_interval))],
-            "created_at.lt": [string(now)],
-            ?"after_id": page_id != "" ?
-              optional.of([page_id])
-            :
-              optional.none(),
-            ?"activity_types[]": size(state.?activity_types.orValue([])) != 0 ?
-              optional.of(state.activity_types)
-            :
-              optional.none(),
-            ?"actor_ids[]": size(state.?actor_ids.orValue([])) != 0 ?
-              optional.of(state.actor_ids)
-            :
-              optional.none(),
-            ?"organization_ids[]": size(state.?organization_ids.orValue([])) != 0 ?
-              optional.of(state.organization_ids)
-            :
-              optional.none(),
-          }
-      ).as(query,
-        state.with(
-          request(
-            "GET",
-            state.url.trim_right("/") + "/v1/compliance/activities?" + query.format_query()
-          ).with({
-            "Header": {
-              "x-api-key": [state.api_key],
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /v1/compliance/activities: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
             },
-          }).do_request().as(resp,
-            resp.StatusCode == 200 ?
-              resp.Body.decode_json().as(body, {
-                "events": body.?data.orValue([]).map(e, {"message": e.encode_json()}),
-                "cursor": body.?has_more.orValue(false) ?
-                  {
-                    "first_id": stored_first_id,
-                    "page_id": stored_first_id != "" ?
-                      string(body.first_id)
-                    :
-                      string(body.last_id),
-                    ?"run_first_id": page_id == "" && has(body.first_id) ?
-                      optional.of(string(body.first_id))
-                    :
-                      state.?cursor.run_first_id,
-                  }
-                :
-                  {
-                    "first_id": state.?cursor.run_first_id.orValue("") != "" ?
-                      state.cursor.run_first_id
-                    :
-                      (
-                        page_id == "" && has(body.first_id)
-                      ) ?
-                        string(body.first_id)
-                      :
-                        stored_first_id,
-                  },
-                "want_more": body.?has_more.orValue(false),
-              })
-            :
-              {
-                "events": {
-                  "error": {
-                    "code": string(resp.StatusCode),
-                    "id": string(resp.Status),
-                    "message": "GET /v1/compliance/activities: " + (
-                      size(resp.Body) != 0 ?
-                        string(resp.Body)
-                      :
-                        string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                    ),
-                  },
-                },
-                "want_more": false,
-              }
-          )
-        )
+            "want_more": false,
+          }
       )
     )
   )
