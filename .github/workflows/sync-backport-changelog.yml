@@ -16,19 +16,16 @@ jobs:
   sync-changelog:
     runs-on: ubuntu-latest
     steps:
-      - name: Guard — zero-SHA check and branch name filter
+      - name: Guard — zero-SHA check
         id: guard
         env:
           BEFORE: ${{ github.event.before }}
-          BRANCH: ${{ github.ref_name }}
         run: |
-          # Branch-creation pushes have a zero before-SHA — nothing to diff.
           if [[ "$BEFORE" == "0000000000000000000000000000000000000000" ]]; then
             echo "proceed=false" >> "$GITHUB_OUTPUT"
             echo "Skipping: branch-creation push"
             exit 0
           fi
-
           echo "proceed=true" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v6
@@ -40,83 +37,12 @@ jobs:
         id: collect
         if: steps.guard.outputs.proceed == 'true'
         env:
-          BEFORE: ${{ github.event.before }}
-          AFTER: ${{ github.event.after }}
-          REPOSITORY: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Resolve the backport PR number — the workflow is triggered by a push that
-          # results from merging a PR into the backport branch.
-          BACKPORT_PR_NUMBER=$(gh api "repos/${REPOSITORY}/commits/${AFTER}/pulls" \
-            --jq '.[0].number // empty' 2>/dev/null || true)
-          if [[ -z "$BACKPORT_PR_NUMBER" ]]; then
-            echo "No PR associated with commit ${AFTER} — skipping"
-            echo "has_changes=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          WORKING_BRANCH="changelog/pr-${BACKPORT_PR_NUMBER}"
-
-          # Deduplication: skip if a sync PR for this backport PR already exists.
-          PR_COUNT=$(gh pr list --head "$WORKING_BRANCH" --state all --json number | jq length)
-          if [[ "$PR_COUNT" -gt 0 ]]; then
-            echo "Sync PR already exists for ${WORKING_BRANCH} — skipping"
-            echo "has_changes=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          mapfile -t CHANGED < <(git diff --name-only "${BEFORE}..${AFTER}" -- '**/changelog.yml')
-
-          # Pipe-delimited manifest|version|entry_file rows: one push may queue several packages,
-          # and each changelog block lives in its own temp file (multi-line YAML). A single TSV
-          # path is passed to the create step via GITHUB_OUTPUT; embedding entries in outputs
-          # would break on newlines and size limits.
-          ENTRIES_TSV=$(mktemp /tmp/entries_XXXX.tsv)
-
-          for CHANGELOG_PATH in "${CHANGED[@]}"; do
-            PACKAGE_DIR=$(dirname "$CHANGELOG_PATH")
-            # Pass the path via env var rather than interpolating into Python source —
-            # interpolation breaks if PACKAGE_DIR contains a single quote.
-            MANIFEST_NAME=$(MANIFEST_PATH="${PACKAGE_DIR}/manifest.yml" python3 -c \
-              "import yaml, os; print(yaml.safe_load(open(os.environ['MANIFEST_PATH'])).get('name', ''))" \
-              2>/dev/null || true)
-            if [[ -z "$MANIFEST_NAME" ]]; then
-              echo "Could not read manifest for $PACKAGE_DIR — skipping"
-              continue
-            fi
-
-            ENTRY_FILE=$(mktemp /tmp/entry_XXXX.txt)
-            if ! NEW_VERSION=$(git diff "${BEFORE}..${AFTER}" -- "$CHANGELOG_PATH" \
-                | python3 dev/scripts/backport_extract_changelog_entry.py - --entry-file "$ENTRY_FILE" 2>/dev/null); then
-              echo "No new version entry in $CHANGELOG_PATH — skipping"
-              rm "$ENTRY_FILE"
-              continue
-            fi
-
-            # Idempotency: skip if this version already exists in main.
-            if git show "origin/main:${CHANGELOG_PATH}" 2>/dev/null \
-                | grep -qFe "- version: ${NEW_VERSION}" \
-                            -e "- version: \"${NEW_VERSION}\"" \
-                            -e "- version: '${NEW_VERSION}'"; then
-              echo "Version ${NEW_VERSION} of ${MANIFEST_NAME} already in main — skipping"
-              continue
-            fi
-
-            echo "${MANIFEST_NAME}|${NEW_VERSION}|${ENTRY_FILE}" >> "$ENTRIES_TSV"
-            echo "Queued ${MANIFEST_NAME} ${NEW_VERSION}"
-          done
-
-          if [[ ! -s "$ENTRIES_TSV" ]]; then
-            echo "No new changelog entries to sync"
-            echo "has_changes=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          echo "has_changes=true"                       >> "$GITHUB_OUTPUT"
-          echo "entries_tsv=$ENTRIES_TSV"               >> "$GITHUB_OUTPUT"
-          echo "working_branch=$WORKING_BRANCH"         >> "$GITHUB_OUTPUT"
-          echo "backport_pr_number=$BACKPORT_PR_NUMBER" >> "$GITHUB_OUTPUT"
-          echo "Queued $(wc -l < "$ENTRIES_TSV") entr(ies) for sync under ${WORKING_BRANCH}"
+          python3 dev/scripts/backport_collect_entries.py \
+            --before     "${{ github.event.before }}" \
+            --after      "${{ github.event.after }}" \
+            --repository "${{ github.repository }}"
 
       - name: Set up Go
         if: steps.collect.outputs.has_changes == 'true'
@@ -133,120 +59,25 @@ jobs:
         id: create
         if: steps.collect.outputs.has_changes == 'true'
         env:
-          ENTRIES_TSV: ${{ steps.collect.outputs.entries_tsv }}
-          WORKING_BRANCH: ${{ steps.collect.outputs.working_branch }}
-          BACKPORT_PR_NUMBER: ${{ steps.collect.outputs.backport_pr_number }}
-          BACKPORT_BRANCH: ${{ github.ref_name }}
-          AFTER: ${{ github.event.after }}
-          REPOSITORY: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git checkout -b "$WORKING_BRANCH" origin/main
-
-          SUMMARY=""
-          NOT_FOUND=""
-          while IFS='|' read -r PKG VER ENTRY_FILE; do
-            if ! MAIN_PKG_DIR=$(python3 dev/scripts/backport_resolve_package_dir.py --package "$PKG"); then
-              echo "Package '$PKG' not found on main — skipping" >&2
-              NOT_FOUND="${NOT_FOUND}\`${PKG}\`, "
-              continue
-            fi
-            MAIN_CHANGELOG="${MAIN_PKG_DIR}/changelog.yml"
-            python3 dev/scripts/backport_insert_changelog_entry.py \
-              --changelog "$MAIN_CHANGELOG" \
-              --version   "$VER" \
-              --entry-file "$ENTRY_FILE"
-            git add "$MAIN_CHANGELOG"
-            SUMMARY="${SUMMARY}- \`${PKG}\` ${VER}"$'\n'
-            echo "Prepared $PKG $VER"
-          done < "$ENTRIES_TSV"
-
-          # Expose skipped packages to the comment step.
-          echo "not_found_packages=${NOT_FOUND%, }" >> "$GITHUB_OUTPUT"
-
-          if [[ -z "$SUMMARY" ]]; then
-            echo "No changelogs applied — all packages missing on main. Skipping commit."
-            exit 0
-          fi
-
-          AFTER_SHORT="${AFTER:0:8}"
-          BACKPORT_PR_URL="https://github.com/${REPOSITORY}/pull/${BACKPORT_PR_NUMBER}"
-          TRIGGER_LINE="_Triggered by commit [\`${AFTER_SHORT}\`](https://github.com/${REPOSITORY}/commit/${AFTER}) on \`${BACKPORT_BRANCH}\`._"
-
-          ENTRY_COUNT=$(wc -l < "$ENTRIES_TSV")
-          if [[ "$ENTRY_COUNT" -eq 1 ]]; then
-            IFS='|' read -r TITLE_PKG TITLE_VER _ < "$ENTRIES_TSV"
-            PR_TITLE="changelog: ${TITLE_PKG} ${TITLE_VER} (backport sync from PR #${BACKPORT_PR_NUMBER})"
-            COMMIT_MSG="changelog: ${TITLE_PKG} ${TITLE_VER} (backport sync from PR #${BACKPORT_PR_NUMBER}, ${AFTER_SHORT})"
-          else
-            PR_TITLE="changelog: backport sync from PR #${BACKPORT_PR_NUMBER}"
-            COMMIT_MSG="changelog: backport sync from PR #${BACKPORT_PR_NUMBER} (${AFTER_SHORT})"
-          fi
-
-          git commit -m "$COMMIT_MSG"
-          git push origin "$WORKING_BRANCH"
-
-          printf 'Automated changelog sync from [PR #%s](%s).\n\n**Packages synced:**\n%s\n%s\n' \
-            "$BACKPORT_PR_NUMBER" \
-            "$BACKPORT_PR_URL" \
-            "$SUMMARY" \
-            "$TRIGGER_LINE" \
-            > /tmp/pr_body.txt
-
-          # TODO: remove --reviewer once the sync process is validated.
-          gh pr create \
-            --base main \
-            --head "$WORKING_BRANCH" \
-            --title "$PR_TITLE" \
-            --label "automation" \
-            --reviewer "elastic/ecosystem" \
-            --body-file /tmp/pr_body.txt
+          python3 dev/scripts/backport_create_sync_pr.py \
+            --entries-tsv        "${{ steps.collect.outputs.entries_tsv }}" \
+            --working-branch     "${{ steps.collect.outputs.working_branch }}" \
+            --backport-pr-number "${{ steps.collect.outputs.backport_pr_number }}" \
+            --backport-branch    "${{ github.ref_name }}" \
+            --after              "${{ github.event.after }}" \
+            --repository         "${{ github.repository }}"
 
       - name: Comment on backport PR
         if: always() && steps.guard.outputs.proceed == 'true'
         env:
-          REPOSITORY: ${{ github.repository }}
-          BACKPORT_PR_NUMBER: ${{ steps.collect.outputs.backport_pr_number }}
-          WORKING_BRANCH: ${{ steps.collect.outputs.working_branch }}
-          NOT_FOUND_PACKAGES: ${{ steps.create.outputs.not_found_packages }}
-          CREATE_OUTCOME: ${{ steps.create.outcome }}
-          RUN_ID: ${{ github.run_id }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [[ -z "$BACKPORT_PR_NUMBER" ]]; then
-            echo "No backport PR number — skipping comment"
-            exit 0
-          fi
-
-          if [[ -z "$WORKING_BRANCH" ]]; then
-            # Nothing to sync (no changelog changes or all versions already in main).
-            exit 0
-          fi
-
-          RUN_URL="https://github.com/${REPOSITORY}/actions/runs/${RUN_ID}"
-          SKIPPED_WARN=$'\n\n'"⚠️ The following packages were not found on \`main\` and were skipped: ${NOT_FOUND_PACKAGES}"
-
-          case "$CREATE_OUTCOME" in
-            skipped)
-              BODY="Changelog sync skipped: all versions already present in \`main\` or a sync PR already exists."
-              ;;
-            success)
-              SYNC_PR_URL=$(gh pr list \
-                --head "$WORKING_BRANCH" \
-                --state open --json url --jq '.[0].url')
-              if [[ -n "$SYNC_PR_URL" ]]; then
-                BODY="Changelog sync PR created successfully: ${SYNC_PR_URL}"
-                [[ -n "$NOT_FOUND_PACKAGES" ]] && BODY+="${SKIPPED_WARN}"
-              else
-                BODY="Changelog sync could not be completed: the following packages were not found on \`main\`: ${NOT_FOUND_PACKAGES}"
-              fi
-              ;;
-            *)
-              BODY="Changelog sync PR creation failed. See the [workflow run](${RUN_URL}) for details."
-              ;;
-          esac
-
-          gh pr comment "$BACKPORT_PR_NUMBER" --body "$BODY"
+          python3 dev/scripts/backport_comment_result.py \
+            --backport-pr-number "${{ steps.collect.outputs.backport_pr_number }}" \
+            --working-branch     "${{ steps.collect.outputs.working_branch }}" \
+            --not-found-packages "${{ steps.create.outputs.not_found_packages }}" \
+            --create-outcome     "${{ steps.create.outcome }}" \
+            --run-id             "${{ github.run_id }}" \
+            --repository         "${{ github.repository }}"
