@@ -377,9 +377,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-05-22T09:00:00.000Z",
     "agent": {
-        "ephemeral_id": "d84a5218-0865-4884-9cd9-2ab86e73ded7",
-        "id": "1190c0f1-9af2-44b8-8fb7-3b3c206a2212",
-        "name": "elastic-agent-85867",
+        "ephemeral_id": "4abb0374-f25a-408a-a4f3-254ddd13c46f",
+        "id": "497dcb88-5d3d-474f-9a92-8c57df6b0ca8",
+        "name": "elastic-agent-24394",
         "type": "filebeat",
         "version": "8.19.0"
     },
@@ -395,14 +395,14 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "anthropic.audit",
-        "namespace": "52420",
+        "namespace": "65544",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "1190c0f1-9af2-44b8-8fb7-3b3c206a2212",
+        "id": "497dcb88-5d3d-474f-9a92-8c57df6b0ca8",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -414,7 +414,7 @@ An example event for `audit` looks as following:
         ],
         "dataset": "anthropic.audit",
         "id": "activity_01MOCKpage03a",
-        "ingested": "2026-05-29T04:58:11Z",
+        "ingested": "2026-05-29T05:10:18Z",
         "kind": "event",
         "outcome": "success",
         "type": [
