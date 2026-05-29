@@ -6,6 +6,11 @@ Use the Box Events integration to ingest the activity logs which are generated e
 
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference `box_events.events` when troubleshooting an issue.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 For example, if you wanted to set up notifications for incoming Box Shield alerts you could verify that this data is being ingested from the `Box Shield Alerts` Dashboard. Then, go to `Alerts and Insights / Rules and Connectors` in the sidebar and set up a Rule using an Elasticsearch Query against index `*box*alert*` with time field `@timestamp` and DSL 
 
 ```
@@ -224,10 +229,10 @@ Preserves a raw copy of the original event, added to the field `event.original`.
 | box.source.file_version.type | Value is always `file_version` | keyword |
 | box.source.folder_name | The name of a folder | keyword |
 | box.source.id | The unique identifier that represent a folder | keyword |
-| box.source.item_status | Defines if this item has been deleted or not. active when the item has is not in the trash trashed when the item has been moved to the trash but not deleted deleted when the item has been permanently deleted. Value is one of `active`, `trashed`, `deleted` | keyword |
+| box.source.item_status | Defines if this item has been deleted or not. The values are "active" when the item is not in the trash, "trashed" when the item has been moved to the trash but not deleted, and "deleted" when the item has been permanently deleted. | keyword |
 | box.source.job_title | User job title | boolean |
 | box.source.language | User preferred language | boolean |
-| box.source.login | User login | boolean |
+| box.source.login | User login | keyword |
 | box.source.max_upload_size | Max upload size | boolean |
 | box.source.modified_at | The date and time at which this folder was last updated | date |
 | box.source.modified_by.id | The unique identifier for this user that last modified the file. | keyword |

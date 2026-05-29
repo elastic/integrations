@@ -23,22 +23,42 @@ The Okta Entity Analytics integration collects two types of data: user and devic
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
-The minimum **kibana.version** required is **8.9.0**.
+The minimum **kibana.version** required is **9.2.6** or **9.3.1**.
 
 ## Setup
 
 ### Collect data from Okta
 
 1. Get the required domain namespace, which should be preceded by an organization's subdomain (tenant) or configured custom domain.
-2. Create an Okta API Token for Authentication. Follow this [guide](https://developer.okta.com/docs/guides/create-an-api-token/main/).
+2. Gather credentials for the authentication method you will use. For **API token** authentication, create an Okta API token following this [guide](https://developer.okta.com/docs/guides/create-an-api-token/main/). For **OAuth2**, create an API Services application and keys as described under **OAuth2** in the **Types of authentication** section.
 
 ### Enable the integration in Elastic
 
-1. In Kibana navigate to **Management** > **Integrations**.
+1. In Kibana, navigate to **Management** > **Integrations**.
 2. In the search bar, type **Okta Entity Analytics**.
 3. Select the **Okta Entity Analytics** integration and add it.
-4. While adding the integration, add the domain and API Token that you got earlier. Domain should be without https:// for example: dev-123456.okta.com.
+4. While adding the integration, enter your Okta domain and the fields for your authentication method. Use your domain without `https://` (for example: `dev-123456.okta.com`). Refer to **Types of authentication** for API token and OAuth2 fields.
 5. Save the integration.
+
+## Types of authentication
+### API Token
+1. In the administration dashboard for your Okta account, go to **Security** > **API**.
+2. Open the **Tokens** tab and click **Create token** to create a new token.
+3. Copy the token value and retain it for configuration. The token is only shown once—copy it before you leave the page.
+4. Paste the token into the `Okta API Token` configuration option to start collecting entity analytics logs.
+
+### OAuth2
+**In this type of authentication, the following information is required:**
+1. Your Okta domain URL. [ Example: https://dev-123456.okta.com ]
+2. Your Okta service app Client ID.
+3. Your Okta service app JWK Private Key.
+4. The Okta scopes that are required for OAuth2. By default they are set to `okta.users.read` and `okta.devices.read` which are the ones required to read user and device logs.
+
+**Steps to acquire Okta OAuth2 credentials:**
+1. Acquire an Okta dev or user account with privileges to mint tokens with the `okta.*` scopes.
+2. Log into your Okta account, navigate to `Applications` on the left-hand side, click on the `Create App Integration` button and create an API Services application.
+3. Click on the created app, note down the `Client ID` and select the option for `Public key/Private key`.
+4. Generate your own `Private/Public key` pair in the `JWK` format and save it in one of the available formats.
 
 ## Usage
 

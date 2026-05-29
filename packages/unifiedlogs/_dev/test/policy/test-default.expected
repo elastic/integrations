@@ -1,0 +1,37 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: unifiedlogs
+      name: test-default-unifiedlogs
+      streams:
+        - backfill: false
+          backtrace: false
+          condition: ${host.platform} == 'darwin'
+          data_stream:
+            dataset: unifiedlogs.generic
+          debug: false
+          info: true
+          mach_continuous_time: false
+          pipeline: logs-unifiedlogs.log-default
+          signpost: false
+          source: false
+          unreliable: false
+      type: unifiedlogs
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

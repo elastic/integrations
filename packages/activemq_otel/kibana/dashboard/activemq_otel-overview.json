@@ -1,0 +1,1134 @@
+{
+    "attributes": {
+        "title": "[ActiveMQ OTel] Overview",
+        "description": "At-a-glance broker health. Quick answer to \"am I healthy?\"",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "756a792e-f0f8-cddb-73d2-c3067261ca61",
+                                "order": 1,
+                                "label": "Broker Health & Capacity",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_756a792e-f0f8-cddb-73d2-c3067261ca61_dashboard"
+                            },
+                            {
+                                "id": "0f00cfd2-f106-3406-8e77-4bd310364983",
+                                "order": 2,
+                                "label": "Destinations & Message Flow",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_0f00cfd2-f106-3406-8e77-4bd310364983_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 12,
+                    "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [ActiveMQ OTel] Overview\n\nAt-a-glance landing page for broker health:\n- Active connections and broker memory/store utilization\n- Total messages in broker\n- Enqueue vs dequeue rate over time\n- Top destinations by message count (excluding Advisory)\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "51d19170-11f8-4808-0de8-f8a74bdbb14a",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 6,
+                    "h": 4,
+                    "i": "51d19170-11f8-4808-0de8-f8a74bdbb14a"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Active Connections",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "a2d3035a-37dc-0111-ff44-78fc37fad19e",
+                                "layerType": "data",
+                                "metricAccessor": "6e5104f2-a091-21fb-73e8-f9db07949a43",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.broker.connection.current IS NOT NULL OR activemq.connection.count IS NOT NULL\n| EVAL conn = COALESCE(activemq.broker.connection.current, activemq.connection.count)\n| STATS connections = MAX(conn)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "a2d3035a-37dc-0111-ff44-78fc37fad19e": {
+                                            "query": {
+                                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.broker.connection.current IS NOT NULL OR activemq.connection.count IS NOT NULL\n| EVAL conn = COALESCE(activemq.broker.connection.current, activemq.connection.count)\n| STATS connections = MAX(conn)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "connections",
+                                                    "columnId": "6e5104f2-a091-21fb-73e8-f9db07949a43",
+                                                    "label": "Active Connections",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "connections",
+                                                    "columnId": "6e5104f2-a091-21fb-73e8-f9db07949a43",
+                                                    "label": "Active Connections",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "5b7ebaa7-5217-ebb9-908b-0e70068616d8",
+                "gridData": {
+                    "x": 22,
+                    "y": 2,
+                    "w": 6,
+                    "h": 4,
+                    "i": "5b7ebaa7-5217-ebb9-908b-0e70068616d8"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Memory Utilization",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "aac5154e-4e4b-9447-5d5c-aacd238eb44f",
+                                "layerType": "data",
+                                "metricAccessor": "863b5ce6-61fb-7fbe-75a7-26082ace0f51",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.memory.utilization IS NOT NULL\n| STATS mem_pct = AVG(activemq.memory.utilization) * 100"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "aac5154e-4e4b-9447-5d5c-aacd238eb44f": {
+                                            "query": {
+                                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.memory.utilization IS NOT NULL\n| STATS mem_pct = AVG(activemq.memory.utilization) * 100"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "mem_pct",
+                                                    "columnId": "863b5ce6-61fb-7fbe-75a7-26082ace0f51",
+                                                    "label": "Memory %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "mem_pct",
+                                                    "columnId": "863b5ce6-61fb-7fbe-75a7-26082ace0f51",
+                                                    "label": "Memory %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "067263da-6ba5-2209-5154-c4f6df681618",
+                "gridData": {
+                    "x": 28,
+                    "y": 2,
+                    "w": 6,
+                    "h": 4,
+                    "i": "067263da-6ba5-2209-5154-c4f6df681618"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Store Utilization",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "0d807522-0497-0018-7002-60d884c68000",
+                                "layerType": "data",
+                                "metricAccessor": "35246e81-b711-33db-3f7b-eb47de3714d1",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.store.utilization IS NOT NULL\n| STATS store_pct = AVG(activemq.store.utilization) * 100"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "0d807522-0497-0018-7002-60d884c68000": {
+                                            "query": {
+                                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.store.utilization IS NOT NULL\n| STATS store_pct = AVG(activemq.store.utilization) * 100"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "store_pct",
+                                                    "columnId": "35246e81-b711-33db-3f7b-eb47de3714d1",
+                                                    "label": "Store %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "store_pct",
+                                                    "columnId": "35246e81-b711-33db-3f7b-eb47de3714d1",
+                                                    "label": "Store %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "64b0b417-72b2-5b78-0ad8-911d76643bc7",
+                "gridData": {
+                    "x": 34,
+                    "y": 2,
+                    "w": 6,
+                    "h": 4,
+                    "i": "64b0b417-72b2-5b78-0ad8-911d76643bc7"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Total Messages",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "99706da4-35c4-cb31-5982-254c88b6b41e",
+                                "layerType": "data",
+                                "metricAccessor": "83badd55-1e40-78e7-00b7-1b260240b578",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.broker.message.current IS NOT NULL\n| STATS total_msgs = MAX(activemq.broker.message.current)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "99706da4-35c4-cb31-5982-254c88b6b41e": {
+                                            "query": {
+                                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.broker.message.current IS NOT NULL\n| STATS total_msgs = MAX(activemq.broker.message.current)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total_msgs",
+                                                    "columnId": "83badd55-1e40-78e7-00b7-1b260240b578",
+                                                    "label": "Total Messages",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total_msgs",
+                                                    "columnId": "83badd55-1e40-78e7-00b7-1b260240b578",
+                                                    "label": "Total Messages",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "429e1379-c1b7-281b-780d-4e57d0a8b529",
+                "gridData": {
+                    "x": 0,
+                    "y": 14,
+                    "w": 48,
+                    "h": 12,
+                    "i": "429e1379-c1b7-281b-780d-4e57d0a8b529"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Enqueue vs Dequeue Rate",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "5f0869ac-269f-93f9-d33a-3f30752a87b9",
+                                        "accessors": [
+                                            "fb7919da-5f49-d263-241a-9bea31188878",
+                                            "27371964-efe4-8b73-c1a9-8a2775f99e1e"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Messages/sec",
+                                "yLeftTitle": "Messages/sec",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.broker.enqueue.count IS NOT NULL OR activemq.broker.dequeue.count IS NOT NULL\n| STATS enqueue_rate = SUM(RATE(activemq.broker.enqueue.count)), dequeue_rate = SUM(RATE(activemq.broker.dequeue.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "5f0869ac-269f-93f9-d33a-3f30752a87b9": {
+                                            "query": {
+                                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.broker.enqueue.count IS NOT NULL OR activemq.broker.dequeue.count IS NOT NULL\n| STATS enqueue_rate = SUM(RATE(activemq.broker.enqueue.count)), dequeue_rate = SUM(RATE(activemq.broker.dequeue.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "enqueue_rate",
+                                                    "columnId": "fb7919da-5f49-d263-241a-9bea31188878",
+                                                    "label": "Enqueue Rate",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/sec"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dequeue_rate",
+                                                    "columnId": "27371964-efe4-8b73-c1a9-8a2775f99e1e",
+                                                    "label": "Dequeue Rate",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/sec"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "enqueue_rate",
+                                                    "columnId": "fb7919da-5f49-d263-241a-9bea31188878",
+                                                    "label": "Enqueue Rate",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/sec"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dequeue_rate",
+                                                    "columnId": "27371964-efe4-8b73-c1a9-8a2775f99e1e",
+                                                    "label": "Dequeue Rate",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "/sec"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "7869dc12-0151-cb63-77d1-481bec1d9a93",
+                "gridData": {
+                    "x": 0,
+                    "y": 26,
+                    "w": 48,
+                    "h": 12,
+                    "i": "7869dc12-0151-cb63-77d1-481bec1d9a93"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Memory & Store Utilization Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "ed8ffc31-9ecb-6534-7d8d-bda4b161afe5",
+                                        "accessors": [
+                                            "30254751-0f40-832a-2cd0-d3fc2f75825a",
+                                            "3ee670b8-4a9f-643c-70c8-9934fff8d825"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Utilization %",
+                                "yLeftTitle": "Utilization %",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.memory.utilization IS NOT NULL OR activemq.store.utilization IS NOT NULL\n| STATS mem_pct = AVG(activemq.memory.utilization) * 100, store_pct = AVG(activemq.store.utilization) * 100 BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "ed8ffc31-9ecb-6534-7d8d-bda4b161afe5": {
+                                            "query": {
+                                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.memory.utilization IS NOT NULL OR activemq.store.utilization IS NOT NULL\n| STATS mem_pct = AVG(activemq.memory.utilization) * 100, store_pct = AVG(activemq.store.utilization) * 100 BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "mem_pct",
+                                                    "columnId": "30254751-0f40-832a-2cd0-d3fc2f75825a",
+                                                    "label": "Memory %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "store_pct",
+                                                    "columnId": "3ee670b8-4a9f-643c-70c8-9934fff8d825",
+                                                    "label": "Store %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "mem_pct",
+                                                    "columnId": "30254751-0f40-832a-2cd0-d3fc2f75825a",
+                                                    "label": "Memory %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "store_pct",
+                                                    "columnId": "3ee670b8-4a9f-643c-70c8-9934fff8d825",
+                                                    "label": "Store %",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "c033975a-d3fa-169d-1812-56c1cf7dbad4",
+                "gridData": {
+                    "x": 0,
+                    "y": 38,
+                    "w": 48,
+                    "h": 12,
+                    "i": "c033975a-d3fa-169d-1812-56c1cf7dbad4"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Top Destinations by Message Count",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "5fa30590-b343-a622-9303-d388ddb5c026",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "b490de6d-f115-57c6-02f9-8385bb41a206",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "a52d894a-4139-60ab-7fbf-2d478b6ff44b",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.message.current IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS message_count = MAX(activemq.message.current) BY dest\n| SORT message_count DESC\n| LIMIT 20"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "a52d894a-4139-60ab-7fbf-2d478b6ff44b": {
+                                            "query": {
+                                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.message.current IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS message_count = MAX(activemq.message.current) BY dest\n| SORT message_count DESC\n| LIMIT 20"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "5fa30590-b343-a622-9303-d388ddb5c026",
+                                                    "label": "Destination",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "message_count",
+                                                    "columnId": "b490de6d-f115-57c6-02f9-8385bb41a206",
+                                                    "label": "Messages",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "5fa30590-b343-a622-9303-d388ddb5c026",
+                                                    "label": "Destination",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "message_count",
+                                                    "columnId": "b490de6d-f115-57c6-02f9-8385bb41a206",
+                                                    "label": "Messages",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "activemq.otel"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "activemq.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": false,
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "b0d7dd2e-3f13-3c25-5510-2cca888fde0a": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "b0d7dd2e-3f13-3c25-5510-2cca888fde0a",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "resource.attributes.activemq.broker.name",
+                        "title": "Broker",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                },
+                "a18657f3-9386-7419-0c1e-db380f1b3b06": {
+                    "grow": false,
+                    "order": 1,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "a18657f3-9386-7419-0c1e-db380f1b3b06",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "resource.attributes.host.name",
+                        "title": "Host",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "activemq_otel-overview",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "activemq_otel-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "activemq_otel-broker-health",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_756a792e-f0f8-cddb-73d2-c3067261ca61_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "activemq_otel-destinations",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_0f00cfd2-f106-3406-8e77-4bd310364983_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_b0d7dd2e-3f13-3c25-5510-2cca888fde0a:optionsListDataView"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_a18657f3-9386-7419-0c1e-db380f1b3b06:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}

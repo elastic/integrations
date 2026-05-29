@@ -34,6 +34,11 @@ To create an API key please refer to Check Point's [Infinity API Guide](https://
 5. Add all the required integration configuration parameters, such as Server URL, Client ID, Secret Key. For all data streams, these parameters must be provided in order to retrieve logs.
 6. Save the integration.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Data Streams:
 
 1. **Anti-bot:** This is behavioral protection against bots. A single bot can create multiple threats. Cybercriminals often use bots in Advanced Persistent Threat (APT) attacks to target specific individuals or organizations.

@@ -21,13 +21,6 @@ install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
 # Start the mock O365 API server.
 docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} o365-mock
 
-# Workaround for https://github.com/elastic/elastic-package/issues/3321:
-# add_package passes the package dir as RepositoryRoot instead of the repo
-# root, so the builder can't find licenses/Elastic-2.0.txt. Copy it into
-# the package directory where the builder expects it.
-exec mkdir -p ${PACKAGE_ROOT}/licenses
-exec cp ${PACKAGE_ROOT}/../../licenses/Elastic-2.0.txt ${PACKAGE_ROOT}/licenses/Elastic-2.0.txt
-
 # Add the package resources.
 add_package -profile ${CONFIG_PROFILES}/${PROFILE}
 
@@ -51,9 +44,6 @@ stdout '^0$'
 remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
 uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
 docker_down o365-mock
-
-# Clean up license workaround (https://github.com/elastic/elastic-package/issues/3321).
-exec rm -rf ${PACKAGE_ROOT}/licenses
 
 -- test_config.yaml --
 input: cel

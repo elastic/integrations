@@ -61,7 +61,24 @@
         - name: buffer_cache_hit_ratio
           type: double
           metric_type: gauge
-          description: The ratio is the total number of cache hits divided by the total number of cache lookups over the last few thousand page accesses. After a long period of time, the ratio moves very little. Because reading from the cache is much less expensive than reading from disk, you want this ratio to be high.
+          description: >-
+            Deprecated: use `mssql.metrics.buffer_cache_hit_ratio_pct` instead.
+            The ratio is the total number of cache hits divided by the total number of cache lookups
+            over the last few thousand page accesses. After a long period of time, the ratio moves very
+            little. Because reading from the cache is much less expensive than reading from disk, you
+            want this ratio to be high.
+        - name: buffer_cache_hit_ratio_pct
+          type: double
+          unit: percent
+          format: percent
+          metric_type: gauge
+          description: >-
+            Buffer cache hit ratio expressed as a fraction in [0, 1]. Computed at query time as
+            `Buffer cache hit ratio / Buffer cache hit ratio base`, joining the numerator
+            counter with its companion `PERF_LARGE_RAW_BASE` counter (`cntr_type` 1073939712)
+            from `sys.dm_os_performance_counters` as required for `PERF_LARGE_RAW_FRACTION`
+            counters. A healthy SQL Server typically reports values close to 1.0, indicating
+            that most page requests were satisfied from the buffer cache rather than from disk.
         - name: buffer_page_life_expectancy
           type: long
           metric_type: gauge

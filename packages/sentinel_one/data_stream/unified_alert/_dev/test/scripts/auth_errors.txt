@@ -1,0 +1,130 @@
+# Test that the unified_alert data stream correctly indexes CEL error events for
+# SentinelOne API authentication and authorization failures (error codes
+# 4010010 and 4030010), then recovers and collects unified alert documents.
+#
+# The mock cycles through four responses for /web/api/v2.1/unifiedalerts/graphql:
+#   1st call → 401 {"errors":[{"code":4010010,"detail":"Authentication failed."}]}
+#   2nd call → 403 {"errors":[{"code":4030010,"detail":"Insufficient permissions."}]}
+#   3rd call → 200 with 2 alerts (detectedAt phase)
+#   4th call → 200 with 2 alerts (updatedAt phase)
+#
+# Note: The CEL program runs two POST requests per complete poll cycle —
+# one for detectedAt and one for updatedAt. Each error returns want_more:false
+# so the program waits for the next interval before retrying. The ingest
+# pipeline fingerprints on (id, updatedAt, detectedAt) so both 200 responses
+# deduplicate to the same 2 unique documents.
+#
+# The CEL program emits an indexed error event for each non-200 response.
+# The test first asserts that 2 error events land in Elasticsearch, then
+# asserts that 2 unified alert documents eventually arrive.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the mock SentinelOne API server.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} s1-mock
+
+# Add the package resources.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Add the data stream policy.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Wait for 2 error events: one for the 401 and one for the 403. Each non-200
+# response causes the CEL program to emit an indexed error event.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_errors.json
+
+# Verify both documents are error events.
+exec jq '[.hits.hits[]._source | select(.error.message != null)] | length' got_errors.json
+stdout '^2$'
+
+# Verify error codes from the 401 and 403 responses are both present.
+exec jq '[.hits.hits[]._source.error.code] | sort | .[]' got_errors.json
+stdout '401'
+stdout '403'
+
+# Wait for 2 unified alert documents. The fingerprint deduplicates both polling
+# phases to the same 2 unique docs: 2 errors + 2 data = 4 total.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 4 -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# Verify 2 documents have the sentinel_one.unified_alert namespace set.
+exec jq '[.hits.hits[]._source | select(.sentinel_one.unified_alert != null)] | length' got_docs.json
+stdout '^2$'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down s1-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://s1-mock:8080
+  api_token: test-api-token
+data_stream:
+  vars:
+    interval: 30s
+    initial_interval: 1h
+    batch_size: 10
+    preserve_original_event: true
+    enable_request_tracer: false
+-- s1-mock/docker-compose.yml --
+version: '2.3'
+services:
+  s1-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: s1-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- s1-mock/config.yml --
+rules:
+  # GraphQL alerts endpoint: first call returns 401 (authentication failed),
+  # second call returns 403 (insufficient permissions), third and fourth calls
+  # return 200 with 2 alerts (one for the detectedAt phase, one for the
+  # updatedAt phase). The mock cycles through responses in order.
+  - path: /web/api/v2.1/unifiedalerts/graphql
+    methods: [POST]
+    request_headers:
+      Authorization:
+        - "Bearer test-api-token"
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"errors":[{"code":4010010,"detail":"Authentication failed.","title":"Authentication Failed"}],"data":null,"pagination":null}
+      - status_code: 403
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"errors":[{"code":4030010,"detail":"You do not have permission to perform this action.","title":"Insufficient Permissions"}],"data":null,"pagination":null}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"data":{"alerts":{"totalCount":2,"pageInfo":{"hasNextPage":false,"hasPreviousPage":false,"startCursor":null,"endCursor":null},"edges":[{"cursor":"c1","node":{"id":"ua-001","name":"TestAlert1","severity":"HIGH","status":"OPEN","createdAt":"2024-01-15T10:00:00.000Z","updatedAt":"2024-01-15T10:01:00.000Z","detectedAt":"2024-01-15T10:00:00.000Z","externalId":null}},{"cursor":"c2","node":{"id":"ua-002","name":"TestAlert2","severity":"MEDIUM","status":"OPEN","createdAt":"2024-01-15T10:05:00.000Z","updatedAt":"2024-01-15T10:06:00.000Z","detectedAt":"2024-01-15T10:05:00.000Z","externalId":null}}]}}}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"data":{"alerts":{"totalCount":2,"pageInfo":{"hasNextPage":false,"hasPreviousPage":false,"startCursor":null,"endCursor":null},"edges":[{"cursor":"c1","node":{"id":"ua-001","name":"TestAlert1","severity":"HIGH","status":"OPEN","createdAt":"2024-01-15T10:00:00.000Z","updatedAt":"2024-01-15T10:01:00.000Z","detectedAt":"2024-01-15T10:00:00.000Z","externalId":null}},{"cursor":"c2","node":{"id":"ua-002","name":"TestAlert2","severity":"MEDIUM","status":"OPEN","createdAt":"2024-01-15T10:05:00.000Z","updatedAt":"2024-01-15T10:06:00.000Z","detectedAt":"2024-01-15T10:05:00.000Z","externalId":null}}]}}}

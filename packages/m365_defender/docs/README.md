@@ -8,6 +8,10 @@ The [Microsoft Defender XDR](https://learn.microsoft.com/en-us/defender-xdr/) in
 
 The integration works by collecting data from the Microsoft Azure Event Hub, Microsoft Graph Security REST API, and the Microsoft Defender Endpoint API.
 
+For a demo, refer to the following video (click to view).
+
+[![Microsoft Defender XDR integration video](https://play.vidyard.com/fsxgbbf7qarpgx345x28v5.jpg)](https://videos.elastic.co/watch/fSxgBbf7QArpgX345x28v5)
+
 ### Compatibility
 
 This integration supports below API versions to collect data.
@@ -15,9 +19,9 @@ This integration supports below API versions to collect data.
     - [Alerts](https://learn.microsoft.com/en-us/graph/api/security-list-alerts_v2?view=graph-rest-1.0)
     - [Incidents](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0)
   - [Microsoft Defender for Endpoint API v1.0](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)
-    - [Vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files)
+    - [Vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities)
   - [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide)
-    - Supported Microsoft Defender XDR Streaming event types are listed below. For more details on all available event types, refer to [documentation](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types).
+    - Supported Microsoft Defender XDR Streaming event types are in the following table. For more details on all available event types, refer to [documentation](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types).
 
 | Resource types | Description |
 | --- | --- |
@@ -63,7 +67,7 @@ The Microsoft Defender XDR integration collects logs for four types of events: A
 
 **Events:** This data stream uses the [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide) to collect Alert, Device, Email, App and Identity Events. Events are streamed to an Azure Event Hub. For a list of supported events exposed by the Streaming API and supported by Elastic's integration, please refer to Microsoft's documentation [here](https://learn.microsoft.com/en-us/defender-xdr/supported-event-types?view=o365-worldwide).
 
-**Vulnerabilities:** This data stream uses the [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)'s [`/api/machines/SoftwareVulnerabilitiesExport`](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files) endpoint to collect vulnerability assessments.
+**Vulnerabilities:** This data stream uses the [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)'s [`/api/machines/SoftwareVulnerabilityChangesByMachine`](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities) delta endpoint to collect vulnerability change events (new, updated, and fixed vulnerabilities).
 
 **Note:** The **Alerts** data stream ingests individual detection events surfaced by Microsoft and partner security providers, while **Incidents** data stream ingests correlated collections of alerts that represent a broader attack.
 
@@ -173,7 +177,17 @@ The values used in `event.severity` are consistent with Elastic Detection Rules.
 
 ## Troubleshooting
 
-- Expiring SAS URLs: The option `SAS Valid Hours` in `vulnerability` data stream controls the duration that the `Shared Access Signature (SAS)` download URLs are valid for. The default value of this option is `1h` i.e., 1 hour, and the maximum allowed value is `6h` i.e., 6 hours. Increase the value of the option `SAS Valid Hours` when you see `error.message` indicates signatures are invalid, or when you notice invalid signature errors inside CEL trace logs.
+### Vulnerability data stream: Fixed vulnerabilities appearing on the Findings page
+
+The vulnerability data stream uses Microsoft Defender for Endpoint's delta API, which returns change events including remediated (`Fixed`) vulnerabilities. Each record carries a `vulnerability.status` field with one of the following values: `open`, `fixed`, or `unknown`.
+
+Until the Kibana Vulnerability Findings page adds a default filter on this field, remediated vulnerabilities will appear alongside open findings. To exclude them, add the following filter to the Findings page or any saved search:
+
+```
+NOT vulnerability.status: fixed
+```
+
+This is equivalent to showing only currently active vulnerabilities.
 
 ## Scaling
 
@@ -989,11 +1003,11 @@ An example event for `incident` looks as following:
 {
     "@timestamp": "2021-09-30T09:35:45.113Z",
     "agent": {
-        "ephemeral_id": "ea0e3074-38cf-4f33-88d6-cec07743a825",
-        "id": "50b0fe53-224a-4406-97f7-4fd963c16f5c",
-        "name": "elastic-agent-28076",
+        "ephemeral_id": "26029426-feed-4aa1-81fb-43b40fc9a50b",
+        "id": "fc780176-34dd-4467-936a-4bb0d9abb3b9",
+        "name": "elastic-agent-30416",
         "type": "filebeat",
-        "version": "8.19.4"
+        "version": "8.19.10"
     },
     "cloud": {
         "account": {
@@ -1005,23 +1019,23 @@ An example event for `incident` looks as following:
     },
     "data_stream": {
         "dataset": "m365_defender.incident",
-        "namespace": "82148",
+        "namespace": "95310",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "50b0fe53-224a-4406-97f7-4fd963c16f5c",
+        "id": "fc780176-34dd-4467-936a-4bb0d9abb3b9",
         "snapshot": false,
-        "version": "8.19.4"
+        "version": "8.19.10"
     },
     "event": {
         "agent_id_status": "verified",
         "created": "2021-08-13T08:43:35.553Z",
         "dataset": "m365_defender.incident",
         "id": "29723951",
-        "ingested": "2025-12-23T09:48:39Z",
+        "ingested": "2026-03-31T15:00:10Z",
         "kind": "alert",
         "original": "{\"@odata.type\":\"#microsoft.graph.security.incident\",\"alerts\":{\"@odata.type\":\"#microsoft.graph.security.alert\",\"actorDisplayName\":null,\"alertWebUrl\":\"https://security.microsoft.com/alerts/da637551227677560813_-961444813?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"assignedTo\":null,\"category\":\"DefenseEvasion\",\"classification\":\"unknown\",\"comments\":[],\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"description\":\"A hidden file has been launched. This activity could indicate a compromised host. Attackers often hide files associated with malicious tools to evade file system inspection and defenses.\",\"detectionSource\":\"antivirus\",\"detectorId\":\"e0da400f-affd-43ef-b1d5-afc2eb6f2756\",\"determination\":\"unknown\",\"evidence\":[{\"@odata.type\":\"#microsoft.graph.security.deviceEvidence\",\"azureAdDeviceId\":null,\"createdDateTime\":\"2021-04-27T12:19:27.7211305Z\",\"defenderAvStatus\":\"unknown\",\"deviceDnsName\":\"tempDns\",\"firstSeenDateTime\":\"2020-09-12T07:28:32.4321753Z\",\"healthStatus\":\"active\",\"loggedOnUsers\":[],\"mdeDeviceId\":\"73e7e2de709dff64ef64b1d0c30e67fab63279db\",\"onboardingStatus\":\"onboarded\",\"osBuild\":22424,\"osPlatform\":\"Windows10\",\"rbacGroupId\":75,\"rbacGroupName\":\"UnassignedGroup\",\"remediationStatus\":\"none\",\"remediationStatusDetails\":null,\"riskScore\":\"medium\",\"roles\":[\"compromised\"],\"tags\":[\"Test Machine\"],\"verdict\":\"unknown\",\"version\":\"Other\",\"vmMetadata\":{\"cloudProvider\":\"azure\",\"resourceId\":\"/subscriptions/8700d3a3-3bb7-4fbe-a090-488a1ad04161/resourceGroups/WdatpApi-EUS-STG/providers/Microsoft.Compute/virtualMachines/NirLaviTests\",\"subscriptionId\":\"8700d3a3-3bb7-4fbe-a090-488a1ad04161\",\"vmId\":\"ca1b0d41-5a3b-4d95-b48b-f220aed11d78\"}}],\"firstActivityDateTime\":\"2021-04-26T07:45:50.116Z\",\"id\":\"da637551227677560813_-9614448132\",\"incidentId\":\"28282\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/28282?tid=b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"lastActivityDateTime\":\"2021-05-02T07:56:58.222Z\",\"lastUpdateDateTime\":\"2021-05-02T14:19:01.3266667Z\",\"mitreTechniques\":[\"T1564.001\"],\"providerAlertId\":\"da637551227677560813_-961444813\",\"recommendedActions\":\"Collect artifacts and determine scope\\n�\\tReview the machine timeline for suspicious activities that may have occurred before and after the time of the alert, and record additional related artifacts (files, IPs/URLs) \\n�\\tLook for the presence of relevant artifacts on other systems. Identify commonalities and differences between potentially compromised systems.\\n�\\tSubmit relevant files for deep analysis and review resulting detailed behavioral information.\\n�\\tSubmit undetected files to the MMPC malware portal\\n\\nInitiate containment \\u0026 mitigation \\n�\\tContact the user to verify intent and initiate local remediation actions as needed.\\n�\\tUpdate AV signatures and run a full scan. The scan might reveal and remove previously-undetected malware components.\\n�\\tEnsure that the machine has the latest security updates. In particular, ensure that you have installed the latest software, web browser, and Operating System versions.\\n�\\tIf credential theft is suspected, reset all relevant users passwords.\\n�\\tBlock communication with relevant URLs or IPs at the organization�s perimeter.\",\"resolvedDateTime\":null,\"serviceSource\":\"microsoftDefenderForEndpoint\",\"severity\":\"low\",\"status\":\"new\",\"tenantId\":\"b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\",\"threatDisplayName\":null,\"threatFamilyName\":null,\"title\":\"Suspicious execution of hidden file\"},\"assignedTo\":\"KaiC@contoso.onmicrosoft.com\",\"classification\":\"truePositive\",\"comments\":[{\"comment\":\"Demo incident\",\"createdBy\":\"DavidS@contoso.onmicrosoft.com\",\"createdTime\":\"2021-09-30T12:07:37.2756993Z\"}],\"createdDateTime\":\"2021-08-13T08:43:35.5533333Z\",\"determination\":\"multiStagedAttack\",\"displayName\":\"Multi-stage incident involving Initial access \\u0026 Command and control on multiple endpoints reported by multiple sources\",\"id\":\"29723951\",\"incidentWebUrl\":\"https://security.microsoft.com/incidents/2972395?tid=12f988bf-16f1-11af-11ab-1d7cd011db47\",\"lastUpdateDateTime\":\"2021-09-30T09:35:45.1133333Z\",\"redirectIncidentId\":null,\"severity\":\"medium\",\"status\":\"active\",\"tags\":[\"Demo\"],\"tenantId\":\"b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c\"}",
         "provider": "microsoftDefenderForEndpoint",
@@ -1410,26 +1424,26 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-01-05T12:06:57.268Z",
+    "@timestamp": "2026-05-20T12:00:00.000Z",
     "agent": {
-        "ephemeral_id": "15548e80-a8ea-4a4c-baab-48929ef5392c",
-        "id": "d54bb79c-84f4-4b99-abc8-fc8158cedafe",
-        "name": "elastic-agent-64195",
+        "ephemeral_id": "5539665b-3fe9-49d8-a045-b6b8421bd6ed",
+        "id": "ed1fd721-0d94-4537-9beb-9f449cd62e86",
+        "name": "elastic-agent-81995",
         "type": "filebeat",
-        "version": "8.19.4"
+        "version": "8.19.10"
     },
     "data_stream": {
         "dataset": "m365_defender.vulnerability",
-        "namespace": "60777",
+        "namespace": "92152",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "d54bb79c-84f4-4b99-abc8-fc8158cedafe",
+        "id": "ed1fd721-0d94-4537-9beb-9f449cd62e86",
         "snapshot": false,
-        "version": "8.19.4"
+        "version": "8.19.10"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1438,9 +1452,9 @@ An example event for `vulnerability` looks as following:
         ],
         "dataset": "m365_defender.vulnerability",
         "id": "1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226",
-        "ingested": "2026-01-05T12:06:58Z",
+        "ingested": "2026-05-18T13:46:51Z",
         "kind": "event",
-        "original": "{\"CveBatchTitle\":\"Red_hat February 2025 Vulnerabilities\",\"CveBatchUrl\":\"https://security.access.redhat.com/data/oval/v2/RHEL9/rhel-9.8-eus.oval.xml.bz2\",\"CveId\":\"CVE-2022-49226\",\"CvssScore\":5.5,\"DeviceId\":\"1212121212121212121212\",\"DeviceName\":\"sample-host-1\",\"ExploitabilityLevel\":\"NoExploit\",\"FirstSeenTimestamp\":\"2025-10-06 10:43:58\",\"Id\":\"1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226\",\"IsOnboarded\":true,\"LastSeenTimestamp\":\"2025-10-06 22:45:00\",\"OSArchitecture\":\"x64\",\"OSPlatform\":\"Linux\",\"OSVersion\":\"enterprise_linux_9.4\",\"RbacGroupId\":0,\"RbacGroupName\":\"Unassigned\",\"RecommendationReference\":\"va-_-red_hat-_-kernel\",\"RecommendedSecurityUpdate\":\"CVE-2022-49226_oval:com.redhat.rhsa:def:20249315\",\"RecommendedSecurityUpdateId\":\"RHSA-2024:9315\",\"RecommendedSecurityUpdateUrl\":\"https://access.redhat.com/errata/RHSA-2024:9315\",\"RegistryPaths\":[],\"SecurityUpdateAvailable\":true,\"SoftwareName\":\"kernel\",\"SoftwareVendor\":\"red_hat\",\"SoftwareVersion\":\"0:5.14.0-427.42.1.el9_4\",\"VulnerabilitySeverityLevel\":\"Medium\"}",
+        "original": "{\"cveId\":\"CVE-2022-49226\",\"deviceId\":\"1212121212121212121212\",\"deviceName\":\"sample-host-1\",\"diskPaths\":[],\"eventTimestamp\":\"2026-05-20 12:00:00\",\"exploitabilityLevel\":\"NoExploit\",\"firstSeenTimestamp\":\"2026-05-20 10:43:58\",\"id\":\"1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226\",\"lastSeenTimestamp\":\"2026-05-20 22:45:00\",\"osArchitecture\":\"x64\",\"osPlatform\":\"Linux\",\"osVersion\":\"enterprise_linux_9.4\",\"rbacGroupName\":\"Unassigned\",\"recommendationReference\":\"va-_-red_hat-_-kernel\",\"recommendedSecurityUpdate\":\"CVE-2022-49226_oval:com.redhat.rhsa:def:20249315\",\"recommendedSecurityUpdateId\":\"RHSA-2024:9315\",\"recommendedSecurityUpdateUrl\":null,\"registryPaths\":[],\"softwareName\":\"kernel\",\"softwareVendor\":\"red_hat\",\"softwareVersion\":\"0:5.14.0-427.42.1.el9_4\",\"status\":\"New\",\"vulnerabilitySeverityLevel\":\"Medium\"}",
         "type": [
             "info"
         ]
@@ -1466,17 +1480,16 @@ An example event for `vulnerability` looks as following:
     },
     "m365_defender": {
         "vulnerability": {
-            "cve_batch_title": "Red_hat February 2025 Vulnerabilities",
-            "cve_batch_url": "https://security.access.redhat.com/data/oval/v2/RHEL9/rhel-9.8-eus.oval.xml.bz2",
             "cve_id": "CVE-2022-49226",
             "cvss_score": 5.5,
             "device_id": "1212121212121212121212",
             "device_name": "sample-host-1",
+            "event_timestamp": "2026-05-20T12:00:00.000Z",
             "exploitability_level": "NoExploit",
-            "first_seen_timestamp": "2025-10-06T10:43:58.000Z",
+            "first_seen_timestamp": "2026-05-20T10:43:58.000Z",
             "id": "1212121212121212121212_red_hat_kernel_0:5.14.0-427.42.1.el9_4_CVE-2022-49226",
             "is_onboarded": true,
-            "last_seen_timestamp": "2025-10-06T22:45:00.000Z",
+            "last_seen_timestamp": "2026-05-20T22:45:00.000Z",
             "os_architecture": "x64",
             "os_platform": "Linux",
             "os_version": "enterprise_linux_9.4",
@@ -1485,14 +1498,13 @@ An example event for `vulnerability` looks as following:
             "recommendation_reference": "va-_-red_hat-_-kernel",
             "recommended_security_update": "CVE-2022-49226_oval:com.redhat.rhsa:def:20249315",
             "recommended_security_update_id": "RHSA-2024:9315",
-            "security_update_available": true,
             "severity_level": "Medium",
             "software_name": "kernel",
             "software_vendor": "red_hat",
-            "software_version": "0:5.14.0-427.42.1.el9_4"
+            "software_version": "0:5.14.0-427.42.1.el9_4",
+            "status": "New"
         }
     },
-    "message": "Red_hat February 2025 Vulnerabilities",
     "observer": {
         "product": "Microsoft 365 Defender",
         "vendor": "Microsoft"
@@ -1530,6 +1542,7 @@ An example event for `vulnerability` looks as following:
             "base": 5.5
         },
         "severity": "Medium",
+        "status": "open",
         "title": "Vulnerability found in kernel 0:5.14.0-427.42.1.el9_4 - CVE-2022-49226"
     }
 }
@@ -1556,6 +1569,7 @@ An example event for `vulnerability` looks as following:
 | m365_defender.vulnerability.device_id | Unique identifier for the device in the service. | keyword |
 | m365_defender.vulnerability.device_name | Fully qualified domain name (FQDN) of the device. | keyword |
 | m365_defender.vulnerability.disk_paths | Disk evidence that the product is installed on the device. | keyword |
+| m365_defender.vulnerability.event_timestamp | The time this delta event was found. | date |
 | m365_defender.vulnerability.exploitability_level | The exploitability level of this vulnerability (NoExploit, ExploitIsPublic, ExploitIsVerified, ExploitIsInKit) | keyword |
 | m365_defender.vulnerability.first_seen_timestamp | First time this product CVE was seen on the device. | date |
 | m365_defender.vulnerability.id | Unique identifier for the record. | keyword |
@@ -1570,11 +1584,11 @@ An example event for `vulnerability` looks as following:
 | m365_defender.vulnerability.recommended_security_update | Name or description of the security update provided by the software vendor to address the vulnerability. | keyword |
 | m365_defender.vulnerability.recommended_security_update_id | Identifier of the applicable security updates or identifier for the corresponding guidance or knowledge base (KB) articles. | keyword |
 | m365_defender.vulnerability.registry_paths | Registry evidence that the product is installed in the device. | keyword |
-| m365_defender.vulnerability.security_update_available | Indicates whether a security update is available for the software. | boolean |
 | m365_defender.vulnerability.severity_level | Severity level assigned to the security vulnerability based on the CVSS score. | keyword |
 | m365_defender.vulnerability.software_name | Name of the software product. | keyword |
 | m365_defender.vulnerability.software_vendor | Name of the software vendor. | keyword |
 | m365_defender.vulnerability.software_version | Version number of the software product. | keyword |
+| m365_defender.vulnerability.status | Delta event status indicating whether the vulnerability is New, Fixed, or Updated. | keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | package.fixed_version |  | keyword |
 | package.name | Package name | keyword |
@@ -1584,6 +1598,7 @@ An example event for `vulnerability` looks as following:
 | vulnerability.cve | The CVE id of the vulnerability. | keyword |
 | vulnerability.published_date |  | date |
 | vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
+| vulnerability.status | Lifecycle state of the vulnerability finding on the asset. Expected values: open, fixed, reopened, unknown. | keyword |
 | vulnerability.title |  | keyword |
 
 
@@ -1602,4 +1617,4 @@ This integration dataset uses the following APIs:
 - `Alerts`: [List alerts_v2](https://learn.microsoft.com/en-us/graph/api/security-list-alerts_v2?view=graph-rest-1.0&tabs=http) endpoint from [Microsoft Graph Security REST API v1.0](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)
 - `Events`: [Microsoft Defender XDR Streaming API](https://learn.microsoft.com/en-us/defender-xdr/streaming-api?view=o365-worldwide)
 - `Incidents`: [List incidents](https://learn.microsoft.com/en-us/graph/api/security-list-incidents?view=graph-rest-1.0&tabs=http) endpoint from [Microsoft Graph Security REST API v1.0](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0)
-- `Vulnerabilities`: [Get software vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities#2-export-software-vulnerabilities-assessment-via-files) endpoint from [Microsoft Defender for Endpoint API v1.0](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)
+- `Vulnerabilities`: [SoftwareVulnerabilityChangesByMachine](https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities) delta endpoint from [Microsoft Defender for Endpoint API v1.0](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)

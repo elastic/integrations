@@ -1,0 +1,502 @@
+dashboards:
+  - id: apache_tomcat_otel-jvm-memory-gc
+    name: '[Tomcat OTel] JVM Memory & GC'
+    description: >-
+      JVM memory management and garbage collection monitoring for Apache Tomcat,
+      including heap/non-heap usage, G1 memory pools, and GC activity.
+
+    filters:
+      - field: data_stream.dataset
+        equals: tomcat.otel
+
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    controls:
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: resource.attributes.host.name
+
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: apache_tomcat_otel-overview
+            - label: Request Processing
+              dashboard: apache_tomcat_otel-request-processing
+            - label: Thread Pool & Connections
+              dashboard: apache_tomcat_otel-thread-pool-connections
+            - label: JVM Memory & GC
+              dashboard: apache_tomcat_otel-jvm-memory-gc
+            - label: Sessions & Applications
+              dashboard: apache_tomcat_otel-sessions-servlets
+            - label: JVM & OS Resources
+              dashboard: apache_tomcat_otel-jvm-os-resources
+
+      # ─── Dashboard Overview + KPIs ─────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [Tomcat OTel] JVM Memory & GC
+
+            This dashboard monitors JVM memory management and garbage collection:
+            - Heap and non-heap memory usage, committed and max
+            - G1 memory pool breakdown (Eden, Survivor, Old Gen)
+            - Young and Old GC collection counts and pause times
+            - Memory leak detection via Old Gen usage trends
+
+      # KPI Row 1 (w:8 × 4 = 32)
+      - title: Heap Used
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_Memory_HeapMemoryUsage_used IS NOT NULL
+            - STATS heap_used = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_used))
+          primary:
+            field: heap_used
+            label: Heap Used
+            format:
+              type: bytes
+
+      - title: Heap Max
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_Memory_HeapMemoryUsage_max IS NOT NULL
+            - STATS heap_max = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_max))
+          primary:
+            field: heap_max
+            label: Heap Max
+            format:
+              type: bytes
+
+      - title: Non-Heap Used
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_Memory_NonHeapMemoryUsage_used IS NOT NULL
+            - STATS nonheap_used = MAX(LAST_OVER_TIME(java_lang_Memory_NonHeapMemoryUsage_used))
+          primary:
+            field: nonheap_used
+            label: Non-Heap Used
+            format:
+              type: bytes
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Memory Utilization'
+
+      - title: Heap Utilization
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_Memory_HeapMemoryUsage_used IS NOT NULL
+            - STATS heap_used = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_used)), heap_max = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_max))
+            - EVAL heap_util = CASE(heap_max > 0, heap_used / heap_max, 0)
+          primary:
+            field: heap_util
+            label: Heap Utilization
+            format:
+              type: percent
+              decimals: 1
+
+      # KPI Row 2 (w:8 × 4 = 32)
+      - title: Young GC Count
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_G1_Young_Generation_CollectionCount IS NOT NULL
+            - STATS young_gc = MAX(LAST_OVER_TIME(java_lang_G1_Young_Generation_CollectionCount))
+          primary:
+            field: young_gc
+            label: Young GC Count
+            format:
+              type: number
+              compact: true
+
+      - title: Old GC Count
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_G1_Old_Generation_CollectionCount IS NOT NULL
+            - STATS old_gc = MAX(LAST_OVER_TIME(java_lang_G1_Old_Generation_CollectionCount))
+          primary:
+            field: old_gc
+            label: Old GC Count
+            format:
+              type: number
+              compact: true
+
+      - title: Young GC Time
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_G1_Young_Generation_CollectionTime IS NOT NULL
+            - STATS young_gc_time = MAX(LAST_OVER_TIME(java_lang_G1_Young_Generation_CollectionTime))
+          primary:
+            field: young_gc_time
+            label: Young GC Time
+            format:
+              type: number
+              decimals: 0
+              suffix: " ms"
+
+      - title: Last GC Duration
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_G1_Young_Generation_LastGcInfo_duration IS NOT NULL
+            - STATS last_gc = MAX(LAST_OVER_TIME(java_lang_G1_Young_Generation_LastGcInfo_duration))
+          primary:
+            field: last_gc
+            label: Last GC Duration
+            format:
+              type: number
+              decimals: 0
+              suffix: " ms"
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Heap Memory'
+
+      - title: Heap Memory Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: unstacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_Memory_HeapMemoryUsage_used IS NOT NULL
+            - STATS heap_used = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_used)), heap_committed = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_committed)), heap_max = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_max)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: heap_used
+              label: Used
+              format:
+                type: bytes
+            - field: heap_committed
+              label: Committed
+              format:
+                type: bytes
+            - field: heap_max
+              label: Max
+              format:
+                type: bytes
+          legend:
+            visible: show
+            position: right
+
+      - title: Non-Heap Memory Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: unstacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_Memory_NonHeapMemoryUsage_used IS NOT NULL
+            - STATS nonheap_used = MAX(LAST_OVER_TIME(java_lang_Memory_NonHeapMemoryUsage_used)), nonheap_committed = MAX(LAST_OVER_TIME(java_lang_Memory_NonHeapMemoryUsage_committed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: nonheap_used
+              label: Used
+              format:
+                type: bytes
+            - field: nonheap_committed
+              label: Committed
+              format:
+                type: bytes
+          legend:
+            visible: show
+            position: right
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Garbage Collection'
+
+      - title: GC Collection Count Over Time
+        description: Delta of cumulative GC collection counts per time bucket.
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_G1_Young_Generation_CollectionCount IS NOT NULL
+            - STATS young_gc = SUM(DELTA(java_lang_G1_Young_Generation_CollectionCount)), old_gc = SUM(DELTA(java_lang_G1_Old_Generation_CollectionCount)), concurrent_gc = SUM(DELTA(java_lang_G1_Concurrent_GC_CollectionCount)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: young_gc
+              label: Young GC
+              format:
+                type: number
+                decimals: 0
+            - field: old_gc
+              label: Old GC
+              format:
+                type: number
+                decimals: 0
+            - field: concurrent_gc
+              label: Concurrent GC
+              format:
+                type: number
+                decimals: 0
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: Old GC
+                color: '#cc5642'
+          legend:
+            visible: show
+            position: right
+
+      - title: GC Cumulative Time Over Time
+        description: Delta of cumulative GC pause time (ms) per time bucket.
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_G1_Young_Generation_CollectionTime IS NOT NULL
+            - STATS young_time = SUM(DELTA(java_lang_G1_Young_Generation_CollectionTime)), old_time = SUM(DELTA(java_lang_G1_Old_Generation_CollectionTime)), concurrent_time = SUM(DELTA(java_lang_G1_Concurrent_GC_CollectionTime)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: young_time
+              label: Young GC Time (ms)
+              format:
+                type: number
+                decimals: 0
+            - field: old_time
+              label: Old GC Time (ms)
+              format:
+                type: number
+                decimals: 0
+            - field: concurrent_time
+              label: Concurrent GC Time (ms)
+              format:
+                type: number
+                decimals: 0
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: Old GC Time (ms)
+                color: '#cc5642'
+          legend:
+            visible: show
+            position: right
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## G1 Memory Pools'
+
+      - title: Eden Space Over Time
+        size: {w: 16, h: 12}
+        esql:
+          type: area
+          mode: unstacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_G1_Eden_Space_Usage_used IS NOT NULL
+            - STATS eden_used = MAX(LAST_OVER_TIME(java_lang_G1_Eden_Space_Usage_used)), eden_committed = MAX(LAST_OVER_TIME(java_lang_G1_Eden_Space_Usage_committed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: eden_used
+              label: Used
+              format:
+                type: bytes
+            - field: eden_committed
+              label: Committed
+              format:
+                type: bytes
+          legend:
+            visible: show
+            position: bottom
+
+      - title: Survivor Space Over Time
+        size: {w: 16, h: 12}
+        esql:
+          type: area
+          mode: unstacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_G1_Survivor_Space_Usage_used IS NOT NULL
+            - STATS survivor_used = MAX(LAST_OVER_TIME(java_lang_G1_Survivor_Space_Usage_used)), survivor_committed = MAX(LAST_OVER_TIME(java_lang_G1_Survivor_Space_Usage_committed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: survivor_used
+              label: Used
+              format:
+                type: bytes
+            - field: survivor_committed
+              label: Committed
+              format:
+                type: bytes
+          legend:
+            visible: show
+            position: bottom
+
+      - title: Old Generation Over Time
+        description: Old Gen growth without returning to baseline after GC indicates a potential memory leak.
+        size: {w: 16, h: 12}
+        esql:
+          type: area
+          mode: unstacked
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_G1_Old_Gen_Usage_used IS NOT NULL
+            - STATS old_used = MAX(LAST_OVER_TIME(java_lang_G1_Old_Gen_Usage_used)), old_committed = MAX(LAST_OVER_TIME(java_lang_G1_Old_Gen_Usage_committed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: old_used
+              label: Used
+              format:
+                type: bytes
+            - field: old_committed
+              label: Committed
+              format:
+                type: bytes
+          legend:
+            visible: show
+            position: bottom
+
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Memory Utilization'
+
+      - title: Heap Utilization
+        size: {w: 24, h: 10}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_Memory_HeapMemoryUsage_used IS NOT NULL
+            - STATS heap_used = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_used)), heap_max = MAX(LAST_OVER_TIME(java_lang_Memory_HeapMemoryUsage_max))
+            - EVAL heap_util = CASE(heap_max > 0, ROUND(heap_used / heap_max * 100, 1), 0)
+            - EVAL gauge_min = 0
+            - EVAL gauge_max = 100
+            - EVAL gauge_goal = 85
+          metric:
+            field: heap_util
+            label: Heap Utilization
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+          minimum:
+            field: gauge_min
+          maximum:
+            field: gauge_max
+          goal:
+            field: gauge_goal
+          color:
+            range_type: number
+            range_min: 0
+            range_max: 100
+            thresholds:
+              - up_to: 70
+                color: '#54b399'
+              - up_to: 85
+                color: '#d6bf57'
+              - up_to: 100
+                color: '#cc5642'
+          appearance:
+            shape: arc
+
+      - title: Old Generation Utilization
+        description: Old Gen utilization trending upward over time suggests a memory leak.
+        size: {w: 24, h: 10}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-tomcat.otel-*
+            - WHERE java_lang_G1_Old_Gen_Usage_used IS NOT NULL
+            - STATS old_used = MAX(LAST_OVER_TIME(java_lang_G1_Old_Gen_Usage_used)), old_max = MAX(LAST_OVER_TIME(java_lang_G1_Old_Gen_Usage_max))
+            - EVAL old_util = CASE(old_max > 0, ROUND(old_used / old_max * 100, 1), 0)
+            - EVAL gauge_min = 0
+            - EVAL gauge_max = 100
+            - EVAL gauge_goal = 80
+          metric:
+            field: old_util
+            label: Old Gen Utilization
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+          minimum:
+            field: gauge_min
+          maximum:
+            field: gauge_max
+          goal:
+            field: gauge_goal
+          color:
+            range_type: number
+            range_min: 0
+            range_max: 100
+            thresholds:
+              - up_to: 60
+                color: '#54b399'
+              - up_to: 80
+                color: '#d6bf57'
+              - up_to: 100
+                color: '#cc5642'
+          appearance:
+            shape: arc
