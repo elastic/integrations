@@ -170,70 +170,107 @@ HEADER
 
         # Major.minor from branch name (used to verify version family).
         ver_major_minor="$(echo "${ver_suffix}" | cut -d. -f1-2)"
+        # Regex-safe major.minor for grep/sed matching.
+        ver_family_regex="^${ver_major_minor//./\\.}(\.|\$)"
 
-        # --- base_commit resolution (three strategies, in order) ---
+        # --- base_commit resolution ---
         #
-        # 1. git merge-base: works when the original BASE_COMMIT is still reachable
-        #    from upstream/main (i.e. main hasn't been rebased past it).
+        # The BASE_COMMIT is the commit on main from which the backport branch was
+        # created.  Three fast strategies produce candidates; we then pick the
+        # OLDEST (by commit timestamp) whose package version matches the branch's
+        # major.minor family.  This correctly handles:
         #
-        # 2. Parent-of-first-CI-sync: when the branch was created by backport_branch.sh,
-        #    the script adds a "Update .buildkite folder from main" commit on top of
-        #    BASE_COMMIT. The parent of that commit IS the BASE_COMMIT.  Reliable for
-        #    semi-old branches that went through the backport script.
+        #   • Recent branches: merge-base is still in main (strategy A).
+        #   • Old branches with CI-sync at creation time: parent of OLDEST CI-sync
+        #     commit is the BASE_COMMIT (strategy C).
+        #   • Old branches where CI-sync was RE-DONE after cherry-picks: the
+        #     CI-sync parent is a cherry-pick, not the base.  Walking from HEAD
+        #     skipping automation/backport commits finds the first "normal" commit
+        #     (strategy B), and "oldest wins" picks the right one.
         #
-        # 3. Branch tip: last resort when the above can't recover the right family.
-        #    base_commit stays as the (stale) merge-base in this case.
+        # If no candidate matches the version family, fall back to branch-tip version.
 
         base_commit=""
         base_version=""
         version_warn=""
 
-        # Strategy 1: merge-base
-        merge_base_commit=""
-        if merge_base_commit="$(git merge-base "refs/remotes/${REMOTE}/main" "${ref}" 2>/dev/null)"; then
-            manifest_path="$(find_manifest_path "${merge_base_commit}" "${pkg}" 2>/dev/null)" || true
-            if [[ -n "${manifest_path}" ]]; then
-                candidate_ver="$(get_version_at "${merge_base_commit}" "${manifest_path}")"
-                if echo "${candidate_ver}" | grep -qE "^${ver_major_minor//./\\.}(\.|\$)"; then
-                    base_commit="${merge_base_commit}"
-                    base_version="${candidate_ver}"
-                    echo "    base_commit: merge-base (version ${base_version})" >&2
-                fi
-            fi
+        # Helper: check version family match.
+        matches_family() { echo "${1}" | grep -qE "${ver_family_regex}"; }
+
+        # Helper: get commit timestamp (unix seconds).
+        commit_ts() { git log -1 --format="%ct" "${1}" 2>/dev/null; }
+
+        # Collect candidate SHAs.
+        cand_merge_base=""
+        cand_walk=""
+        cand_ci_parent=""
+
+        # Strategy A: git merge-base
+        cand_merge_base="$(git merge-base "refs/remotes/${REMOTE}/main" "${ref}" 2>/dev/null)" || true
+
+        # Strategy B: walk from HEAD, skip CI-automation and explicit backport commits,
+        # take the first "normal" commit (within the top 30).
+        walk_count=0
+        while IFS= read -r sha; do
+            (( walk_count++ )) || true
+            [[ "${walk_count}" -gt 30 ]] && break
+            msg="$(git log -1 --format="%s" "${sha}" 2>/dev/null)"
+            # Skip CI automation commits.
+            echo "${msg}" | grep -qiE \
+                "Update .buildkite (folder )?from main|Copy .buildkite from main|Add .buildkite.*to backport branch" \
+                && continue
+            # Skip explicit backport cherry-picks and double-PR cherry-picks.
+            # Double-PR pattern "(#NNNNN) (#MMMMM)" at end of message is the standard
+            # format for backport cherry-picks in this repo (first PR = original on main,
+            # second PR = the backport PR targeting this branch).
+            echo "${msg}" | grep -qiE "\[backport\]|\(backport\)|backporting |\(#[0-9]+\) \(#[0-9]+\)$" && continue
+            cand_walk="${sha}"
+            break
+        done < <(git log "${ref}" --format="%H" 2>/dev/null)
+
+        # Strategy C: parent of oldest (first) CI-sync commit.
+        first_ci="$(git log "${ref}" --format="%H %s" 2>/dev/null \
+            | grep -iE "Update .buildkite (folder )?from main|Copy .buildkite from main|Add .buildkite.*to backport branch" \
+            | tail -1 | awk '{print $1}')" || true
+        if [[ -n "${first_ci}" ]]; then
+            cand_ci_parent="$(git rev-parse "${first_ci}^" 2>/dev/null)" || true
         fi
 
-        # Strategy 2: parent of first CI-sync commit ("Update .buildkite folder from main")
-        if [[ -z "${base_commit}" ]]; then
-            first_ci="$(git log "${ref}" --format="%H %s" \
-                | grep -iE "Update .buildkite (folder )?from main|Copy .buildkite from main|Add .buildkite.*to backport branch" \
-                | tail -1 \
-                | awk '{print $1}')" || true
-            if [[ -n "${first_ci}" ]]; then
-                ci_parent="${first_ci}^"
-                manifest_path="$(find_manifest_path "${ci_parent}" "${pkg}" 2>/dev/null)" || true
-                if [[ -n "${manifest_path}" ]]; then
-                    candidate_ver="$(get_version_at "${ci_parent}" "${manifest_path}")"
-                    if echo "${candidate_ver}" | grep -qE "^${ver_major_minor//./\\.}(\.|\$)"; then
-                        base_commit="$(git rev-parse "${ci_parent}" 2>/dev/null)" || base_commit="${ci_parent}"
-                        base_version="${candidate_ver}"
-                        echo "    base_commit: CI-sync parent ${base_commit:0:10} (version ${base_version})" >&2
-                    fi
-                fi
-            fi
-        fi
+        # Among all candidates, pick the OLDEST whose version matches the version family.
+        best_commit=""
+        best_version=""
+        best_ts=9999999999
 
-        # Strategy 3: tip fallback (base_commit stays as stale merge-base if available)
-        if [[ -z "${base_version}" ]]; then
-            [[ -z "${base_commit}" ]] && base_commit="${merge_base_commit}"
+        for candidate in "${cand_merge_base}" "${cand_walk}" "${cand_ci_parent}"; do
+            [[ -z "${candidate}" ]] && continue
+            m="$(find_manifest_path "${candidate}" "${pkg}" 2>/dev/null)" || true
+            [[ -z "${m}" ]] && continue
+            ver="$(get_version_at "${candidate}" "${m}")"
+            matches_family "${ver}" || continue
+            ts="$(commit_ts "${candidate}")"
+            [[ -z "${ts}" ]] && continue
+            if [[ -z "${best_commit}" || "${ts}" -lt "${best_ts}" ]]; then
+                best_ts="${ts}"
+                best_commit="${candidate}"
+                best_version="${ver}"
+            fi
+        done
+
+        if [[ -n "${best_commit}" ]]; then
+            base_commit="${best_commit}"
+            base_version="${best_version}"
+            echo "    base_commit: ${base_commit:0:10} (version ${base_version})" >&2
+        else
+            # Fallback: use stale merge-base as commit, branch tip for version.
+            base_commit="${cand_merge_base}"
             tip_manifest="$(find_manifest_path "${ref}" "${pkg}" 2>/dev/null)" || true
             if [[ -n "${tip_manifest}" ]]; then
                 base_version="$(get_version_at "${ref}" "${tip_manifest}")"
-                echo "    NOTE: base_version '${base_version}' read from branch tip — verify base_commit manually" >&2
+                echo "    NOTE: using branch-tip version '${base_version}' — verify base_commit manually" >&2
             fi
         fi
 
         if [[ -z "${base_version}" ]]; then
-            [[ -z "${base_commit}" ]] && base_commit="${merge_base_commit}"
             base_version="unknown"
             version_warn="  # WARN: could not determine base_version — fill in manually"
             echo "    WARNING: could not determine base_version for ${branch}" >&2
