@@ -1,0 +1,26 @@
+version: '2.3'
+# Data-stream-scoped deploy stack used by http_trace's system tests, overriding
+# the package-level deploy at packages/spring_boot/_dev/deploy/docker. It brings
+# both Spring Boot versions up simultaneously so each system test config can pin
+# to the service whose endpoint shape it exercises (via the `service:` key):
+#
+#   - spring-boot-4x config -> `spring_boot` (SB 4.0.6, /actuator/httpexchanges)
+#   - spring-boot-2x config -> `spring_boot2x` (SB 2.3.12, /actuator/httptrace)
+#
+# Build contexts and Dockerfiles are reused from the package-level deploy folder
+# so the application sources are not duplicated.
+services:
+  spring_boot:
+    build:
+      context: ../../../../../_dev/deploy/docker
+      dockerfile: Dockerfile.v4.0.6
+    hostname: springboot
+    ports:
+      - 8090
+  spring_boot2x:
+    build:
+      context: ../../../../../_dev/deploy/docker
+      dockerfile: Dockerfile.v2.3.12
+    hostname: springboot2x
+    ports:
+      - 8090
