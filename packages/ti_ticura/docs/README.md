@@ -71,8 +71,8 @@ The integration is designed so that indicators Ticura no longer publishes are **
 
 The cleanup uses three independent layers:
 
-1. **Pipeline-set expiry flag** — when Ticura sets `agesOut` on an indicator and that timestamp passes, the ingest pipeline sets `threat.indicator.expired: true`. The bundled dashboard excludes anything where this flag is true, so source-expired indicators disappear at the next poll regardless of poll interval.
-2. **ILM tier filter** — the bundled dashboard also restricts to `_tier: "data_hot"`, so the previous backing index (still queryable but now in warm tier) is hidden as soon as a new rollover happens. This catches indicators Ticura silently removed from the feed (without flipping `agesOut`).
+1. **Pipeline-set expiry flag** — when Ticura sets `ages_out` on an indicator and that timestamp passes, the ingest pipeline sets `threat.indicator.expired: true`. The bundled dashboard excludes anything where this flag is true, so source-expired indicators disappear at the next poll regardless of poll interval.
+2. **ILM tier filter** — the bundled dashboard also restricts to `_tier: "data_hot"`, so the previous backing index (still queryable but now in warm tier) is hidden as soon as a new rollover happens. This catches indicators Ticura silently removed from the feed (without flipping `ages_out`).
 3. **ILM deletion** — backing indices are rolled over every 24 hours and physically deleted 1 day after rollover. An indicator dropped by Ticura is therefore guaranteed to be gone from storage within approximately 48 hours.
 
 All indicators are retrieved into data streams named `logs-ti_ticura.ecs-{namespace}` and processed via the integration's ingest pipeline. Each indicator is stored with its `ticura.uuid` as the document `_id`, so re-ingests of the same indicator overwrite in place instead of duplicating.
@@ -95,13 +95,13 @@ The dashboard has nine interactive controls at the top, with **hierarchical chai
 
 | Control | Field | Use |
 |---------|-------|-----|
-| Indicator Type | `ticura.mainType` | IPV4 / IPV6 / DOMAIN / URL / HASH |
-| Risk Category | `ticura.riskCategory` | low / medium / high / critical |
-| Threat Type | `additionalInfo.threatTypes` | "Command and Control Server", "Phishing", "Malware", … |
+| Indicator Type | `ticura.main_type` | IPV4 / IPV6 / DOMAIN / URL / HASH |
+| Risk Category | `ticura.risk_category` | low / medium / high / critical |
+| Threat Type | `additional_info.threat_types` | "Command and Control Server", "Phishing", "Malware", … |
 | MITRE Technique | `threat.technique.id` | Filter by ATT&CK technique (T1190, T1486, …) |
 | Country | `threat.indicator.geo.country_iso_code` | Country of origin (GeoIP-derived) |
 | Threat Actor | `merged.actors` | Attribution to a known actor |
-| Inbound Only | `ticura.isInbound` | Limit to indicators flagged as inbound-only |
+| Inbound Only | `ticura.is_inbound` | Limit to indicators flagged as inbound-only |
 | Namespace | `data_stream.namespace` | Per-feed isolation when multiple feeds are configured |
 | Severity (range slider) | `event.severity` | Slide to a min/max severity window |
 
@@ -112,12 +112,12 @@ Tactical view focused on what to act on right now:
 | Panel | Source field(s) | Purpose |
 |-------|-----------------|---------|
 | Active indicators | count | Total count under the current scope |
-| Currently online | `additionalInfo.online.isOnline:true` count | The most actionable subset — indicators confirmed live by Ticura |
-| Inbound-only threats | `ticura.isInbound:true` count | Threats Ticura specifically flagged as ingress |
-| Sinkhole indicators | `additionalInfo.sinkhole.owner:*` count | Routed to a known sinkhole; valuable investigative context |
-| Indicator subtype distribution | `ticura.subType` | DOMAIN / HASHSHA256 / IPV4PORT / IPV4 / HASHSHA1 / HASHMD5 / IPV6 / EMAIL |
+| Currently online | `additional_info.online.is_online:true` count | The most actionable subset — indicators confirmed live by Ticura |
+| Inbound-only threats | `ticura.is_inbound:true` count | Threats Ticura specifically flagged as ingress |
+| Sinkhole indicators | `additional_info.sinkhole.owner:*` count | Routed to a known sinkhole; valuable investigative context |
+| Indicator subtype distribution | `ticura.sub_type` | DOMAIN / HASHSHA256 / IPV4PORT / IPV4 / HASHSHA1 / HASHMD5 / IPV6 / EMAIL |
 | Severity distribution | `event.severity` bucketed 0–100 | Where the volume sits — informs alert thresholds |
-| Hash type breakdown | `ticura.subType` (file indicators only) | SHA-256 / SHA-1 / MD5 mix |
+| Hash type breakdown | `ticura.sub_type` (file indicators only) | SHA-256 / SHA-1 / MD5 mix |
 | Confidence × Risk category | `ticura.{risk,confidence}Category` cross-tab | Priority quadrants — high-conf + high-risk indicators feed detection rules; low-conf + high-risk indicators need triage |
 | CVE-referenced indicators | count + top-10 CVEs | Volume of vuln-linked IOCs and which CVEs lead |
 | Top 15 ASN organizations | `threat.indicator.as.organization.name` | Pattern recognition — which hosting providers keep showing up |
@@ -133,11 +133,11 @@ Strategic time-series view of how the feed is evolving:
 |-------|-----------------|---------|
 | Indicator velocity | `threat.indicator.modified_at` per day, stacked by `threat.indicator.type` | Daily update rate, broken out by IOC type |
 | New indicators per day | `threat.indicator.first_seen` | Fresh-intel velocity (line chart) |
-| Indicators expiring per day | `ticura.agesOut` | Forward-looking expiry wave (bar chart) |
+| Indicators expiring per day | `ticura.ages_out` | Forward-looking expiry wave (bar chart) |
 | Top 30 countries by indicator count | `threat.indicator.geo.country_iso_code` | Geographic distribution (richer than the Overview pie) |
 | Feed quality matrix | `threat.feed.name` × {count, avg risk, avg confidence, online count} | Which feeds deliver the highest-quality intel |
-| Risk category trend over time | `ticura.riskCategory` split, percentage-stacked area | Are we seeing more critical IOCs over time? |
-| Threat type proportions over time | `additionalInfo.threatTypes` split, percentage-stacked area | Shifting threat-type mix |
+| Risk category trend over time | `ticura.risk_category` split, percentage-stacked area | Are we seeing more critical IOCs over time? |
+| Threat type proportions over time | `additional_info.threat_types` split, percentage-stacked area | Shifting threat-type mix |
 
 ---
 
@@ -166,14 +166,14 @@ The integration ships nine pre-built saved searches under **Discover**. They are
 | Saved search | What it shows |
 |--------------|---------------|
 | `[Ticura] High-risk indicators (last 24h)` | Severity ≥ 70, modified in the last 24 hours, not expired — sorted by severity. |
-| `[Ticura] Active C2 indicators` | `additionalInfo.threatTypes` contains *"Command and Control"*, not expired. Ready for outbound-connection detection. |
-| `[Ticura] Active phishing URLs` | `threat.indicator.type: url` AND `additionalInfo.threatTypes` contains *"Phishing"*, not expired. |
+| `[Ticura] Active C2 indicators` | `additional_info.threat_types` contains *"Command and Control"*, not expired. Ready for outbound-connection detection. |
+| `[Ticura] Active phishing URLs` | `threat.indicator.type: url` AND `additional_info.threat_types` contains *"Phishing"*, not expired. |
 | `[Ticura] Active malware file hashes` | `threat.indicator.type: file`, not expired. Covers SHA-256, SHA-1, MD5. |
 | `[Ticura] Critical-risk indicators in EU` | Severity ≥ 80 attributed to an EU member state via GeoIP. |
-| `[Ticura] Inbound-only threat indicators` | `ticura.isInbound: true` — threats targeting your environment from outside. |
+| `[Ticura] Inbound-only threat indicators` | `ticura.is_inbound: true` — threats targeting your environment from outside. |
 | `[Ticura] Indicators with MITRE ATT&CK enrichment` | `threat.technique.id` populated; useful for pivoting from the MITRE matrix to specific IOCs. |
 | `[Ticura] Recently first-seen indicators` | Sorted by `threat.indicator.first_seen`. Fresh threat-intel monitoring. |
-| `[Ticura] Indicators expiring in next 24h` | `ticura.agesOut <= now+24h` and not yet expired. Worth a quick triage glance. |
+| `[Ticura] Indicators expiring in next 24h` | `ticura.ages_out <= now+24h` and not yet expired. Worth a quick triage glance. |
 
 ---
 
@@ -192,7 +192,7 @@ The integration maps indicators to the Elastic Common Schema using the `threat.i
 | `threat.indicator.modified_at` | Time when the indicator was last updated by Ticura — used as `@timestamp` |
 | `threat.indicator.confidence` | Confidence level assigned to the indicator |
 | `threat.indicator.provider` | Indicator provider (`Ticura`) |
-| `threat.indicator.expired` | True when the indicator has passed `ticura.agesOut` |
+| `threat.indicator.expired` | True when the indicator has passed `ticura.ages_out` |
 
 ### Indicator Values
 
@@ -243,11 +243,11 @@ The integration maps indicators to the Elastic Common Schema using the `threat.i
 | Enrichment | Source | ECS Field(s) Populated |
 |------------|--------|------------------------|
 | Event time | `threat.indicator.last_seen`, falling back to `threat.indicator.first_seen` | `@timestamp` (so Discover shows real per-indicator temporal distribution; `modified_at` is deliberately not used because Ticura assigns it batch-uniformly per scoring run) |
-| Expiry flag | `ticura.agesOut` vs ingest time | `threat.indicator.expired` (boolean — true when the IOC is past its scheduled expiry) |
+| Expiry flag | `ticura.ages_out` vs ingest time | `threat.indicator.expired` (boolean — true when the IOC is past its scheduled expiry) |
 | GeoIP | `threat.indicator.ip` | `threat.indicator.geo.{country_name, city_name, location, ...}` |
 | ASN | `threat.indicator.ip` | `threat.indicator.as.number`, `threat.indicator.as.organization.name` |
 | URL parsing | `threat.indicator.url.full` | `threat.indicator.url.{scheme, domain, port, path, query, ...}` |
-| Hash type | `ticura.subType` (`HASHSHA256` / `HASHMD5` / `HASHSHA1`) | `threat.indicator.file.hash.{sha256, md5, sha1}` (defensive fallback when the source omits the typed field) |
+| Hash type | `ticura.sub_type` (`HASHSHA256` / `HASHMD5` / `HASHSHA1`) | `threat.indicator.file.hash.{sha256, md5, sha1}` (defensive fallback when the source omits the typed field) |
 
 GeoIP and ASN lookups use the GeoLite2 databases bundled with Elasticsearch — no external API calls or keys required.
 
@@ -270,24 +270,24 @@ The integration mirrors Ticura's MITRE ATT&CK enrichment into the canonical ECS 
 
 Different indicator types populate different ECS fields. The integration always sets `threat.indicator.type` for filtering.
 
-**IPv4 / IPv6 indicators** (`ticura.mainType: IPV4` / `IPV6`)
+**IPv4 / IPv6 indicators** (`ticura.main_type: IPV4` / `IPV6`)
 - `threat.indicator.ip` — the address
-- `threat.indicator.port` — only set when `ticura.subType: IPV4PORT`
+- `threat.indicator.port` — only set when `ticura.sub_type: IPV4PORT`
 - `threat.indicator.geo.{country_iso_code, country_name, city_name, region_name, location}` — GeoIP-enriched
 - `threat.indicator.as.{number, organization.name}` — ASN-enriched
 
-**Domain indicators** (`ticura.mainType: DOMAIN`)
+**Domain indicators** (`ticura.main_type: DOMAIN`)
 - `threat.indicator.url.domain` — the domain name
 - `threat.indicator.name` — same as the domain
 - `dns.{question, answers, resolved_ip, type, response_code}` — present when the source includes DNS resolution data
 
-**URL indicators** (`ticura.mainType: URL`)
+**URL indicators** (`ticura.main_type: URL`)
 - `threat.indicator.url.full` — the full URL
 - `threat.indicator.url.{scheme, domain, port, path, query, fragment, original}` — parsed by the pipeline's `uri_parts` processor
 
-**Hash indicators** (`ticura.mainType: HASH`)
+**Hash indicators** (`ticura.main_type: HASH`)
 - `threat.indicator.type: file`
-- `threat.indicator.file.hash.{sha256, sha1, md5}` — populated based on `ticura.subType` (`HASHSHA256` / `HASHSHA1` / `HASHMD5`)
+- `threat.indicator.file.hash.{sha256, sha1, md5}` — populated based on `ticura.sub_type` (`HASHSHA256` / `HASHSHA1` / `HASHMD5`)
 - `threat.indicator.file.{name, size}` — when the source includes them
 
 ---
@@ -299,30 +299,30 @@ These are preserved alongside the ECS-mapped fields for per-field provenance (se
 | Field | Type | Description |
 |-------|------|-------------|
 | `ticura.uuid` | keyword | Stable Ticura indicator ID (used as document `_id`). |
-| `ticura.mainType` / `subType` | keyword | High-level type and subtype as classified by Ticura. |
-| `ticura.risk` / `riskCategory` | long / keyword | Numeric 0–100 risk and its categorical label (low / medium / high / critical). |
-| `ticura.confidence` / `confidenceCategory` | long / keyword | Numeric 0–100 confidence and label. |
-| `ticura.isInbound` | boolean | True for threats originating outside, targeting the protected environment. |
-| `ticura.agesOut` | date | Scheduled expiry timestamp. Used by the pipeline to set `threat.indicator.expired`. |
+| `ticura.main_type` / `sub_type` | keyword | High-level type and subtype as classified by Ticura. |
+| `ticura.risk` / `risk_category` | long / keyword | Numeric 0–100 risk and its categorical label (low / medium / high / critical). |
+| `ticura.confidence` / `confidence_category` | long / keyword | Numeric 0–100 confidence and label. |
+| `ticura.is_inbound` | boolean | True for threats originating outside, targeting the protected environment. |
+| `ticura.ages_out` | date | Scheduled expiry timestamp. Used by the pipeline to set `threat.indicator.expired`. |
 | `ticura.feed_ingest_timestamp` | date | Pipeline-set; when this document was processed. Updated on every re-ingest. |
 | `ticura.countries` / `industries` / `actors` | keyword | Ticura-supplied attribution lists. |
 | `ticura.cve` | keyword | Associated CVE identifiers. |
-| `ticura.filterCats` | nested | Filter categorization metadata. |
+| `ticura.filter_cats` | nested | Filter categorization metadata. |
 | `ticura.technique.*` / `software.*` / `group.*` | group | MITRE ATT&CK enrichment, mirrored to canonical `threat.*` for Elastic Security. |
 
-### Supplemental Enrichment Fields (`additionalInfo.*`)
+### Supplemental Enrichment Fields (`additional_info.*`)
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `additionalInfo.validFrom` | date | First time the indicator was considered valid. |
-| `additionalInfo.threatTypes` | keyword | Labels like *"Command and Control Server"*, *"Phishing"*, *"Malware"*. Used by the analyst saved searches. |
-| `additionalInfo.dnsFirstSeen` / `dnsLastSeen` | date | Earliest / most recent DNS resolution observed for the indicator. |
-| `additionalInfo.malware.name` | keyword | Malware family name. |
-| `additionalInfo.online.isOnline` / `lastOnline` | boolean / date | Online-status enrichment. |
-| `additionalInfo.sinkhole.owner` | keyword | Set for indicators routed to a known sinkhole. |
-| `additionalInfo.countries` / `industries` / `actors` / `cve` | keyword | Supplemental attribution lists (also merged into `merged.*` for convenient querying). |
+| `additional_info.valid_from` | date | First time the indicator was considered valid. |
+| `additional_info.threat_types` | keyword | Labels like *"Command and Control Server"*, *"Phishing"*, *"Malware"*. Used by the analyst saved searches. |
+| `additional_info.dns_first_seen` / `dns_last_seen` | date | Earliest / most recent DNS resolution observed for the indicator. |
+| `additional_info.malware.name` | keyword | Malware family name. |
+| `additional_info.online.is_online` / `last_online` | boolean / date | Online-status enrichment. |
+| `additional_info.sinkhole.owner` | keyword | Set for indicators routed to a known sinkhole. |
+| `additional_info.countries` / `industries` / `actors` / `cve` | keyword | Supplemental attribution lists (also merged into `merged.*` for convenient querying). |
 
-The `merged.{countries, industries, actors}` fields are deduplicated, sorted unions of the `ticura.*` and `additionalInfo.*` equivalents — query these when you don't care which source the attribution came from.
+The `merged.{countries, industries, actors}` fields are deduplicated, sorted unions of the `ticura.*` and `additional_info.*` equivalents — query these when you don't care which source the attribution came from.
 
 ---
 

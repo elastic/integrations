@@ -68,15 +68,15 @@ processors:
       ignore_failure: true
 
   # ----- Expired-indicator flag -----
-  # ticura.agesOut is the indicator's scheduled expiry; documents past that
+  # ticura.ages_out is the indicator's scheduled expiry; documents past that
   # point are stale even if still in the hot index. Setting the canonical
   # ECS flag lets detection rules and dashboards filter on threat.indicator.expired.
   - script:
       lang: painless
-      if: ctx.ticura?.agesOut != null
+      if: ctx.ticura?.ages_out != null
       tag: set_threat_indicator_expired
       source: |
-        long agesMs = ZonedDateTime.parse(ctx.ticura.agesOut).toInstant().toEpochMilli();
+        long agesMs = ZonedDateTime.parse(ctx.ticura.ages_out).toInstant().toEpochMilli();
         long nowMs  = new Date().getTime();
         if (ctx.threat == null) ctx.threat = [:];
         if (ctx.threat.indicator == null) ctx.threat.indicator = [:];
@@ -235,41 +235,31 @@ processors:
       target_field: threat.indicator.as.organization.name
       ignore_missing: true
 
-  # ----- URL indicator: parse URL components -----
-  # uri_parts splits threat.indicator.url.full into scheme, domain, port, path,
-  # query, fragment, etc. Lets URL-based detection rules filter on subfields.
-  # remove_if_successful: false keeps the source url.full intact alongside the
-  # parsed components. keep_original is left off — the source field already
-  # serves that purpose.
-  - uri_parts:
-      field: threat.indicator.url.full
-      target_field: threat.indicator.url
-      remove_if_successful: false
-      if: ctx.threat?.indicator?.url?.full != null
-      ignore_failure: true
 
-  # ----- Hash indicator: fall back to subType when source omits the hash field -----
+  # ----- Hash indicator: fall back to sub_type when source omits the hash field -----
   # Ticura usually sets threat.indicator.file.hash.{sha256,md5} directly, but
   # when only threat.indicator.name (= the hash string) is present, derive the
-  # ECS field from the subType. override: false so source-supplied hashes win.
+  # ECS field from the sub_type. override: false so source-supplied hashes win.
   - set:
       field: threat.indicator.file.hash.sha256
       copy_from: threat.indicator.name
       override: false
-      if: ctx.ticura?.subType == 'HASHSHA256' && ctx.threat?.indicator?.name != null
+      if: ctx.ticura?.sub_type == 'HASHSHA256' && ctx.threat?.indicator?.name != null
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.hash.md5
       copy_from: threat.indicator.name
       override: false
-      if: ctx.ticura?.subType == 'HASHMD5' && ctx.threat?.indicator?.name != null
+      if: ctx.ticura?.sub_type == 'HASHMD5' && ctx.threat?.indicator?.name != null
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.hash.sha1
       copy_from: threat.indicator.name
       override: false
-      if: ctx.ticura?.subType == 'HASHSHA1' && ctx.threat?.indicator?.name != null
+      if: ctx.ticura?.sub_type == 'HASHSHA1' && ctx.threat?.indicator?.name != null
       ignore_empty_value: true
+
+
 
   - script:
       lang: painless
@@ -286,11 +276,11 @@ processors:
                 mergedCountries.add(ctx.ticura.countries);
             }
         }
-        if (ctx.additionalInfo?.countries != null) {
-            if (ctx.additionalInfo.countries instanceof List) {
-                mergedCountries.addAll(ctx.additionalInfo.countries);
+        if (ctx.additional_info?.countries != null) {
+            if (ctx.additional_info.countries instanceof List) {
+                mergedCountries.addAll(ctx.additional_info.countries);
             } else {
-                mergedCountries.add(ctx.additionalInfo.countries);
+                mergedCountries.add(ctx.additional_info.countries);
             }
         }
         ctx.merged.countries = new ArrayList(new HashSet(mergedCountries));
@@ -304,11 +294,11 @@ processors:
                 mergedIndustries.add(ctx.ticura.industries);
             }
         }
-        if (ctx.additionalInfo?.industries != null) {
-            if (ctx.additionalInfo.industries instanceof List) {
-                mergedIndustries.addAll(ctx.additionalInfo.industries);
+        if (ctx.additional_info?.industries != null) {
+            if (ctx.additional_info.industries instanceof List) {
+                mergedIndustries.addAll(ctx.additional_info.industries);
             } else {
-                mergedIndustries.add(ctx.additionalInfo.industries);
+                mergedIndustries.add(ctx.additional_info.industries);
             }
         }
         ctx.merged.industries = new ArrayList(new HashSet(mergedIndustries));
@@ -322,11 +312,11 @@ processors:
                 mergedActors.add(ctx.ticura.actors);
             }
         }
-        if (ctx.additionalInfo?.actors != null) {
-            if (ctx.additionalInfo.actors instanceof List) {
-                mergedActors.addAll(ctx.additionalInfo.actors);
+        if (ctx.additional_info?.actors != null) {
+            if (ctx.additional_info.actors instanceof List) {
+                mergedActors.addAll(ctx.additional_info.actors);
             } else {
-                mergedActors.add(ctx.additionalInfo.actors);
+                mergedActors.add(ctx.additional_info.actors);
             }
         }
         ctx.merged.actors = new ArrayList(new HashSet(mergedActors));
