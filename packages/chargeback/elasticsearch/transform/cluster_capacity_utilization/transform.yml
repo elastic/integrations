@@ -1,0 +1,69 @@
+description: Aggregates daily p95 heap and disk utilization across data-role nodes per deployment.
+source:
+  index:
+    - metrics-elasticsearch.stack_monitoring.node_stats-*
+  query:
+    bool:
+      should:
+        - term:
+            elasticsearch.node.roles: data_hot
+        - term:
+            elasticsearch.node.roles: data_warm
+        - term:
+            elasticsearch.node.roles: data_cold
+        - term:
+            elasticsearch.node.roles: data_frozen
+        - term:
+            elasticsearch.node.roles: data_content
+        - term:
+            elasticsearch.node.roles: data
+      minimum_should_match: 1
+  runtime_mappings:
+    node_disk_used_pct:
+      type: double
+      script:
+        source: |
+          def stats = params._source?.elasticsearch?.node?.stats;
+          if (stats == null) {
+            return;
+          }
+          def total = stats?.fs?.total?.total_in_bytes;
+          def avail = stats?.fs?.total?.available_in_bytes;
+          if (total != null && total > 0 && avail != null) {
+            emit((total - avail) * 100.0 / total);
+          }
+dest:
+  index: cluster_capacity_utilization_lookup
+  pipeline: 0.4.0-capacity_utilization
+frequency: 60m
+sync:
+  time:
+    field: "@timestamp"
+    delay: 1h
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    cluster_name:
+      terms:
+        field: elasticsearch.cluster.name
+  aggregations:
+    heap_used_pct_p95:
+      percentiles:
+        field: elasticsearch.node.stats.jvm.mem.heap.used.pct
+        percents:
+          - 95
+    disk_used_pct_p95:
+      percentiles:
+        field: node_disk_used_pct
+        percents:
+          - 95
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.4.0
