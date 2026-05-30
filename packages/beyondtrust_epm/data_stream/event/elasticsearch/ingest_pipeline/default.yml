@@ -384,6 +384,23 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: set_client_geo_location_from_lat_lon
+      lang: painless
+      description: Combine lat/lon into geo_point.
+      if: >-
+        ctx.beyondtrust_epm?.event?.client?.geo?.location?.lat != null
+        && ctx.beyondtrust_epm?.event?.client?.geo?.location?.lon != null
+      source: |-
+        def location = new HashMap();
+        location.put('lat', ctx.beyondtrust_epm.event.client.geo.location.lat);
+        location.put('lon', ctx.beyondtrust_epm.event.client.geo.location.lon);
+        ctx.beyondtrust_epm.event.client.geo.location = location;
+  - set:
+      field: client.geo.location
+      tag: set_client_geo_location_from_event
+      copy_from: beyondtrust_epm.event.client.geo.location
+      ignore_empty_value: true
   - set:
       field: client.geo.name
       tag: set_client_geo_name_from_event_client_geo_name
@@ -1231,6 +1248,23 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: set_destination_geo_location_from_lat_lon
+      lang: painless
+      description: Combine lat/lon into geo_point.
+      if: >-
+        ctx.beyondtrust_epm?.event?.destination?.geo?.location?.lat != null
+        && ctx.beyondtrust_epm?.event?.destination?.geo?.location?.lon != null
+      source: |-
+        def location = new HashMap();
+        location.put('lat', ctx.beyondtrust_epm.event.destination.geo.location.lat);
+        location.put('lon', ctx.beyondtrust_epm.event.destination.geo.location.lon);
+        ctx.beyondtrust_epm.event.destination.geo.location = location;
+  - set:
+      field: destination.geo.location
+      tag: set_destination_geo_location_from_event
+      copy_from: beyondtrust_epm.event.destination.geo.location
+      ignore_empty_value: true
   - set:
       field: destination.geo.name
       tag: set_destination_geo_name_from_event_destination_geo_name
@@ -3682,6 +3716,23 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: set_host_geo_location_from_lat_lon
+      lang: painless
+      description: Combine lat/lon into geo_point.
+      if: >-
+        ctx.beyondtrust_epm?.event?.host?.geo?.location?.lat != null
+        && ctx.beyondtrust_epm?.event?.host?.geo?.location?.lon != null
+      source: |-
+        def location = new HashMap();
+        location.put('lat', ctx.beyondtrust_epm.event.host.geo.location.lat);
+        location.put('lon', ctx.beyondtrust_epm.event.host.geo.location.lon);
+        ctx.beyondtrust_epm.event.host.geo.location = location;
+  - set:
+      field: host.geo.location
+      tag: set_host_geo_location_from_event
+      copy_from: beyondtrust_epm.event.host.geo.location
+      ignore_empty_value: true
   - set:
       field: host.geo.name
       tag: set_host_geo_name_from_event_host_geo_name
@@ -4268,6 +4319,23 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: set_observer_geo_location_from_lat_lon
+      lang: painless
+      description: Combine lat/lon into geo_point.
+      if: >-
+        ctx.beyondtrust_epm?.event?.observer?.geo?.location?.lat != null
+        && ctx.beyondtrust_epm?.event?.observer?.geo?.location?.lon != null
+      source: |-
+        def location = new HashMap();
+        location.put('lat', ctx.beyondtrust_epm.event.observer.geo.location.lat);
+        location.put('lon', ctx.beyondtrust_epm.event.observer.geo.location.lon);
+        ctx.beyondtrust_epm.event.observer.geo.location = location;
+  - set:
+      field: observer.geo.location
+      tag: set_observer_geo_location_from_event
+      copy_from: beyondtrust_epm.event.observer.geo.location
+      ignore_empty_value: true
   - set:
       field: observer.geo.name
       tag: set_observer_geo_name_from_event_observer_geo_name
@@ -5456,6 +5524,18 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: set_process_entry_meta_source_geo_location_from_lat_lon
+      lang: painless
+      description: Combine lat/lon into geo_point.
+      if: >-
+        ctx.beyondtrust_epm?.event?.process?.entry_meta?.source?.geo?.location?.lat != null
+        && ctx.beyondtrust_epm?.event?.process?.entry_meta?.source?.geo?.location?.lon != null
+      source: |-
+        def location = new HashMap();
+        location.put('lat', ctx.beyondtrust_epm.event.process.entry_meta.source.geo.location.lat);
+        location.put('lon', ctx.beyondtrust_epm.event.process.entry_meta.source.geo.location.lon);
+        ctx.beyondtrust_epm.event.process.entry_meta.source.geo.location = location;
   - convert:
       field: beyondtrust_epm.event.process.entry_meta.source.ip
       tag: convert_process_entry_meta_source_ip_to_ip
@@ -6517,6 +6597,23 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: set_server_geo_location_from_lat_lon
+      lang: painless
+      description: Combine lat/lon into geo_point.
+      if: >-
+        ctx.beyondtrust_epm?.event?.server?.geo?.location?.lat != null
+        && ctx.beyondtrust_epm?.event?.server?.geo?.location?.lon != null
+      source: |-
+        def location = new HashMap();
+        location.put('lat', ctx.beyondtrust_epm.event.server.geo.location.lat);
+        location.put('lon', ctx.beyondtrust_epm.event.server.geo.location.lon);
+        ctx.beyondtrust_epm.event.server.geo.location = location;
+  - set:
+      field: server.geo.location
+      tag: set_server_geo_location_from_event
+      copy_from: beyondtrust_epm.event.server.geo.location
+      ignore_empty_value: true
   - set:
       field: server.geo.name
       tag: set_server_geo_name_from_event_server_geo_name
@@ -7191,6 +7288,23 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: set_source_geo_location_from_lat_lon
+      lang: painless
+      description: Combine lat/lon into geo_point.
+      if: >-
+        ctx.beyondtrust_epm?.event?.source?.geo?.location?.lat != null
+        && ctx.beyondtrust_epm?.event?.source?.geo?.location?.lon != null
+      source: |-
+        def location = new HashMap();
+        location.put('lat', ctx.beyondtrust_epm.event.source.geo.location.lat);
+        location.put('lon', ctx.beyondtrust_epm.event.source.geo.location.lon);
+        ctx.beyondtrust_epm.event.source.geo.location = location;
+  - set:
+      field: source.geo.location
+      tag: set_source_geo_location_from_event
+      copy_from: beyondtrust_epm.event.source.geo.location
+      ignore_empty_value: true
   - set:
       field: source.geo.name
       tag: set_source_geo_name_from_event_source_geo_name
@@ -8763,6 +8877,23 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: set_threat_indicator_geo_location_from_lat_lon
+      lang: painless
+      description: Combine lat/lon into geo_point.
+      if: >-
+        ctx.beyondtrust_epm?.event?.threat?.indicator?.geo?.location?.lat != null
+        && ctx.beyondtrust_epm?.event?.threat?.indicator?.geo?.location?.lon != null
+      source: |-
+        def location = new HashMap();
+        location.put('lat', ctx.beyondtrust_epm.event.threat.indicator.geo.location.lat);
+        location.put('lon', ctx.beyondtrust_epm.event.threat.indicator.geo.location.lon);
+        ctx.beyondtrust_epm.event.threat.indicator.geo.location = location;
+  - set:
+      field: threat.indicator.geo.location
+      tag: set_threat_indicator_geo_location_from_event
+      copy_from: beyondtrust_epm.event.threat.indicator.geo.location
+      ignore_empty_value: true
   - set:
       field: threat.indicator.geo.name
       tag: set_threat_indicator_geo_name_from_event_threat_indicator_geo_name
@@ -11148,7 +11279,6 @@ processors:
             - _ingest._value.virtual_address
             - _ingest._value.virtual_size
           tag: remove_custom_duplicate_fields_from_file_elf_sections
-          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
           ignore_missing: true
   - foreach:
       field: beyondtrust_epm.event.file.elf.segments
@@ -11160,7 +11290,6 @@ processors:
             - _ingest._value.sections
             - _ingest._value.type
           tag: remove_custom_duplicate_fields_from_file_elf_segments
-          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
           ignore_missing: true
   - foreach:
       field: beyondtrust_epm.event.process.elf.sections
@@ -11179,7 +11308,6 @@ processors:
             - _ingest._value.virtual_address
             - _ingest._value.virtual_size
           tag: remove_custom_duplicate_fields_from_process_elf_sections
-          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
           ignore_missing: true
   - foreach:
       field: beyondtrust_epm.event.process.elf.segments
@@ -11191,7 +11319,6 @@ processors:
             - _ingest._value.sections
             - _ingest._value.type
           tag: remove_custom_duplicate_fields_from_process_elf_segments
-          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
           ignore_missing: true
   - foreach:
       field: beyondtrust_epm.event.threat.enrichments
@@ -11207,7 +11334,6 @@ processors:
             - _ingest._value.matched.occurred
             - _ingest._value.matched.type
           tag: remove_custom_duplicate_fields_from_threat_enrichments
-          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
           ignore_missing: true
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.elf.sections
@@ -11226,7 +11352,6 @@ processors:
             - _ingest._value.virtual_address
             - _ingest._value.virtual_size
           tag: remove_custom_duplicate_fields_from_threat_indicator_file_elf_sections
-          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
           ignore_missing: true
   - foreach:
       field: beyondtrust_epm.event.threat.indicator.file.elf.segments
@@ -11238,7 +11363,6 @@ processors:
             - _ingest._value.sections
             - _ingest._value.type
           tag: remove_custom_duplicate_fields_from_threat_indicator_file_elf_segments
-          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
           ignore_missing: true
   # rename all fields name to snake case
   - script:
@@ -12251,7 +12375,6 @@ processors:
         - beyondtrust_epm.event.vulnerability.score.version
         - beyondtrust_epm.event.vulnerability.severity
       tag: remove_custom_duplicate_fields
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
       ignore_missing: true
   - script:
       tag: remove_null_values
