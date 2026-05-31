@@ -1,103 +1,174 @@
-## Overview
+# PostgreSQL OpenTelemetry Assets
 
-The PostreSQL OpenTelemetry integration allows you to monitor [PostgreSQL](https://www.postgresql.org/) servers and to collect telemetry data to track database health and performance. 
+PostgreSQL is an open-source object-relational database management system known for its extensibility, standards compliance, and reliability. It handles ACID-compliant transactions with MVCC, making it suitable for concurrent workloads ranging from single-node deployments to large-scale OLTP/OLAP systems.
 
-### Compatibility
+This content pack provides dashboards, alert rules, and SLO templates for PostgreSQL monitoring. The assets use metrics and events from the OpenTelemetry PostgreSQL receiver (`postgresqlreceiver`) and cover connection capacity, transaction throughput, query performance, I/O health, lock contention, and active query analysis.
 
-The integration package has been tested with [PostgreSQL OpenTelemetry Receiver v0.130.0](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/postgresqlreceiver/README.md) and PostgreSQL server version 16.4.
+## Compatibility
 
-### How it works
+The PostgreSQL OpenTelemetry assets have been tested with:
+- OpenTelemetry PostgreSQL receiver v0.145.0
+- PostgreSQL 16.13
 
-PostgreSQL gathers and aggregates information about server activity using its built-in statistics collector which exposes the data through predefined views. For example `pg_stat_database` and `pg_stat_statements`. For a complete and up-to-date list of the statistics views and metrics collected, refer to the PostgreSQL Receiver [documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/postgresqlreceiver). For detailed explanations of what each statistics view means, check the official documentation for the [statistics collector](https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-STATS) and [pg_stat_statements](https://www.postgresql.org/docs/current/pgstatstatements.html). 
+## Requirements
 
-## What data does this integration collect?
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-The integration provides assets in Kibana that visually represent the collected metrics and events, helping you monitor and explore database activity and performance.
+## Setup
 
-## What do I need to use this integration?
+### Prerequisites
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+Before collecting data, you must configure PostgreSQL to allow the collector to connect and gather metrics. Create a dedicated user with read access to monitoring views:
 
-Some metrics require the `pg_stat_statements` [module](https://www.postgresql.org/docs/current/pgstatstatements.html#PGSTATSTATEMENTS). The module tracks the execution statistics for all the SQL statements. To enable it, add the module to the `shared_preload_libraries` parameter in the `postgres.conf` file and then **restart the server** for the settings to take effect.
+```sql
+CREATE USER otel WITH PASSWORD 'your_password';
+GRANT pg_monitor TO otel;
+GRANT SELECT ON pg_stat_database TO otel;
+GRANT SELECT ON pg_stat_activity TO otel;
+```
 
-Additionally, certain metrics and events must be explicitly enabled in the configuration. Check the sample collector configuration in the next section, and refer to the receiver documentation for a complete list of supported metrics and events.
+For top-query statistics (`db.server.top_query` events) and query samples (`db.server.query_sample`), enable the `pg_stat_statements` extension:
 
+```sql
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+```
 
-## How do I deploy this integration
+Grant the monitoring user access to `pg_stat_statements`:
 
-### Onboard and configure
+```sql
+GRANT SELECT ON pg_stat_statements TO otel;
+```
 
-Install and configure the upstream OTel Collector to export metrics to Elasticsearch, as shown in the following example:
+### Configuration
+
+Configure the OpenTelemetry Collector (or Elastic OpenTelemetry Collector) to receive PostgreSQL metrics and events and export them to Elasticsearch. The following example uses the `postgresqlreceiver` with the `elasticsearch/otel` exporter.
+
+**Placeholders**
+
+| Placeholder | Description | Example |
+|-------------|-------------|---------|
+| `<POSTGRES_ENDPOINT>` | PostgreSQL server address and port | `localhost:5432` |
+| `<POSTGRES_USER>` | PostgreSQL username for the collector | `otel` |
+| `<ES_ENDPOINT>` | Elasticsearch ingest endpoint | `https://my-deployment.es.us-central1.gcp.cloud.es.io:9243` |
+| `${env:POSTGRES_PASSWORD}` | PostgreSQL password (use an environment variable) | — |
 
 ```yaml
-postgresql:
-    endpoint: localhost:5432
-    transport: tcp
-    username: <database_user>
-    password: <database_password>
+receivers:
+  postgresql:
+    endpoint: <POSTGRES_ENDPOINT>
+    username: <POSTGRES_USER>
+    password: ${env:POSTGRES_PASSWORD}
+    databases: [postgres]
+    # Omit databases or list multiple to scrape all desired databases
     metrics:
+      postgresql.blks_hit:
+        enabled: true
+      postgresql.blks_read:
+        enabled: true
       postgresql.database.locks:
         enabled: true
-      postgresql.tup_updated:
+      postgresql.deadlocks:
         enabled: true
-      postgresql.tup_returned:
+      postgresql.sequential_scans:
+        enabled: true
+      postgresql.temp_files:
+        enabled: true
+      postgresql.temp.io:
+        enabled: true
+      postgresql.tup_deleted:
         enabled: true
       postgresql.tup_fetched:
         enabled: true
       postgresql.tup_inserted:
         enabled: true
-      postgresql.tup_deleted:
+      postgresql.tup_returned:
         enabled: true
-      postgresql.blks_hit:
+      postgresql.tup_updated:
         enabled: true
-      postgresql.blks_read:
+      postgresql.wal.delay:
+        enabled: true
+      postgresql.function.calls:
         enabled: true
     events:
+      db.server.query_sample:
+        enabled: true
       db.server.top_query:
-        enabled: true 
-       
+        enabled: true
+    query_sample_collection:
+      max_rows_per_query: 100
+    top_query_collection:
+      max_rows_per_query: 100
+      top_n_query: 200
+      max_explain_each_interval: 1000
+      query_plan_cache_size: 1000
+      query_plan_cache_ttl: 1h
+
 exporters:
-  debug:
-    verbosity: detailed
   elasticsearch/otel:
-    endpoint: https://localhost:9200
-    user: <userid>
-    password: <pwd>
+    endpoints: [<ES_ENDPOINT>]
     mapping:
-      mode: otel 
-    metrics_dynamic_index:
-      enabled: true
-  
+      mode: otel
+
 service:
   pipelines:
-    metrics:
+    metrics/postgresql:
       receivers: [postgresql]
-      exporters: [debug, elasticsearch/otel]
-    logs:
+      exporters: [elasticsearch/otel]
+    logs/postgresql:
       receivers: [postgresql]
-      exporters: [debug, elasticsearch/otel]
+      exporters: [elasticsearch/otel]
 ```
 
-Note: This configuration defines two pipelines — one for metrics and one for logs (events) from the PostgreSQL receiver.
-
-- Metrics are ingested into the metrics-* data view in Elasticsearch.
-- Events (logs) are ingested into the logs-* data view in Elasticsearch.
-
-For the full list of settings exposed for the receiver, refer to the [configuration](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/postgresqlreceiver#configuration) section.
-
-### Validation
-
-To verify that the PostgreSQL OpenTelemetry integration is working:
-
-1. Check Collector Logs
-Ensure the OpenTelemetry Collector is running and the postgresqlreceiver is enabled. You should see logs confirming metric collection from your PostgreSQL instance.
-
-2. Check Dashboards
-Open **Kibana → Dashboards** and confirm that the PostgreSQL OpenTelemetry Metrics dashboard populates with the collected data.
+> **Note**: If you do not need query sample or top-query event collection, you can disable `query_sample_collection` and `top_query_collection` in the receiver config. The metrics pipeline will continue to work.
 
 ## Reference
 
-### PostgreSQL metrics and events reference
+### Metrics
 
-Refer to the OpenTelemetry PostgreSQL receiver's [documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/postgresqlreceiver/documentation.md) for the complete list of metrics and events collected.
+Refer to the [metadata.yaml](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/postgresqlreceiver/metadata.yaml) of the OpenTelemetry PostgreSQL receiver for details on available metrics.
+
+### Logs
+
+The `postgresqlreceiver` emits event logs from `pg_stat_activity` (`db.server.query_sample`) and `pg_stat_statements` (`db.server.top_query`). Events are stored in `logs-postgresqlreceiver.otel-*` and distinguished by the `event_name` field. Query samples include real-time execution time, backend state, and wait events; top-query events provide aggregated statistics per normalized query.
+
+## Dashboards
+
+| Dashboard | Description |
+|-----------|-------------|
+| **[PostgreSQL OTel] Overview** | Overview of PostgreSQL health and golden signals: connection capacity, transaction throughput, errors, buffer cache efficiency, and capacity. |
+| **[PostgreSQL OTel] Connections** | Connection capacity, utilization, and backend distribution per database. |
+| **[PostgreSQL OTel] Workload** | Transaction throughput, tuple operations, and function call rates. |
+| **[PostgreSQL OTel] Query Performance** | Query execution times, top queries from pg_stat_statements, temp file usage, and sequential scan rates. |
+| **[PostgreSQL OTel] I/O Health** | Buffer cache hit ratio, checkpoint duration, background writer efficiency, and buffer writes by source. |
+| **[PostgreSQL OTel] Locks** | Database locks by type, mode, and relation. High exclusive lock counts indicate contention. |
+| **[PostgreSQL OTel] Active Queries** | Real-time snapshots of active queries from pg_stat_activity. Shows wait events, execution time, and state. |
+
+## Alert rules
+
+| Alert | Trigger | Severity |
+|-------|---------|----------|
+| **[PostgreSQL OTel] Connection utilization high** | Connection utilization exceeds 80% of max_connections per instance. | Critical |
+| **[PostgreSQL OTel] Deadlocks detected** | Any increase in deadlock count per instance and database. | Critical |
+| **[PostgreSQL OTel] High rollback rate** | Rollback rate exceeds 1% of commits plus rollbacks per database. | High |
+| **[PostgreSQL OTel] Temp files created** | Queries creating temp files (spilling to disk) per instance and database. | Medium |
+| **[PostgreSQL OTel] High temp I/O volume** | Temp I/O bytes exceed 100 MB in the evaluation window per database. | Medium |
+| **[PostgreSQL OTel] Low buffer hit ratio** | Buffer cache hit ratio below 99% per database. | High |
+| **[PostgreSQL OTel] Long checkpoint duration** | Total checkpoint duration exceeds 30 seconds in the window per instance. | Medium |
+| **[PostgreSQL OTel] Bgwriter maxwritten stops** | Background writer stopped due to writing too many buffers per instance. | Medium |
+| **[PostgreSQL OTel] Backend buffer writes high** | Backend-originated buffer writes exceed 100 in the window per instance. | Medium |
+| **[PostgreSQL OTel] Long-running queries** | Active queries running longer than 5 minutes from pg_stat_activity. | High |
+| **[PostgreSQL OTel] Slow top queries** | Top queries with total execution time exceeding 10 seconds in the window. | Medium |
+| **[PostgreSQL OTel] Exclusive lock contention** | ExclusiveLock or AccessExclusiveLock count exceeds 5 per instance. | High |
+| **[PostgreSQL OTel] Queries waiting on locks** | Query samples with Lock wait event type indicate blocked queries. | High |
+| **[PostgreSQL OTel] High sequential scans** | Sequential scan count exceeds 1000 in the window per database. | Warning |
+
+## SLO templates
+
+> **Note**: SLO templates require Elastic Stack version 9.4.0 or later.
+
+| SLO | Target | Window | Description |
+|-----|--------|--------|-------------|
+| **[PostgreSQL OTel] Average query latency 99.5% rolling 30 days** | 99.5% | 30-day rolling | Average per-query execution time below 200 ms for 99.5% of 1-minute intervals to maintain responsive database performance. |
+| **[PostgreSQL OTel] Connection availability 99.5% rolling 30 days** | 99.5% | 30-day rolling | Connection utilization below 80% for 99.5% of 1-minute intervals to prevent connection exhaustion. |
+| **[PostgreSQL OTel] Buffer cache hit ratio 99.5% rolling 30 days** | 99.5% | 30-day rolling | Buffer cache hit ratio above 99% for 99.5% of 1-minute intervals to maintain efficient I/O and query performance. |
+| **[PostgreSQL OTel] Transaction rollback ratio 99.5% rolling 30 days** | 99.5% | 30-day rolling | Transaction rollback ratio below 1% for 99.5% of 1-minute intervals to maintain transaction reliability and data integrity. |

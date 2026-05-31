@@ -1,0 +1,1688 @@
+{
+    "attributes": {
+        "description": "Forensic pack for persistence mechanism detection — services, scheduled tasks, registry, startup items, WMI, and BITS across all platforms.",
+        "name": "forensic-persistence",
+        "version": 1,
+        "queries": [
+            {
+                "id": "services_suspicious_windows_elastic",
+                "query": "-- Windows Service Persistence Detection\n-- Identifies suspicious services based on signature, path, and persistence indicators\n\nWITH services_base AS (\n  SELECT\n    s.name,\n    s.display_name,\n    s.path AS cmdline,\n    CASE\n      WHEN s.path LIKE '\"%' THEN\n        SUBSTR(s.path, 2, INSTR(SUBSTR(s.path, 2), '\"') - 1)\n      WHEN INSTR(LOWER(s.path), '.exe ') > 0 THEN\n        SUBSTR(s.path, 1, INSTR(LOWER(s.path), '.exe') + 3)\n      WHEN INSTR(LOWER(s.path), '.sys ') > 0 THEN\n        SUBSTR(s.path, 1, INSTR(LOWER(s.path), '.sys') + 3)\n      ELSE s.path\n    END AS exe_path,\n    s.status,\n    s.start_type,\n    s.user_account,\n    s.service_type,\n    s.pid,\n    'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name AS registry_path,\n    r_key.mtime AS _registry_mtime_raw,\n    r_dll.data AS service_dll,\n    r_failcmd.data AS failure_command\n  FROM services s\n  LEFT JOIN registry r_key\n    ON r_key.key = 'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name\n    AND r_key.name = 'Start'\n  LEFT JOIN registry r_dll\n    ON r_dll.key = 'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name || '\\Parameters'\n    AND r_dll.name = 'ServiceDll'\n  LEFT JOIN registry r_failcmd\n    ON r_failcmd.key = 'HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Services\\' || s.name\n    AND r_failcmd.name = 'FailureCommand'\n  WHERE s.service_type NOT LIKE '%DRIVER%'\n    AND s.path IS NOT NULL\n    AND s.path != ''\n),\nservices_enriched AS (\n  SELECT\n    sb.name,\n    sb.display_name,\n    sb.cmdline,\n    sb.exe_path,\n    sb.status,\n    sb.start_type,\n    sb.user_account,\n    sb.service_type,\n    sb.pid,\n    sb.registry_path,\n    sb.service_dll,\n    sb.failure_command,\n    datetime(sb._registry_mtime_raw, 'unixepoch') AS modified_time,\n    CAST((strftime('%s', 'now') - COALESCE(sb._registry_mtime_raw, 0)) / 86400 AS INTEGER) AS days_since_modified,\n    (SELECT sha256 FROM hash WHERE path = sb.exe_path LIMIT 1) AS sha256,\n    concat('https://www.virustotal.com/gui/file/', (SELECT sha256 FROM hash WHERE path = sb.exe_path LIMIT 1)) AS vt_link,\n    (SELECT subject_name FROM authenticode WHERE path = sb.exe_path LIMIT 1) AS signature_signer,\n    (SELECT result FROM authenticode WHERE path = sb.exe_path LIMIT 1) AS signature_status,\n    CASE WHEN sb.service_dll IS NOT NULL AND sb.service_dll != '' THEN\n      (SELECT sha256 FROM hash WHERE path = sb.service_dll LIMIT 1)\n    END AS dll_sha256,\n    CASE WHEN sb.service_dll IS NOT NULL AND sb.service_dll != '' THEN\n      (SELECT result FROM authenticode WHERE path = sb.service_dll LIMIT 1)\n    END AS dll_signature_status\n  FROM services_base sb\n)\n\nSELECT *\nFROM services_enriched\nWHERE (\n  (signature_status IS NULL OR signature_status != 'trusted')\n  OR exe_path LIKE 'C:\\\\Users\\\\%'\n  OR exe_path LIKE '%\\\\AppData\\\\%'\n  OR exe_path LIKE '%\\\\Temp\\\\%'\n  OR exe_path LIKE 'C:\\\\Temp\\\\%'\n  OR exe_path LIKE 'C:\\\\ProgramData\\\\%'\n  OR failure_command IS NOT NULL\n  OR (service_dll IS NOT NULL AND (dll_signature_status IS NULL OR dll_signature_status != 'trusted'))\n)\nORDER BY\n  CASE WHEN signature_status IS NULL OR signature_status != 'trusted' THEN 0 ELSE 1 END,\n  CASE WHEN failure_command IS NOT NULL THEN 0 ELSE 1 END,\n  CASE WHEN exe_path LIKE 'C:\\\\Users\\\\%' OR exe_path LIKE '%\\\\Temp\\\\%' THEN 0 ELSE 1 END;",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.windows_services"
+                        }
+                    },
+                    {
+                        "key": "service.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "service.state",
+                        "value": {
+                            "field": "status"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "exe_path"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "user_account"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.subject_name",
+                        "value": {
+                            "field": "signature_signer"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.status",
+                        "value": {
+                            "field": "signature_status"
+                        }
+                    },
+                    {
+                        "key": "registry.path",
+                        "value": {
+                            "field": "registry_path"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "dll.path",
+                        "value": {
+                            "field": "service_dll"
+                        }
+                    },
+                    {
+                        "key": "dll.hash.sha256",
+                        "value": {
+                            "field": "dll_sha256"
+                        }
+                    },
+                    {
+                        "key": "dll.code_signature.status",
+                        "value": {
+                            "field": "dll_signature_status"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "persistence",
+                                "threat_hunting",
+                                "services",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "services_suspicious_linux_elastic",
+                "query": "-- Linux Systemd Service Persistence Detection\n-- Identifies suspicious service units in non-standard locations\n\nWITH services_base AS (\n  SELECT\n    su.id AS unit_id,\n    su.load_state,\n    su.active_state,\n    su.sub_state,\n    su.description,\n    su.unit_file_state,\n    su.fragment_path,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    CAST((strftime('%s', 'now') - COALESCE(f.mtime, 0)) / 86400 AS INTEGER) AS days_since_modified\n  FROM systemd_units su\n  LEFT JOIN file f ON f.path = su.fragment_path\n  WHERE su.id LIKE '%.service'\n    AND su.fragment_path IS NOT NULL\n    AND su.fragment_path != ''\n)\n\nSELECT *\nFROM services_base\nWHERE (\n  fragment_path LIKE '/home/%'\n  OR fragment_path LIKE '/root/%'\n  OR fragment_path LIKE '/tmp/%'\n  OR fragment_path LIKE '/var/tmp/%'\n  OR fragment_path LIKE '%/.config/systemd/%'\n  OR fragment_path LIKE '%/.local/share/systemd/%'\n  OR unit_file_state IN ('linked', 'linked-runtime', 'transient')\n  OR (fragment_path LIKE '/etc/systemd/system/%' AND days_since_modified < 30)\n  OR fragment_path LIKE '/run/systemd/%'\n)\nORDER BY\n  CASE WHEN fragment_path LIKE '/home/%' OR fragment_path LIKE '/tmp/%' THEN 0 ELSE 1 END,\n  CASE WHEN fragment_path LIKE '%/.config/systemd/%' THEN 0 ELSE 1 END,\n  days_since_modified ASC;",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.systemd_services"
+                        }
+                    },
+                    {
+                        "key": "service.name",
+                        "value": {
+                            "field": "unit_id"
+                        }
+                    },
+                    {
+                        "key": "service.state",
+                        "value": {
+                            "field": "active_state"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "fragment_path"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "persistence",
+                                "threat_hunting",
+                                "systemd",
+                                "linux"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "services_suspicious_darwin_elastic",
+                "query": "-- macOS LaunchD Persistence Detection\n-- Enumerates non-Apple and suspicious launchd services for threat hunting\n\nWITH services_base AS (\n  SELECT\n    l.label,\n    l.name,\n    l.path,\n    l.program,\n    l.program_arguments,\n    l.run_at_load,\n    l.keep_alive,\n    COALESCE(NULLIF(l.username, ''), 'root') AS username,\n    CASE\n      WHEN l.program IS NOT NULL AND l.program != '' THEN l.program\n      WHEN l.program_arguments IS NOT NULL AND l.program_arguments != '' THEN\n        CASE\n          WHEN INSTR(l.program_arguments, ' ') > 0\n            THEN SUBSTR(l.program_arguments, 1, INSTR(l.program_arguments, ' ') - 1)\n          ELSE l.program_arguments\n        END\n      ELSE NULL\n    END AS executable_path,\n    CASE\n      WHEN l.path LIKE '/Library/LaunchDaemons/%' THEN 'system_daemon'\n      WHEN l.path LIKE '/Library/LaunchAgents/%' THEN 'system_agent'\n      WHEN l.path LIKE '%/Library/LaunchAgents/%' THEN 'user_agent'\n      ELSE 'other'\n    END AS launchd_type\n  FROM launchd l\n  WHERE l.path IS NOT NULL\n    AND l.path != ''\n),\nservices_enriched AS (\n  SELECT\n    sb.*,\n    (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) AS signature_signer,\n    CASE\n      WHEN (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) IS NOT NULL\n        AND (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) != ''\n      THEN 1 ELSE 0\n    END AS is_signed,\n    CASE\n      WHEN (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) IS NOT NULL\n        AND (SELECT authority FROM signature WHERE path = sb.executable_path LIMIT 1) != ''\n      THEN 'signed' ELSE 'unsigned'\n    END AS signature_status,\n    (SELECT md5 FROM hash WHERE path = sb.executable_path LIMIT 1) AS md5,\n    (SELECT sha256 FROM hash WHERE path = sb.executable_path LIMIT 1) AS sha256,\n    concat('https://www.virustotal.com/gui/file/', (SELECT sha256 FROM hash WHERE path = sb.executable_path LIMIT 1)) AS vt_link\n  FROM services_base sb\n)\n\nSELECT *\nFROM services_enriched\nWHERE\n  regex_match(path, '^(/System/|/Library/Apple/|/usr/libexec/)', 0) IS NULL\n  AND (\n    regex_match(COALESCE(signature_signer, ''), '(Apple|Software Signing)', 0) IS NULL\n    OR regex_match(COALESCE(executable_path, ''), '(^/Users/|^/tmp/|^/var/tmp/|^/private/tmp/|/[.])', 0) IS NOT NULL\n  )\nORDER BY\n  is_signed ASC,\n  launchd_type,\n  label;",
+                "interval": 3600,
+                "platform": "darwin",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "web"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.launchd_services"
+                        }
+                    },
+                    {
+                        "key": "service.name",
+                        "value": {
+                            "field": "label"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "executable_path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "program_arguments"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "process.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.subject_name",
+                        "value": {
+                            "field": "signature_signer"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.status",
+                        "value": {
+                            "field": "signature_status"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "persistence",
+                                "threat_hunting",
+                                "launchd",
+                                "macos"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "scheduled_tasks_suspicious_windows_elastic",
+                "query": "-- Detects ALL suspicious Windows scheduled tasks (full coverage, no hash enrichment)\n-- Detection: NON_WHITELISTED + LOTL_INDICATOR dual approach\n-- Use companion query 'scheduled_tasks_enriched_windows_elastic' for hash/signature analysis\n\nWITH non_whitelisted AS (\n    SELECT \n        st.name AS task_name,\n        st.action AS command_line,\n        st.path AS task_path,\n        st.enabled,\n        st.state AS task_state,\n        st.hidden,\n        datetime(st.last_run_time, 'unixepoch') AS last_execution,\n        datetime(st.next_run_time, 'unixepoch') AS next_execution,\n        st.last_run_message,\n        1 AS is_non_whitelisted,\n        0 AS is_lotl\n    FROM scheduled_tasks AS st\n    WHERE st.name IS NOT NULL\n        AND st.name != ''\n        AND st.action IS NOT NULL\n        AND st.action != ''\n        -- Allowlist: Microsoft system tasks from System32/SysWOW64\n        AND NOT (\n            (st.path LIKE '\\Microsoft\\Windows\\%' OR st.path LIKE '\\Microsoft\\Office\\%' OR st.path LIKE '\\Microsoft\\XblGameSave\\%')\n            AND (\n                LOWER(st.action) LIKE '%systemroot%\\system32\\%'\n                OR LOWER(st.action) LIKE '%windir%\\system32\\%'\n                OR LOWER(st.action) LIKE 'c:\\windows\\system32\\%'\n                OR LOWER(st.action) LIKE '%systemroot%\\syswow64\\%'\n                OR LOWER(st.action) LIKE '%windir%\\syswow64\\%'\n                OR LOWER(st.action) LIKE 'c:\\windows\\syswow64\\%'\n                OR LOWER(st.action) LIKE '%programfiles%\\windows defender\\%'\n                OR LOWER(st.action) LIKE 'c:\\program files\\windows defender\\%'\n                OR LOWER(st.action) LIKE '%program files%\\microsoft office\\%'\n                OR LOWER(st.action) LIKE 'c:\\program files\\microsoft office\\%'\n                OR LOWER(st.action) LIKE 'c:\\program files (x86)\\microsoft office\\%'\n            )\n        )\n        -- Allowlist: Defender tasks from legitimate ProgramData\n        AND NOT (\n            st.path LIKE '\\Microsoft\\Windows\\Windows Defender\\%'\n            AND (\n                LOWER(st.action) LIKE 'c:\\programdata\\microsoft\\windows defender\\%'\n                OR LOWER(st.action) LIKE '%\\programdata\\microsoft\\windows defender\\%'\n                OR LOWER(st.action) LIKE '%\\program files\\windows defender\\%'\n            )\n        )\n        -- Allowlist: Edge Update tasks\n        AND NOT (\n            st.path LIKE '\\MicrosoftEdgeUpdate%'\n            OR (st.path LIKE '%EdgeUpdate%' AND st.action LIKE '%Microsoft\\EdgeUpdate\\%')\n        )\n        -- Allowlist: Common Windows executables for Microsoft tasks\n        AND NOT (\n            st.path LIKE '\\Microsoft\\Windows\\%'\n            AND (\n                LOWER(st.action) LIKE 'sc.exe %'\n                OR LOWER(st.action) LIKE 'btudtask.exe%'\n                OR LOWER(st.action) LIKE 'schtasks.exe%'\n                OR LOWER(st.action) LIKE '%wmpnscfg.exe%'\n            )\n        )\n        -- Allowlist: Windows subsystem tasks\n        AND NOT (\n            st.path LIKE '%\\Bluetooth\\%'\n            OR st.path LIKE '%\\UPnP\\%'\n            OR st.path LIKE '%\\UsageAndQualityInsights\\%'\n            OR st.path LIKE '%\\Diagnosis\\%'\n            OR st.path LIKE '%\\UpdateOrchestrator\\%'\n            OR st.path LIKE '%\\WindowsUpdate\\%'\n            OR st.path LIKE '%\\Defrag\\%'\n            OR st.path LIKE '%\\Application Experience\\%'\n            OR st.path LIKE '%\\Location\\%'\n            OR st.path LIKE '%\\Sysmain\\%'\n            OR st.path LIKE '%\\ApplicationData\\%'\n            OR st.path LIKE '%\\DUSM\\%'\n            OR st.path LIKE '%\\capabilityaccessmanager\\%'\n            OR st.path LIKE '%\\AppxDeploymentClient\\%'\n            OR st.path LIKE '%\\Windows Media Sharing\\%'\n            OR st.path LIKE '%\\Speech\\%'\n            OR st.path LIKE '%\\TextServicesFramework\\%'\n            OR st.path LIKE '%\\Power Efficiency Diagnostics\\%'\n            OR st.path LIKE '%\\RecoveryEnvironment\\%'\n            OR st.path LIKE '%\\Registry\\%'\n            OR st.path LIKE '%\\MemoryDiagnostic\\%'\n            OR st.path LIKE '%\\Maintenance\\%'\n            OR st.path LIKE '%\\DiskCleanup\\%'\n            OR st.path LIKE '%\\Servicing\\%'\n            OR st.path LIKE '%\\Software Inventory Logging\\%'\n        )\n        -- Allowlist: Known-good third-party updaters (Google, Adobe, OneDrive)\n        AND NOT (\n            st.path LIKE '%\\Google\\Update%'\n            AND st.action LIKE '%Google\\Update\\%'\n        )\n        AND NOT (\n            st.path LIKE '%\\Adobe\\%'\n            AND st.action LIKE '%Adobe%'\n        )\n        AND NOT (\n            st.path LIKE '%OneDrive%'\n        )\n        -- Allowlist: Intel/hardware vendor tasks\n        AND NOT (\n            st.path LIKE '%\\Intel\\%'\n            AND LOWER(st.action) LIKE '%\\intel\\%'\n        )\n),\nlotl_indicators AS (\n    SELECT \n        st.name AS task_name,\n        st.action AS command_line,\n        st.path AS task_path,\n        st.enabled,\n        st.state AS task_state,\n        st.hidden,\n        datetime(st.last_run_time, 'unixepoch') AS last_execution,\n        datetime(st.next_run_time, 'unixepoch') AS next_execution,\n        st.last_run_message,\n        0 AS is_non_whitelisted,\n        1 AS is_lotl,\n        CASE\n            -- PowerShell LOTL patterns\n            WHEN LOWER(st.action) LIKE '%powershell% -e%' \n                OR LOWER(st.action) LIKE '% -enc %' \n                OR LOWER(st.action) LIKE '% -encodedcommand %' \n            THEN 'PowerShell base64 encoded command'\n            WHEN LOWER(st.action) LIKE '%invoke-webrequest%' \n                OR LOWER(st.action) LIKE '%iwr %' \n                OR LOWER(st.action) LIKE '%invoke-restmethod%' \n            THEN 'PowerShell download cradle'\n            WHEN LOWER(st.action) LIKE '%-executionpolicy bypass%' \n                OR LOWER(st.action) LIKE '%-ep bypass%' \n            THEN 'PowerShell execution policy bypass'\n            WHEN LOWER(st.action) LIKE '%-w hidden%' \n                OR LOWER(st.action) LIKE '%-windowstyle hidden%' \n            THEN 'PowerShell hidden window'\n            WHEN LOWER(st.action) LIKE '%iex(%' \n                OR LOWER(st.action) LIKE '%invoke-expression%' \n            THEN 'PowerShell Invoke-Expression abuse'\n            WHEN LOWER(st.action) LIKE '%[convert]::frombase64string%' \n            THEN 'PowerShell base64 decode obfuscation'\n            WHEN LOWER(st.action) LIKE '%downloadstring%' \n                OR LOWER(st.action) LIKE '%downloadfile%' \n            THEN 'PowerShell remote download method'\n            WHEN LOWER(st.action) LIKE '%new-object net.webclient%' \n                OR LOWER(st.action) LIKE '%system.net.webclient%' \n            THEN 'PowerShell WebClient abuse'\n            -- Download/transfer utilities\n            WHEN LOWER(st.action) LIKE '%certutil% -urlcache%' \n                OR LOWER(st.action) LIKE '%certutil% -f%' \n            THEN 'CertUtil download/decode abuse'\n            WHEN LOWER(st.action) LIKE '%bitsadmin% /transfer%' \n                OR LOWER(st.action) LIKE '%bitsadmin%/transfer%' \n            THEN 'BITSAdmin download abuse'\n            -- Suspicious execution paths\n            WHEN (LOWER(st.action) LIKE '%c:\\users\\public\\%' \n                OR LOWER(st.action) LIKE '%c:\\programdata\\%') \n                AND LOWER(st.action) NOT LIKE '%\\programdata\\microsoft\\windows defender\\%'\n                AND LOWER(st.action) NOT LIKE '%\\programdata\\microsoft\\%' \n            THEN 'Suspicious file path (writable by low-priv users)'\n            WHEN LOWER(st.action) LIKE '%\\temp\\%' \n                OR LOWER(st.action) LIKE '%\\appdata\\local\\temp\\%' \n            THEN 'Execution from Temp directory'\n            -- Script host abuse\n            WHEN LOWER(st.action) LIKE '%wscript.exe%' \n                OR LOWER(st.action) LIKE '%cscript.exe%' \n            THEN 'Windows Script Host abuse'\n            WHEN LOWER(st.action) LIKE '%mshta.exe%' \n                OR LOWER(st.action) LIKE '%mshta %' \n            THEN 'MSHTA.exe abuse'\n            -- Script file execution\n            WHEN LOWER(st.action) LIKE '%.hta%' \n                OR LOWER(st.action) LIKE '%.vbs%' \n                OR LOWER(st.action) LIKE '%.vbe%' \n                OR LOWER(st.action) LIKE '%.js%' \n                OR LOWER(st.action) LIKE '%.jse%' \n                OR LOWER(st.action) LIKE '%.wsf%' \n            THEN 'Script file execution (.hta/.vbs/.js)'\n            -- Proxy execution\n            WHEN (LOWER(st.action) LIKE '%regsvr32%' OR LOWER(st.action) LIKE '%rundll32%') \n                AND st.path NOT LIKE '\\Microsoft\\Windows\\%' \n            THEN 'Proxy execution via regsvr32/rundll32'\n            WHEN LOWER(st.action) LIKE '%msiexec%' \n                AND st.path NOT LIKE '\\Microsoft\\Windows\\%' \n            THEN 'MSI package execution'\n            -- Hidden task detection\n            WHEN st.hidden = 1 AND st.enabled = 1\n                AND st.path NOT LIKE '\\Microsoft\\Windows\\%'\n                AND st.path NOT LIKE '\\Microsoft\\Office\\%'\n                AND st.path NOT LIKE '\\Microsoft\\XblGameSave\\%'\n                AND st.path NOT LIKE '\\Microsoft\\EdgeUpdate\\%'\n                AND st.path NOT LIKE '\\MicrosoftEdgeUpdate%'\n                AND st.path NOT LIKE '%OneDrive%'\n            THEN 'Hidden and enabled scheduled task'\n            -- Network utilities\n            WHEN LOWER(st.action) LIKE '%net.exe %' \n                AND (LOWER(st.action) LIKE '% user %' OR LOWER(st.action) LIKE '% localgroup %')\n            THEN 'Net.exe user/group enumeration'\n            WHEN LOWER(st.action) LIKE '%nltest%' \n            THEN 'Domain trust enumeration (nltest)'\n            ELSE 'Unknown LOTL pattern'\n        END AS detection_reason\n    FROM scheduled_tasks AS st\n    WHERE st.name IS NOT NULL\n        AND st.name != ''\n        AND st.action IS NOT NULL\n        AND st.action != ''\n        AND (\n            -- PowerShell patterns\n            LOWER(st.action) LIKE '%powershell% -e%'\n            OR LOWER(st.action) LIKE '% -enc %'\n            OR LOWER(st.action) LIKE '% -encodedcommand %'\n            OR LOWER(st.action) LIKE '%invoke-webrequest%'\n            OR LOWER(st.action) LIKE '%iwr %'\n            OR LOWER(st.action) LIKE '%invoke-restmethod%'\n            OR LOWER(st.action) LIKE '%-executionpolicy bypass%'\n            OR LOWER(st.action) LIKE '%-ep bypass%'\n            OR LOWER(st.action) LIKE '%-w hidden%'\n            OR LOWER(st.action) LIKE '%-windowstyle hidden%'\n            OR LOWER(st.action) LIKE '%iex(%'\n            OR LOWER(st.action) LIKE '%invoke-expression%'\n            OR LOWER(st.action) LIKE '%[convert]::frombase64string%'\n            OR LOWER(st.action) LIKE '%downloadstring%'\n            OR LOWER(st.action) LIKE '%downloadfile%'\n            OR LOWER(st.action) LIKE '%new-object net.webclient%'\n            OR LOWER(st.action) LIKE '%system.net.webclient%'\n            -- Download utilities\n            OR LOWER(st.action) LIKE '%certutil% -urlcache%'\n            OR LOWER(st.action) LIKE '%certutil% -f%'\n            OR LOWER(st.action) LIKE '%bitsadmin% /transfer%'\n            OR LOWER(st.action) LIKE '%bitsadmin%/transfer%'\n            -- Suspicious paths\n            OR (LOWER(st.action) LIKE '%c:\\users\\public\\%' AND LOWER(st.action) NOT LIKE '%\\programdata\\microsoft\\windows defender\\%')\n            OR (LOWER(st.action) LIKE '%c:\\programdata\\%' AND LOWER(st.action) NOT LIKE '%\\programdata\\microsoft\\windows defender\\%' AND LOWER(st.action) NOT LIKE '%\\programdata\\microsoft\\%')\n            OR LOWER(st.action) LIKE '%\\temp\\%'\n            OR LOWER(st.action) LIKE '%\\appdata\\local\\temp\\%'\n            -- Script hosts\n            OR LOWER(st.action) LIKE '%wscript.exe%'\n            OR LOWER(st.action) LIKE '%cscript.exe%'\n            OR LOWER(st.action) LIKE '%mshta.exe%'\n            OR LOWER(st.action) LIKE '%mshta %'\n            -- Script files\n            OR LOWER(st.action) LIKE '%.hta%'\n            OR LOWER(st.action) LIKE '%.vbs%'\n            OR LOWER(st.action) LIKE '%.vbe%'\n            OR LOWER(st.action) LIKE '%.js%'\n            OR LOWER(st.action) LIKE '%.jse%'\n            OR LOWER(st.action) LIKE '%.wsf%'\n            -- Proxy execution\n            OR (LOWER(st.action) LIKE '%regsvr32%' AND st.path NOT LIKE '\\Microsoft\\Windows\\%')\n            OR (LOWER(st.action) LIKE '%rundll32%' AND st.path NOT LIKE '\\Microsoft\\Windows\\%')\n            OR (LOWER(st.action) LIKE '%msiexec%' AND st.path NOT LIKE '\\Microsoft\\Windows\\%')\n            -- Hidden tasks\n            OR (\n                st.hidden = 1 AND st.enabled = 1\n                AND st.path NOT LIKE '\\Microsoft\\Windows\\%'\n                AND st.path NOT LIKE '\\Microsoft\\Office\\%'\n                AND st.path NOT LIKE '\\Microsoft\\XblGameSave\\%'\n                AND st.path NOT LIKE '\\Microsoft\\EdgeUpdate\\%'\n                AND st.path NOT LIKE '\\MicrosoftEdgeUpdate%'\n                AND st.path NOT LIKE '%OneDrive%'\n            )\n            -- Network utilities\n            OR (LOWER(st.action) LIKE '%net.exe %' AND (LOWER(st.action) LIKE '% user %' OR LOWER(st.action) LIKE '% localgroup %'))\n            OR LOWER(st.action) LIKE '%nltest%'\n        )\n),\ncombined AS (\n    SELECT \n        st.name AS task_name,\n        st.action AS command_line,\n        st.path AS task_path,\n        st.enabled,\n        st.state AS task_state,\n        st.hidden,\n        datetime(st.last_run_time, 'unixepoch') AS last_execution,\n        datetime(st.next_run_time, 'unixepoch') AS next_execution,\n        st.last_run_message,\n        CASE \n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 \n            THEN 'Scheduled Task (LOTL)'\n            ELSE 'Scheduled Task'\n        END AS task_type,\n        CASE \n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 AND MAX(COALESCE(nw.is_non_whitelisted, 0)) = 1 \n            THEN 'LOTL_INDICATOR + NON_WHITELISTED'\n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 \n            THEN 'LOTL_INDICATOR'\n            ELSE 'NON_WHITELISTED'\n        END AS detection_method,\n        CASE \n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 AND MAX(COALESCE(nw.is_non_whitelisted, 0)) = 1 \n            THEN MAX(li.detection_reason) || ' + Not in known-good allowlist'\n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 \n            THEN MAX(li.detection_reason)\n            ELSE 'Scheduled task not in known-good allowlist'\n        END AS detection_reason\n    FROM scheduled_tasks AS st\n    LEFT JOIN non_whitelisted AS nw ON st.name = nw.task_name AND st.path = nw.task_path AND st.action = nw.command_line\n    LEFT JOIN lotl_indicators AS li ON st.name = li.task_name AND st.path = li.task_path AND st.action = li.command_line\n    WHERE COALESCE(nw.is_non_whitelisted, 0) = 1 OR COALESCE(li.is_lotl, 0) = 1\n    GROUP BY st.name, st.path, st.action, st.enabled, st.state, st.hidden, st.last_run_time, st.next_run_time, st.last_run_message\n)\nSELECT \n    c.task_name,\n    c.command_line,\n    c.task_path,\n    c.task_type,\n    c.enabled,\n    c.task_state,\n    c.hidden,\n    c.last_execution,\n    c.next_execution,\n    c.last_run_message,\n    c.detection_method,\n    c.detection_reason\nFROM combined AS c\nORDER BY \n    CASE WHEN c.detection_method LIKE 'LOTL_INDICATOR%' THEN 0 ELSE 1 END,\n    c.detection_reason,\n    c.hidden DESC,\n    c.task_name",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.scheduled_tasks_suspicious_windows_elastic"
+                        }
+                    },
+                    {
+                        "key": "service.name",
+                        "value": {
+                            "field": "task_name"
+                        }
+                    },
+                    {
+                        "key": "service.state",
+                        "value": {
+                            "field": "task_state"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "command_line"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "task_path"
+                        }
+                    },
+                    {
+                        "key": "event.created",
+                        "value": {
+                            "field": "last_execution"
+                        }
+                    },
+                    {
+                        "key": "rule.category",
+                        "value": {
+                            "field": "task_type"
+                        }
+                    },
+                    {
+                        "key": "rule.description",
+                        "value": {
+                            "field": "detection_reason"
+                        }
+                    },
+                    {
+                        "key": "rule.name",
+                        "value": {
+                            "field": "detection_method"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "persistence",
+                                "scheduled_tasks",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "scheduled_tasks_enriched_windows_elastic",
+                "query": "-- Enriched suspicious Windows scheduled tasks with hash and signature data\n-- Uses CROSS JOIN for reliable osquery hash/authenticode enrichment\n-- Only returns tasks with existing executable files\n-- For full coverage, use companion query 'scheduled_tasks_suspicious_windows_elastic'\n\n-- CTE to extract executable path with TRIM to handle leading spaces in action field\nWITH task_paths AS (\n    SELECT\n        st.name AS task_name,\n        st.action AS command_line,\n        st.path AS task_path,\n        st.enabled,\n        st.state AS task_state,\n        st.hidden,\n        datetime(st.last_run_time, 'unixepoch') AS last_execution,\n        datetime(st.next_run_time, 'unixepoch') AS next_execution,\n        st.last_run_message,\n        -- Extract executable path using TRIM and .exe detection\n        CASE\n            WHEN INSTR(LOWER(TRIM(st.action)), '.exe ') > 0\n            THEN SUBSTR(TRIM(st.action), 1, INSTR(LOWER(TRIM(st.action)), '.exe ') + 3)\n            WHEN INSTR(LOWER(TRIM(st.action)), '.exe\"') > 0\n            THEN SUBSTR(TRIM(st.action), 1, INSTR(LOWER(TRIM(st.action)), '.exe\"') + 3)\n            ELSE TRIM(st.action)\n        END AS executable_path\n    FROM scheduled_tasks AS st\n    WHERE st.name IS NOT NULL\n        AND st.name != ''\n        AND st.action IS NOT NULL\n        AND st.action != ''\n),\nsuspicious_tasks AS (\n    SELECT\n        tp.task_name,\n        tp.command_line,\n        -- Remove leading quote if present from executable_path\n        CASE\n            WHEN SUBSTR(tp.executable_path, 1, 1) = '\"'\n            THEN SUBSTR(tp.executable_path, 2)\n            ELSE tp.executable_path\n        END AS executable_path,\n        tp.task_path,\n        tp.enabled,\n        tp.task_state,\n        tp.hidden,\n        tp.last_execution,\n        tp.next_execution,\n        tp.last_run_message,\n        -- Detection classification\n        CASE\n            WHEN LOWER(tp.command_line) LIKE '%powershell% -e%' OR LOWER(tp.command_line) LIKE '% -enc %' OR LOWER(tp.command_line) LIKE '% -encodedcommand %' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%invoke-webrequest%' OR LOWER(tp.command_line) LIKE '%iwr %' OR LOWER(tp.command_line) LIKE '%invoke-restmethod%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%-executionpolicy bypass%' OR LOWER(tp.command_line) LIKE '%-ep bypass%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%-w hidden%' OR LOWER(tp.command_line) LIKE '%-windowstyle hidden%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%iex(%' OR LOWER(tp.command_line) LIKE '%invoke-expression%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%[convert]::frombase64string%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%downloadstring%' OR LOWER(tp.command_line) LIKE '%downloadfile%' OR LOWER(tp.command_line) LIKE '%webclient%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%certutil% -urlcache%' OR LOWER(tp.command_line) LIKE '%certutil% -f%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%bitsadmin%/transfer%' OR LOWER(tp.command_line) LIKE '%bitsadmin% /transfer%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%mshta%http%' OR LOWER(tp.command_line) LIKE '%mshta%javascript%' OR LOWER(tp.command_line) LIKE '%mshta.exe%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%wscript.exe%' OR LOWER(tp.command_line) LIKE '%cscript.exe%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%regsvr32%/s%' OR LOWER(tp.command_line) LIKE '%regsvr32%scrobj%' THEN 'Scheduled Task (LOTL)'\n            WHEN (LOWER(tp.command_line) LIKE '%rundll32%' OR LOWER(tp.command_line) LIKE '%msiexec%') AND tp.task_path NOT LIKE '\\Microsoft\\Windows\\%' THEN 'Scheduled Task (LOTL)'\n            WHEN LOWER(tp.command_line) LIKE '%.hta%' OR LOWER(tp.command_line) LIKE '%.vbs%' OR LOWER(tp.command_line) LIKE '%.vbe%' OR LOWER(tp.command_line) LIKE '%.js%' OR LOWER(tp.command_line) LIKE '%.jse%' OR LOWER(tp.command_line) LIKE '%.wsf%' THEN 'Scheduled Task (LOTL)'\n            WHEN tp.hidden = 1 AND tp.enabled = 1 AND tp.task_path NOT LIKE '\\Microsoft\\Windows\\%' AND tp.task_path NOT LIKE '\\Microsoft\\Office\\%' THEN 'Scheduled Task (LOTL)'\n            ELSE 'Scheduled Task'\n        END AS task_type,\n        -- Detection method\n        CASE\n            WHEN LOWER(tp.command_line) LIKE '%powershell% -e%' OR LOWER(tp.command_line) LIKE '% -enc %' OR LOWER(tp.command_line) LIKE '%invoke-%' OR LOWER(tp.command_line) LIKE '%iex(%' OR LOWER(tp.command_line) LIKE '%downloadstring%' OR LOWER(tp.command_line) LIKE '%certutil%' OR LOWER(tp.command_line) LIKE '%bitsadmin%' OR LOWER(tp.command_line) LIKE '%mshta%' OR LOWER(tp.command_line) LIKE '%wscript%' OR LOWER(tp.command_line) LIKE '%cscript%' OR LOWER(tp.command_line) LIKE '%regsvr32%' THEN 'LOTL_INDICATOR'\n            WHEN LOWER(tp.command_line) LIKE '%\\users\\%\\appdata\\%' OR LOWER(tp.command_line) LIKE '%\\users\\public\\%' OR LOWER(tp.command_line) LIKE '%\\temp\\%' OR LOWER(tp.command_line) LIKE '%\\downloads\\%' THEN 'SUSPICIOUS_PATH'\n            WHEN (LOWER(tp.command_line) LIKE '%\\programdata\\%' AND LOWER(tp.command_line) NOT LIKE '%\\microsoft\\%') THEN 'SUSPICIOUS_PATH'\n            WHEN tp.hidden = 1 AND tp.enabled = 1 THEN 'HIDDEN_ENABLED'\n            ELSE 'NON_WHITELISTED'\n        END AS detection_method,\n        -- Detection reason\n        CASE\n            WHEN LOWER(tp.command_line) LIKE '%powershell% -e%' OR LOWER(tp.command_line) LIKE '% -enc %' OR LOWER(tp.command_line) LIKE '% -encodedcommand %' THEN 'PowerShell base64 encoded command'\n            WHEN LOWER(tp.command_line) LIKE '%invoke-webrequest%' OR LOWER(tp.command_line) LIKE '%iwr %' OR LOWER(tp.command_line) LIKE '%invoke-restmethod%' THEN 'PowerShell download cradle'\n            WHEN LOWER(tp.command_line) LIKE '%-executionpolicy bypass%' OR LOWER(tp.command_line) LIKE '%-ep bypass%' THEN 'PowerShell execution policy bypass'\n            WHEN LOWER(tp.command_line) LIKE '%-w hidden%' OR LOWER(tp.command_line) LIKE '%-windowstyle hidden%' THEN 'PowerShell hidden window'\n            WHEN LOWER(tp.command_line) LIKE '%iex(%' OR LOWER(tp.command_line) LIKE '%invoke-expression%' THEN 'PowerShell Invoke-Expression abuse'\n            WHEN LOWER(tp.command_line) LIKE '%[convert]::frombase64string%' THEN 'PowerShell base64 decode'\n            WHEN LOWER(tp.command_line) LIKE '%downloadstring%' OR LOWER(tp.command_line) LIKE '%downloadfile%' OR LOWER(tp.command_line) LIKE '%webclient%' THEN 'PowerShell download method'\n            WHEN LOWER(tp.command_line) LIKE '%certutil% -urlcache%' OR LOWER(tp.command_line) LIKE '%certutil% -f%' THEN 'CertUtil download/decode abuse'\n            WHEN LOWER(tp.command_line) LIKE '%bitsadmin%/transfer%' OR LOWER(tp.command_line) LIKE '%bitsadmin% /transfer%' THEN 'BITSAdmin download abuse'\n            WHEN LOWER(tp.command_line) LIKE '%mshta%http%' OR LOWER(tp.command_line) LIKE '%mshta%javascript%' OR LOWER(tp.command_line) LIKE '%mshta.exe%' THEN 'MSHTA.exe abuse'\n            WHEN LOWER(tp.command_line) LIKE '%wscript.exe%' OR LOWER(tp.command_line) LIKE '%cscript.exe%' THEN 'Windows Script Host abuse'\n            WHEN LOWER(tp.command_line) LIKE '%regsvr32%/s%' OR LOWER(tp.command_line) LIKE '%regsvr32%scrobj%' THEN 'Regsvr32 proxy execution'\n            WHEN LOWER(tp.command_line) LIKE '%rundll32%' AND tp.task_path NOT LIKE '\\Microsoft\\Windows\\%' THEN 'Rundll32 proxy execution'\n            WHEN LOWER(tp.command_line) LIKE '%msiexec%' AND tp.task_path NOT LIKE '\\Microsoft\\Windows\\%' THEN 'MSI package execution'\n            WHEN LOWER(tp.command_line) LIKE '%.hta%' OR LOWER(tp.command_line) LIKE '%.vbs%' OR LOWER(tp.command_line) LIKE '%.vbe%' OR LOWER(tp.command_line) LIKE '%.js%' OR LOWER(tp.command_line) LIKE '%.jse%' OR LOWER(tp.command_line) LIKE '%.wsf%' THEN 'Script file execution'\n            WHEN LOWER(tp.command_line) LIKE '%\\users\\%\\appdata\\local\\temp\\%' THEN 'Executable in User Temp'\n            WHEN LOWER(tp.command_line) LIKE '%\\users\\%\\appdata\\%' THEN 'Executable in User AppData'\n            WHEN LOWER(tp.command_line) LIKE '%\\users\\public\\%' THEN 'Executable in Users Public'\n            WHEN LOWER(tp.command_line) LIKE '%\\programdata\\%' AND LOWER(tp.command_line) NOT LIKE '%\\microsoft\\%' THEN 'Executable in ProgramData'\n            WHEN LOWER(tp.command_line) LIKE '%\\temp\\%' THEN 'Executable in Temp directory'\n            WHEN LOWER(tp.command_line) LIKE '%\\downloads\\%' THEN 'Executable in Downloads'\n            WHEN tp.hidden = 1 AND tp.enabled = 1 AND tp.task_path NOT LIKE '\\Microsoft\\Windows\\%' THEN 'Hidden and enabled task'\n            ELSE 'Suspicious scheduled task'\n        END AS detection_reason\n    FROM task_paths AS tp\n    WHERE (\n        -- LOTL indicators\n        LOWER(tp.command_line) LIKE '%powershell% -e%'\n        OR LOWER(tp.command_line) LIKE '% -enc %'\n        OR LOWER(tp.command_line) LIKE '% -encodedcommand %'\n        OR LOWER(tp.command_line) LIKE '%invoke-webrequest%'\n        OR LOWER(tp.command_line) LIKE '%iwr %'\n        OR LOWER(tp.command_line) LIKE '%invoke-restmethod%'\n        OR LOWER(tp.command_line) LIKE '%-executionpolicy bypass%'\n        OR LOWER(tp.command_line) LIKE '%-ep bypass%'\n        OR LOWER(tp.command_line) LIKE '%-w hidden%'\n        OR LOWER(tp.command_line) LIKE '%-windowstyle hidden%'\n        OR LOWER(tp.command_line) LIKE '%iex(%'\n        OR LOWER(tp.command_line) LIKE '%invoke-expression%'\n        OR LOWER(tp.command_line) LIKE '%[convert]::frombase64string%'\n        OR LOWER(tp.command_line) LIKE '%downloadstring%'\n        OR LOWER(tp.command_line) LIKE '%downloadfile%'\n        OR LOWER(tp.command_line) LIKE '%webclient%'\n        OR LOWER(tp.command_line) LIKE '%certutil% -urlcache%'\n        OR LOWER(tp.command_line) LIKE '%certutil% -f%'\n        OR LOWER(tp.command_line) LIKE '%bitsadmin%/transfer%'\n        OR LOWER(tp.command_line) LIKE '%bitsadmin% /transfer%'\n        OR LOWER(tp.command_line) LIKE '%mshta%http%'\n        OR LOWER(tp.command_line) LIKE '%mshta%javascript%'\n        OR LOWER(tp.command_line) LIKE '%mshta.exe%'\n        OR LOWER(tp.command_line) LIKE '%wscript.exe%'\n        OR LOWER(tp.command_line) LIKE '%cscript.exe%'\n        OR LOWER(tp.command_line) LIKE '%regsvr32%/s%'\n        OR LOWER(tp.command_line) LIKE '%regsvr32%scrobj%'\n        OR (LOWER(tp.command_line) LIKE '%rundll32%' AND tp.task_path NOT LIKE '\\Microsoft\\Windows\\%')\n        OR (LOWER(tp.command_line) LIKE '%msiexec%' AND tp.task_path NOT LIKE '\\Microsoft\\Windows\\%')\n        OR LOWER(tp.command_line) LIKE '%.hta%'\n        OR LOWER(tp.command_line) LIKE '%.vbs%'\n        OR LOWER(tp.command_line) LIKE '%.vbe%'\n        OR LOWER(tp.command_line) LIKE '%.js%'\n        OR LOWER(tp.command_line) LIKE '%.jse%'\n        OR LOWER(tp.command_line) LIKE '%.wsf%'\n        -- Suspicious paths\n        OR LOWER(tp.command_line) LIKE '%\\users\\%\\appdata\\%'\n        OR LOWER(tp.command_line) LIKE '%\\users\\public\\%'\n        OR LOWER(tp.command_line) LIKE '%\\temp\\%'\n        OR LOWER(tp.command_line) LIKE '%\\downloads\\%'\n        OR (LOWER(tp.command_line) LIKE '%\\programdata\\%' AND LOWER(tp.command_line) NOT LIKE '%\\microsoft\\%')\n        -- Hidden enabled tasks\n        OR (tp.hidden = 1 AND tp.enabled = 1 AND tp.task_path NOT LIKE '\\Microsoft\\Windows\\%' AND tp.task_path NOT LIKE '\\Microsoft\\Office\\%')\n    )\n    -- Exclude known good vendors\n    AND NOT (\n        (tp.task_path LIKE '\\Microsoft\\Windows\\%' OR tp.task_path LIKE '\\Microsoft\\Office\\%')\n        AND (\n            LOWER(tp.command_line) LIKE '%\\system32\\%'\n            OR LOWER(tp.command_line) LIKE '%\\syswow64\\%'\n            OR LOWER(tp.command_line) LIKE '%program files\\windows defender\\%'\n        )\n    )\n    AND NOT (tp.task_path LIKE '\\Microsoft\\Windows\\Windows Defender\\%' AND LOWER(tp.command_line) LIKE '%defender%')\n    AND NOT (tp.task_path LIKE '\\MicrosoftEdgeUpdate%' OR (tp.task_path LIKE '%EdgeUpdate%' AND tp.command_line LIKE '%EdgeUpdate%'))\n    AND NOT (tp.task_path LIKE '%\\Google\\Update%' AND tp.command_line LIKE '%Google\\Update%')\n    AND NOT (tp.task_path LIKE '%\\Adobe\\%' AND tp.command_line LIKE '%Adobe%')\n    AND NOT (tp.task_path LIKE '%OneDrive%')\n)\nSELECT \n    st.task_name,\n    st.command_line,\n    st.executable_path,\n    st.task_path,\n    st.task_type,\n    st.enabled,\n    st.task_state,\n    st.hidden,\n    st.last_execution,\n    st.next_execution,\n    st.last_run_message,\n    st.detection_method,\n    st.detection_reason,\n    a.subject_name AS signature_signer,\n    a.result AS signature_status,\n    h.sha256,\n    'https://www.virustotal.com/gui/file/' || h.sha256 AS vt_link,\n    h.sha1,\n    h.md5,\n    f.size AS file_size,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    f.directory AS file_directory\nFROM suspicious_tasks AS st, hash AS h, authenticode AS a, file AS f\nWHERE h.path = st.executable_path\n  AND a.path = st.executable_path\n  AND f.path = st.executable_path\nORDER BY \n    CASE WHEN st.detection_method = 'LOTL_INDICATOR' THEN 0 ELSE 1 END,\n    st.detection_reason,\n    st.hidden DESC,\n    st.task_name",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.scheduled_tasks_enriched_windows_elastic"
+                        }
+                    },
+                    {
+                        "key": "service.name",
+                        "value": {
+                            "field": "task_name"
+                        }
+                    },
+                    {
+                        "key": "service.state",
+                        "value": {
+                            "field": "task_state"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "command_line"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "executable_path"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "task_path"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha1",
+                        "value": {
+                            "field": "sha1"
+                        }
+                    },
+                    {
+                        "key": "file.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "file_size"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.ctime",
+                        "value": {
+                            "field": "changed_time"
+                        }
+                    },
+                    {
+                        "key": "file.directory",
+                        "value": {
+                            "field": "file_directory"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.subject_name",
+                        "value": {
+                            "field": "signature_signer"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.status",
+                        "value": {
+                            "field": "signature_status"
+                        }
+                    },
+                    {
+                        "key": "event.created",
+                        "value": {
+                            "field": "last_execution"
+                        }
+                    },
+                    {
+                        "key": "rule.category",
+                        "value": {
+                            "field": "task_type"
+                        }
+                    },
+                    {
+                        "key": "rule.description",
+                        "value": {
+                            "field": "detection_reason"
+                        }
+                    },
+                    {
+                        "key": "rule.name",
+                        "value": {
+                            "field": "detection_method"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "persistence",
+                                "scheduled_tasks",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "crontab_linux_elastic",
+                "query": "-- Detects suspicious cron jobs via whitelist and LOTL patterns\n-- Multi-distro support: Ubuntu, Debian, CentOS, RHEL, Fedora, openSUSE, Arch\n\nWITH non_whitelisted AS (\n    SELECT \n        c.command,\n        c.path AS crontab_path,\n        c.event,\n        c.minute,\n        c.hour,\n        c.day_of_month,\n        c.month,\n        c.day_of_week,\n        CASE \n            WHEN c.command LIKE '/%' THEN \n                CASE \n                    WHEN INSTR(c.command, ' ') > 0 THEN SUBSTR(c.command, 1, INSTR(c.command, ' ') - 1)\n                    ELSE c.command\n                END\n            ELSE NULL\n        END AS executable_path,\n        CASE\n            WHEN c.path LIKE '/var/spool/cron/crontabs/%' THEN REPLACE(c.path, '/var/spool/cron/crontabs/', '')\n            WHEN c.path LIKE '/var/spool/cron/%' THEN REPLACE(c.path, '/var/spool/cron/', '')\n            ELSE 'system'\n        END AS crontab_owner,\n        1 AS is_non_whitelisted,\n        0 AS is_lotl\n    FROM crontab AS c\n    WHERE c.command IS NOT NULL\n        AND c.command != ''\n        -- Allowlist: System cron with standard executable paths\n        AND NOT (\n            (c.path LIKE '/etc/cron.d/%' \n                OR c.path LIKE '/etc/cron.daily/%' \n                OR c.path LIKE '/etc/cron.hourly/%' \n                OR c.path LIKE '/etc/cron.weekly/%' \n                OR c.path LIKE '/etc/cron.monthly/%'\n                OR c.path = '/etc/crontab'\n            )\n            AND (\n                c.command LIKE '/usr/bin/%'\n                OR c.command LIKE '/usr/sbin/%'\n                OR c.command LIKE '/bin/%'\n                OR c.command LIKE '/sbin/%'\n                OR c.command LIKE '/usr/local/bin/%'\n                OR c.command LIKE '/usr/local/sbin/%'\n            )\n        )\n        -- Allowlist: Package managers and system maintenance\n        AND NOT (\n            c.command LIKE '%apt %'\n            OR c.command LIKE '%apt-get %'\n            OR c.command LIKE '%dpkg %'\n            OR c.command LIKE '%yum %'\n            OR c.command LIKE '%dnf %'\n            OR c.command LIKE '%zypper %'\n            OR c.command LIKE '%pacman %'\n            OR c.command LIKE '%anacron %'\n            OR c.command LIKE '%logrotate %'\n            OR c.command LIKE '%mandb %'\n            OR c.command LIKE '%man-db %'\n            OR c.command LIKE '%updatedb %'\n            OR c.command LIKE '%mlocate %'\n            OR c.command LIKE '%run-parts %'\n            OR (c.command LIKE '%/etc/cron.%' AND c.path LIKE '/etc/crontab')\n        )\n        -- Allowlist: Ubuntu/Debian system packages\n        AND NOT (\n            c.path LIKE '/etc/cron.d/%'\n            AND (\n                c.command LIKE '%debian-sa1%'\n                OR c.command LIKE '%/usr/lib/sysstat/%'\n                OR c.command LIKE '%e2scrub%'\n                OR c.command LIKE '%/usr/lib/%/e2fsprogs/%'\n                OR c.command LIKE '%apt-compat%'\n                OR c.command LIKE '%dpkg%'\n                OR c.command LIKE '%update-notifier%'\n                OR c.command LIKE '%popularity-contest%'\n            )\n        )\n        -- Allowlist: System binaries from /etc/cron.d/ (excludes /tmp, /var/tmp, /dev/shm)\n        AND NOT (\n            c.path LIKE '/etc/cron.d/%'\n            AND (\n                c.command LIKE '%/sbin/%'\n                OR c.command LIKE '%/usr/sbin/%'\n                OR c.command LIKE '%/bin/%'\n                OR c.command LIKE '%/usr/bin/%'\n                OR c.command LIKE '%/usr/lib/%'\n            )\n            AND c.command NOT LIKE '%/tmp/%'\n            AND c.command NOT LIKE '%/var/tmp/%'\n            AND c.command NOT LIKE '%/dev/shm/%'\n        )\n        -- Allowlist: Root crontabs with standard paths (excludes curl, wget, nc)\n        AND NOT (\n            c.path = '/var/spool/cron/crontabs/root'\n            AND (\n                c.command LIKE '/usr/bin/%'\n                OR c.command LIKE '/usr/sbin/%'\n                OR c.command LIKE '/bin/%'\n                OR c.command LIKE '/sbin/%'\n            )\n            AND c.command NOT LIKE '%curl%'\n            AND c.command NOT LIKE '%wget%'\n            AND c.command NOT LIKE '%nc %'\n            AND c.command NOT LIKE '%netcat%'\n        )\n),\nlotl_indicators AS (\n    SELECT \n        c.command,\n        c.path AS crontab_path,\n        c.event,\n        c.minute,\n        c.hour,\n        c.day_of_month,\n        c.month,\n        c.day_of_week,\n        CASE \n            WHEN c.command LIKE '/%' THEN \n                CASE \n                    WHEN INSTR(c.command, ' ') > 0 THEN SUBSTR(c.command, 1, INSTR(c.command, ' ') - 1)\n                    ELSE c.command\n                END\n            ELSE NULL\n        END AS executable_path,\n        CASE\n            WHEN c.path LIKE '/var/spool/cron/crontabs/%' THEN REPLACE(c.path, '/var/spool/cron/crontabs/', '')\n            WHEN c.path LIKE '/var/spool/cron/%' THEN REPLACE(c.path, '/var/spool/cron/', '')\n            ELSE 'system'\n        END AS crontab_owner,\n        0 AS is_non_whitelisted,\n        1 AS is_lotl,\n        CASE\n            WHEN c.command LIKE '%curl%|%bash%' OR c.command LIKE '%curl%|%sh%' THEN 'Download and pipe to shell (curl|bash)'\n            WHEN c.command LIKE '%wget%|%bash%' OR c.command LIKE '%wget%|%sh%' THEN 'Download and pipe to shell (wget|sh)'\n            WHEN c.command LIKE '%curl %http%' OR c.command LIKE '%wget %http%' THEN 'Download utility with remote URL'\n            WHEN c.command LIKE '%nc -e%' OR c.command LIKE '%ncat -e%' THEN 'Reverse shell via netcat'\n            WHEN c.command LIKE '%/dev/tcp/%' OR c.command LIKE '%/dev/udp/%' THEN 'Bash network redirection (reverse shell)'\n            WHEN c.command LIKE '%socat%TCP%' OR c.command LIKE '%socat%EXEC%' THEN 'Socat reverse shell'\n            WHEN c.command LIKE '%base64 -d%' OR c.command LIKE '%base64 --decode%' OR c.command LIKE '%base64 -D%' THEN 'Base64 decode for obfuscation'\n            WHEN c.command LIKE '%echo%|%base64%' THEN 'Base64 encoded command execution'\n            WHEN c.command LIKE '%bash -c%' OR c.command LIKE '%sh -c%' THEN 'Shell command execution via -c flag'\n            WHEN c.command LIKE '%bash -i%' OR c.command LIKE '%sh -i%' THEN 'Interactive shell invocation'\n            WHEN c.command LIKE '%python -c%' OR c.command LIKE '%python3 -c%' THEN 'Python one-liner execution'\n            WHEN c.command LIKE '%perl -e%' THEN 'Perl one-liner execution'\n            WHEN c.command LIKE '%ruby -e%' THEN 'Ruby one-liner execution'\n            WHEN c.command LIKE '%php -r%' THEN 'PHP one-liner execution'\n            WHEN c.command LIKE '%/tmp/%' THEN 'Execution from /tmp directory'\n            WHEN c.command LIKE '%/dev/shm/%' THEN 'Execution from /dev/shm (world-writable memory)'\n            WHEN c.command LIKE '%/var/tmp/%' THEN 'Execution from /var/tmp directory'\n            WHEN c.command LIKE '%./%' OR c.command LIKE '%/.%' THEN 'Execution from hidden directory'\n            WHEN c.command LIKE '%sudo -n%' OR c.command LIKE '%sudo --non-interactive%' THEN 'Sudo without password prompt'\n            WHEN c.command LIKE '%chmod +s%' OR c.command LIKE '%chmod 4755%' OR c.command LIKE '%chmod 4777%' THEN 'Setuid bit modification (privilege escalation)'\n            WHEN c.command LIKE '%authorized_keys%' AND (c.command LIKE '%echo%' OR c.command LIKE '%cat%' OR c.command LIKE '%>>%') THEN 'SSH authorized_keys manipulation'\n            WHEN c.command LIKE '%crontab -e%' OR c.command LIKE '%crontab -%' THEN 'Crontab modification (persistence)'\n            WHEN c.command LIKE '%nohup%&%' OR c.command LIKE '%disown%' THEN 'Background process persistence'\n            WHEN c.command LIKE '%nc %' OR c.command LIKE '%netcat%' THEN 'Netcat network utility abuse'\n            WHEN c.command LIKE '%eval%' OR c.command LIKE '%exec%' THEN 'Eval/exec command execution'\n            ELSE 'Unknown LOTL pattern'\n        END AS detection_reason\n    FROM crontab AS c\n    WHERE c.command IS NOT NULL\n        AND c.command != ''\n        AND (\n            c.command LIKE '%curl%|%bash%'\n            OR c.command LIKE '%curl%|%sh%'\n            OR c.command LIKE '%wget%|%bash%'\n            OR c.command LIKE '%wget%|%sh%'\n            OR c.command LIKE '%curl %http%'\n            OR c.command LIKE '%wget %http%'\n            OR c.command LIKE '%nc -e%'\n            OR c.command LIKE '%ncat -e%'\n            OR c.command LIKE '%/dev/tcp/%'\n            OR c.command LIKE '%/dev/udp/%'\n            OR c.command LIKE '%socat%TCP%'\n            OR c.command LIKE '%socat%EXEC%'\n            OR c.command LIKE '%base64 -d%'\n            OR c.command LIKE '%base64 --decode%'\n            OR c.command LIKE '%base64 -D%'\n            OR c.command LIKE '%echo%|%base64%'\n            OR c.command LIKE '%bash -c%'\n            OR c.command LIKE '%sh -c%'\n            OR c.command LIKE '%bash -i%'\n            OR c.command LIKE '%sh -i%'\n            OR c.command LIKE '%python -c%'\n            OR c.command LIKE '%python3 -c%'\n            OR c.command LIKE '%perl -e%'\n            OR c.command LIKE '%ruby -e%'\n            OR c.command LIKE '%php -r%'\n            OR c.command LIKE '%/tmp/%'\n            OR c.command LIKE '%/dev/shm/%'\n            OR c.command LIKE '%/var/tmp/%'\n            OR c.command LIKE '%./%'\n            OR c.command LIKE '%/.%'\n            OR c.command LIKE '%sudo -n%'\n            OR c.command LIKE '%sudo --non-interactive%'\n            OR c.command LIKE '%chmod +s%'\n            OR c.command LIKE '%chmod 4755%'\n            OR c.command LIKE '%chmod 4777%'\n            OR (c.command LIKE '%authorized_keys%' AND (c.command LIKE '%echo%' OR c.command LIKE '%cat%' OR c.command LIKE '%>>%'))\n            OR c.command LIKE '%crontab -e%'\n            OR c.command LIKE '%crontab -%'\n            OR c.command LIKE '%nohup%&%'\n            OR c.command LIKE '%disown%'\n            OR c.command LIKE '%nc %'\n            OR c.command LIKE '%netcat%'\n            OR c.command LIKE '%eval%'\n            OR c.command LIKE '%exec%'\n        )\n),\ncombined AS (\n    SELECT \n        c.command,\n        c.path AS crontab_path,\n        c.event,\n        c.minute,\n        c.hour,\n        c.day_of_month,\n        c.month,\n        c.day_of_week,\n        COALESCE(\n            MAX(li.executable_path),\n            MAX(nw.executable_path)\n        ) AS executable_path,\n        COALESCE(\n            MAX(li.crontab_owner),\n            MAX(nw.crontab_owner)\n        ) AS crontab_owner,\n        CASE \n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 \n            THEN 'Cron Job (LOTL)'\n            ELSE 'Cron Job'\n        END AS cron_type,\n        CASE \n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 AND MAX(COALESCE(nw.is_non_whitelisted, 0)) = 1 \n            THEN 'LOTL_INDICATOR + NON_WHITELISTED'\n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 \n            THEN 'LOTL_INDICATOR'\n            ELSE 'NON_WHITELISTED'\n        END AS detection_method,\n        CASE \n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 AND MAX(COALESCE(nw.is_non_whitelisted, 0)) = 1 \n            THEN MAX(li.detection_reason) || ' + Not in known-good allowlist'\n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 \n            THEN MAX(li.detection_reason)\n            ELSE 'Cron job not in known-good allowlist'\n        END AS detection_reason\n    FROM crontab AS c\n    LEFT JOIN non_whitelisted AS nw ON c.command = nw.command AND c.path = nw.crontab_path\n    LEFT JOIN lotl_indicators AS li ON c.command = li.command AND c.path = li.crontab_path\n    WHERE COALESCE(nw.is_non_whitelisted, 0) = 1 OR COALESCE(li.is_lotl, 0) = 1\n    GROUP BY c.command, c.path, c.event, c.minute, c.hour, c.day_of_month, c.month, c.day_of_week\n)\nSELECT \n    c.command,\n    c.crontab_path,\n    c.event,\n    c.minute,\n    c.hour,\n    c.day_of_month,\n    c.month,\n    c.day_of_week,\n    c.executable_path,\n    c.crontab_owner,\n    c.cron_type,\n    c.detection_method,\n    c.detection_reason,\n    h.sha256,\n    'https://www.virustotal.com/gui/file/' || h.sha256 AS vt_link,\n    h.sha1,\n    h.md5,\n    f.size AS file_size,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    f.directory,\n    f.uid,\n    f.gid,\n    f.mode\nFROM combined AS c\nLEFT JOIN hash AS h ON c.executable_path = h.path\nLEFT JOIN file AS f ON c.executable_path = f.path\nORDER BY \n    CASE WHEN c.detection_method LIKE 'LOTL_INDICATOR%' THEN 0 ELSE 1 END,\n    c.detection_reason,\n    c.crontab_owner,\n    c.command",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.crontab_linux_elastic"
+                        }
+                    },
+                    {
+                        "key": "rule.description",
+                        "value": {
+                            "field": "detection_reason"
+                        }
+                    },
+                    {
+                        "key": "rule.name",
+                        "value": {
+                            "field": "detection_method"
+                        }
+                    },
+                    {
+                        "key": "rule.category",
+                        "value": {
+                            "field": "cron_type"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "command"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "executable_path"
+                        }
+                    },
+                    {
+                        "key": "event.provider",
+                        "value": {
+                            "field": "crontab_path"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "executable_path"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha1",
+                        "value": {
+                            "field": "sha1"
+                        }
+                    },
+                    {
+                        "key": "file.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "file_size"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.ctime",
+                        "value": {
+                            "field": "changed_time"
+                        }
+                    },
+                    {
+                        "key": "file.directory",
+                        "value": {
+                            "field": "directory"
+                        }
+                    },
+                    {
+                        "key": "file.uid",
+                        "value": {
+                            "field": "uid"
+                        }
+                    },
+                    {
+                        "key": "file.gid",
+                        "value": {
+                            "field": "gid"
+                        }
+                    },
+                    {
+                        "key": "file.mode",
+                        "value": {
+                            "field": "mode"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "crontab_owner"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "persistence",
+                                "crontab",
+                                "linux"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "launchd_darwin_elastic",
+                "query": "-- Detects suspicious launch agents/daemons via whitelist and LOTL patterns\n-- Final filter: LOTL OR unsigned OR non-Apple signed\n\nWITH non_whitelisted AS (\n    SELECT \n        l.name,\n        l.path AS plist_path,\n        l.program,\n        l.program_arguments,\n        l.run_at_load,\n        l.keep_alive,\n        l.on_demand,\n        l.disabled,\n        l.username,\n        l.groupname,\n        l.stdout_path,\n        l.stderr_path,\n        l.start_interval,\n        CASE\n            WHEN l.disabled = 1 THEN 'disabled'\n            WHEN l.run_at_load = 1 THEN 'enabled_run_at_load'\n            ELSE 'enabled'\n        END AS status,\n        1 AS is_non_whitelisted,\n        0 AS is_lotl\n    FROM launchd AS l\n    WHERE l.name IS NOT NULL\n        AND l.name != ''\n        AND (l.program IS NOT NULL AND l.program != '' OR l.program_arguments IS NOT NULL AND l.program_arguments != '')\n        -- Allowlist: All Apple system paths (regardless of naming)\n        AND NOT (\n            l.path LIKE '/System/Library/LaunchDaemons/%'\n            OR l.path LIKE '/System/Library/LaunchAgents/%'\n        )\n        -- Allowlist: Apple Library paths\n        AND NOT (\n            l.path LIKE '/Library/Apple/%'\n            AND l.name LIKE 'com.apple.%'\n        )\n        -- Allowlist: Known-good third-party vendors\n        AND NOT (\n            (l.path LIKE '/Library/LaunchAgents/com.google.%' OR l.path LIKE '/Library/LaunchDaemons/com.google.%')\n            AND l.name LIKE 'com.google.%'\n            AND (l.program LIKE '%Google%' OR l.program LIKE '%/Library/Application Support/Google/%')\n        )\n        AND NOT (\n            (l.path LIKE '/Library/LaunchAgents/com.microsoft.%' OR l.path LIKE '/Library/LaunchDaemons/com.microsoft.%')\n            AND l.name LIKE 'com.microsoft.%'\n            AND (l.program LIKE '%Microsoft%' OR l.program LIKE '%/Library/Application Support/Microsoft/%')\n        )\n        AND NOT (\n            (l.path LIKE '/Library/LaunchAgents/com.adobe.%' OR l.path LIKE '/Library/LaunchDaemons/com.adobe.%')\n            AND l.name LIKE 'com.adobe.%'\n            AND (l.program LIKE '%Adobe%' OR l.program LIKE '%/Library/Application Support/Adobe/%')\n        )\n        AND NOT (\n            (l.path LIKE '/Library/LaunchAgents/com.dropbox.%' OR l.path LIKE '/Library/LaunchDaemons/com.dropbox.%')\n            AND l.name LIKE 'com.dropbox.%'\n            AND l.program LIKE '%Dropbox%'\n        )\n        AND NOT (\n            (l.path LIKE '/Library/LaunchDaemons/com.docker.%' OR l.path LIKE '/Library/LaunchAgents/com.docker.%')\n            AND l.name LIKE 'com.docker.%'\n            AND l.program LIKE '%Docker%'\n        )\n        -- Allowlist: Elastic Agent\n        AND NOT (\n            l.name LIKE 'co.elastic.%'\n            AND (l.program LIKE '%elastic-agent%' OR l.program_arguments LIKE '%elastic-agent%')\n        )\n        -- Allowlist: Standard binary paths\n        AND NOT (\n            l.program LIKE '/usr/bin/%'\n            OR l.program LIKE '/usr/sbin/%'\n            OR l.program LIKE '/bin/%'\n            OR l.program LIKE '/sbin/%'\n        )\n),\nlotl_indicators AS (\n    SELECT \n        l.name,\n        l.path AS plist_path,\n        l.program,\n        l.program_arguments,\n        l.run_at_load,\n        l.keep_alive,\n        l.on_demand,\n        l.disabled,\n        l.username,\n        l.groupname,\n        l.stdout_path,\n        l.stderr_path,\n        l.start_interval,\n        CASE\n            WHEN l.disabled = 1 THEN 'disabled'\n            WHEN l.run_at_load = 1 THEN 'enabled_run_at_load'\n            ELSE 'enabled'\n        END AS status,\n        0 AS is_non_whitelisted,\n        1 AS is_lotl,\n        CASE\n            WHEN l.program LIKE '%curl' OR l.program_arguments LIKE '%curl %' THEN 'Download utility (curl) abuse'\n            WHEN l.program LIKE '%wget' OR l.program_arguments LIKE '%wget %' THEN 'Download utility (wget) abuse'\n            WHEN l.program_arguments LIKE '%curl%|%bash%' OR l.program_arguments LIKE '%curl%|%sh%' THEN 'Download and pipe to shell (curl|bash)'\n            WHEN l.program_arguments LIKE '%wget%|%bash%' OR l.program_arguments LIKE '%wget%|%sh%' THEN 'Download and pipe to shell (wget|sh)'\n            WHEN l.program_arguments LIKE '%nc -e%' OR l.program_arguments LIKE '%ncat -e%' THEN 'Reverse shell via netcat'\n            WHEN l.program_arguments LIKE '%/dev/tcp/%' OR l.program_arguments LIKE '%/dev/udp/%' THEN 'Bash network redirection (reverse shell)'\n            WHEN l.program_arguments LIKE '%socat%TCP%' OR l.program_arguments LIKE '%socat%EXEC%' THEN 'Socat reverse shell'\n            WHEN l.program LIKE '/tmp/%' OR l.program LIKE '/var/tmp/%' OR l.program LIKE '/private/tmp/%' OR l.program LIKE '/private/var/tmp/%' THEN 'Execution from temporary directory'\n            WHEN l.program LIKE '/Users/%/.*' OR l.program LIKE '%/.%' OR l.program_arguments LIKE '%/.%' THEN 'Execution from hidden directory'\n            WHEN l.program LIKE '/Users/%/Downloads/%' THEN 'Execution from user Downloads folder'\n            WHEN l.program LIKE '/Users/%/Desktop/%' THEN 'Execution from user Desktop'\n            WHEN l.program_arguments LIKE '%base64 -d%' OR l.program_arguments LIKE '%base64 --decode%' OR l.program_arguments LIKE '%base64 -D%' THEN 'Base64 decode for obfuscation'\n            WHEN l.program_arguments LIKE '%echo%|%base64%' THEN 'Base64 encoded command execution'\n            WHEN l.program_arguments LIKE '%bash -c%' OR l.program_arguments LIKE '%sh -c%' OR l.program_arguments LIKE '%zsh -c%' THEN 'Shell command execution via -c flag'\n            WHEN l.program_arguments LIKE '%bash -i%' OR l.program_arguments LIKE '%sh -i%' OR l.program_arguments LIKE '%zsh -i%' THEN 'Interactive shell invocation'\n            WHEN l.program_arguments LIKE '%python -c%' OR l.program_arguments LIKE '%python3 -c%' THEN 'Python one-liner execution'\n            WHEN l.program_arguments LIKE '%perl -e%' THEN 'Perl one-liner execution'\n            WHEN l.program_arguments LIKE '%ruby -e%' THEN 'Ruby one-liner execution'\n            WHEN l.program_arguments LIKE '%php -r%' THEN 'PHP one-liner execution'\n            WHEN l.program LIKE '%osascript' AND l.program_arguments LIKE '%-e%' THEN 'AppleScript execution abuse (osascript -e)'\n            WHEN l.program_arguments LIKE '%osascript%-%e%' THEN 'AppleScript inline execution'\n            WHEN l.run_at_load = 1 AND l.keep_alive = 1 AND l.disabled = 0 AND l.path LIKE '%/Users/%/Library/LaunchAgents/%' THEN 'Persistent user-level agent with auto-restart'\n            WHEN l.run_at_load = 1 AND l.keep_alive = 1 AND l.disabled = 0 AND l.path LIKE '/Library/LaunchDaemons/%' THEN 'Persistent system-level daemon with auto-restart'\n            WHEN l.start_interval IS NOT NULL AND l.start_interval != '' AND l.path LIKE '%/Users/%/Library/LaunchAgents/%' THEN 'User-level periodic execution agent'\n            WHEN l.stdout_path LIKE '%/.%' OR l.stderr_path LIKE '%/.%' THEN 'Output redirection to hidden file'\n            WHEN l.program_arguments LIKE '%/.ssh/authorized_keys%' OR l.program_arguments LIKE '%/.ssh/id_rsa%' OR l.program_arguments LIKE '%/.ssh/id_ed25519%' THEN 'SSH key access detected'\n            WHEN l.program_arguments LIKE '%security%find-generic-password%' OR l.program_arguments LIKE '%security%dump-keychain%' THEN 'Keychain credential access'\n            WHEN l.program_arguments LIKE '%sudo -n%' OR l.program_arguments LIKE '%sudo --non-interactive%' THEN 'Sudo without password prompt'\n            WHEN l.program_arguments LIKE '%chmod +s%' OR l.program_arguments LIKE '%chmod 4755%' OR l.program_arguments LIKE '%chmod 4777%' THEN 'Setuid bit modification (privilege escalation)'\n            WHEN l.program LIKE '%/nc' OR l.program LIKE '%netcat' OR l.program LIKE '%ncat' OR l.program_arguments LIKE '%/nc %' OR l.program_arguments LIKE '% nc -%' OR l.program_arguments LIKE '%netcat%' THEN 'Netcat network utility abuse'\n            WHEN l.program LIKE '%socat' OR l.program_arguments LIKE '%socat%' THEN 'Socat network utility abuse'\n            WHEN (\n                l.program_arguments LIKE '% eval %'\n                OR l.program_arguments LIKE '% eval(%'\n                OR l.program_arguments LIKE '%|eval %'\n                OR l.program_arguments LIKE '%;eval %'\n                OR l.program_arguments LIKE '% exec %'\n                OR l.program_arguments LIKE '%|exec %'\n                OR l.program_arguments LIKE '%;exec %'\n                OR (l.program LIKE '%/bash' AND l.program_arguments LIKE '%eval%')\n                OR (l.program LIKE '%/sh' AND l.program_arguments LIKE '%eval%')\n                OR (l.program LIKE '%/zsh' AND l.program_arguments LIKE '%eval%')\n            ) AND l.program NOT LIKE '/usr/libexec/%' THEN 'Eval/exec command execution'\n            ELSE 'Unknown LOTL pattern'\n        END AS detection_reason\n    FROM launchd AS l\n    WHERE l.name IS NOT NULL\n        AND l.name != ''\n        AND (l.program IS NOT NULL AND l.program != '' OR l.program_arguments IS NOT NULL AND l.program_arguments != '')\n        -- Exclude Apple system paths from LOTL detection\n        AND NOT (\n            l.path LIKE '/System/Library/LaunchDaemons/%'\n            OR l.path LIKE '/System/Library/LaunchAgents/%'\n        )\n        -- Exclude Elastic Agent from LOTL detection\n        AND NOT (\n            l.name LIKE 'co.elastic.%'\n            AND (l.program LIKE '%elastic-agent%' OR l.program_arguments LIKE '%elastic-agent%')\n        )\n        AND (\n            l.program LIKE '%curl'\n            OR l.program LIKE '%wget'\n            OR l.program_arguments LIKE '%curl %'\n            OR l.program_arguments LIKE '%wget %'\n            OR l.program_arguments LIKE '%curl%|%bash%'\n            OR l.program_arguments LIKE '%curl%|%sh%'\n            OR l.program_arguments LIKE '%wget%|%bash%'\n            OR l.program_arguments LIKE '%wget%|%sh%'\n            OR l.program_arguments LIKE '%nc -e%'\n            OR l.program_arguments LIKE '%ncat -e%'\n            OR l.program_arguments LIKE '%/dev/tcp/%'\n            OR l.program_arguments LIKE '%/dev/udp/%'\n            OR l.program_arguments LIKE '%socat%TCP%'\n            OR l.program_arguments LIKE '%socat%EXEC%'\n            OR l.program LIKE '/tmp/%'\n            OR l.program LIKE '/var/tmp/%'\n            OR l.program LIKE '/private/tmp/%'\n            OR l.program LIKE '/private/var/tmp/%'\n            OR l.program LIKE '/Users/%/.*'\n            OR l.program LIKE '%/.%'\n            OR l.program LIKE '/Users/%/Downloads/%'\n            OR l.program LIKE '/Users/%/Desktop/%'\n            OR l.program_arguments LIKE '%/.%'\n            OR l.program_arguments LIKE '%base64 -d%'\n            OR l.program_arguments LIKE '%base64 --decode%'\n            OR l.program_arguments LIKE '%base64 -D%'\n            OR l.program_arguments LIKE '%echo%|%base64%'\n            OR l.program_arguments LIKE '%bash -c%'\n            OR l.program_arguments LIKE '%sh -c%'\n            OR l.program_arguments LIKE '%zsh -c%'\n            OR l.program_arguments LIKE '%bash -i%'\n            OR l.program_arguments LIKE '%sh -i%'\n            OR l.program_arguments LIKE '%zsh -i%'\n            OR l.program_arguments LIKE '%python -c%'\n            OR l.program_arguments LIKE '%python3 -c%'\n            OR l.program_arguments LIKE '%perl -e%'\n            OR l.program_arguments LIKE '%ruby -e%'\n            OR l.program_arguments LIKE '%php -r%'\n            OR (l.program LIKE '%osascript' AND l.program_arguments LIKE '%-e%')\n            OR l.program_arguments LIKE '%osascript%-%e%'\n            OR (l.run_at_load = 1 AND l.keep_alive = 1 AND l.disabled = 0 AND l.path LIKE '%/Users/%/Library/LaunchAgents/%')\n            OR (l.run_at_load = 1 AND l.keep_alive = 1 AND l.disabled = 0 AND l.path LIKE '/Library/LaunchDaemons/%')\n            OR (l.start_interval IS NOT NULL AND l.start_interval != '' AND l.path LIKE '%/Users/%/Library/LaunchAgents/%')\n            OR l.stdout_path LIKE '%/.%'\n            OR l.stderr_path LIKE '%/.%'\n            OR l.program_arguments LIKE '%/.ssh/authorized_keys%'\n            OR l.program_arguments LIKE '%/.ssh/id_rsa%'\n            OR l.program_arguments LIKE '%/.ssh/id_ed25519%'\n            OR l.program_arguments LIKE '%security%find-generic-password%'\n            OR l.program_arguments LIKE '%security%dump-keychain%'\n            OR l.program_arguments LIKE '%sudo -n%'\n            OR l.program_arguments LIKE '%sudo --non-interactive%'\n            OR l.program_arguments LIKE '%chmod +s%'\n            OR l.program_arguments LIKE '%chmod 4755%'\n            OR l.program_arguments LIKE '%chmod 4777%'\n            OR l.program LIKE '%/nc'\n            OR l.program LIKE '%netcat'\n            OR l.program LIKE '%ncat'\n            OR l.program_arguments LIKE '%/nc %'\n            OR l.program_arguments LIKE '% nc -%'\n            OR l.program_arguments LIKE '%netcat%'\n            OR l.program LIKE '%socat'\n            OR l.program_arguments LIKE '%socat%'\n            OR (\n                (\n                    l.program_arguments LIKE '% eval %'\n                    OR l.program_arguments LIKE '% eval(%'\n                    OR l.program_arguments LIKE '%|eval %'\n                    OR l.program_arguments LIKE '%;eval %'\n                    OR l.program_arguments LIKE '% exec %'\n                    OR l.program_arguments LIKE '%|exec %'\n                    OR l.program_arguments LIKE '%;exec %'\n                    OR (l.program LIKE '%/bash' AND l.program_arguments LIKE '%eval%')\n                    OR (l.program LIKE '%/sh' AND l.program_arguments LIKE '%eval%')\n                    OR (l.program LIKE '%/zsh' AND l.program_arguments LIKE '%eval%')\n                )\n                AND l.program NOT LIKE '/usr/libexec/%'\n            )\n        )\n),\ncombined AS (\n    SELECT \n        l.name,\n        l.path AS plist_path,\n        l.program,\n        l.program_arguments,\n        -- Derive executable_path: use program if exists, else extract from program_arguments\n        COALESCE(\n            l.program,\n            CASE\n                -- Handle quoted paths (strip leading quote)\n                WHEN l.program_arguments LIKE '\"%' THEN\n                    CASE\n                        WHEN INSTR(SUBSTR(l.program_arguments, 2), '\"') > 0\n                        THEN SUBSTR(l.program_arguments, 2, INSTR(SUBSTR(l.program_arguments, 2), '\"') - 1)\n                        ELSE SUBSTR(l.program_arguments, 2)\n                    END\n                -- Handle unquoted absolute paths\n                WHEN l.program_arguments LIKE '/%' THEN\n                    CASE\n                        WHEN INSTR(l.program_arguments, ' ') > 0\n                        THEN SUBSTR(l.program_arguments, 1, INSTR(l.program_arguments, ' ') - 1)\n                        ELSE l.program_arguments\n                    END\n                ELSE NULL\n            END\n        ) AS executable_path,\n        l.run_at_load,\n        l.keep_alive,\n        l.on_demand,\n        l.disabled,\n        l.username,\n        l.groupname,\n        l.stdout_path,\n        l.stderr_path,\n        l.start_interval,\n        COALESCE(\n            MAX(li.status),\n            MAX(nw.status)\n        ) AS status,\n        CASE \n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 \n            THEN 'Launch Agent/Daemon (LOTL)'\n            ELSE 'Launch Agent/Daemon'\n        END AS launchd_type,\n        CASE \n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 AND MAX(COALESCE(nw.is_non_whitelisted, 0)) = 1 \n            THEN 'LOTL_INDICATOR + NON_WHITELISTED'\n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 \n            THEN 'LOTL_INDICATOR'\n            ELSE 'NON_WHITELISTED'\n        END AS detection_method,\n        CASE \n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 AND MAX(COALESCE(nw.is_non_whitelisted, 0)) = 1 \n            THEN MAX(li.detection_reason) || ' + Not in known-good allowlist'\n            WHEN MAX(COALESCE(li.is_lotl, 0)) = 1 \n            THEN MAX(li.detection_reason)\n            ELSE 'Launch agent/daemon not in known-good allowlist'\n        END AS detection_reason\n    FROM launchd AS l\n    LEFT JOIN non_whitelisted AS nw ON l.name = nw.name AND l.path = nw.plist_path AND (l.program = nw.program OR (l.program IS NULL AND nw.program IS NULL))\n    LEFT JOIN lotl_indicators AS li ON l.name = li.name AND l.path = li.plist_path AND (l.program = li.program OR (l.program IS NULL AND li.program IS NULL))\n    WHERE COALESCE(nw.is_non_whitelisted, 0) = 1 OR COALESCE(li.is_lotl, 0) = 1\n    GROUP BY l.name, l.path, l.program, l.program_arguments, l.run_at_load, l.keep_alive, l.on_demand, l.disabled, l.username, l.groupname, l.stdout_path, l.stderr_path, l.start_interval\n)\nSELECT \n    c.name,\n    c.plist_path,\n    c.program,\n    c.program_arguments,\n    c.executable_path,\n    c.launchd_type,\n    c.run_at_load,\n    c.keep_alive,\n    c.on_demand,\n    c.disabled,\n    c.status,\n    c.username,\n    c.groupname,\n    c.stdout_path,\n    c.stderr_path,\n    c.start_interval,\n    c.detection_method,\n    c.detection_reason,\n    s.signed AS is_signed,\n    s.authority AS signature_signer,\n    CASE WHEN s.signed = 1 THEN 'valid' ELSE 'unsigned' END AS signature_status,\n    h.sha256,\n    'https://www.virustotal.com/gui/file/' || h.sha256 AS vt_link,\n    h.sha1,\n    h.md5,\n    f.size AS size,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    datetime(f.btime, 'unixepoch') AS created_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    f.directory\nFROM combined AS c\nLEFT JOIN signature AS s ON c.executable_path = s.path\nLEFT JOIN hash AS h ON c.executable_path = h.path\nLEFT JOIN file AS f ON c.executable_path = f.path\nWHERE (\n    c.detection_method LIKE 'LOTL_INDICATOR%'\n    OR s.signed IS NULL\n    OR s.signed = 0\n    OR (\n        s.identifier IS NOT NULL\n        AND s.identifier NOT LIKE 'com.apple.%'\n        AND s.identifier NOT LIKE 'Apple Inc.%'\n    )\n)\nGROUP BY c.name, c.plist_path, c.program, c.program_arguments, c.executable_path, c.launchd_type, c.run_at_load, c.keep_alive, c.on_demand, c.disabled, c.status, c.username, c.groupname, c.stdout_path, c.stderr_path, c.start_interval, c.detection_method, c.detection_reason, s.signed, s.authority, h.sha256, h.sha1, h.md5, f.size, f.mtime, f.ctime, f.btime, f.atime, f.directory\nORDER BY \n    CASE WHEN c.detection_method LIKE 'LOTL_INDICATOR%' THEN 0 ELSE 1 END,\n    c.detection_reason,\n    c.run_at_load DESC,\n    c.keep_alive DESC,\n    c.name",
+                "interval": 3600,
+                "platform": "darwin",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.launchd_darwin_elastic"
+                        }
+                    },
+                    {
+                        "key": "rule.description",
+                        "value": {
+                            "field": "detection_reason"
+                        }
+                    },
+                    {
+                        "key": "rule.name",
+                        "value": {
+                            "field": "detection_method"
+                        }
+                    },
+                    {
+                        "key": "rule.category",
+                        "value": {
+                            "field": "launchd_type"
+                        }
+                    },
+                    {
+                        "key": "service.state",
+                        "value": {
+                            "field": "status"
+                        }
+                    },
+                    {
+                        "key": "service.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "executable_path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "program_arguments"
+                        }
+                    },
+                    {
+                        "key": "event.provider",
+                        "value": {
+                            "field": "plist_path"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "executable_path"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha1",
+                        "value": {
+                            "field": "sha1"
+                        }
+                    },
+                    {
+                        "key": "file.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.ctime",
+                        "value": {
+                            "field": "changed_time"
+                        }
+                    },
+                    {
+                        "key": "file.created",
+                        "value": {
+                            "field": "created_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "file.directory",
+                        "value": {
+                            "field": "directory"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.signed",
+                        "value": {
+                            "field": "is_signed"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.subject_name",
+                        "value": {
+                            "field": "signature_signer"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.status",
+                        "value": {
+                            "field": "signature_status"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "service.id",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "persistence",
+                                "launchd",
+                                "macos"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "registry_persistence_windows_elastic",
+                "query": "-- Windows Registry Persistence Detection\n-- Enumerates autostart registry locations with hash/signature enrichment\n\nSELECT\n    r.name,\n    CASE\n        WHEN r.data LIKE '\"%' THEN substr(r.data, 2, instr(substr(r.data, 2), '\"') - 1)\n        WHEN instr(r.data, ' ') > 0 THEN substr(r.data, 1, instr(r.data, ' ') - 1)\n        ELSE r.data\n    END AS executable_path,\n    r.data,\n    r.key,\n    r.path,\n    r.type,\n    datetime(r.mtime, 'unixepoch') AS registry_modified_time,\n    CASE\n        WHEN r.key LIKE '%\\Run' THEN 'Registry Run Key'\n        WHEN r.key LIKE '%\\RunOnce' THEN 'Registry RunOnce Key'\n        WHEN r.key LIKE '%\\Winlogon' THEN 'Winlogon Persistence'\n        WHEN r.key LIKE '%\\Active Setup\\Installed Components' THEN 'Active Setup'\n        WHEN r.key LIKE '%\\Policies\\Explorer\\Run' THEN 'Policy Run Key'\n        ELSE 'Other Persistence'\n    END AS persistence_type,\n    a.subject_name AS signature_signer,\n    a.result AS signature_status,\n    h.md5,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    h.sha1,\n    f.size,\n    datetime(f.btime, 'unixepoch') AS created_time,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    f.directory\nFROM registry r\nLEFT JOIN hash h ON h.path = (\n    CASE\n        WHEN r.data LIKE '\"%' THEN substr(r.data, 2, instr(substr(r.data, 2), '\"') - 1)\n        WHEN instr(r.data, ' ') > 0 THEN substr(r.data, 1, instr(r.data, ' ') - 1)\n        ELSE r.data\n    END\n)\nLEFT JOIN authenticode a ON a.path = (\n    CASE\n        WHEN r.data LIKE '\"%' THEN substr(r.data, 2, instr(substr(r.data, 2), '\"') - 1)\n        WHEN instr(r.data, ' ') > 0 THEN substr(r.data, 1, instr(r.data, ' ') - 1)\n        ELSE r.data\n    END\n)\nLEFT JOIN file f ON f.path = (\n    CASE\n        WHEN r.data LIKE '\"%' THEN substr(r.data, 2, instr(substr(r.data, 2), '\"') - 1)\n        WHEN instr(r.data, ' ') > 0 THEN substr(r.data, 1, instr(r.data, ' ') - 1)\n        ELSE r.data\n    END\n)\nWHERE (\n    -- Run/RunOnce (HKLM)\n    r.key = 'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'\n    OR r.key = 'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce'\n    -- Run/RunOnce (Per-User)\n    OR r.key LIKE 'HKEY_USERS\\%\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'\n    OR r.key LIKE 'HKEY_USERS\\%\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce'\n    -- WOW64 (32-bit on 64-bit)\n    OR r.key = 'HKEY_LOCAL_MACHINE\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run'\n    OR r.key = 'HKEY_LOCAL_MACHINE\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\RunOnce'\n    -- Policy Run Keys (often missed by EDR)\n    OR r.key = 'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run'\n    OR r.key LIKE 'HKEY_USERS\\%\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run'\n    -- Winlogon (specific persistence values only)\n    OR (r.key = 'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon'\n        AND r.name IN ('Shell', 'Userinit', 'Taskman', 'AppSetup'))\n    -- Active Setup (per-user persistence on login) - only StubPath contains the command\n    OR (r.key LIKE 'HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Active Setup\\Installed Components\\%'\n        AND r.name = 'StubPath')\n)\nAND r.type != 'subkey'\nAND r.data IS NOT NULL\nAND r.data != ''",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "registry"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.registry_persistence"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "executable_path"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha1",
+                        "value": {
+                            "field": "sha1"
+                        }
+                    },
+                    {
+                        "key": "file.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.created",
+                        "value": {
+                            "field": "created_time"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "file.ctime",
+                        "value": {
+                            "field": "changed_time"
+                        }
+                    },
+                    {
+                        "key": "file.directory",
+                        "value": {
+                            "field": "directory"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.subject_name",
+                        "value": {
+                            "field": "signature_signer"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.status",
+                        "value": {
+                            "field": "signature_status"
+                        }
+                    },
+                    {
+                        "key": "registry.key",
+                        "value": {
+                            "field": "key"
+                        }
+                    },
+                    {
+                        "key": "registry.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "registry.data.strings",
+                        "value": {
+                            "field": "data"
+                        }
+                    },
+                    {
+                        "key": "registry.value",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "persistence",
+                                "registry",
+                                "autostart",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "startup_items_windows_elastic",
+                "query": "-- Dual-detection Windows startup items query:\n-- 1. NON_WHITELISTED: Filters out known-good high-volume tasks, flags everything else\n-- 2. LOTL_INDICATOR: Detects Living off the Land attack patterns (powershell -e, certutil, etc.)\n-- Uses TRIM() on paths and extracts .exe path for proper hash lookups\n-- MITRE ATT&CK: T1547.001, T1059.001, T1105\n\nWITH non_whitelisted AS (\n    SELECT \n        si.name,\n        TRIM(si.path) AS path,\n        si.type,\n        si.status,\n        si.source,\n        si.args,\n        si.username,\n        'NON_WHITELISTED' AS detection_method,\n        'Startup item not in known-good allowlist' AS detection_reason\n    FROM startup_items AS si\n    WHERE si.type IN ('Startup Item', 'Run Group Policy', 'RunOnce')\n        AND TRIM(si.path) IS NOT NULL\n        AND TRIM(si.path) != ''\n        -- Filter out RunNotification numeric values (0, 1, 4, etc.)\n        AND LENGTH(TRIM(si.path)) > 2\n        AND (TRIM(si.path) LIKE '%\\\\%' OR TRIM(si.path) LIKE '_:%' OR TRIM(si.path) LIKE '\"%')\n        -- Filter 1a: Exclude Microsoft system tasks in System32 (unless LotL indicators present)\n        AND NOT (\n            si.source LIKE 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\%'\n            AND TRIM(si.path) LIKE 'C:\\Windows\\System32\\%'\n            AND si.args NOT LIKE '%powershell% -e%'\n            AND si.args NOT LIKE '% -enc %'\n            AND si.args NOT LIKE '% -EncodedCommand %'\n            AND si.args NOT LIKE '%Invoke-WebRequest%'\n            AND si.args NOT LIKE '%IWR %'\n            AND si.args NOT LIKE '%certutil% -urlcache%'\n            AND si.args NOT LIKE '%bitsadmin%'\n        )\n        -- Filter 1b: Exclude specific known-good third-party updaters (name + path match required)\n        AND NOT (\n            si.name = 'GoogleUpdateTaskMachineUA'\n            AND TRIM(si.path) LIKE '%GoogleUpdate.exe%'\n        )\n        AND NOT (\n            si.name LIKE 'Adobe Acrobat Update Task%'\n            AND TRIM(si.path) LIKE '%Adobe%'\n        )\n        AND NOT (\n            si.source LIKE '%Microsoft\\Office%'\n            AND TRIM(si.path) LIKE 'C:\\Program Files\\Microsoft Office\\%'\n        )\n),\nlotl_indicators AS (\n    SELECT \n        si.name,\n        TRIM(si.path) AS path,\n        si.type,\n        si.status,\n        si.source,\n        si.args,\n        si.username,\n        'LOTL_INDICATOR' AS detection_method,\n        CASE\n            WHEN si.args LIKE '%powershell% -e%' OR si.args LIKE '% -enc %' OR si.args LIKE '% -EncodedCommand %' THEN 'PowerShell base64 encoded command'\n            WHEN si.args LIKE '%Invoke-WebRequest%' OR si.args LIKE '%IWR %' OR si.args LIKE '%curl %' OR si.args LIKE '%wget %' THEN 'Download command detected'\n            WHEN si.args LIKE '%certutil% -urlcache%' OR si.args LIKE '%certutil% -f%' THEN 'CertUtil download abuse'\n            WHEN si.args LIKE '%bitsadmin% /transfer%' THEN 'BITSAdmin download abuse'\n            WHEN TRIM(si.path) LIKE '%C:\\Users\\Public\\%' OR TRIM(si.path) LIKE '%C:\\ProgramData\\%' THEN 'Suspicious file path (writable by low-priv users)'\n            WHEN TRIM(si.path) LIKE '%\\Temp\\%' OR TRIM(si.path) LIKE '%\\AppData\\Local\\Temp\\%' THEN 'Execution from Temp directory'\n            WHEN si.args LIKE '%wscript.exe%' OR si.args LIKE '%cscript.exe%' THEN 'Windows Script Host abuse'\n            WHEN si.args LIKE '%mshta.exe%' THEN 'MSHTA.exe abuse'\n            WHEN si.args LIKE '%regsvr32%' OR si.args LIKE '%rundll32%' THEN 'Proxy execution via regsvr32/rundll32'\n            WHEN si.args LIKE '%.hta%' OR si.args LIKE '%.vbs%' OR si.args LIKE '%.js%' THEN 'Script file execution'\n            ELSE 'Unknown LotL pattern'\n        END AS detection_reason\n    FROM startup_items AS si\n    WHERE si.type IN ('Startup Item', 'Run Group Policy', 'RunOnce')\n        AND TRIM(si.path) IS NOT NULL\n        AND TRIM(si.path) != ''\n        -- Filter out RunNotification numeric values (0, 1, 4, etc.)\n        AND LENGTH(TRIM(si.path)) > 2\n        AND (TRIM(si.path) LIKE '%\\\\%' OR TRIM(si.path) LIKE '_:%' OR TRIM(si.path) LIKE '\"%')\n        AND (\n            -- PowerShell encoded commands (highest priority)\n            si.args LIKE '%powershell% -e%'\n            OR si.args LIKE '% -enc %'\n            OR si.args LIKE '% -EncodedCommand %'\n            -- Download utilities abuse\n            OR si.args LIKE '%Invoke-WebRequest%'\n            OR si.args LIKE '%IWR %'\n            OR si.args LIKE '%curl %'\n            OR si.args LIKE '%wget %'\n            OR si.args LIKE '%certutil% -urlcache%'\n            OR si.args LIKE '%certutil% -f%'\n            OR si.args LIKE '%bitsadmin% /transfer%'\n            -- Suspicious file paths\n            OR TRIM(si.path) LIKE '%C:\\Users\\Public\\%'\n            OR TRIM(si.path) LIKE '%C:\\ProgramData\\%'\n            OR TRIM(si.path) LIKE '%\\Temp\\%'\n            OR TRIM(si.path) LIKE '%\\AppData\\Local\\Temp\\%'\n            -- Script execution abuse\n            OR si.args LIKE '%wscript.exe%'\n            OR si.args LIKE '%cscript.exe%'\n            OR si.args LIKE '%mshta.exe%'\n            OR si.args LIKE '%regsvr32%'\n            OR si.args LIKE '%rundll32%'\n            OR si.args LIKE '%.hta%'\n            OR si.args LIKE '%.vbs%'\n            OR si.args LIKE '%.js%'\n        )\n),\ncombined AS (\n    SELECT * FROM non_whitelisted\n    UNION\n    SELECT * FROM lotl_indicators\n)\nSELECT \n    c.name,\n    c.path,\n    -- Extract .exe path from command line for proper hash/signature lookups\n    CASE\n        WHEN INSTR(LOWER(c.path), '.exe ') > 0\n        THEN SUBSTR(c.path, 1, INSTR(LOWER(c.path), '.exe ') + 3)\n        WHEN INSTR(LOWER(c.path), '.exe\"') > 0\n        THEN REPLACE(SUBSTR(c.path, 1, INSTR(LOWER(c.path), '.exe\"') + 3), '\"', '')\n        ELSE c.path\n    END AS exe_path,\n    c.type,\n    c.status,\n    c.source,\n    c.args,\n    c.username,\n    c.detection_method,\n    c.detection_reason,\n    a.subject_name AS signature_signer,\n    a.result AS signature_status,\n    h.sha256,\n    h.sha1,\n    h.md5,\n    f.size,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    datetime(f.btime, 'unixepoch') AS created_time,\n    f.directory\nFROM combined AS c\nLEFT JOIN authenticode AS a ON a.path = CASE\n    WHEN INSTR(LOWER(c.path), '.exe ') > 0\n    THEN SUBSTR(c.path, 1, INSTR(LOWER(c.path), '.exe ') + 3)\n    WHEN INSTR(LOWER(c.path), '.exe\"') > 0\n    THEN REPLACE(SUBSTR(c.path, 1, INSTR(LOWER(c.path), '.exe\"') + 3), '\"', '')\n    ELSE c.path\nEND\nLEFT JOIN hash AS h ON h.path = CASE\n    WHEN INSTR(LOWER(c.path), '.exe ') > 0\n    THEN SUBSTR(c.path, 1, INSTR(LOWER(c.path), '.exe ') + 3)\n    WHEN INSTR(LOWER(c.path), '.exe\"') > 0\n    THEN REPLACE(SUBSTR(c.path, 1, INSTR(LOWER(c.path), '.exe\"') + 3), '\"', '')\n    ELSE c.path\nEND\nLEFT JOIN file AS f ON f.path = CASE\n    WHEN INSTR(LOWER(c.path), '.exe ') > 0\n    THEN SUBSTR(c.path, 1, INSTR(LOWER(c.path), '.exe ') + 3)\n    WHEN INSTR(LOWER(c.path), '.exe\"') > 0\n    THEN REPLACE(SUBSTR(c.path, 1, INSTR(LOWER(c.path), '.exe\"') + 3), '\"', '')\n    ELSE c.path\nEND\nORDER BY \n    CASE WHEN c.detection_method = 'LOTL_INDICATOR' THEN 0 ELSE 1 END,\n    c.detection_reason,\n    c.name",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.startup_items"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "args"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha1",
+                        "value": {
+                            "field": "sha1"
+                        }
+                    },
+                    {
+                        "key": "file.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.ctime",
+                        "value": {
+                            "field": "changed_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "file.created",
+                        "value": {
+                            "field": "created_time"
+                        }
+                    },
+                    {
+                        "key": "file.directory",
+                        "value": {
+                            "field": "directory"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "rule.category",
+                        "value": {
+                            "field": "type"
+                        }
+                    },
+                    {
+                        "key": "service.state",
+                        "value": {
+                            "field": "status"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.subject_name",
+                        "value": {
+                            "field": "signature_signer"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.status",
+                        "value": {
+                            "field": "signature_status"
+                        }
+                    },
+                    {
+                        "key": "rule.description",
+                        "value": {
+                            "field": "detection_reason"
+                        }
+                    },
+                    {
+                        "key": "rule.name",
+                        "value": {
+                            "field": "detection_method"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "persistence",
+                                "startup_items",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "startup_items_linux_elastic",
+                "query": "-- Dual-detection Linux persistence query:\n-- 1. NON_WHITELISTED: User-created systemd/cron/XDG autostart/startup_items (location-based filtering)\n-- 2. LOTL_INDICATOR: Living off the Land patterns (bash -c, curl | bash, base64 -d, etc.)\n-- Uses TRIM() on paths for proper matching\n-- MITRE ATT&CK: T1543.002, T1053.003, T1547.013, T1059.004, T1105\n\nWITH non_whitelisted_systemd AS (\n    SELECT\n        su.id AS name,\n        su.id AS service_id,\n        TRIM(su.fragment_path) AS path,\n        TRIM(su.fragment_path) AS source,\n        su.description AS args,\n        su.user AS username,\n        CASE\n            WHEN su.unit_file_state = 'enabled' THEN 'enabled'\n            WHEN su.unit_file_state = 'disabled' THEN 'disabled'\n            ELSE su.unit_file_state\n        END AS status,\n        'Systemd Service (Custom)' AS type,\n        'NON_WHITELISTED' AS detection_method,\n        'User-created systemd service' AS detection_reason\n    FROM systemd_units AS su\n    WHERE TRIM(su.fragment_path) LIKE '/etc/systemd/system/%'\n        AND su.id LIKE '%.service'\n        AND su.unit_file_state IN ('enabled', 'static', 'linked')\n        AND su.id NOT IN (\n            'ssh.service', 'sshd.service', 'cron.service', 'crond.service',\n            'rsyslog.service', 'syslog.service', 'systemd-timesyncd.service',\n            'chronyd.service', 'ntpd.service', 'NetworkManager.service',\n            'systemd-networkd.service', 'networking.service', 'docker.service',\n            'containerd.service', 'podman.service', 'snapd.service',\n            'flatpak-system-helper.service', 'ufw.service', 'firewalld.service',\n            'iptables.service', 'nftables.service', 'auditd.service',\n            'journald.service', 'systemd-journald.service', 'polkit.service',\n            'dbus.service', 'dbus-broker.service', 'gdm.service', 'lightdm.service',\n            'sddm.service', 'cups.service', 'cups-browsed.service',\n            'avahi-daemon.service', 'bluetooth.service', 'ModemManager.service',\n            'accounts-daemon.service', 'udisks2.service', 'upower.service',\n            'thermald.service', 'fwupd.service', 'packagekit.service',\n            'unattended-upgrades.service', 'apt-daily.service',\n            'apt-daily-upgrade.service', 'dnf-makecache.service',\n            'elastic-agent.service', 'filebeat.service', 'metricbeat.service',\n            'auditbeat.service', 'osqueryd.service'\n        )\n        AND su.id NOT LIKE 'getty@%'\n        AND su.id NOT LIKE 'dbus-%'\n        AND su.id NOT LIKE 'systemd-%'\n        AND su.id NOT LIKE 'user@%'\n        AND su.id NOT LIKE 'session-%'\n),\nnon_whitelisted_cron AS (\n    SELECT\n        SUBSTR(c.command, 1, 100) AS name,\n        '' AS service_id,\n        TRIM(c.path) AS path,\n        TRIM(c.path) AS source,\n        c.command AS args,\n        CASE\n            WHEN TRIM(c.path) LIKE '/var/spool/cron/crontabs/%' THEN REPLACE(TRIM(c.path), '/var/spool/cron/crontabs/', '')\n            WHEN TRIM(c.path) LIKE '/var/spool/cron/%' THEN REPLACE(REPLACE(TRIM(c.path), '/var/spool/cron/', ''), 'crontabs/', '')\n            ELSE 'root'\n        END AS username,\n        'enabled' AS status,\n        'Cron @reboot' AS type,\n        'NON_WHITELISTED' AS detection_method,\n        'Cron @reboot job' AS detection_reason\n    FROM crontab AS c\n    WHERE c.event = '@reboot'\n        AND c.command NOT LIKE '%/usr/lib/apt/%'\n        AND c.command NOT LIKE '%unattended-upgrade%'\n        AND c.command NOT LIKE '%/usr/sbin/anacron%'\n        AND c.command NOT LIKE '%run-parts%/etc/cron%'\n),\nnon_whitelisted_xdg AS (\n    SELECT\n        REPLACE(f.filename, '.desktop', '') AS name,\n        '' AS service_id,\n        f.path,\n        f.directory AS source,\n        '' AS args,\n        SUBSTR(SUBSTR(f.path, 7), 1, INSTR(SUBSTR(f.path, 7), '/') - 1) AS username,\n        'enabled' AS status,\n        'XDG Autostart (User)' AS type,\n        'NON_WHITELISTED' AS detection_method,\n        'User-specific XDG autostart entry' AS detection_reason\n    FROM file AS f\n    WHERE f.path LIKE '/home/%/.config/autostart/%.desktop'\n),\nnon_whitelisted_startup AS (\n    SELECT\n        si.name,\n        '' AS service_id,\n        TRIM(si.path) AS path,\n        si.source,\n        si.args,\n        si.username,\n        si.status,\n        'Startup Item (Generic)' AS type,\n        'NON_WHITELISTED' AS detection_method,\n        'Startup item from startup_items table' AS detection_reason\n    FROM startup_items AS si\n    WHERE TRIM(si.path) IS NOT NULL\n        AND TRIM(si.path) != ''\n        AND TRIM(si.path) NOT LIKE '/usr/lib/systemd/%'\n        AND TRIM(si.path) NOT LIKE '/lib/systemd/%'\n        AND TRIM(si.path) NOT LIKE '/usr/share/dbus-1/%'\n        AND TRIM(si.path) NOT LIKE '/etc/init.d/%'\n        AND TRIM(si.path) NOT LIKE '/run/systemd/generator/%'\n        AND TRIM(si.path) NOT LIKE '/run/systemd/generator.late/%'\n        AND TRIM(si.path) NOT LIKE '/run/systemd/transient/%'\n        AND TRIM(si.path) NOT LIKE '/run/systemd/system/%'\n        AND TRIM(si.path) NOT LIKE '/etc/systemd/system/%'\n        AND si.source NOT LIKE '/etc/xdg/autostart/%'\n        AND si.source NOT LIKE '/usr/share/gnome/autostart/%'\n        AND si.source NOT LIKE '/usr/share/autostart/%'\n        AND si.source NOT LIKE '/usr/share/gdm/autostart/%'\n        AND si.source NOT LIKE '/usr/share/applications/%'\n        AND si.name NOT LIKE 'snap-%.mount'\n        AND si.name NOT LIKE 'snap%.mount'\n        AND si.name NOT LIKE 'session-%.scope'\n        AND si.name NOT LIKE 'user-%.slice'\n        AND si.name NOT LIKE 'user@%.service'\n        AND si.name NOT LIKE '%.mount'\n        AND si.name NOT LIKE '%.automount'\n        AND si.name NOT LIKE '%.socket'\n        AND si.name NOT LIKE '%.timer'\n        AND si.name NOT LIKE '%.path'\n        AND si.name NOT LIKE '%.target'\n        AND si.name NOT LIKE '%.slice'\n        AND si.name NOT LIKE '%.swap'\n        AND si.name NOT LIKE '%.device'\n        AND si.name NOT LIKE 'systemd-%'\n        AND si.name NOT LIKE 'dbus-%'\n        AND si.name NOT LIKE 'getty@%'\n        AND si.name NOT LIKE 'GNOME %'\n        AND si.name NOT LIKE 'gsd-%'\n        AND si.name NOT IN (\n            'sshd', 'ssh.service', 'sshd.service', 'cron', 'cron.service',\n            'crond', 'crond.service', 'rsyslogd', 'rsyslog.service',\n            'chronyd', 'chronyd.service', 'ntpd', 'ntpd.service',\n            'NetworkManager', 'NetworkManager.service', 'dockerd', 'docker.service',\n            'containerd', 'containerd.service', 'snapd', 'snapd.service',\n            'polkitd', 'polkit.service', 'gdm', 'gdm.service', 'gdm3',\n            'lightdm', 'lightdm.service', 'sddm', 'sddm.service',\n            'cupsd', 'cups.service', 'cups-browsed', 'cups-browsed.service',\n            'avahi-daemon', 'avahi-daemon.service', 'bluetoothd', 'bluetooth',\n            'bluetooth.service', 'ModemManager', 'ModemManager.service',\n            'udisksd', 'udisks2.service', 'upowerd', 'upower.service',\n            'thermald', 'thermald.service', 'fwupd', 'fwupd.service',\n            'packagekitd', 'packagekit.service', 'elastic-agent', 'elastic-agent.service',\n            'filebeat', 'filebeat.service', 'metricbeat', 'metricbeat.service',\n            'auditbeat', 'auditbeat.service', 'osqueryd', 'osqueryd.service',\n            'dbus', 'dbus.service', 'accounts-daemon.service', 'apport.service',\n            'apparmor.service', 'ufw.service', 'firewalld.service'\n        )\n),\nlotl_systemd AS (\n    SELECT\n        su.id AS name,\n        su.id AS service_id,\n        TRIM(su.fragment_path) AS path,\n        TRIM(su.fragment_path) AS source,\n        su.description AS args,\n        su.user AS username,\n        CASE\n            WHEN su.unit_file_state = 'enabled' THEN 'enabled'\n            WHEN su.unit_file_state = 'disabled' THEN 'disabled'\n            ELSE su.unit_file_state\n        END AS status,\n        'Systemd Service (LotL)' AS type,\n        'LOTL_INDICATOR' AS detection_method,\n        CASE\n            WHEN su.description LIKE '%bash -c%' OR su.description LIKE '%sh -c%' THEN 'Shell command execution via -c flag'\n            WHEN su.description LIKE '%curl%|%bash%' OR su.description LIKE '%wget%|%sh%' THEN 'Download and pipe to shell'\n            WHEN su.description LIKE '%curl%http%' OR su.description LIKE '%wget%http%' THEN 'Download utility abuse'\n            WHEN su.description LIKE '%base64 -d%' OR su.description LIKE '%base64 --decode%' THEN 'Base64 decode for obfuscation'\n            WHEN su.description LIKE '%/dev/shm/%' OR su.description LIKE '%/tmp/%' THEN 'Execution from world-writable directory'\n            WHEN su.description LIKE '% nc %' OR su.description LIKE '%/nc %' OR su.description LIKE 'nc %' OR su.description LIKE '%netcat%' OR su.description LIKE '%ncat %' THEN 'Netcat reverse shell'\n            WHEN su.description LIKE '%/dev/tcp/%' THEN 'Bash TCP socket redirection'\n            WHEN su.description LIKE '%nohup%&%' OR su.description LIKE '%disown%' THEN 'Background process persistence'\n            WHEN su.description LIKE '%.sh%' AND TRIM(su.fragment_path) LIKE '/tmp/%' THEN 'Shell script from temp directory'\n            WHEN su.description LIKE '%python% -c%' OR su.description LIKE '%perl% -e%' THEN 'Scripting language one-liner'\n            WHEN su.description LIKE '%chmod +x%' AND su.description LIKE '%http%' THEN 'Download and execute pattern'\n            ELSE 'Unknown LotL pattern in systemd'\n        END AS detection_reason\n    FROM systemd_units AS su\n    WHERE TRIM(su.fragment_path) IS NOT NULL\n        AND su.id LIKE '%.service'\n        AND su.unit_file_state IN ('enabled', 'static', 'linked')\n        AND (\n            su.description LIKE '%bash -c%'\n            OR su.description LIKE '%sh -c%'\n            OR su.description LIKE '%curl%|%bash%'\n            OR su.description LIKE '%wget%|%sh%'\n            OR su.description LIKE '%curl%http%'\n            OR su.description LIKE '%wget%http%'\n            OR su.description LIKE '%base64 -d%'\n            OR su.description LIKE '%base64 --decode%'\n            OR su.description LIKE '%/dev/shm/%'\n            OR su.description LIKE '%/tmp/%'\n            OR (su.description LIKE '% nc %' OR su.description LIKE '%/nc %' OR su.description LIKE 'nc %')\n            OR su.description LIKE '%netcat%'\n            OR su.description LIKE '%ncat %'\n            OR su.description LIKE '%/dev/tcp/%'\n            OR su.description LIKE '%nohup%&%'\n            OR su.description LIKE '%disown%'\n            OR (su.description LIKE '%.sh%' AND TRIM(su.fragment_path) LIKE '/tmp/%')\n            OR su.description LIKE '%python% -c%'\n            OR su.description LIKE '%perl% -e%'\n            OR (su.description LIKE '%chmod +x%' AND su.description LIKE '%http%')\n        )\n),\nlotl_cron AS (\n    SELECT\n        SUBSTR(c.command, 1, 100) AS name,\n        '' AS service_id,\n        TRIM(c.path) AS path,\n        TRIM(c.path) AS source,\n        c.command AS args,\n        CASE\n            WHEN TRIM(c.path) LIKE '/var/spool/cron/crontabs/%' THEN REPLACE(TRIM(c.path), '/var/spool/cron/crontabs/', '')\n            WHEN TRIM(c.path) LIKE '/var/spool/cron/%' THEN REPLACE(REPLACE(TRIM(c.path), '/var/spool/cron/', ''), 'crontabs/', '')\n            ELSE 'root'\n        END AS username,\n        'enabled' AS status,\n        'Cron (LotL)' AS type,\n        'LOTL_INDICATOR' AS detection_method,\n        CASE\n            WHEN c.command LIKE '%bash -c%' OR c.command LIKE '%sh -c%' THEN 'Shell command execution via -c flag'\n            WHEN c.command LIKE '%curl%|%bash%' OR c.command LIKE '%wget%|%sh%' THEN 'Download and pipe to shell'\n            WHEN c.command LIKE '%curl%http%' OR c.command LIKE '%wget%http%' THEN 'Download utility abuse'\n            WHEN c.command LIKE '%base64 -d%' OR c.command LIKE '%base64 --decode%' THEN 'Base64 decode for obfuscation'\n            WHEN c.command LIKE '%/dev/shm/%' OR c.command LIKE '%/tmp/%' THEN 'Execution from world-writable directory'\n            WHEN c.command LIKE '% nc %' OR c.command LIKE '%/nc %' OR c.command LIKE 'nc %' OR c.command LIKE '%netcat%' OR c.command LIKE '%ncat %' THEN 'Netcat reverse shell'\n            WHEN c.command LIKE '%/dev/tcp/%' THEN 'Bash TCP socket redirection'\n            WHEN c.command LIKE '%nohup%&%' OR c.command LIKE '%disown%' THEN 'Background process persistence'\n            WHEN c.command LIKE '%python% -c%' OR c.command LIKE '%perl% -e%' THEN 'Scripting language one-liner'\n            WHEN c.command LIKE '%chmod +x%' AND c.command LIKE '%http%' THEN 'Download and execute pattern'\n            ELSE 'Unknown LotL pattern in cron'\n        END AS detection_reason\n    FROM crontab AS c\n    WHERE c.command IS NOT NULL\n        AND (\n            c.command LIKE '%bash -c%'\n            OR c.command LIKE '%sh -c%'\n            OR c.command LIKE '%curl%|%bash%'\n            OR c.command LIKE '%wget%|%sh%'\n            OR c.command LIKE '%curl%http%'\n            OR c.command LIKE '%wget%http%'\n            OR c.command LIKE '%base64 -d%'\n            OR c.command LIKE '%base64 --decode%'\n            OR c.command LIKE '%/dev/shm/%'\n            OR c.command LIKE '%/tmp/%'\n            OR (c.command LIKE '% nc %' OR c.command LIKE '%/nc %' OR c.command LIKE 'nc %')\n            OR c.command LIKE '%netcat%'\n            OR c.command LIKE '%ncat %'\n            OR c.command LIKE '%/dev/tcp/%'\n            OR c.command LIKE '%nohup%&%'\n            OR c.command LIKE '%disown%'\n            OR c.command LIKE '%python% -c%'\n            OR c.command LIKE '%perl% -e%'\n            OR (c.command LIKE '%chmod +x%' AND c.command LIKE '%http%')\n        )\n),\nlotl_startup AS (\n    SELECT\n        si.name,\n        '' AS service_id,\n        TRIM(si.path) AS path,\n        si.source,\n        si.args,\n        si.username,\n        si.status,\n        'Startup Item (LotL)' AS type,\n        'LOTL_INDICATOR' AS detection_method,\n        CASE\n            WHEN si.args LIKE '%bash -c%' OR si.args LIKE '%sh -c%' THEN 'Shell command execution via -c flag'\n            WHEN si.args LIKE '%curl%|%bash%' OR si.args LIKE '%wget%|%sh%' THEN 'Download and pipe to shell'\n            WHEN si.args LIKE '%curl%http%' OR si.args LIKE '%wget%http%' THEN 'Download utility abuse'\n            WHEN si.args LIKE '%base64 -d%' OR si.args LIKE '%base64 --decode%' THEN 'Base64 decode for obfuscation'\n            WHEN TRIM(si.path) LIKE '%/dev/shm/%' OR TRIM(si.path) LIKE '%/tmp/%' THEN 'Execution from world-writable directory'\n            WHEN si.args LIKE '% nc %' OR si.args LIKE '%/nc %' OR si.args LIKE 'nc %' OR si.args LIKE '%netcat%' OR si.args LIKE '%ncat %' THEN 'Netcat reverse shell'\n            WHEN si.args LIKE '%/dev/tcp/%' THEN 'Bash TCP socket redirection'\n            WHEN si.args LIKE '%nohup%&%' OR si.args LIKE '%disown%' THEN 'Background process persistence'\n            WHEN si.args LIKE '%python% -c%' OR si.args LIKE '%perl% -e%' THEN 'Scripting language one-liner'\n            WHEN si.args LIKE '%chmod +x%' AND si.args LIKE '%http%' THEN 'Download and execute pattern'\n            ELSE 'Unknown LotL pattern in startup_items'\n        END AS detection_reason\n    FROM startup_items AS si\n    WHERE TRIM(si.path) IS NOT NULL\n        AND TRIM(si.path) != ''\n        AND (\n            si.args LIKE '%bash -c%'\n            OR si.args LIKE '%sh -c%'\n            OR si.args LIKE '%curl%|%bash%'\n            OR si.args LIKE '%wget%|%sh%'\n            OR si.args LIKE '%curl%http%'\n            OR si.args LIKE '%wget%http%'\n            OR si.args LIKE '%base64 -d%'\n            OR si.args LIKE '%base64 --decode%'\n            OR TRIM(si.path) LIKE '%/dev/shm/%'\n            OR TRIM(si.path) LIKE '%/tmp/%'\n            OR (si.args LIKE '% nc %' OR si.args LIKE '%/nc %' OR si.args LIKE 'nc %')\n            OR si.args LIKE '%netcat%'\n            OR si.args LIKE '%ncat %'\n            OR si.args LIKE '%/dev/tcp/%'\n            OR si.args LIKE '%nohup%&%'\n            OR si.args LIKE '%disown%'\n            OR si.args LIKE '%python% -c%'\n            OR si.args LIKE '%perl% -e%'\n            OR (si.args LIKE '%chmod +x%' AND si.args LIKE '%http%')\n        )\n),\ncombined AS (\n    SELECT * FROM non_whitelisted_systemd\n    UNION ALL\n    SELECT * FROM non_whitelisted_cron\n    UNION ALL\n    SELECT * FROM non_whitelisted_xdg\n    UNION ALL\n    SELECT * FROM non_whitelisted_startup\n    UNION ALL\n    SELECT * FROM lotl_systemd\n    UNION ALL\n    SELECT * FROM lotl_cron\n    UNION ALL\n    SELECT * FROM lotl_startup\n)\nSELECT\n    c.name,\n    c.service_id,\n    c.path,\n    c.type,\n    c.status,\n    c.source,\n    c.args,\n    c.username,\n    c.detection_method,\n    c.detection_reason,\n    h.sha256,\n    h.sha1,\n    h.md5,\n    f.size,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    datetime(f.btime, 'unixepoch') AS created_time,\n    f.uid,\n    f.gid,\n    f.mode\nFROM combined AS c\nLEFT JOIN hash AS h ON h.path = c.path\nLEFT JOIN file AS f ON f.path = c.path\nORDER BY\n    CASE WHEN c.detection_method = 'LOTL_INDICATOR' THEN 0 ELSE 1 END,\n    c.detection_reason,\n    c.type,\n    c.name",
+                "interval": 3600,
+                "platform": "linux",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.startup_items"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "args"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha1",
+                        "value": {
+                            "field": "sha1"
+                        }
+                    },
+                    {
+                        "key": "file.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.ctime",
+                        "value": {
+                            "field": "changed_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "file.created",
+                        "value": {
+                            "field": "created_time"
+                        }
+                    },
+                    {
+                        "key": "file.uid",
+                        "value": {
+                            "field": "uid"
+                        }
+                    },
+                    {
+                        "key": "file.gid",
+                        "value": {
+                            "field": "gid"
+                        }
+                    },
+                    {
+                        "key": "file.mode",
+                        "value": {
+                            "field": "mode"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "service.id",
+                        "value": {
+                            "field": "service_id"
+                        }
+                    },
+                    {
+                        "key": "service.state",
+                        "value": {
+                            "field": "status"
+                        }
+                    },
+                    {
+                        "key": "rule.category",
+                        "value": {
+                            "field": "type"
+                        }
+                    },
+                    {
+                        "key": "rule.description",
+                        "value": {
+                            "field": "detection_reason"
+                        }
+                    },
+                    {
+                        "key": "rule.name",
+                        "value": {
+                            "field": "detection_method"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "persistence",
+                                "startup_items",
+                                "linux"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "startup_items_darwin_elastic",
+                "query": "-- Dual-detection macOS persistence query:\n-- 1. NON_WHITELISTED: Non-Apple signed LaunchAgents/Daemons (signature-based filtering)\n-- 2. LOTL_INDICATOR: Living off the Land patterns (bash -c, curl | bash, osascript, etc.)\n-- Uses TRIM() on paths and extracts executable path from program_arguments\n-- MITRE ATT&CK: T1543.001, T1547.015, T1059.004, T1105\n\nWITH non_whitelisted_launchd AS (\n    SELECT\n        l.label AS name,\n        TRIM(COALESCE(NULLIF(l.program, ''), l.program_arguments)) AS path,\n        l.path AS source,\n        l.program_arguments AS args,\n        l.username,\n        CASE\n            WHEN l.disabled = '1' OR l.disabled = 1 THEN 'disabled'\n            WHEN l.run_at_load = 'true' OR l.run_at_load = '1' OR l.run_at_load = 1 THEN 'enabled'\n            ELSE 'unknown'\n        END AS status,\n        'Launch Agent/Daemon' AS type,\n        'NON_WHITELISTED' AS detection_method,\n        'Non-Apple signed LaunchAgent/Daemon' AS detection_reason\n    FROM launchd AS l\n    WHERE (\n        (l.program IS NOT NULL AND TRIM(l.program) != '')\n        OR (l.program_arguments IS NOT NULL AND TRIM(l.program_arguments) != '')\n    )\n        AND l.path NOT LIKE '/System/Library/%'\n        AND l.path NOT LIKE '/Library/Apple/%'\n        AND (l.run_at_load = 'true' OR l.run_at_load = '1' OR l.run_at_load = 1)\n),\nnon_whitelisted_startup AS (\n    SELECT\n        si.name,\n        TRIM(si.path) AS path,\n        si.source,\n        si.args,\n        si.username,\n        si.status,\n        CASE\n            WHEN si.type = 'Startup Item' THEN 'Legacy Startup Item'\n            WHEN si.type = 'Login Item' THEN 'Login Item'\n            ELSE si.type\n        END AS type,\n        'NON_WHITELISTED' AS detection_method,\n        'Legacy startup/login item' AS detection_reason\n    FROM startup_items AS si\n    WHERE TRIM(si.path) IS NOT NULL\n        AND TRIM(si.path) != ''\n        AND TRIM(si.path) NOT LIKE '/System/Library/%'\n        AND TRIM(si.path) NOT LIKE '/Library/Apple/%'\n),\nlotl_launchd AS (\n    SELECT\n        l.label AS name,\n        TRIM(COALESCE(NULLIF(l.program, ''), l.program_arguments)) AS path,\n        l.path AS source,\n        l.program_arguments AS args,\n        l.username,\n        CASE\n            WHEN l.disabled = '1' OR l.disabled = 1 THEN 'disabled'\n            WHEN l.run_at_load = 'true' OR l.run_at_load = '1' OR l.run_at_load = 1 THEN 'enabled'\n            ELSE 'unknown'\n        END AS status,\n        'Launch Agent/Daemon (LotL)' AS type,\n        'LOTL_INDICATOR' AS detection_method,\n        CASE\n            WHEN l.program_arguments LIKE '%bash -c%' OR l.program_arguments LIKE '%sh -c%' THEN 'Shell command execution via -c flag'\n            WHEN l.program_arguments LIKE '%curl%|%bash%' OR l.program_arguments LIKE '%curl%|%sh%' THEN 'Download and pipe to shell'\n            WHEN l.program_arguments LIKE '%curl%http%' OR l.program_arguments LIKE '%wget%http%' THEN 'Download utility abuse'\n            WHEN l.program_arguments LIKE '%base64 -D%' OR l.program_arguments LIKE '%base64 --decode%' THEN 'Base64 decode for obfuscation'\n            WHEN l.program_arguments LIKE '%osascript%' AND l.program_arguments LIKE '%-e%' THEN 'AppleScript execution abuse'\n            WHEN l.program_arguments LIKE '%python%-%c%' OR l.program_arguments LIKE '%perl%-%e%' THEN 'Scripting language one-liner'\n            WHEN (l.program_arguments LIKE '%/tmp/%' AND l.program_arguments NOT LIKE '%/var/tmp/%') OR l.program_arguments LIKE '%/private/tmp/%' THEN 'Execution from temp directory'\n            WHEN l.program_arguments LIKE '%/dev/tcp/%' THEN 'Bash TCP socket redirection'\n            WHEN l.program_arguments LIKE '% nc %' OR l.program_arguments LIKE '%/nc %' OR l.program_arguments LIKE 'nc %' OR l.program_arguments LIKE '%netcat%' OR l.program_arguments LIKE '%ncat %' THEN 'Netcat reverse shell'\n            WHEN l.program_arguments LIKE '%nohup%&%' OR l.program_arguments LIKE '%disown%' THEN 'Background process persistence'\n            WHEN l.program_arguments LIKE '%.sh%' AND (TRIM(COALESCE(NULLIF(l.program, ''), l.program_arguments)) LIKE '/tmp/%' OR TRIM(COALESCE(NULLIF(l.program, ''), l.program_arguments)) LIKE '/private/tmp/%') THEN 'Shell script from temp directory'\n            ELSE 'Unknown LotL pattern in LaunchAgent'\n        END AS detection_reason\n    FROM launchd AS l\n    WHERE (\n        (l.program IS NOT NULL AND TRIM(l.program) != '')\n        OR (l.program_arguments IS NOT NULL AND TRIM(l.program_arguments) != '')\n    )\n        AND (l.run_at_load = 'true' OR l.run_at_load = '1' OR l.run_at_load = 1)\n        AND (\n            l.program_arguments LIKE '%bash -c%'\n            OR l.program_arguments LIKE '%sh -c%'\n            OR l.program_arguments LIKE '%curl%|%bash%'\n            OR l.program_arguments LIKE '%curl%|%sh%'\n            OR l.program_arguments LIKE '%curl%http%'\n            OR l.program_arguments LIKE '%wget%http%'\n            OR l.program_arguments LIKE '%base64 -D%'\n            OR l.program_arguments LIKE '%base64 --decode%'\n            OR (l.program_arguments LIKE '%osascript%' AND l.program_arguments LIKE '%-e%')\n            OR l.program_arguments LIKE '%python%-%c%'\n            OR l.program_arguments LIKE '%perl%-%e%'\n            OR (l.program_arguments LIKE '%/tmp/%' AND l.program_arguments NOT LIKE '%/var/tmp/%')\n            OR l.program_arguments LIKE '%/private/tmp/%'\n            OR l.program_arguments LIKE '%/dev/tcp/%'\n            OR (l.program_arguments LIKE '% nc %' OR l.program_arguments LIKE '%/nc %' OR l.program_arguments LIKE 'nc %')\n            OR l.program_arguments LIKE '%netcat%'\n            OR l.program_arguments LIKE '%ncat %'\n            OR l.program_arguments LIKE '%nohup%&%'\n            OR l.program_arguments LIKE '%disown%'\n            OR (l.program_arguments LIKE '%.sh%' AND (TRIM(COALESCE(NULLIF(l.program, ''), l.program_arguments)) LIKE '/tmp/%' OR TRIM(COALESCE(NULLIF(l.program, ''), l.program_arguments)) LIKE '/private/tmp/%'))\n        )\n),\ncombined AS (\n    SELECT * FROM non_whitelisted_launchd\n    UNION ALL\n    SELECT * FROM non_whitelisted_startup\n    UNION ALL\n    SELECT * FROM lotl_launchd\n)\nSELECT\n    c.name,\n    c.path,\n    -- Extract executable path (first space-separated token if path contains arguments)\n    CASE\n        WHEN INSTR(c.path, ' ') > 0 AND SUBSTR(c.path, 1, 1) != '-'\n        THEN SUBSTR(c.path, 1, INSTR(c.path, ' ') - 1)\n        ELSE c.path\n    END AS exe_path,\n    c.type,\n    c.status,\n    c.source,\n    c.args,\n    c.username,\n    c.detection_method,\n    c.detection_reason,\n    CASE WHEN s.signed = 1 THEN 'signed' ELSE 'unsigned' END AS signature_status,\n    s.identifier AS signature_signer,\n    h.sha256,\n    h.sha1,\n    h.md5,\n    f.size,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    datetime(f.btime, 'unixepoch') AS created_time,\n    f.uid,\n    f.gid,\n    f.mode\nFROM combined AS c\nLEFT JOIN signature AS s ON s.path = CASE\n    WHEN INSTR(c.path, ' ') > 0 AND SUBSTR(c.path, 1, 1) != '-'\n    THEN SUBSTR(c.path, 1, INSTR(c.path, ' ') - 1)\n    ELSE c.path\nEND\nLEFT JOIN hash AS h ON h.path = CASE\n    WHEN INSTR(c.path, ' ') > 0 AND SUBSTR(c.path, 1, 1) != '-'\n    THEN SUBSTR(c.path, 1, INSTR(c.path, ' ') - 1)\n    ELSE c.path\nEND\nLEFT JOIN file AS f ON f.path = CASE\n    WHEN INSTR(c.path, ' ') > 0 AND SUBSTR(c.path, 1, 1) != '-'\n    THEN SUBSTR(c.path, 1, INSTR(c.path, ' ') - 1)\n    ELSE c.path\nEND\nWHERE (\n    c.detection_method = 'LOTL_INDICATOR'\n    OR s.signed IS NULL\n    OR s.signed = 0\n    OR (\n        s.identifier IS NOT NULL\n        AND s.identifier NOT LIKE 'com.apple.%'\n        AND s.identifier NOT LIKE 'Apple Inc.%'\n    )\n)\nORDER BY\n    CASE WHEN c.detection_method = 'LOTL_INDICATOR' THEN 0 ELSE 1 END,\n    CASE WHEN s.signed = 0 OR s.signed IS NULL THEN 0 ELSE 1 END,\n    c.detection_reason,\n    c.name",
+                "interval": 3600,
+                "platform": "darwin",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.startup_items"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "exe_path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "args"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha1",
+                        "value": {
+                            "field": "sha1"
+                        }
+                    },
+                    {
+                        "key": "file.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.ctime",
+                        "value": {
+                            "field": "changed_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "file.created",
+                        "value": {
+                            "field": "created_time"
+                        }
+                    },
+                    {
+                        "key": "file.uid",
+                        "value": {
+                            "field": "uid"
+                        }
+                    },
+                    {
+                        "key": "file.gid",
+                        "value": {
+                            "field": "gid"
+                        }
+                    },
+                    {
+                        "key": "file.mode",
+                        "value": {
+                            "field": "mode"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "service.state",
+                        "value": {
+                            "field": "status"
+                        }
+                    },
+                    {
+                        "key": "rule.category",
+                        "value": {
+                            "field": "type"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.status",
+                        "value": {
+                            "field": "signature_status"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.subject_name",
+                        "value": {
+                            "field": "signature_signer"
+                        }
+                    },
+                    {
+                        "key": "rule.description",
+                        "value": {
+                            "field": "detection_reason"
+                        }
+                    },
+                    {
+                        "key": "rule.name",
+                        "value": {
+                            "field": "detection_method"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "persistence",
+                                "startup_items",
+                                "macos"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "wmi_persistence_event_subscriptions_windows_elastic",
+                "query": "-- WMI Persistence Event Subscriptions - Complete Coverage (T1546.003)\n-- Detects bound subscriptions and orphaned components for full forensic visibility\n-- Timestamps converted to UTC ISO 8601 format per ECS standardization\n\nWITH wmi_subscriptions AS (\n    -- Part 1: Bound subscriptions (complete filter-consumer chains)\n    SELECT\n        'bound' AS status,\n        filter.name AS filter_name,\n        filter.query AS filter_query,\n        filter.query_language,\n        filter.class AS filter_class,\n        COALESCE(cli.name, script.name) AS consumer_name,\n        CASE\n            WHEN cli.name IS NOT NULL THEN 'CommandLineEventConsumer'\n            WHEN script.name IS NOT NULL THEN 'ActiveScriptEventConsumer'\n            ELSE 'Unknown'\n        END AS consumer_type,\n        COALESCE(cli.class, script.class) AS consumer_class,\n        COALESCE(cli.relative_path, script.relative_path) AS consumer_relative_path,\n        cli.command_line_template,\n        cli.executable_path,\n        script.scripting_engine,\n        script.script_file_name,\n        script.script_text,\n        COALESCE(\n            NULLIF(cli.executable_path, ''),\n            NULLIF(cli.command_line_template, ''),\n            NULLIF(script.script_file_name, '')\n        ) AS hashable_path\n    FROM wmi_filter_consumer_binding binding\n    LEFT JOIN wmi_event_filters filter ON binding.filter = filter.relative_path\n    LEFT JOIN wmi_cli_event_consumers cli ON binding.consumer = cli.relative_path\n    LEFT JOIN wmi_script_event_consumers script ON binding.consumer = script.relative_path\n\n    UNION ALL\n\n    -- Part 2: Orphaned CLI consumers (possible residual malware)\n    SELECT\n        'orphaned_consumer' AS status,\n        '' AS filter_name,\n        '' AS filter_query,\n        '' AS query_language,\n        '' AS filter_class,\n        cli.name AS consumer_name,\n        'CommandLineEventConsumer' AS consumer_type,\n        cli.class AS consumer_class,\n        cli.relative_path AS consumer_relative_path,\n        cli.command_line_template,\n        cli.executable_path,\n        '' AS scripting_engine,\n        '' AS script_file_name,\n        '' AS script_text,\n        COALESCE(NULLIF(cli.executable_path, ''), NULLIF(cli.command_line_template, '')) AS hashable_path\n    FROM wmi_cli_event_consumers cli\n    WHERE NOT EXISTS (\n        SELECT 1 FROM wmi_filter_consumer_binding binding\n        WHERE binding.consumer = cli.relative_path\n    )\n\n    UNION ALL\n\n    -- Part 3: Orphaned Script consumers (possible residual malware)\n    SELECT\n        'orphaned_consumer' AS status,\n        '' AS filter_name,\n        '' AS filter_query,\n        '' AS query_language,\n        '' AS filter_class,\n        script.name AS consumer_name,\n        'ActiveScriptEventConsumer' AS consumer_type,\n        script.class AS consumer_class,\n        script.relative_path AS consumer_relative_path,\n        '' AS command_line_template,\n        '' AS executable_path,\n        script.scripting_engine,\n        script.script_file_name,\n        script.script_text,\n        NULLIF(script.script_file_name, '') AS hashable_path\n    FROM wmi_script_event_consumers script\n    WHERE NOT EXISTS (\n        SELECT 1 FROM wmi_filter_consumer_binding binding\n        WHERE binding.consumer = script.relative_path\n    )\n\n    UNION ALL\n\n    -- Part 4: Orphaned filters (possible residual malware)\n    SELECT\n        'orphaned_filter' AS status,\n        filter.name AS filter_name,\n        filter.query AS filter_query,\n        filter.query_language,\n        filter.class AS filter_class,\n        '' AS consumer_name,\n        '' AS consumer_type,\n        '' AS consumer_class,\n        '' AS consumer_relative_path,\n        '' AS command_line_template,\n        '' AS executable_path,\n        '' AS scripting_engine,\n        '' AS script_file_name,\n        '' AS script_text,\n        '' AS hashable_path\n    FROM wmi_event_filters filter\n    WHERE NOT EXISTS (\n        SELECT 1 FROM wmi_filter_consumer_binding binding\n        WHERE binding.filter = filter.relative_path\n    )\n)\n\nSELECT\n    ws.status,\n    ws.filter_name,\n    ws.filter_query,\n    ws.query_language,\n    ws.filter_class,\n    ws.consumer_name,\n    ws.consumer_type,\n    ws.consumer_class,\n    ws.consumer_relative_path,\n    ws.command_line_template,\n    ws.executable_path,\n    ws.scripting_engine,\n    ws.script_file_name,\n    ws.script_text,\n    h.md5,\n    h.sha1,\n    h.sha256,\n    concat('https://www.virustotal.com/gui/file/', h.sha256) AS vt_link,\n    a.subject_name AS signature_signer,\n    a.result AS signature_status,\n    -- File timestamps converted to UTC ISO 8601 with readable aliases (ECS standard)\n    datetime(f.btime, 'unixepoch') AS created_time,\n    datetime(f.mtime, 'unixepoch') AS modified_time,\n    datetime(f.atime, 'unixepoch') AS accessed_time,\n    datetime(f.ctime, 'unixepoch') AS changed_time,\n    f.size AS file_size\nFROM wmi_subscriptions ws\nLEFT JOIN hash h ON h.path = ws.hashable_path AND ws.hashable_path != ''\nLEFT JOIN authenticode a ON a.path = ws.hashable_path AND ws.hashable_path != ''\nLEFT JOIN file f ON f.path = ws.hashable_path AND ws.hashable_path != ''",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.wmi_persistence"
+                        }
+                    },
+                    {
+                        "key": "file.hash.md5",
+                        "value": {
+                            "field": "md5"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha1",
+                        "value": {
+                            "field": "sha1"
+                        }
+                    },
+                    {
+                        "key": "file.hash.sha256",
+                        "value": {
+                            "field": "sha256"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.subject_name",
+                        "value": {
+                            "field": "signature_signer"
+                        }
+                    },
+                    {
+                        "key": "file.code_signature.status",
+                        "value": {
+                            "field": "signature_status"
+                        }
+                    },
+                    {
+                        "key": "file.created",
+                        "value": {
+                            "field": "created_time"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "file.ctime",
+                        "value": {
+                            "field": "changed_time"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "file_size"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "persistence",
+                                "wmi",
+                                "event_subscription",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "bits_monitoring_windows_elastic",
+                "query": "-- Monitor BITS (Background Intelligent Transfer Service) file transfers\n-- Source: Windows Event Log (Microsoft-Windows-Bits-Client/Operational)\n-- Event ID 59: BITS transfer completion events\n-- Focus: External/suspicious download sources (filters out known-good vendors and private IPs)\n\nWITH extracted AS (\n    SELECT\n        datetime AS event_time,\n        provider_name,\n        eventid AS event_id,\n        json_extract(data, '$.EventData.url') AS url_full,\n        -- Robust Host Extraction:\n        -- 1. Remove protocol headers\n        -- 2. Split by slash to get the domain\n        -- 3. Split by colon to remove ports (e.g. :8080) if present\n        split(\n            split(\n                replace(\n                    replace(json_extract(data, '$.EventData.url'), 'https://', ''),\n                    'http://', ''\n                ),\n                '/', 0\n            ),\n            ':', 0\n        ) AS url_domain,\n        json_extract(data, '$.EventData.name') AS filename,\n        json_extract(data, '$.EventData.processId') AS pid,\n        json_extract(data, '$.EventData.threadId') AS tid\n    FROM windows_eventlog\n    WHERE channel = 'Microsoft-Windows-Bits-Client/Operational'\n      AND eventid = 59\n)\n\nSELECT *\nFROM extracted\nWHERE regex_match(\n    url_domain,\n    '^(.*\\\\.)?(office365\\\\.com|office\\\\.net|windowsupdate\\\\.com|live\\\\.com|mozilla\\\\.com|adobe\\\\.com|microsoft\\\\.com|google\\\\.com|oracle\\\\.com|hp\\\\.com|aka\\\\.ms|gvt1\\\\.com|oneclient\\\\.sfx\\\\.ms)$|^(10\\\\.|192\\\\.168\\\\.|172\\\\.(1[6-9]|2[0-9]|3[0-1])\\\\.).*',\n    0\n) IS NULL;",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "connection",
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.bits_monitoring"
+                        }
+                    },
+                    {
+                        "key": "event.code",
+                        "value": {
+                            "field": "event_id"
+                        }
+                    },
+                    {
+                        "key": "event.provider",
+                        "value": {
+                            "field": "provider_name"
+                        }
+                    },
+                    {
+                        "key": "event.created",
+                        "value": {
+                            "field": "event_time"
+                        }
+                    },
+                    {
+                        "key": "url.full",
+                        "value": {
+                            "field": "url_full"
+                        }
+                    },
+                    {
+                        "key": "url.domain",
+                        "value": {
+                            "field": "url_domain"
+                        }
+                    },
+                    {
+                        "key": "event.reason",
+                        "value": {
+                            "field": "filename"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "process.thread.id",
+                        "value": {
+                            "field": "tid"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "network",
+                                "persistence",
+                                "defense_evasion",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "coreMigrationVersion": "9.3.0",
+    "id": "osquery_manager-d9b2c3e4-f5a6-4b7c-9d8e-0f1a2b3c4d5e",
+    "references": [],
+    "type": "osquery-pack-asset"
+}

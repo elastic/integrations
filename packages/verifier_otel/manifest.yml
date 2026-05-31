@@ -1,0 +1,193 @@
+format_version: 3.5.0
+name: verifier_otel
+title: "Permission Verifier"
+version: 0.0.1
+source:
+  license: "Elastic-2.0"
+description: "Verify identity federation based integration permissions and report results to Elasticsearch using the Verifier receiver of the OTel Collector."
+type: input
+categories:
+  - monitoring
+  - security
+  - opentelemetry
+  - cloud
+conditions:
+  kibana:
+    version: "^9.3.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/verifier-logo.svg
+    title: Verifier logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: verifierreceiver
+    type: logs
+    title: Permission Verifier
+    description: Verify identity federation based integration permissions and report status.
+    input: otelcol
+    template_path: input.yml.hbs
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: cloud-services
+    vars:
+      - name: identity_federation_id
+        type: text
+        title: Identity Federation ID
+        description: Unique identifier for the Identity Federation being verified.
+        multi: false
+        required: true
+        show_user: true
+      - name: identity_federation_name
+        type: text
+        title: Identity Federation Name
+        description: Human-readable name of the Identity Federation.
+        multi: false
+        required: false
+        show_user: true
+      - name: verification_id
+        type: text
+        title: Verification ID
+        description: Unique identifier for this verification session.
+        multi: false
+        required: true
+        show_user: true
+      - name: verification_type
+        type: select
+        title: Verification Type
+        description: Type of verification.
+        multi: false
+        required: false
+        show_user: false
+        default: on_demand
+        options:
+          - value: on_demand
+            text: On Demand
+          - value: scheduled
+            text: Scheduled
+      - name: provider
+        type: text
+        title: Cloud Provider
+        description: "Cloud provider type (for example, aws, azure, gcp, okta)."
+        multi: false
+        required: true
+        show_user: true
+      - name: account_type
+        type: select
+        title: Account Type
+        description: "Whether the target is a single account or an organization (management) account. Affects which permissions are verified."
+        multi: false
+        required: false
+        show_user: true
+        default: single-account
+        options:
+          - value: single-account
+            text: Single Account
+          - value: organization-account
+            text: Organization Account (Management Account)
+      # --- AWS credentials ---
+      - name: credentials_role_arn
+        type: text
+        title: AWS Role ARN
+        description: The ARN of the IAM role to assume in the customer's AWS account.
+        multi: false
+        required: false
+        show_user: true
+      - name: credentials_external_id
+        type: password
+        title: AWS External ID
+        description: The external ID used to prevent confused deputy attacks (AWS).
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+      # --- Azure credentials ---
+      - name: credentials_tenant_id
+        type: password
+        title: Azure Tenant ID
+        description: The Azure AD tenant ID.
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+      - name: credentials_client_id
+        type: password
+        title: Client ID
+        description: "The client (application) ID for Azure or Okta authentication."
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+      # --- GCP credentials ---
+      - name: credentials_audience
+        type: text
+        title: GCP Audience
+        description: "Full WIF resource name used as the STS audience (for example, //iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider)."
+        multi: false
+        required: false
+        show_user: true
+      - name: credentials_service_account_email
+        type: text
+        title: GCP Service Account Email
+        description: The GCP service account email for impersonation.
+        multi: false
+        required: false
+        show_user: true
+      - name: policy_id
+        type: text
+        title: Policy ID
+        description: The agent policy ID for this set of integrations.
+        multi: false
+        required: true
+        show_user: true
+      - name: policy_name
+        type: text
+        title: Policy Name
+        description: Human-readable name of the policy.
+        multi: false
+        required: false
+        show_user: true
+      - name: package_policy_id
+        type: text
+        title: Package Policy ID
+        description: Unique identifier for the package policy instance.
+        multi: false
+        required: false
+        show_user: true
+      - name: policy_templates
+        type: text
+        title: Policy Templates
+        description: "Policy template names from the integration package (for example, cloudtrail, guardduty, activitylogs). Multiple templates produce one integration entry each, all under the same policy. Combined with package_name to uniquely identify each integration."
+        multi: true
+        required: true
+        show_user: true
+      - name: package_name
+        type: text
+        title: Package Name
+        description: "Integration package name (for example, aws, azure, gcp, okta)."
+        multi: false
+        required: true
+        show_user: true
+      - name: package_title
+        type: text
+        title: Package Title
+        description: "Human-readable title of the integration package (for example, AWS, Azure, GCP)."
+        multi: false
+        required: false
+        show_user: true
+      - name: package_version
+        type: text
+        title: Package Version
+        description: "Semantic version of the integration package (for example, 2.17.0). Different versions might require different permissions. When empty, the latest permission set is used."
+        multi: false
+        required: false
+        show_user: true
+owner:
+  github: elastic/cloud-services
+  type: elastic

@@ -1,0 +1,96 @@
+name: "Sweeper: Field Mapping Type Conflicts"
+on:
+  schedule:
+    - cron: "0 9 * * 2"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-quality-audit.lock.yml@v0
+    with:
+      title-prefix: "[field-mapping-conflicts]"
+      severity-threshold: "high"
+      additional-instructions: |
+        You are auditing field mapping declarations in the elastic/integrations repository
+        for type conflicts that cause real indexing failures. Produce findings that would
+        impress a senior engineer: a small number of thoroughly investigated cases where a
+        real document would be rejected by Elasticsearch because the declared type cannot
+        hold the actual value. One confirmed conflict that causes guaranteed data loss is
+        worth more than a list of fields that might theoretically overflow.
+
+        ## What field mappings guarantee
+
+        Field mapping declarations under `packages/<pkg>/data_stream/<stream>/fields/` are
+        compiled into Elasticsearch index templates. The guarantee is: every document the
+        integration produces can be indexed without type errors. A mismatch between the
+        declared type and the actual data causes Elasticsearch to reject the document —
+        silently, from the user's perspective.
+
+        ## How to investigate
+
+        **The constant_keyword conflict — start here.** Find every data stream where
+        `event.kind` is declared as `constant_keyword` AND the pipeline's `on_failure`
+        handler sets `event.kind: pipeline_error`. These are directly contradictory: the
+        mapping says the field always holds one value, the pipeline sets a different value
+        on failure. Every document that fails to parse is rejected by Elasticsearch — not
+        indexed in a degraded state, just silently lost. To confirm a finding, read both
+        files and verify both conditions are present in the same data stream.
+
+        **Integer overflow risks.** Do not file every field declared as `integer`. Instead,
+        reason about what the field actually receives. Fields named `bytes`, `packets`,
+        `duration`, `sequence_number`, or `timestamp_ms` on network, security, or
+        high-volume integrations are high risk — real production traffic regularly exceeds
+        2.1 billion for byte counters, nanosecond timestamps, and 64-bit sequence numbers.
+        Fields named `priority`, `retry_count`, or `version` are low risk. For each
+        candidate, read the ingest pipeline to understand what value is assigned to the
+        field, then reason about whether real production data from this source will exceed
+        the type's range.
+
+        **Cross-data-stream conflicts.** Two data streams in the same package that declare
+        the same field with different types produce a mapping conflict when both write to a
+        shared index template. Most likely in large packages: `windows`, `aws`, `azure`,
+        `cisco_*`. These are worth checking for any package that has gone through major
+        restructuring.
+
+        For any finding, check the git history of the affected files:
+        `git log --oneline -p -- packages/<pkg>/data_stream/<stream>/fields/`
+
+        A field that was declared as `long` and changed to `integer` is a regression —
+        check whether the commit message explains why. A `constant_keyword` declaration
+        added after a pipeline already had a `pipeline_error` handler is a regression.
+        Regressions affect users who were previously working and are always higher priority
+        than original omissions.
+
+        These patterns are starting points. If you understand the mapping and pipeline well
+        enough to find a conflict not described here, file it.
+
+        ## The reproduction is the argument
+
+        For the `event.kind` constant_keyword conflict: show (1) the exact field declaration
+        with its constant value, (2) the `on_failure` handler that sets a different value,
+        and (3) what Elasticsearch does — it rejects the document because the value does not
+        match the constant. You must trace all three steps explicitly; "these seem contradictory"
+        is not a reproduction.
+
+        For integer overflow: show the specific field, the source data context, and why real
+        production data will exceed 2.1 billion. "Byte counts can be large" is not a
+        reproduction. "This integration monitors network interfaces and the pipeline assigns
+        `interface.ingress.bytes` from a 64-bit counter that will overflow a 32-bit integer
+        within hours on any gigabit link" is a reproduction.
+
+        ## Output
+
+        File a single issue containing:
+        - `event.kind` constant_keyword conflicts first — these cause guaranteed, silent data
+          loss for every document that fails to parse
+        - High-confidence integer overflow risks with the field, the source context, and
+          the concrete reason the range will be exceeded
+        - Cross-data-stream type conflicts, by package
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

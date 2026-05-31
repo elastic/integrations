@@ -1,0 +1,362 @@
+---
+# PostgreSQL OpenTelemetry Overview Dashboard
+# Converted from Kibana dashboard JSON
+# Overview of PostgreSQL health and golden signals
+#
+# Data source: metrics-postgresqlreceiver.otel-*
+# Metrics reference: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/postgresqlreceiver
+dashboards:
+  - id: postgresql_otel-overview
+    name: '[PostgreSQL OTel] Overview'
+    description: Overview of PostgreSQL health and golden signals - connection capacity, transaction throughput, errors, buffer cache efficiency, and capacity.
+    controls:
+      - type: options
+        label: Instance
+        data_view: metrics-*
+        field: resource.attributes.service.instance.id
+      - type: options
+        label: Database
+        data_view: metrics-*
+        field: resource.attributes.postgresql.database.name
+    panels:
+      # Links navigation (y=0)
+      - size: {w: 48, h: 2}
+        position: {x: 0, y: 0}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: postgresql_otel-overview
+            - label: Connections
+              dashboard: postgresql_otel-connections
+            - label: Workload
+              dashboard: postgresql_otel-workload
+            - label: Query Performance
+              dashboard: postgresql_otel-query-performance
+            - label: I/O Health
+              dashboard: postgresql_otel-io-health
+            - label: Locks
+              dashboard: postgresql_otel-locks
+            - label: Active Queries
+              dashboard: postgresql_otel-active-queries
+
+      # Markdown intro (y=2)
+      - size: {w: 16, h: 8}
+        position: {x: 0, y: 2}
+        hide_title: true
+        markdown:
+          content: |
+            ## [PostgreSQL OTel] Overview
+
+            This dashboard provides an overview of PostgreSQL health and golden signals:
+            - Connection capacity and utilization
+            - Transaction throughput (commits vs rollbacks)
+            - Error rates (deadlocks, rollbacks)
+            - Buffer cache hit ratio
+            - Checkpoint and background writer health
+            - Database size and capacity
+
+      # KPI metrics row (y=2)
+      - title: Active Connections
+        hide_title: true
+        size: {w: 8, h: 4}
+        position: {x: 16, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.backends IS NOT NULL
+            | STATS connections = SUM(LAST_OVER_TIME(postgresql.backends))
+          primary:
+            field: connections
+            label: Connections
+            format:
+              type: number
+              decimals: 0
+
+      - title: Max Connections
+        hide_title: true
+        size: {w: 8, h: 4}
+        position: {x: 24, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.connection.max IS NOT NULL
+            | STATS max_conn = MAX(LAST_OVER_TIME(postgresql.connection.max))
+          primary:
+            field: max_conn
+            label: Max
+            format:
+              type: number
+              decimals: 0
+
+      - title: Deadlocks
+        hide_title: true
+        size: {w: 8, h: 4}
+        position: {x: 32, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.deadlocks IS NOT NULL
+            | STATS deadlocks = SUM(INCREASE(postgresql.deadlocks))
+          primary:
+            field: deadlocks
+            label: Deadlocks
+            format:
+              type: number
+              decimals: 0
+
+      - title: Temp Files
+        hide_title: true
+        size: {w: 8, h: 4}
+        position: {x: 40, y: 2}
+        esql:
+          type: metric
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.temp_files IS NOT NULL
+            | STATS temp_files = SUM(INCREASE(postgresql.temp_files))
+          primary:
+            field: temp_files
+            label: Temp Files
+            format:
+              type: number
+              decimals: 0
+
+      # Buffer Hit Ratio and Bgwriter (y=6)
+      - title: Buffer Hit Ratio
+        hide_title: true
+        size: {w: 16, h: 4}
+        position: {x: 16, y: 6}
+        esql:
+          type: metric
+          query: |
+            FROM metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.blks_hit IS NOT NULL OR postgresql.blks_read IS NOT NULL
+            | STATS hit = MAX(TO_DOUBLE(postgresql.blks_hit)), read = MAX(TO_DOUBLE(postgresql.blks_read))
+            | EVAL hit_ratio = CASE(read + hit > 0, hit / (hit + read), 0.0)
+          primary:
+            field: hit_ratio
+            label: Hit Ratio
+            format:
+              type: percent
+              decimals: 1
+
+      - title: Bgwriter Maxwritten
+        hide_title: true
+        size: {w: 16, h: 4}
+        position: {x: 32, y: 6}
+        esql:
+          type: metric
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.bgwriter.maxwritten IS NOT NULL
+            | STATS maxwritten = SUM(INCREASE(postgresql.bgwriter.maxwritten))
+          primary:
+            field: maxwritten
+            label: Maxwritten
+            format:
+              type: number
+              decimals: 0
+
+      # Database Health Summary datatable (y=10)
+      - title: Database Health Summary
+        size: {w: 48, h: 15}
+        position: {x: 0, y: 10}
+        esql:
+          type: datatable
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | STATS connections = MAX(LAST_OVER_TIME(postgresql.backends)), commits = SUM(RATE(postgresql.commits)), rollbacks = SUM(RATE(postgresql.rollbacks)), deadlocks = SUM(INCREASE(postgresql.deadlocks)), blks_hit = SUM(RATE(postgresql.blks_hit)), blks_read = SUM(RATE(postgresql.blks_read)), temp_files = SUM(INCREASE(postgresql.temp_files)), db_size = MAX(LAST_OVER_TIME(postgresql.db_size)) BY resource.attributes.postgresql.database.name
+            | EVAL rollback_pct = CASE(commits + rollbacks > 0, rollbacks / (commits + rollbacks) * 100.0, 0.0), hit_ratio = CASE(blks_hit + blks_read > 0, blks_hit / (blks_hit + blks_read), 0.0)
+            | KEEP resource.attributes.postgresql.database.name, connections, commits, rollback_pct, deadlocks, hit_ratio, temp_files, db_size
+            | SORT connections DESC
+          breakdowns:
+            - field: resource.attributes.postgresql.database.name
+              label: Database
+          metrics:
+            - field: connections
+              label: Connections
+              format:
+                type: number
+                decimals: 0
+            - field: commits
+              label: Commits/sec
+              format:
+                type: number
+                decimals: 2
+            - field: rollback_pct
+              label: Rollback %
+              format:
+                type: number
+                decimals: 2
+            - field: deadlocks
+              label: Deadlocks
+              format:
+                type: number
+                decimals: 0
+            - field: hit_ratio
+              label: Buffer Hit Ratio
+              format:
+                type: percent
+                decimals: 1
+            - field: temp_files
+              label: Temp Files
+              format:
+                type: number
+                decimals: 0
+            - field: db_size
+              label: DB Size
+              format:
+                type: bytes
+                decimals: 1
+
+      # Connections Over Time (y=25)
+      - title: Connections Over Time
+        size: {w: 24, h: 10}
+        position: {x: 0, y: 25}
+        esql:
+          type: line
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.backends IS NOT NULL
+            | STATS connections = MAX(LAST_OVER_TIME(postgresql.backends)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), resource.attributes.postgresql.database.name
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: connections
+              label: Connections
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: resource.attributes.postgresql.database.name
+
+      # Buffer Hit Ratio Over Time (y=25)
+      - title: Buffer Hit Ratio Over Time
+        size: {w: 24, h: 10}
+        position: {x: 24, y: 25}
+        esql:
+          type: line
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | STATS hit = SUM(RATE(postgresql.blks_hit)), read = SUM(RATE(postgresql.blks_read)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), resource.attributes.postgresql.database.name
+            | EVAL hit_ratio = CASE(read + hit > 0, hit / (hit + read), 0)
+            | WHERE hit_ratio IS NOT NULL
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: hit_ratio
+              label: Hit Ratio
+              format:
+                type: percent
+                decimals: 2
+          breakdown:
+            field: resource.attributes.postgresql.database.name
+
+      # Transaction Rate (Commits vs Rollbacks) (y=35)
+      - title: Transaction Rate (Commits vs Rollbacks)
+        size: {w: 24, h: 10}
+        position: {x: 0, y: 35}
+        esql:
+          type: area
+          mode: stacked
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | FORK ( WHERE postgresql.commits IS NOT NULL | STATS rate = SUM(RATE(postgresql.commits)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL tx_type = "commits" ) ( WHERE postgresql.rollbacks IS NOT NULL | STATS rate = SUM(RATE(postgresql.rollbacks)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend) | EVAL tx_type = "rollbacks" )
+            | STATS rate = SUM(rate) BY time_bucket, tx_type
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: rate
+              label: Transactions/sec
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: tx_type
+
+      # Deadlocks Over Time (y=35)
+      - title: Deadlocks Over Time
+        size: {w: 24, h: 10}
+        position: {x: 24, y: 35}
+        esql:
+          type: line
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.deadlocks IS NOT NULL
+            | STATS deadlock_rate = SUM(RATE(postgresql.deadlocks)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), resource.attributes.postgresql.database.name
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: deadlock_rate
+              label: Deadlocks/sec
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: resource.attributes.postgresql.database.name
+
+      # Database Size by Database (y=45)
+      - title: Database Size by Database
+        size: {w: 24, h: 10}
+        position: {x: 0, y: 45}
+        esql:
+          type: bar
+          mode: unstacked
+          query: |
+            FROM metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.db_size IS NOT NULL
+            | STATS db_size = MAX(postgresql.db_size) BY resource.attributes.postgresql.database.name
+            | SORT db_size DESC
+            | LIMIT 10
+          dimension:
+            field: resource.attributes.postgresql.database.name
+            label: Database
+          metrics:
+            - field: db_size
+              label: Size
+              format:
+                type: bytes
+                decimals: 2
+
+      # Temp Files and I/O Over Time (y=45)
+      - title: Temp Files and I/O Over Time
+        size: {w: 24, h: 10}
+        position: {x: 24, y: 45}
+        esql:
+          type: line
+          query: |
+            TS metrics-postgresqlreceiver.otel-*
+            | WHERE postgresql.temp_files IS NOT NULL OR postgresql.temp.io IS NOT NULL
+            | STATS temp_files = SUM(RATE(postgresql.temp_files)), temp_io = SUM(RATE(postgresql.temp.io)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            label: Time
+            data_type: date
+          metrics:
+            - field: temp_files
+              label: Temp Files/sec
+              format:
+                type: number
+                decimals: 2
+            - field: temp_io
+              label: Temp I/O bytes/sec
+              format:
+                type: bytes
+                decimals: 2

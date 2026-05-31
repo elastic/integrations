@@ -1,0 +1,134 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the creation of a process running as SYSTEM while impersonating the token context of a Windows core binary. Adversaries may create a new process with a different token to escalate privileges and bypass access controls.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.executable",
+                "process.command_line",
+                "process.pe.original_file_name",
+                "process.hash.sha256",
+                "process.code_signature.subject_name",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.Ext.effective_parent.executable",
+                "process.Ext.session_info.logon_type",
+                "process.Ext.token.integrity_level_name",
+                "process.Ext.authentication_id"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Process Created with an Elevated Token",
+        "note": "## Triage and analysis\n\n### Investigating Process Created with an Elevated Token\n#### Possible investigation steps\n\n- What SYSTEM token path did the alert record?\n  - Why: CreateProcessWithTokenW-style abuse creates a process in a supplied token context, so child, OS parent, and effective parent must be interpreted together.\n  - Focus: `user.id`, `process.executable`, `process.command_line`, `process.parent.executable`, and `process.Ext.effective_parent.executable`.\n  - Implication: escalate when a payload or unusual command runs as `S-1-5-18` through a Windows effective parent without one exact recognized workflow; lower suspicion only when child, OS parent, and effective parent all bind to the same vendor, update, accessibility, or test activity.\n- Does the OS parent explain why another token was used?\n  - Focus: `process.parent.executable`, `process.parent.command_line`, `process.parent.code_signature.subject_name`, and lineage when needed.\n  - Implication: escalate when the parent is user-writable, script-driven, remote-tool initiated, unexpectedly signed, or unrelated to the effective parent; lower suspicion when it is a stable signed helper for the same component.\n- Is the created process identity consistent with that workflow?\n  - Focus: `process.executable`, `process.hash.sha256`, `process.pe.original_file_name`, and `process.code_signature.subject_name`.\n  - Implication: escalate when the SYSTEM child has an unexpected signer, user-writable path, new hash, or PE-name mismatch; lower suspicion when signer, hash history, path, and parent context all fit the same component.\n- Does the token and session context explain the SYSTEM child?\n  - Why: CreateProcessWithTokenW, CreateProcessAsUserW, and runas-style abuse can look ordinary unless token/session context is compared with lineage.\n  - Focus: `process.Ext.authentication_id`, `process.Ext.session_info.logon_type`, `process.Ext.token.integrity_level_name`, `process.Ext.token.elevation_level`, and `user.id`.\n  - Implication: escalate when SYSTEM or full-integrity execution appears in a logon/session context disconnected from parent or effective parent; lower suspicion when token level and session type match the same service, update, accessibility, or test component.\n- Did the process tree show staging or immediate follow-on execution?\n  - Why: token reuse after the first child makes repeated SYSTEM children or fresh executable timing a scope-expansion trigger.\n  - Focus: same-`host.id` child process starts from `process.entity_id`; review child `process.executable`, `process.command_line`, `process.Ext.relative_file_creation_time`, and `process.Ext.relative_file_name_modify_time`. !{investigate{\"description\":\"\",\"label\":\"Child process starts from the SYSTEM process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: if hash or relative-time values are empty, scope with `process.executable`, `process.command_line`, `process.parent.executable`, and `process.Ext.effective_parent.executable`; broaden only when local evidence stays suspicious or unresolved.\n    - !{investigate{\"description\":\"\",\"label\":\"Process events for the same token-creation pattern\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.executable\",\"queryType\":\"phrase\",\"value\":\"{{process.executable}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.executable\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.executable}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.Ext.effective_parent.executable\",\"queryType\":\"phrase\",\"value\":\"{{process.Ext.effective_parent.executable}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n    - !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n    - !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the SYSTEM child launches shells, script interpreters, security tools, freshly created or renamed executables, or the same token-creation pattern on unrelated hosts; lower suspicion when descendants and recurrence stay inside the same component pattern.\n- What disposition is supported?\n  - Escalate on conflict across child command, parent/effective-parent pair, identity, token/session, or descendants. Close only when the same signed component explains all categories on this `host.id`; preserve and escalate when any element is missing or contradictory.\n\n### False positive analysis\n\n- Treat this alert as unusual until alert-local process evidence proves one component expected to create a SYSTEM process from another token, such as an unexcluded vendor support or accessibility helper, updater/installer, print or error-reporting component, or authorized security test.\n- Confirm benign activity only when identity, parentage, token context, and scope all point to that component: `process.executable`, `process.hash.sha256`, `process.code_signature.subject_name`, `process.parent.executable`, `process.Ext.effective_parent.executable`, `user.id`, and `host.id`. A trusted signer, Windows path, or component label alone is insufficient.\n- Before adding an exception, validate that the exact child/parent/effective-parent pattern is stable for the same host or managed host group. Build from minimum stable fields, avoiding broad exceptions on `process.name`, `user.name`, or `?:\\Windows\\*.exe` alone.\n\n### Response and remediation\n\n- Preserve evidence first: export the alert, process tree, `process.entity_id`, `process.pid`, command lines, hashes, signer details, token/session fields, and any descendant process records before containment or process termination.\n- If suspicious but unconfirmed, preserve and scope first. Use reversible containment such as host isolation only when the SYSTEM child is still running, spawning descendants, or recurring beyond one validated workflow; otherwise keep the host connected for evidence collection while escalating.\n- If malicious activity is confirmed, contain the host, block or quarantine confirmed malicious hashes or executables, and suspend or terminate the SYSTEM child only after recording its identifiers and collecting needed memory or file evidence.\n- Eradicate only artifacts and configuration changes identified during investigation or incident response. Remediate the entry path that obtained or duplicated the token, and reset credentials only for accounts tied to confirmed misuse.\n- After recovery, document the confirmed benign workflow or malicious child/parent/effective-parent pattern, and keep any exception scoped to the stable fields that proved the case.",
+        "query": "process where host.os.type == \"windows\" and event.action == \"start\" and\n\n /* CreateProcessWithToken and effective parent is a privileged MS native binary used as a target for token theft */\n user.id == \"S-1-5-18\"  and process.parent.executable != null and\n\n /* Token Theft target process usually running as service are located in one of the following paths */\n process.Ext.effective_parent.executable : \"?:\\\\Windows\\\\*.exe\" and\n\n/* Ignores Utility Manager in Windows running in debug mode */\n not (process.Ext.effective_parent.executable : \"?:\\\\Windows\\\\System32\\\\Utilman.exe\" and\n      process.parent.executable : \"?:\\\\Windows\\\\System32\\\\Utilman.exe\" and process.parent.args : \"/debug\") and\n\n/* Ignores Windows print spooler service with correlation to Access Intelligent Form */\nnot (process.parent.executable : (\"?:\\\\Windows\\\\System32\\\\spoolsv.exe\", \"?:\\\\Windows\\\\System32\\\\PrintIsolationHost.exe\") and\n     process.executable: (\"?:\\\\Program Files\\\\*.exe\",\n                          \"?:\\\\Program Files (x86)\\\\*.exe\",\n                          \"?:\\\\Windows\\\\System32\\\\spool\\\\drivers\\\\*.exe\",\n                          \"?:\\\\Windows\\\\System32\\\\ROUTE.EXE\")) and\n\n/* Ignores Windows error reporting executables */\n not process.executable : (\"?:\\\\Windows\\\\System32\\\\WerFault.exe\",\n                           \"?:\\\\Windows\\\\SysWOW64\\\\WerFault.exe\",\n                           \"?:\\\\Windows\\\\System32\\\\WerFaultSecure.exe\",\n                           \"?:\\\\Windows\\\\SysWOW64\\\\WerFaultSecure.exe\",\n                           \"?:\\\\windows\\\\system32\\\\WerMgr.exe\",\n                           \"?:\\\\Windows\\\\SoftwareDistribution\\\\Download\\\\Install\\\\securityhealthsetup.exe\")  and\n\n /* Ignores Windows updates from TiWorker.exe that runs with elevated privileges */\n not (process.parent.executable : \"?:\\\\Windows\\\\WinSxS\\\\*\\\\TiWorker.exe\" and\n      process.executable : (\"?:\\\\Windows\\\\Microsoft.NET\\\\Framework*.exe\",\n                            \"?:\\\\Windows\\\\WinSxS\\\\*.exe\",\n                            \"?:\\\\Windows\\\\System32\\\\inetsrv\\\\iissetup.exe\",\n                            \"?:\\\\Windows\\\\SysWOW64\\\\inetsrv\\\\iissetup.exe\",\n                            \"?:\\\\Windows\\\\System32\\\\inetsrv\\\\aspnetca.exe\",\n                            \"?:\\\\Windows\\\\SysWOW64\\\\inetsrv\\\\aspnetca.exe\",\n                            \"?:\\\\Windows\\\\System32\\\\lodctr.exe\",\n                            \"?:\\\\Windows\\\\SysWOW64\\\\lodctr.exe\",\n                            \"?:\\\\Windows\\\\System32\\\\netcfg.exe\",\n                            \"?:\\\\Windows\\\\Microsoft.NET\\\\Framework*\\\\*\\\\ngen.exe\",\n                            \"?:\\\\Windows\\\\Microsoft.NET\\\\Framework*\\\\*\\\\aspnet_regiis.exe\")) and\n\n/* Ignores additional parent executables that run with elevated privileges */\n not process.parent.executable :\n               (\"?:\\\\Windows\\\\System32\\\\AtBroker.exe\",\n                \"?:\\\\Windows\\\\system32\\\\svchost.exe\",\n                \"?:\\\\Program Files (x86)\\\\*.exe\",\n                \"?:\\\\Program Files\\\\*.exe\",\n                \"?:\\\\Windows\\\\System32\\\\msiexec.exe\",\n                \"?:\\\\Windows\\\\System32\\\\DriverStore\\\\*\",\n                \"?:\\\\Windows\\\\LTSvc\\\\*\\\\Update.exe\") and\n\n/* Ignores Windows binaries with a trusted signature and specific signature name */\n not (process.code_signature.trusted == true and\n      process.code_signature.subject_name :\n                (\"philandro Software GmbH\",\n                 \"Freedom Scientific Inc.\",\n                 \"TeamViewer Germany GmbH\",\n                 \"Projector.is, Inc.\",\n                 \"TeamViewer GmbH\",\n                 \"Cisco WebEx LLC\",\n                 \"Dell Inc\",\n                 \"Sophos Ltd\",\n                 \"Sophos Limited\",\n                 \"Brother Industries, Ltd.\",\n                 \"MILVUS INOVACOES EM SOFTWARE LTDA\",\n                 \"Chocolatey Software, Inc\")) and\n\n not (process.Ext.effective_parent.executable : \"?:\\\\Windows\\\\servicing\\\\TrustedInstaller.exe\" and\n      process.executable : \"C:\\\\Windows\\\\WinSxS\\\\amd64_microsoft-windows-servicingstack_*\\\\TiWorker.exe\") and\n\n not process.Ext.effective_parent.executable : \"?:\\\\Windows\\\\ServiceProfiles\\\\LocalService\\\\AppData\\\\Local\\\\ServicePortalAgent\\\\current\\\\emulator\\\\MmrAgent.NetFxEmulator.exe\"\n",
+        "references": [
+            "https://lengjibo.github.io/token/",
+            "https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createprocesswithtokenw"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.effective_parent.executable",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.subject_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "02a23ee7-c8f8-4701-b99d-e9038ce313cb",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1134",
+                        "name": "Access Token Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1134/",
+                        "subtechnique": [
+                            {
+                                "id": "T1134.002",
+                                "name": "Create Process with Token",
+                                "reference": "https://attack.mitre.org/techniques/T1134/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 12
+    },
+    "id": "02a23ee7-c8f8-4701-b99d-e9038ce313cb_12",
+    "type": "security-rule"
+}

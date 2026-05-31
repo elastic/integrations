@@ -24,7 +24,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 You can install only one Elastic Agent per host.
-Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
 ## Setup
 
@@ -70,12 +70,14 @@ This is the `Access Session` dataset.
 | beyondtrust_pra.access_session.destination.gsnumber | Uniquely identifies the user in regards to their current connection to the BeyondTrust Appliance B Series. | keyword |
 | beyondtrust_pra.access_session.destination.hostname | The hostname of the user's computer. | keyword |
 | beyondtrust_pra.access_session.destination.id | Unique ID assigned to the user. | keyword |
-| beyondtrust_pra.access_session.destination.invited | Integer value (1) present only if the user is an invited user. | boolean |
+| beyondtrust_pra.access_session.destination.invited | True when the user is an invited user. | boolean |
 | beyondtrust_pra.access_session.destination.os | The operating system of the user's computer. | keyword |
 | beyondtrust_pra.access_session.destination.private_ip | The user's private IP address. | ip |
+| beyondtrust_pra.access_session.destination.private_port | The user's private port. | long |
 | beyondtrust_pra.access_session.destination.public_ip | The user's public IP address. | ip |
+| beyondtrust_pra.access_session.destination.public_port | The user's public port. | long |
 | beyondtrust_pra.access_session.destination.seconds_involved | Integer value indicating the number of seconds the user was involved in this session. | long |
-| beyondtrust_pra.access_session.destination.session_owner | Integer value (1 or 0) indicating whether the user was the owner of the session or was merely a conference member. | keyword |
+| beyondtrust_pra.access_session.destination.session_owner | Boolean value indicating whether the user was the owner of the session or was merely a conference member. | boolean |
 | beyondtrust_pra.access_session.destination.type | Indicating whether this action was directed to the system, a customer, or a user. | keyword |
 | beyondtrust_pra.access_session.destination.username | The username assigned to the user. | keyword |
 | beyondtrust_pra.access_session.encoded_body | Contains the base64 (RFC 2045 section 6.8) encoded value of what would have been shown in the \<body\> element, and is shown ONLY if the \<body\> text contains characters that are invalid according to XML specification. . | keyword |
@@ -88,12 +90,14 @@ This is the `Access Session` dataset.
 | beyondtrust_pra.access_session.performed_by.gsnumber | Uniquely identifies the user in regards to their current connection to the BeyondTrust Appliance B Series. | keyword |
 | beyondtrust_pra.access_session.performed_by.hostname | The hostname of the user's computer. | keyword |
 | beyondtrust_pra.access_session.performed_by.id | Unique ID assigned to the user. | keyword |
-| beyondtrust_pra.access_session.performed_by.invited | Integer value (1) present only if the user is an invited user. | boolean |
+| beyondtrust_pra.access_session.performed_by.invited | True when the user is an invited user. | boolean |
 | beyondtrust_pra.access_session.performed_by.os | The operating system of the user's computer. | keyword |
 | beyondtrust_pra.access_session.performed_by.private_ip | The user's private IP address. | ip |
+| beyondtrust_pra.access_session.performed_by.private_port | The user's private port. | long |
 | beyondtrust_pra.access_session.performed_by.public_ip | The user's public IP address. | ip |
+| beyondtrust_pra.access_session.performed_by.public_port | The user's public port. | long |
 | beyondtrust_pra.access_session.performed_by.seconds_involved | Integer value indicating the number of seconds the user was involved in this session. | long |
-| beyondtrust_pra.access_session.performed_by.session_owner | Integer value (1 or 0) indicating whether the user was the owner of the session or was merely a conference member. | keyword |
+| beyondtrust_pra.access_session.performed_by.session_owner | Boolean value indicating whether the user was the owner of the session or was merely a conference member. | boolean |
 | beyondtrust_pra.access_session.performed_by.type | Indicates whether this action was performed by the system, a endpoint, or a representative. | keyword |
 | beyondtrust_pra.access_session.performed_by.username | The username assigned to the user. | keyword |
 | beyondtrust_pra.access_session.session.command_shell_recordings.command_shell_recording.download_url | The URL at which the video of the command shell session may be downloaded. | keyword |
@@ -105,6 +109,7 @@ This is the `Access Session` dataset.
 | beyondtrust_pra.access_session.session.duration | Session length in HH:MM:SS format. | keyword |
 | beyondtrust_pra.access_session.session.end_time.text | The date and time the session was ended. | date |
 | beyondtrust_pra.access_session.session.end_time.timestamp | Displays the end time in UNIX timestamp (UTC). | date |
+| beyondtrust_pra.access_session.session.file_delete_count | The number of files deleted via the File Transfer interface during the session. | long |
 | beyondtrust_pra.access_session.session.file_move_count | The number of files renamed via the File Transfer interface during the session. | long |
 | beyondtrust_pra.access_session.session.file_transfer_count | The number of file transfers which occurred during the session. | long |
 | beyondtrust_pra.access_session.session.jump_group.id | This is the Jump Group's unique ID for its type. Jump Groups of different types can have the same ID. . | keyword |
@@ -116,8 +121,8 @@ This is the `Access Session` dataset.
 | beyondtrust_pra.access_session.session.lsid | A string which uniquely identifies this session. | keyword |
 | beyondtrust_pra.access_session.session.primary_customer.gsnumber | Uniquely identifies the user in regards to their current connection to the BeyondTrust Appliance B Series. | keyword |
 | beyondtrust_pra.access_session.session.primary_customer.text | The name of the remote endpoint accessed by the user. | keyword |
-| beyondtrust_pra.access_session.session.primary_rep.gsnumber | The name of the user who owned the session. | keyword |
-| beyondtrust_pra.access_session.session.primary_rep.id |  | keyword |
+| beyondtrust_pra.access_session.session.primary_rep.gsnumber | Uniquely identifies the user in regards to their current connection to the BeyondTrust Appliance B Series. | keyword |
+| beyondtrust_pra.access_session.session.primary_rep.id | Unique ID assigned to the user. | keyword |
 | beyondtrust_pra.access_session.session.primary_rep.text |  | keyword |
 | beyondtrust_pra.access_session.session.session_chat_download_url | The URL at which this session's chat transcript can be downloaded. This element is displayed only for sessions that have successfully ended. | keyword |
 | beyondtrust_pra.access_session.session.session_chat_view_url | The URL at which this session's chat transcript can be viewed in a web browser. This element is displayed only for sessions that have successfully ended. | keyword |
@@ -138,7 +143,6 @@ This is the `Access Session` dataset.
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
-| log.offset | Log offset. | long |
 
 
 An example event for `access_session` looks as following:
@@ -147,11 +151,11 @@ An example event for `access_session` looks as following:
 {
     "@timestamp": "2024-04-04T13:30:00.000Z",
     "agent": {
-        "ephemeral_id": "a11d10e2-15f6-4fe2-b096-28ed0b870085",
-        "id": "3728b9dc-4bc5-4b86-973b-9a2e303a863a",
-        "name": "elastic-agent-24720",
+        "ephemeral_id": "efa67a44-cb94-45ec-ae65-e5aa04cfaeed",
+        "id": "6d3a1abe-7f1c-4196-8c8f-57ba4f0b94e1",
+        "name": "elastic-agent-11622",
         "type": "filebeat",
-        "version": "8.17.0"
+        "version": "8.18.0"
     },
     "beyondtrust_pra": {
         "access_session": {
@@ -187,7 +191,7 @@ An example event for `access_session` looks as following:
                 "private_ip": "1.128.0.2",
                 "public_ip": "175.16.199.0",
                 "seconds_involved": 3600,
-                "session_owner": "1",
+                "session_owner": true,
                 "type": "representative",
                 "username": "admin_user"
             },
@@ -222,6 +226,7 @@ An example event for `access_session` looks as following:
                 },
                 "file_move_count": 1,
                 "file_transfer_count": 3,
+                "file_delete_count": 0,
                 "jump_group": {
                     "id": "56789",
                     "text": "Support Team",
@@ -303,7 +308,7 @@ An example event for `access_session` looks as following:
     },
     "data_stream": {
         "dataset": "beyondtrust_pra.access_session",
-        "namespace": "12228",
+        "namespace": "99596",
         "type": "logs"
     },
     "destination": {
@@ -332,9 +337,9 @@ An example event for `access_session` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "3728b9dc-4bc5-4b86-973b-9a2e303a863a",
+        "id": "6d3a1abe-7f1c-4196-8c8f-57ba4f0b94e1",
         "snapshot": false,
-        "version": "8.17.0"
+        "version": "8.18.0"
     },
     "event": {
         "action": "session-start",
@@ -343,7 +348,7 @@ An example event for `access_session` looks as following:
             "session"
         ],
         "dataset": "beyondtrust_pra.access_session",
-        "ingested": "2025-04-15T07:58:33Z",
+        "ingested": "2026-04-21T11:59:30Z",
         "kind": "event",
         "original": "{\"body\":\"Session started by Admin\",\"destination\":{\"gsnumber\":\"C12345\",\"hostname\":\"remote-host\",\"os\":\"Windows 10\",\"private_ip\":\"1.128.0.1\",\"public_ip\":\"81.2.69.192\",\"type\":\"customer\",\"username\":\"remote_user\"},\"encoded_body\":\"U2Vzc2lvbiBzdGFydGVkIGJ5IEFkbWlu\",\"event_type\":\"Session Start\",\"filename\":\"logfile.txt\",\"files\":{\"file\":[{\"filename\":\"logfile.txt\",\"filesize\":\"1024\"}]},\"filesize\":1024,\"performed_by\":{\"display_name\":\"Admin\",\"gsnumber\":\"R56789\",\"hostname\":\"admin-host\",\"id\":\"112233\",\"invited\":1,\"os\":\"Windows 11\",\"private_ip\":\"1.128.0.2\",\"public_ip\":\"175.16.199.0\",\"seconds_involved\":3600,\"session_owner\":1,\"type\":\"representative\",\"username\":\"admin_user\"},\"session\":{\"command_shell_recordings\":{\"command_shell_recording\":[{\"download_url\":\"https://example.com/shell_download/12345\",\"instance\":\"0\",\"view_url\":\"https://example.com/shell_view/12345\"}]},\"custom_attributes\":{\"custom_attribute\":[{\"#text\":\"High\",\"code_name\":\"priority\",\"display_name\":\"priority\"},{\"#text\":\"High\",\"code_name\":\"priority\",\"display_name\":\"priority\"}]},\"duration\":\"01:00:00\",\"end_time\":{\"#text\":\"2024-04-04T14:00:00Z\",\"timestamp\":\"1712239200\"},\"file_delete_count\":0,\"file_move_count\":1,\"file_transfer_count\":3,\"jump_group\":{\"#text\":\"Support Team\",\"id\":\"56789\",\"type\":\"shared\"},\"jumpoint\":{\"#text\":\"Main Jumpoint\",\"id\":\"98765\"},\"lseq\":\"12345\",\"primary_customer\":{\"#text\":\"Remote PC\",\"gsnumber\":\"C12345\"},\"primary_rep\":{\"#text\":\"John Doe\",\"gsnumber\":\"R56789\",\"id\":\"112233\"},\"session_chat_download_url\":\"https://example.com/chat_download/12345\",\"session_chat_view_url\":\"https://example.com/chat_view/12345\",\"session_recording_download_url\":\"https://example.com/recording_download/12345\",\"session_recording_view_url\":\"https://example.com/recording_view/12345\",\"session_type\":\"support2\",\"start_time\":{\"#text\":\"2024-04-04T13:00:00Z\",\"timestamp\":\"1712235600\"}},\"system_information\":{\"category\":[{\"data\":{\"row\":[{\"field\":[{\"#text\":\"remote-host1\",\"name\":\"hostname\"},{\"#text\":\"h1234\",\"name\":\"hostname\"}]},{\"field\":[{\"#text\":\"remote-host2\",\"name\":\"hostname\"},{\"#text\":\"h5647\",\"name\":\"hostname\"}]}]},\"description\":{\"field\":[{\"#text\":\"Hostname\",\"name\":\"hostname\"},{\"#text\":\"Hostid\",\"name\":\"hostid\"}]},\"name\":\"OS Information\"}]},\"timestamp\":\"2024-04-04T13:30:00Z\"}",
         "type": [

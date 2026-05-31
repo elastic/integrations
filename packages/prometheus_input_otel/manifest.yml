@@ -1,0 +1,136 @@
+format_version: 3.5.0
+name: prometheus_input_otel
+title: "Prometheus OTel Scrape (Guided)"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Scrape Prometheus metrics endpoints using the OpenTelemetry Collector Prometheus receiver with guided configuration"
+type: input
+categories:
+  - monitoring
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.2.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/logo_prometheus_otel.svg
+    title: Prometheus OpenTelemetry logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: prometheusreceiver
+    type: metrics
+    title: Prometheus Metrics
+    description: Scrape metrics from Prometheus-compatible endpoints using guided configuration fields
+    input: otelcol
+    template_path: input.yml.hbs
+    vars:
+      - name: targets
+        type: text
+        title: Scrape Targets
+        required: true
+        multi: true
+        description: List of Prometheus scrape targets in host:port format (e.g., localhost:9090). The metrics_path is configured separately.
+        default:
+          - localhost:9090
+        show_user: true
+      - name: scrape_interval
+        type: duration
+        title: Scrape Interval
+        required: false
+        description: How frequently to scrape targets
+        default: 60s
+        show_user: true
+      - name: scrape_timeout
+        type: duration
+        title: Scrape Timeout
+        required: false
+        description: Timeout for scraping (must be less than scrape_interval)
+        default: 10s
+        show_user: false
+      - name: metrics_path
+        type: text
+        title: Metrics Path
+        required: false
+        description: The HTTP resource path to fetch metrics from targets
+        default: /metrics
+        show_user: false
+      - name: scheme
+        type: select
+        title: Scheme
+        required: false
+        description: Protocol scheme to use for scraping
+        default: http
+        show_user: false
+        options:
+          - text: HTTP
+            value: http
+          - text: HTTPS
+            value: https
+      - name: honor_labels
+        type: bool
+        title: Honor Labels
+        required: false
+        description: Honor labels from the scraped metrics
+        default: false
+        show_user: false
+      - name: honor_timestamps
+        type: bool
+        title: Honor Timestamps
+        required: false
+        description: Honor timestamps from the scraped metrics
+        default: true
+        show_user: false
+      - name: tls_enabled
+        type: bool
+        title: Enable TLS Configuration
+        required: false
+        description: Enable TLS configuration for HTTPS endpoints
+        default: false
+        show_user: true
+      - name: tls_skip_verify
+        type: bool
+        title: Skip TLS Verification
+        required: false
+        description: Skip verification of the server certificate (use for self-signed certificates)
+        default: false
+        show_user: true
+      - name: tls_ca_file
+        type: text
+        title: CA Certificate Path
+        required: false
+        description: Path to the CA certificate file for verifying the server
+        show_user: true
+      - name: tls_cert_file
+        type: text
+        title: Client Certificate Path
+        required: false
+        description: Path to the client certificate file for mutual TLS authentication. Must be used together with Client Key Path.
+        show_user: false
+      - name: tls_key_file
+        type: text
+        title: Client Key Path
+        required: false
+        description: Path to the client private key file for mutual TLS authentication. Must be used together with Client Certificate Path.
+        show_user: false
+      - name: username
+        type: text
+        title: Username
+        required: false
+        description: Username for basic authentication
+        show_user: true
+      - name: password
+        type: password
+        title: Password
+        required: false
+        # TODO: Change to secret: true once Fleet Server resolves the secret handling issue
+        # for OTel input packages. See: https://github.com/elastic/fleet-server/issues/6277
+        secret: false
+        description: Password for basic authentication. Must be used together with Username.
+        show_user: true
+owner:
+  github: elastic/ecosystem
+  type: elastic

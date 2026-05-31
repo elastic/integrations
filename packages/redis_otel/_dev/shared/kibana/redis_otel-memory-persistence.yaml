@@ -1,0 +1,366 @@
+dashboards:
+- id: redis_otel-memory-persistence
+  name: '[Redis OTel] Memory & Persistence'
+  description: >-
+    Detailed view of Redis memory usage, fragmentation, CPU consumption,
+    and persistence (RDB, fork duration, replication offset).
+
+  settings:
+    margins: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+
+  filters:
+  - field: data_stream.dataset
+    equals: redisreceiver.otel
+  controls:
+  - type: options
+    label: Server
+    data_view: metrics-*
+    field: server.address
+  - type: options
+    label: Host
+    data_view: metrics-*
+    field: resource.attributes.host.name
+
+  panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: redis_otel-overview
+      - label: Memory & Persistence
+        dashboard: redis_otel-memory-persistence
+
+      # ─── Dashboard Overview Panel ────────────────────────────────────
+  - hide_title: true
+    size: {w: 16, h: 12}
+    markdown:
+      content: |
+        ## [Redis OTel] Memory & Persistence
+
+        This dashboard focuses on Redis resource utilization:
+        - Memory used vs maxmemory and fragmentation ratio
+        - CPU time by main thread and background threads
+        - Fork duration and RDB changes since last save
+        - Replication offset and backlog
+
+      # ─── KPI Metric Row 1 ──────────────────────────────────────────
+  - title: Memory Used
+    hide_title: true
+    size: {w: sixth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-redisreceiver.otel-*
+      - WHERE data_stream.dataset == "redisreceiver.otel"
+      - WHERE redis.memory.used IS NOT NULL
+      - STATS mem = MAX(LAST_OVER_TIME(redis.memory.used))
+      primary:
+        field: mem
+        label: Used
+        format:
+          type: bytes
+          decimals: 2
+
+  - title: Memory RSS
+    hide_title: true
+    size: {w: sixth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-redisreceiver.otel-*
+      - WHERE data_stream.dataset == "redisreceiver.otel"
+      - WHERE redis.memory.rss IS NOT NULL
+      - STATS rss = MAX(LAST_OVER_TIME(redis.memory.rss))
+      primary:
+        field: rss
+        label: RSS
+        format:
+          type: bytes
+          decimals: 2
+
+  - title: Fragmentation Ratio
+    hide_title: true
+    size: {w: sixth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-redisreceiver.otel-*
+      - WHERE data_stream.dataset == "redisreceiver.otel"
+      - WHERE redis.memory.fragmentation_ratio IS NOT NULL
+      - STATS frag = AVG(AVG_OVER_TIME(redis.memory.fragmentation_ratio))
+      primary:
+        field: frag
+        label: Frag Ratio
+        format:
+          type: number
+          decimals: 2
+
+  - title: Fork Duration
+    hide_title: true
+    size: {w: sixth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-redisreceiver.otel-*
+      - WHERE data_stream.dataset == "redisreceiver.otel"
+      - WHERE redis.latest_fork IS NOT NULL
+      - STATS fork_us = MAX(LAST_OVER_TIME(redis.latest_fork))
+      primary:
+        field: fork_us
+        label: "Fork (µs)"
+        format:
+          type: number
+          decimals: 0
+
+  - title: RDB Pending
+    hide_title: true
+    size: {w: eighth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-redisreceiver.otel-*
+      - WHERE data_stream.dataset == "redisreceiver.otel"
+      - WHERE redis.rdb.changes_since_last_save IS NOT NULL
+      - STATS changes = MAX(LAST_OVER_TIME(redis.rdb.changes_since_last_save))
+      primary:
+        field: changes
+        label: RDB Pending
+        format:
+          type: number
+          compact: true
+          decimals: 2
+
+      # ─── KPI Metric Row 2 (beside overview panel) ──────────────────
+  - title: Replicas
+    hide_title: true
+    size: {w: sixth, h: 4}
+    esql:
+      type: metric
+      query:
+      - TS metrics-redisreceiver.otel-*
+      - WHERE data_stream.dataset == "redisreceiver.otel"
+      - WHERE redis.slaves.connected IS NOT NULL
+      - STATS replicas = MAX(LAST_OVER_TIME(redis.slaves.connected))
+      primary:
+        field: replicas
+        label: Replicas
+        format:
+          type: number
+          decimals: 0
+
+      # ─── Section: Memory ───────────────────────────────────────────
+  - title: Memory
+    hide_title: true
+    size: {w: 48, h: 3}
+    markdown:
+      content: '## Memory'
+
+      # ─── Memory Usage vs Maxmemory ─────────────────────────────────
+  - title: Memory Usage vs Maxmemory
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-redisreceiver.otel-*
+      - WHERE data_stream.dataset == "redisreceiver.otel"
+      - WHERE redis.memory.used IS NOT NULL OR redis.memory.rss IS NOT NULL OR redis.memory.peak IS NOT NULL OR redis.maxmemory IS NOT NULL
+      - STATS mem_used = MAX(LAST_OVER_TIME(redis.memory.used)), mem_rss = MAX(LAST_OVER_TIME(redis.memory.rss)), mem_peak = 
+        MAX(LAST_OVER_TIME(redis.memory.peak)), maxmem = MAX(LAST_OVER_TIME(redis.maxmemory)) BY time_bucket = BUCKET(@timestamp, 20, 
+        ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: mem_used
+        label: Used
+        format:
+          type: bytes
+          decimals: 2
+      - field: mem_rss
+        label: RSS
+        format:
+          type: bytes
+          decimals: 2
+      - field: mem_peak
+        label: Peak
+        format:
+          type: bytes
+          decimals: 2
+      - field: maxmem
+        label: Maxmemory
+        format:
+          type: bytes
+          decimals: 2
+      appearance:
+        y_left_axis:
+          title: "Bytes"
+      legend:
+        visible: show
+        position: right
+
+      # ─── Fragmentation Ratio Over Time ─────────────────────────────
+  - title: Fragmentation Ratio Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-redisreceiver.otel-*
+      - WHERE data_stream.dataset == "redisreceiver.otel"
+      - WHERE redis.memory.fragmentation_ratio IS NOT NULL
+      - STATS frag = AVG(AVG_OVER_TIME(redis.memory.fragmentation_ratio)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: frag
+        label: Fragmentation Ratio
+        format:
+          type: number
+          decimals: 2
+
+      # ─── Memory Utilization Gauge ──────────────────────────────────
+  - title: Memory Utilization Gauge
+    size: {w: 24, h: 12}
+    esql:
+      type: gauge
+      query:
+      - TS metrics-redisreceiver.otel-*
+      - WHERE data_stream.dataset == "redisreceiver.otel"
+      - WHERE redis.memory.used IS NOT NULL AND redis.maxmemory IS NOT NULL AND redis.maxmemory > 0
+      - STATS mem_used = MAX(LAST_OVER_TIME(redis.memory.used)), maxmem = MAX(LAST_OVER_TIME(redis.maxmemory))
+      - EVAL util_pct = TO_DOUBLE(mem_used) / TO_DOUBLE(maxmem) | EVAL _gauge_min = 0, _gauge_max = 1, _gauge_goal = 0.85
+      metric:
+        field: util_pct
+        label: Memory %
+        format:
+          type: percent
+          decimals: 1
+      minimum:
+        field: _gauge_min
+      maximum:
+        field: _gauge_max
+      goal:
+        field: _gauge_goal
+      appearance:
+        shape: horizontal_bullet
+        ticks_position: auto
+
+      # ─── Section: CPU & Persistence ────────────────────────────────
+  - title: CPU & Persistence
+    hide_title: true
+    size: {w: 48, h: 3}
+    markdown:
+      content: '## CPU & Persistence'
+
+      # ─── CPU Time by State ─────────────────────────────────────────
+  - title: CPU Time by State
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      query:
+      - TS metrics-redisreceiver.otel-*
+      - WHERE data_stream.dataset == "redisreceiver.otel"
+      - WHERE redis.cpu.time IS NOT NULL
+      - STATS cpu_rate = SUM(RATE(redis.cpu.time)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.state
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: cpu_rate
+        label: CPU (s/sec)
+        format:
+          type: number
+          decimals: 2
+      breakdown:
+        field: attributes.state
+      legend:
+        visible: show
+        position: right
+
+      # ─── Fork Duration Over Time ───────────────────────────────────
+  - title: Fork Duration Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-redisreceiver.otel-*
+      - WHERE data_stream.dataset == "redisreceiver.otel"
+      - WHERE redis.latest_fork IS NOT NULL
+      - STATS fork_us = MAX(LAST_OVER_TIME(redis.latest_fork)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: fork_us
+        label: "Fork Duration (µs)"
+        format:
+          type: number
+          decimals: 0
+
+      # ─── RDB Changes Since Last Save ───────────────────────────────
+  - title: RDB Changes Since Last Save
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-redisreceiver.otel-*
+      - WHERE data_stream.dataset == "redisreceiver.otel"
+      - WHERE redis.rdb.changes_since_last_save IS NOT NULL
+      - STATS changes = MAX(LAST_OVER_TIME(redis.rdb.changes_since_last_save)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: changes
+        label: Pending Changes
+        format:
+          type: number
+          compact: true
+          decimals: 2
+
+      # ─── Replication Offset ────────────────────────────────────────
+  - title: Replication Offset
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - TS metrics-redisreceiver.otel-*
+      - WHERE data_stream.dataset == "redisreceiver.otel"
+      - WHERE redis.replication.offset IS NOT NULL OR redis.replication.backlog_first_byte_offset IS NOT NULL
+      - STATS repl_offset = MAX(LAST_OVER_TIME(redis.replication.offset)), backlog_first = 
+        MAX(LAST_OVER_TIME(redis.replication.backlog_first_byte_offset)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: repl_offset
+        label: Replication Offset
+        format:
+          type: number
+          compact: true
+          decimals: 2
+      - field: backlog_first
+        label: Backlog First Byte
+        format:
+          type: number
+          compact: true
+          decimals: 2
+      appearance:
+        y_left_axis:
+          title: "Offset (bytes)"
+      legend:
+        visible: show
+        position: right

@@ -19,6 +19,7 @@ Find more details in [Logs](#logs).
 
 * `performance`: Comprehensive performance counters and objects available on the server.
 * `transaction_log`: Usage statistics and space utilization metrics for transaction logs.
+* `availability_groups`: Health and synchronization metrics for Always On Availability Groups.
 
 Find more details in [Metrics](#metrics).
 
@@ -39,6 +40,9 @@ If you browse Microsoft Developer Network (MSDN) for the following tables, you w
     - [sys.dm_db_log_stats (DB_ID)](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-db-log-stats-transact-sql?view=sql-server-ver16) (Available on SQL Server (MSSQL) 2016 (13.x) SP 2 and later)
 2. `performance`:
     - [sys.dm_os_performance_counters](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver16)
+3. `availability_groups`:
+    - [sys.availability_groups](https://learn.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-availability-groups-transact-sql?view=sql-server-ver16)
+    - [sys.dm_hadr_availability_group_states](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-hadr-availability-group-states-transact-sql)
 
 Please make sure the user has the permissions to system as well as user-defined databases. For the particular user used in the integration, the following requirements are met:
 
@@ -84,8 +88,6 @@ As part of the input configuration, you need to provide the user name, password 
 
 * `host/instance_name`          (e.g. `localhost/namedinstance_01`)
 * `host:named_instance_port`    (e.g. `localhost:60873`)
-
-
 
 ### Configuration
 
@@ -136,6 +138,22 @@ Keep in mind that this feature is disabled by default and needs to be manually e
 #### Password URL encoding
 
 When the password contains special characters, pass these special characters using URL encoding.
+
+### Availability Groups Metrics
+
+Collects metrics related to Always On Availability Groups, including replica status and synchronization health. This dataset queries the following SQL Server tables:
+
+- `sys.availability_groups`
+- `sys.dm_hadr_availability_group_states`
+
+**Note:** Always On Availability Groups must be enabled on your SQL Server instance for this dataset to collect metrics. This feature is available in SQL Server Enterprise and Standard editions (with limitations in Standard).
+
+**Prerequisites**: To collect Availability Groups metrics, ensure the following:
+
+1. Always On Availability Groups feature is enabled on the SQL Server instance.
+2. The user account configured for the integration has `VIEW SERVER STATE` and `VIEW ANY DEFINITION` permissions. *Additionally look at section [Microsoft SQL Server permissions](#microsoft-sql-server-permissions)*.
+
+Read more in [Monitor Availability Groups](https://learn.microsoft.com/en-us/sql/database-engine/availability-groups/windows/monitoring-of-availability-groups-sql-server?view=sql-server-ver16) and [Always On Availability Groups](https://learn.microsoft.com/en-us/sql/database-engine/availability-groups/windows/overview-of-always-on-availability-groups-sql-server?view=sql-server-ver16) overview.
 
 ## Logs
 
@@ -403,6 +421,7 @@ An example event for `performance` looks as following:
             "active_temp_tables": 0,
             "batch_requests_per_sec": 15,
             "buffer_cache_hit_ratio": 995,
+            "buffer_cache_hit_ratio_pct": 0.995,
             "buffer_checkpoint_pages_per_sec": 70,
             "buffer_database_pages": 2208,
             "buffer_page_life_expectancy": 19,
@@ -425,6 +444,7 @@ An example event for `performance` looks as following:
             "SELECT cntr_value As 'active_temp_tables' FROM sys.dm_os_performance_counters WHERE counter_name = 'Active Temp Tables' AND object_name like '%General Statistics%'",
             "SELECT cntr_value As 'batch_requests_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Batch Requests/sec'",
             "SELECT cntr_value As 'buffer_cache_hit_ratio' FROM sys.dm_os_performance_counters WHERE counter_name = 'Buffer cache hit ratio' AND object_name like '%Buffer Manager%'",
+            "SELECT CAST(CASE WHEN base.cntr_value > 0 THEN (num.cntr_value * 1.0 / base.cntr_value) ELSE NULL END AS FLOAT) As 'buffer_cache_hit_ratio_pct' FROM sys.dm_os_performance_counters AS num INNER JOIN sys.dm_os_performance_counters AS base ON base.object_name = num.object_name AND base.instance_name = num.instance_name WHERE num.counter_name = 'Buffer cache hit ratio' AND base.counter_name = 'Buffer cache hit ratio base' AND num.object_name like '%Buffer Manager%'",
             "SELECT cntr_value As 'buffer_checkpoint_pages_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Checkpoint pages/sec' AND object_name like '%Buffer Manager%'",
             "SELECT cntr_value As 'buffer_database_pages' FROM sys.dm_os_performance_counters WHERE counter_name = 'Database pages' AND object_name like '%Buffer Manager%'",
             "SELECT cntr_value As 'buffer_page_life_expectancy' FROM sys.dm_os_performance_counters WHERE counter_name = 'Page life expectancy' AND  object_name like '%Buffer Manager%'",
@@ -457,45 +477,46 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Metric Type |
-|---|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
-| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
-| container.id | Unique container id. | keyword |  |
-| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
-| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| mssql.metrics.active_temp_tables | Number of temporary tables/table variables in use. | long | gauge |
-| mssql.metrics.batch_requests_per_sec | Number of Transact-SQL command batches received per second. This statistic is affected by all constraints (such as I/O, number of users, cache size, complexity of requests, and so on). High batch requests mean good throughput. | float | gauge |
-| mssql.metrics.buffer_cache_hit_ratio | The ratio is the total number of cache hits divided by the total number of cache lookups over the last few thousand page accesses. After a long period of time, the ratio moves very little. Because reading from the cache is much less expensive than reading from disk, you want this ratio to be high. | double | gauge |
-| mssql.metrics.buffer_checkpoint_pages_per_sec | Indicates the number of pages flushed to disk per second by a checkpoint or other operation that require all dirty pages to be flushed. | float | gauge |
-| mssql.metrics.buffer_database_pages | Indicates the number of pages in the buffer pool with database content. | long | gauge |
-| mssql.metrics.buffer_page_life_expectancy | Indicates the number of seconds a page will stay in the buffer pool without references (in seconds). | long | gauge |
-| mssql.metrics.buffer_target_pages | Ideal number of pages in the buffer pool. | long | gauge |
-| mssql.metrics.compilations_per_sec | Number of SQL compilations per second. Indicates the number of times the compile code path is entered. Includes compiles caused by statement-level recompilations in SQL Server. After SQL Server user activity is stable, this value reaches a steady state. | float | gauge |
-| mssql.metrics.connection_reset_per_sec | Total number of logins started per second from the connection pool. | float | gauge |
-| mssql.metrics.instance_name | Name of the mssql connected instance. | keyword |  |
-| mssql.metrics.lock_waits_per_sec | Number of lock requests per second that required the caller to wait. | float | gauge |
-| mssql.metrics.logins_per_sec | Total number of logins started per second. This does not include pooled connections. | float | gauge |
-| mssql.metrics.logouts_per_sec | Total number of logout operations started per second. | float | gauge |
-| mssql.metrics.memory_grants_pending | This is generated from the default pattern given for Dynamic Counter Name variable. This counter tells us how many processes are waiting for the memory to be assigned to them so they can get started. | long |  |
-| mssql.metrics.page_splits_per_sec | Number of page splits per second that occur as the result of overflowing index pages. | float | gauge |
-| mssql.metrics.re_compilations_per_sec | Number of statement recompiles per second. Counts the number of times statement recompiles are triggered. Generally, you want the recompiles to be low. | float | gauge |
-| mssql.metrics.server_name | Name of the mssql server. | keyword |  |
-| mssql.metrics.transactions | Total number of transactions | long | gauge |
-| mssql.metrics.user_connections | Total number of user connections. | long | gauge |
-| mssql.query | The SQL queries executed. | keyword |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| mssql.metrics.active_temp_tables | Number of temporary tables/table variables in use. | long |  | gauge |
+| mssql.metrics.batch_requests_per_sec | Number of Transact-SQL command batches received per second. This statistic is affected by all constraints (such as I/O, number of users, cache size, complexity of requests, and so on). High batch requests mean good throughput. | float |  | gauge |
+| mssql.metrics.buffer_cache_hit_ratio | Deprecated: use `mssql.metrics.buffer_cache_hit_ratio_pct` instead. The ratio is the total number of cache hits divided by the total number of cache lookups over the last few thousand page accesses. After a long period of time, the ratio moves very little. Because reading from the cache is much less expensive than reading from disk, you want this ratio to be high. | double |  | gauge |
+| mssql.metrics.buffer_cache_hit_ratio_pct | Buffer cache hit ratio expressed as a fraction in [0, 1]. Computed at query time as `Buffer cache hit ratio / Buffer cache hit ratio base`, joining the numerator counter with its companion `PERF_LARGE_RAW_BASE` counter (`cntr_type` 1073939712) from `sys.dm_os_performance_counters` as required for `PERF_LARGE_RAW_FRACTION` counters. A healthy SQL Server typically reports values close to 1.0, indicating that most page requests were satisfied from the buffer cache rather than from disk. | double | percent | gauge |
+| mssql.metrics.buffer_checkpoint_pages_per_sec | Indicates the number of pages flushed to disk per second by a checkpoint or other operation that require all dirty pages to be flushed. | float |  | gauge |
+| mssql.metrics.buffer_database_pages | Indicates the number of pages in the buffer pool with database content. | long |  | gauge |
+| mssql.metrics.buffer_page_life_expectancy | Indicates the number of seconds a page will stay in the buffer pool without references (in seconds). | long |  | gauge |
+| mssql.metrics.buffer_target_pages | Ideal number of pages in the buffer pool. | long |  | gauge |
+| mssql.metrics.compilations_per_sec | Number of SQL compilations per second. Indicates the number of times the compile code path is entered. Includes compiles caused by statement-level recompilations in SQL Server. After SQL Server user activity is stable, this value reaches a steady state. | float |  | gauge |
+| mssql.metrics.connection_reset_per_sec | Total number of logins started per second from the connection pool. | float |  | gauge |
+| mssql.metrics.instance_name | Name of the mssql connected instance. | keyword |  |  |
+| mssql.metrics.lock_waits_per_sec | Number of lock requests per second that required the caller to wait. | float |  | gauge |
+| mssql.metrics.logins_per_sec | Total number of logins started per second. This does not include pooled connections. | float |  | gauge |
+| mssql.metrics.logouts_per_sec | Total number of logout operations started per second. | float |  | gauge |
+| mssql.metrics.memory_grants_pending | This is generated from the default pattern given for Dynamic Counter Name variable. This counter tells us how many processes are waiting for the memory to be assigned to them so they can get started. | long |  |  |
+| mssql.metrics.page_splits_per_sec | Number of page splits per second that occur as the result of overflowing index pages. | float |  | gauge |
+| mssql.metrics.re_compilations_per_sec | Number of statement recompiles per second. Counts the number of times statement recompiles are triggered. Generally, you want the recompiles to be low. | float |  | gauge |
+| mssql.metrics.server_name | Name of the mssql server. | keyword |  |  |
+| mssql.metrics.transactions | Total number of transactions | long |  | gauge |
+| mssql.metrics.user_connections | Total number of user connections. | long |  | gauge |
+| mssql.query | The SQL queries executed. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 
 
 ### transaction_log
@@ -623,6 +644,119 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mssql.metrics.used_log_space_pct | A percentage of the occupied size of the log as a percent of the total log size. | float | percent | gauge |
 | mssql.query | The SQL queries executed. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+
+
+### availability_groups
+
+The Microsoft SQL Server `availability_groups` dataset provides metrics from the Always On Availability Groups DMVs (Dynamic Management Views). All availability_groups metrics will be available in the `sqlserver.metrics` field group.
+
+An example event for `availability_groups` looks as following:
+
+```json
+{
+    "@timestamp": "2026-01-09T13:26:41.427Z",
+    "agent": {
+        "ephemeral_id": "9879229c-2cb1-4082-a6e7-289de62de193",
+        "id": "819a1c28-7fc6-4490-8456-c04d37abce3d",
+        "name": "elastic-agent-12312",
+        "type": "metricbeat",
+        "version": "8.19.8"
+    },
+    "data_stream": {
+        "dataset": "microsoft_sqlserver.availability_groups",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "819a1c28-7fc6-4490-8456-c04d37abce3d",
+        "snapshot": false,
+        "version": "8.19.8"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "microsoft_sqlserver.availability_groups",
+        "duration": 797064208,
+        "ingested": "2026-01-09T13:26:43Z",
+        "module": "sql"
+    },
+    "host": {
+        "architecture": "arm64",
+        "hostname": "localhost",
+        "id": "11111-8ABC-59B6-95BC-11111111",
+        "ip": [
+            "192.168.242.2",
+            "192.168.255.6"
+        ],
+        "mac": [
+            "02-42-C0-A8-F2-02",
+            "02-42-C0-A8-FF-06"
+        ],
+        "name": "elastic-agent-12312",
+        "os": {
+            "build": "24G84",
+            "family": "darwin",
+            "kernel": "24.6.0",
+            "name": "macOS",
+            "platform": "darwin",
+            "type": "macos",
+            "version": "15.6"
+        }
+    },
+    "metricset": {
+        "name": "query",
+        "period": 300000
+    },
+    "mssql": {
+        "metrics": {
+            "group_id": "13495A5F-460C-4D93-BFA2-477E9F555A5A",
+            "name": "ag_test",
+            "primary_recovery_health": 1,
+            "primary_replica": "myVm-1",
+            "server_name": "myVm-1",
+            "synchronization_health": 2,
+            "synchronization_health_desc": "HEALTHY"
+        }
+    },
+    "service": {
+        "address": "microsoft_sqlserver",
+        "type": "sql"
+    }
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
+| mssql.metrics.group_id | Unique identifier (GUID) of the availability group. | keyword |  |
+| mssql.metrics.name | Availability group name. | keyword |  |
+| mssql.metrics.primary_recovery_health | Primary replica recovery health (0 = ONLINE_IN_PROGRESS, 1 = ONLINE. NULL on secondary replicas). | long | gauge |
+| mssql.metrics.primary_replica | Server name of the current primary replica. | keyword |  |
+| mssql.metrics.secondary_recovery_health | Secondary replica recovery health (0 = ONLINE_IN_PROGRESS, 1 = ONLINE. NULL on primary replicas). | long | gauge |
+| mssql.metrics.server_name | SQL Server instance name where metrics were collected. | keyword |  |
+| mssql.metrics.synchronization_health | AG synchronization health status (0 = NOT_HEALTHY, 1 = PARTIALLY_HEALTHY, 2 = HEALTHY). | long | gauge |
+| mssql.metrics.synchronization_health_desc | Text description of AG synchronization health. | keyword |  |
+| mssql.query | The SQL queries executed. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
 
 ## Alerting Rule Template
