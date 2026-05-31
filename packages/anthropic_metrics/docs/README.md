@@ -66,7 +66,8 @@ Elastic Agent polls the Anthropic Admin APIs and ships collected events to Elast
 3. Click **Add Anthropic Metrics** and enter the Admin API key.
 4. Configure each data stream using the settings below, then deploy the policy to your Elastic Agent.
 
-#### Usage data stream settings
+<details>
+<summary>Usage data stream settings</summary>
 
 | Setting | Default | Description |
 |---------|---------|-------------|
@@ -75,7 +76,10 @@ Elastic Agent polls the Anthropic Admin APIs and ships collected events to Elast
 | Bucket Width | `1h` | Time granularity for usage buckets. One of `1m`, `1h`, or `1d`. Use `1m` for real-time alerting, `1h` for operational monitoring, or `1d` for finance reporting. |
 | Group By | `model`, `workspace_id`, `service_tier`, `inference_geo` | Dimensions to break down usage data. Additional options: `api_key_id`, `context_window`, `speed`. |
 
-#### Cost data stream settings
+</details>
+
+<details>
+<summary>Cost data stream settings</summary>
 
 | Setting | Default | Description |
 |---------|---------|-------------|
@@ -83,11 +87,16 @@ Elastic Agent polls the Anthropic Admin APIs and ships collected events to Elast
 | Initial Interval | `168h` (7 days) | Lookback window on the first collection run. |
 | Group By | `workspace_id`, `description` | Dimensions to break down cost data. When `description` is included, the API returns structured fields for model, service tier, cost type, token type, context window, and inference geography. |
 
-#### Rate Limit data stream settings
+</details>
+
+<details>
+<summary>Rate Limit data stream settings</summary>
 
 | Setting | Default | Description |
 |---------|---------|-------------|
 | Interval | `15m` | How often the Rate Limits API is polled. This is a snapshot API, so each poll returns the full current configuration. |
+
+</details>
 
 ### Validation
 
