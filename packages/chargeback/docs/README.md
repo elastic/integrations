@@ -158,15 +158,28 @@ You can verify the transforms are running by navigating to **Stack Management �
 
 The integration includes a **Transform Health Monitoring** alert rule template that can be installed from the integration page. This rule monitors all Chargeback transforms and alerts when they encounter issues or failures, providing proactive notification of any problems with data processing.
 
-## Dashboard
+## Dashboards
 
-Chargeback data can be viewed in the `[Chargeback] Cost and Consumption breakdown` dashboard, which provides collapsible sections:
+Chargeback ships two focused dashboards:
 
-- **Cost by component (SKU)** — all billable SKUs via `billing_cluster_cost_lookup` (`cost_type` / `cost_category`)
-- **Datatiers / utilization** — provisioned capacity vs realized pool, utilization p95, and allocated memory/storage **estimates** (not Cloud invoice lines)
-- **Realized Cost** — three Lens panels: (1) stacked area showing aggregate memory vs storage ECU contribution against the provisioned ceiling over time; (2) line chart showing realized monetary cost per deployment over time; (3) summary table with provisioned ECU, realized ECU, utilization %, and cost per deployment.
-- **Deployment / tier / data stream** — allocation from `chargeable_pool` × workload shares (not per-SKU ECU)
-- **Configuration** — rates and weights
+### [Chargeback] Overview
+
+Answers: *what did we spend and where did it go?*
+
+Collapsible sections:
+- **Cost by component (SKU)** — all billable SKUs via `billing_cluster_cost_lookup` (`cost_type` / `cost_category`). Includes normalised cost by type and category, and workload mix.
+- **Deployment group statistics** — total cost and trend per deployment group, making cross-group comparison easy.
+- **Deployment statistics** — normalised cost per deployment and tier, and cost-share breakdown.
+- **Configuration** — conversion rate, blending weights, and date-window reference.
+
+### [Chargeback] Data Tiers
+
+Answers: *which data streams and tiers drive cost, and how efficiently are they using capacity?*
+
+Collapsible sections:
+- **Datatiers / utilization** — provisioned capacity vs realized pool, utilization p95, and chargeable pool per tier. Allocated memory/storage are **estimates** (not Cloud invoice lines).
+- **Data tier and data stream overview** — top-20 data streams by indexing / query / storage cost, blended cost totals, and workload breakdown by tier.
+- **Data tier and data stream per day** — time-series panels (indexing, querying, storage, blended) broken out by data stream and tier, including absolute cost and percentage share.
 
 ![Cost and Consumption breakdown](../img/chargeback.png)
 
