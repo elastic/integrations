@@ -119,26 +119,6 @@ For more information on architectures that can be used for scaling this integrat
 
 ## Reference
 
-### Field Reference
-
-#### Audit
-
-{{fields "audit"}}
-
-#### Event
-
-{{fields "event"}}
-
-### Example event
-
-#### Audit
-
-{{event "audit"}}
-
-#### Event
-
-{{event "event"}}
-
 ### Inputs used
 
 These inputs are used in the integration:
