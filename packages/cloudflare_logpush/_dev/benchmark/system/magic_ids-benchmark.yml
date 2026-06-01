@@ -1,0 +1,26 @@
+---
+description: Benchmark 10000 magic_ids events ingested
+input: http_endpoint
+vars:
+  listen_address: 0.0.0.0
+data_stream:
+  name: magic_ids
+  vars:
+    listen_port: 9560
+    url: /cloudflare_logpush/magic_ids
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+warmup_time_period: 10s
+corpora:
+  input_service:
+    name: cloudflare-logpush-magic_ids
+    signal: SIGHUP
+  generator:
+    total_events: 10000
+    template:
+      path: ./magic_ids-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./magic_ids-benchmark/config.yml
+    fields:
+      path: ./magic_ids-benchmark/fields.yml
