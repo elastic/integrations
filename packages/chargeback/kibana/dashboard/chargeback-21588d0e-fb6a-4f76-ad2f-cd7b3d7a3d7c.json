@@ -28,7 +28,7 @@
                     "layout": "horizontal",
                     "links": [
                         {
-                            "destinationRefName": "link_b4608234-af1e-46db-820f-d8bcdb4eecc5_dashboard",
+                            "destinationRefName": "link_ef30138f-4f94-49d8-b9fd-e6eed432a78f_dashboard",
                             "options": {
                                 "open_in_new_tab": false,
                                 "use_filters": true,
@@ -37,7 +37,7 @@
                             "type": "dashboardLink"
                         },
                         {
-                            "destinationRefName": "link_b2697cdc-7208-4ec7-a957-3dde78ef6a38_dashboard",
+                            "destinationRefName": "link_d611de7d-b0a4-4c1e-8df1-1f7f806a0015_dashboard",
                             "options": {
                                 "open_in_new_tab": false,
                                 "use_filters": true,
@@ -46,7 +46,7 @@
                             "type": "dashboardLink"
                         },
                         {
-                            "destinationRefName": "link_8cd8dc4f-38f0-49d6-8c54-3b1fc6abe55c_dashboard",
+                            "destinationRefName": "link_16d8fb8a-6225-4ea1-ad60-d7e49111fa9b_dashboard",
                             "options": {
                                 "open_in_new_tab": false,
                                 "use_filters": true,
@@ -65,6 +65,312 @@
                 },
                 "panelIndex": "1dd3dbff-677c-7339-7873-1341bc8465c5",
                 "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "cluster-tier-contribution-dv": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "cluster-tier-contribution-dv",
+                                    "managed": false,
+                                    "name": "cluster_tier_contribution_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "cluster_tier_contribution_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "cluster-tier-contribution-dv",
+                                            "timeField": "@timestamp",
+                                            "title": "cluster_tier_contribution_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "ba345378-8ee0-40ec-9fb0-d26588d09107": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "deployment",
+                                                    "customLabel": true,
+                                                    "fieldName": "deployment",
+                                                    "label": "Deployment name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Data Tier (usage-based)",
+                                                    "customLabel": false,
+                                                    "fieldName": "Data Tier",
+                                                    "label": "Data Tier",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "cluster_tier_contribution_lookup",
+                                                            "sourceField": "Data Tier"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Normalised cost",
+                                                    "customLabel": true,
+                                                    "fieldName": "Normalised cost",
+                                                    "inMetricDimension": true,
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "chargeback_integration",
+                                            "query": {
+                                                "esql": "FROM cluster_tier_contribution_lookup\n| WHERE composite_key IS NOT NULL AND tier IS NOT NULL AND tier != \"unknown\"\n| EVAL ts = @timestamp\n| LOOKUP JOIN billing_realized_pool_lookup ON composite_key\n| WHERE data_tier_capacity_ecu IS NOT NULL\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL deployment = CASE(deployment_id IS NULL, deployment_name, CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\"))\n| EVAL mem_w = COALESCE(TO_DOUBLE(conf_utilization_memory_weight), 70.0), disk_w = COALESCE(TO_DOUBLE(conf_utilization_storage_weight), 30.0)\n| EVAL heap_p = COALESCE(heap_used_pct_p95, 100) / 100, disk_p = COALESCE(disk_used_pct_p95, 100) / 100\n| EVAL util_score = (mem_w * heap_p + disk_w * disk_p) / (mem_w + disk_w), chargeable_pool = data_tier_capacity_ecu * util_score, tier_label = CASE(tier IS NULL OR tier == \"unknown\", \"Unclassified\", tier)\n| EVAL idx_w = COALESCE(TO_DOUBLE(conf_indexing_weight), 20.0), qry_w = COALESCE(TO_DOUBLE(conf_query_weight), 20.0), sto_w = COALESCE(TO_DOUBLE(conf_storage_weight), 40.0), rate = COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| EVAL indexing = CASE(deployment_sum_indexing_time > 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool), querying = CASE(deployment_sum_query_time > 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool), store = CASE(deployment_sum_store_size > 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool), data_set = CASE(deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool)\n| EVAL storage = CASE(store == 0, data_set, store), total_weight_hot = sto_w + qry_w + idx_w, total_weight_cold = sto_w + qry_w\n| EVAL blended = CASE(tier_label == \"hot/content\", (storage * sto_w + querying * qry_w + indexing * idx_w) / total_weight_hot, (storage * sto_w + querying * qry_w) / total_weight_cold) * rate\n| STATS `Normalised cost` = SUM(blended) BY deployment, tier_label\n| WHERE deployment IS NOT NULL AND tier_label IS NOT NULL AND `Normalised cost` > 0\n| RENAME tier_label AS `Data Tier`\n| SORT `Normalised cost` DESC\n| LIMIT 500"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM cluster_tier_contribution_lookup\n| WHERE composite_key IS NOT NULL AND tier IS NOT NULL AND tier != \"unknown\"\n| EVAL ts = @timestamp\n| LOOKUP JOIN billing_realized_pool_lookup ON composite_key\n| WHERE data_tier_capacity_ecu IS NOT NULL\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL deployment = CASE(deployment_id IS NULL, deployment_name, CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\"))\n| EVAL mem_w = COALESCE(TO_DOUBLE(conf_utilization_memory_weight), 70.0), disk_w = COALESCE(TO_DOUBLE(conf_utilization_storage_weight), 30.0)\n| EVAL heap_p = COALESCE(heap_used_pct_p95, 100) / 100, disk_p = COALESCE(disk_used_pct_p95, 100) / 100\n| EVAL util_score = (mem_w * heap_p + disk_w * disk_p) / (mem_w + disk_w), chargeable_pool = data_tier_capacity_ecu * util_score, tier_label = CASE(tier IS NULL OR tier == \"unknown\", \"Unclassified\", tier)\n| EVAL idx_w = COALESCE(TO_DOUBLE(conf_indexing_weight), 20.0), qry_w = COALESCE(TO_DOUBLE(conf_query_weight), 20.0), sto_w = COALESCE(TO_DOUBLE(conf_storage_weight), 40.0), rate = COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| EVAL indexing = CASE(deployment_sum_indexing_time > 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool), querying = CASE(deployment_sum_query_time > 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool), store = CASE(deployment_sum_store_size > 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool), data_set = CASE(deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool)\n| EVAL storage = CASE(store == 0, data_set, store), total_weight_hot = sto_w + qry_w + idx_w, total_weight_cold = sto_w + qry_w\n| EVAL blended = CASE(tier_label == \"hot/content\", (storage * sto_w + querying * qry_w + indexing * idx_w) / total_weight_hot, (storage * sto_w + querying * qry_w) / total_weight_cold) * rate\n| STATS `Normalised cost` = SUM(blended) BY deployment, tier_label\n| WHERE deployment IS NOT NULL AND tier_label IS NOT NULL AND `Normalised cost` > 0\n| RENAME tier_label AS `Data Tier`\n| SORT `Normalised cost` DESC\n| LIMIT 500"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "deployment",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "Data Tier (usage-based)",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "Normalised cost",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "summaryRow": "sum"
+                                    }
+                                ],
+                                "layerId": "ba345378-8ee0-40ec-9fb0-d26588d09107",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "Normalised cost per deployment and tier",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "The allocatable pool redistributed across data tiers by workload \u2014 a weighted blend of indexing, query and storage share. The total is slightly below the realised pool because deployment-days that have a billing pool but no monitoring breakdown cannot be allocated to a tier.",
+                    "drilldowns": [],
+                    "title": "Normalised cost per deployment and tier"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "8049f13b-c56d-4a6e-a4e3-5cf4274fef60",
+                    "sectionId": "5092dfac-3f29-4eab-8c8f-f97bf1479370",
+                    "w": 24,
+                    "x": 0,
+                    "y": 3
+                },
+                "panelIndex": "8049f13b-c56d-4a6e-a4e3-5cf4274fef60",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "cluster-tier-contribution-dv": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "cluster-tier-contribution-dv",
+                                    "managed": false,
+                                    "name": "cluster_tier_contribution_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "cluster_tier_contribution_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "cluster-tier-contribution-dv",
+                                            "timeField": "@timestamp",
+                                            "title": "cluster_tier_contribution_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "91b4be84-6eb5-4b77-ad13-b85d992f3bbf": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "deployment",
+                                                    "customLabel": true,
+                                                    "fieldName": "deployment",
+                                                    "label": "Deployment name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Data Tier (usage-based)",
+                                                    "customLabel": false,
+                                                    "fieldName": "Data Tier",
+                                                    "label": "Data Tier",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "cluster_tier_contribution_lookup",
+                                                            "sourceField": "Data Tier"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Normalised cost",
+                                                    "customLabel": true,
+                                                    "fieldName": "Normalised cost",
+                                                    "inMetricDimension": true,
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "chargeback_integration",
+                                            "query": {
+                                                "esql": "FROM cluster_tier_contribution_lookup\n| WHERE composite_key IS NOT NULL AND tier IS NOT NULL AND tier != \"unknown\"\n| EVAL ts = @timestamp\n| LOOKUP JOIN billing_realized_pool_lookup ON composite_key\n| WHERE data_tier_capacity_ecu IS NOT NULL\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL deployment = CASE(deployment_id IS NULL, deployment_name, CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\"))\n| EVAL mem_w = COALESCE(TO_DOUBLE(conf_utilization_memory_weight), 70.0), disk_w = COALESCE(TO_DOUBLE(conf_utilization_storage_weight), 30.0)\n| EVAL heap_p = COALESCE(heap_used_pct_p95, 100) / 100, disk_p = COALESCE(disk_used_pct_p95, 100) / 100\n| EVAL util_score = (mem_w * heap_p + disk_w * disk_p) / (mem_w + disk_w), chargeable_pool = data_tier_capacity_ecu * util_score, tier_label = CASE(tier IS NULL OR tier == \"unknown\", \"Unclassified\", tier)\n| EVAL idx_w = COALESCE(TO_DOUBLE(conf_indexing_weight), 20.0), qry_w = COALESCE(TO_DOUBLE(conf_query_weight), 20.0), sto_w = COALESCE(TO_DOUBLE(conf_storage_weight), 40.0), rate = COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| EVAL indexing = CASE(deployment_sum_indexing_time > 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool), querying = CASE(deployment_sum_query_time > 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool), store = CASE(deployment_sum_store_size > 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool), data_set = CASE(deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool)\n| EVAL storage = CASE(store == 0, data_set, store), total_weight_hot = sto_w + qry_w + idx_w, total_weight_cold = sto_w + qry_w\n| EVAL blended = CASE(tier_label == \"hot/content\", (storage * sto_w + querying * qry_w + indexing * idx_w) / total_weight_hot, (storage * sto_w + querying * qry_w) / total_weight_cold) * rate\n| STATS `Normalised cost` = SUM(blended) BY deployment, tier_label\n| WHERE deployment IS NOT NULL AND tier_label IS NOT NULL AND `Normalised cost` > 0\n| RENAME tier_label AS `Data Tier`\n| SORT `Normalised cost` DESC\n| LIMIT 500"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM cluster_tier_contribution_lookup\n| WHERE composite_key IS NOT NULL AND tier IS NOT NULL AND tier != \"unknown\"\n| EVAL ts = @timestamp\n| LOOKUP JOIN billing_realized_pool_lookup ON composite_key\n| WHERE data_tier_capacity_ecu IS NOT NULL\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL deployment = CASE(deployment_id IS NULL, deployment_name, CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\"))\n| EVAL mem_w = COALESCE(TO_DOUBLE(conf_utilization_memory_weight), 70.0), disk_w = COALESCE(TO_DOUBLE(conf_utilization_storage_weight), 30.0)\n| EVAL heap_p = COALESCE(heap_used_pct_p95, 100) / 100, disk_p = COALESCE(disk_used_pct_p95, 100) / 100\n| EVAL util_score = (mem_w * heap_p + disk_w * disk_p) / (mem_w + disk_w), chargeable_pool = data_tier_capacity_ecu * util_score, tier_label = CASE(tier IS NULL OR tier == \"unknown\", \"Unclassified\", tier)\n| EVAL idx_w = COALESCE(TO_DOUBLE(conf_indexing_weight), 20.0), qry_w = COALESCE(TO_DOUBLE(conf_query_weight), 20.0), sto_w = COALESCE(TO_DOUBLE(conf_storage_weight), 40.0), rate = COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| EVAL indexing = CASE(deployment_sum_indexing_time > 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool), querying = CASE(deployment_sum_query_time > 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool), store = CASE(deployment_sum_store_size > 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool), data_set = CASE(deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool)\n| EVAL storage = CASE(store == 0, data_set, store), total_weight_hot = sto_w + qry_w + idx_w, total_weight_cold = sto_w + qry_w\n| EVAL blended = CASE(tier_label == \"hot/content\", (storage * sto_w + querying * qry_w + indexing * idx_w) / total_weight_hot, (storage * sto_w + querying * qry_w) / total_weight_cold) * rate\n| STATS `Normalised cost` = SUM(blended) BY deployment, tier_label\n| WHERE deployment IS NOT NULL AND tier_label IS NOT NULL AND `Normalised cost` > 0\n| RENAME tier_label AS `Data Tier`\n| SORT `Normalised cost` DESC\n| LIMIT 500"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "91b4be84-6eb5-4b77-ad13-b85d992f3bbf",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "Normalised cost"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "deployment",
+                                            "Data Tier (usage-based)"
+                                        ]
+                                    }
+                                ],
+                                "shape": "treemap"
+                            }
+                        },
+                        "title": "Normalised cost share by deployment and tier",
+                        "version": 2,
+                        "visualizationType": "lnsPie"
+                    },
+                    "description": "The allocatable pool redistributed across data tiers by workload \u2014 a weighted blend of indexing, query and storage share. The total is slightly below the realised pool because deployment-days that have a billing pool but no monitoring breakdown cannot be allocated to a tier.",
+                    "drilldowns": [],
+                    "title": "Normalised cost share by deployment and tier"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "normalised-cost-per-deployment-and-tier",
+                    "sectionId": "5092dfac-3f29-4eab-8c8f-f97bf1479370",
+                    "w": 24,
+                    "x": 24,
+                    "y": 3
+                },
+                "panelIndex": "normalised-cost-per-deployment-and-tier",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "# Deployment statistics",
+                    "settings": {
+                        "open_links_in_new_tab": false
+                    }
+                },
+                "gridData": {
+                    "h": 3,
+                    "i": "b67fa5aa-7fb2-40de-ba6f-a17b0dc20417",
+                    "sectionId": "5092dfac-3f29-4eab-8c8f-f97bf1479370",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "b67fa5aa-7fb2-40de-ba6f-a17b0dc20417",
+                "type": "markdown"
             },
             {
                 "embeddableConfig": {
@@ -114,8 +420,19 @@
                                         }
                                     ],
                                     "layers": {
-                                        "28174526-fb0d-4645-a2b7-f5101203fb4e": {
+                                        "d5fc6c30-bd9a-4a92-b1fe-db454cf3b4c6": {
                                             "columns": [
+                                                {
+                                                    "columnId": "Normalised cost",
+                                                    "customLabel": false,
+                                                    "fieldName": "Normalised cost",
+                                                    "inMetricDimension": true,
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
                                                 {
                                                     "columnId": "@timestamp",
                                                     "customLabel": false,
@@ -127,38 +444,19 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "deployment",
+                                                    "columnId": "Deployment",
                                                     "customLabel": false,
-                                                    "fieldName": "deployment",
+                                                    "fieldName": "Deployment",
                                                     "label": "Deployment",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
-                                                },
-                                                {
-                                                    "columnId": "Normalised cost",
-                                                    "customLabel": false,
-                                                    "fieldName": "Normalised cost",
-                                                    "inMetricDimension": true,
-                                                    "label": "Normalised cost",
-                                                    "meta": {
-                                                        "esType": "double",
-                                                        "type": "number"
-                                                    },
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        }
-                                                    }
                                                 }
                                             ],
-                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "index": "billing-realized-pool-dv",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| WHERE @timestamp IS NOT NULL AND deployment_name IS NOT NULL\n| EVAL ts = @timestamp, deployment = CASE(deployment_id IS NULL, deployment_name, CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\"))\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON ts \u003e= conf_start_date AND ts \u003c= conf_end_date\n| EVAL mem_w = COALESCE(TO_DOUBLE(conf_utilization_memory_weight), 70.0), disk_w = COALESCE(TO_DOUBLE(conf_utilization_storage_weight), 30.0)\n| EVAL heap_p = COALESCE(heap_used_pct_p95, 100) / 100, disk_p = COALESCE(disk_used_pct_p95, 100) / 100\n| EVAL util_score = (mem_w * heap_p + disk_w * disk_p) / (mem_w + disk_w), chargeable_pool = data_tier_capacity_ecu * COALESCE(util_score, 1.0), rate = COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| STATS `Normalised cost` = SUM(chargeable_pool * rate) BY ts, deployment\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` ASC\n| LIMIT 5000"
+                                                "esql": "FROM billing_realized_pool_lookup\n| WHERE @timestamp IS NOT NULL AND deployment_name IS NOT NULL\n| EVAL ts = @timestamp, deployment = CASE(deployment_id IS NULL, deployment_name, CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\"))\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL mem_w = COALESCE(TO_DOUBLE(conf_utilization_memory_weight), 70.0), disk_w = COALESCE(TO_DOUBLE(conf_utilization_storage_weight), 30.0)\n| EVAL heap_p = COALESCE(heap_used_pct_p95, 100) / 100, disk_p = COALESCE(disk_used_pct_p95, 100) / 100\n| EVAL util_score = (mem_w * heap_p + disk_w * disk_p) / (mem_w + disk_w), chargeable_pool = data_tier_capacity_ecu * COALESCE(util_score, 1.0), rate = COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| STATS `Normalised cost` = SUM(chargeable_pool * rate) BY ts, deployment\n| RENAME ts AS `@timestamp`, deployment as `Deployment`\n| SORT `@timestamp` ASC\n| LIMIT 5000"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -168,7 +466,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| WHERE @timestamp IS NOT NULL AND deployment_name IS NOT NULL\n| EVAL ts = @timestamp, deployment = CASE(deployment_id IS NULL, deployment_name, CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\"))\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON ts \u003e= conf_start_date AND ts \u003c= conf_end_date\n| EVAL mem_w = COALESCE(TO_DOUBLE(conf_utilization_memory_weight), 70.0), disk_w = COALESCE(TO_DOUBLE(conf_utilization_storage_weight), 30.0)\n| EVAL heap_p = COALESCE(heap_used_pct_p95, 100) / 100, disk_p = COALESCE(disk_used_pct_p95, 100) / 100\n| EVAL util_score = (mem_w * heap_p + disk_w * disk_p) / (mem_w + disk_w), chargeable_pool = data_tier_capacity_ecu * COALESCE(util_score, 1.0), rate = COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| STATS `Normalised cost` = SUM(chargeable_pool * rate) BY ts, deployment\n| RENAME ts AS `@timestamp`\n| SORT `@timestamp` ASC\n| LIMIT 5000"
+                                "esql": "FROM billing_realized_pool_lookup\n| WHERE @timestamp IS NOT NULL AND deployment_name IS NOT NULL\n| EVAL ts = @timestamp, deployment = CASE(deployment_id IS NULL, deployment_name, CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\"))\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL mem_w = COALESCE(TO_DOUBLE(conf_utilization_memory_weight), 70.0), disk_w = COALESCE(TO_DOUBLE(conf_utilization_storage_weight), 30.0)\n| EVAL heap_p = COALESCE(heap_used_pct_p95, 100) / 100, disk_p = COALESCE(disk_used_pct_p95, 100) / 100\n| EVAL util_score = (mem_w * heap_p + disk_w * disk_p) / (mem_w + disk_w), chargeable_pool = data_tier_capacity_ecu * COALESCE(util_score, 1.0), rate = COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| STATS `Normalised cost` = SUM(chargeable_pool * rate) BY ts, deployment\n| RENAME ts AS `@timestamp`, deployment as `Deployment`\n| SORT `@timestamp` ASC\n| LIMIT 5000"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -212,11 +510,11 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "28174526-fb0d-4645-a2b7-f5101203fb4e",
+                                        "layerId": "d5fc6c30-bd9a-4a92-b1fe-db454cf3b4c6",
                                         "layerType": "data",
                                         "seriesType": "bar_stacked",
                                         "splitAccessors": [
-                                            "deployment"
+                                            "Deployment"
                                         ],
                                         "xAccessor": "@timestamp"
                                     }
@@ -234,7 +532,7 @@
                                 "valueLabels": "hide"
                             }
                         },
-                        "title": "Realised Pool per Deployment",
+                        "title": "",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
@@ -286,12 +584,19 @@
                                         "tier-breakdown-layer": {
                                             "columns": [
                                                 {
-                                                    "columnId": "Data Tier",
+                                                    "columnId": "Data Tier (usage-based)",
                                                     "customLabel": false,
                                                     "fieldName": "Data Tier",
                                                     "label": "Data Tier",
                                                     "meta": {
                                                         "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "cluster_tier_contribution_lookup",
+                                                            "sourceField": "Data Tier"
+                                                        },
                                                         "type": "string"
                                                     }
                                                 },
@@ -317,7 +622,7 @@
                                             ],
                                             "index": "tier-breakdown-dv",
                                             "query": {
-                                                "esql": "FROM cluster_tier_contribution_lookup\n| WHERE composite_key IS NOT NULL AND tier IS NOT NULL AND tier != \"unknown\"\n| EVAL ts = @timestamp\n| LOOKUP JOIN billing_realized_pool_lookup ON composite_key\n| WHERE data_tier_capacity_ecu IS NOT NULL\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON ts \u003e= conf_start_date AND ts \u003c= conf_end_date\n| EVAL deployment = CASE(deployment_id IS NULL, deployment_name, CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\"))\n| EVAL mem_w = COALESCE(TO_DOUBLE(conf_utilization_memory_weight), 70.0), disk_w = COALESCE(TO_DOUBLE(conf_utilization_storage_weight), 30.0)\n| EVAL heap_p = COALESCE(heap_used_pct_p95, 100) / 100, disk_p = COALESCE(disk_used_pct_p95, 100) / 100\n| EVAL util_score = (mem_w * heap_p + disk_w * disk_p) / (mem_w + disk_w), chargeable_pool = data_tier_capacity_ecu * util_score, tier_label = CASE(tier IS NULL OR tier == \"unknown\", \"Unclassified\", tier)\n| EVAL idx_w = COALESCE(TO_DOUBLE(conf_indexing_weight), 20.0), qry_w = COALESCE(TO_DOUBLE(conf_query_weight), 20.0), sto_w = COALESCE(TO_DOUBLE(conf_storage_weight), 40.0), rate = COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| EVAL indexing = CASE(deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool), querying = CASE(deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool), store = CASE(deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool), data_set = CASE(deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool)\n| EVAL storage = CASE(store == 0, data_set, store), total_weight_hot = sto_w + qry_w + idx_w, total_weight_cold = sto_w + qry_w\n| EVAL blended = CASE(tier_label == \"hot/content\", (storage * sto_w + querying * qry_w + indexing * idx_w) / total_weight_hot, (storage * sto_w + querying * qry_w) / total_weight_cold) * rate\n| STATS `Normalised cost` = SUM(blended) BY tier_label\n| WHERE tier_label IS NOT NULL\n| RENAME tier_label AS `Data Tier`\n| SORT `Normalised cost` DESC\n| LIMIT 50"
+                                                "esql": "FROM cluster_tier_contribution_lookup\n| WHERE composite_key IS NOT NULL AND tier IS NOT NULL AND tier != \"unknown\"\n| EVAL ts = @timestamp\n| LOOKUP JOIN billing_realized_pool_lookup ON composite_key\n| WHERE data_tier_capacity_ecu IS NOT NULL\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL deployment = CASE(deployment_id IS NULL, deployment_name, CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\"))\n| EVAL mem_w = COALESCE(TO_DOUBLE(conf_utilization_memory_weight), 70.0), disk_w = COALESCE(TO_DOUBLE(conf_utilization_storage_weight), 30.0)\n| EVAL heap_p = COALESCE(heap_used_pct_p95, 100) / 100, disk_p = COALESCE(disk_used_pct_p95, 100) / 100\n| EVAL util_score = (mem_w * heap_p + disk_w * disk_p) / (mem_w + disk_w), chargeable_pool = data_tier_capacity_ecu * util_score, tier_label = CASE(tier IS NULL OR tier == \"unknown\", \"Unclassified\", tier)\n| EVAL idx_w = COALESCE(TO_DOUBLE(conf_indexing_weight), 20.0), qry_w = COALESCE(TO_DOUBLE(conf_query_weight), 20.0), sto_w = COALESCE(TO_DOUBLE(conf_storage_weight), 40.0), rate = COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| EVAL indexing = CASE(deployment_sum_indexing_time > 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool), querying = CASE(deployment_sum_query_time > 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool), store = CASE(deployment_sum_store_size > 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool), data_set = CASE(deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool)\n| EVAL storage = CASE(store == 0, data_set, store), total_weight_hot = sto_w + qry_w + idx_w, total_weight_cold = sto_w + qry_w\n| EVAL blended = CASE(tier_label == \"hot/content\", (storage * sto_w + querying * qry_w + indexing * idx_w) / total_weight_hot, (storage * sto_w + querying * qry_w) / total_weight_cold) * rate\n| STATS `Normalised cost` = SUM(blended) BY tier_label\n| WHERE tier_label IS NOT NULL\n| RENAME tier_label AS `Data Tier`\n| SORT `Normalised cost` DESC\n| LIMIT 50"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -327,12 +632,12 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM cluster_tier_contribution_lookup\n| WHERE composite_key IS NOT NULL AND tier IS NOT NULL AND tier != \"unknown\"\n| EVAL ts = @timestamp\n| LOOKUP JOIN billing_realized_pool_lookup ON composite_key\n| WHERE data_tier_capacity_ecu IS NOT NULL\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON ts \u003e= conf_start_date AND ts \u003c= conf_end_date\n| EVAL deployment = CASE(deployment_id IS NULL, deployment_name, CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\"))\n| EVAL mem_w = COALESCE(TO_DOUBLE(conf_utilization_memory_weight), 70.0), disk_w = COALESCE(TO_DOUBLE(conf_utilization_storage_weight), 30.0)\n| EVAL heap_p = COALESCE(heap_used_pct_p95, 100) / 100, disk_p = COALESCE(disk_used_pct_p95, 100) / 100\n| EVAL util_score = (mem_w * heap_p + disk_w * disk_p) / (mem_w + disk_w), chargeable_pool = data_tier_capacity_ecu * util_score, tier_label = CASE(tier IS NULL OR tier == \"unknown\", \"Unclassified\", tier)\n| EVAL idx_w = COALESCE(TO_DOUBLE(conf_indexing_weight), 20.0), qry_w = COALESCE(TO_DOUBLE(conf_query_weight), 20.0), sto_w = COALESCE(TO_DOUBLE(conf_storage_weight), 40.0), rate = COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| EVAL indexing = CASE(deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool), querying = CASE(deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool), store = CASE(deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool), data_set = CASE(deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool)\n| EVAL storage = CASE(store == 0, data_set, store), total_weight_hot = sto_w + qry_w + idx_w, total_weight_cold = sto_w + qry_w\n| EVAL blended = CASE(tier_label == \"hot/content\", (storage * sto_w + querying * qry_w + indexing * idx_w) / total_weight_hot, (storage * sto_w + querying * qry_w) / total_weight_cold) * rate\n| STATS `Normalised cost` = SUM(blended) BY tier_label\n| WHERE tier_label IS NOT NULL\n| RENAME tier_label AS `Data Tier`\n| SORT `Normalised cost` DESC\n| LIMIT 50"
+                                "esql": "FROM cluster_tier_contribution_lookup\n| WHERE composite_key IS NOT NULL AND tier IS NOT NULL AND tier != \"unknown\"\n| EVAL ts = @timestamp\n| LOOKUP JOIN billing_realized_pool_lookup ON composite_key\n| WHERE data_tier_capacity_ecu IS NOT NULL\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON ts >= conf_start_date AND ts <= conf_end_date\n| EVAL deployment = CASE(deployment_id IS NULL, deployment_name, CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\"))\n| EVAL mem_w = COALESCE(TO_DOUBLE(conf_utilization_memory_weight), 70.0), disk_w = COALESCE(TO_DOUBLE(conf_utilization_storage_weight), 30.0)\n| EVAL heap_p = COALESCE(heap_used_pct_p95, 100) / 100, disk_p = COALESCE(disk_used_pct_p95, 100) / 100\n| EVAL util_score = (mem_w * heap_p + disk_w * disk_p) / (mem_w + disk_w), chargeable_pool = data_tier_capacity_ecu * util_score, tier_label = CASE(tier IS NULL OR tier == \"unknown\", \"Unclassified\", tier)\n| EVAL idx_w = COALESCE(TO_DOUBLE(conf_indexing_weight), 20.0), qry_w = COALESCE(TO_DOUBLE(conf_query_weight), 20.0), sto_w = COALESCE(TO_DOUBLE(conf_storage_weight), 40.0), rate = COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| EVAL indexing = CASE(deployment_sum_indexing_time > 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool), querying = CASE(deployment_sum_query_time > 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool), store = CASE(deployment_sum_store_size > 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool), data_set = CASE(deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool)\n| EVAL storage = CASE(store == 0, data_set, store), total_weight_hot = sto_w + qry_w + idx_w, total_weight_cold = sto_w + qry_w\n| EVAL blended = CASE(tier_label == \"hot/content\", (storage * sto_w + querying * qry_w + indexing * idx_w) / total_weight_hot, (storage * sto_w + querying * qry_w) / total_weight_cold) * rate\n| STATS `Normalised cost` = SUM(blended) BY tier_label\n| WHERE tier_label IS NOT NULL\n| RENAME tier_label AS `Data Tier`\n| SORT `Normalised cost` DESC\n| LIMIT 50"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "Data Tier",
+                                        "columnId": "Data Tier (usage-based)",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
@@ -403,12 +708,19 @@
                                         "9d199172-f9fa-4fc4-82af-c7e2672a3f54": {
                                             "columns": [
                                                 {
-                                                    "columnId": "Data Tier",
+                                                    "columnId": "Data Tier (usage-based)",
                                                     "customLabel": false,
                                                     "fieldName": "Data Tier",
                                                     "label": "Data Tier",
                                                     "meta": {
                                                         "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "billing_realized_pool_lookup",
+                                                            "sourceField": "Data Tier"
+                                                        },
                                                         "type": "string"
                                                     }
                                                 },
@@ -491,7 +803,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), tier_label = CASE(tier IS NULL OR tier == \"unknown\", \"Unclassified\", tier)\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate), querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool), store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool), storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier_label == \"hot/content\", ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight) + (indexing / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_indexing_weight)) / total_weight_hot, ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight)) / total_weight_cold) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS Indexing = SUM(indexing), Querying = SUM(querying), Storage = SUM(storage), Blended = SUM(blended) BY tier_label\n| WHERE Blended \u003e 0\n| RENAME tier_label AS `Data Tier`\n| SORT Blended DESC"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), tier_label = CASE(tier IS NULL OR tier == \"unknown\", \"Unclassified\", tier)\n| EVAL indexing = CASE (deployment_sum_indexing_time > 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate), querying = CASE (deployment_sum_query_time > 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate), data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool), store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool), storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier_label == \"hot/content\", ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight) + (indexing / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_indexing_weight)) / total_weight_hot, ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight)) / total_weight_cold) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS Indexing = SUM(indexing), Querying = SUM(querying), Storage = SUM(storage), Blended = SUM(blended) BY tier_label\n| WHERE Blended > 0\n| RENAME tier_label AS `Data Tier`\n| SORT Blended DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -501,12 +813,12 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), tier_label = CASE(tier IS NULL OR tier == \"unknown\", \"Unclassified\", tier)\n| EVAL indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate), querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate), data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool), store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool), storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier_label == \"hot/content\", ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight) + (indexing / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_indexing_weight)) / total_weight_hot, ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight)) / total_weight_cold) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS Indexing = SUM(indexing), Querying = SUM(querying), Storage = SUM(storage), Blended = SUM(blended) BY tier_label\n| WHERE Blended \u003e 0\n| RENAME tier_label AS `Data Tier`\n| SORT Blended DESC"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), tier_label = CASE(tier IS NULL OR tier == \"unknown\", \"Unclassified\", tier)\n| EVAL indexing = CASE (deployment_sum_indexing_time > 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate), querying = CASE (deployment_sum_query_time > 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate), data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool), store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool), storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate), total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight, total_weight_cold = conf_storage_weight + conf_query_weight, blended = CASE (tier_label == \"hot/content\", ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight) + (indexing / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_indexing_weight)) / total_weight_hot, ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight)) / total_weight_cold) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS Indexing = SUM(indexing), Querying = SUM(querying), Storage = SUM(storage), Blended = SUM(blended) BY tier_label\n| WHERE Blended > 0\n| RENAME tier_label AS `Data Tier`\n| SORT Blended DESC"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "Data Tier",
+                                        "columnId": "Data Tier (usage-based)",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
@@ -543,7 +855,7 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "The allocatable pool redistributed across data tiers by workload — a weighted blend of indexing, query and storage share. The total is slightly below the realised pool because deployment-days that have a billing pool but no monitoring breakdown cannot be allocated to a tier.",
+                    "description": "The allocatable pool redistributed across data tiers by workload \u2014 a weighted blend of indexing, query and storage share. The total is slightly below the realised pool because deployment-days that have a billing pool but no monitoring breakdown cannot be allocated to a tier.",
                     "drilldowns": [],
                     "title": "Workload Mix by Data Tier"
                 },
@@ -745,7 +1057,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        datastream\n| WHERE agg_indexing \u003e 0\n| SORT agg_indexing DESC\n| Limit 20"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time > 0, TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        datastream\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC\n| Limit 20"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -755,7 +1067,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        datastream\n| WHERE agg_indexing \u003e 0\n| SORT agg_indexing DESC\n| Limit 20"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time > 0, TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        datastream\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC\n| Limit 20"
                             },
                             "visualization": {
                                 "layers": [
@@ -798,11 +1110,11 @@
                                 "shape": "donut"
                             }
                         },
-                        "title": "Top 20 Data Streams — Indexing Cost",
+                        "title": "Top 20 Data Streams \u2014 Indexing Cost",
                         "version": 2,
                         "visualizationType": "lnsPie"
                     },
-                    "title": "Top 20 Data Streams — Indexing Cost"
+                    "title": "Top 20 Data Streams \u2014 Indexing Cost"
                 },
                 "gridData": {
                     "h": 15,
@@ -858,7 +1170,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        datastream\n| WHERE agg_querying \u003e 0\n| SORT agg_querying DESC\n| Limit 20"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    querying = CASE (deployment_sum_query_time > 0, TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        datastream\n| WHERE agg_querying > 0\n| SORT agg_querying DESC\n| Limit 20"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -868,7 +1180,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        datastream\n| WHERE agg_querying \u003e 0\n| SORT agg_querying DESC\n| Limit 20"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    querying = CASE (deployment_sum_query_time > 0, TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        datastream\n| WHERE agg_querying > 0\n| SORT agg_querying DESC\n| Limit 20"
                             },
                             "visualization": {
                                 "layers": [
@@ -911,11 +1223,11 @@
                                 "shape": "donut"
                             }
                         },
-                        "title": "Top 20 Data Streams — Query Cost",
+                        "title": "Top 20 Data Streams \u2014 Query Cost",
                         "version": 2,
                         "visualizationType": "lnsPie"
                     },
-                    "title": "Top 20 Data Streams — Query Cost"
+                    "title": "Top 20 Data Streams \u2014 Query Cost"
                 },
                 "gridData": {
                     "h": 15,
@@ -971,7 +1283,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        datastream\n| WHERE agg_storage \u003e 0\n| SORT agg_storage DESC\n| limit 20"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        datastream\n| WHERE agg_storage > 0\n| SORT agg_storage DESC\n| limit 20"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -981,7 +1293,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        datastream\n| WHERE agg_storage \u003e 0\n| SORT agg_storage DESC\n| limit 20"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        datastream\n| WHERE agg_storage > 0\n| SORT agg_storage DESC\n| limit 20"
                             },
                             "visualization": {
                                 "layers": [
@@ -1024,11 +1336,11 @@
                                 "shape": "donut"
                             }
                         },
-                        "title": "Top 20 Data Streams — Storage Cost",
+                        "title": "Top 20 Data Streams \u2014 Storage Cost",
                         "version": 2,
                         "visualizationType": "lnsPie"
                     },
-                    "title": "Top 20 Data Streams — Storage Cost"
+                    "title": "Top 20 Data Streams \u2014 Storage Cost"
                 },
                 "gridData": {
                     "h": 15,
@@ -1076,7 +1388,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_and_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_and_datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool),\n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_and_datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool),\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_and_datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_and_datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        TO_DOUBLE(((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight))) / total_weight_hot,\n        TO_DOUBLE(((storage * conf_storage_weight) + (querying * conf_query_weight))) / total_weight_cold\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    agg_blended = sum(blended)\n    BY\n        datastream\n| WHERE agg_blended \u003e 0\n| SORT agg_blended DESC\n| limit 20"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_and_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, TO_DOUBLE(tier_and_datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool),\n    querying = CASE (deployment_sum_query_time > 0, TO_DOUBLE(tier_and_datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_and_datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(tier_and_datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        TO_DOUBLE(((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight))) / total_weight_hot,\n        TO_DOUBLE(((storage * conf_storage_weight) + (querying * conf_query_weight))) / total_weight_cold\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    agg_blended = sum(blended)\n    BY\n        datastream\n| WHERE agg_blended > 0\n| SORT agg_blended DESC\n| limit 20"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1086,7 +1398,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_and_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_and_datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool),\n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_and_datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool),\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_and_datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_and_datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        TO_DOUBLE(((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight))) / total_weight_hot,\n        TO_DOUBLE(((storage * conf_storage_weight) + (querying * conf_query_weight))) / total_weight_cold\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    agg_blended = sum(blended)\n    BY\n        datastream\n| WHERE agg_blended \u003e 0\n| SORT agg_blended DESC\n| limit 20"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_and_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, TO_DOUBLE(tier_and_datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool),\n    querying = CASE (deployment_sum_query_time > 0, TO_DOUBLE(tier_and_datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_and_datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(tier_and_datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        TO_DOUBLE(((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight))) / total_weight_hot,\n        TO_DOUBLE(((storage * conf_storage_weight) + (querying * conf_query_weight))) / total_weight_cold\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    agg_blended = sum(blended)\n    BY\n        datastream\n| WHERE agg_blended > 0\n| SORT agg_blended DESC\n| limit 20"
                             },
                             "visualization": {
                                 "layers": [
@@ -1161,7 +1473,7 @@
                                                     "customLabel": true,
                                                     "fieldName": "Data tier",
                                                     "inMetricDimension": true,
-                                                    "label": "Data Tier",
+                                                    "label": "Data Tier (usage-based)",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
@@ -1320,7 +1632,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| LOOKUP JOIN cluster_tier_and_datastream_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE(deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_and_datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    querying = CASE(deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_and_datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    data_set = CASE(deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_and_datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE(deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_and_datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE(store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE(\n        tier == \"hot/content\",\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight) + (indexing / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_indexing_weight)) / total_weight_hot,\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight)) / total_weight_cold\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    Indexing = round(sum(indexing),2),\n    Querying = round(sum(querying),2),\n    Storage = round(sum(storage),2),\n    Blended = round(sum(blended),2)\n    BY datastream, tier\n| SORT Blended DESC\n| RENAME tier as `Data tier`, datastream as `Data stream`\n| Keep `Data stream`, `Data tier`, Indexing, Querying, Storage, Blended\n| WHERE `Data stream` is not null"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| LOOKUP JOIN cluster_tier_and_datastream_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE(deployment_sum_indexing_time > 0, TO_DOUBLE(tier_and_datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    querying = CASE(deployment_sum_query_time > 0, TO_DOUBLE(tier_and_datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    data_set = CASE(deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_and_datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE(deployment_sum_store_size > 0, TO_DOUBLE(tier_and_datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE(store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE(\n        tier == \"hot/content\",\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight) + (indexing / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_indexing_weight)) / total_weight_hot,\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight)) / total_weight_cold\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    Indexing = round(sum(indexing),2),\n    Querying = round(sum(querying),2),\n    Storage = round(sum(storage),2),\n    Blended = round(sum(blended),2)\n    BY datastream, tier\n| SORT Blended DESC\n| RENAME tier as `Data tier`, datastream as `Data stream`\n| Keep `Data stream`, `Data tier`, Indexing, Querying, Storage, Blended\n| WHERE `Data stream` is not null"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1330,7 +1642,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| LOOKUP JOIN cluster_tier_and_datastream_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE(deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_and_datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    querying = CASE(deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_and_datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    data_set = CASE(deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_and_datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE(deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_and_datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE(store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE(\n        tier == \"hot/content\",\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight) + (indexing / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_indexing_weight)) / total_weight_hot,\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight)) / total_weight_cold\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    Indexing = round(sum(indexing),2),\n    Querying = round(sum(querying),2),\n    Storage = round(sum(storage),2),\n    Blended = round(sum(blended),2)\n    BY datastream, tier\n| SORT Blended DESC\n| RENAME tier as `Data tier`, datastream as `Data stream`\n| Keep `Data stream`, `Data tier`, Indexing, Querying, Storage, Blended\n| WHERE `Data stream` is not null"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| LOOKUP JOIN cluster_tier_and_datastream_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE(deployment_sum_indexing_time > 0, TO_DOUBLE(tier_and_datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    querying = CASE(deployment_sum_query_time > 0, TO_DOUBLE(tier_and_datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    data_set = CASE(deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_and_datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE(deployment_sum_store_size > 0, TO_DOUBLE(tier_and_datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE(store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE(\n        tier == \"hot/content\",\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight) + (indexing / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_indexing_weight)) / total_weight_hot,\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight)) / total_weight_cold\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    Indexing = round(sum(indexing),2),\n    Querying = round(sum(querying),2),\n    Storage = round(sum(storage),2),\n    Blended = round(sum(blended),2)\n    BY datastream, tier\n| SORT Blended DESC\n| RENAME tier as `Data tier`, datastream as `Data stream`\n| Keep `Data stream`, `Data tier`, Indexing, Querying, Storage, Blended\n| WHERE `Data stream` is not null"
                             },
                             "visualization": {
                                 "columns": [
@@ -1367,7 +1679,6 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "drilldowns": [],
                     "title": "Workload Breakdown by Data Tier"
                 },
                 "gridData": {
@@ -1452,7 +1763,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_indexing \u003e 0\n| SORT agg_indexing DESC"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time > 0, TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1462,7 +1773,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_indexing \u003e 0\n| SORT agg_indexing DESC"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    indexing = CASE (deployment_sum_indexing_time > 0, TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1599,7 +1910,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time \u003e 0,\n        TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_indexing \u003e 0"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time > 0,\n        TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_indexing > 0"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1609,7 +1920,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time \u003e 0,\n        TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_indexing \u003e 0"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time > 0,\n        TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_indexing > 0"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1680,6 +1991,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "drilldowns": [],
                     "title": "Indexing Cost by Tier over Time"
                 },
                 "gridData": {
@@ -1746,7 +2058,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time \u003e 0,\n        TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        datastream\n| WHERE agg_indexing \u003e 0\n| SORT agg_indexing DESC"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time > 0,\n        TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        datastream\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1756,7 +2068,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time \u003e 0,\n        TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        datastream\n| WHERE agg_indexing \u003e 0\n| SORT agg_indexing DESC"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    indexing = CASE (\n        deployment_sum_indexing_time > 0,\n        TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_indexing = sum(indexing)\n    BY \n        @timestamp,\n        datastream\n| WHERE agg_indexing > 0\n| SORT agg_indexing DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1893,7 +2205,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time \u003e 0,\n        TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_querying = sum(querying) \n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying \u003e 0\n| SORT agg_querying DESC"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time > 0,\n        TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_querying = sum(querying) \n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1903,7 +2215,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time \u003e 0,\n        TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_querying = sum(querying) \n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying \u003e 0\n| SORT agg_querying DESC"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time > 0,\n        TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_querying = sum(querying) \n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2040,7 +2352,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time \u003e 0,\n        TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_querying \u003e 0"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time > 0,\n        TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_querying > 0"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2050,7 +2362,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time \u003e 0,\n        TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_querying \u003e 0"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    querying = CASE (\n        deployment_sum_query_time > 0,\n        TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_querying = sum(querying)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_querying > 0"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2121,6 +2433,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "drilldowns": [],
                     "title": "Query Cost by Tier over Time"
                 },
                 "gridData": {
@@ -2187,7 +2500,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS \n    agg_querying = sum(querying)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying \u003e 0\n| SORT agg_querying DESC"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    querying = CASE (deployment_sum_query_time > 0, TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS \n    agg_querying = sum(querying)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2197,7 +2510,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS \n    agg_querying = sum(querying)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying \u003e 0\n| SORT agg_querying DESC"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    querying = CASE (deployment_sum_query_time > 0, TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS \n    agg_querying = sum(querying)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2334,7 +2647,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage \u003e 0\n| SORT agg_storage DESC"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2344,7 +2657,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage \u003e 0\n| SORT agg_storage DESC"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2481,7 +2794,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_storage \u003e 0"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_storage > 0"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2491,7 +2804,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_storage \u003e 0"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp,\n        tier\n| WHERE agg_storage > 0"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2562,6 +2875,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "drilldowns": [],
                     "title": "Storage Cost by Tier over Time"
                 },
                 "gridData": {
@@ -2628,7 +2942,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage \u003e 0\n| SORT agg_storage DESC"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2638,7 +2952,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage \u003e 0\n| SORT agg_storage DESC"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL \n    data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS  \n    agg_storage = sum(storage)\n    BY \n        @timestamp, \n        datastream\n| WHERE agg_storage > 0\n| SORT agg_storage DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2775,7 +3089,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool),\n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool),\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    blended = TO_DOUBLE(((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight))) / total_weight_hot * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream\n| WHERE agg_blended \u003e 0\n| SORT agg_blended DESC"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool),\n    querying = CASE (deployment_sum_query_time > 0, TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    blended = TO_DOUBLE(((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight))) / total_weight_hot * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2785,7 +3099,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool),\n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool),\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    blended = TO_DOUBLE(((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight))) / total_weight_hot * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream\n| WHERE agg_blended \u003e 0\n| SORT agg_blended DESC"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, TO_DOUBLE(datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool),\n    querying = CASE (deployment_sum_query_time > 0, TO_DOUBLE(datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    blended = TO_DOUBLE(((storage * conf_storage_weight) + (querying * conf_query_weight) + (indexing * conf_indexing_weight))) / total_weight_hot * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    agg_blended = sum(blended)\n    BY\n        @timestamp,\n        datastream\n| WHERE agg_blended > 0\n| SORT agg_blended DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2891,12 +3205,19 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Data Tier",
+                                                    "columnId": "Data Tier (usage-based)",
                                                     "customLabel": false,
                                                     "fieldName": "Data Tier",
                                                     "label": "Data Tier",
                                                     "meta": {
                                                         "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "billing_realized_pool_lookup",
+                                                            "sourceField": "Data Tier"
+                                                        },
                                                         "type": "string"
                                                     }
                                                 },
@@ -2914,7 +3235,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight) + (indexing / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_indexing_weight)) / total_weight_hot,\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight)) / total_weight_cold\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    `Normalised cost` = SUM(blended) BY @timestamp, tier\n| WHERE `Normalised cost` \u003e 0\n| RENAME tier AS `Data Tier`\n| SORT @timestamp ASC"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    querying = CASE (deployment_sum_query_time > 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight) + (indexing / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_indexing_weight)) / total_weight_hot,\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight)) / total_weight_cold\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    `Normalised cost` = SUM(blended) BY @timestamp, tier\n| WHERE `Normalised cost` > 0\n| RENAME tier AS `Data Tier`\n| SORT @timestamp ASC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2924,7 +3245,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight) + (indexing / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_indexing_weight)) / total_weight_hot,\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight)) / total_weight_cold\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    `Normalised cost` = SUM(blended) BY @timestamp, tier\n| WHERE `Normalised cost` \u003e 0\n| RENAME tier AS `Data Tier`\n| SORT @timestamp ASC"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    querying = CASE (deployment_sum_query_time > 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight) + (indexing / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_indexing_weight)) / total_weight_hot,\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight)) / total_weight_cold\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    `Normalised cost` = SUM(blended) BY @timestamp, tier\n| WHERE `Normalised cost` > 0\n| RENAME tier AS `Data Tier`\n| SORT @timestamp ASC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2972,7 +3293,7 @@
                                         "layerType": "data",
                                         "seriesType": "bar_stacked",
                                         "splitAccessors": [
-                                            "Data Tier"
+                                            "Data Tier (usage-based)"
                                         ],
                                         "xAccessor": "@timestamp"
                                     }
@@ -2995,6 +3316,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "drilldowns": [],
                     "title": "Blended Cost by Tier over Time"
                 },
                 "gridData": {
@@ -3053,7 +3375,7 @@
                                             ],
                                             "index": "chargeback_integration",
                                             "query": {
-                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_and_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_and_datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_and_datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_and_datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_and_datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight) + (indexing / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_indexing_weight)) / total_weight_hot,\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight)) / total_weight_cold\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    `% Normalised cost` = sum(blended)\n    BY\n        @timestamp,\n        datastream,\n        tier\n| WHERE `% Normalised cost` \u003e 0\n| SORT `% Normalised cost` DESC"
+                                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_and_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, TO_DOUBLE(tier_and_datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    querying = CASE (deployment_sum_query_time > 0, TO_DOUBLE(tier_and_datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_and_datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(tier_and_datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight) + (indexing / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_indexing_weight)) / total_weight_hot,\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight)) / total_weight_cold\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    `% Normalised cost` = sum(blended)\n    BY\n        @timestamp,\n        datastream,\n        tier\n| WHERE `% Normalised cost` > 0\n| SORT `% Normalised cost` DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -3063,7 +3385,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_and_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum \u003e 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_and_datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    querying = CASE (deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_and_datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    data_set = CASE (deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_and_datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_and_datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight) + (indexing / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_indexing_weight)) / total_weight_hot,\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight)) / total_weight_cold\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    `% Normalised cost` = sum(blended)\n    BY\n        @timestamp,\n        datastream,\n        tier\n| WHERE `% Normalised cost` \u003e 0\n| SORT `% Normalised cost` DESC"
+                                "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_tier_and_datastream_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| EVAL\n    indexing = CASE (deployment_sum_indexing_time > 0, TO_DOUBLE(tier_and_datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    querying = CASE (deployment_sum_query_time > 0, TO_DOUBLE(tier_and_datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    data_set = CASE (deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_and_datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE (deployment_sum_store_size > 0, TO_DOUBLE(tier_and_datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE (store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE (\n        tier == \"hot/content\",\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight) + (indexing / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_indexing_weight)) / total_weight_hot,\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight)) / total_weight_cold\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    `% Normalised cost` = sum(blended)\n    BY\n        @timestamp,\n        datastream,\n        tier\n| WHERE `% Normalised cost` > 0\n| SORT `% Normalised cost` DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -3292,8 +3614,16 @@
             {
                 "collapsed": false,
                 "gridData": {
-                    "i": "c04d8f10-0002-4000-8000-chargebackdt01",
+                    "i": "5092dfac-3f29-4eab-8c8f-f97bf1479370",
                     "y": 2
+                },
+                "title": "Deployment cost allocation (usage-based)"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "c04d8f10-0002-4000-8000-chargebackdt01",
+                    "y": 3
                 },
                 "title": "Datatiers / utilization"
             },
@@ -3301,7 +3631,7 @@
                 "collapsed": false,
                 "gridData": {
                     "i": "96918af7-e003-4af8-8c37-245db141d60c",
-                    "y": 3
+                    "y": 4
                 },
                 "title": "Data tier and data stream overview"
             },
@@ -3309,7 +3639,7 @@
                 "collapsed": false,
                 "gridData": {
                     "i": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
-                    "y": 4
+                    "y": 5
                 },
                 "title": "Data tier and data stream per day"
             }
@@ -3320,23 +3650,23 @@
         "title": "[Chargeback] Cost and Consumption - Data Tiers"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-06-01T07:17:32.335Z",
+    "created_at": "2026-06-01T07:58:54.643Z",
     "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
     "id": "chargeback-21588d0e-fb6a-4f76-ad2f-cd7b3d7a3d7c",
     "references": [
         {
             "id": "chargeback-b6cecac0-ebe7-43de-bfc6-1ff287ad860a",
-            "name": "1dd3dbff-677c-7339-7873-1341bc8465c5:link_b4608234-af1e-46db-820f-d8bcdb4eecc5_dashboard",
+            "name": "1dd3dbff-677c-7339-7873-1341bc8465c5:link_ef30138f-4f94-49d8-b9fd-e6eed432a78f_dashboard",
             "type": "dashboard"
         },
         {
             "id": "chargeback-21588d0e-fb6a-4f76-ad2f-cd7b3d7a3d7c",
-            "name": "1dd3dbff-677c-7339-7873-1341bc8465c5:link_b2697cdc-7208-4ec7-a957-3dde78ef6a38_dashboard",
+            "name": "1dd3dbff-677c-7339-7873-1341bc8465c5:link_d611de7d-b0a4-4c1e-8df1-1f7f806a0015_dashboard",
             "type": "dashboard"
         },
         {
             "id": "chargeback-7ec9743a-ccfa-43d2-8311-2f25893dadae",
-            "name": "1dd3dbff-677c-7339-7873-1341bc8465c5:link_8cd8dc4f-38f0-49d6-8c54-3b1fc6abe55c_dashboard",
+            "name": "1dd3dbff-677c-7339-7873-1341bc8465c5:link_16d8fb8a-6225-4ea1-ad60-d7e49111fa9b_dashboard",
             "type": "dashboard"
         },
         {
