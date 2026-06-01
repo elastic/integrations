@@ -1,21 +1,11 @@
 {
     "attributes": {
         "columns": [
-            "@timestamp",
-            "crowdstrike.idp.timeline.event_label",
-            "event.action",
-            "event.severity",
-            "user.email",
-            "host.name",
-            "source.ip",
-            "source.geo.country_name",
-            "destination.domain",
-            "service.name",
-            "network.protocol",
-            "tls.version",
-            "crowdstrike.idp.timeline.network_type",
-            "crowdstrike.idp.timeline.ip_address_reputations",
-            "event.id"
+            "host.hostname",
+            "crowdstrike.host.last_seen",
+            "crowdstrike.host.status",
+            "crowdstrike.host.agent.version",
+            "host.ip"
         ],
         "description": "",
         "grid": {},
@@ -36,13 +26,40 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": {
-                                "query": "crowdstrike.identity_protection_timeline"
+                                "query": "crowdstrike.host"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "data_stream.dataset": "crowdstrike.identity_protection_timeline"
+                                "data_stream.dataset": "crowdstrike.host"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "crowdstrike.host.last_seen",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "crowdstrike.host.last_seen",
+                            "negate": false,
+                            "params": {
+                                "lt": "now-7d"
+                            },
+                            "type": "range",
+                            "value": {
+                                "lt": "now-7d"
+                            }
+                        },
+                        "query": {
+                            "range": {
+                                "crowdstrike.host.last_seen": {
+                                    "lt": "now-7d"
+                                }
                             }
                         }
                     }
@@ -56,16 +73,16 @@
         },
         "sort": [
             [
-                "@timestamp",
-                "desc"
+                "crowdstrike.host.last_seen",
+                "asc"
             ]
         ],
         "timeRestore": false,
-        "title": "[CrowdStrike] Identity Protection timeline events"
+        "title": "[CrowdStrike] Stale hosts (7d)"
     },
     "coreMigrationVersion": "8.8.0",
     "created_at": "2026-05-29T12:14:13.818Z",
-    "id": "crowdstrike-23fdf228-aa89-4473-b3cd-733546858a94",
+    "id": "crowdstrike-af5b7c0c-ca1a-4d78-8539-6bcbc90f9953",
     "references": [
         {
             "id": "logs-*",
@@ -75,6 +92,11 @@
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         }
     ],
