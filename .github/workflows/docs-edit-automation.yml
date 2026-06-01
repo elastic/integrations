@@ -7,10 +7,10 @@ on:
       - synchronize
     paths:
       # Match any markdown source file under a package's _dev/build/docs/
-      # directory. This covers both the package-level README.md and
-      # per-integration/per-data-stream files such as cloudtrail.md,
-      # activitylogs.md, gke.md, etc.
-      - 'packages/*/_dev/build/docs/*.md'
+      # directory, including future nested package directories. This covers
+      # both the package-level README.md and per-integration/per-data-stream
+      # files such as cloudtrail.md, activitylogs.md, gke.md, etc.
+      - 'packages/**/_dev/build/docs/*.md'
 
 jobs:
   help-with-docs:
@@ -40,9 +40,10 @@ jobs:
             echo "Error: Failed to fetch PR files"
             exit 1
           fi
-          # Match any *.md file directly under packages/<pkg>/_dev/build/docs/
-          # (not nested in subdirectories; current repo layout has none).
-          CHANGED_DOCS=$(echo "$PR_FILES" | grep -E '^packages/[^/]+/_dev/build/docs/[^/]+\.md$' || true)
+          # Match any *.md file directly under a package's _dev/build/docs/,
+          # including future nested package directories such as
+          # packages/nginx/nginx_otel/_dev/build/docs/README.md.
+          CHANGED_DOCS=$(echo "$PR_FILES" | grep -E '^packages/.+/_dev/build/docs/[^/]+\.md$' || true)
           
           if [ -z "$CHANGED_DOCS" ]; then
             {
@@ -100,12 +101,12 @@ jobs:
           # Reuse the PR_FILES we already fetched to avoid another API call
           ALL_CHANGED_FILES="$PR_FILES"
           
-          # Collect unique package names from the changed doc files.
+          # Collect unique package paths from the changed doc files.
           # A single PR can touch multiple .md files in the same package
           # (e.g. cloudtrail.md and s3.md under packages/aws/_dev/build/docs/),
           # so we dedupe before classifying.
           CHANGED_PACKAGES=$(echo "$CHANGED_DOCS" \
-            | sed -n 's|^packages/\([^/]*\)/_dev/build/docs/.*|\1|p' \
+            | sed -n 's|^packages/\(.*\)/_dev/build/docs/[^/]*\.md$|\1|p' \
             | sort -u)
 
           # Find packages that need updates vs already done.
@@ -285,7 +286,7 @@ jobs:
         if: steps.analyze.outputs.no_docs_changes == 'true' || (steps.analyze.outputs.packages_needing_update == '' && steps.analyze.outputs.packages_already_done != '' && steps.analyze.outputs.packages_missing_manifest == '' && steps.analyze.outputs.packages_missing_changelog == '')
         run: |
           if [ "${{ steps.analyze.outputs.no_docs_changes }}" = "true" ]; then
-            MESSAGE="No documentation source files (packages/*/_dev/build/docs/*.md) were changed in this PR."
+            MESSAGE="No documentation source files (packages/**/_dev/build/docs/*.md) were changed in this PR."
           else
             MESSAGE="All packages with documentation changes already have updated changelogs and manifests."
           fi
