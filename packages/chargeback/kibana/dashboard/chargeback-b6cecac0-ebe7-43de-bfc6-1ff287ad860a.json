@@ -1,8 +1,4 @@
 {
-    "accessControl": {
-        "accessMode": "default",
-        "owner": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
-    },
     "attributes": {
         "description": "Cost breakdown by SKU, deployment, and tier. Shows total billing, cost by component, and deployment cost comparison.",
         "kibanaSavedObjectMeta": {
@@ -231,6 +227,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "Full billing spend per chargeback group over time. Each group is defined by the chargeback_group tag set on ESS deployments. All SKUs (data tiers, ML, Kibana, snapshots, transfer) contribute — the stack totals equal the full organisation bill. FinOps value: shows which teams or business units are growing their spend fastest.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -393,7 +390,7 @@
             },
             {
                 "embeddableConfig": {
-                    "content": "# Deployment group statistics",
+                    "content": "## Deployment group statistics\n**Source:** `billing_cluster_cost_lookup` — full invoice, all SKUs.\n\nCost is normalised using the configured chargeable-unit rate. Groups are derived from the `chargeback_group` tag on ESS deployments. Totals in this section match the full deployment bill shown above.",
                     "settings": {
                         "open_links_in_new_tab": false
                     },
@@ -413,6 +410,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "Total normalised spend per chargeback group for the selected period, ranked highest to lowest. Covers the full invoice — all SKU families included. FinOps value: the primary allocation table for internal chargeback — each group's figure is what you charge back to that team or cost centre.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -495,7 +493,7 @@
                                 "layerType": "data"
                             }
                         },
-                        "title": "",
+                        "title": "Total Cost by Deployment Group",
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
@@ -511,11 +509,13 @@
                     "y": 17
                 },
                 "panelIndex": "43ab691d-4b1f-4e83-b2e4-026c16f6a5eb",
+                "title": "Total Cost by Deployment Group",
                 "type": "vis"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "Cost breakdown per chargeback group split by FinOps category (data_tier, platform, transfer, snapshot, onprem). Total per group equals that group's full invoice amount. FinOps value: reveals whether a group's spend is dominated by compute (data_tier) or operational overhead (snapshots, egress transfer) — helps prioritise where optimisation conversations should start.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -627,7 +627,7 @@
                                 "layerType": "data"
                             }
                         },
-                        "title": "",
+                        "title": "Cost by Group and FinOps Category",
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
@@ -643,11 +643,13 @@
                     "y": 17
                 },
                 "panelIndex": "5224b414-cee6-4426-b981-20815c77ac83",
+                "title": "Cost by Group and FinOps Category",
                 "type": "vis"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "Proportional share of total spend, segmented by chargeback group and FinOps category. FinOps value: at-a-glance view for finance stakeholders showing which groups own which share of the bill and what type of cost it is.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -758,7 +760,7 @@
                                 "shape": "treemap"
                             }
                         },
-                        "title": "",
+                        "title": "Cost Share by Group and Category",
                         "version": 2,
                         "visualizationType": "lnsPie"
                     },
@@ -774,11 +776,12 @@
                     "y": 17
                 },
                 "panelIndex": "4db4725c-45a7-40bd-a6a8-dc7ac42fff0b",
+                "title": "Cost Share by Group and Category",
                 "type": "vis"
             },
             {
                 "embeddableConfig": {
-                    "content": "# Component statistics",
+                    "content": "## Component statistics\n**Source:** `billing_cluster_cost_lookup` — full invoice, filtered to SKUs with a classified `cost_type`.\n\nBilling components (`cost_type`) are derived from the ESS SKU string: data tiers (datahot/datacontent, datawarm, datacold, datafrozen), platform (ml, kibana, apm), data-transfer, snapshots, and on-premises nodes. FinOps categories (`cost_category`) group these into broader buckets: data_tier, platform, transfer, snapshot, onprem, other.\n\n⚠️ If any SKUs could not be classified (`cost_type IS NULL`), those rows are excluded — totals here may be slightly lower than the full bill above.",
                     "settings": {
                         "open_links_in_new_tab": false
                     }
@@ -797,6 +800,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "Cost per deployment broken down by billing component (cost_type: e.g. datahot/datacontent, datawarm, ml, kibana, snapshots, data-transfer) and FinOps category (cost_category: data_tier, platform, transfer, snapshot, onprem). Filtered to SKUs where cost_type has been classified — rows where classification could not be derived from the SKU are excluded. FinOps value: the most granular billing breakdown available — use this to identify which specific infrastructure components drive cost for each deployment.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -990,7 +994,7 @@
                                 "layerType": "data"
                             }
                         },
-                        "title": "",
+                        "title": "Cost by Billing Component and Deployment",
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
@@ -1006,11 +1010,13 @@
                     "y": 3
                 },
                 "panelIndex": "c04d8f10-1001-4000-8000-chargebacksku01",
+                "title": "Cost by Billing Component and Deployment",
                 "type": "vis"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "Proportional cost split by FinOps category per deployment — shows how much of each deployment's bill comes from data storage (data_tier) vs. platform components (ML, Kibana, APM) vs. operational overhead (transfer, snapshot). FinOps value: the headline for optimisation conversations — a high transfer or snapshot share signals quick-win reduction opportunities.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -1161,7 +1167,7 @@
                                 "shape": "treemap"
                             }
                         },
-                        "title": "",
+                        "title": "Cost Share by FinOps Category",
                         "version": 2,
                         "visualizationType": "lnsPie"
                     },
@@ -1176,11 +1182,13 @@
                     "y": 3
                 },
                 "panelIndex": "c04d8f10-1004-4000-8000-chargebacksku01",
+                "title": "Cost Share by FinOps Category",
                 "type": "vis"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "Proportional cost split by billing component (cost_type) per deployment — the finest-grained view of what Elastic is invoicing. FinOps value: pinpoints exactly which SKU families dominate spend, e.g. whether cold-tier storage or data-transfer is the unexpected cost driver.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -1331,7 +1339,7 @@
                                 "shape": "treemap"
                             }
                         },
-                        "title": "",
+                        "title": "Cost Share by Billing Component",
                         "version": 2,
                         "visualizationType": "lnsPie"
                     },
@@ -1346,11 +1354,13 @@
                     "y": 3
                 },
                 "panelIndex": "c04d8f10-1003-4000-8000-chargebacksku01",
+                "title": "Cost Share by Billing Component",
                 "type": "vis"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "Estimated cost per deployment split by data tier (hot/content, warm, cold, frozen), calculated using the usage-based chargeable pool: provisioned data-tier ECU × utilization score, then allocated by workload share (indexing / querying / storage). ⚠️ This total is lower than the full deployment bill: it covers only allocatable data-tier SKUs and applies a utilization discount. ML, Kibana, snapshots, and data transfer are excluded. FinOps value: shows how data-tier capacity cost is distributed across tiers by actual workload — useful for ILM decisions and tier right-sizing.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -1472,6 +1482,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "Percentage of each deployment's chargeable pool consumed by each data tier, based on actual workload (indexing time, query time, storage size). ⚠️ Denominator is the chargeable pool (allocatable data-tier ECU × utilization), not the full invoice — percentages do not apply to the total billing figures above. FinOps value: identifies which tier carries the heaviest workload share, guiding ILM policy and tier sizing decisions.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -1610,7 +1621,7 @@
             },
             {
                 "embeddableConfig": {
-                    "content": "# Deployment statistics",
+                    "content": "## Deployment cost allocation (usage-based)\n**Source:** `cluster_tier_contribution_lookup` — usage-based allocation, **not** the full invoice.\n\n⚠️ **These totals will not match the billing figures above.** This section allocates the *chargeable pool* — allocatable data-tier ECU discounted by p95 utilization — across tiers by actual workload (indexing time, query time, storage). ML, Kibana, APM, snapshots, and data transfer are excluded. For the full usage-based breakdown see the *[Chargeback] Usage \u0026 Cost Allocation* dashboard.",
                     "settings": {
                         "open_links_in_new_tab": false
                     }
@@ -1752,11 +1763,10 @@
         "timeFrom": "now-3M",
         "timeRestore": true,
         "timeTo": "now",
-        "title": "[Chargeback] Cost and Consumption Overview"
+        "title": "[Chargeback] Billing Components Overview"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-06-01T06:24:22.210Z",
-    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "created_at": "2026-06-01T08:20:58.811Z",
     "id": "chargeback-b6cecac0-ebe7-43de-bfc6-1ff287ad860a",
     "references": [
         {
@@ -1796,6 +1806,5 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.3.0",
-    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    "typeMigrationVersion": "10.3.0"
 }
