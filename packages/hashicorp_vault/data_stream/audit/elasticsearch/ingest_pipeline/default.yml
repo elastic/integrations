@@ -90,7 +90,7 @@ processors:
       field: hashicorp_vault.audit.response.data.BatchItem.ResultReason
       ignore_missing: true
   - script:
-      description: Normalize KMIP error reason as per https://docs.oasis-open.org/kmip/kmip-spec/v2.0/csd01/kmip-spec-v2.0-csd01.html#_Toc534980116
+      description: Normalize KMIP error reason as per https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497707
       tag: script_normalize_kmip_error
       lang: painless
       if: ctx.hashicorp_vault?.audit?.response?.data?.BatchItem?.ResultReason?.value != null
@@ -169,7 +169,7 @@ processors:
         "0x00000100": "General Failure"
   - script:
       tag: script_translate_kmip_operation
-      description: Translate operation code to human-readable operation descrption, as per  https://docs.oasis-open.org/kmip/kmip-spec/v2.0/csd01/kmip-spec-v2.0-csd01.html#_Toc534980107
+      description: Translate operation code to human-readable operation descrption, as per https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497698
       lang: painless
       if: ctx.hashicorp_vault?.audit?.request?.data?.BatchItem?.Operation?.value != null
       source: >
@@ -654,7 +654,7 @@ processors:
       value: failure
   - set:
       tag: set_event_outcome_kmip_pending_or_unknown
-      description: Handle pending response as per https://docs.oasis-open.org/kmip/kmip-spec/v2.0/csd01/kmip-spec-v2.0-csd01.html#_Toc534980117
+      description: Handle pending response as per https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497708
       if: ctx.hashicorp_vault?.audit?.type == 'kmip-response' && ctx.hashicorp_vault?.audit?.response?.data?.BatchItem?.ResultStatus?.value == '0x00000002'
       field: event.outcome
       value: unknown
