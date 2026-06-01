@@ -226,7 +226,7 @@ From **0.3.0** onward, ingest pipelines ship with the integration and the billin
 When you change `deployment_erus` or RAM fields with `_update`, also set `daily_meru` (mERU per day = ERU × 1000), or re-index the document through the packaged config pipeline:
 
 ```json
-POST onprem_billing_config/_update/<document_id>?pipeline=logs-onprem_billing.config_bootstrap-0.3.3-config_bootstrap
+POST onprem_billing_config/_update/<document_id>?pipeline=0.3.3-config_bootstrap
 {
   "doc": {
     "deployment_erus": 3.0,
