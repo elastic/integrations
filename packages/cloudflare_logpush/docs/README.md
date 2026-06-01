@@ -130,10 +130,8 @@ When configuring the integration to read from S3-Compatible Buckets such as Clou
 - Make sure that the Bucket Name is set.
 - Although you have to create an API token, that token should not be used for authentication with the S3 API. You just have to set the Access Key ID and Secret Access Key.
 - Set the endpoint URL which can be found in Bucket Details. Endpoint should be a full URI that will be used as the API endpoint of the service. For Cloudflare R2 buckets, the URI is typically in the form of `https(s)://<accountid>.r2.cloudflarestorage.com`.
+- Set the **Region** field to `auto`. This is required for all non-AWS S3-compatible buckets on Elastic Agent 8.19.12 and later. For Cloudflare R2, the region is always `auto` per the [R2 S3 API documentation](https://developers.cloudflare.com/r2/api/s3/api/#bucket-region).
 - Bucket Prefix is optional for each data stream.
-
-**Note**:
-- The AWS region is not a requirement when configuring the R2 Bucket, as the region for any R2 Bucket is `auto` from the [API perspective](https://developers.cloudflare.com/r2/api/s3/api/#bucket-region). However, the error `failed to get AWS region for bucket: operation error S3: GetBucketLocation` may appear when starting the integration. The reason is that `GetBucketLocation` is the first request made to the API when starting the integration, so any configuration, credentials or permissions errors would cause this. Focus on the API response error to identify the original issue.
 
 ### Collect data from GCS Buckets
 
@@ -207,9 +205,9 @@ An example event for `access_request` looks as following:
 {
     "@timestamp": "2023-05-23T17:18:33.000Z",
     "agent": {
-        "ephemeral_id": "3c43110d-da0b-4e1b-adec-7031cdfb87a1",
-        "id": "57b2b3df-7f1f-49a9-8b35-90731f9b1b4e",
-        "name": "elastic-agent-50154",
+        "ephemeral_id": "056ec563-a195-426e-9567-24bbfabae21f",
+        "id": "b7ff516b-300e-4aa7-9b17-86fb55c9b5c3",
+        "name": "elastic-agent-10661",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -228,15 +226,22 @@ An example event for `access_request` looks as following:
         },
         "ip": "67.43.156.93"
     },
-    "cloud": {
-        "provider": "google cloud"
-    },
     "cloudflare_logpush": {
         "access_request": {
+            "action": "login",
+            "allowed": true,
             "app": {
+                "domain": "partner-zt-logs.cloudflareaccess.com/warp",
                 "uuid": "123e4567-e89b-12d3-a456-426614174000"
             },
+            "client": {
+                "ip": "67.43.156.93"
+            },
             "connection": "onetimepin",
+            "country": "us",
+            "ray": {
+                "id": "00c0ffeeabc12345"
+            },
             "request": {
                 "prompt": "Please provide your reason for accessing the application.",
                 "response": "I need to access the application for work purposes."
@@ -247,19 +252,24 @@ An example event for `access_request` looks as following:
                     "approver2@example.com"
                 ],
                 "duration": 7200
+            },
+            "timestamp": "2023-05-23T17:18:33.000Z",
+            "user": {
+                "email": "user@example.com",
+                "id": "166befbb-00e3-5e20-bd6e-27245333949f"
             }
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.access_request",
-        "namespace": "33755",
+        "namespace": "60239",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "57b2b3df-7f1f-49a9-8b35-90731f9b1b4e",
+        "id": "b7ff516b-300e-4aa7-9b17-86fb55c9b5c3",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -271,32 +281,16 @@ An example event for `access_request` looks as following:
         ],
         "dataset": "cloudflare_logpush.access_request",
         "id": "00c0ffeeabc12345",
-        "ingested": "2025-12-12T07:31:27Z",
+        "ingested": "2026-05-11T12:48:12Z",
         "kind": "event",
+        "original": "{\"Action\":\"login\",\"Allowed\":true,\"AppDomain\":\"partner-zt-logs.cloudflareaccess.com/warp\",\"AppUUID\":\"123e4567-e89b-12d3-a456-426614174000\",\"Connection\":\"onetimepin\",\"Country\":\"us\",\"CreatedAt\":1684862313000000000,\"Email\":\"user@example.com\",\"IPAddress\":\"67.43.156.93\",\"PurposeJustificationPrompt\":\"Please provide your reason for accessing the application.\",\"PurposeJustificationResponse\":\"I need to access the application for work purposes.\",\"RayID\":\"00c0ffeeabc12345\",\"TemporaryAccessApprovers\":[\"approver1@example.com\",\"approver2@example.com\"],\"TemporaryAccessDuration\":7200,\"UserUID\":\"166befbb-00e3-5e20-bd6e-27245333949f\"}",
         "type": [
             "access",
             "allowed"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "access_request.log"
-            }
-        }
-    },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/access_request.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
         "ip": [
@@ -310,6 +304,8 @@ An example event for `access_request` looks as following:
         ]
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-access_request"
     ],
@@ -327,14 +323,13 @@ An example event for `access_request` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.access_request.action | What type of record is this. login | logout. | keyword |
 | cloudflare_logpush.access_request.allowed | If request was allowed or denied. | boolean |
 | cloudflare_logpush.access_request.app.domain | The domain of the Application that Access is protecting. | keyword |
@@ -350,18 +345,15 @@ An example event for `access_request` looks as following:
 | cloudflare_logpush.access_request.timestamp | The date and time the corresponding access request was made. | date |
 | cloudflare_logpush.access_request.user.email | Email of the user who logged in. | keyword |
 | cloudflare_logpush.access_request.user.id | The uid of the user who logged in. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -380,20 +372,26 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-30T20:19:48.000Z",
     "agent": {
-        "ephemeral_id": "f6aa0050-d066-4e9f-ad0e-44e29655cb0a",
-        "id": "c88b6a8a-5b51-4f19-9386-d141ad8d5fd7",
-        "name": "elastic-agent-42667",
+        "ephemeral_id": "7caa446a-60b4-42bd-a8be-01eab6c59082",
+        "id": "c5ea9366-b921-478c-88a3-2d6437c654b2",
+        "name": "elastic-agent-70377",
         "type": "filebeat",
         "version": "8.17.1"
     },
-    "cloud": {
-        "provider": "google cloud"
-    },
     "cloudflare_logpush": {
         "audit": {
+            "action": {
+                "result": "success",
+                "type": "token_create"
+            },
             "actor": {
+                "email": "user@example.com",
+                "id": "enl3j9du8rnx2swwd9l32qots7l54t9s",
+                "ip": "81.2.69.142",
                 "type": "user"
             },
+            "id": "73fd39ed-5aab-4a2a-b93c-c9a4abf0c425",
+            "interface": "UI",
             "metadata": {
                 "token_name": "test",
                 "token_tag": "b7261c49a793a82678d12285f0bc1401"
@@ -412,19 +410,20 @@ An example event for `audit` looks as following:
             "resource": {
                 "id": "enl3j9du8rnx2swwd9l32qots7l54t9s",
                 "type": "account"
-            }
+            },
+            "timestamp": "2021-11-30T20:19:48.000Z"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.audit",
-        "namespace": "27343",
+        "namespace": "70305",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "c88b6a8a-5b51-4f19-9386-d141ad8d5fd7",
+        "id": "c5ea9366-b921-478c-88a3-2d6437c654b2",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -436,46 +435,33 @@ An example event for `audit` looks as following:
         ],
         "dataset": "cloudflare_logpush.audit",
         "id": "73fd39ed-5aab-4a2a-b93c-c9a4abf0c425",
-        "ingested": "2025-12-12T07:37:27Z",
+        "ingested": "2026-05-18T06:36:56Z",
         "kind": "event",
+        "original": "{\"ActionResult\":true,\"ActionType\":\"token_create\",\"ActorEmail\":\"user@example.com\",\"ActorID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ActorIP\":\"81.2.69.142\",\"ActorType\":\"user\",\"ID\":\"73fd39ed-5aab-4a2a-b93c-c9a4abf0c425\",\"Interface\":\"UI\",\"Metadata\":{\"token_name\":\"test\",\"token_tag\":\"b7261c49a793a82678d12285f0bc1401\"},\"NewValue\":{\"key1\":\"value1\",\"key2\":\"value2\"},\"OldValue\":{\"key3\":\"value4\",\"key4\":\"value4\"},\"OwnerID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ResourceID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ResourceType\":\"account\",\"When\":\"2021-11-30T20:19:48Z\"}",
         "outcome": "success",
         "provider": "UI",
         "type": [
             "info"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "audit.log"
-            }
-        }
-    },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/audit.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
         "ip": [
             "81.2.69.142"
         ],
         "user": [
-            "enl3j9du8rnx2swwd9l32qots7l54t9s"
+            "enl3j9du8rnx2swwd9l32qots7l54t9s",
+            "user@example.com"
         ]
     },
     "source": {
         "ip": "81.2.69.142"
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-audit"
     ],
@@ -490,14 +476,13 @@ An example event for `audit` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.audit.action.result | Whether the action was successful. | keyword |
 | cloudflare_logpush.audit.action.type | Type of action taken. | keyword |
 | cloudflare_logpush.audit.actor.email | Email of the actor. | keyword |
@@ -513,18 +498,15 @@ An example event for `audit` looks as following:
 | cloudflare_logpush.audit.resource.id | Unique identifier of the resource within Cloudflare system. | keyword |
 | cloudflare_logpush.audit.resource.type | The type of resource that was changed. | keyword |
 | cloudflare_logpush.audit.timestamp | When the change happened. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -542,14 +524,11 @@ An example event for `casb` looks as following:
 {
     "@timestamp": "2023-05-16T10:00:00.000Z",
     "agent": {
-        "ephemeral_id": "941f6da3-676d-466a-817c-3d2b60cb0da8",
-        "id": "082d25a2-4d08-4619-9273-1bbf8ecda1ac",
-        "name": "elastic-agent-85424",
+        "ephemeral_id": "9565fcd4-e907-4a0c-a16c-3607fde347e3",
+        "id": "c7197566-06bc-44aa-884f-c2e78db6d462",
+        "name": "elastic-agent-22768",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "casb": {
@@ -604,31 +583,35 @@ An example event for `casb` looks as following:
                         "url": "/services/data/userID"
                     }
                 },
-                "name": "John Doe"
+                "name": "John Doe",
+                "url": "https://example.com/resource"
             },
             "finding": {
+                "id": "6b187be4-2dd5-42c5-a37b-111111111111",
                 "type": {
                     "id": "a2790c4f-03f5-449f-b209-5f4447f417aa",
-                    "name": "Salesforce User Sending Email with Different Email Address"
+                    "name": "Salesforce User Sending Email with Different Email Address",
+                    "severity": "Medium"
                 }
             },
             "integration": {
                 "id": "c772678d-5cf1-4c73-bf3f-111111111111",
                 "name": "Salesforce Testing",
                 "policy_vendor": "Salesforce Connection"
-            }
+            },
+            "timestamp": "2023-05-16T10:00:00.000Z"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.casb",
-        "namespace": "79671",
+        "namespace": "37356",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "082d25a2-4d08-4619-9273-1bbf8ecda1ac",
+        "id": "c7197566-06bc-44aa-884f-c2e78db6d462",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -639,34 +622,20 @@ An example event for `casb` looks as following:
         ],
         "dataset": "cloudflare_logpush.casb",
         "id": "6b187be4-2dd5-42c5-a37b-111111111111",
-        "ingested": "2025-12-12T11:49:37Z",
+        "ingested": "2026-05-21T11:22:13Z",
         "kind": "event",
-        "severity": 2,
+        "original": "{\"AssetDisplayName\":\"John Doe\",\"AssetExternalID\":\"0051N000004mG2LAAA\",\"AssetLink\":\"https://example.com/resource\",\"AssetMetadata\":{\"AccountId\":null,\"Address\":{\"city\":\"Singapore\",\"country\":\"Singapore\",\"countryCode\":\"SG\",\"geocodeAccuracy\":null,\"latitude\":null,\"longitude\":null,\"postalCode\":null,\"state\":null,\"stateCode\":null,\"street\":null},\"Alias\":\"JDoe\",\"BadgeText\":\"\",\"BannerPhotoUrl\":\"/profilephoto/001\",\"CallCenterId\":null,\"CommunityNickname\":\"Doe.John\",\"CompanyName\":\"MyCompany\",\"ContactId\":null,\"DefaultGroupNotificationFrequency\":\"N\",\"Department\":\"521\",\"DigestFrequency\":\"D\",\"Division\":null,\"Email\":\"user@example.com\",\"EmailEncodingKey\":\"UTF-8\",\"EmailPreferencesAutoBcc\":true,\"EmployeeNumber\":\"18124\",\"Extension\":null,\"Fax\":null,\"FederationIdentifier\":null,\"FirstName\":\"John\",\"ForecastEnabled\":false,\"FullPhotoUrl\":\"https://photos.com/profilephoto/001\",\"Id\":\"0051N000004mG2LAAA\",\"IsActive\":false,\"IsProfilePhotoActive\":false,\"LanguageLocaleKey\":\"en_US\",\"LastLoginDate\":\"2021-10-06T06:32:09.000+0000\",\"LastName\":\"Doe\",\"LastReferencedDate\":null,\"LastViewedDate\":null,\"LocaleSidKey\":\"en_SG\",\"MediumBannerPhotoUrl\":\"/profilephoto/001/E\",\"MobilePhone\":null,\"Name\":\"John Doe\",\"OfflineTrialExpirationDate\":null,\"Phone\":\"+3460000000\",\"ReceivesAdminInfoEmails\":true,\"ReceivesInfoEmails\":true,\"SenderEmail\":\"sender@example.com\",\"SenderName\":null,\"Signature\":null,\"SmallBannerPhotoUrl\":\"/profilephoto/001/D\",\"SmallPhotoUrl\":\"https://photos.com/photo/001\",\"TimeZoneSidKey\":\"Asia/Singapore\",\"Title\":\"Customer Solutions Engineer\",\"UserPermissionsCallCenterAutoLogin\":false,\"UserPermissionsInteractionUser\":true,\"UserPermissionsMarketingUser\":false,\"UserPermissionsOfflineUser\":false,\"UserPermissionsSupportUser\":false,\"UserRoleId\":\"00E2G000001E\",\"UserType\":\"Standard\",\"attributes\":{\"type\":\"User\",\"url\":\"/services/data/userID\"}},\"DetectedTimestamp\":\"2023-05-16T10:00:00Z\",\"FindingTypeDisplayName\":\"Salesforce User Sending Email with Different Email Address\",\"FindingTypeID\":\"a2790c4f-03f5-449f-b209-5f4447f417aa\",\"FindingTypeSeverity\":\"Medium\",\"InstanceID\":\"6b187be4-2dd5-42c5-a37b-111111111111\",\"IntegrationDisplayName\":\"Salesforce Testing\",\"IntegrationID\":\"c772678d-5cf1-4c73-bf3f-111111111111\",\"IntegrationPolicyVendor\":\"Salesforce Connection\"}",
+        "severity": 47,
         "type": [
             "access"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "casb.log"
-            }
-        }
-    },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/casb.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-casb"
     ],
@@ -683,14 +652,13 @@ An example event for `casb` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.casb.asset.id | Unique identifier for an asset of this type. Format will vary by policy vendor. | keyword |
 | cloudflare_logpush.casb.asset.metadata | Metadata associated with the asset. Structure will vary by policy vendor. | flattened |
 | cloudflare_logpush.casb.asset.name | Asset display name. | keyword |
@@ -703,18 +671,15 @@ An example event for `casb` looks as following:
 | cloudflare_logpush.casb.integration.name | Human-readable name of the integration. | keyword |
 | cloudflare_logpush.casb.integration.policy_vendor | Human-readable vendor name of the integration´s policy. | keyword |
 | cloudflare_logpush.casb.timestamp | Date and time the finding was first identified. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -732,25 +697,11 @@ An example event for `device_posture` looks as following:
 {
     "@timestamp": "2023-05-17T12:00:00.000Z",
     "agent": {
-        "ephemeral_id": "edffd861-c70c-4011-9b8e-4bb37d718964",
-        "id": "c1433c6f-9bf4-4f42-b22e-10ef701c8969",
-        "name": "elastic-agent-95387",
+        "ephemeral_id": "a37046a3-9b2f-4b9d-916d-28fc59e71dee",
+        "id": "99140cdd-ebf8-451d-bda0-e3e77001b75b",
+        "name": "elastic-agent-57256",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "aws": {
-        "s3": {
-            "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-device-posture-bucket-31257",
-                "name": "elastic-package-device-posture-bucket-31257"
-            },
-            "object": {
-                "key": "test-device-posture.log"
-            }
-        }
-    },
-    "cloud": {
-        "region": "us-east-1"
     },
     "cloudflare_logpush": {
         "device_posture": {
@@ -770,22 +721,48 @@ An example event for `device_posture` looks as following:
                 "result": true
             },
             "host": {
+                "id": "083a8354-d56c-11ed-9771-111111111",
                 "manufacturer": "Google Compute Engine",
                 "model": "Google Compute Engine",
+                "name": "zt-test-vm1",
+                "os": {
+                    "family": "linux",
+                    "version": "5.15.0"
+                },
                 "serial": "GoogleCloud-ABCD1234567890"
-            }
+            },
+            "rule": {
+                "category": "os_version",
+                "id": "policy-abcdefgh",
+                "name": "Ubuntu"
+            },
+            "timestamp": "2023-05-17T12:00:00.000Z",
+            "user": {
+                "email": "user@example.com",
+                "id": "user-abcdefgh"
+            },
+            "version": "2023.3.258"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.device_posture",
-        "namespace": "33464",
+        "namespace": "78609",
         "type": "logs"
     },
+    "device": {
+        "id": "083a8354-d56c-11ed-9771-111111111",
+        "manufacturer": "Google Compute Engine",
+        "model": {
+            "name": "Google Compute Engine"
+        },
+        "serial_number": "GoogleCloud-ABCD1234567890",
+        "type": "linux"
+    },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "c1433c6f-9bf4-4f42-b22e-10ef701c8969",
+        "id": "99140cdd-ebf8-451d-bda0-e3e77001b75b",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -795,9 +772,9 @@ An example event for `device_posture` looks as following:
             "host"
         ],
         "dataset": "cloudflare_logpush.device_posture",
-        "ingested": "2025-12-12T08:15:20Z",
+        "ingested": "2026-05-18T06:37:57Z",
         "kind": "event",
-        "original": "{\"ClientVersion\":\"2023.3.258\",\"DeviceID\":\"083a8354-d56c-11ed-9771-111111111\",\"DeviceManufacturer\":\"Google Compute Engine\",\"DeviceModel\":\"Google Compute Engine\",\"DeviceName\":\"zt-test-vm1\",\"DeviceSerialNumber\":\"GoogleCloud-ABCD1234567890\",\"DeviceType\":\"linux\",\"Email\":\"user@example.com\",\"OSVersion\":\"5.15.0\",\"PolicyID\":\"policy-abcdefgh\",\"PostureCheckName\":\"Ubuntu\",\"PostureCheckType\":\"os_version\",\"PostureEvaluatedResult\":true,\"PostureExpectedJSON\":{\"version\":\"5.15.0-1025-gcp\",\"operator\":\"==\",\"os_distro_name\":\"ubuntu\",\"os_distro_revision\":\"20.04\"},\"PostureReceivedJSON\":{\"version\":\"5.15.0-1025-gcp\",\"operator\":\"==\",\"os_distro_name\":\"ubuntu\",\"os_distro_revision\":\"20.04\"},\"Timestamp\":\"2023-05-17T12:00:00Z\",\"UserUID\":\"user-abcdefgh\"}",
+        "original": "{\"ClientVersion\":\"2023.3.258\",\"DeviceID\":\"083a8354-d56c-11ed-9771-111111111\",\"DeviceManufacturer\":\"Google Compute Engine\",\"DeviceModel\":\"Google Compute Engine\",\"DeviceName\":\"zt-test-vm1\",\"DeviceSerialNumber\":\"GoogleCloud-ABCD1234567890\",\"DeviceType\":\"linux\",\"Email\":\"user@example.com\",\"OSVersion\":\"5.15.0\",\"PolicyID\":\"policy-abcdefgh\",\"PostureCheckName\":\"Ubuntu\",\"PostureCheckType\":\"os_version\",\"PostureEvaluatedResult\":true,\"PostureExpectedJSON\":{\"operator\":\"==\",\"os_distro_name\":\"ubuntu\",\"os_distro_revision\":\"20.04\",\"version\":\"5.15.0-1025-gcp\"},\"PostureReceivedJSON\":{\"operator\":\"==\",\"os_distro_name\":\"ubuntu\",\"os_distro_revision\":\"20.04\",\"version\":\"5.15.0-1025-gcp\"},\"Timestamp\":\"2023-05-17T12:00:00Z\",\"UserUID\":\"user-abcdefgh\"}",
         "outcome": "success",
         "type": [
             "info"
@@ -812,13 +789,7 @@ An example event for `device_posture` looks as following:
         }
     },
     "input": {
-        "type": "aws-s3"
-    },
-    "log": {
-        "file": {
-            "path": "https://elastic-package-device-posture-bucket-31257.s3.us-east-1.amazonaws.com/test-device-posture.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
         "hosts": [
@@ -836,8 +807,8 @@ An example event for `device_posture` looks as following:
         "name": "Ubuntu"
     },
     "tags": [
-        "collect_sqs_logs",
         "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-device_posture"
     ],
@@ -855,14 +826,13 @@ An example event for `device_posture` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.device_posture.eval.expected | JSON object of what the posture check expects from the Zero Trust client. | flattened |
 | cloudflare_logpush.device_posture.eval.received | JSON object of what the Zero Trust client actually uploads. | flattened |
 | cloudflare_logpush.device_posture.eval.result | Whether this posture upload passes the associated posture check, given the requirements posture check at the time of the timestamp. | boolean |
@@ -873,6 +843,7 @@ An example event for `device_posture` looks as following:
 | cloudflare_logpush.device_posture.host.os.family | The Zero Trust client operating system type. | keyword |
 | cloudflare_logpush.device_posture.host.os.version | The operating system version at the time of upload. | keyword |
 | cloudflare_logpush.device_posture.host.serial | The serial number of the device that the Zero Trust client is running on. | keyword |
+| cloudflare_logpush.device_posture.registration_id | The UUID of the device registration associated with this posture result. | keyword |
 | cloudflare_logpush.device_posture.rule.category | The type of the Zero Trust client check or service provider check. | keyword |
 | cloudflare_logpush.device_posture.rule.id | The posture check ID associated with this device posture result. | keyword |
 | cloudflare_logpush.device_posture.rule.name | The name of the posture check associated with this device posture result. | keyword |
@@ -880,18 +851,15 @@ An example event for `device_posture` looks as following:
 | cloudflare_logpush.device_posture.user.email | The email used to register the device with the Zero Trust client. | keyword |
 | cloudflare_logpush.device_posture.user.id | The uid of the user who registered the device. | keyword |
 | cloudflare_logpush.device_posture.version | The Zero Trust client version at the time of upload. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -909,25 +877,11 @@ An example event for `dlp_forensic_copies` looks as following:
 {
     "@timestamp": "2023-05-04T11:29:14.000Z",
     "agent": {
-        "ephemeral_id": "ac5a4097-8089-4aaa-86b6-7a2807d34abf",
-        "id": "f5cd4a36-a09b-49fe-8b0c-0148d4e98428",
-        "name": "elastic-agent-81829",
+        "ephemeral_id": "46d0e042-e386-4309-83fe-f22fa8cef397",
+        "id": "57444465-a0cd-4b2f-a7c9-af783ce1a161",
+        "name": "elastic-agent-22795",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "aws": {
-        "s3": {
-            "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-dlp-forensic-copies-bucket-19014",
-                "name": "elastic-package-dlp-forensic-copies-bucket-19014"
-            },
-            "object": {
-                "key": "test-dlp-forensic-copies.log"
-            }
-        }
-    },
-    "cloud": {
-        "region": "us-east-1"
     },
     "cloudflare_logpush": {
         "dlp_forensic_copies": {
@@ -946,14 +900,14 @@ An example event for `dlp_forensic_copies` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.dlp_forensic_copies",
-        "namespace": "64194",
+        "namespace": "20200",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "f5cd4a36-a09b-49fe-8b0c-0148d4e98428",
+        "id": "57444465-a0cd-4b2f-a7c9-af783ce1a161",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -963,28 +917,22 @@ An example event for `dlp_forensic_copies` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.dlp_forensic_copies",
-        "ingested": "2025-12-12T08:39:29Z",
+        "ingested": "2026-04-29T02:52:34Z",
         "kind": "event",
-        "original": "{\"AccountID\":\"acc-id\",\"ForensicCopyID\":\"copy-id\",\"GatewayRequestID\":\"req-id\",\"Payload\":\"Tm90aGluZyB0byBzZWUgaGVyZS4gTW92ZSBhbG9uZy4K\",\"Phase\":\"request\",\"TriggeredRuleID\":\"9\",\"Datetime\":\"2023-05-04T11:29:14Z\",\"Headers\":{\"key1\":\"val1\",\"key2\":\"val2\"}}",
+        "original": "{\"AccountID\":\"acc-id\",\"Datetime\":\"2023-05-04T11:29:14Z\",\"ForensicCopyID\":\"copy-id\",\"GatewayRequestID\":\"req-id\",\"Headers\":{\"key1\":\"val1\",\"key2\":\"val2\"},\"Payload\":\"Tm90aGluZyB0byBzZWUgaGVyZS4gTW92ZSBhbG9uZy4K\",\"Phase\":\"request\",\"TriggeredRuleID\":\"9\"}",
         "type": [
             "info"
         ]
     },
     "input": {
-        "type": "aws-s3"
-    },
-    "log": {
-        "file": {
-            "path": "https://elastic-package-dlp-forensic-copies-bucket-19014.s3.us-east-1.amazonaws.com/test-dlp-forensic-copies.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "rule": {
         "id": "9"
     },
     "tags": [
-        "collect_sqs_logs",
         "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-dlp_forensic_copies"
     ]
@@ -995,14 +943,13 @@ An example event for `dlp_forensic_copies` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.dlp_forensic_copies.account_id | Cloudflare account ID. | keyword |
 | cloudflare_logpush.dlp_forensic_copies.datetime | The date and time the corresponding HTTP request was made. | date |
 | cloudflare_logpush.dlp_forensic_copies.forensic_copy_id | The unique ID for this particular forensic copy. | keyword |
@@ -1011,18 +958,15 @@ An example event for `dlp_forensic_copies` looks as following:
 | cloudflare_logpush.dlp_forensic_copies.payload | Captured request/response data, base64-encoded. | keyword |
 | cloudflare_logpush.dlp_forensic_copies.phase | Phase of the HTTP request this forensic copy was captured from (i.e. "request" or "response"). | keyword |
 | cloudflare_logpush.dlp_forensic_copies.triggered_rule_id | The ID of the Gateway firewall rule that triggered this forensic copy. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -1040,14 +984,11 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2022-05-26T09:23:54.000Z",
     "agent": {
-        "ephemeral_id": "28ac7554-1d13-49b2-a05e-c28fff86aed2",
-        "id": "90e30034-7fa9-4654-9018-4c3f3605c19e",
-        "name": "elastic-agent-61553",
+        "ephemeral_id": "333c9617-e828-4159-9f0c-85495de4f5a0",
+        "id": "c0c3eba6-e72e-4926-b2f7-27938eb1df85",
+        "name": "elastic-agent-24362",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "dns": {
@@ -1059,29 +1000,35 @@ An example event for `dns` looks as following:
                 "subnet_length": 0
             },
             "query": {
+                "name": "example.com",
                 "type": 65535
             },
             "response": {
                 "cached": false,
                 "code": 0
-            }
+            },
+            "source": {
+                "ip": "175.16.199.0"
+            },
+            "timestamp": "2022-05-26T09:23:54.000Z"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.dns",
-        "namespace": "24004",
+        "namespace": "34585",
         "type": "logs"
     },
     "dns": {
         "question": {
             "name": "example.com"
-        }
+        },
+        "response_code": "NoError"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "90e30034-7fa9-4654-9018-4c3f3605c19e",
+        "id": "c0c3eba6-e72e-4926-b2f7-27938eb1df85",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -1091,33 +1038,20 @@ An example event for `dns` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.dns",
-        "ingested": "2025-12-12T08:46:14Z",
+        "ingested": "2026-05-18T06:39:07Z",
         "kind": "event",
+        "original": "{\"ColoCode\":\"MRS\",\"EDNSSubnet\":\"1.128.0.0\",\"EDNSSubnetLength\":0,\"QueryName\":\"example.com\",\"QueryType\":65535,\"ResponseCached\":false,\"ResponseCode\":0,\"SourceIP\":\"175.16.199.0\",\"Timestamp\":\"2022-05-26T09:23:54Z\"}",
         "type": [
             "info"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "dns.log"
-            }
-        }
-    },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/dns.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
+        "hosts": [
+            "example.com"
+        ],
         "ip": [
             "175.16.199.0",
             "1.128.0.0"
@@ -1127,6 +1061,8 @@ An example event for `dns` looks as following:
         "ip": "175.16.199.0"
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-dns"
     ]
@@ -1137,14 +1073,13 @@ An example event for `dns` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.dns.colo.code | IATA airport code of data center that received the request. | keyword |
 | cloudflare_logpush.dns.edns.subnet | EDNS Client Subnet (IPv4 or IPv6). | ip |
 | cloudflare_logpush.dns.edns.subnet_length | EDNS Client Subnet length. | long |
@@ -1154,18 +1089,15 @@ An example event for `dns` looks as following:
 | cloudflare_logpush.dns.response.code | Integer value of response code. | long |
 | cloudflare_logpush.dns.source.ip | IP address of the client (IPv4 or IPv6). | ip |
 | cloudflare_logpush.dns.timestamp | Timestamp at which the query occurred. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -1183,14 +1115,11 @@ An example event for `dns_firewall` looks as following:
 {
     "@timestamp": "2023-09-19T12:30:00.000Z",
     "agent": {
-        "ephemeral_id": "2f6c2025-b827-4b56-b9d7-5515c0e8ec22",
-        "id": "9cf56aad-c149-4ec4-b610-b508a6f3812d",
-        "name": "elastic-agent-80366",
+        "ephemeral_id": "fa7a10f7-96fa-404a-8d48-d6ddb776760c",
+        "id": "3d1bd14d-4ca0-4b54-b00e-9ca8f7110ea9",
+        "name": "elastic-agent-21286",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "dns_firewall": {
@@ -1204,6 +1133,7 @@ An example event for `dns_firewall` looks as following:
             },
             "question": {
                 "dnssec_ok": true,
+                "name": "example.com",
                 "recursion_desired": true,
                 "size": 60,
                 "tcp": false,
@@ -1211,8 +1141,13 @@ An example event for `dns_firewall` looks as following:
             },
             "response": {
                 "cached": true,
-                "cached_stale": false
+                "cached_stale": false,
+                "code": "0"
             },
+            "source": {
+                "ip": "67.43.156.2"
+            },
+            "timestamp": "2023-09-19T12:30:00.000Z",
             "upstream": {
                 "ip": "81.2.69.144",
                 "response_code": "0",
@@ -1222,20 +1157,36 @@ An example event for `dns_firewall` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.dns_firewall",
-        "namespace": "97058",
+        "namespace": "24235",
         "type": "logs"
+    },
+    "destination": {
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "81.2.69.144"
     },
     "dns": {
         "question": {
-            "name": "example.com"
+            "name": "example.com",
+            "type": "A"
         },
         "response_code": "0"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "9cf56aad-c149-4ec4-b610-b508a6f3812d",
+        "id": "3d1bd14d-4ca0-4b54-b00e-9ca8f7110ea9",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -1245,31 +1196,15 @@ An example event for `dns_firewall` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.dns_firewall",
-        "ingested": "2025-12-12T08:52:06Z",
+        "ingested": "2026-05-18T06:40:14Z",
         "kind": "event",
+        "original": "{\"ClientResponseCode\":0,\"ClusterID\":\"CLUSTER-001\",\"ColoCode\":\"SFO\",\"EDNSSubnet\":\"67.43.156.0\",\"EDNSSubnetLength\":24,\"QueryDO\":true,\"QueryName\":\"example.com\",\"QueryRD\":true,\"QuerySize\":60,\"QueryTCP\":false,\"QueryType\":1,\"ResponseCached\":true,\"ResponseCachedStale\":false,\"SourceIP\":\"67.43.156.2\",\"Timestamp\":\"2023-09-19T12:30:00Z\",\"UpstreamIP\":\"81.2.69.144\",\"UpstreamResponseCode\":0,\"UpstreamResponseTimeMs\":30}",
         "type": [
             "info"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "dns_firewall.log"
-            }
-        }
-    },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/dns_firewall.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "network": {
         "transport": "udp"
@@ -1297,6 +1232,8 @@ An example event for `dns_firewall` looks as following:
         "ip": "67.43.156.2"
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-dns_firewall"
     ]
@@ -1307,14 +1244,13 @@ An example event for `dns_firewall` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.dns_firewall.cluster_id | The ID of the cluster which handled this request. | keyword |
 | cloudflare_logpush.dns_firewall.colo.code | IATA airport code of data center that received the request. | keyword |
 | cloudflare_logpush.dns_firewall.edns.subnet | EDNS Client Subnet (IPv4 or IPv6). | ip |
@@ -1334,18 +1270,15 @@ An example event for `dns_firewall` looks as following:
 | cloudflare_logpush.dns_firewall.upstream.ip | IP of the upstream nameserver (IPv4 or IPv6). | ip |
 | cloudflare_logpush.dns_firewall.upstream.response_code | Response code from the upstream nameserver. | keyword |
 | cloudflare_logpush.dns_firewall.upstream.response_time_ms | Upstream response time in milliseconds. | long |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -1363,14 +1296,11 @@ An example event for `email_security_alerts` looks as following:
 {
     "@timestamp": "2024-08-28T15:32:35.000Z",
     "agent": {
-        "ephemeral_id": "e482a27d-3e24-4212-8a06-620ac597d5af",
-        "id": "7bc49be7-d33e-43a3-bfec-1d4c34fbf105",
-        "name": "elastic-agent-95627",
+        "ephemeral_id": "9fe4a665-f928-4dfa-92c4-780cee1d74f9",
+        "id": "36b125a2-8f42-4f77-b3e7-a7090bcf1c63",
+        "name": "elastic-agent-56850",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "email_security_alerts": {
@@ -1414,6 +1344,7 @@ An example event for `email_security_alerts` looks as following:
             "smtp_envelope_to": [
                 "firstlast+env_to@cloudflare.com"
             ],
+            "smtp_helo_server_ip": "81.2.69.144",
             "smtp_helo_server_ip_as_name": "asn",
             "smtp_helo_server_ip_as_number": "42",
             "smtp_helo_server_ip_geo": "US/NV/Las Vegas",
@@ -1423,22 +1354,61 @@ An example event for `email_security_alerts` looks as following:
                 "CredentialHarvester",
                 "Dropper"
             ],
+            "timestamp": "2024-08-28T15:32:35.000Z",
             "to": "firstlast+to@cloudflare.com",
             "to_name": "First Last (to)"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.email_security_alerts",
-        "namespace": "91726",
+        "namespace": "29526",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "7bc49be7-d33e-43a3-bfec-1d4c34fbf105",
+        "id": "36b125a2-8f42-4f77-b3e7-a7090bcf1c63",
         "snapshot": false,
         "version": "8.17.1"
+    },
+    "email": {
+        "attachments": [
+            {
+                "file": {
+                    "hash": {
+                        "md5": "91f073bd208689ddbd248e8989ecae90",
+                        "sha1": "62b77e14e2c43049c45b5725018e78d0f9986930",
+                        "sha256": "3b57505305e7162141fd898ed87d08f92fc42579b5047495859e56b3275a6c06",
+                        "ssdeep": "McAQ8tPlH25e85Q2OiYpD08NvHmjJ97UfPMO47sekO:uN9M553OiiN/OJ9MM+e3"
+                    },
+                    "mime_type": "application/x-msi",
+                    "name": "attachment.gif"
+                }
+            }
+        ],
+        "cc": {
+            "address": [
+                "firstlast+cc@cloudflare.com"
+            ]
+        },
+        "from": {
+            "address": [
+                "firstlast+from@cloudflare.com"
+            ]
+        },
+        "message_id": "<Message-ID>",
+        "reply_to": {
+            "address": [
+                "firstlast+reply@cloudflare.com"
+            ]
+        },
+        "subject": "innocuous message: please read",
+        "to": {
+            "address": [
+                "firstlast+to@cloudflare.com"
+            ]
+        }
     },
     "event": {
         "agent_id_status": "verified",
@@ -1447,8 +1417,9 @@ An example event for `email_security_alerts` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.email_security_alerts",
-        "ingested": "2025-12-12T08:58:27Z",
+        "ingested": "2026-05-18T07:00:14Z",
         "kind": "alert",
+        "original": "{\"AlertID\":\"4WtWkr6nlBz9sNH-2024-08-28T15:32:35\",\"AlertReasons\":[\"because\",\"said-so\"],\"Attachments\":[{\"ContentTypeComputed\":\"application/x-msi\",\"ContentTypeProvided\":\"image/gif\",\"Decrypted\":true,\"Encrypted\":true,\"Md5\":\"91f073bd208689ddbd248e8989ecae90\",\"Name\":\"attachment.gif\",\"Sha1\":\"62b77e14e2c43049c45b5725018e78d0f9986930\",\"Sha256\":\"3b57505305e7162141fd898ed87d08f92fc42579b5047495859e56b3275a6c06\",\"Ssdeep\":\"McAQ8tPlH25e85Q2OiYpD08NvHmjJ97UfPMO47sekO:uN9M553OiiN/OJ9MM+e3\"}],\"CC\":[\"firstlast+cc@cloudflare.com\"],\"CCName\":[\"First Last (cc)\"],\"FinalDisposition\":\"malicious\",\"From\":\"firstlast+from@cloudflare.com\",\"FromName\":\"First Last (from)\",\"Links\":[\"https://example.com\"],\"MessageDeliveryMode\":\"unset\",\"MessageID\":\"\\u003cMessage-ID\\u003e\",\"Origin\":\"unset\",\"OriginalSender\":\"firstlast+origin@cloudflare.com\",\"ReplyTo\":\"firstlast+reply@cloudflare.com\",\"ReplyToName\":\"First Last (reply)\",\"SMTPEnvelopeFrom\":\"firstlast+env_from@cloudflare.com\",\"SMTPEnvelopeTo\":[\"firstlast+env_to@cloudflare.com\"],\"SMTPHeloServerIP\":\"81.2.69.144\",\"SMTPHeloServerIPAsName\":\"asn\",\"SMTPHeloServerIPAsNumber\":\"42\",\"SMTPHeloServerIPGeo\":\"US/NV/Las Vegas\",\"SMTPHeloServerName\":\"servername\",\"Subject\":\"innocuous message: please read\",\"ThreatCategories\":[\"CredentialHarvester\",\"Dropper\"],\"Timestamp\":\"2024-08-28T15:32:35Z\",\"To\":\"firstlast+to@cloudflare.com\",\"ToName\":\"First Last (to)\"}",
         "type": [
             "info"
         ]
@@ -1465,25 +1436,8 @@ An example event for `email_security_alerts` looks as following:
             "name": "attachment.gif"
         }
     ],
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "email_security_alerts.log"
-            }
-        }
-    },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/email_security_alerts.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
         "hash": [
@@ -1504,6 +1458,9 @@ An example event for `email_security_alerts` looks as following:
             "firstlast+from@cloudflare.com",
             "First Last (from)",
             "firstlast+env_from@cloudflare.com",
+            "firstlast+origin@cloudflare.com",
+            "First Last (reply)",
+            "firstlast+reply@cloudflare.com",
             "firstlast+env_to@cloudflare.com",
             "firstlast+cc@cloudflare.com",
             "First Last (cc)"
@@ -1527,6 +1484,8 @@ An example event for `email_security_alerts` looks as following:
         "ip": "81.2.69.144"
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-email_security_alerts"
     ]
@@ -1537,14 +1496,13 @@ An example event for `email_security_alerts` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.email_security_alerts.alert_id | The canonical ID for an Email Security Alert. | keyword |
 | cloudflare_logpush.email_security_alerts.alert_reasons | Human-readable list of findings which contributed to this message's final disposition. | keyword |
 | cloudflare_logpush.email_security_alerts.attachments.\* | Metadata of attachments contained in this message. | keyword |
@@ -1574,18 +1532,15 @@ An example event for `email_security_alerts` looks as following:
 | cloudflare_logpush.email_security_alerts.timestamp | Start time of message processing. | date |
 | cloudflare_logpush.email_security_alerts.to | Email address portions of the To header provided by the sender. | keyword |
 | cloudflare_logpush.email_security_alerts.to_name | Name portions of the To header provided by the sender. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -1603,32 +1558,22 @@ An example event for `firewall_event` looks as following:
 {
     "@timestamp": "2022-05-31T05:23:43.000Z",
     "agent": {
-        "ephemeral_id": "37b1d591-989b-4113-b104-1f4212137e5a",
-        "id": "c39dd230-1d6b-4fa2-a12b-ae61fb5e7f5f",
-        "name": "elastic-agent-20484",
+        "ephemeral_id": "59ac2e94-d18d-446d-aaca-d5f33b2de2d7",
+        "id": "deb4d2d8-8dff-4e82-8ae3-f917de372242",
+        "name": "elastic-agent-80603",
         "type": "filebeat",
         "version": "8.17.1"
     },
-    "aws": {
-        "s3": {
-            "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-firewall-event-bucket-13780",
-                "name": "elastic-package-firewall-event-bucket-13780"
-            },
-            "object": {
-                "key": "test-firewall-event.log"
-            }
-        }
-    },
-    "cloud": {
-        "region": "us-east-1"
-    },
     "cloudflare_logpush": {
         "firewall_event": {
+            "action": "block",
             "client": {
                 "asn": {
-                    "description": "CLOUDFLARENET"
+                    "description": "CLOUDFLARENET",
+                    "value": 15169
                 },
+                "country": "us",
+                "ip": "175.16.199.0",
                 "ip_class": "searchEngine",
                 "referer": {
                     "host": "abc.example.com",
@@ -1638,6 +1583,7 @@ An example event for `firewall_event` looks as following:
                 },
                 "request": {
                     "host": "xyz.example.com",
+                    "method": "GET",
                     "path": "/abc/checkout",
                     "protocol": "HTTP/1.1",
                     "query": "?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))&timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))",
@@ -1650,6 +1596,9 @@ An example event for `firewall_event` looks as following:
             "edge": {
                 "colo": {
                     "code": "IAD"
+                },
+                "response": {
+                    "status": 403
                 }
             },
             "kind": "firewall",
@@ -1669,19 +1618,23 @@ An example event for `firewall_event` looks as following:
             "ray": {
                 "id": "713d477539b55c29"
             },
-            "source": "firewallrules"
+            "rule": {
+                "id": "7dc666e026974dab84884c73b3e2afe1"
+            },
+            "source": "firewallrules",
+            "timestamp": "2022-05-31T05:23:43.000Z"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.firewall_event",
-        "namespace": "63366",
+        "namespace": "23958",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "c39dd230-1d6b-4fa2-a12b-ae61fb5e7f5f",
+        "id": "deb4d2d8-8dff-4e82-8ae3-f917de372242",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -1693,9 +1646,9 @@ An example event for `firewall_event` looks as following:
         ],
         "dataset": "cloudflare_logpush.firewall_event",
         "id": "713d477539b55c29",
-        "ingested": "2025-12-12T09:03:48Z",
+        "ingested": "2026-05-11T12:52:16Z",
         "kind": "event",
-        "original": "{\"ClientRequestScheme\":\"https\",\"MatchIndex\":1,\"ClientRefererHost\":\"abc.example.com\",\"Source\":\"firewallrules\",\"ClientRequestUserAgent\":\"Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\",\"ClientRefererPath\":\"/abc/checkout\",\"Metadata\":{\"filter\":\"1ced07e066a34abf8b14f2a99593bc8d\",\"type\":\"customer\"},\"EdgeResponseStatus\":403,\"ClientRequestProtocol\":\"HTTP/1.1\",\"OriginatorRayID\":\"00\",\"RayID\":\"713d477539b55c29\",\"ClientRequestMethod\":\"GET\",\"ClientIP\":\"175.16.199.0\",\"ClientRequestPath\":\"/abc/checkout\",\"Action\":\"block\",\"Kind\":\"firewall\",\"RuleID\":\"7dc666e026974dab84884c73b3e2afe1\",\"ClientIPClass\":\"searchEngine\",\"ClientASNDescription\":\"CLOUDFLARENET\",\"ClientCountry\":\"us\",\"ClientRefererQuery\":\"?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))&timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))\",\"ClientRequestQuery\":\"?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))&timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))\",\"OriginResponseStatus\":0,\"EdgeColoCode\":\"IAD\",\"ClientRefererScheme\":\"referer URL scheme\",\"Datetime\":\"2022-05-31T05:23:43Z\",\"ClientRequestHost\":\"xyz.example.com\",\"ClientASN\":15169}",
+        "original": "{\"Action\":\"block\",\"ClientASN\":15169,\"ClientASNDescription\":\"CLOUDFLARENET\",\"ClientCountry\":\"us\",\"ClientIP\":\"175.16.199.0\",\"ClientIPClass\":\"searchEngine\",\"ClientRefererHost\":\"abc.example.com\",\"ClientRefererPath\":\"/abc/checkout\",\"ClientRefererQuery\":\"?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))\\u0026timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))\",\"ClientRefererScheme\":\"referer URL scheme\",\"ClientRequestHost\":\"xyz.example.com\",\"ClientRequestMethod\":\"GET\",\"ClientRequestPath\":\"/abc/checkout\",\"ClientRequestProtocol\":\"HTTP/1.1\",\"ClientRequestQuery\":\"?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))\\u0026timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))\",\"ClientRequestScheme\":\"https\",\"ClientRequestUserAgent\":\"Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\",\"Datetime\":\"2022-05-31T05:23:43Z\",\"EdgeColoCode\":\"IAD\",\"EdgeResponseStatus\":403,\"Kind\":\"firewall\",\"MatchIndex\":1,\"Metadata\":{\"filter\":\"1ced07e066a34abf8b14f2a99593bc8d\",\"type\":\"customer\"},\"OriginResponseStatus\":0,\"OriginatorRayID\":\"00\",\"RayID\":\"713d477539b55c29\",\"RuleID\":\"7dc666e026974dab84884c73b3e2afe1\",\"Source\":\"firewallrules\"}",
         "type": [
             "info"
         ]
@@ -1710,13 +1663,7 @@ An example event for `firewall_event` looks as following:
         "version": "1.1"
     },
     "input": {
-        "type": "aws-s3"
-    },
-    "log": {
-        "file": {
-            "path": "https://elastic-package-firewall-event-bucket-13780.s3.us-east-1.amazonaws.com/test-firewall-event.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "network": {
         "protocol": "http"
@@ -1743,8 +1690,8 @@ An example event for `firewall_event` looks as following:
         "ip": "175.16.199.0"
     },
     "tags": [
-        "collect_sqs_logs",
         "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-firewall_event"
     ],
@@ -1774,14 +1721,13 @@ An example event for `firewall_event` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.firewall_event.action | The code of the first-class action the Cloudflare Firewall took on this request. | keyword |
 | cloudflare_logpush.firewall_event.client.asn.description | The ASN of the visitor as string. | keyword |
 | cloudflare_logpush.firewall_event.client.asn.value | The ASN number of the visitor. | long |
@@ -1804,12 +1750,13 @@ An example event for `firewall_event` looks as following:
 | cloudflare_logpush.firewall_event.content_scan.types | List of content types. | keyword |
 | cloudflare_logpush.firewall_event.edge.colo.code | The airport code of the Cloudflare datacenter that served this request. | keyword |
 | cloudflare_logpush.firewall_event.edge.response.status | HTTP response status code returned to browser. | long |
+| cloudflare_logpush.firewall_event.fraud.user_id | A unique identifier generated by the Fraud Detection system for each user. | keyword |
 | cloudflare_logpush.firewall_event.kind | The kind of event, currently only possible values are. | keyword |
 | cloudflare_logpush.firewall_event.leaked_credential_check | Result of the check for leaked credentials. Possible results are: password_leaked | username_and_password_leaked | username_password_similar | username_leaked | clean. | keyword |
 | cloudflare_logpush.firewall_event.match_index | Rules match index in the chain. | long |
 | cloudflare_logpush.firewall_event.meta_data | Additional product-specific information. | flattened |
-| cloudflare_logpush.firewall_event.origin.ray.id | HTTP origin response status code returned to browser. | keyword |
-| cloudflare_logpush.firewall_event.origin.response.status | The RayID of the request that issued the challenge/jschallenge. | long |
+| cloudflare_logpush.firewall_event.origin.ray.id | The RayID of the request that issued the challenge/jschallenge. | keyword |
+| cloudflare_logpush.firewall_event.origin.response.status | HTTP origin response status code returned to browser. | long |
 | cloudflare_logpush.firewall_event.ray.id | The RayID of the request. | keyword |
 | cloudflare_logpush.firewall_event.ref | The user-defined identifier for the rule triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.rule.description | The Cloudflare security product-specific Description of the rule triggered by this request. | keyword |
@@ -1817,18 +1764,15 @@ An example event for `firewall_event` looks as following:
 | cloudflare_logpush.firewall_event.source | The Cloudflare security product triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.timestamp | The date and time the event occurred at the edge. | date |
 | cloudflare_logpush.firewall_event.zone.name | The human-readable name of the zone. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -1846,21 +1790,40 @@ An example event for `gateway_dns` looks as following:
 {
     "@timestamp": "2023-05-02T22:49:53.000Z",
     "agent": {
-        "ephemeral_id": "4b6b3e0f-122c-4c43-bc90-343c619d6b41",
-        "id": "57130e12-3aa9-4de1-8bab-eed6847b485d",
-        "name": "elastic-agent-76347",
+        "ephemeral_id": "0d5b40c6-2008-4ad0-8cb4-046ba22a95d7",
+        "id": "12640826-2373-4835-8e5e-d8c4f9b93657",
+        "name": "elastic-agent-32400",
         "type": "filebeat",
         "version": "8.17.1"
     },
-    "cloud": {
-        "provider": "google cloud"
-    },
     "cloudflare_logpush": {
         "gateway_dns": {
+            "answers": [
+                {
+                    "data": "CHNlY3VyaXR5BnVidW50dQMjb20AAAEAAQAAAAgABLl9vic=",
+                    "type": "1"
+                },
+                {
+                    "data": "CHNlY3VyaXR5BnVidW50dQNjb20AAAEAABAAAAgABLl9viQ=",
+                    "type": "1"
+                },
+                {
+                    "data": "CHNlT3VyaXR5BnVidW50dQNjb20AAAEAAQAAAAgABFu9Wyc=",
+                    "type": "1"
+                }
+            ],
             "application_id": 0,
             "colo": {
                 "code": "ORD",
                 "id": 14
+            },
+            "destination": {
+                "ip": "89.160.20.129",
+                "port": 443
+            },
+            "host": {
+                "id": "083a8354-d56c-11ed-9771-6a842b111aaa",
+                "name": "zt-test-vm1"
             },
             "location": {
                 "id": "f233bd67-78c7-4050-9aff-ad63cce25732",
@@ -1882,6 +1845,7 @@ An example event for `gateway_dns` looks as following:
                 "id": "1412",
                 "name": "7bdc7a9c-81d3-4816-8e56-de1acad3dec5"
             },
+            "protocol": "https",
             "question": {
                 "category": {
                     "ids": [
@@ -1893,17 +1857,35 @@ An example event for `gateway_dns` looks as following:
                         "Technology"
                     ]
                 },
+                "name": "security.ubuntu.com",
                 "reversed": "com.ubuntu.security",
                 "size": 48,
+                "type": "A",
                 "type_id": 1
             },
+            "resolved_ip": [
+                "67.43.156.1",
+                "67.43.156.2",
+                "67.43.156.3"
+            ],
             "resolver_decision": "allowedOnNoPolicyMatch",
-            "timezone_inferred_method": "fromLocalTime"
+            "response_code": "0",
+            "source": {
+                "ip": "67.43.156.2",
+                "port": 0
+            },
+            "timestamp": "2023-05-02T22:49:53.000Z",
+            "timezone": "UTC",
+            "timezone_inferred_method": "fromLocalTime",
+            "user": {
+                "email": "user@test.com",
+                "id": "166befbb-00e3-5e20-bd6e-27245000000"
+            }
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.gateway_dns",
-        "namespace": "69154",
+        "namespace": "45159",
         "type": "logs"
     },
     "destination": {
@@ -1927,6 +1909,9 @@ An example event for `gateway_dns` looks as following:
         },
         "ip": "89.160.20.129",
         "port": 443
+    },
+    "device": {
+        "id": "083a8354-d56c-11ed-9771-6a842b111aaa"
     },
     "dns": {
         "answers": [
@@ -1955,10 +1940,10 @@ An example event for `gateway_dns` looks as following:
         "response_code": "0"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "57130e12-3aa9-4de1-8bab-eed6847b485d",
+        "id": "12640826-2373-4835-8e5e-d8c4f9b93657",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -1968,37 +1953,21 @@ An example event for `gateway_dns` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.gateway_dns",
-        "ingested": "2025-12-12T09:10:08Z",
+        "ingested": "2026-05-18T06:42:20Z",
         "kind": "event",
+        "original": "{\"ApplicationID\":0,\"ColoCode\":\"ORD\",\"ColoID\":14,\"Datetime\":\"2023-05-02T22:49:53Z\",\"DeviceID\":\"083a8354-d56c-11ed-9771-6a842b111aaa\",\"DeviceName\":\"zt-test-vm1\",\"DstIP\":\"89.160.20.129\",\"DstPort\":443,\"Email\":\"user@test.com\",\"Location\":\"GCP default\",\"LocationID\":\"f233bd67-78c7-4050-9aff-ad63cce25732\",\"MatchedCategoryIDs\":[7,163],\"MatchedCategoryNames\":[\"Photography\",\"Weather\"],\"Policy\":\"7bdc7a9c-81d3-4816-8e56-de1acad3dec5\",\"PolicyID\":\"1412\",\"Protocol\":\"https\",\"QueryCategoryIDs\":[26,155],\"QueryCategoryNames\":[\"Technology\",\"Technology\"],\"QueryName\":\"security.ubuntu.com\",\"QueryNameReversed\":\"com.ubuntu.security\",\"QuerySize\":48,\"QueryType\":1,\"QueryTypeName\":\"A\",\"RCode\":0,\"RData\":[{\"data\":\"CHNlY3VyaXR5BnVidW50dQMjb20AAAEAAQAAAAgABLl9vic=\",\"type\":\"1\"},{\"data\":\"CHNlY3VyaXR5BnVidW50dQNjb20AAAEAABAAAAgABLl9viQ=\",\"type\":\"1\"},{\"data\":\"CHNlT3VyaXR5BnVidW50dQNjb20AAAEAAQAAAAgABFu9Wyc=\",\"type\":\"1\"}],\"ResolvedIPs\":[\"67.43.156.1\",\"67.43.156.2\",\"67.43.156.3\"],\"ResolverDecision\":\"allowedOnNoPolicyMatch\",\"SrcIP\":\"67.43.156.2\",\"SrcPort\":0,\"TimeZone\":\"UTC\",\"TimeZoneInferredMethod\":\"fromLocalTime\",\"UserID\":\"166befbb-00e3-5e20-bd6e-27245000000\"}",
         "outcome": "success",
         "timezone": "UTC",
         "type": [
             "info"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "gateway_dns.log"
-            }
-        }
-    },
     "host": {
         "id": "083a8354-d56c-11ed-9771-6a842b111aaa",
         "name": "zt-test-vm1"
     },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/gateway_dns.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "network": {
         "protocol": "https"
@@ -2006,11 +1975,14 @@ An example event for `gateway_dns` looks as following:
     "related": {
         "hosts": [
             "083a8354-d56c-11ed-9771-6a842b111aaa",
-            "zt-test-vm1"
+            "zt-test-vm1",
+            "security.ubuntu.com"
         ],
         "ip": [
             "67.43.156.2",
-            "89.160.20.129"
+            "89.160.20.129",
+            "67.43.156.1",
+            "67.43.156.3"
         ],
         "user": [
             "166befbb-00e3-5e20-bd6e-27245000000",
@@ -2034,6 +2006,8 @@ An example event for `gateway_dns` looks as following:
         "port": 0
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-gateway_dns"
     ],
@@ -2048,14 +2022,13 @@ An example event for `gateway_dns` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.gateway_dns.account_id | Cloudflare account ID. | keyword |
 | cloudflare_logpush.gateway_dns.answers | The response data objects. | flattened |
 | cloudflare_logpush.gateway_dns.application_id | ID of the application the domain belongs to. | long |
@@ -2069,7 +2042,7 @@ An example event for `gateway_dns` looks as following:
 | cloudflare_logpush.gateway_dns.colo.id | The ID of the colo that received the DNS query. | long |
 | cloudflare_logpush.gateway_dns.custom_resolver.address | IP and port combo used to resolve the custom dns resolver query, if any. | keyword |
 | cloudflare_logpush.gateway_dns.custom_resolver.duration_milli | The time it took for the custom resolver to respond in milliseconds. | long |
-| cloudflare_logpush.gateway_dns.custom_resolver.policy.ids | Custom resolver policy UUID, if matched. | keyword |
+| cloudflare_logpush.gateway_dns.custom_resolver.policy.ids | Custom resolver policy UUIDs, if matched. | keyword |
 | cloudflare_logpush.gateway_dns.custom_resolver.policy.names | Custom resolver policy name, if matched. | keyword |
 | cloudflare_logpush.gateway_dns.custom_resolver.response | Status of the custom resolver response. | keyword |
 | cloudflare_logpush.gateway_dns.destination.ip | The destination IP address the DNS query was made to. | ip |
@@ -2081,6 +2054,12 @@ An example event for `gateway_dns` looks as following:
 | cloudflare_logpush.gateway_dns.host.name | The name of the device where the HTTP request originated from. | keyword |
 | cloudflare_logpush.gateway_dns.initial_category.ids | ID or IDs of category that the queried domains belongs to. | keyword |
 | cloudflare_logpush.gateway_dns.initial_category.names | Name or names of category that the queried domains belongs to. | keyword |
+| cloudflare_logpush.gateway_dns.initial_resolved_ips | The IPs used to correlate existing FQDN matching policy between Gateway DNS and Gateway proxy. | ip |
+| cloudflare_logpush.gateway_dns.internal_dns.duration_ms | The time it took for the internal DNS to respond. | long |
+| cloudflare_logpush.gateway_dns.internal_dns.fallback_strategy | The fallback strategy applied over the internal DNS response. | keyword |
+| cloudflare_logpush.gateway_dns.internal_dns.rcode | The return code sent back by the internal DNS service. | long |
+| cloudflare_logpush.gateway_dns.internal_dns.view_id | The DNS internal view identifier that was sent to the internal DNS service. | keyword |
+| cloudflare_logpush.gateway_dns.internal_dns.zone_id | The DNS zone identifier returned by the internal DNS service. | keyword |
 | cloudflare_logpush.gateway_dns.is_response_cached | Response comes from cache or not. | boolean |
 | cloudflare_logpush.gateway_dns.location.id | UUID of the location the DNS request is coming from. | keyword |
 | cloudflare_logpush.gateway_dns.location.name | Name of the location the DNS request is coming from. | keyword |
@@ -2089,8 +2068,10 @@ An example event for `gateway_dns` looks as following:
 | cloudflare_logpush.gateway_dns.matched.indicator_feed.ids | ID or IDs of indicator feed(s) that the domain was matched with the policy. | keyword |
 | cloudflare_logpush.gateway_dns.matched.indicator_feed.names | Name or names of indicator feed(s) that the domain was matched with the policy. | keyword |
 | cloudflare_logpush.gateway_dns.policy.id | ID of the policy/rule that was applied (if any). | keyword |
-| cloudflare_logpush.gateway_dns.policy.name | Name of the policy that was applied (if any) | keyword |
+| cloudflare_logpush.gateway_dns.policy.name | Name of the policy that was applied (if any). | keyword |
 | cloudflare_logpush.gateway_dns.protocol | The protocol used for the DNS query by the client. | keyword |
+| cloudflare_logpush.gateway_dns.question.application.ids | ID or IDs of applications the queried domain belongs to. | keyword |
+| cloudflare_logpush.gateway_dns.question.application.names | Name or names of applications the queried domain belongs to. | keyword |
 | cloudflare_logpush.gateway_dns.question.category.ids | ID or IDs of category that the domain belongs to. | long |
 | cloudflare_logpush.gateway_dns.question.category.names | Name or names of category that the domain belongs to. | keyword |
 | cloudflare_logpush.gateway_dns.question.id | Globally unique identifier of the query. | keyword |
@@ -2101,13 +2082,17 @@ An example event for `gateway_dns` looks as following:
 | cloudflare_logpush.gateway_dns.question.size | The size of the DNS request in bytes. | long |
 | cloudflare_logpush.gateway_dns.question.type | The type of DNS query. | keyword |
 | cloudflare_logpush.gateway_dns.question.type_id | ID of the type of DNS query. | long |
+| cloudflare_logpush.gateway_dns.redirect_target_uri | Custom URI to which the user was redirected, if any. | keyword |
+| cloudflare_logpush.gateway_dns.registration_id | The UUID of the device registration from which the HTTP request originated. | keyword |
+| cloudflare_logpush.gateway_dns.request_context_category.ids | ID or IDs of the category that was sent to gateway in the EDNS request for filtering. | keyword |
+| cloudflare_logpush.gateway_dns.request_context_category.names | Name or names of the category that was sent to gateway in the EDNS request for filtering. | keyword |
 | cloudflare_logpush.gateway_dns.resolved_ip | The resolved IPs in the response, if any. | ip |
 | cloudflare_logpush.gateway_dns.resolved_ip_details.category.ids | ID or IDs of category that the IPs in the response belongs to. | keyword |
 | cloudflare_logpush.gateway_dns.resolved_ip_details.category.names | Name or names of category that the IPs in the response belongs to. | keyword |
 | cloudflare_logpush.gateway_dns.resolved_ip_details.continent_codes | Continent code of each resolved IP, if any. | keyword |
 | cloudflare_logpush.gateway_dns.resolved_ip_details.country_codes | Country code of each resolved IP, if any. | keyword |
 | cloudflare_logpush.gateway_dns.resolved_ip_details.ips | The resolved IPs in the response, if any. | ip |
-| cloudflare_logpush.gateway_dns.resolver.policy.id | Resolver policy UUID, if any matched. | keyword |
+| cloudflare_logpush.gateway_dns.resolver.policy.ids | Resolver policy UUIDs, if any matched. | keyword |
 | cloudflare_logpush.gateway_dns.resolver.policy.names | Resolver policy name, if any matched. | keyword |
 | cloudflare_logpush.gateway_dns.resolver_decision | Result of the DNS query. | keyword |
 | cloudflare_logpush.gateway_dns.resource_records.json | String that represents the JSON array with the returned resource records. | match_only_text |
@@ -2122,18 +2107,15 @@ An example event for `gateway_dns` looks as following:
 | cloudflare_logpush.gateway_dns.timezone_inferred_method | Method used to pick the time zone for the schedule. | keyword |
 | cloudflare_logpush.gateway_dns.user.email | Email used to authenticate the client. | keyword |
 | cloudflare_logpush.gateway_dns.user.id | User identity where the HTTP request originated from. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -2151,24 +2133,26 @@ An example event for `gateway_http` looks as following:
 {
     "@timestamp": "2023-05-03T20:55:05.000Z",
     "agent": {
-        "ephemeral_id": "48652a2c-a69f-44aa-8c1c-cadb9863f0c9",
-        "id": "48f0311d-16dc-41e5-b2cf-40ae0743d746",
-        "name": "elastic-agent-46882",
+        "ephemeral_id": "a375df4c-195d-4f86-b947-5f5c8a56c199",
+        "id": "c3e9e2f1-198e-4016-96fd-b40d22516ba7",
+        "name": "elastic-agent-91580",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "gateway_http": {
             "account_id": "e1836771179f98aabb828da5ea69a348",
+            "action": "block",
             "blocked_file": {
                 "hash": "91dc1db739a705105e1c763bfdbdaa84c0de8",
                 "name": "downloaded_test",
                 "reason": "malware",
                 "size": 43,
                 "type": "bin"
+            },
+            "destination": {
+                "ip": "89.160.20.129",
+                "port": 443
             },
             "downloaded_files": [
                 "downloaded_file",
@@ -2186,28 +2170,47 @@ An example event for `gateway_http` looks as following:
                     }
                 ]
             },
+            "host": {
+                "id": "083a8354-d56c-11ed-9771-6a842b100cff",
+                "name": "zt-test-vm1"
+            },
             "isolated": false,
             "policy": {
                 "id": "85063bec-74cb-4546-85a3-e0cde2cdfda2",
                 "name": "Block Yahoo"
             },
             "request": {
-                "host": "guce.yahoo.com"
+                "host": "guce.yahoo.com",
+                "method": "GET",
+                "referrer": "https://www.example.com/",
+                "version": "HTTP/2"
             },
             "request_id": "1884fec9b600007fb06a299400000001",
-            "source": {
-                "internal_ip": "192.168.1.123"
+            "response": {
+                "status_code": 302
             },
+            "source": {
+                "internal_ip": "192.168.1.123",
+                "ip": "67.43.156.2",
+                "port": 47924
+            },
+            "timestamp": "2023-05-03T20:55:05.000Z",
             "untrusted_certificate_action": "none",
             "uploaded_files": [
                 "uploaded_file",
                 "uploaded_test"
-            ]
+            ],
+            "url": "https://test.com",
+            "user": {
+                "email": "user@example.com",
+                "id": "166befbb-00e3-5e20-bd6e-27245723949f"
+            },
+            "user_agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) Firefox/112.0"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.gateway_http",
-        "namespace": "27028",
+        "namespace": "98733",
         "type": "logs"
     },
     "destination": {
@@ -2232,11 +2235,14 @@ An example event for `gateway_http` looks as following:
         "ip": "89.160.20.129",
         "port": 443
     },
+    "device": {
+        "id": "083a8354-d56c-11ed-9771-6a842b100cff"
+    },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "48f0311d-16dc-41e5-b2cf-40ae0743d746",
+        "id": "c3e9e2f1-198e-4016-96fd-b40d22516ba7",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -2247,23 +2253,21 @@ An example event for `gateway_http` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.gateway_http",
-        "ingested": "2025-12-12T09:16:06Z",
+        "ingested": "2026-05-18T06:44:52Z",
         "kind": "event",
+        "original": "{\"AccountID\":\"e1836771179f98aabb828da5ea69a348\",\"Action\":\"block\",\"BlockedFileHash\":\"91dc1db739a705105e1c763bfdbdaa84c0de8\",\"BlockedFileName\":\"downloaded_test\",\"BlockedFileReason\":\"malware\",\"BlockedFileSize\":43,\"BlockedFileType\":\"bin\",\"Datetime\":\"2023-05-03T20:55:05Z\",\"DestinationIP\":\"89.160.20.129\",\"DestinationPort\":443,\"DeviceID\":\"083a8354-d56c-11ed-9771-6a842b100cff\",\"DeviceName\":\"zt-test-vm1\",\"DownloadedFileNames\":[\"downloaded_file\",\"downloaded_test\"],\"Email\":\"user@example.com\",\"FileInfo\":{\"files\":[{\"name\":\"downloaded_file\",\"size\":43},{\"name\":\"downloaded_test\",\"size\":341}]},\"HTTPHost\":\"guce.yahoo.com\",\"HTTPMethod\":\"GET\",\"HTTPStatusCode\":302,\"HTTPVersion\":\"HTTP/2\",\"IsIsolated\":false,\"PolicyID\":\"85063bec-74cb-4546-85a3-e0cde2cdfda2\",\"PolicyName\":\"Block Yahoo\",\"Referer\":\"https://www.example.com/\",\"RequestID\":\"1884fec9b600007fb06a299400000001\",\"SourceIP\":\"67.43.156.2\",\"SourceInternalIP\":\"192.168.1.123\",\"SourcePort\":47924,\"URL\":\"https://test.com\",\"UntrustedCertificateAction\":\"none\",\"UploadedFileNames\":[\"uploaded_file\",\"uploaded_test\"],\"UserAgent\":\"Mozilla/5.0 (X11; Ubuntu; Linux x86_64) Firefox/112.0\",\"UserID\":\"166befbb-00e3-5e20-bd6e-27245723949f\"}",
         "type": [
             "info",
             "denied"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "gateway_http.log"
-            }
-        }
+    "file": {
+        "extension": "bin",
+        "hash": {
+            "sha256": "91dc1db739a705105e1c763bfdbdaa84c0de8"
+        },
+        "name": "downloaded_test",
+        "size": 43
     },
     "host": {
         "id": "083a8354-d56c-11ed-9771-6a842b100cff",
@@ -2280,18 +2284,16 @@ An example event for `gateway_http` looks as following:
         "version": "HTTP/2"
     },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/gateway_http.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
+        "hash": [
+            "91dc1db739a705105e1c763bfdbdaa84c0de8"
+        ],
         "hosts": [
             "083a8354-d56c-11ed-9771-6a842b100cff",
-            "zt-test-vm1"
+            "zt-test-vm1",
+            "guce.yahoo.com"
         ],
         "ip": [
             "67.43.156.2",
@@ -2320,6 +2322,8 @@ An example event for `gateway_http` looks as following:
         "port": 47924
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-gateway_http"
     ],
@@ -2342,18 +2346,19 @@ An example event for `gateway_http` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.gateway_http.account_id | Cloudflare account tag. | keyword |
 | cloudflare_logpush.gateway_http.action | Action performed by gateway on the HTTP request. | keyword |
+| cloudflare_logpush.gateway_http.app_control_info | Information about application control operations, APIs, and groups that matched the HTTP request. | flattened |
 | cloudflare_logpush.gateway_http.application.ids | IDs of the applications that matched the session parameters. | keyword |
 | cloudflare_logpush.gateway_http.application.names | Names of the applications that matched the session parameters. | keyword |
+| cloudflare_logpush.gateway_http.application.statuses | Statuses of the applications that matched the HTTP request parameters. | keyword |
 | cloudflare_logpush.gateway_http.blocked_file.hash | Hash of the file blocked in the response, if any. | keyword |
 | cloudflare_logpush.gateway_http.blocked_file.name | File name blocked in the request, if any. | keyword |
 | cloudflare_logpush.gateway_http.blocked_file.reason | Reason file was blocked in the response, if any. | keyword |
@@ -2378,6 +2383,8 @@ An example event for `gateway_http` looks as following:
 | cloudflare_logpush.gateway_http.private_app_aud | The private app AUD, if any. | keyword |
 | cloudflare_logpush.gateway_http.proxy_endpoint | The proxy endpoint used on this network session, if any. | keyword |
 | cloudflare_logpush.gateway_http.quarantined | If the request content was quarantined. | keyword |
+| cloudflare_logpush.gateway_http.redirect_target_uri | Custom URI to which the user was redirected, if any. | keyword |
+| cloudflare_logpush.gateway_http.registration_id | The UUID of the device registration from which the HTTP request originated. | keyword |
 | cloudflare_logpush.gateway_http.request.host | Content of the host header in the HTTP request. | keyword |
 | cloudflare_logpush.gateway_http.request.method | HTTP request method. | keyword |
 | cloudflare_logpush.gateway_http.request.referrer | Contents of the referer header in the HTTP request. | keyword |
@@ -2401,18 +2408,15 @@ An example event for `gateway_http` looks as following:
 | cloudflare_logpush.gateway_http.user_agent | Contents of the user agent header in the HTTP request. | keyword |
 | cloudflare_logpush.gateway_http.virtual_network.id | The identifier of the virtual network the device was connected to, if any. | keyword |
 | cloudflare_logpush.gateway_http.virtual_network.name | The name of the virtual network the device was connected to, if any. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -2430,18 +2434,24 @@ An example event for `gateway_network` looks as following:
 {
     "@timestamp": "2023-05-18T21:12:57.058Z",
     "agent": {
-        "ephemeral_id": "e97e2537-55fc-411f-9d94-ee80a16b9840",
-        "id": "b7375e7f-8998-462f-8a35-45412fd644da",
-        "name": "elastic-agent-36424",
+        "ephemeral_id": "bb2bfd1b-c4db-449d-862d-aef156d1e223",
+        "id": "e7be4f6c-e802-4720-9ae6-04ba68f633d6",
+        "name": "elastic-agent-69794",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "gateway_network": {
             "account_id": "e1836771179f98aabb828da5ea69a111",
+            "action": "allowedOnNoRuleMatch",
+            "destination": {
+                "ip": "89.160.20.129",
+                "port": 443
+            },
+            "host": {
+                "id": "083a8354-d56c-11ed-9771-6a842b100cff",
+                "name": "zt-test-vm1"
+            },
             "override": {
                 "ip": "175.16.199.4",
                 "port": 8080
@@ -2450,14 +2460,24 @@ An example event for `gateway_network` looks as following:
                 "id": "85063bec-74cb-4546-85a3-e0cde2cdfda2",
                 "name": "My policy"
             },
+            "session_id": "5f2d04be-3512-11e8-b467-0ed5f89f718b",
+            "sni": "www.elastic.co",
             "source": {
-                "internal_ip": "192.168.1.3"
+                "internal_ip": "192.168.1.3",
+                "ip": "67.43.156.2",
+                "port": 47924
+            },
+            "timestamp": "2023-05-18T21:12:57.058Z",
+            "transport": "tcp",
+            "user": {
+                "email": "user@test.com",
+                "id": "166befbb-00e3-5e20-bd6e-27245723949f"
             }
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.gateway_network",
-        "namespace": "25906",
+        "namespace": "92706",
         "type": "logs"
     },
     "destination": {
@@ -2483,11 +2503,14 @@ An example event for `gateway_network` looks as following:
         "ip": "89.160.20.129",
         "port": 443
     },
+    "device": {
+        "id": "083a8354-d56c-11ed-9771-6a842b100cff"
+    },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "b7375e7f-8998-462f-8a35-45412fd644da",
+        "id": "e7be4f6c-e802-4720-9ae6-04ba68f633d6",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -2499,35 +2522,19 @@ An example event for `gateway_network` looks as following:
         ],
         "dataset": "cloudflare_logpush.gateway_network",
         "id": "5f2d04be-3512-11e8-b467-0ed5f89f718b",
-        "ingested": "2025-12-12T09:23:26Z",
+        "ingested": "2026-05-18T06:45:50Z",
         "kind": "event",
+        "original": "{\"AccountID\":\"e1836771179f98aabb828da5ea69a111\",\"Action\":\"allowedOnNoRuleMatch\",\"Datetime\":1684444377058000000,\"DestinationIP\":\"89.160.20.129\",\"DestinationPort\":443,\"DeviceID\":\"083a8354-d56c-11ed-9771-6a842b100cff\",\"DeviceName\":\"zt-test-vm1\",\"Email\":\"user@test.com\",\"OverrideIP\":\"175.16.199.4\",\"OverridePort\":8080,\"PolicyID\":\"85063bec-74cb-4546-85a3-e0cde2cdfda2\",\"PolicyName\":\"My policy\",\"SNI\":\"www.elastic.co\",\"SessionID\":\"5f2d04be-3512-11e8-b467-0ed5f89f718b\",\"SourceIP\":\"67.43.156.2\",\"SourceInternalIP\":\"192.168.1.3\",\"SourcePort\":47924,\"Transport\":\"tcp\",\"UserID\":\"166befbb-00e3-5e20-bd6e-27245723949f\"}",
         "type": [
             "info"
         ]
-    },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "gateway_network.log"
-            }
-        }
     },
     "host": {
         "id": "083a8354-d56c-11ed-9771-6a842b100cff",
         "name": "zt-test-vm1"
     },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/gateway_network.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "network": {
         "transport": "tcp"
@@ -2566,6 +2573,8 @@ An example event for `gateway_network` looks as following:
         "port": 47924
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-gateway_network"
     ],
@@ -2585,14 +2594,13 @@ An example event for `gateway_network` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.gateway_network.account_id | Cloudflare account tag. | keyword |
 | cloudflare_logpush.gateway_network.action | Action performed by gateway on the session. | keyword |
 | cloudflare_logpush.gateway_network.application.ids | IDs of the applications that matched the session parameters. | keyword |
@@ -2606,11 +2614,12 @@ An example event for `gateway_network` looks as following:
 | cloudflare_logpush.gateway_network.detected_protocol | Detected traffic protocol of the network session. | keyword |
 | cloudflare_logpush.gateway_network.host.id | UUID of the device where the network session originated from. | keyword |
 | cloudflare_logpush.gateway_network.host.name | The name of the device where the network session originated from. | keyword |
-| cloudflare_logpush.gateway_network.override.ip | Overriden IP of the network session, if any. | ip |
-| cloudflare_logpush.gateway_network.override.port | Overriden port of the network session, if any. | long |
+| cloudflare_logpush.gateway_network.override.ip | Overridden IP of the network session, if any. | ip |
+| cloudflare_logpush.gateway_network.override.port | Overridden port of the network session, if any. | long |
 | cloudflare_logpush.gateway_network.policy.id | Identifier of the policy/rule that was applied, if any. | keyword |
 | cloudflare_logpush.gateway_network.policy.name | The name of the gateway policy applied to the session, if any. | keyword |
 | cloudflare_logpush.gateway_network.proxy_endpoint | The proxy endpoint used on this network session, if any. | keyword |
+| cloudflare_logpush.gateway_network.registration_id | The UUID of the device registration from which the network session originated. | keyword |
 | cloudflare_logpush.gateway_network.session_id | The session identifier of this network session. | keyword |
 | cloudflare_logpush.gateway_network.sni | Content of the SNI (Server Name Indication) for the TLS network session, if any. | keyword |
 | cloudflare_logpush.gateway_network.source.internal_ip | Local LAN IP of the device. Only available when connected via a GRE/IPsec tunnel on-ramp. | ip |
@@ -2620,22 +2629,19 @@ An example event for `gateway_network` looks as following:
 | cloudflare_logpush.gateway_network.source_ip.country_code | Country code of the source IP of the network session. | keyword |
 | cloudflare_logpush.gateway_network.timestamp | The date and time the corresponding network session was made. | date |
 | cloudflare_logpush.gateway_network.transport | Transport protocol used for this session. | keyword |
-| cloudflare_logpush.gateway_network.user.email | Email associated with the user identity where the network sesion originated from. | keyword |
+| cloudflare_logpush.gateway_network.user.email | Email associated with the user identity where the network session originated from. | keyword |
 | cloudflare_logpush.gateway_network.user.id | User identity where the network session originated from. | keyword |
 | cloudflare_logpush.gateway_network.virtual_network.id | The identifier of the virtual network the device was connected to, if any. | keyword |
 | cloudflare_logpush.gateway_network.virtual_network.name | The name of the virtual network the device was connected to, if any. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -2653,9 +2659,9 @@ An example event for `http_request` looks as following:
 {
     "@timestamp": "2022-05-25T13:25:26.000Z",
     "agent": {
-        "ephemeral_id": "3cd010e7-a0bc-4a53-aff5-3af3c380387f",
-        "id": "3ce9b73c-faf9-42ad-a254-eb64a83a369c",
-        "name": "elastic-agent-80039",
+        "ephemeral_id": "a40fecc1-2ab2-490f-a99b-bdf108a7e6ca",
+        "id": "005a84af-709c-46d9-8153-49b95f61e8f6",
+        "name": "elastic-agent-60454",
         "type": "filebeat",
         "version": "8.17.1"
     },
@@ -2843,17 +2849,20 @@ An example event for `http_request` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.http_request",
-        "namespace": "73428",
+        "namespace": "92118",
         "type": "logs"
     },
     "destination": {
         "ip": "67.43.156.0"
     },
+    "device": {
+        "type": "desktop"
+    },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "3ce9b73c-faf9-42ad-a254-eb64a83a369c",
+        "id": "005a84af-709c-46d9-8153-49b95f61e8f6",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -2864,7 +2873,7 @@ An example event for `http_request` looks as following:
         ],
         "dataset": "cloudflare_logpush.http_request",
         "id": "710e98d9367f357d",
-        "ingested": "2026-01-20T11:31:07Z",
+        "ingested": "2026-05-18T06:46:51Z",
         "kind": "event",
         "original": "{\"BotDetectionIDs\":[7,8,9],\"BotScore\":20,\"BotScoreSrc\":\"Verified Bot\",\"BotTags\":[\"bing\",\"api\"],\"CacheCacheStatus\":\"dynamic\",\"CacheResponseBytes\":983828,\"CacheResponseStatus\":200,\"CacheTieredFill\":false,\"ClientASN\":43766,\"ClientCountry\":\"sa\",\"ClientDeviceType\":\"desktop\",\"ClientIP\":\"175.16.199.0\",\"ClientIPClass\":\"noRecord\",\"ClientMTLSAuthCertFingerprint\":\"Fingerprint\",\"ClientMTLSAuthStatus\":\"unknown\",\"ClientRequestBytes\":5800,\"ClientRequestHost\":\"xyz.example.com\",\"ClientRequestMethod\":\"POST\",\"ClientRequestPath\":\"/xyz/checkout\",\"ClientRequestProtocol\":\"HTTP/1.1\",\"ClientRequestReferer\":\"https://example.com/s/example/default?sourcerer=(default:(id:!n,selectedPatterns:!(example,%27logs-endpoint.*-example%27,%27logs-system.*-example%27,%27logs-windows.*-example%27)))\\u0026timerange=(global:(linkTo:!(),timerange:(from:%272022-05-16T06:26:36.340Z%27,fromStr:now-24h,kind:relative,to:%272022-05-17T06:26:36.340Z%27,toStr:now)),timeline:(linkTo:!(),timerange:(from:%272022-04-17T22:00:00.000Z%27,kind:absolute,to:%272022-04-18T21:59:59.999Z%27)))\\u0026timeline=(activeTab:notes,graphEventId:%27%27,id:%279844bdd4-4dd6-5b22-ab40-3cd46fce8d6b%27,isOpen:!t)\",\"ClientRequestScheme\":\"https\",\"ClientRequestSource\":\"edgeWorkerFetch\",\"ClientRequestURI\":\"/s/example/api/telemetry/v2/clusters/_stats\",\"ClientRequestUserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36\",\"ClientSSLCipher\":\"NONE\",\"ClientSSLProtocol\":\"TLSv1.2\",\"ClientSrcPort\":0,\"ClientTCPRTTMs\":0,\"ClientXRequestedWith\":\"Request With\",\"Cookies\":{\"key\":\"value\"},\"EdgeCFConnectingO2O\":false,\"EdgeColoCode\":\"RUH\",\"EdgeColoID\":339,\"EdgeEndTimestamp\":\"2022-05-25T13:25:32Z\",\"EdgePathingOp\":\"wl\",\"EdgePathingSrc\":\"macro\",\"EdgePathingStatus\":\"nr\",\"EdgeRateLimitAction\":\"unknown\",\"EdgeRateLimitID\":0,\"EdgeRequestHost\":\"abc.example.com\",\"EdgeResponseBodyBytes\":980397,\"EdgeResponseBytes\":981308,\"EdgeResponseCompressionRatio\":0,\"EdgeResponseContentType\":\"application/json\",\"EdgeResponseStatus\":200,\"EdgeServerIP\":\"1.128.0.0\",\"EdgeStartTimestamp\":\"2022-05-25T13:25:26Z\",\"EdgeTimeToFirstByteMs\":5333,\"OriginDNSResponseTimeMs\":3,\"OriginIP\":\"67.43.156.0\",\"OriginRequestHeaderSendDurationMs\":0,\"OriginResponseBytes\":0,\"OriginResponseDurationMs\":5319,\"OriginResponseHTTPExpires\":\"2022-05-27T13:25:26Z\",\"OriginResponseHTTPLastModified\":\"2022-05-26T13:25:26Z\",\"OriginResponseHeaderReceiveDurationMs\":5155,\"OriginResponseStatus\":200,\"OriginResponseTime\":5232000000,\"OriginSSLProtocol\":\"TLSv1.2\",\"OriginTCPHandshakeDurationMs\":24,\"OriginTLSHandshakeDurationMs\":53,\"ParentRayID\":\"710e98d93d50357d\",\"RayID\":\"710e98d9367f357d\",\"SecurityAction\":\"unknown\",\"SecurityLevel\":\"off\",\"SecurityRuleDescription\":\"matchad variable message\",\"SecurityRuleID\":\"98d93d5\",\"SmartRouteColoID\":20,\"UpperTierColoID\":0,\"WAFAttackScore\":50,\"WAFFlags\":\"0\",\"WAFMatchedVar\":\"example\",\"WAFProfile\":\"unknown\",\"WAFRCEAttackScore\":1,\"WAFSQLiAttackScore\":99,\"WAFXSSAttackScore\":90,\"WorkerCPUTime\":0,\"WorkerStatus\":\"unknown\",\"WorkerSubrequest\":true,\"WorkerSubrequestCount\":0,\"ZoneID\":393347122,\"ZoneName\":\"example.com\"}",
         "type": [
@@ -2873,9 +2882,16 @@ An example event for `http_request` looks as following:
     },
     "http": {
         "request": {
-            "method": "POST"
+            "bytes": 5800,
+            "id": "710e98d9367f357d",
+            "method": "POST",
+            "referrer": "https://example.com/s/example/default?sourcerer=(default:(id:!n,selectedPatterns:!(example,%27logs-endpoint.*-example%27,%27logs-system.*-example%27,%27logs-windows.*-example%27)))&timerange=(global:(linkTo:!(),timerange:(from:%272022-05-16T06:26:36.340Z%27,fromStr:now-24h,kind:relative,to:%272022-05-17T06:26:36.340Z%27,toStr:now)),timeline:(linkTo:!(),timerange:(from:%272022-04-17T22:00:00.000Z%27,kind:absolute,to:%272022-04-18T21:59:59.999Z%27)))&timeline=(activeTab:notes,graphEventId:%27%27,id:%279844bdd4-4dd6-5b22-ab40-3cd46fce8d6b%27,isOpen:!t)"
         },
         "response": {
+            "body": {
+                "bytes": 980397
+            },
+            "bytes": 981308,
             "mime_type": "application/json",
             "status_code": 200
         },
@@ -2888,7 +2904,15 @@ An example event for `http_request` looks as following:
         "protocol": "http"
     },
     "related": {
+        "hash": [
+            "Fingerprint"
+        ],
+        "hosts": [
+            "xyz.example.com",
+            "abc.example.com"
+        ],
         "ip": [
+            "1.128.0.0",
             "175.16.199.0",
             "67.43.156.0"
         ]
@@ -2900,7 +2924,8 @@ An example event for `http_request` looks as following:
         "geo": {
             "country_iso_code": "sa"
         },
-        "ip": "175.16.199.0"
+        "ip": "175.16.199.0",
+        "port": 0
     },
     "tags": [
         "preserve_original_event",
@@ -2910,6 +2935,11 @@ An example event for `http_request` looks as following:
     ],
     "tls": {
         "cipher": "NONE",
+        "client": {
+            "hash": {
+                "sha256": "FINGERPRINT"
+            }
+        },
         "version": "1.2",
         "version_protocol": "tls"
     },
@@ -2939,14 +2969,13 @@ An example event for `http_request` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.http_request.bot.detection_ids | List of IDs that correlate to the Bot Management Heuristic detections made on a request. Available in Logpush v2 only. | long |
 | cloudflare_logpush.http_request.bot.detection_tags | List of tags that correlate to the Bot Management Heuristic detections made on a request. Available only for Bot Management customers. To enable this feature, contact your account team. | keyword |
 | cloudflare_logpush.http_request.bot.score.src | Detection engine responsible for generating the Bot Score. Possible values are Not Computed, Heuristics, Machine Learning, Behavioral Analysis, Verified Bot, JS Fingerprinting, Cloudflare Service. | text |
@@ -2954,8 +2983,8 @@ An example event for `http_request` looks as following:
 | cloudflare_logpush.http_request.bot.tag | Type of bot traffic (if available). Available in Logpush v2 only. | text |
 | cloudflare_logpush.http_request.cache.reserve_used | Cache Reserve was used to serve this request. | boolean |
 | cloudflare_logpush.http_request.cache.response.bytes | Number of bytes returned by the cache. | long |
-| cloudflare_logpush.http_request.cache.response.status | Cache status. | long |
-| cloudflare_logpush.http_request.cache.status | HTTP status code returned by the cache to the edge. | keyword |
+| cloudflare_logpush.http_request.cache.response.status | HTTP status code returned by the cache to the edge. | long |
+| cloudflare_logpush.http_request.cache.status | Cache status. | keyword |
 | cloudflare_logpush.http_request.cache.tiered_fill | Tiered Cache was used to serve this request. | boolean |
 | cloudflare_logpush.http_request.client.asn | Client AS number. | long |
 | cloudflare_logpush.http_request.client.city | Approximate city of the client. | keyword |
@@ -2987,7 +3016,7 @@ An example event for `http_request` looks as following:
 | cloudflare_logpush.http_request.content_scan.sizes | List of content object sizes. | long |
 | cloudflare_logpush.http_request.content_scan.types | List of content types. | keyword |
 | cloudflare_logpush.http_request.cookies | String key-value pairs for Cookies. | flattened |
-| cloudflare_logpush.http_request.datetime | Timestamp when the request was received | date |
+| cloudflare_logpush.http_request.datetime | Timestamp when the request was received. | date |
 | cloudflare_logpush.http_request.edge.cf_connecting_o2o | True if the request looped through multiple zones on the Cloudflare edge. | boolean |
 | cloudflare_logpush.http_request.edge.colo.code | IATA airport code of data center that received the request. | keyword |
 | cloudflare_logpush.http_request.edge.colo.id | Cloudflare edge colo id. | long |
@@ -3009,9 +3038,16 @@ An example event for `http_request` looks as following:
 | cloudflare_logpush.http_request.firewall.matches.action | Array of actions the Cloudflare firewall products performed on this request. | keyword |
 | cloudflare_logpush.http_request.firewall.matches.rule_id | Array of RuleIDs of the firewall product that has matched the request. | keyword |
 | cloudflare_logpush.http_request.firewall.matches.sources | The firewall products that matched the request. | keyword |
+| cloudflare_logpush.http_request.fraud.attack | The primary attack or use case detected by Fraud detections. | keyword |
+| cloudflare_logpush.http_request.fraud.detection_ids | List of IDs correlating to Fraud detections. | keyword |
+| cloudflare_logpush.http_request.fraud.detection_tags | List of tags correlating to Fraud detections. | keyword |
+| cloudflare_logpush.http_request.fraud.email_risk | Risk of a specific email address (low/medium/high). | keyword |
+| cloudflare_logpush.http_request.fraud.user_id | A unique identifier generated by the Fraud Detection system. | keyword |
 | cloudflare_logpush.http_request.ja3_hash | The MD5 hash of the JA3 fingerprint used to profile SSL/TLS clients. | keyword |
 | cloudflare_logpush.http_request.ja4 | The JA4 fingerprint used to profile SSL/TLS clients. Available only for Bot Management customers. | keyword |
 | cloudflare_logpush.http_request.ja4_signals | Inter-request statistics computed for this JA4 fingerprint. JA4Signals field is organized in key:value pairs, where values are numbers. Available only for Bot Management customers. | flattened |
+| cloudflare_logpush.http_request.js_detection_passed | Whether the request passed background JS Detection (passed/failed/missing). | keyword |
+| cloudflare_logpush.http_request.leaked_credential_check | Result of the check for leaked credentials. | keyword |
 | cloudflare_logpush.http_request.origin.dns_response_time.ms | Time taken to receive a DNS response for an origin name. | long |
 | cloudflare_logpush.http_request.origin.ip | IP of the origin server. | ip |
 | cloudflare_logpush.http_request.origin.request_header_send_duration.ms | Time taken to send request headers to origin after establishing a connection. | long |
@@ -3026,12 +3062,14 @@ An example event for `http_request` looks as following:
 | cloudflare_logpush.http_request.origin.tcp_handshake_duration.ms | Time taken to complete TCP handshake with origin. | long |
 | cloudflare_logpush.http_request.origin.tls_handshake_duration.ms | Time taken to complete TLS handshake with origin. | long |
 | cloudflare_logpush.http_request.parent_ray.id | Ray ID of the parent request if this request was made using a Worker script. | keyword |
+| cloudflare_logpush.http_request.pay_per_crawl_status | Pay Per Crawl outcome. | keyword |
 | cloudflare_logpush.http_request.ray.id | ID of the request. | keyword |
 | cloudflare_logpush.http_request.request.headers | String key-value pairs for RequestHeaders. | flattened |
 | cloudflare_logpush.http_request.response.headers | String key-value pairs for ResponseHeaders. | flattened |
 | cloudflare_logpush.http_request.security_level | The security level configured at the time of this request. This is used to determine the sensitivity of the IP Reputation system. | text |
 | cloudflare_logpush.http_request.smart_route.colo.id | The Cloudflare datacenter used to connect to the origin server if Argo Smart Routing is used. Available in Logpush v2 only. | long |
 | cloudflare_logpush.http_request.upper_tier.colo.id | The “upper tier” datacenter that was checked for a cached copy if Tiered Cache is used. Available in Logpush v2 only. | long |
+| cloudflare_logpush.http_request.verified_bot_category | The category of verified bot. | keyword |
 | cloudflare_logpush.http_request.waf.action | Action taken by the WAF, if triggered. | text |
 | cloudflare_logpush.http_request.waf.flag | Additional configuration flags. | text |
 | cloudflare_logpush.http_request.waf.matched_var | The full name of the most-recently matched variable. | text |
@@ -3042,25 +3080,25 @@ An example event for `http_request` looks as following:
 | cloudflare_logpush.http_request.waf.score.rce | WAF score for a Remote Code Execution (RCE) attack. | long |
 | cloudflare_logpush.http_request.waf.score.sqli | WAF score for an SQL injection (SQLi) attack. | long |
 | cloudflare_logpush.http_request.waf.score.xss | WAF score for a Cross-site scripting (XSS) attack. | long |
+| cloudflare_logpush.http_request.web_assets.labels_managed | Cloudflare-defined labels matched for the request. | keyword |
+| cloudflare_logpush.http_request.web_assets.operation_id | UUID of the matched web asset operation. | keyword |
 | cloudflare_logpush.http_request.worker.cpu_time | Amount of time in microseconds spent executing a worker, if any. | long |
+| cloudflare_logpush.http_request.worker.script_name | The Worker script name that made the request. | keyword |
 | cloudflare_logpush.http_request.worker.status | Status returned from worker daemon. | text |
 | cloudflare_logpush.http_request.worker.subrequest.count | Number of subrequests issued by a worker when handling this request. | long |
 | cloudflare_logpush.http_request.worker.subrequest.value | Whether or not this request was a worker subrequest. | boolean |
 | cloudflare_logpush.http_request.worker.wall_time_us | Real-time in microseconds elapsed between start and end of worker invocation. | long |
 | cloudflare_logpush.http_request.zone.id | Internal zone ID. | long |
 | cloudflare_logpush.http_request.zone.name | The human-readable name of the zone. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -3078,31 +3116,39 @@ An example event for `magic_ids` looks as following:
 {
     "@timestamp": "2023-09-11T03:02:57.000Z",
     "agent": {
-        "ephemeral_id": "b4087b6e-9b59-4f1e-b4a1-8be9334146fb",
-        "id": "01cff4ad-3e8d-4819-a226-ad295d9fcb79",
-        "name": "elastic-agent-65074",
+        "ephemeral_id": "61afdfe3-0dbf-4d46-b45e-fe220ee31911",
+        "id": "8fd12f28-f7fa-4364-86a4-9cac977085b9",
+        "name": "elastic-agent-50922",
         "type": "filebeat",
         "version": "8.17.1"
     },
-    "cloud": {
-        "provider": "google cloud"
-    },
     "cloudflare_logpush": {
         "magic_ids": {
+            "action": "pass",
             "colo": {
                 "city": "Tokyo",
                 "code": "NRT"
+            },
+            "destination": {
+                "ip": "89.160.20.129",
+                "port": 80
             },
             "signature": {
                 "id": 2031296,
                 "message": "ET CURRENT_EVENTS [Fireeye] POSSIBLE HackTool.TCP.Rubeus.[User32LogonProcesss]",
                 "revision": 1
-            }
+            },
+            "source": {
+                "ip": "67.43.156.2",
+                "port": 44667
+            },
+            "timestamp": "2023-09-11T03:02:57.000Z",
+            "transport": "tcp"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.magic_ids",
-        "namespace": "22953",
+        "namespace": "15005",
         "type": "logs"
     },
     "destination": {
@@ -3128,10 +3174,10 @@ An example event for `magic_ids` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "01cff4ad-3e8d-4819-a226-ad295d9fcb79",
+        "id": "8fd12f28-f7fa-4364-86a4-9cac977085b9",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -3143,32 +3189,16 @@ An example event for `magic_ids` looks as following:
             "intrusion_detection"
         ],
         "dataset": "cloudflare_logpush.magic_ids",
-        "ingested": "2025-12-12T09:39:17Z",
+        "ingested": "2026-05-11T12:57:17Z",
         "kind": "event",
+        "original": "{\"Action\":\"pass\",\"ColoCity\":\"Tokyo\",\"ColoCode\":\"NRT\",\"DestinationIP\":\"89.160.20.129\",\"DestinationPort\":80,\"Protocol\":\"tcp\",\"SignatureID\":2031296,\"SignatureMessage\":\"ET CURRENT_EVENTS [Fireeye] POSSIBLE HackTool.TCP.Rubeus.[User32LogonProcesss]\",\"SignatureRevision\":1,\"SourceIP\":\"67.43.156.2\",\"SourcePort\":44667,\"Timestamp\":\"2023-09-11T03:02:57Z\"}",
         "type": [
             "info",
             "allowed"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "magic_ids.log"
-            }
-        }
-    },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/magic_ids.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "network": {
         "transport": "tcp"
@@ -3196,6 +3226,8 @@ An example event for `magic_ids` looks as following:
         "port": 44667
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-magic_ids"
     ]
@@ -3206,14 +3238,13 @@ An example event for `magic_ids` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.magic_ids.action | What action was taken on the packet. Possible values are pass | block. | keyword |
 | cloudflare_logpush.magic_ids.colo.city | The city where the detection occurred. | keyword |
 | cloudflare_logpush.magic_ids.colo.code | The IATA airport code corresponding to where the detection occurred. | keyword |
@@ -3226,18 +3257,15 @@ An example event for `magic_ids` looks as following:
 | cloudflare_logpush.magic_ids.source.port | The source port of the packet which triggered the detection. It is set to 0 if the protocol field is set to any. | long |
 | cloudflare_logpush.magic_ids.timestamp | A timestamp of when the detection occurred. | date |
 | cloudflare_logpush.magic_ids.transport | The layer 4 protocol of the packet which triggered the detection. Possible values are tcp | udp | any. Variant any means a detection occurred at a lower layer (such as IP). | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -3255,14 +3283,11 @@ An example event for `nel_report` looks as following:
 {
     "@timestamp": "2021-07-27T00:01:07.000Z",
     "agent": {
-        "ephemeral_id": "268e4658-b07c-4510-b437-dcbb422583b5",
-        "id": "7ccbc26d-a497-4fcf-8a84-93b0b1f3c120",
-        "name": "elastic-agent-51944",
+        "ephemeral_id": "aca88611-b6b1-4170-9acb-8a54a45284e0",
+        "id": "1d75344d-fd23-4a1c-82d8-b5f5ae8aa4f8",
+        "name": "elastic-agent-34059",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "nel_report": {
@@ -3275,24 +3300,28 @@ An example event for `nel_report` looks as following:
                     "country": "US"
                 }
             },
+            "error": {
+                "type": "network-error"
+            },
             "last_known_good": {
                 "colo": {
                     "code": "SJC"
                 }
             },
-            "phase": "connection"
+            "phase": "connection",
+            "timestamp": "2021-07-27T00:01:07.000Z"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.nel_report",
-        "namespace": "32139",
+        "namespace": "45047",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "7ccbc26d-a497-4fcf-8a84-93b0b1f3c120",
+        "id": "1d75344d-fd23-4a1c-82d8-b5f5ae8aa4f8",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -3305,33 +3334,30 @@ An example event for `nel_report` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.nel_report",
-        "ingested": "2025-12-12T09:45:27Z",
+        "ingested": "2026-05-18T06:47:51Z",
         "kind": "event",
+        "original": "{\"ClientIPASN\":\"13335\",\"ClientIPASNDescription\":\"CLOUDFLARENET\",\"ClientIPCountry\":\"US\",\"LastKnownGoodColoCode\":\"SJC\",\"Phase\":\"connection\",\"Timestamp\":\"2021-07-27T00:01:07Z\",\"Type\":\"network-error\"}",
         "type": [
             "info"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "nel_report.log"
+    "input": {
+        "type": "http_endpoint"
+    },
+    "source": {
+        "as": {
+            "number": 13335,
+            "organization": {
+                "name": "CLOUDFLARENET"
             }
+        },
+        "geo": {
+            "country_iso_code": "US"
         }
     },
-    "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/nel_report.log"
-        },
-        "offset": 0
-    },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-nel_report"
     ]
@@ -3342,14 +3368,13 @@ An example event for `nel_report` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.nel_report.client.ip.asn.description | Client ASN description. | keyword |
 | cloudflare_logpush.nel_report.client.ip.asn.value | Client ASN. | long |
 | cloudflare_logpush.nel_report.client.ip.country | Client country. | keyword |
@@ -3357,18 +3382,15 @@ An example event for `nel_report` looks as following:
 | cloudflare_logpush.nel_report.last_known_good.colo.code | IATA airport code of colo client connected to. | keyword |
 | cloudflare_logpush.nel_report.phase | The phase of connection the error occurred in. | keyword |
 | cloudflare_logpush.nel_report.timestamp | Timestamp for error report. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -3386,14 +3408,11 @@ An example event for `network_analytics` looks as following:
 {
     "@timestamp": "2021-07-27T00:01:07.000Z",
     "agent": {
-        "ephemeral_id": "0ed44bac-a86d-417a-83f6-06250aca48c5",
-        "id": "47e353e4-8ed7-44c4-b167-ad9581cbdeaf",
-        "name": "elastic-agent-13604",
+        "ephemeral_id": "80437a68-d353-483d-bf25-7851c2f11f0d",
+        "id": "7995797e-6e9e-4f8b-956d-57acba24e128",
+        "name": "elastic-agent-70734",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "network_analytics": {
@@ -3416,10 +3435,14 @@ An example event for `network_analytics` looks as following:
                         "description": "asn description"
                     }
                 },
+                "asn": 1900,
                 "country": "AD",
                 "geo_hash": "gbuun",
-                "geo_location": "gbuun"
+                "geo_location": "gbuun",
+                "ip": "175.16.199.0",
+                "port": 0
             },
+            "direction": "ingress",
             "gre": {
                 "checksum": 10,
                 "ether": {
@@ -3453,6 +3476,7 @@ An example event for `network_analytics` looks as following:
                     "fragments": 1480
                 },
                 "protocol": {
+                    "name": "tcp",
                     "value": 6
                 },
                 "source": {
@@ -3480,7 +3504,9 @@ An example event for `network_analytics` looks as following:
             "ipv6": {
                 "dscp": 46,
                 "ecn": 1,
-                "extension_headers": "header",
+                "extension_headers": [
+                    "header"
+                ],
                 "flow_label": 1,
                 "identification": 1
             },
@@ -3489,8 +3515,10 @@ An example event for `network_analytics` looks as following:
                 "scope": "local",
                 "system": "flowtrackd"
             },
+            "outcome": "success",
             "protocol_state": "OPEN",
             "rule": {
+                "id": "rule1",
                 "set": {
                     "id": "3b64149bfa6e4220bbbc2bd6db589552",
                     "override": {
@@ -3505,9 +3533,12 @@ An example event for `network_analytics` looks as following:
                         "description": "Source ASN Description"
                     }
                 },
+                "asn": 1500,
                 "country": "AD",
                 "geo_hash": "gbuun",
-                "geo_location": "gbuun"
+                "geo_location": "gbuun",
+                "ip": "67.43.156.0",
+                "port": 0
             },
             "tcp": {
                 "acknowledgement_number": 1000,
@@ -3518,7 +3549,9 @@ An example event for `network_analytics` looks as following:
                     "value": 1
                 },
                 "mss": 512,
-                "options": "mss",
+                "options": [
+                    "mss"
+                ],
                 "sack": {
                     "blocks": [
                         1
@@ -3536,6 +3569,7 @@ An example event for `network_analytics` looks as following:
                     "size": 10
                 }
             },
+            "timestamp": "2021-07-27T00:01:07.000Z",
             "udp": {
                 "checksum": 10,
                 "payload_length": 10
@@ -3545,21 +3579,24 @@ An example event for `network_analytics` looks as following:
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.network_analytics",
-        "namespace": "16796",
+        "namespace": "88444",
         "type": "logs"
     },
     "destination": {
         "as": {
             "number": 1900
         },
+        "geo": {
+            "country_iso_code": "AD"
+        },
         "ip": "175.16.199.0",
         "port": 0
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "47e353e4-8ed7-44c4-b167-ad9581cbdeaf",
+        "id": "7995797e-6e9e-4f8b-956d-57acba24e128",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -3569,32 +3606,16 @@ An example event for `network_analytics` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.network_analytics",
-        "ingested": "2025-12-12T09:51:57Z",
+        "ingested": "2026-05-25T03:06:49Z",
         "kind": "event",
+        "original": "{\"AttackCampaignID\":\"xyz987\",\"AttackID\":\"abc777\",\"ColoCountry\":\"AD\",\"ColoGeoHash\":\"gbuun\",\"ColoID\":46,\"ColoName\":\"SJC\",\"Datetime\":\"2021-07-27T00:01:07Z\",\"DestinationASN\":1900,\"DestinationASNDescription\":\"asn description\",\"DestinationCountry\":\"AD\",\"DestinationGeoHash\":\"gbuun\",\"DestinationPort\":0,\"Direction\":\"ingress\",\"GREChecksum\":10,\"GREEthertype\":10,\"GREHeaderLength\":1024,\"GREKey\":10,\"GRESequenceNumber\":10,\"GREVersion\":10,\"ICMPChecksum\":10,\"ICMPCode\":10,\"ICMPType\":10,\"IPDestinationAddress\":\"175.16.199.0\",\"IPDestinationSubnet\":\"/24\",\"IPFragmentOffset\":1480,\"IPHeaderLength\":20,\"IPMoreFragments\":1480,\"IPProtocol\":6,\"IPProtocolName\":\"tcp\",\"IPSourceAddress\":\"67.43.156.0\",\"IPSourceSubnet\":\"/24\",\"IPTotalLength\":1024,\"IPTotalLengthBuckets\":10,\"IPTtl\":240,\"IPTtlBuckets\":2,\"IPv4Checksum\":0,\"IPv4DontFragment\":0,\"IPv4Dscp\":46,\"IPv4Ecn\":1,\"IPv4Identification\":1,\"IPv4Options\":1,\"IPv6Dscp\":46,\"IPv6Ecn\":1,\"IPv6ExtensionHeaders\":\"header\",\"IPv6FlowLabel\":1,\"IPv6Identification\":1,\"MitigationReason\":\"BLOCKED\",\"MitigationScope\":\"local\",\"MitigationSystem\":\"flowtrackd\",\"Outcome\":\"pass\",\"ProtocolState\":\"OPEN\",\"RuleID\":\"rule1\",\"RulesetID\":\"3b64149bfa6e4220bbbc2bd6db589552\",\"RulesetOverrideID\":\"id1\",\"SampleInterval\":1,\"SourceASN\":1500,\"SourceASNDescription\":\"Source ASN Description\",\"SourceCountry\":\"AD\",\"SourceGeoHash\":\"gbuun\",\"SourcePort\":0,\"TCPAcknowledgementNumber\":1000,\"TCPChecksum\":10,\"TCPDataOffset\":0,\"TCPFlags\":1,\"TCPFlagsString\":\"Human-readable flags string\",\"TCPMss\":512,\"TCPOptions\":\"mss\",\"TCPSackBlocks\":1,\"TCPSacksPermitted\":1,\"TCPSequenceNumber\":100,\"TCPTimestampEcr\":100,\"TCPTimestampValue\":100,\"TCPUrgentPointer\":10,\"TCPWindowScale\":10,\"TCPWindowSize\":10,\"UDPChecksum\":10,\"UDPPayloadLength\":10,\"Verdict\":\"pass\"}",
         "outcome": "success",
         "type": [
             "info"
         ]
     },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "network_analytics.log"
-            }
-        }
-    },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/network_analytics.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "network": {
         "direction": "ingress",
@@ -3616,13 +3637,28 @@ An example event for `network_analytics` looks as following:
         "as": {
             "number": 1500
         },
+        "geo": {
+            "country_iso_code": "AD"
+        },
         "ip": "67.43.156.0",
         "port": 0
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-network_analytics"
-    ]
+    ],
+    "threat": {
+        "group": {
+            "id": "xyz987"
+        },
+        "indicator": {
+            "id": [
+                "abc777"
+            ]
+        }
+    }
 }
 ```
 
@@ -3630,14 +3666,13 @@ An example event for `network_analytics` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.network_analytics.attack.campaign.id | Unique identifier of the attack campaign that this packet was a part of, if any. | keyword |
 | cloudflare_logpush.network_analytics.attack.id | Unique identifier of the mitigation that matched the packet, if any. | keyword |
 | cloudflare_logpush.network_analytics.attack.vector | Descriptive name of the type of attack that this packet was a part of, if any. Only for packets matching rules contained within the Cloudflare L3/4 managed ruleset. | keyword |
@@ -3657,15 +3692,17 @@ An example event for `network_analytics` looks as following:
 | cloudflare_logpush.network_analytics.destination.ip | Value of the Destination Address header field in the IPv4 or IPv6 packet. | ip |
 | cloudflare_logpush.network_analytics.destination.port | Value of the Destination Port header field in the TCP or UDP packet. | long |
 | cloudflare_logpush.network_analytics.direction | The direction in relation to customer network. | keyword |
+| cloudflare_logpush.network_analytics.dns.query.name | The DNS query name (domain) if the packet is a DNS query. | keyword |
+| cloudflare_logpush.network_analytics.dns.query.type | The DNS query type if the packet is a DNS query. | keyword |
 | cloudflare_logpush.network_analytics.gre.checksum | Value of the Checksum header field in the GRE packet. | long |
 | cloudflare_logpush.network_analytics.gre.ether.type | Value of the Ethertype header field in the GRE packet. | long |
 | cloudflare_logpush.network_analytics.gre.header.length | Length of the GRE packet header, in bytes. | long |
 | cloudflare_logpush.network_analytics.gre.key | Value of the Key header field in the GRE packet. | long |
 | cloudflare_logpush.network_analytics.gre.sequence.number | Value of the Sequence Number header field in the GRE packet. | long |
 | cloudflare_logpush.network_analytics.gre.version | Value of the Version header field in the GRE packet. | long |
-| cloudflare_logpush.network_analytics.icmp.checksum | Value of the Checksum header field in the ICMP packet | long |
-| cloudflare_logpush.network_analytics.icmp.code | Value of the Code header field in the ICMP packet | long |
-| cloudflare_logpush.network_analytics.icmp.type | Value of the Type header field in the ICMP packet | long |
+| cloudflare_logpush.network_analytics.icmp.checksum | Value of the Checksum header field in the ICMP packet. | long |
+| cloudflare_logpush.network_analytics.icmp.code | Value of the Code header field in the ICMP packet. | long |
+| cloudflare_logpush.network_analytics.icmp.type | Value of the Type header field in the ICMP packet. | long |
 | cloudflare_logpush.network_analytics.ip.destination.subnet | Computed subnet of the Destination Address header field in the IPv4 or IPv6 packet. | keyword |
 | cloudflare_logpush.network_analytics.ip.fragment.offset | Value of the Fragment Offset header field in the IPv4 or IPv6 packet. | long |
 | cloudflare_logpush.network_analytics.ip.header.length | Length of the IPv4 or IPv6 packet header, in bytes. | long |
@@ -3692,6 +3729,7 @@ An example event for `network_analytics` looks as following:
 | cloudflare_logpush.network_analytics.mitigation.scope | Whether the packet matched a local or global mitigation, if any. | keyword |
 | cloudflare_logpush.network_analytics.mitigation.system | Which Cloudflare system dropped the packet, if any. | keyword |
 | cloudflare_logpush.network_analytics.outcome | The action that Cloudflare systems took on the packet. | keyword |
+| cloudflare_logpush.network_analytics.pfp_custom_tag | The custom network analytics tag set by Programmable Flow Protection. | keyword |
 | cloudflare_logpush.network_analytics.protocol_state | State of the packet in the context of the protocol, if any. | keyword |
 | cloudflare_logpush.network_analytics.rule.id | Unique identifier of the rule contained with the Cloudflare L3/4 managed ruleset that this packet matched, if any. | text |
 | cloudflare_logpush.network_analytics.rule.name | Human-readable name of the rule contained within the Cloudflare L3/4 managed ruleset that this packet matched, if any. | text |
@@ -3725,18 +3763,15 @@ An example event for `network_analytics` looks as following:
 | cloudflare_logpush.network_analytics.udp.checksum | Value of the Checksum header field in the UDP packet. | long |
 | cloudflare_logpush.network_analytics.udp.payload_length | Value of the Payload Length header field in the UDP packet. | long |
 | cloudflare_logpush.network_analytics.verdict | The action that Cloudflare systems think should be taken on the packet (pass | drop). | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -3754,19 +3789,19 @@ An example event for `network_session` looks as following:
 {
     "@timestamp": "2023-05-04T11:29:14.000Z",
     "agent": {
-        "ephemeral_id": "ba4a058c-c545-42a7-a7fa-e33b4ff32fda",
-        "id": "70c5474a-4b38-40f2-a354-bf18bcdc45c9",
-        "name": "elastic-agent-55862",
+        "ephemeral_id": "6e63fcd5-1e1f-4e3b-a49f-61fc4c2a8ac3",
+        "id": "b739e1ec-b1fb-4809-97b7-0635148b839c",
+        "name": "elastic-agent-12860",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "network_session": {
             "account_id": "e1836771179f98aabb828da5ea69a111",
             "destination": {
+                "bytes": 679,
+                "ip": "89.160.20.129",
+                "port": 80,
                 "tunnel_id": "00000000-0000-0000-0000-000000000000"
             },
             "egress": {
@@ -3778,6 +3813,10 @@ An example event for `network_session` looks as following:
                     "name": "Egress Rule 1"
                 }
             },
+            "host": {
+                "id": "083a8354-d56c-11ed-9771-6a842b100cff",
+                "name": "zt-test-vm1"
+            },
             "ingress": {
                 "colo_name": "ORD"
             },
@@ -3785,8 +3824,16 @@ An example event for `network_session` looks as following:
             "rule_evaluation": {
                 "time_ms": 10
             },
+            "session": {
+                "end": "2023-05-04T11:29:14.000Z",
+                "id": "18881f179300007fb0d06d6400000001",
+                "start": "2023-05-04T11:29:14.000Z"
+            },
             "source": {
-                "internal_ip": "1.128.0.1"
+                "bytes": 2333,
+                "internal_ip": "1.128.0.1",
+                "ip": "67.43.156.2",
+                "port": 52994
             },
             "tcp": {
                 "client": {
@@ -3797,6 +3844,7 @@ An example event for `network_session` looks as following:
                     "reuse": false
                 }
             },
+            "timestamp": "2023-05-04T11:29:14.000Z",
             "tls": {
                 "client": {
                     "cipher": "TLS_AES_128_GCM_SHA256",
@@ -3805,18 +3853,27 @@ An example event for `network_session` looks as following:
                 },
                 "server": {
                     "certificate": {
+                        "issuer": "DigiCert Inc",
                         "validation_result": "VALID"
                     },
                     "cipher": "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
                     "handshake_time_ms": 130,
                     "version": "TLS 1.2"
                 }
+            },
+            "transport": "TCP",
+            "user": {
+                "email": "user@test.com",
+                "id": "166befbb-00e3-5e20-bd6e-27245723949f"
+            },
+            "vlan": {
+                "id": "0ce99869-63d3-4d5d-bdaf-d4f33df964aa"
             }
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.network_session",
-        "namespace": "60780",
+        "namespace": "93612",
         "type": "logs"
     },
     "destination": {
@@ -3842,11 +3899,14 @@ An example event for `network_session` looks as following:
         "ip": "89.160.20.129",
         "port": 80
     },
+    "device": {
+        "id": "083a8354-d56c-11ed-9771-6a842b100cff"
+    },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "70c5474a-4b38-40f2-a354-bf18bcdc45c9",
+        "id": "b739e1ec-b1fb-4809-97b7-0635148b839c",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -3857,38 +3917,23 @@ An example event for `network_session` looks as following:
             "session"
         ],
         "dataset": "cloudflare_logpush.network_session",
+        "duration": 0,
         "end": "2023-05-04T11:29:14.000Z",
         "id": "18881f179300007fb0d06d6400000001",
-        "ingested": "2025-12-12T09:58:37Z",
+        "ingested": "2026-05-18T06:49:50Z",
         "kind": "event",
+        "original": "{\"AccountID\":\"e1836771179f98aabb828da5ea69a111\",\"BytesReceived\":679,\"BytesSent\":2333,\"ClientTCPHandshakeDurationMs\":12,\"ClientTLSCipher\":\"TLS_AES_128_GCM_SHA256\",\"ClientTLSHandshakeDurationMs\":125,\"ClientTLSVersion\":\"TLS 1.3\",\"ConnectionCloseReason\":\"CLIENT_CLOSED\",\"ConnectionReuse\":false,\"DestinationTunnelID\":\"00000000-0000-0000-0000-000000000000\",\"DeviceID\":\"083a8354-d56c-11ed-9771-6a842b100cff\",\"DeviceName\":\"zt-test-vm1\",\"EgressColoName\":\"ORD\",\"EgressIP\":\"2a02:cf40::23\",\"EgressPort\":41052,\"EgressRuleID\":\"00000000-0000-0000-0000-000000000000\",\"EgressRuleName\":\"Egress Rule 1\",\"Email\":\"user@test.com\",\"IngressColoName\":\"ORD\",\"Offramp\":\"INTERNET\",\"OriginIP\":\"89.160.20.129\",\"OriginPort\":80,\"OriginTLSCertificateIssuer\":\"DigiCert Inc\",\"OriginTLSCertificateValidationResult\":\"VALID\",\"OriginTLSCipher\":\"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384\",\"OriginTLSHandshakeDurationMs\":130,\"OriginTLSVersion\":\"TLS 1.2\",\"Protocol\":\"TCP\",\"RuleEvaluationDurationMs\":10,\"SessionEndTime\":\"2023-05-04T11:29:14Z\",\"SessionID\":\"18881f179300007fb0d06d6400000001\",\"SessionStartTime\":\"2023-05-04T11:29:14Z\",\"SourceIP\":\"67.43.156.2\",\"SourceInternalIP\":\"1.128.0.1\",\"SourcePort\":52994,\"UserID\":\"166befbb-00e3-5e20-bd6e-27245723949f\",\"VirtualNetworkID\":\"0ce99869-63d3-4d5d-bdaf-d4f33df964aa\"}",
         "start": "2023-05-04T11:29:14.000Z",
         "type": [
             "connection"
         ]
-    },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "network_session.log"
-            }
-        }
     },
     "host": {
         "id": "083a8354-d56c-11ed-9771-6a842b100cff",
         "name": "zt-test-vm1"
     },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/network_session.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "network": {
         "transport": "TCP",
@@ -3904,7 +3949,8 @@ An example event for `network_session` looks as following:
         "ip": [
             "67.43.156.2",
             "89.160.20.129",
-            "2a02:cf40::23"
+            "2a02:cf40::23",
+            "1.128.0.1"
         ],
         "user": [
             "166befbb-00e3-5e20-bd6e-27245723949f",
@@ -3929,13 +3975,18 @@ An example event for `network_session` looks as following:
         "port": 52994
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-network_session"
     ],
     "tls": {
+        "cipher": "TLS_AES_128_GCM_SHA256",
         "server": {
             "issuer": "DigiCert Inc"
-        }
+        },
+        "version": "1.3",
+        "version_protocol": "tls"
     },
     "user": {
         "email": "user@test.com",
@@ -3948,14 +3999,13 @@ An example event for `network_session` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.network_session.account_id | Cloudflare account ID. | keyword |
 | cloudflare_logpush.network_session.destination.bytes | The number of bytes sent from the origin to the client during the network session. | long |
 | cloudflare_logpush.network_session.destination.ip | The IP of the destination (origin) for the network session. | ip |
@@ -3970,11 +4020,15 @@ An example event for `network_session` looks as following:
 | cloudflare_logpush.network_session.host.id | Identifier of the client device which initiated the network session, if applicable. | keyword |
 | cloudflare_logpush.network_session.host.name | Name of the client device which initiated the network session, if applicable. | keyword |
 | cloudflare_logpush.network_session.ingress.colo_name | The name of the Cloudflare colo to which traffic ingressed. | keyword |
+| cloudflare_logpush.network_session.initial_origin_ip | The IP used to correlate FQDN matching between Gateway DNS and proxy. | ip |
 | cloudflare_logpush.network_session.offramp | The type of destination to which the network session was routed. | keyword |
+| cloudflare_logpush.network_session.registration_id | Identifier of the client registration. | keyword |
+| cloudflare_logpush.network_session.resolved_fqdn | The fully qualified domain name of the destination. | keyword |
 | cloudflare_logpush.network_session.rule_evaluation.time_ms | The duration taken by Secure Web Gateway applying applicable Network, HTTP, and Egress rules to the network session in milliseconds. | long |
 | cloudflare_logpush.network_session.session.end | The network session end timestamp with nanosecond precision. | date |
 | cloudflare_logpush.network_session.session.id | The identifier of this network session. | keyword |
 | cloudflare_logpush.network_session.session.start | The network session start timestamp with nanosecond precision. | date |
+| cloudflare_logpush.network_session.sni | The server name indication (SNI) value from the TLS handshake. | keyword |
 | cloudflare_logpush.network_session.source.bytes | The number of bytes sent from the client to the origin during the network session. | long |
 | cloudflare_logpush.network_session.source.internal_ip | Local LAN IP of the device. Only available when connected via a GRE/IPsec tunnel on-ramp. | ip |
 | cloudflare_logpush.network_session.source.ip | Source IP of the network session. | ip |
@@ -3995,18 +4049,15 @@ An example event for `network_session` looks as following:
 | cloudflare_logpush.network_session.user.email | Email address associated with the user identity which initiated the network session. | keyword |
 | cloudflare_logpush.network_session.user.id | User identity where the network session originated from. | keyword |
 | cloudflare_logpush.network_session.vlan.id | Identifier of the virtual network configured for the client. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -4024,35 +4075,36 @@ An example event for `page_shield_events` looks as following:
 {
     "@timestamp": "2023-05-04T11:29:14.000Z",
     "agent": {
-        "ephemeral_id": "1dfb269c-1b6e-443c-8dd2-2cc980f787ff",
-        "id": "a717a65c-0d5d-44b7-ad3e-8459415f563c",
-        "name": "elastic-agent-55379",
+        "ephemeral_id": "c4b2e0d0-c5d3-4b55-a279-9c1036902273",
+        "id": "f2246fe8-a35d-4718-8e63-2c915bdcc3b2",
+        "name": "elastic-agent-20584",
         "type": "filebeat",
         "version": "8.17.1"
     },
-    "cloud": {
-        "provider": "google cloud"
-    },
     "cloudflare_logpush": {
         "page_shield_events": {
+            "action": "log",
             "csp_directive": "directive",
+            "host": "hostymchost.face",
             "page_url": "http://example.com/?query=42",
             "policy_id": "9",
             "resource_type": "other",
+            "timestamp": "2023-05-04T11:29:14.000Z",
+            "url": "https://example.com/?query=hog",
             "url_contains_cdn_cgi_path": true,
             "url_host": "example.com"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.page_shield_events",
-        "namespace": "48764",
+        "namespace": "37474",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "a717a65c-0d5d-44b7-ad3e-8459415f563c",
+        "id": "f2246fe8-a35d-4718-8e63-2c915bdcc3b2",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -4063,41 +4115,31 @@ An example event for `page_shield_events` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.page_shield_events",
-        "ingested": "2025-12-12T10:04:57Z",
+        "ingested": "2026-05-18T06:50:51Z",
         "kind": "event",
+        "original": "{\"Action\":\"log\",\"CSPDirective\":\"directive\",\"Host\":\"hostymchost.face\",\"PageURL\":\"http://example.com/?query=42\",\"PolicyID\":\"9\",\"ResourceType\":\"other\",\"Timestamp\":\"2023-05-04T11:29:14Z\",\"URL\":\"https://example.com/?query=hog\",\"URLContainsCDNCGIPath\":true,\"URLHost\":\"example.com\"}",
         "type": [
             "info"
         ]
-    },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "page_shield_events.log"
-            }
-        }
     },
     "host": {
         "name": "hostymchost.face"
     },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/page_shield_events.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
         "hosts": [
-            "hostymchost.face"
+            "hostymchost.face",
+            "example.com"
         ]
     },
+    "rule": {
+        "id": "9"
+    },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-page_shield_events"
     ],
@@ -4115,18 +4157,16 @@ An example event for `page_shield_events` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.page_shield_events.action | The action which was taken against the violation. Possible values are (log, allow). | keyword |
 | cloudflare_logpush.page_shield_events.csp_directive | The violated directive in the report. | keyword |
 | cloudflare_logpush.page_shield_events.host | The host where the resource was seen. | keyword |
-| cloudflare_logpush.page_shield_events.page | The page URL the violation was seen on. | keyword |
 | cloudflare_logpush.page_shield_events.page_url | The page URL the violation was seen on. | keyword |
 | cloudflare_logpush.page_shield_events.policy_id | The ID of the policy which was violated. | keyword |
 | cloudflare_logpush.page_shield_events.resource_type | The resource type of the violated directive. Possible values are 'script', 'connection' or 'other' for unmonitored resource types. | keyword |
@@ -4134,18 +4174,15 @@ An example event for `page_shield_events` looks as following:
 | cloudflare_logpush.page_shield_events.url | The resource URL. | keyword |
 | cloudflare_logpush.page_shield_events.url_contains_cdn_cgi_path | Whether the resource URL contains the CDN-CGI path. (deprecated by Cloudflare) | boolean |
 | cloudflare_logpush.page_shield_events.url_host | The domain host of the URL. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -4163,33 +4200,52 @@ An example event for `sinkhole_http` looks as following:
 {
     "@timestamp": "2023-09-19T12:00:00.000Z",
     "agent": {
-        "ephemeral_id": "fe6f8be2-37c0-4f74-83b6-d6061fff286d",
-        "id": "97a57f01-e27c-4ad1-87e6-ef4b6d5e1e0e",
-        "name": "elastic-agent-25658",
+        "ephemeral_id": "f5360237-2b8b-49e3-994a-ef98d531e736",
+        "id": "ac021511-d64e-46d7-b66c-ad8a1ed2dd98",
+        "name": "elastic-agent-33739",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "sinkhole_http": {
             "account_id": "AC123456",
+            "destination": {
+                "ip": "89.160.20.129"
+            },
+            "host": {
+                "name": "example.com"
+            },
             "request": {
+                "body": {
+                    "bytes": 39,
+                    "content": "{\"action\": \"login\", \"user\": \"john_doe\"}"
+                },
                 "headers": [
                     "Host: example.com",
                     "User-Agent: Mozilla/5.0",
                     "Accept: */*",
                     "Connection: keep-alive"
                 ],
-                "password": "password123"
+                "method": "POST",
+                "password": "password123",
+                "referrer": "https://searchengine.com/",
+                "uri": "/api/v1/login",
+                "url": "https://example.com/api/v1/login"
             },
-            "sinkhole_id": "SH001"
+            "sinkhole_id": "SH001",
+            "source": {
+                "ip": "67.43.156.2"
+            },
+            "timestamp": "2023-09-19T12:00:00.000Z",
+            "user": {
+                "name": "john_doe"
+            },
+            "user_agent": "Mozilla/5.0"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.sinkhole_http",
-        "namespace": "95284",
+        "namespace": "85580",
         "type": "logs"
     },
     "destination": {
@@ -4214,10 +4270,10 @@ An example event for `sinkhole_http` looks as following:
         "ip": "89.160.20.129"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "97a57f01-e27c-4ad1-87e6-ef4b6d5e1e0e",
+        "id": "ac021511-d64e-46d7-b66c-ad8a1ed2dd98",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -4227,22 +4283,12 @@ An example event for `sinkhole_http` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.sinkhole_http",
-        "ingested": "2025-12-12T10:10:56Z",
+        "ingested": "2026-05-11T12:59:20Z",
         "kind": "event",
+        "original": "{\"AccountID\":\"AC123456\",\"Body\":\"{\\\"action\\\": \\\"login\\\", \\\"user\\\": \\\"john_doe\\\"}\",\"BodyLength\":39,\"DestAddr\":\"89.160.20.129\",\"Headers\":\"Host: example.com\\nUser-Agent: Mozilla/5.0\\nAccept: */*\\nConnection: keep-alive\",\"Host\":\"example.com\",\"Method\":\"POST\",\"Password\":\"password123\",\"R2Path\":\"\",\"Referrer\":\"https://searchengine.com/\",\"SinkholeID\":\"SH001\",\"SrcAddr\":\"67.43.156.2\",\"Timestamp\":\"2023-09-19T12:00:00Z\",\"URI\":\"/api/v1/login\",\"URL\":\"https://example.com/api/v1/login\",\"UserAgent\":\"Mozilla/5.0\",\"Username\":\"john_doe\"}",
         "type": [
             "info"
         ]
-    },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "sinkhole_http.log"
-            }
-        }
     },
     "host": {
         "name": "example.com"
@@ -4258,13 +4304,7 @@ An example event for `sinkhole_http` looks as following:
         }
     },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/sinkhole_http.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "related": {
         "hosts": [
@@ -4294,6 +4334,8 @@ An example event for `sinkhole_http` looks as following:
         "ip": "67.43.156.2"
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-sinkhole_http"
     ],
@@ -4320,14 +4362,13 @@ An example event for `sinkhole_http` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.sinkhole_http.account_id | The Account ID. | keyword |
 | cloudflare_logpush.sinkhole_http.destination.ip | The destination IP address of the request. | ip |
 | cloudflare_logpush.sinkhole_http.host.name | The host the request was sent to. | keyword |
@@ -4345,18 +4386,15 @@ An example event for `sinkhole_http` looks as following:
 | cloudflare_logpush.sinkhole_http.timestamp | The date and time the sinkhole HTTP request was logged. | date |
 | cloudflare_logpush.sinkhole_http.user.name | The request username. | keyword |
 | cloudflare_logpush.sinkhole_http.user_agent | The request user agent. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -4374,20 +4412,23 @@ An example event for `spectrum_event` looks as following:
 {
     "@timestamp": "2022-05-26T09:24:00.000Z",
     "agent": {
-        "ephemeral_id": "1e145e40-ba54-4666-86af-b8bbda38bfa6",
-        "id": "e7a01d20-2fff-4feb-bb44-7361b6bc648a",
-        "name": "elastic-agent-97143",
+        "ephemeral_id": "3cdde097-c44e-4b3a-916b-78fe2857021a",
+        "id": "bf47fe17-7497-4514-a24f-4f663a35147a",
+        "name": "elastic-agent-37986",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "spectrum_event": {
             "action": "connect",
+            "application": "7ef659a2f8ef4810a9bade96fdad7c75",
             "client": {
+                "asn": 200391,
+                "bytes": 0,
+                "country": "bg",
+                "ip": "67.43.156.0",
                 "matched_ip_firewall": "UNKNOWN",
+                "port": 40456,
                 "protocol": "tcp",
                 "tcp_rtt": 0,
                 "tls": {
@@ -4408,6 +4449,9 @@ An example event for `spectrum_event` looks as following:
             },
             "ip_firewall": false,
             "origin": {
+                "bytes": 0,
+                "ip": "175.16.199.0",
+                "port": 3389,
                 "protocol": "tcp",
                 "tcp_rtt": 0,
                 "tls": {
@@ -4420,12 +4464,14 @@ An example event for `spectrum_event` looks as following:
             },
             "proxy": {
                 "protocol": "off"
-            }
+            },
+            "status": 0,
+            "timestamp": "2022-05-26T09:24:00.000Z"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.spectrum_event",
-        "namespace": "19575",
+        "namespace": "18982",
         "type": "logs"
     },
     "destination": {
@@ -4434,10 +4480,10 @@ An example event for `spectrum_event` looks as following:
         "port": 3389
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "e7a01d20-2fff-4feb-bb44-7361b6bc648a",
+        "id": "bf47fe17-7497-4514-a24f-4f663a35147a",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -4448,25 +4494,16 @@ An example event for `spectrum_event` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.spectrum_event",
+        "duration": -1653557040000000000,
         "end": "1970-01-01T00:00:00.000Z",
         "id": "7ef659a2f8ef4810a9bade96fdad7c75",
-        "ingested": "2025-12-12T10:17:07Z",
+        "ingested": "2026-05-18T06:51:50Z",
         "kind": "event",
+        "original": "{\"Application\":\"7ef659a2f8ef4810a9bade96fdad7c75\",\"ClientAsn\":200391,\"ClientBytes\":0,\"ClientCountry\":\"bg\",\"ClientIP\":\"67.43.156.0\",\"ClientMatchedIpFirewall\":\"UNKNOWN\",\"ClientPort\":40456,\"ClientProto\":\"tcp\",\"ClientTcpRtt\":0,\"ClientTlsCipher\":\"UNK\",\"ClientTlsClientHelloServerName\":\"server name\",\"ClientTlsProtocol\":\"unknown\",\"ClientTlsStatus\":\"UNKNOWN\",\"ColoCode\":\"SOF\",\"ConnectTimestamp\":\"2022-05-26T09:24:00Z\",\"DisconnectTimestamp\":\"1970-01-01T00:00:00Z\",\"Event\":\"connect\",\"IpFirewall\":false,\"OriginBytes\":0,\"OriginIP\":\"175.16.199.0\",\"OriginPort\":3389,\"OriginProto\":\"tcp\",\"OriginTcpRtt\":0,\"OriginTlsCipher\":\"UNK\",\"OriginTlsFingerprint\":\"0000000000000000000000000000000000000000000000000000000000000000.\",\"OriginTlsMode\":\"off\",\"OriginTlsProtocol\":\"unknown\",\"OriginTlsStatus\":\"UNKNOWN\",\"ProxyProtocol\":\"off\",\"Status\":0,\"Timestamp\":\"2022-05-26T09:24:00Z\"}",
         "start": "2022-05-26T09:24:00.000Z",
         "type": [
             "info"
         ]
-    },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "spectrum_event.log"
-            }
-        }
     },
     "http": {
         "response": {
@@ -4474,19 +4511,16 @@ An example event for `spectrum_event` looks as following:
         }
     },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/spectrum_event.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "network": {
         "community_id": "1:X7lywUVKlduqRq5SyCRaBj4hLP0=",
         "transport": "tcp"
     },
     "related": {
+        "hash": [
+            "0000000000000000000000000000000000000000000000000000000000000000."
+        ],
         "ip": [
             "67.43.156.0",
             "175.16.199.0"
@@ -4504,9 +4538,22 @@ An example event for `spectrum_event` looks as following:
         "port": 40456
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-spectrum_event"
-    ]
+    ],
+    "tls": {
+        "cipher": "UNK",
+        "client": {
+            "server_name": "server name"
+        },
+        "server": {
+            "hash": {
+                "sha256": "0000000000000000000000000000000000000000000000000000000000000000."
+            }
+        }
+    }
 }
 ```
 
@@ -4514,14 +4561,13 @@ An example event for `spectrum_event` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.spectrum_event.action | Event Action. | keyword |
 | cloudflare_logpush.spectrum_event.application | The unique public ID of the application on which the event occurred. | keyword |
 | cloudflare_logpush.spectrum_event.client.asn | Client AS number. | long |
@@ -4553,18 +4599,15 @@ An example event for `spectrum_event` looks as following:
 | cloudflare_logpush.spectrum_event.proxy.protocol | Which form of proxy protocol is applied to the given connection. | keyword |
 | cloudflare_logpush.spectrum_event.status | A code indicating reason for connection closure. | long |
 | cloudflare_logpush.spectrum_event.timestamp | Timestamp at which the event took place. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
@@ -4582,18 +4625,25 @@ An example event for `workers_trace` looks as following:
 {
     "@timestamp": "2023-07-20T11:35:46.804Z",
     "agent": {
-        "ephemeral_id": "7be35875-0716-4185-a715-56f4262e6677",
-        "id": "5de705c9-500f-4f23-b85e-94dfb165569e",
-        "name": "elastic-agent-35180",
+        "ephemeral_id": "965be674-649c-4d4d-a517-a0b096ce6326",
+        "id": "3dd2d8dc-5e48-4d17-bbf8-db7c36035fde",
+        "name": "elastic-agent-85422",
         "type": "filebeat",
         "version": "8.17.1"
-    },
-    "cloud": {
-        "provider": "google cloud"
     },
     "cloudflare_logpush": {
         "workers_trace": {
             "dispatch_namespace": "my-worker-dispatch",
+            "event": {
+                "ray_id": "7e9ae7157ac0c33a",
+                "request": {
+                    "method": "GET",
+                    "url": "http://chat-gpt-little-butterfly-0c3d.example.workers.dev/v2/_catalog"
+                },
+                "response": {
+                    "status": 404
+                }
+            },
             "exceptions": [
                 {
                     "message": "Uncaught TypeError: Cannot read property 'x' of undefined",
@@ -4610,25 +4660,28 @@ An example event for `workers_trace` looks as following:
                     "message": "Something went wrong"
                 }
             ],
+            "outcome": "exception",
             "script": {
                 "name": "chat-gpt-little-butterfly-0c3d",
                 "tags": [
                     "api",
                     "chatgpt"
                 ]
-            }
+            },
+            "timestamp": "2023-07-20T11:35:46.804Z",
+            "type": "fetch"
         }
     },
     "data_stream": {
         "dataset": "cloudflare_logpush.workers_trace",
-        "namespace": "22099",
+        "namespace": "56374",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "5de705c9-500f-4f23-b85e-94dfb165569e",
+        "id": "3dd2d8dc-5e48-4d17-bbf8-db7c36035fde",
         "snapshot": false,
         "version": "8.17.1"
     },
@@ -4640,24 +4693,14 @@ An example event for `workers_trace` looks as following:
         ],
         "dataset": "cloudflare_logpush.workers_trace",
         "id": "7e9ae7157ac0c33a",
-        "ingested": "2025-12-12T10:23:03Z",
+        "ingested": "2026-04-29T03:08:36Z",
         "kind": "event",
+        "original": "{\"DispatchNamespace\":\"my-worker-dispatch\",\"Event\":{\"RayID\":\"7e9ae7157ac0c33a\",\"Request\":{\"Method\":\"GET\",\"URL\":\"http://chat-gpt-little-butterfly-0c3d.example.workers.dev/v2/_catalog\"},\"Response\":{\"Status\":404}},\"EventTimestampMs\":1689852946804,\"EventType\":\"fetch\",\"Exceptions\":[{\"Message\":\"Uncaught TypeError: Cannot read property 'x' of undefined\",\"Stack\":\"TypeError: Cannot read property 'x' of undefined\\n    at fetchHandler (/workers/script.js:12:27)\\n    at handleRequest (/workers/script.js:6:13)\"}],\"Logs\":[{\"level\":\"info\",\"message\":\"Request received for /api/data\"},{\"level\":\"error\",\"message\":\"Something went wrong\"}],\"Outcome\":\"exception\",\"ScriptName\":\"chat-gpt-little-butterfly-0c3d\",\"ScriptTags\":[\"api\",\"chatgpt\"]}",
         "outcome": "failure",
         "type": [
             "info",
             "error"
         ]
-    },
-    "gcs": {
-        "storage": {
-            "bucket": {
-                "name": "testbucket"
-            },
-            "object": {
-                "content_type": "application/json",
-                "name": "workers_trace.log"
-            }
-        }
     },
     "http": {
         "request": {
@@ -4668,15 +4711,11 @@ An example event for `workers_trace` looks as following:
         }
     },
     "input": {
-        "type": "gcs"
-    },
-    "log": {
-        "file": {
-            "path": "gs://testbucket/workers_trace.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
         "forwarded",
         "cloudflare_logpush-workers_trace"
     ],
@@ -4693,14 +4732,14 @@ An example event for `workers_trace` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloudflare_logpush.workers_trace.cpu_time_ms | The amount of CPU time used by the Worker script, in milliseconds. | long |
 | cloudflare_logpush.workers_trace.dispatch_namespace | The Cloudflare Worker dispatch namespace. | keyword |
 | cloudflare_logpush.workers_trace.entrypoint | The name of the entrypoint class in which the Worker began execution. | keyword |
 | cloudflare_logpush.workers_trace.event | Details about the source event. | flattened |
@@ -4712,18 +4751,16 @@ An example event for `workers_trace` looks as following:
 | cloudflare_logpush.workers_trace.script.version | The version of the script that was invoked. | flattened |
 | cloudflare_logpush.workers_trace.timestamp | The timestamp of when the event was received. | date |
 | cloudflare_logpush.workers_trace.type | The event type that triggered the invocation. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
+| cloudflare_logpush.workers_trace.wall_time_ms | The elapsed wall-clock time in milliseconds for the Worker invocation. | long |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
 | gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
 | gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |
 | gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |

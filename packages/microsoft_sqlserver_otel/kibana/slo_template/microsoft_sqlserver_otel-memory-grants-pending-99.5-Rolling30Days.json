@@ -1,0 +1,55 @@
+{
+  "attributes": {
+    "name": "[SQL Server OTel] Memory grants pending 99.5% rolling 30 days",
+    "description": "This SLO tracks SQL Server memory grants pending via OTel metrics, ensuring that 99.5% of 1-minute time intervals show zero queries waiting for memory grants over a rolling period of 30 days. Any sustained non-zero value means queries cannot execute and users experience hangs or timeouts.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"sqlserverreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "sqlserver.memory.grants.pending.count"
+            }
+          ],
+          "equation": "A",
+          "comparator": "LTE",
+          "threshold": 0
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "sqlserver",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.service.instance.id"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "microsoft_sqlserver_otel-overview"
+        },
+        {
+          "id": "microsoft_sqlserver_otel-memory-saturation"
+        }
+      ]
+    }
+  },
+  "id": "microsoft_sqlserver_otel-memory-grants-pending-99.5-Rolling30Days",
+  "type": "slo_template"
+}

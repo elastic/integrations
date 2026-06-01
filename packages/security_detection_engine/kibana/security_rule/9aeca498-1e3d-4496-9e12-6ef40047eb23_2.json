@@ -1,0 +1,183 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects shell executions (cmd, PowerShell, rundll32) spawned by Velociraptor. Threat actors have been observed installing Velociraptor to execute shell commands on compromised systems, blending in with legitimate system processes.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Shell Execution via Velociraptor",
+        "note": "## Triage and analysis\n\n### Investigating Suspicious Shell Execution via Velociraptor\n\nVelociraptor is a legitimate endpoint visibility and response tool. Threat actors have been observed deploying it on compromised systems to run shell commands (cmd, PowerShell, rundll32), making their activity look like normal Velociraptor-collector behavior.\n\n### Possible investigation steps\n\n- Confirm the parent process name matches a Velociraptor binary (e.g. velociraptor.exe, Velociraptor.exe) and the child is cmd.exe, powershell.exe, or rundll32.exe.\n- Review the child process command line for suspicious or interactive commands (e.g. download, lateral movement, credential access) versus known Velociraptor artifact scripts (Get-LocalGroupMember, Get-Date, registry queries, Velociraptor Tools module).\n- Identify how Velociraptor was installed (dropped by another process, scheduled task, service); correlate with earlier process or file events on the host.\n- Check whether the Velociraptor executable path and code signature are expected (e.g. Program Files vs. temp or user writable); unauthorized installs are often from non-standard paths.\n- Correlate with other alerts for the same host or user (initial access, persistence, C2) to determine if this is abuse vs. legitimate IR/DFIR use.\n\n### False positive analysis\n\n- Legitimate Velociraptor artifacts that run Get-LocalGroupMember, Get-Date, registry Run key checks, or Velociraptor Tools PowerShell module are excluded by the rule; remaining FPs may be custom artifacts. Allowlist by command-line pattern or host if you use Velociraptor for authorized IR and see known-good artifacts.\n\n### Response and remediation\n\n- If abuse is confirmed: isolate the host, terminate the Velociraptor and child shell processes, and remove the Velociraptor installation (binary, service, config).\n- Determine how Velociraptor was deployed and close the initial access vector; rotate credentials for affected accounts.\n- If the deployment was authorized (IR/DFIR), document and tune the rule or add an exception to reduce noise.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and process.command_line != null and\n process.parent.name : \"velociraptor.exe\" and\n process.name : (\"cmd.exe\", \"powershell.exe\", \"rundll32.exe\") and\n not (process.name : \"powershell.exe\" and process.command_line : \"*RwBlAHQALQBMAG8AYwBhAGwARwByAG8AdQBwAE0AZQBtAGIAZQBy*\") and\n not (process.name : \"powershell.exe\" and process.command_line : \"*RwBlAHQALQBEAGEAdABl*\" and process.command_line : \"*-Format*\") and\n not (process.name : \"cmd.exe\" and process.command_line : \"*start*127.0.0.1:8889*\") and\n not (process.name : \"powershell.exe\" and process.command_line : \"*RwBlAHQALQBJAHQAZQBt*\" and process.command_line : \"*UgBlAGcAaQBzAHQAcgB5*\" and process.command_line : \"*UgB1AG4A*\") and\n not (process.name : \"powershell.exe\" and\n      process.args : (\"RwBlAHQALQ*\", \"UgBlAG0AbwB2AGUALQBJAHQAZQBtACA*\", \"C:\\\\Program Files\\\\Velociraptor\\\\thor.db\",\n                      \"import-module \\\"C:\\\\Program Files\\\\Velociraptor\\\\Tools\\\\*\"))\n",
+        "references": [
+            "https://www.huntress.com/blog/active-exploitation-solarwinds-web-help-desk-cve-2025-26399",
+            "https://attack.mitre.org/techniques/T1219/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "9aeca498-1e3d-4496-9e12-6ef40047eb23",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Tactic: Execution",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Crowdstrike",
+            "Data Source: Elastic Endgame",
+            "Data Source: Windows Security Event Logs"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1219",
+                        "name": "Remote Access Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1219/",
+                        "subtechnique": [
+                            {
+                                "id": "T1219.002",
+                                "name": "Remote Desktop Software",
+                                "reference": "https://attack.mitre.org/techniques/T1219/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/",
+                        "subtechnique": [
+                            {
+                                "id": "T1218.011",
+                                "name": "Rundll32",
+                                "reference": "https://attack.mitre.org/techniques/T1218/011/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            },
+                            {
+                                "id": "T1059.003",
+                                "name": "Windows Command Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 2
+    },
+    "id": "9aeca498-1e3d-4496-9e12-6ef40047eb23_2",
+    "type": "security-rule"
+}

@@ -1,0 +1,632 @@
+dashboards:
+- id: redisenterprise_otel-shard-diagnostics
+  name: '[Redis Enterprise OTel] Shard Diagnostics'
+  description: 'Shard-level deep diagnostics for Redis Enterprise: per-shard resource usage, memory fragmentation, persistence operations, replication health, error analysis, and client connection patterns.'
+  time_range:
+    from: now-15m
+    to: now
+  minimum_kibana_version: 8.14.0
+  filters:
+  - field: data_stream.dataset
+    equals: redisenterprise.otel
+  settings:
+    margins: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+  controls:
+  - type: options
+    label: Cluster
+    data_view: metrics-*
+    field: cluster
+  - type: options
+    label: Database
+    data_view: metrics-*
+    field: bdb
+  - type: options
+    label: Node
+    data_view: metrics-*
+    field: node
+  panels:
+  - title: Navigation
+    size:
+      w: 48
+      h: 2
+    links:
+      layout: horizontal
+      items:
+      - label: Cluster Overview
+        dashboard: redisenterprise_otel-overview
+      - label: Node Health
+        dashboard: redisenterprise_otel-node-health
+      - label: Database Performance
+        dashboard: redisenterprise_otel-database-performance
+      - label: Proxy & Listener
+        dashboard: redisenterprise_otel-proxy-listener
+      - label: Shard Diagnostics
+        dashboard: redisenterprise_otel-shard-diagnostics
+  - hide_title: true
+    size:
+      w: 16
+      h: 12
+    markdown:
+      content: '## [Redis Enterprise OTel] Shard Diagnostics
+
+
+        Granular shard-level monitoring for deep troubleshooting:
+
+        - Per-shard memory, CPU, and ops/sec for hot-spot detection
+
+        - Memory fragmentation and allocator behaviour
+
+        - AOF rewrite and RDB snapshot activity with CoW overhead
+
+        - Replication lag and sync status
+
+        - Error replies and ACL denial breakdown
+
+        - Client connection saturation and blocked clients
+
+        - Event loop performance metrics
+
+        '
+  - title: Shards Up
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_up IS NOT NULL
+      - STATS shard_status = MAX(redis_up) BY redis
+      - STATS shards_up = SUM(shard_status), total_shards = COUNT(*)
+      primary:
+        field: shards_up
+        label: Shards Up
+        format:
+          type: number
+          decimals: 0
+  - title: Avg Shard Memory
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_used_memory IS NOT NULL
+      - STATS avg_mem = AVG(redis_used_memory)
+      primary:
+        field: avg_mem
+        label: Avg Shard Memory
+        format:
+          type: bytes
+  - title: Avg Shard Ops/sec
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_instantaneous_ops_per_sec IS NOT NULL
+      - STATS avg_ops = AVG(redis_instantaneous_ops_per_sec)
+      primary:
+        field: avg_ops
+        label: Avg Ops/sec
+        format:
+          type: number
+          compact: true
+  - title: Blocked Clients
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_blocked_clients IS NOT NULL
+      - STATS avg_blocked = AVG(redis_blocked_clients) BY redis
+      - STATS total_blocked = SUM(avg_blocked)
+      primary:
+        field: total_blocked
+        label: Blocked Clients
+        format:
+          type: number
+          decimals: 0
+  - title: Total Error Replies
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_total_error_replies IS NOT NULL
+      - STATS total_errors = SUM(redis_total_error_replies)
+      primary:
+        field: total_errors
+        label: Error Replies
+        format:
+          type: number
+          compact: true
+  - title: Avg Fragmentation Ratio
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_mem_fragmentation_ratio IS NOT NULL
+      - STATS avg_frag = AVG(redis_mem_fragmentation_ratio)
+      primary:
+        field: avg_frag
+        label: Avg Fragmentation
+        format:
+          type: number
+          decimals: 2
+  - title: Connected Clients
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_connected_clients IS NOT NULL
+      - STATS avg_clients = AVG(redis_connected_clients) BY redis
+      - STATS total_clients = SUM(avg_clients)
+      primary:
+        field: total_clients
+        label: Connected Clients
+        format:
+          type: number
+          compact: true
+  - title: Active Defrag Running
+    hide_title: true
+    size:
+      w: 8
+      h: 6
+    esql:
+      type: metric
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_active_defrag_running IS NOT NULL
+      - STATS defrag_active = SUM(redis_active_defrag_running)
+      primary:
+        field: defrag_active
+        label: Defrag Active
+        format:
+          type: number
+          decimals: 0
+  - hide_title: true
+    size:
+      w: 48
+      h: 3
+    markdown:
+      content: '## Resource Usage by Shard'
+  - title: Memory Usage by Shard
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: bar
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_used_memory IS NOT NULL
+      - STATS used_memory = AVG(redis_used_memory) BY redis, bdb, role
+      - EVAL label = CONCAT(redis, " (", role, ")")
+      - SORT used_memory DESC
+      - LIMIT 20
+      dimension:
+        field: label
+      metrics:
+      - field: used_memory
+        label: Used Memory
+        format:
+          type: bytes
+      appearance:
+        y_left_axis:
+          title: Used Memory (bytes)
+  - title: Ops/sec by Shard
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: bar
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_instantaneous_ops_per_sec IS NOT NULL
+      - STATS ops = AVG(redis_instantaneous_ops_per_sec) BY redis, bdb, role
+      - EVAL label = CONCAT(redis, " (", role, ")")
+      - SORT ops DESC
+      - LIMIT 20
+      dimension:
+        field: label
+      metrics:
+      - field: ops
+        label: Ops/sec
+        format:
+          type: number
+          compact: true
+      appearance:
+        y_left_axis:
+          title: Operations / sec
+  - title: Shard CPU Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_process_cpu_usage_percent IS NOT NULL
+      - STATS cpu_pct = AVG(redis_process_cpu_usage_percent) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), redis
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: cpu_pct
+        label: CPU %
+        format:
+          type: number
+          decimals: 1
+          suffix: '%'
+      breakdown:
+        field: redis
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: CPU Usage %
+  - title: Memory Fragmentation Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_mem_fragmentation_ratio IS NOT NULL
+      - STATS frag = AVG(redis_mem_fragmentation_ratio) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), redis
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: frag
+        label: Fragmentation Ratio
+        format:
+          type: number
+          decimals: 2
+      breakdown:
+        field: redis
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Fragmentation Ratio (RSS / used)
+  - hide_title: true
+    size:
+      w: 48
+      h: 3
+    markdown:
+      content: '## Persistence & Fork Activity'
+  - title: AOF Rewrite & RDB Save Activity Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: bar
+      mode: stacked
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_aof_rewrite_in_progress IS NOT NULL
+      - STATS aof_rewrites = SUM(redis_aof_rewrite_in_progress), rdb_saves = SUM(redis_rdb_bgsave_in_progress) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: aof_rewrites
+        label: AOF Rewrites
+        format:
+          type: number
+          decimals: 0
+      - field: rdb_saves
+        label: RDB Saves
+        format:
+          type: number
+          decimals: 0
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Active Operations
+  - title: Copy-on-Write Size Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_current_cow_size IS NOT NULL
+      - STATS cow_size = MAX(redis_current_cow_size) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), redis
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: cow_size
+        label: CoW Size
+        format:
+          type: bytes
+      breakdown:
+        field: redis
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: CoW Size (bytes)
+  - title: Fork Progress Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_current_fork_perc IS NOT NULL
+      - STATS fork_pct = MAX(redis_current_fork_perc) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), redis
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: fork_pct
+        label: Fork Progress %
+        format:
+          type: number
+          decimals: 0
+          suffix: '%'
+      breakdown:
+        field: redis
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Fork Progress %
+  - title: RDB Changes Since Last Save
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_rdb_changes_since_last_save IS NOT NULL
+      - STATS changes = AVG(redis_rdb_changes_since_last_save) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), redis
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: changes
+        label: Unsaved Changes
+        format:
+          type: number
+          compact: true
+      breakdown:
+        field: redis
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Unsaved Changes
+  - hide_title: true
+    size:
+      w: 48
+      h: 3
+    markdown:
+      content: '## Errors & Client Connections'
+  - title: Error Replies Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: bar
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_total_error_replies IS NOT NULL
+      - STATS errors = SUM(redis_total_error_replies) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), redis
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: errors
+        label: Error Replies
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: redis
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Error Replies
+  - title: Connected Clients Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_connected_clients IS NOT NULL
+      - STATS clients = AVG(redis_connected_clients) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), redis
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: clients
+        label: Connected Clients
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: redis
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Connected Clients
+  - title: Blocked Clients Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_blocked_clients IS NOT NULL
+      - STATS blocked = AVG(redis_blocked_clients) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), redis
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: blocked
+        label: Blocked Clients
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: redis
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Blocked Clients
+  - title: Event Loop Duration Over Time
+    size:
+      w: 24
+      h: 12
+    esql:
+      type: line
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_eventloop_duration_sum IS NOT NULL
+      - STATS loop_duration = AVG(redis_eventloop_duration_sum) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), redis
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: loop_duration
+        label: Event Loop Duration (µs)
+        format:
+          type: number
+          compact: true
+      breakdown:
+        field: redis
+      legend:
+        visible: show
+        position: right
+      appearance:
+        y_left_axis:
+          title: Event Loop Duration (µs)
+  - hide_title: true
+    size:
+      w: 48
+      h: 3
+    markdown:
+      content: '## Detail'
+  - title: Shard Detail
+    size:
+      w: 48
+      h: 15
+    esql:
+      type: datatable
+      query:
+      - FROM metrics-redisenterprise.otel-default
+      - WHERE redis_up IS NOT NULL
+      - STATS Status = MAX(redis_up), `Used Memory` = AVG(redis_used_memory), `Max Memory` = AVG(redis_maxmemory), `RSS` = AVG(redis_used_memory_rss), `Frag Ratio` = AVG(redis_mem_fragmentation_ratio), `Ops/sec` = AVG(redis_instantaneous_ops_per_sec), `CPU %` = AVG(redis_process_cpu_usage_percent), `Clients` = AVG(redis_connected_clients), `Blocked` = AVG(redis_blocked_clients), `Errors` = SUM(redis_total_error_replies) BY redis, bdb, node, role
+      - EVAL `Memory %` = COALESCE(ROUND((`Used Memory` / `Max Memory`) * 100, 1), 0.0)
+      - EVAL Status = COALESCE(Status, 0), `Used Memory` = COALESCE(`Used Memory`, 0), `Max Memory` = COALESCE(`Max Memory`, 0), `RSS` = COALESCE(`RSS`, 0), `Frag Ratio` = COALESCE(`Frag Ratio`, 0.0), `Ops/sec` = COALESCE(`Ops/sec`, 0.0), `CPU %` = COALESCE(`CPU %`, 0.0), `Clients` = COALESCE(`Clients`, 0), `Blocked` = COALESCE(`Blocked`, 0), `Errors` = COALESCE(`Errors`, 0)
+      - SORT `Used Memory` DESC
+      - LIMIT 100
+      breakdowns:
+      - field: redis
+        label: Shard
+      - field: bdb
+        label: Database
+      - field: node
+        label: Node
+      - field: role
+        label: Role
+      metrics:
+      - field: Status
+        label: Up
+        format:
+          type: number
+          decimals: 0
+      - field: Used Memory
+        label: Memory
+        format:
+          type: bytes
+      - field: Memory %
+        label: Memory %
+        format:
+          type: number
+          decimals: 1
+          suffix: '%'
+      - field: Frag Ratio
+        label: Frag
+        format:
+          type: number
+          decimals: 2
+      - field: Ops/sec
+        label: Ops/sec
+        format:
+          type: number
+          compact: true
+      - field: CPU %
+        label: CPU %
+        format:
+          type: number
+          decimals: 1
+          suffix: '%'
+      - field: Clients
+        label: Clients
+        format:
+          type: number
+          decimals: 0
+      - field: Errors
+        label: Errors
+        format:
+          type: number
+          compact: true

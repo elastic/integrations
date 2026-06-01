@@ -1,0 +1,67 @@
+{
+  "attributes": {
+    "name": "[Envoy OTel] Downstream request availability 99.5% rolling 30 days",
+    "description": "Tracks the proportion of downstream HTTP requests that complete successfully (2xx responses) versus total completed requests. Ensures 99.5% of 1-minute timeslices meet the availability threshold over a rolling 30-day period. Degradation indicates upstream failures, timeouts, or proxy configuration issues affecting client-facing request success.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"statsdreceiver\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "envoy.http.ingress_http.downstream_rq_2xx",
+              "filter": ""
+            },
+            {
+              "name": "B",
+              "aggregation": "min",
+              "field": "envoy.http.ingress_http.downstream_rq_2xx",
+              "filter": ""
+            },
+            {
+              "name": "C",
+              "aggregation": "max",
+              "field": "envoy.http.ingress_http.downstream_rq_completed",
+              "filter": ""
+            },
+            {
+              "name": "D",
+              "aggregation": "min",
+              "field": "envoy.http.ingress_http.downstream_rq_completed",
+              "filter": ""
+            }
+          ],
+          "equation": "(A-B)/(C-D)",
+          "comparator": "GTE",
+          "threshold": 0.995
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "envoy",
+      "otel"
+    ]
+  },
+  "artifacts": {
+    "dashboards": [
+      { "id": "envoyproxy_otel-envoy-overview" },
+      { "id": "envoyproxy_otel-envoy-downstream" }
+    ]
+  },
+  "id": "envoyproxy_otel-downstream-request-availability-99.5-Rolling30Days",
+  "type": "slo_template"
+}
