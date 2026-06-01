@@ -1,0 +1,1801 @@
+{
+    "accessControl": {
+        "accessMode": "default",
+        "owner": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    },
+    "attributes": {
+        "description": "Cost breakdown by SKU, deployment, and tier. Shows total billing, cost by component, and deployment cost comparison.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "autoApplyFilters": true,
+            "hidePanelBorders": false,
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "layout": "horizontal",
+                    "links": [
+                        {
+                            "destinationRefName": "link_953bc6a8-f66a-45b7-ac26-0dfe293bb6f4_dashboard",
+                            "options": {
+                                "open_in_new_tab": false,
+                                "use_filters": true,
+                                "use_time_range": true
+                            },
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_07b2c791-8687-421a-b14f-4d033cfb3808_dashboard",
+                            "options": {
+                                "open_in_new_tab": false,
+                                "use_filters": true,
+                                "use_time_range": true
+                            },
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_d4e86f32-bccc-47f2-9dea-b61792cd5585_dashboard",
+                            "options": {
+                                "open_in_new_tab": false,
+                                "use_filters": true,
+                                "use_time_range": true
+                            },
+                            "type": "dashboardLink"
+                        }
+                    ]
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "98c09b2b-c68f-ac41-8625-0fc04714f44f",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "98c09b2b-c68f-ac41-8625-0fc04714f44f",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                    "managed": false,
+                                    "name": "billing_cluster_cost_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "billing_cluster_cost_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "timeField": "@timestamp",
+                                            "title": "billing_cluster_cost_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "aa55ae31-395f-4738-b9fd-3da1d649d640": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "@timestamp",
+                                                    "customLabel": false,
+                                                    "fieldName": "@timestamp",
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "deployment",
+                                                    "customLabel": false,
+                                                    "fieldName": "deployment",
+                                                    "label": "Deployment",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Normalised cost",
+                                                    "customLabel": false,
+                                                    "fieldName": "Normalised cost",
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "query": {
+                                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL total_chargeable_units_value = COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0), deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS `Normalised cost` = SUM(total_chargeable_units_value) BY @timestamp, deployment\n| SORT @timestamp DESC\n| LIMIT 5000"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL total_chargeable_units_value = COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0), deployment = CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\")\n| STATS `Normalised cost` = SUM(total_chargeable_units_value) BY @timestamp, deployment\n| SORT @timestamp DESC\n| LIMIT 5000"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "Normalised cost"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "aa55ae31-395f-4738-b9fd-3da1d649d640",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessors": [
+                                            "deployment"
+                                        ],
+                                        "xAccessor": "@timestamp"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Total Cloud Billing Over Time",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Full deployment bill: the sum of ALL billing SKUs (data tiers, ML, Kibana, snapshots, data transfer and on-prem nodes) converted at the configured rate. This is the highest-level total. Tier and data-stream panels show only the allocatable data-tier pool, so they sum to less than this figure.",
+                    "time_range": {
+                        "from": "now-6M",
+                        "to": "now"
+                    },
+                    "title": "Total Cloud Billing Over Time"
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "d9069c7e-bfaf-4045-aedf-ca1042c21010",
+                    "w": 48,
+                    "x": 0,
+                    "y": 2
+                },
+                "panelIndex": "d9069c7e-bfaf-4045-aedf-ca1042c21010",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                    "managed": false,
+                                    "name": "billing_cluster_cost_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "billing_cluster_cost_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "timeField": "@timestamp",
+                                            "title": "billing_cluster_cost_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "c6398250-abb1-4935-a3a8-41af3c8ea057": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "@timestamp",
+                                                    "customLabel": false,
+                                                    "fieldName": "@timestamp",
+                                                    "label": "@timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "deployment_group",
+                                                    "customLabel": false,
+                                                    "fieldName": "deployment_group",
+                                                    "label": "Deployment Group",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Normalised cost",
+                                                    "customLabel": false,
+                                                    "fieldName": "Normalised cost",
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "query": {
+                                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL total_chargeable_units_value = COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| STATS `Normalised cost` = SUM(total_chargeable_units_value) BY @timestamp, deployment_group\n| SORT @timestamp DESC\n| LIMIT 5000"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp \u003e= conf_start_date AND @timestamp \u003c= conf_end_date\n| EVAL total_chargeable_units_value = COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| STATS `Normalised cost` = SUM(total_chargeable_units_value) BY @timestamp, deployment_group\n| SORT @timestamp DESC\n| LIMIT 5000"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "Normalised cost"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "c6398250-abb1-4935-a3a8-41af3c8ea057",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessors": [
+                                            "deployment_group"
+                                        ],
+                                        "xAccessor": "@timestamp"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Cost Trend by Deployment Group",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Full deployment bill: the sum of ALL billing SKUs (data tiers, ML, Kibana, snapshots, data transfer and on-prem nodes) converted at the configured rate. This is the highest-level total. Tier and data-stream panels show only the allocatable data-tier pool, so they sum to less than this figure.",
+                    "time_range": {
+                        "from": "now-6M",
+                        "to": "now"
+                    },
+                    "title": "Normalised Cost Trend by Deployment Group"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "003538c5-ca13-4130-949f-2b70047abb38",
+                    "sectionId": "2b8b2365-5e05-4f1d-8880-f35892a8e60f",
+                    "w": 48,
+                    "x": 0,
+                    "y": 3
+                },
+                "panelIndex": "003538c5-ca13-4130-949f-2b70047abb38",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "# Deployment group statistics",
+                    "settings": {
+                        "open_links_in_new_tab": false
+                    },
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 3,
+                    "i": "67c62ee5-2ceb-404a-a7a0-817be211286f",
+                    "sectionId": "2b8b2365-5e05-4f1d-8880-f35892a8e60f",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "67c62ee5-2ceb-404a-a7a0-817be211286f",
+                "type": "markdown"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                    "managed": false,
+                                    "name": "billing_cluster_cost_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "billing_cluster_cost_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "timeField": "@timestamp",
+                                            "title": "billing_cluster_cost_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "b9429019-7f45-4333-8551-6642636e2db9": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "Normalised cost",
+                                                    "customLabel": false,
+                                                    "fieldName": "Normalised cost",
+                                                    "inMetricDimension": true,
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Deployment Group",
+                                                    "customLabel": false,
+                                                    "fieldName": "Deployment Group",
+                                                    "label": "Deployment Group",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "query": {
+                                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts \u003e= conf_start_date AND ts \u003c= conf_end_date\n| STATS `Normalised cost` = SUM(COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)) BY deployment_group | RENAME deployment_group AS `Deployment Group`\n| SORT `Normalised cost` DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM billing_cluster_cost_lookup\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts \u003e= conf_start_date AND ts \u003c= conf_end_date\n| STATS `Normalised cost` = SUM(COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)) BY deployment_group | RENAME deployment_group AS `Deployment Group`\n| SORT `Normalised cost` DESC"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "Normalised cost",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "summaryRow": "sum"
+                                    },
+                                    {
+                                        "columnId": "Deployment Group",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "b9429019-7f45-4333-8551-6642636e2db9",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "Full deployment bill: the sum of ALL billing SKUs (data tiers, ML, Kibana, snapshots, data transfer and on-prem nodes) converted at the configured rate. This is the highest-level total. Tier and data-stream panels show only the allocatable data-tier pool, so they sum to less than this figure.",
+                    "title": "Normalised Cost by Deployment Group"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "43ab691d-4b1f-4e83-b2e4-026c16f6a5eb",
+                    "sectionId": "2b8b2365-5e05-4f1d-8880-f35892a8e60f",
+                    "w": 16,
+                    "x": 0,
+                    "y": 17
+                },
+                "panelIndex": "43ab691d-4b1f-4e83-b2e4-026c16f6a5eb",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                    "managed": false,
+                                    "name": "billing_cluster_cost_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "billing_cluster_cost_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "timeField": "@timestamp",
+                                            "title": "billing_cluster_cost_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "b410b660-726b-4ecd-943b-c66510f2ce58": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "Normalised cost",
+                                                    "customLabel": false,
+                                                    "fieldName": "Normalised cost",
+                                                    "inMetricDimension": true,
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Deployment Group",
+                                                    "customLabel": false,
+                                                    "fieldName": "Deployment Group",
+                                                    "label": "Deployment Group",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "2f5e2665-1370-45f6-a2cd-973250b4d9d5",
+                                                    "fieldName": "Cost Category",
+                                                    "label": "Cost Category",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "sourceField": "Cost Category"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "query": {
+                                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` \u003e= conf_start_date AND\n            `ts` \u003c= conf_end_date\n  | STATS\n      `Normalised cost` =\n        SUM(\n          COALESCE(total_chargeable_units, total_ecu) *\n            COALESCE(\n              conf_chargeable_unit_rate,\n              conf_ecu_rate,\n              1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalised cost` DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` \u003e= conf_start_date AND\n            `ts` \u003c= conf_end_date\n  | STATS\n      `Normalised cost` =\n        SUM(\n          COALESCE(total_chargeable_units, total_ecu) *\n            COALESCE(\n              conf_chargeable_unit_rate,\n              conf_ecu_rate,\n              1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalised cost` DESC"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "Normalised cost",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "summaryRow": "sum"
+                                    },
+                                    {
+                                        "columnId": "Deployment Group",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "2f5e2665-1370-45f6-a2cd-973250b4d9d5",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "b410b660-726b-4ecd-943b-c66510f2ce58",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "Full deployment bill: the sum of ALL billing SKUs (data tiers, ML, Kibana, snapshots, data transfer and on-prem nodes) converted at the configured rate. This is the highest-level total. Tier and data-stream panels show only the allocatable data-tier pool, so they sum to less than this figure.",
+                    "title": "Normalised Cost by Deployment Group and Cost Category"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "5224b414-cee6-4426-b981-20815c77ac83",
+                    "sectionId": "2b8b2365-5e05-4f1d-8880-f35892a8e60f",
+                    "w": 16,
+                    "x": 16,
+                    "y": 17
+                },
+                "panelIndex": "5224b414-cee6-4426-b981-20815c77ac83",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                    "managed": false,
+                                    "name": "billing_cluster_cost_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "billing_cluster_cost_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "timeField": "@timestamp",
+                                            "title": "billing_cluster_cost_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "b410b660-726b-4ecd-943b-c66510f2ce58": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "Normalised cost",
+                                                    "customLabel": false,
+                                                    "fieldName": "Normalised cost",
+                                                    "inMetricDimension": true,
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Deployment Group",
+                                                    "customLabel": false,
+                                                    "fieldName": "Deployment Group",
+                                                    "label": "Deployment Group",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "2f5e2665-1370-45f6-a2cd-973250b4d9d5",
+                                                    "fieldName": "Cost Category",
+                                                    "label": "Cost Category",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "sourceField": "Cost Category"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "query": {
+                                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` \u003e= conf_start_date AND\n            `ts` \u003c= conf_end_date\n  | STATS\n      `Normalised cost` =\n        SUM(\n          COALESCE(total_chargeable_units, total_ecu) *\n            COALESCE(\n              conf_chargeable_unit_rate,\n              conf_ecu_rate,\n              1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalised cost` DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM billing_cluster_cost_lookup\n  | EVAL `ts` = @timestamp\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON\n          `ts` \u003e= conf_start_date AND\n            `ts` \u003c= conf_end_date\n  | STATS\n      `Normalised cost` =\n        SUM(\n          COALESCE(total_chargeable_units, total_ecu) *\n            COALESCE(\n              conf_chargeable_unit_rate,\n              conf_ecu_rate,\n              1.0))\n        BY deployment_group, cost_category\n  | RENAME deployment_group AS `Deployment Group`, cost_category as `Cost Category`\n  | SORT `Normalised cost` DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "b410b660-726b-4ecd-943b-c66510f2ce58",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "Normalised cost"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "Deployment Group",
+                                            "2f5e2665-1370-45f6-a2cd-973250b4d9d5"
+                                        ]
+                                    }
+                                ],
+                                "shape": "treemap"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsPie"
+                    },
+                    "description": "Full deployment bill: the sum of ALL billing SKUs (data tiers, ML, Kibana, snapshots, data transfer and on-prem nodes) converted at the configured rate. This is the highest-level total. Tier and data-stream panels show only the allocatable data-tier pool, so they sum to less than this figure.",
+                    "title": "Total Cost by Deployment Group (copy 1)"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "4db4725c-45a7-40bd-a6a8-dc7ac42fff0b",
+                    "sectionId": "2b8b2365-5e05-4f1d-8880-f35892a8e60f",
+                    "w": 16,
+                    "x": 32,
+                    "y": 17
+                },
+                "panelIndex": "4db4725c-45a7-40bd-a6a8-dc7ac42fff0b",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "# Component statistics",
+                    "settings": {
+                        "open_links_in_new_tab": false
+                    }
+                },
+                "gridData": {
+                    "h": 3,
+                    "i": "68147c35-8150-48ea-9353-d6770a66c1a9",
+                    "sectionId": "c04d8f10-0001-4000-8000-chargebacksku01",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "68147c35-8150-48ea-9353-d6770a66c1a9",
+                "type": "markdown"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                    "managed": false,
+                                    "name": "billing_cluster_cost_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "billing_cluster_cost_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "timeField": "@timestamp",
+                                            "title": "billing_cluster_cost_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "30d04f87-c476-4b48-9f90-18bda3ce5ff2": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "Normalised cost",
+                                                    "customLabel": false,
+                                                    "fieldName": "Normalised cost",
+                                                    "inMetricDimension": true,
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Deployment",
+                                                    "customLabel": false,
+                                                    "fieldName": "Deployment",
+                                                    "label": "Deployment",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Cost Type",
+                                                    "customLabel": false,
+                                                    "fieldName": "Cost Type",
+                                                    "label": "Cost Type",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "38199b76-4208-4426-9bac-33521adc19e2",
+                                                    "fieldName": "Cost Category",
+                                                    "label": "Cost Category",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "sourceField": "Cost Category"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Cost Category",
+                                                    "fieldName": "Cost Category",
+                                                    "label": "Cost Category",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "Normalised cost",
+                                                    "customLabel": false,
+                                                    "fieldName": "Normalised cost",
+                                                    "inMetricDimension": true,
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Deployment",
+                                                    "customLabel": false,
+                                                    "fieldName": "Deployment",
+                                                    "label": "Deployment",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "38199b76-4208-4426-9bac-33521adc19e2",
+                                                    "fieldName": "Cost Category",
+                                                    "label": "Cost Category",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "sourceField": "Cost Category"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Cost Type",
+                                                    "customLabel": false,
+                                                    "fieldName": "Cost Type",
+                                                    "label": "Cost Type",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "query": {
+                                                "esql": "FROM billing_cluster_cost_lookup\n  | WHERE cost_type IS NOT NULL\n  | EVAL `ts` = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type,\n      Deployment = deployment_name\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON `ts` \u003e= conf_start_date AND `ts` \u003c= conf_end_date\n  | STATS\n      `Normalised cost` =\n        SUM(\n          COALESCE(total_chargeable_units, total_ecu) *\n            COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0))\n        BY Deployment, `Cost Category`, `Cost Type`\n  | SORT `Normalised cost` DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM billing_cluster_cost_lookup\n  | WHERE cost_type IS NOT NULL\n  | EVAL `ts` = @timestamp, `Cost Category` = cost_category, `Cost Type` = cost_type,\n      Deployment = deployment_name\n  | LOOKUP JOIN chargeback_conf_lookup\n        ON `ts` \u003e= conf_start_date AND `ts` \u003c= conf_end_date\n  | STATS\n      `Normalised cost` =\n        SUM(\n          COALESCE(total_chargeable_units, total_ecu) *\n            COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0))\n        BY Deployment, `Cost Category`, `Cost Type`\n  | SORT `Normalised cost` DESC"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "Normalised cost",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "summaryRow": "sum"
+                                    },
+                                    {
+                                        "columnId": "Deployment",
+                                        "isTransposed": false,
+                                        "width": 309.66666666666663
+                                    },
+                                    {
+                                        "columnId": "Cost Type",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "38199b76-4208-4426-9bac-33521adc19e2",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "width": 187
+                                    }
+                                ],
+                                "layerId": "30d04f87-c476-4b48-9f90-18bda3ce5ff2",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "Full deployment bill: the sum of ALL billing SKUs (data tiers, ML, Kibana, snapshots, data transfer and on-prem nodes) converted at the configured rate. This is the highest-level total. Tier and data-stream panels show only the allocatable data-tier pool, so they sum to less than this figure.",
+                    "title": "Normalised cost by deployment and item"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "c04d8f10-1001-4000-8000-chargebacksku01",
+                    "sectionId": "c04d8f10-0001-4000-8000-chargebacksku01",
+                    "w": 16,
+                    "x": 0,
+                    "y": 3
+                },
+                "panelIndex": "c04d8f10-1001-4000-8000-chargebacksku01",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                    "managed": false,
+                                    "name": "billing_cluster_cost_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "billing_cluster_cost_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "timeField": "@timestamp",
+                                            "title": "billing_cluster_cost_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "292a9a01-e99b-4699-b669-8719ce91ae57": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "Cost Category",
+                                                    "customLabel": false,
+                                                    "fieldName": "Cost Category",
+                                                    "label": "Cost Category",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Normalised cost",
+                                                    "customLabel": false,
+                                                    "fieldName": "Normalised cost",
+                                                    "inMetricDimension": true,
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "2c726374-4aa5-46d4-9a07-76ded6403153",
+                                                    "fieldName": "Deployment",
+                                                    "label": "Deployment",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "sourceField": "Deployment"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Deployment",
+                                                    "fieldName": "Deployment",
+                                                    "label": "Deployment",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "2c726374-4aa5-46d4-9a07-76ded6403153",
+                                                    "fieldName": "Deployment",
+                                                    "label": "Deployment",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "sourceField": "Deployment"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Cost Category",
+                                                    "customLabel": false,
+                                                    "fieldName": "Cost Category",
+                                                    "label": "Cost Category",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Normalised cost",
+                                                    "customLabel": false,
+                                                    "fieldName": "Normalised cost",
+                                                    "inMetricDimension": true,
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "query": {
+                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts \u003e= conf_start_date AND ts \u003c= conf_end_date\n| STATS `Normalised cost` = SUM(COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)) BY deployment_name, cost_category\n| RENAME cost_category AS `Cost Category`, deployment_name AS `Deployment`\n| SORT `Normalised cost` DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts \u003e= conf_start_date AND ts \u003c= conf_end_date\n| STATS `Normalised cost` = SUM(COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)) BY deployment_name, cost_category\n| RENAME cost_category AS `Cost Category`, deployment_name AS `Deployment`\n| SORT `Normalised cost` DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "292a9a01-e99b-4699-b669-8719ce91ae57",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "Normalised cost"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "Cost Category",
+                                            "2c726374-4aa5-46d4-9a07-76ded6403153"
+                                        ]
+                                    }
+                                ],
+                                "shape": "treemap"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsPie"
+                    },
+                    "description": "Cost broken down by Deployment, and FinOps roll-up group (Cost category).\nCost category groups these into broader buckets (data_tier, platform, transfer, snapshot, onprem, other).\nThis is the highest-level total. Tier and data-stream panels show only the allocatable data-tier pool, so they sum to less than this figure."
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "c04d8f10-1004-4000-8000-chargebacksku01",
+                    "sectionId": "c04d8f10-0001-4000-8000-chargebacksku01",
+                    "w": 16,
+                    "x": 16,
+                    "y": 3
+                },
+                "panelIndex": "c04d8f10-1004-4000-8000-chargebacksku01",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                    "managed": false,
+                                    "name": "billing_cluster_cost_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "billing_cluster_cost_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "timeField": "@timestamp",
+                                            "title": "billing_cluster_cost_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "a72c8733-c35a-4013-80dd-293f9a0e8f7b": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "Cost Type",
+                                                    "customLabel": false,
+                                                    "fieldName": "Cost Type",
+                                                    "label": "Cost Type",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Normalised cost",
+                                                    "customLabel": false,
+                                                    "fieldName": "Normalised cost",
+                                                    "inMetricDimension": true,
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "71f0415a-bb2a-4ee5-acbb-c5dc1b179bc7",
+                                                    "fieldName": "Deployment",
+                                                    "label": "Deployment",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "sourceField": "Deployment"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Deployment",
+                                                    "fieldName": "Deployment",
+                                                    "label": "Deployment",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "71f0415a-bb2a-4ee5-acbb-c5dc1b179bc7",
+                                                    "fieldName": "Deployment",
+                                                    "label": "Deployment",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "billing_cluster_cost_lookup",
+                                                            "sourceField": "Deployment"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Cost Type",
+                                                    "customLabel": false,
+                                                    "fieldName": "Cost Type",
+                                                    "label": "Cost Type",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Normalised cost",
+                                                    "customLabel": false,
+                                                    "fieldName": "Normalised cost",
+                                                    "inMetricDimension": true,
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "2bf6c0d816ef0a2d56d03ede549c16c08c35db2cf02d78c12756a98a33f50e4f",
+                                            "query": {
+                                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts \u003e= conf_start_date AND ts \u003c= conf_end_date\n| STATS `Normalised cost` = SUM(COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)) BY deployment_name, cost_type\n| RENAME cost_type AS `Cost Type`, deployment_name as `Deployment`\n| SORT `Normalised cost` DESC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM billing_cluster_cost_lookup\n| WHERE cost_type IS NOT NULL\n| EVAL ts = @timestamp\n| LOOKUP JOIN chargeback_conf_lookup ON ts \u003e= conf_start_date AND ts \u003c= conf_end_date\n| STATS `Normalised cost` = SUM(COALESCE(total_chargeable_units, total_ecu) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)) BY deployment_name, cost_type\n| RENAME cost_type AS `Cost Type`, deployment_name as `Deployment`\n| SORT `Normalised cost` DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "a72c8733-c35a-4013-80dd-293f9a0e8f7b",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "Normalised cost"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "Cost Type",
+                                            "71f0415a-bb2a-4ee5-acbb-c5dc1b179bc7"
+                                        ]
+                                    }
+                                ],
+                                "shape": "treemap"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsPie"
+                    },
+                    "description": "Cost broken down by Deployment, and Billable component (Cost type).\nCost Type shows individual SKU families (datahot/datacontent, datawarm, ml, kibana, snapshots, …)."
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "c04d8f10-1003-4000-8000-chargebacksku01",
+                    "sectionId": "c04d8f10-0001-4000-8000-chargebacksku01",
+                    "w": 16,
+                    "x": 32,
+                    "y": 3
+                },
+                "panelIndex": "c04d8f10-1003-4000-8000-chargebacksku01",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "cluster-tier-contribution-dv": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "cluster-tier-contribution-dv",
+                                    "managed": false,
+                                    "name": "cluster_tier_contribution_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "cluster_tier_contribution_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [],
+                                    "layers": {
+                                        "ba345378-8ee0-40ec-9fb0-d26588d09107": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "deployment",
+                                                    "customLabel": true,
+                                                    "fieldName": "deployment",
+                                                    "label": "Deployment name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Data Tier",
+                                                    "customLabel": true,
+                                                    "fieldName": "Data Tier",
+                                                    "label": "Data Tier",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Normalised cost",
+                                                    "customLabel": true,
+                                                    "fieldName": "Normalised cost",
+                                                    "inMetricDimension": true,
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "chargeback_integration",
+                                            "query": {
+                                                "esql": "FROM cluster_tier_contribution_lookup\n| WHERE composite_key IS NOT NULL AND tier IS NOT NULL AND tier != \"unknown\"\n| EVAL ts = @timestamp\n| LOOKUP JOIN billing_realized_pool_lookup ON composite_key\n| WHERE data_tier_capacity_ecu IS NOT NULL\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON ts \u003e= conf_start_date AND ts \u003c= conf_end_date\n| EVAL deployment = CASE(deployment_id IS NULL, deployment_name, CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\"))\n| EVAL mem_w = COALESCE(TO_DOUBLE(conf_utilization_memory_weight), 70.0), disk_w = COALESCE(TO_DOUBLE(conf_utilization_storage_weight), 30.0)\n| EVAL heap_p = COALESCE(heap_used_pct_p95, 100) / 100, disk_p = COALESCE(disk_used_pct_p95, 100) / 100\n| EVAL util_score = (mem_w * heap_p + disk_w * disk_p) / (mem_w + disk_w), chargeable_pool = data_tier_capacity_ecu * util_score, tier_label = CASE(tier IS NULL OR tier == \"unknown\", \"Unclassified\", tier)\n| EVAL idx_w = COALESCE(TO_DOUBLE(conf_indexing_weight), 20.0), qry_w = COALESCE(TO_DOUBLE(conf_query_weight), 20.0), sto_w = COALESCE(TO_DOUBLE(conf_storage_weight), 40.0), rate = COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| EVAL indexing = CASE(deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool), querying = CASE(deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool), store = CASE(deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool), data_set = CASE(deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool)\n| EVAL storage = CASE(store == 0, data_set, store), total_weight_hot = sto_w + qry_w + idx_w, total_weight_cold = sto_w + qry_w\n| EVAL blended = CASE(tier_label == \"hot/content\", (storage * sto_w + querying * qry_w + indexing * idx_w) / total_weight_hot, (storage * sto_w + querying * qry_w) / total_weight_cold) * rate\n| STATS `Normalised cost` = SUM(blended) BY deployment, tier_label\n| WHERE deployment IS NOT NULL AND tier_label IS NOT NULL AND `Normalised cost` \u003e 0\n| RENAME tier_label AS `Data Tier`\n| SORT `Normalised cost` DESC\n| LIMIT 500"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM cluster_tier_contribution_lookup\n| WHERE composite_key IS NOT NULL AND tier IS NOT NULL AND tier != \"unknown\"\n| EVAL ts = @timestamp\n| LOOKUP JOIN billing_realized_pool_lookup ON composite_key\n| WHERE data_tier_capacity_ecu IS NOT NULL\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON ts \u003e= conf_start_date AND ts \u003c= conf_end_date\n| EVAL deployment = CASE(deployment_id IS NULL, deployment_name, CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\"))\n| EVAL mem_w = COALESCE(TO_DOUBLE(conf_utilization_memory_weight), 70.0), disk_w = COALESCE(TO_DOUBLE(conf_utilization_storage_weight), 30.0)\n| EVAL heap_p = COALESCE(heap_used_pct_p95, 100) / 100, disk_p = COALESCE(disk_used_pct_p95, 100) / 100\n| EVAL util_score = (mem_w * heap_p + disk_w * disk_p) / (mem_w + disk_w), chargeable_pool = data_tier_capacity_ecu * util_score, tier_label = CASE(tier IS NULL OR tier == \"unknown\", \"Unclassified\", tier)\n| EVAL idx_w = COALESCE(TO_DOUBLE(conf_indexing_weight), 20.0), qry_w = COALESCE(TO_DOUBLE(conf_query_weight), 20.0), sto_w = COALESCE(TO_DOUBLE(conf_storage_weight), 40.0), rate = COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| EVAL indexing = CASE(deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool), querying = CASE(deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool), store = CASE(deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool), data_set = CASE(deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool)\n| EVAL storage = CASE(store == 0, data_set, store), total_weight_hot = sto_w + qry_w + idx_w, total_weight_cold = sto_w + qry_w\n| EVAL blended = CASE(tier_label == \"hot/content\", (storage * sto_w + querying * qry_w + indexing * idx_w) / total_weight_hot, (storage * sto_w + querying * qry_w) / total_weight_cold) * rate\n| STATS `Normalised cost` = SUM(blended) BY deployment, tier_label\n| WHERE deployment IS NOT NULL AND tier_label IS NOT NULL AND `Normalised cost` \u003e 0\n| RENAME tier_label AS `Data Tier`\n| SORT `Normalised cost` DESC\n| LIMIT 500"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "deployment",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "Data Tier",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "Normalised cost",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "summaryRow": "sum"
+                                    }
+                                ],
+                                "layerId": "ba345378-8ee0-40ec-9fb0-d26588d09107",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "Normalised cost per deployment and tier",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "The allocatable pool redistributed across data tiers by workload — a weighted blend of indexing, query and storage share. The total is slightly below the realised pool because deployment-days that have a billing pool but no monitoring breakdown cannot be allocated to a tier.",
+                    "title": "Normalised cost per deployment and tier"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "8049f13b-c56d-4a6e-a4e3-5cf4274fef60",
+                    "sectionId": "5092dfac-3f29-4eab-8c8f-f97bf1479370",
+                    "w": 24,
+                    "x": 0,
+                    "y": 3
+                },
+                "panelIndex": "8049f13b-c56d-4a6e-a4e3-5cf4274fef60",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "cluster-tier-contribution-dv": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "cluster-tier-contribution-dv",
+                                    "managed": false,
+                                    "name": "cluster_tier_contribution_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "cluster_tier_contribution_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [],
+                                    "layers": {
+                                        "91b4be84-6eb5-4b77-ad13-b85d992f3bbf": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "deployment",
+                                                    "customLabel": true,
+                                                    "fieldName": "deployment",
+                                                    "label": "Deployment name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Data Tier",
+                                                    "customLabel": true,
+                                                    "fieldName": "Data Tier",
+                                                    "label": "Data Tier",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Normalised cost",
+                                                    "customLabel": true,
+                                                    "fieldName": "Normalised cost",
+                                                    "inMetricDimension": true,
+                                                    "label": "Normalised cost",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "chargeback_integration",
+                                            "query": {
+                                                "esql": "FROM cluster_tier_contribution_lookup\n| WHERE composite_key IS NOT NULL AND tier IS NOT NULL AND tier != \"unknown\"\n| EVAL ts = @timestamp\n| LOOKUP JOIN billing_realized_pool_lookup ON composite_key\n| WHERE data_tier_capacity_ecu IS NOT NULL\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON ts \u003e= conf_start_date AND ts \u003c= conf_end_date\n| EVAL deployment = CASE(deployment_id IS NULL, deployment_name, CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\"))\n| EVAL mem_w = COALESCE(TO_DOUBLE(conf_utilization_memory_weight), 70.0), disk_w = COALESCE(TO_DOUBLE(conf_utilization_storage_weight), 30.0)\n| EVAL heap_p = COALESCE(heap_used_pct_p95, 100) / 100, disk_p = COALESCE(disk_used_pct_p95, 100) / 100\n| EVAL util_score = (mem_w * heap_p + disk_w * disk_p) / (mem_w + disk_w), chargeable_pool = data_tier_capacity_ecu * util_score, tier_label = CASE(tier IS NULL OR tier == \"unknown\", \"Unclassified\", tier)\n| EVAL idx_w = COALESCE(TO_DOUBLE(conf_indexing_weight), 20.0), qry_w = COALESCE(TO_DOUBLE(conf_query_weight), 20.0), sto_w = COALESCE(TO_DOUBLE(conf_storage_weight), 40.0), rate = COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| EVAL indexing = CASE(deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool), querying = CASE(deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool), store = CASE(deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool), data_set = CASE(deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool)\n| EVAL storage = CASE(store == 0, data_set, store), total_weight_hot = sto_w + qry_w + idx_w, total_weight_cold = sto_w + qry_w\n| EVAL blended = CASE(tier_label == \"hot/content\", (storage * sto_w + querying * qry_w + indexing * idx_w) / total_weight_hot, (storage * sto_w + querying * qry_w) / total_weight_cold) * rate\n| STATS `Normalised cost` = SUM(blended) BY deployment, tier_label\n| WHERE deployment IS NOT NULL AND tier_label IS NOT NULL AND `Normalised cost` \u003e 0\n| RENAME tier_label AS `Data Tier`\n| SORT `Normalised cost` DESC\n| LIMIT 500"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM cluster_tier_contribution_lookup\n| WHERE composite_key IS NOT NULL AND tier IS NOT NULL AND tier != \"unknown\"\n| EVAL ts = @timestamp\n| LOOKUP JOIN billing_realized_pool_lookup ON composite_key\n| WHERE data_tier_capacity_ecu IS NOT NULL\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON ts \u003e= conf_start_date AND ts \u003c= conf_end_date\n| EVAL deployment = CASE(deployment_id IS NULL, deployment_name, CONCAT(deployment_name, \" (\", LEFT(deployment_id, 6), \")\"))\n| EVAL mem_w = COALESCE(TO_DOUBLE(conf_utilization_memory_weight), 70.0), disk_w = COALESCE(TO_DOUBLE(conf_utilization_storage_weight), 30.0)\n| EVAL heap_p = COALESCE(heap_used_pct_p95, 100) / 100, disk_p = COALESCE(disk_used_pct_p95, 100) / 100\n| EVAL util_score = (mem_w * heap_p + disk_w * disk_p) / (mem_w + disk_w), chargeable_pool = data_tier_capacity_ecu * util_score, tier_label = CASE(tier IS NULL OR tier == \"unknown\", \"Unclassified\", tier)\n| EVAL idx_w = COALESCE(TO_DOUBLE(conf_indexing_weight), 20.0), qry_w = COALESCE(TO_DOUBLE(conf_query_weight), 20.0), sto_w = COALESCE(TO_DOUBLE(conf_storage_weight), 40.0), rate = COALESCE(conf_chargeable_unit_rate, conf_ecu_rate, 1.0)\n| EVAL indexing = CASE(deployment_sum_indexing_time \u003e 0, TO_DOUBLE(tier_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool), querying = CASE(deployment_sum_query_time \u003e 0, TO_DOUBLE(tier_sum_query_time) / deployment_sum_query_time * chargeable_pool), store = CASE(deployment_sum_store_size \u003e 0, TO_DOUBLE(tier_sum_store_size) / deployment_sum_store_size * chargeable_pool), data_set = CASE(deployment_sum_data_set_store_size \u003e 0, TO_DOUBLE(tier_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool)\n| EVAL storage = CASE(store == 0, data_set, store), total_weight_hot = sto_w + qry_w + idx_w, total_weight_cold = sto_w + qry_w\n| EVAL blended = CASE(tier_label == \"hot/content\", (storage * sto_w + querying * qry_w + indexing * idx_w) / total_weight_hot, (storage * sto_w + querying * qry_w) / total_weight_cold) * rate\n| STATS `Normalised cost` = SUM(blended) BY deployment, tier_label\n| WHERE deployment IS NOT NULL AND tier_label IS NOT NULL AND `Normalised cost` \u003e 0\n| RENAME tier_label AS `Data Tier`\n| SORT `Normalised cost` DESC\n| LIMIT 500"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "91b4be84-6eb5-4b77-ad13-b85d992f3bbf",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "Normalised cost"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "deployment",
+                                            "Data Tier"
+                                        ]
+                                    }
+                                ],
+                                "shape": "treemap"
+                            }
+                        },
+                        "title": "Normalised cost share by deployment and tier",
+                        "version": 2,
+                        "visualizationType": "lnsPie"
+                    },
+                    "description": "The allocatable pool redistributed across data tiers by workload — a weighted blend of indexing, query and storage share. The total is slightly below the realised pool because deployment-days that have a billing pool but no monitoring breakdown cannot be allocated to a tier.",
+                    "title": "Normalised cost share by deployment and tier"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "normalised-cost-per-deployment-and-tier",
+                    "sectionId": "5092dfac-3f29-4eab-8c8f-f97bf1479370",
+                    "w": 24,
+                    "x": 24,
+                    "y": 3
+                },
+                "panelIndex": "normalised-cost-per-deployment-and-tier",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "# Deployment statistics",
+                    "settings": {
+                        "open_links_in_new_tab": false
+                    }
+                },
+                "gridData": {
+                    "h": 3,
+                    "i": "b67fa5aa-7fb2-40de-ba6f-a17b0dc20417",
+                    "sectionId": "5092dfac-3f29-4eab-8c8f-f97bf1479370",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "b67fa5aa-7fb2-40de-ba6f-a17b0dc20417",
+                "type": "markdown"
+            }
+        ],
+        "pinned_panels": {
+            "panels": {
+                "2c7df183-8a05-4ee0-b7db-415e874636cd": {
+                    "config": {
+                        "dataViewRefName": "2c7df183-8a05-4ee0-b7db-415e874636cd:optionsListDataView",
+                        "exclude": false,
+                        "exists_selected": false,
+                        "field_name": "deployment_name",
+                        "ignore_validations": false,
+                        "run_past_timeout": false,
+                        "search_technique": "prefix",
+                        "selected_options": [],
+                        "single_select": false,
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Deployment name",
+                        "use_global_filters": true
+                    },
+                    "grow": false,
+                    "order": 1,
+                    "type": "options_list_control",
+                    "width": "medium"
+                },
+                "7c63054e-e2af-4763-9485-d90b842ebb84": {
+                    "config": {
+                        "dataViewRefName": "7c63054e-e2af-4763-9485-d90b842ebb84:optionsListDataView",
+                        "exclude": false,
+                        "exists_selected": false,
+                        "field_name": "cost_category",
+                        "ignore_validations": false,
+                        "run_past_timeout": false,
+                        "search_technique": "wildcard",
+                        "selected_options": [],
+                        "single_select": false,
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Cost Category",
+                        "use_global_filters": true
+                    },
+                    "grow": false,
+                    "order": 2,
+                    "type": "options_list_control",
+                    "width": "medium"
+                },
+                "ac0cfdbf-cfb9-4f9b-9d2d-72c324c01ba6": {
+                    "config": {
+                        "dataViewRefName": "ac0cfdbf-cfb9-4f9b-9d2d-72c324c01ba6:optionsListDataView",
+                        "exclude": false,
+                        "exists_selected": false,
+                        "field_name": "cost_type",
+                        "ignore_validations": false,
+                        "run_past_timeout": false,
+                        "search_technique": "wildcard",
+                        "selected_options": [],
+                        "single_select": false,
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Cost Type",
+                        "use_global_filters": true
+                    },
+                    "grow": false,
+                    "order": 3,
+                    "type": "options_list_control",
+                    "width": "medium"
+                },
+                "b680ef70-4697-41e5-bf5f-e7e1e700ec3e": {
+                    "config": {
+                        "dataViewRefName": "b680ef70-4697-41e5-bf5f-e7e1e700ec3e:optionsListDataView",
+                        "exclude": false,
+                        "exists_selected": false,
+                        "field_name": "deployment_group",
+                        "ignore_validations": false,
+                        "run_past_timeout": false,
+                        "search_technique": "prefix",
+                        "selected_options": [],
+                        "single_select": false,
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Deployment group",
+                        "use_global_filters": true
+                    },
+                    "grow": false,
+                    "order": 0,
+                    "type": "options_list_control",
+                    "width": "medium"
+                }
+            }
+        },
+        "sections": [
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "2b8b2365-5e05-4f1d-8880-f35892a8e60f",
+                    "y": 13
+                },
+                "title": "Deployment group statistics"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "c04d8f10-0001-4000-8000-chargebacksku01",
+                    "y": 14
+                },
+                "title": "Component statistics"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "5092dfac-3f29-4eab-8c8f-f97bf1479370",
+                    "y": 15
+                },
+                "title": "Deployment statistics"
+            }
+        ],
+        "timeFrom": "now-3M",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "[Chargeback] Cost and Consumption Overview"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-06-01T06:24:22.210Z",
+    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "id": "chargeback-b6cecac0-ebe7-43de-bfc6-1ff287ad860a",
+    "references": [
+        {
+            "id": "chargeback-b6cecac0-ebe7-43de-bfc6-1ff287ad860a",
+            "name": "98c09b2b-c68f-ac41-8625-0fc04714f44f:link_953bc6a8-f66a-45b7-ac26-0dfe293bb6f4_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "chargeback-21588d0e-fb6a-4f76-ad2f-cd7b3d7a3d7c",
+            "name": "98c09b2b-c68f-ac41-8625-0fc04714f44f:link_07b2c791-8687-421a-b14f-4d033cfb3808_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "chargeback-7ec9743a-ccfa-43d2-8311-2f25893dadae",
+            "name": "98c09b2b-c68f-ac41-8625-0fc04714f44f:link_d4e86f32-bccc-47f2-9dea-b61792cd5585_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "chargeback_integration",
+            "name": "b680ef70-4697-41e5-bf5f-e7e1e700ec3e:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "chargeback_integration",
+            "name": "2c7df183-8a05-4ee0-b7db-415e874636cd:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "chargeback_integration",
+            "name": "7c63054e-e2af-4763-9485-d90b842ebb84:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "chargeback_integration",
+            "name": "ac0cfdbf-cfb9-4f9b-9d2d-72c324c01ba6:optionsListDataView",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+}
