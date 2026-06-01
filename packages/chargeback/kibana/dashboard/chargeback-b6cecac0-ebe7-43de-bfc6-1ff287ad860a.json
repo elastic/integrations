@@ -371,7 +371,8 @@
                         },
                         "title": "Cost Trend by Deployment Group",
                         "version": 2,
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsXY",
+                        "description": "Full billing spend per chargeback group over time. Each group is defined by the chargeback_group tag set on ESS deployments. All SKUs (data tiers, ML, Kibana, snapshots, transfer) contribute \u2014 the stack totals equal the full organisation bill. FinOps value: shows which teams or business units are growing their spend fastest."
                     },
                     "description": "Full deployment bill: the sum of ALL billing SKUs (data tiers, ML, Kibana, snapshots, data transfer and on-prem nodes) converted at the configured rate. This is the highest-level total. Tier and data-stream panels show only the allocatable data-tier pool, so they sum to less than this figure.",
                     "time_range": {
@@ -393,7 +394,7 @@
             },
             {
                 "embeddableConfig": {
-                    "content": "# Deployment group statistics",
+                    "content": "## Deployment group statistics\n**Source:** `billing_cluster_cost_lookup` \u2014 full invoice, all SKUs.\n\nCost is normalised using the configured chargeable-unit rate. Groups are derived from the `chargeback_group` tag on ESS deployments. Totals in this section match the full deployment bill shown above.",
                     "settings": {
                         "open_links_in_new_tab": false
                     },
@@ -495,9 +496,10 @@
                                 "layerType": "data"
                             }
                         },
-                        "title": "",
+                        "title": "Total Cost by Deployment Group",
                         "version": 2,
-                        "visualizationType": "lnsDatatable"
+                        "visualizationType": "lnsDatatable",
+                        "description": "Total normalised spend per chargeback group for the selected period, ranked highest to lowest. Covers the full invoice \u2014 all SKU families included. FinOps value: the primary allocation table for internal chargeback \u2014 each group's figure is what you charge back to that team or cost centre."
                     },
                     "description": "Full deployment bill: the sum of ALL billing SKUs (data tiers, ML, Kibana, snapshots, data transfer and on-prem nodes) converted at the configured rate. This is the highest-level total. Tier and data-stream panels show only the allocatable data-tier pool, so they sum to less than this figure.",
                     "title": "Normalised Cost by Deployment Group"
@@ -511,7 +513,8 @@
                     "y": 17
                 },
                 "panelIndex": "43ab691d-4b1f-4e83-b2e4-026c16f6a5eb",
-                "type": "vis"
+                "type": "vis",
+                "title": "Total Cost by Deployment Group"
             },
             {
                 "embeddableConfig": {
@@ -627,9 +630,10 @@
                                 "layerType": "data"
                             }
                         },
-                        "title": "",
+                        "title": "Cost by Group and FinOps Category",
                         "version": 2,
-                        "visualizationType": "lnsDatatable"
+                        "visualizationType": "lnsDatatable",
+                        "description": "Cost breakdown per chargeback group split by FinOps category (data_tier, platform, transfer, snapshot, onprem). Total per group equals that group's full invoice amount. FinOps value: reveals whether a group's spend is dominated by compute (data_tier) or operational overhead (snapshots, egress transfer) \u2014 helps prioritise where optimisation conversations should start."
                     },
                     "description": "Full deployment bill: the sum of ALL billing SKUs (data tiers, ML, Kibana, snapshots, data transfer and on-prem nodes) converted at the configured rate. This is the highest-level total. Tier and data-stream panels show only the allocatable data-tier pool, so they sum to less than this figure.",
                     "title": "Normalised Cost by Deployment Group and Cost Category"
@@ -643,7 +647,8 @@
                     "y": 17
                 },
                 "panelIndex": "5224b414-cee6-4426-b981-20815c77ac83",
-                "type": "vis"
+                "type": "vis",
+                "title": "Cost by Group and FinOps Category"
             },
             {
                 "embeddableConfig": {
@@ -758,9 +763,10 @@
                                 "shape": "treemap"
                             }
                         },
-                        "title": "",
+                        "title": "Cost Share by Group and Category",
                         "version": 2,
-                        "visualizationType": "lnsPie"
+                        "visualizationType": "lnsPie",
+                        "description": "Proportional share of total spend, segmented by chargeback group and FinOps category. FinOps value: at-a-glance view for finance stakeholders showing which groups own which share of the bill and what type of cost it is."
                     },
                     "description": "Full deployment bill: the sum of ALL billing SKUs (data tiers, ML, Kibana, snapshots, data transfer and on-prem nodes) converted at the configured rate. This is the highest-level total. Tier and data-stream panels show only the allocatable data-tier pool, so they sum to less than this figure.",
                     "title": "Total Cost by Deployment Group (copy 1)"
@@ -774,11 +780,12 @@
                     "y": 17
                 },
                 "panelIndex": "4db4725c-45a7-40bd-a6a8-dc7ac42fff0b",
-                "type": "vis"
+                "type": "vis",
+                "title": "Cost Share by Group and Category"
             },
             {
                 "embeddableConfig": {
-                    "content": "# Component statistics",
+                    "content": "## Component statistics\n**Source:** `billing_cluster_cost_lookup` \u2014 full invoice, filtered to SKUs with a classified `cost_type`.\n\nBilling components (`cost_type`) are derived from the ESS SKU string: data tiers (datahot/datacontent, datawarm, datacold, datafrozen), platform (ml, kibana, apm), data-transfer, snapshots, and on-premises nodes. FinOps categories (`cost_category`) group these into broader buckets: data_tier, platform, transfer, snapshot, onprem, other.\n\n\u26a0\ufe0f If any SKUs could not be classified (`cost_type IS NULL`), those rows are excluded \u2014 totals here may be slightly lower than the full bill above.",
                     "settings": {
                         "open_links_in_new_tab": false
                     }
@@ -990,9 +997,10 @@
                                 "layerType": "data"
                             }
                         },
-                        "title": "",
+                        "title": "Cost by Billing Component and Deployment",
                         "version": 2,
-                        "visualizationType": "lnsDatatable"
+                        "visualizationType": "lnsDatatable",
+                        "description": "Cost per deployment broken down by billing component (cost_type: e.g. datahot/datacontent, datawarm, ml, kibana, snapshots, data-transfer) and FinOps category (cost_category: data_tier, platform, transfer, snapshot, onprem). Filtered to SKUs where cost_type has been classified \u2014 rows where classification could not be derived from the SKU are excluded. FinOps value: the most granular billing breakdown available \u2014 use this to identify which specific infrastructure components drive cost for each deployment."
                     },
                     "description": "Full deployment bill: the sum of ALL billing SKUs (data tiers, ML, Kibana, snapshots, data transfer and on-prem nodes) converted at the configured rate. This is the highest-level total. Tier and data-stream panels show only the allocatable data-tier pool, so they sum to less than this figure.",
                     "title": "Normalised cost by deployment and item"
@@ -1006,7 +1014,8 @@
                     "y": 3
                 },
                 "panelIndex": "c04d8f10-1001-4000-8000-chargebacksku01",
-                "type": "vis"
+                "type": "vis",
+                "title": "Cost by Billing Component and Deployment"
             },
             {
                 "embeddableConfig": {
@@ -1161,9 +1170,10 @@
                                 "shape": "treemap"
                             }
                         },
-                        "title": "",
+                        "title": "Cost Share by FinOps Category",
                         "version": 2,
-                        "visualizationType": "lnsPie"
+                        "visualizationType": "lnsPie",
+                        "description": "Proportional cost split by FinOps category per deployment \u2014 shows how much of each deployment's bill comes from data storage (data_tier) vs. platform components (ML, Kibana, APM) vs. operational overhead (transfer, snapshot). FinOps value: the headline for optimisation conversations \u2014 a high transfer or snapshot share signals quick-win reduction opportunities."
                     },
                     "description": "Cost broken down by Deployment, and FinOps roll-up group (Cost category).\nCost category groups these into broader buckets (data_tier, platform, transfer, snapshot, onprem, other).\nThis is the highest-level total. Tier and data-stream panels show only the allocatable data-tier pool, so they sum to less than this figure."
                 },
@@ -1176,7 +1186,8 @@
                     "y": 3
                 },
                 "panelIndex": "c04d8f10-1004-4000-8000-chargebacksku01",
-                "type": "vis"
+                "type": "vis",
+                "title": "Cost Share by FinOps Category"
             },
             {
                 "embeddableConfig": {
@@ -1331,9 +1342,10 @@
                                 "shape": "treemap"
                             }
                         },
-                        "title": "",
+                        "title": "Cost Share by Billing Component",
                         "version": 2,
-                        "visualizationType": "lnsPie"
+                        "visualizationType": "lnsPie",
+                        "description": "Proportional cost split by billing component (cost_type) per deployment \u2014 the finest-grained view of what Elastic is invoicing. FinOps value: pinpoints exactly which SKU families dominate spend, e.g. whether cold-tier storage or data-transfer is the unexpected cost driver."
                     },
                     "description": "Cost broken down by Deployment, and Billable component (Cost type).\nCost Type shows individual SKU families (datahot/datacontent, datawarm, ml, kibana, snapshots, \u2026)."
                 },
@@ -1346,7 +1358,8 @@
                     "y": 3
                 },
                 "panelIndex": "c04d8f10-1003-4000-8000-chargebacksku01",
-                "type": "vis"
+                "type": "vis",
+                "title": "Cost Share by Billing Component"
             },
             {
                 "embeddableConfig": {
@@ -1453,7 +1466,8 @@
                         },
                         "title": "Normalised cost per deployment and tier",
                         "version": 2,
-                        "visualizationType": "lnsDatatable"
+                        "visualizationType": "lnsDatatable",
+                        "description": "Estimated cost per deployment split by data tier (hot/content, warm, cold, frozen), calculated using the usage-based chargeable pool: provisioned data-tier ECU \u00d7 utilization score, then allocated by workload share (indexing / querying / storage). \u26a0\ufe0f This total is lower than the full deployment bill: it covers only allocatable data-tier SKUs and applies a utilization discount. ML, Kibana, snapshots, and data transfer are excluded. FinOps value: shows how data-tier capacity cost is distributed across tiers by actual workload \u2014 useful for ILM decisions and tier right-sizing."
                     },
                     "description": "The allocatable pool redistributed across data tiers by workload \u2014 a weighted blend of indexing, query and storage share. The total is slightly below the realised pool because deployment-days that have a billing pool but no monitoring breakdown cannot be allocated to a tier.",
                     "title": "Normalised cost per deployment and tier"
@@ -1592,7 +1606,8 @@
                         },
                         "title": "Normalised cost share by deployment and tier",
                         "version": 2,
-                        "visualizationType": "lnsPie"
+                        "visualizationType": "lnsPie",
+                        "description": "Percentage of each deployment's chargeable pool consumed by each data tier, based on actual workload (indexing time, query time, storage size). \u26a0\ufe0f Denominator is the chargeable pool (allocatable data-tier ECU \u00d7 utilization), not the full invoice \u2014 percentages do not apply to the total billing figures above. FinOps value: identifies which tier carries the heaviest workload share, guiding ILM policy and tier sizing decisions."
                     },
                     "description": "The allocatable pool redistributed across data tiers by workload \u2014 a weighted blend of indexing, query and storage share. The total is slightly below the realised pool because deployment-days that have a billing pool but no monitoring breakdown cannot be allocated to a tier.",
                     "title": "Normalised cost share by deployment and tier"
@@ -1610,7 +1625,7 @@
             },
             {
                 "embeddableConfig": {
-                    "content": "# Deployment statistics",
+                    "content": "## Deployment cost allocation (usage-based)\n**Source:** `cluster_tier_contribution_lookup` \u2014 usage-based allocation, **not** the full invoice.\n\n\u26a0\ufe0f **These totals will not match the billing figures above.** This section allocates the *chargeable pool* \u2014 allocatable data-tier ECU discounted by p95 utilization \u2014 across tiers by actual workload (indexing time, query time, storage). ML, Kibana, APM, snapshots, and data transfer are excluded. For the full usage-based breakdown see the *[Chargeback] Usage & Cost Allocation* dashboard.",
                     "settings": {
                         "open_links_in_new_tab": false
                     }
