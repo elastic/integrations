@@ -452,9 +452,10 @@
                                 "valueLabels": "hide"
                             }
                         },
-                        "title": "Weight configuration values",
+                        "title": "Blended cost weights",
                         "version": 2,
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsXY",
+                        "description": "The three weights that determine how indexing, querying, and storage activity are blended into a single cost figure per tier or data stream. Indexing weight only applies to the hot/content tier. Adjust these to reflect your organisation's relative value of each workload type."
                     },
                     "title": "Weight configuration values"
                 },
@@ -466,7 +467,8 @@
                     "y": 17
                 },
                 "panelIndex": "a3a091e7-6bff-4edf-bc65-993e8a3648de",
-                "type": "vis"
+                "type": "vis",
+                "title": "Blended cost weights"
             },
             {
                 "embeddableConfig": {
@@ -610,6 +612,382 @@
                 },
                 "panelIndex": "54ff8784-cfb6-41dc-ad15-50547f49f9e7",
                 "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
+                                    "name": "chargeback_conf_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "chargeback_conf_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
+                                            "title": "chargeback_conf_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "b4e9eaa5-13f8-616d-a8d4-5ed62e3b2b8e": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "conf_start_date",
+                                                    "customLabel": false,
+                                                    "fieldName": "conf_start_date",
+                                                    "label": "Date from",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "conf_end_date",
+                                                    "customLabel": false,
+                                                    "fieldName": "conf_end_date",
+                                                    "label": "Date to",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "conf_utilization_memory_weight",
+                                                    "customLabel": true,
+                                                    "fieldName": "conf_utilization_memory_weight",
+                                                    "label": "Memory (heap) weight",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "conf_utilization_storage_weight",
+                                                    "customLabel": true,
+                                                    "fieldName": "conf_utilization_storage_weight",
+                                                    "label": "Disk weight",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
+                                            "query": {
+                                                "esql": "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_utilization_memory_weight, conf_utilization_storage_weight\n| SORT conf_start_date DESC\n| LIMIT 20"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_indexing_weight, conf_query_weight, conf_storage_weight, conf_utilization_memory_weight, conf_utilization_storage_weight, conf_memory_cost_weight, conf_storage_cost_weight\n| SORT conf_start_date DESC\n| LIMIT 20"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "columns": [
+                                    {
+                                        "columnId": "conf_start_date",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "conf_end_date",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "conf_utilization_memory_weight",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "conf_utilization_storage_weight",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "conf_utilization_memory_weight",
+                                            "conf_utilization_storage_weight"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "b4e9eaa5-13f8-616d-a8d4-5ed62e3b2b8e",
+                                        "layerType": "data",
+                                        "seriesType": "bar_percentage_stacked"
+                                    }
+                                ],
+                                "legend": {
+                                    "horizontalAlignment": "right",
+                                    "isInside": true,
+                                    "isVisible": false,
+                                    "position": "right",
+                                    "showSingleSeries": false,
+                                    "verticalAlignment": "bottom"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Utilization score weights",
+                        "version": 2,
+                        "visualizationType": "lnsXY",
+                        "description": "Memory (heap p95) vs disk (disk p95) weight in the utilization score. Default 70 / 30 reflects that Elasticsearch is primarily memory-bound \u2014 heap exhaustion is the main failure mode. The floor (conf_utilization_floor, default 0.10) prevents realized cost reaching zero for idle or unmonitored clusters; it is shown in the config table."
+                    },
+                    "title": "Weight configuration values"
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "13a38bed-2251-a75c-c496-d8be3b4c94b0",
+                    "w": 9,
+                    "x": 30,
+                    "y": 17
+                },
+                "panelIndex": "13a38bed-2251-a75c-c496-d8be3b4c94b0",
+                "type": "vis",
+                "title": "Utilization score weights"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
+                                    "name": "chargeback_conf_lookup",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "chargeback_conf_lookup",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
+                                            "title": "chargeback_conf_lookup"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "7cbe76ed-5470-b2fe-261b-451262de4f47": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "conf_start_date",
+                                                    "customLabel": false,
+                                                    "fieldName": "conf_start_date",
+                                                    "label": "Date from",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "conf_end_date",
+                                                    "customLabel": false,
+                                                    "fieldName": "conf_end_date",
+                                                    "label": "Date to",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "conf_memory_cost_weight",
+                                                    "customLabel": true,
+                                                    "fieldName": "conf_memory_cost_weight",
+                                                    "label": "Memory weight",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "conf_storage_cost_weight",
+                                                    "customLabel": true,
+                                                    "fieldName": "conf_storage_cost_weight",
+                                                    "label": "Storage weight",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "8f632b34627f697e9702333f8ef042ab73e3436b01f9a29710a96cc9dad323b9",
+                                            "query": {
+                                                "esql": "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_memory_cost_weight, conf_storage_cost_weight\n| SORT conf_start_date DESC\n| LIMIT 20"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM chargeback_conf_lookup\n| KEEP conf_start_date, conf_end_date, conf_indexing_weight, conf_query_weight, conf_storage_weight, conf_utilization_memory_weight, conf_utilization_storage_weight, conf_memory_cost_weight, conf_storage_cost_weight\n| SORT conf_start_date DESC\n| LIMIT 20"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "columns": [
+                                    {
+                                        "columnId": "conf_start_date",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "conf_end_date",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "conf_memory_cost_weight",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "conf_storage_cost_weight",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "conf_memory_cost_weight",
+                                            "conf_storage_cost_weight"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "7cbe76ed-5470-b2fe-261b-451262de4f47",
+                                        "layerType": "data",
+                                        "seriesType": "bar_percentage_stacked"
+                                    }
+                                ],
+                                "legend": {
+                                    "horizontalAlignment": "right",
+                                    "isInside": true,
+                                    "isVisible": false,
+                                    "position": "right",
+                                    "showSingleSeries": false,
+                                    "verticalAlignment": "bottom"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Memory / storage cost split",
+                        "version": 2,
+                        "visualizationType": "lnsXY",
+                        "description": "Illustrative split of the chargeable pool (realized cost) between memory and storage contributions shown in the Usage & Cost Allocation dashboard. Default 50 / 50. This does not affect the total chargeback amount \u2014 it only controls how the pool is visually decomposed between the two resource dimensions."
+                    },
+                    "title": "Weight configuration values"
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "b2b23b6d-1700-6c26-5349-a3f8201f9b83",
+                    "w": 9,
+                    "x": 39,
+                    "y": 17
+                },
+                "panelIndex": "b2b23b6d-1700-6c26-5349-a3f8201f9b83",
+                "type": "vis",
+                "title": "Memory / storage cost split"
             }
         ],
         "timeFrom": "now-3M",
