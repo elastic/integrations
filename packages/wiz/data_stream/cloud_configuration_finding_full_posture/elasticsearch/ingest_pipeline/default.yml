@@ -115,6 +115,17 @@ processors:
       tag: set_event_created
       copy_from: wiz.cloud_configuration_finding_full_posture.analyzed_at
       ignore_empty_value: true
+  - date:
+      field: json.updatedAt
+      target_field: wiz.cloud_configuration_finding_full_posture.updated_at
+      tag: date_set_updatedat
+      formats:
+        - ISO8601
+      if: ctx.json?.updatedAt != null && ctx.json.updatedAt != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.id
       tag: rename_id

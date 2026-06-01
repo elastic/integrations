@@ -1,3 +1,26 @@
+- version: "2.0.0"
+  changes:
+    - description: >-
+        Change assets document fingerprint from full-body hash to id plus
+        timestamps. Assets now produce a new document only when a timestamp
+        field changes, preserving update history without creating duplicates
+        from non-temporal field noise.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/17670
+    - description: >-
+        Change assets risk.total_risk field type from keyword to double.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/17670
+    - description: >-
+        The _id scheme change means every existing asset document will be
+        duplicated until lifecycle policy removes the old versions. Where
+        possible, upgrade to 1.1.0 first and allow at least one successful
+        asset collection interval before upgrading to this version. Where
+        this is not possible, the risk.total_risk field type change triggers
+        an automatic data stream rollover on upgrade, so the old backing
+        index begins aging out immediately without manual intervention.
+      type: breaking-change
+      link: https://github.com/elastic/integrations/pull/17670
 - version: "1.1.1"
   changes:
     - description: >-

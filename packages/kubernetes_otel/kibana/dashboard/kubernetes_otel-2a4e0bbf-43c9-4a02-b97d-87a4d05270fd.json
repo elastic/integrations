@@ -58,8 +58,8 @@
                     "layout": "horizontal",
                     "links": [
                         {
-                            "destinationRefName": "link_96ea6ed8-bdfc-44d6-8f78-d71e270e1be1_dashboard",
-                            "label": "< Overview",
+                            "destinationRefName": "link_72995b34-850a-4aec-bcb7-2cf694d13086_dashboard",
+                            "label": "\u003c Overview",
                             "options": {
                                 "open_in_new_tab": false,
                                 "use_filters": false,
@@ -84,10 +84,30 @@
                     "attributes": {
                         "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
+                                    "managed": false,
+                                    "name": "metrics-k8sclusterreceiver.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-k8sclusterreceiver.otel-*",
+                                    "type": "esql"
+                                }
+                            },
                             "datasourceStates": {
                                 "textBased": {
-                                    "indexPatternRefs": [],
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-k8sclusterreceiver.otel-*"
+                                        }
+                                    ],
                                     "layers": {
                                         "75c10a74-0909-4bcd-a3d7-b4462341ce07": {
                                             "allColumns": [
@@ -116,8 +136,9 @@
                                                     }
                                                 }
                                             ],
+                                            "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "query": {
-                                                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n| STATS count = COUNT_DISTINCT(k8s.pod.name), name = MAX(k8s.pod.name)\n| EVAL name = CASE(count == 1, name, CONCAT(TO_STRING(count), \" pods\"))\n| KEEP name"
+                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n| STATS last_seen = MAX(@timestamp) BY k8s.pod.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| STATS count = COUNT(*), names = VALUES(k8s.pod.name)\n| EVAL name = CASE(count == 1, MV_FIRST(names), CONCAT(TO_STRING(count), \" pods\"))\n| KEEP name"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -125,9 +146,9 @@
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n| STATS name = MAX(k8s.pod.name)\n"
+                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n| STATS last_seen = MAX(@timestamp) BY k8s.pod.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| STATS count = COUNT(*), names = VALUES(k8s.pod.name)\n| EVAL name = CASE(count == 1, MV_FIRST(names), CONCAT(TO_STRING(count), \" pods\"))\n| KEEP name"
                             },
                             "visualization": {
                                 "colorMode": "none",
@@ -144,7 +165,6 @@
                             }
                         },
                         "title": "",
-                        "type": "lens",
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     }
@@ -157,17 +177,37 @@
                     "y": 0
                 },
                 "panelIndex": "v3-pd-header-name",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
+                                    "managed": false,
+                                    "name": "metrics-k8sclusterreceiver.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-k8sclusterreceiver.otel-*",
+                                    "type": "esql"
+                                }
+                            },
                             "datasourceStates": {
                                 "textBased": {
-                                    "indexPatternRefs": [],
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-k8sclusterreceiver.otel-*"
+                                        }
+                                    ],
                                     "layers": {
                                         "ac4df9dc-46c7-4813-beb3-bd1d6db3e3fb": {
                                             "allColumns": [
@@ -196,8 +236,9 @@
                                                     }
                                                 }
                                             ],
+                                            "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "query": {
-                                                "esql": "FROM metrics-*\n| WHERE k8s.pod.phase IS NOT NULL AND k8s.pod.name IS NOT NULL\n| STATS count = COUNT_DISTINCT(k8s.pod.name), phase = MAX(k8s.pod.phase)\n| EVAL phase = CASE(\n    count > 1, \"N/A\",\n    phase == 1, \"Pending\",\n    phase == 2, \"Running\",\n    phase == 3, \"Succeeded\",\n    phase == 4, \"Failed\",\n    \"Unknown\"\n  )\n| KEEP phase"
+                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.phase IS NOT NULL AND k8s.pod.name IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp) BY k8s.pod.name\n| WHERE @timestamp == latest_ts\n| STATS count = COUNT_DISTINCT(k8s.pod.name), phase = MAX(k8s.pod.phase)\n| EVAL phase = CASE(\n    count \u003e 1, \"N/A\",\n    phase == 1, \"Pending\",\n    phase == 2, \"Running\",\n    phase == 3, \"Succeeded\",\n    phase == 4, \"Failed\",\n    \"Unknown\"\n  )\n| KEEP phase"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -205,9 +246,9 @@
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-*\n| WHERE k8s.pod.phase IS NOT NULL AND k8s.pod.name IS NOT NULL\n| STATS count = COUNT_DISTINCT(k8s.pod.name), phase = MAX(k8s.pod.phase)\n| EVAL phase = CASE(\n    count > 1, \"N/A\",\n    phase == 1, \"Pending\",\n    phase == 2, \"Running\",\n    phase == 3, \"Succeeded\",\n    phase == 4, \"Failed\",\n    \"Unknown\"\n  )\n| KEEP phase"
+                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.phase IS NOT NULL AND k8s.pod.name IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp) BY k8s.pod.name\n| WHERE @timestamp == latest_ts\n| STATS count = COUNT_DISTINCT(k8s.pod.name), phase = MAX(k8s.pod.phase)\n| EVAL phase = CASE(\n    count \u003e 1, \"N/A\",\n    phase == 1, \"Pending\",\n    phase == 2, \"Running\",\n    phase == 3, \"Succeeded\",\n    phase == 4, \"Failed\",\n    \"Unknown\"\n  )\n| KEEP phase"
                             },
                             "visualization": {
                                 "colorMode": "none",
@@ -223,7 +264,6 @@
                             }
                         },
                         "title": "",
-                        "type": "lens",
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
@@ -237,7 +277,7 @@
                     "y": 0
                 },
                 "panelIndex": "v3-pd-header-status",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -245,17 +285,17 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6": {
+                                "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
+                                    "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                     "managed": false,
-                                    "name": "metrics-*",
+                                    "name": "metrics-k8sclusterreceiver.otel-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-*",
+                                    "title": "metrics-k8sclusterreceiver.otel-*",
                                     "type": "esql"
                                 }
                             },
@@ -263,9 +303,9 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
+                                            "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-k8sclusterreceiver.otel-*"
                                         }
                                     ],
                                     "layers": {
@@ -312,9 +352,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
+                                            "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "query": {
-                                                "esql": "FROM metrics-*\n| WHERE k8s.container.restarts IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n| STATS max_restarts = MAX(k8s.container.restarts)\n    BY k8s.pod.uid, k8s.container.name\n| STATS restarts = SUM(max_restarts)"
+                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.container.restarts IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n| STATS max_restarts = MAX(k8s.container.restarts),\n    last_seen = MAX(@timestamp)\n    BY k8s.pod.uid, k8s.container.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| STATS restarts = SUM(max_restarts)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -324,7 +364,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-*\n| WHERE k8s.container.restarts IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n| STATS max_restarts = MAX(k8s.container.restarts)\n    BY k8s.pod.uid, k8s.container.name\n| STATS restarts = SUM(max_restarts)"
+                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.container.restarts IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n| STATS max_restarts = MAX(k8s.container.restarts),\n    last_seen = MAX(@timestamp)\n    BY k8s.pod.uid, k8s.container.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| STATS restarts = SUM(max_restarts)"
                             },
                             "visualization": {
                                 "applyColorTo": "background",
@@ -333,14 +373,16 @@
                                 "layerId": "4af3de89-68a8-8e1f-ccb7-4e6febd43855",
                                 "layerType": "data",
                                 "metricAccessor": "2999510e-3669-b52d-dfab-8810af241dd4",
-                                "showBar": false
+                                "showBar": false,
+                                "subtitle": "Last value"
                             }
                         },
                         "title": "",
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Total container restarts for this pod. MAX(k8s.container.restarts)."
+                    "description": "Total container restarts for this pod. MAX(k8s.container.restarts).",
+                    "drilldowns": []
                 },
                 "gridData": {
                     "h": 3,
@@ -350,7 +392,7 @@
                     "y": 0
                 },
                 "panelIndex": "v2-pod-detail-restarts",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -459,7 +501,7 @@
                             "open_in_new_tab": true,
                             "trigger": "on_click_value",
                             "type": "url_drilldown",
-                            "url": "{{kibanaUrl}}/app/discover#/?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(dataViewId:'logs-*',type:dataView),query:(language:kuery,query:'k8s.pod.name:\"{{event.value}}\"'))"
+                            "url": "{{kibanaUrl}}/app/discover#/?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))\u0026_a=(dataSource:(dataViewId:'logs-*',type:dataView),query:(language:kuery,query:'k8s.pod.name:\"{{event.value}}\"'))"
                         }
                     ]
                 },
@@ -471,17 +513,37 @@
                     "y": 0
                 },
                 "panelIndex": "v4-pd-logs-card",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
+                                    "managed": false,
+                                    "name": "metrics-kubeletstatsreceiver.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-kubeletstatsreceiver.otel-*",
+                                    "type": "esql"
+                                }
+                            },
                             "datasourceStates": {
                                 "textBased": {
-                                    "indexPatternRefs": [],
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-kubeletstatsreceiver.otel-*"
+                                        }
+                                    ],
                                     "layers": {
                                         "5324aeda-31bb-49b8-8383-1e41599ce41f": {
                                             "allColumns": [
@@ -546,8 +608,9 @@
                                                     }
                                                 }
                                             ],
+                                            "index": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
                                             "query": {
-                                                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.pod.cpu_limit_utilization IS NOT NULL\n| STATS utilization = AVG(k8s.pod.cpu_limit_utilization)\n| EVAL max_val = 1.0\n| KEEP utilization, max_val"
+                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.pod.cpu_limit_utilization IS NOT NULL\n| STATS utilization = AVG(k8s.pod.cpu_limit_utilization)\n| EVAL max_val = 1.0\n| KEEP utilization, max_val"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -555,9 +618,9 @@
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.pod.cpu_limit_utilization IS NOT NULL\n| STATS utilization = AVG(k8s.pod.cpu_limit_utilization)\n| EVAL max_val = 1.0\n| KEEP utilization, max_val"
+                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.pod.cpu_limit_utilization IS NOT NULL\n| STATS utilization = AVG(k8s.pod.cpu_limit_utilization)\n| EVAL max_val = 1.0\n| KEEP utilization, max_val"
                             },
                             "visualization": {
                                 "applyColorTo": "bar",
@@ -609,14 +672,15 @@
                                     "type": "palette"
                                 },
                                 "progressDirection": "horizontal",
-                                "showBar": true
+                                "showBar": true,
+                                "subtitle": "Last value"
                             }
                         },
-                        "title": "CPU utilization (vs limits)",
-                        "type": "lens",
+                        "title": "",
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
+                    "drilldowns": [],
                     "hide_title": true
                 },
                 "gridData": {
@@ -628,7 +692,7 @@
                     "y": 0
                 },
                 "panelIndex": "v4-pd-cpu-gauge",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -788,8 +852,7 @@
                         "visualizationType": "lnsXY"
                     },
                     "description": "CPU usage over time with request (dashed yellow) and limit (dashed red) reference lines.",
-                    "drilldowns": [],
-                    "title": "CPU usage vs requests & limits"
+                    "title": "CPU usage vs requests \u0026 limits"
                 },
                 "gridData": {
                     "h": 10,
@@ -800,17 +863,37 @@
                     "y": 0
                 },
                 "panelIndex": "v4-pd-cpu-ts",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
                         "state": {
-                            "adHocDataViews": {},
+                            "adHocDataViews": {
+                                "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
+                                    "managed": false,
+                                    "name": "metrics-kubeletstatsreceiver.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-kubeletstatsreceiver.otel-*",
+                                    "type": "esql"
+                                }
+                            },
                             "datasourceStates": {
                                 "textBased": {
-                                    "indexPatternRefs": [],
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-kubeletstatsreceiver.otel-*"
+                                        }
+                                    ],
                                     "layers": {
                                         "72938f7c-f5ca-480b-bcdd-bce4a68d676a": {
                                             "allColumns": [
@@ -875,8 +958,9 @@
                                                     }
                                                 }
                                             ],
+                                            "index": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
                                             "query": {
-                                                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.pod.memory_limit_utilization IS NOT NULL\n| STATS utilization = AVG(k8s.pod.memory_limit_utilization)\n| EVAL max_val = 1.0\n| KEEP utilization, max_val"
+                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.pod.memory_limit_utilization IS NOT NULL\n| STATS utilization = LAST(k8s.pod.memory_limit_utilization, @timestamp)\n  BY k8s.pod.name\n| STATS utilization = AVG(utilization)\n| EVAL max_val = 1.0\n| KEEP utilization, max_val"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -884,9 +968,9 @@
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.pod.memory_limit_utilization IS NOT NULL\n| STATS utilization = AVG(k8s.pod.memory_limit_utilization)\n| EVAL max_val = 1.0\n| KEEP utilization, max_val"
+                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.pod.memory_limit_utilization IS NOT NULL\n| STATS utilization = LAST(k8s.pod.memory_limit_utilization, @timestamp)\n  BY k8s.pod.name\n| STATS utilization = AVG(utilization)\n| EVAL max_val = 1.0\n| KEEP utilization, max_val"
                             },
                             "visualization": {
                                 "applyColorTo": "bar",
@@ -938,14 +1022,15 @@
                                     "type": "palette"
                                 },
                                 "progressDirection": "horizontal",
-                                "showBar": true
+                                "showBar": true,
+                                "subtitle": "Last value"
                             }
                         },
-                        "title": "Memory utilization (vs limits)",
-                        "type": "lens",
+                        "title": "",
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
+                    "drilldowns": [],
                     "hide_title": true
                 },
                 "gridData": {
@@ -957,7 +1042,7 @@
                     "y": 0
                 },
                 "panelIndex": "v4-pd-mem-gauge",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -1061,7 +1146,7 @@
                                             ],
                                             "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                                             "query": {
-                                                "esql": "TS metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n| STATS `Memory working set` = SUM(k8s.pod.memory.working_set),\n    `Memory requests` = SUM(k8s.container.memory_request),\n    `Memory limits` = SUM(k8s.container.memory_limit)\n  BY timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| SORT timestamp\n| KEEP timestamp, `Memory working set`, `Memory requests`, `Memory limits`"
+                                                "esql": "TS metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n| STATS `Memory working set` = AVG(k8s.pod.memory.working_set),\n    `Memory requests` = AVG(k8s.container.memory_request),\n    `Memory limits` = AVG(k8s.container.memory_limit)\n  BY k8s.pod.name, k8s.container.name,\n     timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| STATS `Memory working set` = MAX(`Memory working set`),\n    `Memory requests` = SUM(`Memory requests`),\n    `Memory limits` = SUM(`Memory limits`)\n  BY k8s.pod.name, timestamp\n| STATS `Memory working set` = SUM(`Memory working set`),\n    `Memory requests` = SUM(`Memory requests`),\n    `Memory limits` = SUM(`Memory limits`)\n  BY timestamp\n| SORT timestamp\n| KEEP timestamp, `Memory working set`, `Memory requests`, `Memory limits`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1071,7 +1156,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n| STATS `Memory working set` = SUM(k8s.pod.memory.working_set),\n    `Memory requests` = SUM(k8s.container.memory_request),\n    `Memory limits` = SUM(k8s.container.memory_limit)\n  BY timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| SORT timestamp\n| KEEP timestamp, `Memory working set`, `Memory requests`, `Memory limits`"
+                                "esql": "TS metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n| STATS `Memory working set` = AVG(k8s.pod.memory.working_set),\n    `Memory requests` = AVG(k8s.container.memory_request),\n    `Memory limits` = AVG(k8s.container.memory_limit)\n  BY k8s.pod.name, k8s.container.name,\n     timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| STATS `Memory working set` = MAX(`Memory working set`),\n    `Memory requests` = SUM(`Memory requests`),\n    `Memory limits` = SUM(`Memory limits`)\n  BY k8s.pod.name, timestamp\n| STATS `Memory working set` = SUM(`Memory working set`),\n    `Memory requests` = SUM(`Memory requests`),\n    `Memory limits` = SUM(`Memory limits`)\n  BY timestamp\n| SORT timestamp\n| KEEP timestamp, `Memory working set`, `Memory requests`, `Memory limits`"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1142,8 +1227,7 @@
                         "visualizationType": "lnsXY"
                     },
                     "description": "Memory working set over time. Yellow dashed = requests, solid red = limits (OOMKill threshold).",
-                    "drilldowns": [],
-                    "title": "Memory working set vs requests & limits"
+                    "title": "Memory working set vs requests \u0026 limits"
                 },
                 "gridData": {
                     "h": 10,
@@ -1154,7 +1238,7 @@
                     "y": 0
                 },
                 "panelIndex": "v4-pd-mem-ts",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -1162,17 +1246,17 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6": {
+                                "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
+                                    "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                     "managed": false,
-                                    "name": "metrics-*",
+                                    "name": "metrics-k8sclusterreceiver.otel-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-*",
+                                    "title": "metrics-k8sclusterreceiver.otel-*",
                                     "type": "esql"
                                 }
                             },
@@ -1180,9 +1264,9 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
+                                            "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-k8sclusterreceiver.otel-*"
                                         }
                                     ],
                                     "layers": {
@@ -1213,9 +1297,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
+                                            "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "query": {
-                                                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.cpu_limit IS NOT NULL\n| STATS cpu_limit = MAX(k8s.container.cpu_limit)\n  BY k8s.pod.name, k8s.container.name\n| STATS total_cores = SUM(cpu_limit)\n| EVAL total_cores = ROUND(total_cores, 2)\n| KEEP total_cores"
+                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.cpu_limit IS NOT NULL\n| STATS cpu_limit = MAX(k8s.container.cpu_limit),\n    last_seen = MAX(@timestamp)\n  BY k8s.pod.name, k8s.container.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| STATS total_cores = SUM(cpu_limit)\n| EVAL total_cores = ROUND(total_cores, 2)\n| KEEP total_cores"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1225,7 +1309,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.cpu_limit IS NOT NULL\n| STATS cpu_limit = MAX(k8s.container.cpu_limit)\n  BY k8s.pod.name, k8s.container.name\n| STATS total_cores = SUM(cpu_limit)\n| EVAL total_cores = ROUND(total_cores, 2)\n| KEEP total_cores"
+                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.cpu_limit IS NOT NULL\n| STATS cpu_limit = MAX(k8s.container.cpu_limit),\n    last_seen = MAX(@timestamp)\n  BY k8s.pod.name, k8s.container.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| STATS total_cores = SUM(cpu_limit)\n| EVAL total_cores = ROUND(total_cores, 2)\n| KEEP total_cores"
                             },
                             "visualization": {
                                 "applyColorTo": "background",
@@ -1234,13 +1318,15 @@
                                 "layerId": "27c8778d-41d0-47b6-b0da-cb1478a5794f",
                                 "layerType": "data",
                                 "metricAccessor": "69cbd6aa-7904-4d5e-a9eb-90232c49ca11",
-                                "showBar": false
+                                "showBar": false,
+                                "subtitle": "Last value"
                             }
                         },
                         "title": "",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
+                    },
+                    "drilldowns": []
                 },
                 "gridData": {
                     "h": 5,
@@ -1251,7 +1337,7 @@
                     "y": 5
                 },
                 "panelIndex": "v4-pd-cpu-limit",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -1317,7 +1403,7 @@
                                             ],
                                             "index": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
                                             "query": {
-                                                "esql": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.volume.capacity IS NOT NULL\n| STATS capacity = SUM(k8s.volume.capacity),\n    available = SUM(k8s.volume.available)\n  BY timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| EVAL `Volume Usage` = capacity - available\n| SORT timestamp\n| KEEP timestamp, `Volume Usage`"
+                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.volume.capacity IS NOT NULL\n| STATS cap = MAX(k8s.volume.capacity),\n    avail = MAX(k8s.volume.available)\n  BY k8s.pod.name, k8s.volume.name,\n    timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| STATS `Volume Usage` = SUM(cap) - SUM(avail)\n  BY timestamp\n| SORT timestamp\n| KEEP timestamp, `Volume Usage`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1327,7 +1413,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.volume.capacity IS NOT NULL\n| STATS capacity = SUM(k8s.volume.capacity),\n    available = SUM(k8s.volume.available)\n  BY timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| EVAL `Volume Usage` = capacity - available\n| SORT timestamp\n| KEEP timestamp, `Volume Usage`"
+                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.volume.capacity IS NOT NULL\n| STATS cap = MAX(k8s.volume.capacity),\n    avail = MAX(k8s.volume.available)\n  BY k8s.pod.name, k8s.volume.name,\n    timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| STATS `Volume Usage` = SUM(cap) - SUM(avail)\n  BY timestamp\n| SORT timestamp\n| KEEP timestamp, `Volume Usage`"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1394,7 +1480,6 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "drilldowns": [],
                     "title": "Volume usage over time"
                 },
                 "gridData": {
@@ -1406,7 +1491,7 @@
                     "y": 10
                 },
                 "panelIndex": "97863656-e046-4954-b9d9-93fadafeb3f9",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -1464,7 +1549,7 @@
                                             ],
                                             "index": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
                                             "query": {
-                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n    AND k8s.container.name IS NOT NULL\n| EVAL container_id = CONCAT(k8s.pod.name, \"/\", k8s.container.name)\n| STATS `Container Count` = COUNT_DISTINCT(container_id)\n    BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT timestamp\n| KEEP timestamp, `Container Count`"
+                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n  AND container.cpu.usage IS NOT NULL\n| EVAL container_id = CONCAT(k8s.pod.name, \"/\", k8s.container.name)\n| STATS `Container Count` = COUNT_DISTINCT(container_id)\n  BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT timestamp\n| KEEP timestamp, `Container Count`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1474,7 +1559,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n    AND k8s.container.name IS NOT NULL\n| EVAL container_id = CONCAT(k8s.pod.name, \"/\", k8s.container.name)\n| STATS `Container Count` = COUNT_DISTINCT(container_id)\n    BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT timestamp\n| KEEP timestamp, `Container Count`"
+                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n  AND container.cpu.usage IS NOT NULL\n| EVAL container_id = CONCAT(k8s.pod.name, \"/\", k8s.container.name)\n| STATS `Container Count` = COUNT_DISTINCT(container_id)\n  BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT timestamp\n| KEEP timestamp, `Container Count`"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1541,7 +1626,6 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "drilldowns": [],
                     "title": "Container count over time"
                 },
                 "gridData": {
@@ -1553,7 +1637,7 @@
                     "y": 10
                 },
                 "panelIndex": "1633d880-4700-4397-ac93-106e71ba34a0",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -1609,7 +1693,7 @@
                                             ],
                                             "index": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
                                             "query": {
-                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.volume.capacity IS NOT NULL\n  AND k8s.volume.available IS NOT NULL\n| STATS avail = MAX(k8s.volume.available),\n    cap = MAX(k8s.volume.capacity)\n  BY k8s.pod.name, k8s.volume.name\n| STATS total_avail = SUM(avail),\n    total_cap = SUM(cap)\n| EVAL utilization = ROUND(1.0 - TO_DOUBLE(total_avail) / TO_DOUBLE(total_cap), 4)\n| KEEP utilization"
+                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.volume.capacity IS NOT NULL\n  AND k8s.volume.available IS NOT NULL\n| STATS avail = LAST(k8s.volume.available, @timestamp),\n    cap = LAST(k8s.volume.capacity, @timestamp),\n    last_seen = MAX(@timestamp)\n  BY k8s.pod.name, k8s.volume.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| STATS total_avail = SUM(avail),\n    total_cap = SUM(cap)\n| EVAL utilization = ROUND(1.0 - TO_DOUBLE(total_avail) / TO_DOUBLE(total_cap), 4)\n| KEEP utilization"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1619,20 +1703,22 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.volume.capacity IS NOT NULL\n  AND k8s.volume.available IS NOT NULL\n| STATS avail = MAX(k8s.volume.available),\n    cap = MAX(k8s.volume.capacity)\n  BY k8s.pod.name, k8s.volume.name\n| STATS total_avail = SUM(avail),\n    total_cap = SUM(cap)\n| EVAL utilization = ROUND(1.0 - TO_DOUBLE(total_avail) / TO_DOUBLE(total_cap), 4)\n| KEEP utilization"
+                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.volume.capacity IS NOT NULL\n  AND k8s.volume.available IS NOT NULL\n| STATS avail = LAST(k8s.volume.available, @timestamp),\n    cap = LAST(k8s.volume.capacity, @timestamp),\n    last_seen = MAX(@timestamp)\n  BY k8s.pod.name, k8s.volume.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| STATS total_avail = SUM(avail),\n    total_cap = SUM(cap)\n| EVAL utilization = ROUND(1.0 - TO_DOUBLE(total_avail) / TO_DOUBLE(total_cap), 4)\n| KEEP utilization"
                             },
                             "visualization": {
                                 "applyColorTo": "background",
                                 "color": "#61A2FF",
                                 "layerId": "ca04349e-a75e-4404-87ae-a78f02decc60",
                                 "layerType": "data",
-                                "metricAccessor": "utilization"
+                                "metricAccessor": "utilization",
+                                "subtitle": "Last value"
                             }
                         },
                         "title": "",
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
+                    "drilldowns": [],
                     "hide_title": true,
                     "title": "Volume utilization"
                 },
@@ -1645,7 +1731,7 @@
                     "y": 10
                 },
                 "panelIndex": "c43f87bc-a64c-49eb-b103-f53dd8ef759b",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -1653,17 +1739,17 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6": {
+                                "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
+                                    "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                     "managed": false,
-                                    "name": "metrics-*",
+                                    "name": "metrics-k8sclusterreceiver.otel-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-*",
+                                    "title": "metrics-k8sclusterreceiver.otel-*",
                                     "type": "esql"
                                 }
                             },
@@ -1671,9 +1757,9 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
+                                            "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-k8sclusterreceiver.otel-*"
                                         }
                                     ],
                                     "layers": {
@@ -1699,9 +1785,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
+                                            "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "query": {
-                                                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.memory_limit IS NOT NULL\n| STATS mem_limit = MAX(k8s.container.memory_limit)\n  BY k8s.pod.name, k8s.container.name\n| STATS total_limit = SUM(mem_limit)\n| KEEP total_limit"
+                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.memory_limit IS NOT NULL\n| STATS mem_limit = MAX(k8s.container.memory_limit),\n    last_seen = MAX(@timestamp)\n  BY k8s.pod.name, k8s.container.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| STATS total_limit = SUM(mem_limit)\n| KEEP total_limit"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1711,19 +1797,21 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.memory_limit IS NOT NULL\n| STATS mem_limit = MAX(k8s.container.memory_limit)\n  BY k8s.pod.name, k8s.container.name\n| STATS total_limit = SUM(mem_limit)\n| KEEP total_limit"
+                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.memory_limit IS NOT NULL\n| STATS mem_limit = MAX(k8s.container.memory_limit),\n    last_seen = MAX(@timestamp)\n  BY k8s.pod.name, k8s.container.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| STATS total_limit = SUM(mem_limit)\n| KEEP total_limit"
                             },
                             "visualization": {
                                 "color": "#61A2FF",
                                 "layerId": "0de1cb25-05bc-46e8-91bc-acbe36433638",
                                 "layerType": "data",
-                                "metricAccessor": "total_limit"
+                                "metricAccessor": "total_limit",
+                                "subtitle": "Last value"
                             }
                         },
                         "title": "",
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
+                    "drilldowns": [],
                     "title": ""
                 },
                 "gridData": {
@@ -1735,7 +1823,7 @@
                     "y": 5
                 },
                 "panelIndex": "cf0099b0-4701-406f-9436-53dc9a58af45",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -1743,17 +1831,17 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6": {
+                                "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
+                                    "id": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
                                     "managed": false,
-                                    "name": "metrics-*",
+                                    "name": "metrics-kubeletstatsreceiver.otel-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-*",
+                                    "title": "metrics-kubeletstatsreceiver.otel-*",
                                     "type": "esql"
                                 }
                             },
@@ -1761,9 +1849,9 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
+                                            "id": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-kubeletstatsreceiver.otel-*"
                                         }
                                     ],
                                     "layers": {
@@ -1789,9 +1877,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
+                                            "index": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
                                             "query": {
-                                                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.volume.capacity IS NOT NULL\n| STATS cap = MAX(k8s.volume.capacity)\n  BY k8s.pod.name, k8s.volume.name\n| STATS total_cap = SUM(cap)\n| KEEP total_cap"
+                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.volume.capacity IS NOT NULL\n| STATS cap = MAX(k8s.volume.capacity),\n    last_seen = MAX(@timestamp)\n  BY k8s.pod.name, k8s.volume.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| STATS total_cap = SUM(cap)\n| KEEP total_cap"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1801,19 +1889,21 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.volume.capacity IS NOT NULL\n| STATS cap = MAX(k8s.volume.capacity)\n  BY k8s.pod.name, k8s.volume.name\n| STATS total_cap = SUM(cap)\n| KEEP total_cap"
+                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.volume.capacity IS NOT NULL\n| STATS cap = MAX(k8s.volume.capacity),\n    last_seen = MAX(@timestamp)\n  BY k8s.pod.name, k8s.volume.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| STATS total_cap = SUM(cap)\n| KEEP total_cap"
                             },
                             "visualization": {
                                 "color": "#61A2FF",
                                 "layerId": "e9cbf807-725a-496c-95ea-4462c11f6ebb",
                                 "layerType": "data",
-                                "metricAccessor": "total_cap"
+                                "metricAccessor": "total_cap",
+                                "subtitle": "Last value"
                             }
                         },
                         "title": "",
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
+                    "drilldowns": [],
                     "title": ""
                 },
                 "gridData": {
@@ -1825,7 +1915,7 @@
                     "y": 15
                 },
                 "panelIndex": "b7944b7b-1576-457f-95ac-770bf98d8ccc",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -2060,7 +2150,6 @@
                         "visualizationType": "lnsXY"
                     },
                     "description": "Memory composition over time. RSS, working set, and available memory as separate series. SUM per 1m bucket.",
-                    "drilldowns": [],
                     "title": "Memory composition"
                 },
                 "gridData": {
@@ -2072,7 +2161,7 @@
                     "y": 0
                 },
                 "panelIndex": "v2-pod-detail-memory-decomp",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -2080,17 +2169,17 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6": {
+                                "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
+                                    "id": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
                                     "managed": false,
-                                    "name": "metrics-*",
+                                    "name": "metrics-kubeletstatsreceiver.otel-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-*",
+                                    "title": "metrics-kubeletstatsreceiver.otel-*",
                                     "type": "esql"
                                 }
                             },
@@ -2098,9 +2187,9 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
+                                            "id": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-kubeletstatsreceiver.otel-*"
                                         }
                                     ],
                                     "layers": {
@@ -2181,9 +2270,9 @@
                                                     "label": "Direction"
                                                 }
                                             ],
-                                            "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
+                                            "index": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
                                             "query": {
-                                                "esql": "TS metrics-*\n| WHERE k8s.pod.network.io IS NOT NULL\n| STATS\n    `Throughput` = SUM(RATE(k8s.pod.network.io))\n  BY timestamp = TBUCKET(50, ?_tstart, ?_tend), direction\n| EVAL direction = CASE(direction == \"receive\", \"Network In\", direction == \"transmit\", \"Network Out\", direction)\n| SORT timestamp\n| KEEP timestamp, direction, `Throughput`"
+                                                "esql": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.network.io IS NOT NULL\n| STATS\n    `Throughput` = SUM(RATE(k8s.pod.network.io))\n  BY timestamp = TBUCKET(50, ?_tstart, ?_tend), direction\n| EVAL direction = CASE(direction == \"receive\", \"Network In\", direction == \"transmit\", \"Network Out\", direction)\n| SORT timestamp\n| KEEP timestamp, direction, `Throughput`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2193,7 +2282,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics-*\n| WHERE k8s.pod.network.io IS NOT NULL\n| STATS\n    `Throughput` = SUM(RATE(k8s.pod.network.io))\n  BY timestamp = TBUCKET(50, ?_tstart, ?_tend), direction\n| EVAL direction = CASE(direction == \"receive\", \"Network In\", direction == \"transmit\", \"Network Out\", direction)\n| SORT timestamp\n| KEEP timestamp, direction, `Throughput`"
+                                "esql": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.pod.network.io IS NOT NULL\n| STATS\n    `Throughput` = SUM(RATE(k8s.pod.network.io))\n  BY timestamp = TBUCKET(50, ?_tstart, ?_tend), direction\n| EVAL direction = CASE(direction == \"receive\", \"Network In\", direction == \"transmit\", \"Network Out\", direction)\n| SORT timestamp\n| KEEP timestamp, direction, `Throughput`"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2281,7 +2370,6 @@
                         "visualizationType": "lnsXY"
                     },
                     "description": "Network I/O over time. SUM(RATE(k8s.pod.network.io)) per 1m bucket.",
-                    "drilldowns": [],
                     "title": "Network I/O over time"
                 },
                 "gridData": {
@@ -2293,7 +2381,7 @@
                     "y": 0
                 },
                 "panelIndex": "v2-pod-detail-network-io",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -2598,7 +2686,7 @@
                                             ],
                                             "index": "940e9622ed5a553d64d70de28a6d22ade679d741e867ed5246ccd555c690adf4",
                                             "query": {
-                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n| STATS\n    ready        = MAX(k8s.container.ready),\n    restarts     = MAX(k8s.container.restarts),\n    cpu_usage    = AVG(container.cpu.usage),\n    memory_ws    = AVG(container.memory.working_set),\n    cpu_limit    = MAX(k8s.container.cpu_limit),\n    memory_limit = MAX(k8s.container.memory_limit)\n  BY k8s.pod.name, k8s.container.name\n| EVAL\n    restarts = COALESCE(restarts, 0),\n    mem_limit_util = CASE(\n      memory_limit IS NOT NULL AND memory_limit > 0,\n        ROUND(TO_DOUBLE(memory_ws) / TO_DOUBLE(memory_limit), 4),\n      NULL)\n| SORT restarts DESC\n| LIMIT 100"
+                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n| STATS\n    ready_num    = LAST(k8s.container.ready, CASE(k8s.container.ready IS NOT NULL, @timestamp, NULL)),\n    restarts     = MAX(k8s.container.restarts),\n    cpu_usage    = AVG(container.cpu.usage),\n    memory_ws    = AVG(container.memory.working_set),\n    cpu_limit    = MAX(k8s.container.cpu_limit),\n    memory_limit = MAX(k8s.container.memory_limit),\n    last_seen    = MAX(@timestamp)\n  BY k8s.pod.name, k8s.container.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| EVAL\n    ready = CASE(\n      ready_num == 1, \"Ready\",\n      ready_num == 0, \"Not Ready\",\n      \"Unknown\"),\n    restarts = COALESCE(restarts, 0),\n    mem_limit_util = CASE(\n      memory_limit IS NOT NULL AND memory_limit \u003e 0,\n        ROUND(TO_DOUBLE(memory_ws) / TO_DOUBLE(memory_limit), 4),\n      NULL)\n| KEEP k8s.pod.name, k8s.container.name, ready, restarts, cpu_usage, memory_ws, cpu_limit, memory_limit, mem_limit_util\n| SORT restarts DESC\n| LIMIT 100"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2608,11 +2696,75 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n| STATS\n    ready        = MAX(k8s.container.ready),\n    restarts     = MAX(k8s.container.restarts),\n    cpu_usage    = AVG(container.cpu.usage),\n    memory_ws    = AVG(container.memory.working_set),\n    cpu_limit    = MAX(k8s.container.cpu_limit),\n    memory_limit = MAX(k8s.container.memory_limit)\n  BY k8s.pod.name, k8s.container.name\n| EVAL\n    restarts = COALESCE(restarts, 0),\n    mem_limit_util = CASE(\n      memory_limit IS NOT NULL AND memory_limit > 0,\n        ROUND(TO_DOUBLE(memory_ws) / TO_DOUBLE(memory_limit), 4),\n      NULL)\n| SORT restarts DESC\n| LIMIT 100"
+                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.pod.name IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n| STATS\n    ready_num    = LAST(k8s.container.ready, CASE(k8s.container.ready IS NOT NULL, @timestamp, NULL)),\n    restarts     = MAX(k8s.container.restarts),\n    cpu_usage    = AVG(container.cpu.usage),\n    memory_ws    = AVG(container.memory.working_set),\n    cpu_limit    = MAX(k8s.container.cpu_limit),\n    memory_limit = MAX(k8s.container.memory_limit),\n    last_seen    = MAX(@timestamp)\n  BY k8s.pod.name, k8s.container.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| EVAL\n    ready = CASE(\n      ready_num == 1, \"Ready\",\n      ready_num == 0, \"Not Ready\",\n      \"Unknown\"),\n    restarts = COALESCE(restarts, 0),\n    mem_limit_util = CASE(\n      memory_limit IS NOT NULL AND memory_limit \u003e 0,\n        ROUND(TO_DOUBLE(memory_ws) / TO_DOUBLE(memory_limit), 4),\n      NULL)\n| KEEP k8s.pod.name, k8s.container.name, ready, restarts, cpu_usage, memory_ws, cpu_limit, memory_limit, mem_limit_util\n| SORT restarts DESC\n| LIMIT 100"
                             },
                             "visualization": {
                                 "columns": [
                                     {
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 0,
+                                                        "paletteId": "default",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Ready"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 6,
+                                                        "paletteId": "default",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Not Ready"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 1,
+                                                        "paletteId": "neutral",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "Unknown"
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                }
+                                            ],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "colorMode": "cell",
                                         "columnId": "ready"
                                     },
                                     {
@@ -2694,7 +2846,7 @@
                             "open_in_new_tab": true,
                             "trigger": "on_click_value",
                             "type": "url_drilldown",
-                            "url": "{{kibanaUrl}}/app/discover#/?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(dataViewId:'logs-*',type:dataView),query:(language:kuery,query:'k8s.pod.name:\"{{event.value}}\"'))"
+                            "url": "{{kibanaUrl}}/app/discover#/?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))\u0026_a=(dataSource:(dataViewId:'logs-*',type:dataView),query:(language:kuery,query:'k8s.pod.name:\"{{event.value}}\"'))"
                         }
                     ],
                     "title": "Containers"
@@ -2708,7 +2860,7 @@
                     "y": 0
                 },
                 "panelIndex": "7dad193d-fd5e-416d-8e59-63301bc8f9da",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -2857,7 +3009,6 @@
                         "visualizationType": "lnsXY"
                     },
                     "description": "CPU usage per container. avg(container.cpu.usage) broken down by k8s.container.name.",
-                    "drilldowns": [],
                     "title": "CPU usage by container"
                 },
                 "gridData": {
@@ -2869,12 +3020,9 @@
                     "y": 0
                 },
                 "panelIndex": "be254895-5146-4aa9-8def-d8854fb01d6a",
-                "type": "lens"
+                "type": "vis"
             }
         ],
-        "pinned_panels": {
-            "panels": {}
-        },
         "sections": [
             {
                 "collapsed": false,
@@ -2901,18 +3049,18 @@
                 "title": "Containers in pod"
             }
         ],
-        "timeFrom": "now-15m",
+        "timeFrom": "2026-05-03T16:31:34.018Z",
         "timeRestore": true,
-        "timeTo": "now",
-        "title": "[OTEL][Kubernetes] Pod Detail"
+        "timeTo": "2026-05-07T09:11:15.618Z",
+        "title": "[Kubernetes OTel] Pod Detail"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-04-02T07:45:24.241Z",
+    "created_at": "2026-05-04T03:38:22.097Z",
     "id": "kubernetes_otel-2a4e0bbf-43c9-4a02-b97d-87a4d05270fd",
     "references": [
         {
             "id": "kubernetes_otel-7b1ac87f-60ea-477f-b506-8a248026afbb",
-            "name": "v3-pod-back-link:link_96ea6ed8-bdfc-44d6-8f78-d71e270e1be1_dashboard",
+            "name": "v3-pod-back-link:link_72995b34-850a-4aec-bcb7-2cf694d13086_dashboard",
             "type": "dashboard"
         },
         {
