@@ -4,11 +4,9 @@ _Technical preview: This integration is being developed by Elastic's Customer En
 
 The Chargeback integration provides FinOps visibility into Elastic usage across tenants. By integrating data from the [**Elasticsearch Service Billing**](https://www.elastic.co/docs/reference/integrations/ess_billing/) and [**Elasticsearch**](https://www.elastic.co/docs/reference/integrations/elasticsearch/) integrations, it enables the determination of value provided by each deployment, data stream, and tier across the organisation. This allows Centre of Excellence (CoE) teams to accurately allocate costs back to the appropriate tenant.
 
-The integration creates several transforms that aggregate billing and usage data into lookup indices optimized for cost analysis and chargeback reporting.
-
 ## What is FinOps?
 
-FinOps is an operational framework and cultural practice aimed at maximizing the business value of cloud usage. It facilitates timely, data-driven decision-making and promotes financial accountability through collaboration among engineering, finance, and business teams.
+FinOps is an operational framework and cultural practice aimed at maximising the business value of cloud usage. It facilitates timely, data-driven decision-making and promotes financial accountability through collaboration among engineering, finance, and business teams.
 
 ## Purpose
 
@@ -16,27 +14,35 @@ The Chargeback integration assists organisations in addressing a crucial questio
 
 > **"How is my organisation consuming the Elastic solution, and to which tenants can I allocate these costs?"**
 
-The integration provides a breakdown of chargeable units (ECU/ERU) per:
+The integration provides a breakdown of chargeable units (ECU/ERU) per deployment, data tier, data stream, and day.
 
-- Deployment
-- Data tier
-- Data stream
-- Day
+Chargeback costs are presented based on a configured rate and unit, used to convert raw consumption (ECU or ERU) into your preferred currency (for example `EUR` at a rate of `0.85` per chargeable unit).
 
-Currently, Chargeback calculations consider only Elasticsearch data nodes. Contributions from other assets, like Kibana or ML nodes, are assumed to be shared proportionally among tenants. To incorporate indexing, querying, and storage in a weighted manner, a blended value is created using the following default weights (modifiable):
-- Indexing: `20` (applicable only to the hot tier)
-- Querying: `20`
-- Storage: `40`
+## Requirements
 
-This default weighting means storage contributes most to the blended cost calculation, with indexing considered only on the hot tier. Adjust these weights based on your organisation's needs and best judgment.
+**Monitoring cluster:**
+- Must be on Elasticsearch version **9.2.0+** due to the use of smart [ES|QL LOOKUP JOIN](https://www.elastic.co/docs/reference/query-languages/esql/esql-lookup-join) (conditional joins) in transforms and dashboard queries.
+- This is where the Chargeback integration should be installed.
 
-Chargeback costs are presented based on a configured rate and unit. These are used to display cost in your local currency, for instance `EUR`, with a rate of `0.85` per chargeable unit (ECU/ERU).
+**Required integrations:**
+- [**Elasticsearch Service Billing**](https://www.elastic.co/docs/reference/integrations/ess_billing/) integration (v1.4.1+) must be installed and collecting billing data from your Elastic Cloud organisation (ESS / Elastic Cloud only).
+- **[On-Premises Billing](https://github.com/elastic/integrations/tree/main/packages/onprem_billing)** integration (v0.3.3+) as a replacement for ESS Billing when running on-premises (ECE, ECK, self-managed). See that integration's README for ERU/mERU configuration.
+- [**Elasticsearch**](https://www.elastic.co/docs/reference/integrations/elasticsearch/) integration (v1.16.0+) must be installed and collecting [usage data](https://www.elastic.co/docs/reference/integrations/elasticsearch/#indices-and-data-streams-usage-analysis) and **`node_stats`** from data nodes on all deployments included in chargeback calculations.
+
+**Required transforms:**
+- The transform `logs-elasticsearch.index_pivot-default-{VERSION}` (from the Elasticsearch integration) must be running to aggregate usage metrics per index.
+
+**Data flow:**
+1. ESS Billing data is collected into `metrics-ess_billing.billing-*`.
+2. Elasticsearch usage data is collected into `metrics-elasticsearch.stack_monitoring.*` or, when using the Elasticsearch integration index pivot, into indices matching `monitoring-indices*`.
+3. Chargeback transforms process and correlate this data.
+4. Dashboard queries the resulting lookup indices using ES|QL.
 
 ## Configuration
 
 Configuration values are stored in the `chargeback_conf_lookup` index. The dashboard automatically applies the correct configuration based on the billing date falling within the `conf_start_date` and `conf_end_date` range.
 
-### Update the default configuration:
+### Update the default configuration
 
 Using `_update/config` updates the document with ID `config`:
 
@@ -60,9 +66,9 @@ POST chargeback_conf_lookup/_update/config
 }
 ```
 
-### Add a new configuration period (for time-based rate changes):
+### Add a new configuration period
 
-Using `_doc` creates a new document with an auto-generated ID:
+Using `_doc` creates a new document with an auto-generated ID, allowing different rates or weights for different time periods (for example Q1 vs Q2 rates):
 
 ```
 POST chargeback_conf_lookup/_doc
@@ -77,21 +83,29 @@ POST chargeback_conf_lookup/_doc
 }
 ```
 
-This allows you to have different rates for different time periods (e.g., quarterly or annual rate changes).
+### Configuration reference
 
-**Configuration Options:**
-- `conf_chargeable_unit_rate`: The monetary value per chargeable unit (ECU/ERU) (e.g., 0.85)
-- `conf_chargeable_unit_rate_unit`: The currency code (e.g., "EUR", "USD", "GBP")
-- `conf_indexing_weight`: Weight for indexing operations in **blended tier** mix (default: 20, only applies to hot tier)
-- `conf_query_weight`: Weight for query operations in **blended tier** mix (default: 20)
-- `conf_storage_weight`: Weight for storage in **blended tier** mix (default: 40)
-- `conf_utilization_memory_weight`: Weight for heap p95 in utilization score (default: 70)
-- `conf_utilization_storage_weight`: Weight for disk p95 in utilization score (default: 30)
-- `conf_utilization_floor`: Minimum utilization score (0.0–1.0) applied to all deployments regardless of actual usage (default: 0.10). Prevents realized cost from reaching zero for idle or unmonitored clusters.
-- `conf_memory_cost_weight`: Weight for illustrative memory split of `chargeable_pool` in datatiers panels (default: 50)
-- `conf_storage_cost_weight`: Weight for illustrative storage split of `chargeable_pool` in datatiers panels (default: 50)
-- `conf_start_date`: Start date/time for the configuration period (ISO 8601 format)
-- `conf_end_date`: End date/time for the configuration period (ISO 8601 format)
+**Rate and currency:**
+- `conf_chargeable_unit_rate`: monetary value per chargeable unit (ECU/ERU), for example `0.85`
+- `conf_chargeable_unit_rate_unit`: currency code, for example `"EUR"`, `"USD"`, `"GBP"`
+
+**Blended cost weights** (determine how indexing, querying, and storage activity are combined into a single cost figure):
+- `conf_indexing_weight`: weight for indexing operations (default: `20`, applies to hot tier only)
+- `conf_query_weight`: weight for query operations (default: `20`)
+- `conf_storage_weight`: weight for storage (default: `40`)
+
+**Utilisation score weights** (determine how heap and disk metrics are combined into the utilisation score):
+- `conf_utilization_memory_weight`: weight for heap p95 in utilisation score (default: `70`)
+- `conf_utilization_storage_weight`: weight for disk p95 in utilisation score (default: `30`)
+- `conf_utilization_floor`: minimum utilisation score applied to all deployments (default: `0.10`). Prevents realized cost from reaching zero for idle or unmonitored clusters.
+
+**Memory/storage cost split** (illustrative decomposition of the chargeable pool shown in the Usage and Cost Allocation dashboard):
+- `conf_memory_cost_weight`: weight for memory contribution display (default: `50`)
+- `conf_storage_cost_weight`: weight for storage contribution display (default: `50`)
+
+**Date window:**
+- `conf_start_date`: start date/time for the configuration period (ISO 8601 format)
+- `conf_end_date`: end date/time for the configuration period (ISO 8601 format)
 
 ## Realized Cost
 
@@ -100,194 +114,149 @@ Realized cost answers: *of the capacity I purchased, how much am I actually usin
 ### Formula
 
 ```
-util_score        = GREATEST((mem_w × heap_p95 + disk_w × disk_p95) / (mem_w + disk_w), floor)
-realized_ecu      = provisioned_ecu × util_score
-realized_cost     = realized_ecu × conf_chargeable_unit_rate
+util_score    = GREATEST((mem_w x heap_p95 + disk_w x disk_p95) / (mem_w + disk_w), floor)
+chargeable_pool = provisioned_ecu x util_score
+realized_cost   = chargeable_pool x conf_chargeable_unit_rate
 ```
 
 Where:
-- `heap_p95` = p95 heap usage across data nodes (0.0–1.0), sourced from `cluster_capacity_utilization_lookup`. Defaults to 1.0 (100%) when monitoring data is absent.
-- `disk_p95` = p95 disk usage across data nodes (0.0–1.0), same source.
+- `heap_p95` = p95 heap usage across data nodes (0.0 to 1.0), sourced from `cluster_capacity_utilization_lookup`. Defaults to 1.0 (100%) when monitoring data is absent.
+- `disk_p95` = p95 disk usage across data nodes (0.0 to 1.0), same source.
 - `mem_w` / `disk_w` = `conf_utilization_memory_weight` / `conf_utilization_storage_weight` (default 70 / 30)
 - `floor` = `conf_utilization_floor` (default 0.10)
 
-### Why 70 % memory / 30 % storage?
+**Why 70% memory / 30% storage?** Elasticsearch is a memory-bound workload; heap exhaustion is the primary failure mode and directly impacts query performance. Disk is more manageable via ILM, compression, and tier movement. The 70/30 default reflects this operational reality.
 
-Elasticsearch is a memory-bound workload — heap exhaustion is the primary failure mode and directly impacts query performance. Disk is more manageable via ILM, compression, and tier movement. The 70/30 default reflects this operational reality.
+**Why p95?** p95 captures the "reliably busy" signal: it accounts for peak hours without being distorted by brief maintenance spikes (which p99+ would amplify) or being washed out like daily averages.
 
-### Why p95?
-
-p95 captures the "reliably busy" signal — it accounts for peak hours without being distorted by brief maintenance spikes (which p99+ would amplify) or washed out like daily averages.
-
-### Why a utilization floor?
-
-Without a floor, idle or unmonitored deployments produce zero realized cost — they appear to consume nothing even though they hold provisioned capacity. A floor of 10 % (default) ensures every deployment contributes proportionally to the shared cost pool, even during quiet periods.
-
-### Decomposition
-
-The `billing_realized_cost_lookup` index stores:
-- `memory_contribution_ecu = realized_ecu × mem_w / (mem_w + disk_w)`
-- `storage_contribution_ecu = realized_ecu × disk_w / (mem_w + disk_w)`
-
-These always sum to `realized_ecu` and let the trellis visualization show which resource type is driving cost for each deployment.
+**Why a utilisation floor?** Without a floor, idle or unmonitored deployments produce zero realized cost; they appear to consume nothing even though they hold provisioned capacity. A floor of 10% (default) ensures every deployment contributes proportionally to the shared cost pool, even during quiet periods.
 
 ## Data and Transforms
 
-The integration creates the following transforms to aggregate cost and usage data:
+The integration creates eight transforms to aggregate cost and usage data:
 
-1. **billing_cluster_cost** - Aggregates daily chargeable units (ECU/ERU) per deployment **and SKU** from ESS Billing (`cost_type`, `cost_category`, `is_allocatable`)
-2. **billing_realized_pool** - Aggregates daily **allocatable data-tier capacity** per deployment (one row per deployment/day for realized-cost allocation)
-3. **billing_realized_cost** - Pre-computes daily **realized cost** per deployment: joins provisioned capacity with utilization metrics and applies the weight-based scoring formula and monetary rate. Output fields: `provisioned_ecu`, `realized_ecu`, `memory_contribution_ecu`, `storage_contribution_ecu`, `util_score`, `realized_cost_amount`. Powers the Realized Cost trellis visualization.
-4. **cluster_capacity_utilization** - P95 heap and disk utilization across **data-role nodes** per deployment/day (from `node_stats`)
-5. **cluster_deployment_contribution** - Per-deployment usage metrics (indexing, query, storage) from monitoring indices
-6. **cluster_datastream_contribution** - Usage per data stream
-7. **cluster_tier_contribution** - Usage per data tier
-8. **cluster_tier_and_ds_contribution** - Combined tier and data stream usage
+**Billing transforms:**
+1. **`billing_cluster_cost`**: aggregates daily chargeable units (ECU/ERU) per deployment and SKU from ESS Billing, adding `cost_type`, `cost_category`, and `is_allocatable` classification.
+2. **`billing_realized_pool`**: aggregates daily allocatable data-tier capacity per deployment (the provisioned ECU ceiling for data nodes only).
+3. **`chargeback_conf_lookup`**: configuration bootstrap; creates the `chargeback_conf_lookup` index with default values on install.
 
-These transforms produce lookup indices that are queried by the dashboard using ES|QL LOOKUP JOINs to correlate billing costs with actual usage patterns.
+**Utilisation transforms:**
+4. **`cluster_capacity_utilization`**: computes p95 heap and disk utilisation across data-role nodes per deployment/day from `node_stats`.
 
-### Transform Auto-Start
+**Usage transforms** (from monitoring indices):
+5. **`cluster_deployment_contribution`**: indexing, querying, and storage metrics per deployment/day.
+6. **`cluster_datastream_contribution`**: same metrics split by data stream.
+7. **`cluster_tier_contribution`**: same metrics split by data tier.
+8. **`cluster_tier_and_ds_contribution`**: same metrics split by both tier and data stream.
 
-All Chargeback transforms start automatically when the integration is installed. No manual intervention is required to start the transforms.
+These transforms produce lookup indices queried by the dashboards using ES|QL LOOKUP JOINs.
 
-**Performance Note:** On clusters with months of historical monitoring data for multiple deployments, the initial transform execution may process a large volume of data. This can cause temporary performance impact during the first run. The transforms will then run incrementally on their configured schedules (15-60 minute intervals), processing only new data with minimal overhead.
+### Transform auto-start
 
-You can verify the transforms are running by navigating to **Stack Management → Transforms** and filtering for `chargeback`.
+All Chargeback transforms start automatically when the integration is installed. No manual intervention is required.
 
-### Transform Health Monitoring
+On clusters with months of historical monitoring data for multiple deployments, the initial transform execution may process a large volume of data. This can cause temporary performance impact during the first run. Transforms then run incrementally on their configured schedules (15 to 60 minute intervals), processing only new data with minimal overhead.
 
-The integration includes a **Transform Health Monitoring** alert rule template that can be installed from the integration page. This rule monitors all Chargeback transforms and alerts when they encounter issues or failures, providing proactive notification of any problems with data processing.
+You can verify the transforms are running by navigating to **Stack Management > Transforms** and filtering for `chargeback`.
+
+### Transform health monitoring
+
+The integration includes a **Transform Health Monitoring** alert rule template that can be installed from the integration page. This rule monitors all Chargeback transforms and alerts when they encounter issues or failures.
 
 ## Dashboards
 
-Chargeback ships two focused dashboards:
+Chargeback ships three focused dashboards with a navigation bar linking between them.
 
-### [Chargeback] Overview
+### [Chargeback] Billing Components Overview
 
 Answers: *what did we spend and where did it go?*
 
-Collapsible sections:
-- **Cost by component (SKU)** — all billable SKUs via `billing_cluster_cost_lookup` (`cost_type` / `cost_category`). Includes normalised cost by type and category, and workload mix.
-- **Deployment group statistics** — total cost and trend per deployment group, making cross-group comparison easy.
-- **Deployment statistics** — normalised cost per deployment and tier, and cost-share breakdown.
-- **Configuration** — conversion rate, blending weights, and date-window reference.
+**Source:** `billing_cluster_cost_lookup` (full invoice, all SKUs). Totals in this dashboard equal the full Elastic invoice.
 
-### [Chargeback] Data Tiers
+Sections:
+- **Deployment group statistics**: total billing spend and trend per chargeback group. Use this for internal chargeback allocation by team or cost centre.
+- **Component statistics**: cost broken down by billing component (`cost_type`: datahot/datacontent, datawarm, ml, kibana, snapshots, data-transfer, etc.) and FinOps category (`cost_category`: data_tier, platform, transfer, snapshot, onprem, other).
 
-Answers: *which data streams and tiers drive cost, and how efficiently are they using capacity?*
+![Billing Components Overview](../img/chargeback-billing-overview.png)
 
-Collapsible sections:
-- **Datatiers / utilization** — provisioned capacity vs realized pool, utilization p95, and chargeable pool per tier. Allocated memory/storage are **estimates** (not Cloud invoice lines).
-- **Data tier and data stream overview** — top-20 data streams by indexing / query / storage cost, blended cost totals, and workload breakdown by tier.
-- **Data tier and data stream per day** — time-series panels (indexing, querying, storage, blended) broken out by data stream and tier, including absolute cost and percentage share.
+### [Chargeback] Usage and Cost Allocation
 
-![Cost and Consumption breakdown](../img/chargeback.png)
+Answers: *which data streams and tiers drive cost, and how efficiently are we using capacity?*
 
-### Cost reconciliation (FinOps)
+**Source:** `cluster_tier_contribution_lookup` and related usage lookups. Totals reflect the chargeable pool (allocatable data-tier ECU discounted by utilisation) and will not equal the full invoice. ML, Kibana, snapshots, and data transfer are excluded.
 
-Three totals appear on the dashboard; all are valid:
+Sections:
+- **Deployment cost allocation (usage-based)**: normalised cost per deployment split by data tier (usage-weighted). Shows which deployments consume the most of their chargeable pool across tiers.
+- **Datatiers / utilisation**: provisioned capacity vs chargeable pool, utilisation p95 per deployment.
+- **Data tier and data stream overview**: top-20 data streams by indexing / query / storage cost, blended cost totals, workload breakdown by tier.
+- **Data tier and data stream per day**: time-series panels (indexing, querying, storage, blended) broken out by data stream and data tier (usage-based), including absolute cost and percentage share.
 
-| Total | Source | Use |
-|-------|--------|-----|
-| **Deployment bill** | `SUM(COALESCE(total_chargeable_units, total_ecu))` over **all** SKUs in `billing_cluster_cost_lookup` | Overview, deployment totals |
-| **Provisioned data-tier capacity** | `data_tier_capacity_ecu` in `billing_realized_pool_lookup` | Datatiers “provisioned” |
-| **Realized pool** | `chargeable_pool` = capacity × utilization score (ES\|QL) | Tier and data-stream allocation only |
+![Usage and Cost Allocation](../img/chargeback-usage-allocation.png)
 
-**Do not expect** tier or data-stream allocated units to equal the full deployment bill. Non-allocatable SKUs (ML, Kibana, transfer, snapshots, …) appear in the SKU overview only. The utilization discount is not spread to tiers/streams by design.
+### [Chargeback] Configuration
 
-When `node_stats` is missing for a deployment/day, utilization defaults to **100%** (`utilization_data_missing` on datatiers panels).
+Reference dashboard showing all active configuration values: conversion rate, date windows, blended cost weights, utilisation score weights, and memory/storage cost split.
 
-### Upgrading from 0.3.0
+![Configuration](../img/chargeback-configuration.png)
 
-From **0.3.1** onward, configuration and billing fields use chargeable-unit names (for example `conf_chargeable_unit_rate` and `total_chargeable_units` instead of `conf_ecu_rate` and `total_ecu`). Dashboard ES|QL uses `COALESCE` across both names; **both columns must exist in the lookup index mapping** or panels fail at query time. From **0.3.2** onward, lookup mappings include legacy ECU names as **field aliases** that point to chargeable-unit fields.
+### Cost reconciliation
 
-**Upgrading from 0.3.1 to 0.3.2:** The package already defines these aliases in its transform field mappings. For **new installs** (or newly recreated lookup indices), no manual alias creation is required. Existing 0.3.1 lookup indices keep their old mappings, so after upgrading to **0.3.2**:
+Two distinct totals appear across the dashboards; both are valid and intentionally different:
 
-1. Delete each affected lookup index (`billing_cluster_cost_lookup`, `chargeback_conf_lookup`) and **reset** the corresponding transform so the index is recreated with 0.3.2 mappings (reprocesses historical data; plan for load and sync delay).
-2. Start or schedule the `billing_cluster_cost` and `chargeback_conf_lookup` transforms.
+| Total | Source | Dashboard |
+|---|---|---|
+| **Full deployment bill** | `SUM(total_chargeable_units)` over all SKUs in `billing_cluster_cost_lookup` | Billing Components Overview |
+| **Chargeable pool** | `billing_realized_pool_lookup` capacity x utilisation score | Usage and Cost Allocation |
 
-If the dashboard was not replaced on upgrade, re-import the Chargeback dashboard saved objects.
+Do not expect the chargeable pool to equal the full deployment bill. Non-allocatable SKUs (ML, Kibana, transfer, snapshots) appear in the Billing Components Overview only. The utilisation discount is not spread to tiers or data streams by design.
 
-If you built your own ES|QL, dashboards, or automation against the lookup indices, prefer the chargeable-unit field names when convenient.
-
-### Upgrading to 0.5.0 (realized cost trellis)
-
-1. Upgrade the Fleet package to **0.5.0**.
-2. The new **`billing_realized_cost`** transform starts automatically and creates `billing_realized_cost_lookup`. No action required unless you want to backfill historical data, in which case reset the transform.
-3. The **`chargeback_conf_lookup`** transform is bumped to force a reinstall that adds the new `conf_utilization_floor` field (default `0.10`). Reset the transform if the field is missing after upgrade.
-4. To customize the utilization floor, update the configuration document (see _Configuration_ section above).
-
-New lookup index: `billing_realized_cost_lookup`.
-
-### Upgrading to 0.4.0 (realized cost)
-
-1. Upgrade the Fleet package to **0.4.0**.
-2. **Reset** new transforms: `billing_realized_pool`, `cluster_capacity_utilization`.
-3. **Reset** all Chargeback transforms (pipeline **0.4.0**).
-4. Ensure the Elasticsearch integration collects **`node_stats`** on monitored clusters (data nodes).
-5. Update `chargeback_conf_lookup` if you override utilization or allocated-split weights.
-
-New lookup indices: `billing_realized_pool_lookup`, `cluster_capacity_utilization_lookup`.
+When `node_stats` is missing for a deployment/day, utilisation defaults to 100%.
 
 ## Deployment Groups
 
-The integration supports organizing deployments into logical groups using the `chargeback_group` tag on ESS Billing deployments. This enables cost allocation and filtering by teams, projects, or any organizational structure.
+The integration supports organising deployments into logical groups using the `chargeback_group` tag on ESS Billing deployments. This enables cost allocation and filtering by team, project, or any organisational structure.
 
-To assign a deployment to a chargeback group, add a tag to your deployment in the Elastic Cloud console in the format:
+To assign a deployment to a chargeback group, add a tag in the Elastic Cloud console in the format:
+
 ```
 chargeback_group:<group-name>
 ```
 
-For example: `chargeback_group:team-search` or `chargeback_group:project-analytics`
+For example: `chargeback_group:team-search` or `chargeback_group:project-analytics`.
 
-The `billing_cluster_cost` transform automatically extracts these tags from the `deployment_tags` field in ESS Billing data using runtime mappings. The dashboard includes a deployment group filter to view costs by specific groups, making it easy to track expenses per team or project.
-
-**Note:** Each deployment should have only one `chargeback_group` tag. Having multiple tags can cause issues and lead to unpredictable cost allocation.
+The `billing_cluster_cost` transform automatically extracts these tags from the `deployment_tags` field in ESS Billing data. Each deployment should have only one `chargeback_group` tag; multiple tags can produce unpredictable cost allocation.
 
 ## Observability Alerting
 
-Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+Three alert rule templates are included and can be installed from the integration page. Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+**[Chargeback] Deployment with chargeback group missing usage data:** alerts when a deployment that has a chargeback group assigned is not sending usage data to the monitoring cluster. This prevents silent gaps in cost allocation.
+
+**[Chargeback] New chargeback group detected:** notifies when a new `chargeback_group` tag appears on a deployment. Use this to ensure new teams or projects are accounted for in your chargeback model.
+
+**[Chargeback] Transform health monitoring:** monitors all Chargeback transforms and alerts when they encounter failures or fall behind on processing. Requires all transforms to be running before activation.
 
 For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
 
-Alert rule templates require Elastic Stack version 9.2.0 or later.
+## Upgrade Notes
 
-The following alert rule templates are available:
+### Upgrading to 0.4.0
 
-**[Chargeback] Deployment with chargeback group missing usage data**
+1. Upgrade the Fleet package to **0.4.0**.
+2. The two new transforms (`billing_realized_pool`, `cluster_capacity_utilization`) are created and auto-started.
+3. Reset the `billing_cluster_cost` transform to backfill `cost_type`, `cost_category`, and `is_allocatable` into existing lookup documents. Until backfill completes, the Component statistics panels will show no data.
+4. Ensure the Elasticsearch integration collects **`node_stats`** from data nodes. Without this, utilisation defaults to 100%.
+5. The old `[Chargeback] Cost and Consumption breakdown` dashboard is replaced by three new dashboards. Delete the old dashboard from **Stack Management > Saved Objects** if it is not removed automatically.
 
+### Upgrading from 0.3.1 to 0.3.2
 
+Lookup mappings were updated to include legacy ECU field aliases (`total_ecu`, `conf_ecu_rate`, `conf_ecu_rate_unit`) pointing to chargeable-unit fields. Existing 0.3.1 lookup indices retain old mappings. After upgrading:
 
-**[Chargeback] New chargeback group detected**
+1. Delete each affected lookup index (`billing_cluster_cost_lookup`, `chargeback_conf_lookup`) and reset the corresponding transform so the index is recreated with 0.3.2 mappings.
+2. Start or schedule the `billing_cluster_cost` and `chargeback_conf_lookup` transforms.
 
+If the dashboard was not replaced on upgrade, re-import the Chargeback dashboard saved objects.
 
+### Upgrading from 0.2.x to 0.3.0
 
-**[Chargeback] Transform health monitoring**
-
-
-
-
-
-## Requirements
-
-To use this integration, the following prerequisites must be met:
-
-**Monitoring Cluster:**
-- Must be on Elasticsearch version **9.2.0+** due to the use of smart [ES|QL LOOKUP JOIN](https://www.elastic.co/docs/reference/query-languages/esql/esql-lookup-join) (conditional joins) in transforms and dashboard queries
-- This is where the Chargeback integration should be installed
-
-**Required Integrations:**
-- [**Elasticsearch Service Billing**](https://www.elastic.co/docs/reference/integrations/ess_billing/) integration (v1.4.1+) must be installed and collecting billing data from your Elastic Cloud organization _(ESS / Elastic Cloud only)_
-- **[On-Premises Billing](https://github.com/elastic/integrations/tree/main/packages/onprem_billing)** integration (v0.3.3+) as a replacement for ESS Billing when running on-premises (ECE, ECK, self-managed). See that integration's README for ERU/mERU configuration.
-- [**Elasticsearch**](https://www.elastic.co/docs/reference/integrations/elasticsearch/) integration (v1.16.0+) must be installed and collecting [usage data](https://www.elastic.co/docs/reference/integrations/elasticsearch/#indices-and-data-streams-usage-analysis) and **`node_stats`** from data nodes on all deployments you want in chargeback calculations
-
-**Required Transforms:**
-- The transform `logs-elasticsearch.index_pivot-default-{VERSION}` (from the Elasticsearch integration) must be running to aggregate usage metrics per index
-
-**Data Flow:**
-1. ESS Billing data is collected into `metrics-ess_billing.billing-*`
-2. Elasticsearch usage data is collected into `metrics-elasticsearch.stack_monitoring.*`, or—when using the Elasticsearch integration index pivot—into indices whose names match `monitoring-indices*` (the default destination is `monitoring-indices`).
-3. Chargeback transforms process and correlate this data
-4. Dashboard queries the resulting lookup indices using ES|QL
-
-**Note:** This integration must be installed on a centralized monitoring cluster that has visibility to both billing and usage data from your deployments.
+Field names changed from ECU to chargeable units: `total_ecu` to `total_chargeable_units`, `conf_ecu_rate` to `conf_chargeable_unit_rate`, `conf_ecu_rate_unit` to `conf_chargeable_unit_rate_unit`. Dashboard ES|QL uses `COALESCE` across both names; both columns must exist in the lookup index mapping or panels fail at query time.
