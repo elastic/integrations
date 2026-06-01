@@ -1,8 +1,16 @@
 {
     "attributes": {
+        "version": 1,
+        "description": "Realised cost allocation per data tier and data stream. Shows utilisation, top consumers, and time-series cost breakdowns.",
+        "refreshInterval": {
+            "pause": true,
+            "value": 60000
+        },
+        "title": "[Chargeback] Usage & Cost Allocation",
         "controlGroupInput": {
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
+            "showApplySelections": false,
             "ignoreParentSettingsJSON": {
                 "ignoreFilters": false,
                 "ignoreQuery": false,
@@ -11,121 +19,108 @@
             },
             "panelsJSON": {
                 "b680ef70-4697-41e5-bf5f-e7e1e700ec3e": {
-                    "explicitInput": {
-                        "dataViewId": "chargeback_integration",
-                        "exclude": false,
-                        "existsSelected": false,
-                        "fieldName": "deployment_group",
-                        "searchTechnique": "prefix",
-                        "selectedOptions": [],
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        },
-                        "title": "Deployment group"
-                    },
                     "grow": false,
                     "order": 0,
                     "type": "optionsListControl",
-                    "width": "medium"
-                },
-                "2c7df183-8a05-4ee0-b7db-415e874636cd": {
+                    "width": "medium",
                     "explicitInput": {
                         "dataViewId": "chargeback_integration",
+                        "fieldName": "deployment_group",
+                        "title": "Deployment group",
                         "exclude": false,
                         "existsSelected": false,
-                        "fieldName": "deployment_name",
-                        "searchTechnique": "prefix",
                         "selectedOptions": [],
+                        "searchTechnique": "prefix",
                         "sort": {
                             "by": "_count",
                             "direction": "desc"
-                        },
-                        "title": "Deployment name"
-                    },
+                        }
+                    }
+                },
+                "2c7df183-8a05-4ee0-b7db-415e874636cd": {
                     "grow": false,
                     "order": 1,
                     "type": "optionsListControl",
-                    "width": "medium"
-                }
-            },
-            "showApplySelections": false
-        },
-        "description": "Realised cost allocation per data tier and data stream. Shows utilisation, top consumers, and time-series cost breakdowns.",
-        "kibanaSavedObjectMeta": {
-            "searchSourceJSON": {
-                "query": {
-                    "language": "kuery",
-                    "query": ""
+                    "width": "medium",
+                    "explicitInput": {
+                        "dataViewId": "chargeback_integration",
+                        "fieldName": "deployment_name",
+                        "title": "Deployment name",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "selectedOptions": [],
+                        "searchTechnique": "prefix",
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
                 }
             }
         },
         "optionsJSON": {
-            "autoApplyFilters": true,
-            "hidePanelBorders": false,
-            "hidePanelTitles": false,
+            "useMargins": true,
             "syncColors": false,
             "syncCursor": true,
             "syncTooltips": false,
-            "useMargins": true
+            "hidePanelTitles": false
         },
         "panelsJSON": [
             {
+                "type": "links",
                 "embeddableConfig": {
-                    "attributes": {
-                        "layout": "horizontal",
-                        "links": [
-                            {
-                                "destinationRefName": "link_ea0417fa-630d-c656-8f4b-a8d7b9916b29_dashboard",
-                                "id": "ea0417fa-630d-c656-8f4b-a8d7b9916b29",
-                                "label": "[Chargeback] Billing Components Overview",
-                                "order": 0,
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": true,
-                                    "useCurrentFilters": true
-                                },
-                                "type": "dashboardLink"
+                    "layout": "horizontal",
+                    "links": [
+                        {
+                            "id": "ea0417fa-630d-c656-8f4b-a8d7b9916b29",
+                            "label": "[Chargeback] Billing Components Overview",
+                            "order": 0,
+                            "options": {
+                                "openInNewTab": false,
+                                "useCurrentFilters": true,
+                                "useCurrentDateRange": true
                             },
-                            {
-                                "destinationRefName": "link_dc802531-4211-c74b-d9db-b197b528bbc8_dashboard",
-                                "id": "dc802531-4211-c74b-d9db-b197b528bbc8",
-                                "label": "[Chargeback] Usage & Cost Allocation",
-                                "order": 1,
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": true,
-                                    "useCurrentFilters": true
-                                },
-                                "type": "dashboardLink"
+                            "type": "dashboardLink",
+                            "destinationRefName": "link_ea0417fa-630d-c656-8f4b-a8d7b9916b29_dashboard"
+                        },
+                        {
+                            "id": "dc802531-4211-c74b-d9db-b197b528bbc8",
+                            "label": "[Chargeback] Usage & Cost Allocation",
+                            "order": 1,
+                            "options": {
+                                "openInNewTab": false,
+                                "useCurrentFilters": true,
+                                "useCurrentDateRange": true
                             },
-                            {
-                                "destinationRefName": "link_4e06e36e-f5d7-981f-8554-57756d1c59b8_dashboard",
-                                "id": "4e06e36e-f5d7-981f-8554-57756d1c59b8",
-                                "label": "[Chargeback] Configuration",
-                                "order": 2,
-                                "options": {
-                                    "openInNewTab": false,
-                                    "useCurrentDateRange": true,
-                                    "useCurrentFilters": true
-                                },
-                                "type": "dashboardLink"
-                            }
-                        ]
-                    },
+                            "type": "dashboardLink",
+                            "destinationRefName": "link_dc802531-4211-c74b-d9db-b197b528bbc8_dashboard"
+                        },
+                        {
+                            "id": "4e06e36e-f5d7-981f-8554-57756d1c59b8",
+                            "label": "[Chargeback] Configuration",
+                            "order": 2,
+                            "options": {
+                                "openInNewTab": false,
+                                "useCurrentFilters": true,
+                                "useCurrentDateRange": true
+                            },
+                            "type": "dashboardLink",
+                            "destinationRefName": "link_4e06e36e-f5d7-981f-8554-57756d1c59b8_dashboard"
+                        }
+                    ],
                     "enhancements": {}
                 },
+                "panelIndex": "13cd2a6a-ec89-4553-ae64-cbc347770aa5",
                 "gridData": {
                     "h": 2,
-                    "i": "1dd3dbff-677c-7339-7873-1341bc8465c5",
+                    "i": "13cd2a6a-ec89-4553-ae64-cbc347770aa5",
                     "w": 48,
                     "x": 0,
                     "y": 0
-                },
-                "panelIndex": "1dd3dbff-677c-7339-7873-1341bc8465c5",
-                "type": "links"
+                }
             },
             {
+                "type": "visualization",
                 "embeddableConfig": {
                     "enhancements": {
                         "dynamicActions": {
@@ -155,18 +150,18 @@
                         "uiState": {}
                     }
                 },
+                "panelIndex": "eca9d216-830e-4509-88c7-66b1dd354c71",
                 "gridData": {
                     "h": 3,
-                    "i": "03a1f87b-a94c-4956-89b7-72711a0b3112",
-                    "sectionId": "c04d8f10-0002-4000-8000-chargebackdt01",
+                    "i": "eca9d216-830e-4509-88c7-66b1dd354c71",
                     "w": 48,
                     "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "03a1f87b-a94c-4956-89b7-72711a0b3112",
-                "type": "visualization"
+                    "y": 0,
+                    "sectionId": "0fceb22c-1e73-45e4-b634-006f6dcc5f43"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -324,18 +319,18 @@
                     "drilldowns": [],
                     "title": "Realised Pool per Deployment"
                 },
+                "panelIndex": "0c666274-4041-44ca-8a1e-7b4affafeb5d",
                 "gridData": {
                     "h": 16,
-                    "i": "c04d8f10-1002-4000-8000-chargebackdt01",
-                    "sectionId": "c04d8f10-0002-4000-8000-chargebackdt01",
+                    "i": "0c666274-4041-44ca-8a1e-7b4affafeb5d",
                     "w": 39,
                     "x": 9,
-                    "y": 3
-                },
-                "panelIndex": "c04d8f10-1002-4000-8000-chargebackdt01",
-                "type": "lens"
+                    "y": 3,
+                    "sectionId": "0fceb22c-1e73-45e4-b634-006f6dcc5f43"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -441,18 +436,18 @@
                     "drilldowns": [],
                     "title": "Chargeable Pool by Data Tier"
                 },
+                "panelIndex": "bb5dac10-896d-4312-a0db-4aa663d0d88b",
                 "gridData": {
                     "h": 16,
-                    "i": "c04d8f10-1003-4000-8000-chargebackdt02",
-                    "sectionId": "c04d8f10-0002-4000-8000-chargebackdt01",
+                    "i": "bb5dac10-896d-4312-a0db-4aa663d0d88b",
                     "w": 9,
                     "x": 0,
-                    "y": 3
-                },
-                "panelIndex": "c04d8f10-1003-4000-8000-chargebackdt02",
-                "type": "lens"
+                    "y": 3,
+                    "sectionId": "0fceb22c-1e73-45e4-b634-006f6dcc5f43"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -629,18 +624,18 @@
                     "drilldowns": [],
                     "title": "Workload Mix by Data Tier"
                 },
+                "panelIndex": "b6c32121-c93d-4a4c-a850-7f486a476d81",
                 "gridData": {
                     "h": 10,
-                    "i": "18643569-92d3-4a30-aafe-6ae11acc4c58",
-                    "sectionId": "96918af7-e003-4af8-8c37-245db141d60c",
+                    "i": "b6c32121-c93d-4a4c-a850-7f486a476d81",
                     "w": 48,
                     "x": 0,
-                    "y": 3
-                },
-                "panelIndex": "18643569-92d3-4a30-aafe-6ae11acc4c58",
-                "type": "lens"
+                    "y": 3,
+                    "sectionId": "d11ae80b-d7bb-474f-9082-81752ab2865d"
+                }
             },
             {
+                "type": "legacy_vis",
                 "embeddableConfig": {
                     "savedVis": {
                         "data": {
@@ -665,18 +660,18 @@
                     },
                     "title": ""
                 },
+                "panelIndex": "41c6c963-16be-4b21-b59c-3c123f84ad57",
                 "gridData": {
                     "h": 3,
-                    "i": "4d8d5ff0-b63f-4d39-be03-e6f85a8b60ce",
-                    "sectionId": "96918af7-e003-4af8-8c37-245db141d60c",
+                    "i": "41c6c963-16be-4b21-b59c-3c123f84ad57",
                     "w": 12,
                     "x": 0,
-                    "y": 13
-                },
-                "panelIndex": "4d8d5ff0-b63f-4d39-be03-e6f85a8b60ce",
-                "type": "legacy_vis"
+                    "y": 13,
+                    "sectionId": "d11ae80b-d7bb-474f-9082-81752ab2865d"
+                }
             },
             {
+                "type": "legacy_vis",
                 "embeddableConfig": {
                     "savedVis": {
                         "data": {
@@ -701,18 +696,18 @@
                     },
                     "title": ""
                 },
+                "panelIndex": "1ad2d1fd-04c2-4d2b-ad5d-15ffb0176cc1",
                 "gridData": {
                     "h": 3,
-                    "i": "40a91be7-f01d-47ce-ba7f-683bcee42626",
-                    "sectionId": "96918af7-e003-4af8-8c37-245db141d60c",
+                    "i": "1ad2d1fd-04c2-4d2b-ad5d-15ffb0176cc1",
                     "w": 12,
                     "x": 12,
-                    "y": 13
-                },
-                "panelIndex": "40a91be7-f01d-47ce-ba7f-683bcee42626",
-                "type": "legacy_vis"
+                    "y": 13,
+                    "sectionId": "d11ae80b-d7bb-474f-9082-81752ab2865d"
+                }
             },
             {
+                "type": "legacy_vis",
                 "embeddableConfig": {
                     "savedVis": {
                         "data": {
@@ -737,18 +732,18 @@
                     },
                     "title": ""
                 },
+                "panelIndex": "2753c162-7420-4b8d-971f-4bda81d7be2b",
                 "gridData": {
                     "h": 3,
-                    "i": "d0c647b4-4b26-49d3-b54a-1ddbdf995143",
-                    "sectionId": "96918af7-e003-4af8-8c37-245db141d60c",
+                    "i": "2753c162-7420-4b8d-971f-4bda81d7be2b",
                     "w": 12,
                     "x": 24,
-                    "y": 13
-                },
-                "panelIndex": "d0c647b4-4b26-49d3-b54a-1ddbdf995143",
-                "type": "legacy_vis"
+                    "y": 13,
+                    "sectionId": "d11ae80b-d7bb-474f-9082-81752ab2865d"
+                }
             },
             {
+                "type": "legacy_vis",
                 "embeddableConfig": {
                     "savedVis": {
                         "data": {
@@ -773,18 +768,18 @@
                     },
                     "title": ""
                 },
+                "panelIndex": "c83bffe6-c501-430a-8769-a964b240acf5",
                 "gridData": {
                     "h": 3,
-                    "i": "540d6135-d996-43ed-a192-30d51e2e5454",
-                    "sectionId": "96918af7-e003-4af8-8c37-245db141d60c",
+                    "i": "c83bffe6-c501-430a-8769-a964b240acf5",
                     "w": 12,
                     "x": 36,
-                    "y": 13
-                },
-                "panelIndex": "540d6135-d996-43ed-a192-30d51e2e5454",
-                "type": "legacy_vis"
+                    "y": 13,
+                    "sectionId": "d11ae80b-d7bb-474f-9082-81752ab2865d"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -886,18 +881,18 @@
                     },
                     "title": "Top 20 Data Streams \u2014 Indexing Cost"
                 },
+                "panelIndex": "b349f8c6-846f-40d8-83e7-0b8365a7988e",
                 "gridData": {
                     "h": 15,
-                    "i": "ed65354e-848c-4d93-bcd6-b9c50793e242",
-                    "sectionId": "96918af7-e003-4af8-8c37-245db141d60c",
+                    "i": "b349f8c6-846f-40d8-83e7-0b8365a7988e",
                     "w": 12,
                     "x": 0,
-                    "y": 16
-                },
-                "panelIndex": "ed65354e-848c-4d93-bcd6-b9c50793e242",
-                "type": "lens"
+                    "y": 16,
+                    "sectionId": "d11ae80b-d7bb-474f-9082-81752ab2865d"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -999,18 +994,18 @@
                     },
                     "title": "Top 20 Data Streams \u2014 Query Cost"
                 },
+                "panelIndex": "cd86b33a-2af1-4dbc-b296-f3e5a3ee5970",
                 "gridData": {
                     "h": 15,
-                    "i": "4a2ecf27-21c7-4fff-986b-05b25e0ce8f8",
-                    "sectionId": "96918af7-e003-4af8-8c37-245db141d60c",
+                    "i": "cd86b33a-2af1-4dbc-b296-f3e5a3ee5970",
                     "w": 12,
                     "x": 12,
-                    "y": 16
-                },
-                "panelIndex": "4a2ecf27-21c7-4fff-986b-05b25e0ce8f8",
-                "type": "lens"
+                    "y": 16,
+                    "sectionId": "d11ae80b-d7bb-474f-9082-81752ab2865d"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -1112,18 +1107,18 @@
                     },
                     "title": "Top 20 Data Streams \u2014 Storage Cost"
                 },
+                "panelIndex": "c3afc6bc-09c4-4f60-a038-163d535a7d32",
                 "gridData": {
                     "h": 15,
-                    "i": "3269b898-7190-40b6-ad0e-d29fcf98e762",
-                    "sectionId": "96918af7-e003-4af8-8c37-245db141d60c",
+                    "i": "c3afc6bc-09c4-4f60-a038-163d535a7d32",
                     "w": 12,
                     "x": 24,
-                    "y": 16
-                },
-                "panelIndex": "3269b898-7190-40b6-ad0e-d29fcf98e762",
-                "type": "lens"
+                    "y": 16,
+                    "sectionId": "d11ae80b-d7bb-474f-9082-81752ab2865d"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -1216,19 +1211,32 @@
                     },
                     "title": "Blended Cost by Data Stream"
                 },
+                "panelIndex": "e57765c6-40be-41cf-b3d2-e65ee8a51b67",
                 "gridData": {
                     "h": 15,
-                    "i": "cb467fdf-5cb1-41b5-8235-8b823cbd9310",
-                    "sectionId": "96918af7-e003-4af8-8c37-245db141d60c",
+                    "i": "e57765c6-40be-41cf-b3d2-e65ee8a51b67",
                     "w": 12,
                     "x": 36,
-                    "y": 16
-                },
-                "panelIndex": "cb467fdf-5cb1-41b5-8235-8b823cbd9310",
-                "type": "lens"
+                    "y": 16,
+                    "sectionId": "d11ae80b-d7bb-474f-9082-81752ab2865d"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "title": "Workload Breakdown by Data Tier",
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "filters": [],
+                    "query": {
+                        "esql": "FROM billing_realized_pool_lookup\n| LOOKUP JOIN cluster_capacity_utilization_lookup ON composite_key\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN chargeback_conf_lookup ON @timestamp >= conf_start_date AND @timestamp <= conf_end_date\n| EVAL heap_util = COALESCE(heap_used_pct_p95, 100) / 100, disk_util = COALESCE(disk_used_pct_p95, 100) / 100, w_sum = conf_utilization_memory_weight + conf_utilization_storage_weight, capacity_utilization_score = CASE(w_sum > 0, (conf_utilization_memory_weight * heap_util + conf_utilization_storage_weight * disk_util) / w_sum, 1.0)\n| EVAL chargeable_pool = data_tier_capacity_ecu * COALESCE(capacity_utilization_score, 1.0), utilization_data_missing = heap_used_pct_p95 IS NULL AND disk_used_pct_p95 IS NULL\n| LOOKUP JOIN cluster_tier_and_datastream_contribution_lookup ON composite_key\n| EVAL\n    indexing = CASE(deployment_sum_indexing_time > 0, TO_DOUBLE(tier_and_datastream_sum_indexing_time) / deployment_sum_indexing_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    querying = CASE(deployment_sum_query_time > 0, TO_DOUBLE(tier_and_datastream_sum_query_time) / deployment_sum_query_time * chargeable_pool) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    data_set = CASE(deployment_sum_data_set_store_size > 0, TO_DOUBLE(tier_and_datastream_sum_data_set_store_size) / deployment_sum_data_set_store_size * chargeable_pool),\n    store = CASE(deployment_sum_store_size > 0, TO_DOUBLE(tier_and_datastream_sum_store_size) / deployment_sum_store_size * chargeable_pool),\n    storage = CASE(store == 0, data_set, store) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate),\n    total_weight_hot = conf_storage_weight + conf_query_weight + conf_indexing_weight,\n    total_weight_cold = conf_storage_weight + conf_query_weight,\n    blended = CASE(\n        tier == \"hot/content\",\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight) + (indexing / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_indexing_weight)) / total_weight_hot,\n        ((storage / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_storage_weight) + (querying / COALESCE(conf_chargeable_unit_rate, conf_ecu_rate) * conf_query_weight)) / total_weight_cold\n    ) * COALESCE(conf_chargeable_unit_rate, conf_ecu_rate)\n| STATS\n    Indexing = round(sum(indexing),2),\n    Querying = round(sum(querying),2),\n    Storage = round(sum(storage),2),\n    Blended = round(sum(blended),2)\n    BY datastream, tier\n| SORT Blended DESC\n| RENAME tier as `Data tier`, datastream as `Data stream`\n| Keep `Data stream`, `Data tier`, Indexing, Querying, Storage, Blended\n| WHERE `Data stream` is not null"
+                    },
                     "attributes": {
                         "references": [],
                         "state": {
@@ -1302,63 +1310,6 @@
                                             ],
                                             "columns": [
                                                 {
-                                                    "columnId": "Indexing",
-                                                    "customLabel": false,
-                                                    "fieldName": "Indexing",
-                                                    "inMetricDimension": true,
-                                                    "label": "Indexing",
-                                                    "meta": {
-                                                        "esType": "double",
-                                                        "type": "number"
-                                                    },
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        }
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "Querying",
-                                                    "customLabel": false,
-                                                    "fieldName": "Querying",
-                                                    "inMetricDimension": true,
-                                                    "label": "Querying",
-                                                    "meta": {
-                                                        "esType": "double",
-                                                        "type": "number"
-                                                    },
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        }
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "Storage",
-                                                    "customLabel": false,
-                                                    "fieldName": "Storage",
-                                                    "inMetricDimension": true,
-                                                    "label": "Storage",
-                                                    "meta": {
-                                                        "esType": "double",
-                                                        "type": "number"
-                                                    },
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        }
-                                                    }
-                                                },
-                                                {
                                                     "columnId": "ce5b4b7d-63cc-4961-9d04-657a81926514",
                                                     "fieldName": "Data stream",
                                                     "meta": {
@@ -1375,29 +1326,68 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "40585357-dc89-45f5-90eb-1eec5b69de24",
-                                                    "fieldName": "Blended",
-                                                    "inMetricDimension": true,
-                                                    "label": "Blended",
+                                                    "columnId": "f649e7a2-4d2c-45a3-aa64-99f2e29c2dd0",
+                                                    "fieldName": "Indexing",
                                                     "meta": {
+                                                        "type": "number",
                                                         "esType": "double",
+                                                        "sourceParams": {
+                                                            "indexPattern": "billing_realized_pool_lookup",
+                                                            "sourceField": "Indexing"
+                                                        },
                                                         "params": {
                                                             "id": "number"
+                                                        }
+                                                    },
+                                                    "label": "Indexing"
+                                                },
+                                                {
+                                                    "columnId": "71737902-035d-4164-978e-2614106901ea",
+                                                    "fieldName": "Querying",
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "double",
+                                                        "sourceParams": {
+                                                            "indexPattern": "billing_realized_pool_lookup",
+                                                            "sourceField": "Querying"
                                                         },
+                                                        "params": {
+                                                            "id": "number"
+                                                        }
+                                                    },
+                                                    "label": "Querying"
+                                                },
+                                                {
+                                                    "columnId": "7ff73adf-6069-4878-af96-89acc86b9fb2",
+                                                    "fieldName": "Storage",
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "double",
+                                                        "sourceParams": {
+                                                            "indexPattern": "billing_realized_pool_lookup",
+                                                            "sourceField": "Storage"
+                                                        },
+                                                        "params": {
+                                                            "id": "number"
+                                                        }
+                                                    },
+                                                    "label": "Storage"
+                                                },
+                                                {
+                                                    "columnId": "cbb5c7e4-d1f7-47a1-8c0a-766ac93d4362",
+                                                    "fieldName": "Blended",
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "double",
                                                         "sourceParams": {
                                                             "indexPattern": "billing_realized_pool_lookup",
                                                             "sourceField": "Blended"
                                                         },
-                                                        "type": "number"
-                                                    },
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
+                                                        "params": {
+                                                            "id": "number"
                                                         }
-                                                    }
+                                                    },
+                                                    "label": "Blended"
                                                 }
                                             ],
                                             "index": "chargeback_integration",
@@ -1427,21 +1417,24 @@
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Indexing",
+                                        "columnId": "f649e7a2-4d2c-45a3-aa64-99f2e29c2dd0",
+                                        "isTransposed": false,
                                         "isMetric": true
                                     },
                                     {
-                                        "columnId": "Querying",
+                                        "columnId": "71737902-035d-4164-978e-2614106901ea",
+                                        "isTransposed": false,
                                         "isMetric": true
                                     },
                                     {
-                                        "columnId": "Storage",
+                                        "columnId": "7ff73adf-6069-4878-af96-89acc86b9fb2",
+                                        "isTransposed": false,
                                         "isMetric": true
                                     },
                                     {
-                                        "columnId": "40585357-dc89-45f5-90eb-1eec5b69de24",
-                                        "isMetric": true,
-                                        "isTransposed": false
+                                        "columnId": "cbb5c7e4-d1f7-47a1-8c0a-766ac93d4362",
+                                        "isTransposed": false,
+                                        "isMetric": true
                                     }
                                 ],
                                 "layerId": "23693fb0-43a5-4f95-bd77-d6a54e18e34a",
@@ -1451,22 +1444,20 @@
                         "title": "Workload Breakdown by Data Tier",
                         "version": 2,
                         "visualizationType": "lnsDatatable"
-                    },
-                    "drilldowns": [],
-                    "title": "Workload Breakdown by Data Tier"
+                    }
                 },
+                "panelIndex": "7766db54-cadf-46f1-8417-ebe8267a3c23",
                 "gridData": {
                     "h": 15,
-                    "i": "964a716b-bb61-4cc0-ba77-c1e73e2da836",
-                    "sectionId": "96918af7-e003-4af8-8c37-245db141d60c",
+                    "i": "7766db54-cadf-46f1-8417-ebe8267a3c23",
                     "w": 48,
                     "x": 0,
-                    "y": 31
-                },
-                "panelIndex": "964a716b-bb61-4cc0-ba77-c1e73e2da836",
-                "type": "lens"
+                    "y": 31,
+                    "sectionId": "d11ae80b-d7bb-474f-9082-81752ab2865d"
+                }
             },
             {
+                "type": "visualization",
                 "embeddableConfig": {
                     "enhancements": {
                         "dynamicActions": {
@@ -1496,18 +1487,18 @@
                         "uiState": {}
                     }
                 },
+                "panelIndex": "a22d7ea0-bd5b-4372-a1bf-c3c44af10937",
                 "gridData": {
                     "h": 3,
-                    "i": "5e338cf9-782e-4212-99d6-227846c8b7ee",
-                    "sectionId": "96918af7-e003-4af8-8c37-245db141d60c",
+                    "i": "a22d7ea0-bd5b-4372-a1bf-c3c44af10937",
                     "w": 48,
                     "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "5e338cf9-782e-4212-99d6-227846c8b7ee",
-                "type": "visualization"
+                    "y": 0,
+                    "sectionId": "d11ae80b-d7bb-474f-9082-81752ab2865d"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -1643,18 +1634,18 @@
                     },
                     "title": "Indexing Cost by Data Stream over Time"
                 },
+                "panelIndex": "a85aea2f-8e25-4bef-b09a-32f0a5cb33f9",
                 "gridData": {
                     "h": 14,
-                    "i": "dafb7c36-3a1d-4cbb-9944-51beedf535f6",
-                    "sectionId": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "a85aea2f-8e25-4bef-b09a-32f0a5cb33f9",
                     "w": 16,
                     "x": 0,
-                    "y": 6
-                },
-                "panelIndex": "dafb7c36-3a1d-4cbb-9944-51beedf535f6",
-                "type": "lens"
+                    "y": 6,
+                    "sectionId": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -1790,18 +1781,18 @@
                     },
                     "title": "Indexing Cost by Tier over Time"
                 },
+                "panelIndex": "2f961fd2-5b04-4c4d-aafb-76af69b06130",
                 "gridData": {
                     "h": 14,
-                    "i": "45a29dd3-1990-4717-bf6b-25a5d85d2344",
-                    "sectionId": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "2f961fd2-5b04-4c4d-aafb-76af69b06130",
                     "w": 16,
                     "x": 16,
-                    "y": 6
-                },
-                "panelIndex": "45a29dd3-1990-4717-bf6b-25a5d85d2344",
-                "type": "lens"
+                    "y": 6,
+                    "sectionId": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -1937,18 +1928,18 @@
                     },
                     "title": "Indexing Cost Share by Data Stream over Time (%)"
                 },
+                "panelIndex": "c895d51f-09ee-4624-8674-1d77a8d1df61",
                 "gridData": {
                     "h": 14,
-                    "i": "9bc8fa5a-d47a-4a79-ab6a-032d726f085f",
-                    "sectionId": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "c895d51f-09ee-4624-8674-1d77a8d1df61",
                     "w": 16,
                     "x": 32,
-                    "y": 6
-                },
-                "panelIndex": "9bc8fa5a-d47a-4a79-ab6a-032d726f085f",
-                "type": "lens"
+                    "y": 6,
+                    "sectionId": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -2084,18 +2075,18 @@
                     },
                     "title": "Query Cost by Data Stream over Time"
                 },
+                "panelIndex": "48aef73e-b6de-424a-85fa-74f46d9bded4",
                 "gridData": {
                     "h": 14,
-                    "i": "83bbd574-571b-4401-af7f-d0998cd9af2e",
-                    "sectionId": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "48aef73e-b6de-424a-85fa-74f46d9bded4",
                     "w": 16,
                     "x": 0,
-                    "y": 23
-                },
-                "panelIndex": "83bbd574-571b-4401-af7f-d0998cd9af2e",
-                "type": "lens"
+                    "y": 23,
+                    "sectionId": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -2231,18 +2222,18 @@
                     },
                     "title": "Query Cost by Tier over Time"
                 },
+                "panelIndex": "fb59beb6-bf05-4ce0-90a3-d8b434d300aa",
                 "gridData": {
                     "h": 14,
-                    "i": "b0df8c79-87d4-4a7a-8c7b-4752862fb2dd",
-                    "sectionId": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "fb59beb6-bf05-4ce0-90a3-d8b434d300aa",
                     "w": 16,
                     "x": 16,
-                    "y": 23
-                },
-                "panelIndex": "b0df8c79-87d4-4a7a-8c7b-4752862fb2dd",
-                "type": "lens"
+                    "y": 23,
+                    "sectionId": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -2378,18 +2369,18 @@
                     },
                     "title": "Query Cost Share by Data Stream over Time (%)"
                 },
+                "panelIndex": "6fb65bcc-0568-4c8d-a833-c87cf8f8bccd",
                 "gridData": {
                     "h": 14,
-                    "i": "b3e62c24-abb9-431e-a228-cbc5e7b8b02a",
-                    "sectionId": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "6fb65bcc-0568-4c8d-a833-c87cf8f8bccd",
                     "w": 16,
                     "x": 32,
-                    "y": 23
-                },
-                "panelIndex": "b3e62c24-abb9-431e-a228-cbc5e7b8b02a",
-                "type": "lens"
+                    "y": 23,
+                    "sectionId": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -2525,18 +2516,18 @@
                     },
                     "title": "Storage Cost by Data Stream over Time"
                 },
+                "panelIndex": "5bdd9079-cb0e-453e-835b-afcb5d72f06b",
                 "gridData": {
                     "h": 15,
-                    "i": "6430d172-9b7f-45a0-a836-c46af0276b19",
-                    "sectionId": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "5bdd9079-cb0e-453e-835b-afcb5d72f06b",
                     "w": 16,
                     "x": 0,
-                    "y": 40
-                },
-                "panelIndex": "6430d172-9b7f-45a0-a836-c46af0276b19",
-                "type": "lens"
+                    "y": 40,
+                    "sectionId": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -2672,18 +2663,18 @@
                     },
                     "title": "Storage Cost by Tier over Time"
                 },
+                "panelIndex": "5ac2dcd4-8775-4c15-8e79-346e0a62dd4d",
                 "gridData": {
                     "h": 15,
-                    "i": "ba7efeab-de6c-4301-8e97-7adb98dae58b",
-                    "sectionId": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "5ac2dcd4-8775-4c15-8e79-346e0a62dd4d",
                     "w": 16,
                     "x": 16,
-                    "y": 40
-                },
-                "panelIndex": "ba7efeab-de6c-4301-8e97-7adb98dae58b",
-                "type": "lens"
+                    "y": 40,
+                    "sectionId": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -2819,18 +2810,18 @@
                     },
                     "title": "Storage Cost Share by Data Stream over Time (%)"
                 },
+                "panelIndex": "5d96941f-c4e3-4833-b716-192d75d6ae0d",
                 "gridData": {
                     "h": 15,
-                    "i": "a672f0fa-cdf6-4e27-a2c8-f753eef30a06",
-                    "sectionId": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "5d96941f-c4e3-4833-b716-192d75d6ae0d",
                     "w": 16,
                     "x": 32,
-                    "y": 40
-                },
-                "panelIndex": "a672f0fa-cdf6-4e27-a2c8-f753eef30a06",
-                "type": "lens"
+                    "y": 40,
+                    "sectionId": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -2966,18 +2957,18 @@
                     },
                     "title": "Blended Cost by Data Stream over Time"
                 },
+                "panelIndex": "0f25691b-8bc9-4dd2-94be-893a6e64a195",
                 "gridData": {
                     "h": 14,
-                    "i": "4c97109a-2048-470f-ae18-8c424ba2c12e",
-                    "sectionId": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "0f25691b-8bc9-4dd2-94be-893a6e64a195",
                     "w": 16,
                     "x": 0,
-                    "y": 58
-                },
-                "panelIndex": "4c97109a-2048-470f-ae18-8c424ba2c12e",
-                "type": "lens"
+                    "y": 58,
+                    "sectionId": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -3105,18 +3096,18 @@
                     },
                     "title": "Blended Cost by Tier over Time"
                 },
+                "panelIndex": "b3e1e89a-a86d-40b3-97e2-ba89751330fa",
                 "gridData": {
                     "h": 14,
-                    "i": "5732f95c-3cc0-46c8-a8ab-14f8c6937f9f",
-                    "sectionId": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "b3e1e89a-a86d-40b3-97e2-ba89751330fa",
                     "w": 16,
                     "x": 16,
-                    "y": 58
-                },
-                "panelIndex": "5732f95c-3cc0-46c8-a8ab-14f8c6937f9f",
-                "type": "lens"
+                    "y": 58,
+                    "sectionId": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80"
+                }
             },
             {
+                "type": "lens",
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -3244,18 +3235,18 @@
                     },
                     "title": "Blended Cost Share by Tier and Data Stream (%)"
                 },
+                "panelIndex": "cefe7754-4e91-4b85-8132-512a9ca31793",
                 "gridData": {
                     "h": 14,
-                    "i": "4dbbad0a-7ceb-443b-912b-0c1ae9fb3a6a",
-                    "sectionId": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "cefe7754-4e91-4b85-8132-512a9ca31793",
                     "w": 16,
                     "x": 32,
-                    "y": 58
-                },
-                "panelIndex": "4dbbad0a-7ceb-443b-912b-0c1ae9fb3a6a",
-                "type": "lens"
+                    "y": 58,
+                    "sectionId": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80"
+                }
             },
             {
+                "type": "visualization",
                 "embeddableConfig": {
                     "enhancements": {
                         "dynamicActions": {
@@ -3285,18 +3276,18 @@
                         "uiState": {}
                     }
                 },
+                "panelIndex": "5994f908-7b57-4bd9-8e58-0b275c4c7f8e",
                 "gridData": {
                     "h": 3,
-                    "i": "ef9d58e0-ffb8-4134-97d6-636c60558dd6",
-                    "sectionId": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "5994f908-7b57-4bd9-8e58-0b275c4c7f8e",
                     "w": 48,
                     "x": 0,
-                    "y": 0
-                },
-                "panelIndex": "ef9d58e0-ffb8-4134-97d6-636c60558dd6",
-                "type": "visualization"
+                    "y": 0,
+                    "sectionId": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80"
+                }
             },
             {
+                "type": "visualization",
                 "embeddableConfig": {
                     "enhancements": {
                         "dynamicActions": {
@@ -3326,18 +3317,18 @@
                         "uiState": {}
                     }
                 },
+                "panelIndex": "5011c332-ce8a-4a78-a08a-c0527c374fcb",
                 "gridData": {
                     "h": 3,
-                    "i": "91bf0432-9d0b-4f76-938b-bf9af9e518b7",
-                    "sectionId": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "5011c332-ce8a-4a78-a08a-c0527c374fcb",
                     "w": 48,
                     "x": 0,
-                    "y": 3
-                },
-                "panelIndex": "91bf0432-9d0b-4f76-938b-bf9af9e518b7",
-                "type": "visualization"
+                    "y": 3,
+                    "sectionId": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80"
+                }
             },
             {
+                "type": "visualization",
                 "embeddableConfig": {
                     "enhancements": {
                         "dynamicActions": {
@@ -3367,18 +3358,18 @@
                         "uiState": {}
                     }
                 },
+                "panelIndex": "e458e034-197a-4ec6-95a8-2938181a4883",
                 "gridData": {
                     "h": 3,
-                    "i": "32ab63d1-f410-4ab9-b379-2e23dff7ac53",
-                    "sectionId": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "e458e034-197a-4ec6-95a8-2938181a4883",
                     "w": 48,
                     "x": 0,
-                    "y": 20
-                },
-                "panelIndex": "32ab63d1-f410-4ab9-b379-2e23dff7ac53",
-                "type": "visualization"
+                    "y": 20,
+                    "sectionId": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80"
+                }
             },
             {
+                "type": "visualization",
                 "embeddableConfig": {
                     "enhancements": {
                         "dynamicActions": {
@@ -3408,18 +3399,18 @@
                         "uiState": {}
                     }
                 },
+                "panelIndex": "692b3cdd-b37f-4da9-80a6-aff7b799ecc1",
                 "gridData": {
                     "h": 3,
-                    "i": "ce867a35-6fa2-4605-a2fb-3e5efe22cb58",
-                    "sectionId": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "692b3cdd-b37f-4da9-80a6-aff7b799ecc1",
                     "w": 48,
                     "x": 0,
-                    "y": 37
-                },
-                "panelIndex": "ce867a35-6fa2-4605-a2fb-3e5efe22cb58",
-                "type": "visualization"
+                    "y": 37,
+                    "sectionId": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80"
+                }
             },
             {
+                "type": "visualization",
                 "embeddableConfig": {
                     "enhancements": {
                         "dynamicActions": {
@@ -3449,125 +3440,82 @@
                         "uiState": {}
                     }
                 },
+                "panelIndex": "50e188d3-b5da-49e7-8342-247554634e9a",
                 "gridData": {
                     "h": 3,
-                    "i": "2c1344dc-1d3d-4be8-a569-aa128f985033",
-                    "sectionId": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "50e188d3-b5da-49e7-8342-247554634e9a",
                     "w": 48,
                     "x": 0,
-                    "y": 55
-                },
-                "panelIndex": "2c1344dc-1d3d-4be8-a569-aa128f985033",
-                "type": "visualization"
-            }
-        ],
-        "pinned_panels": {
-            "panels": {
-                "2c7df183-8a05-4ee0-b7db-415e874636cd": {
-                    "config": {
-                        "dataViewRefName": "2c7df183-8a05-4ee0-b7db-415e874636cd:optionsListDataView",
-                        "exclude": false,
-                        "exists_selected": false,
-                        "field_name": "deployment_name",
-                        "ignore_validations": false,
-                        "run_past_timeout": false,
-                        "search_technique": "prefix",
-                        "selected_options": [],
-                        "single_select": false,
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        },
-                        "title": "Deployment name",
-                        "use_global_filters": true
-                    },
-                    "grow": false,
-                    "order": 1,
-                    "type": "options_list_control",
-                    "width": "medium"
-                },
-                "b680ef70-4697-41e5-bf5f-e7e1e700ec3e": {
-                    "config": {
-                        "dataViewRefName": "b680ef70-4697-41e5-bf5f-e7e1e700ec3e:optionsListDataView",
-                        "exclude": false,
-                        "exists_selected": false,
-                        "field_name": "deployment_group",
-                        "ignore_validations": false,
-                        "run_past_timeout": false,
-                        "search_technique": "prefix",
-                        "selected_options": [],
-                        "single_select": false,
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        },
-                        "title": "Deployment group",
-                        "use_global_filters": true
-                    },
-                    "grow": false,
-                    "order": 0,
-                    "type": "options_list_control",
-                    "width": "medium"
+                    "y": 55,
+                    "sectionId": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80"
                 }
             }
-        },
+        ],
         "sections": [
             {
                 "collapsed": false,
+                "title": "Datatiers / utilization",
                 "gridData": {
-                    "i": "c04d8f10-0002-4000-8000-chargebackdt01",
+                    "i": "0fceb22c-1e73-45e4-b634-006f6dcc5f43",
                     "y": 2
-                },
-                "title": "Datatiers / utilization"
+                }
             },
             {
                 "collapsed": false,
+                "title": "Data tier and data stream overview",
                 "gridData": {
-                    "i": "96918af7-e003-4af8-8c37-245db141d60c",
+                    "i": "d11ae80b-d7bb-474f-9082-81752ab2865d",
                     "y": 3
-                },
-                "title": "Data tier and data stream overview"
+                }
             },
             {
                 "collapsed": false,
+                "title": "Data tier and data stream per day",
                 "gridData": {
-                    "i": "be60066e-c6d8-4e27-b8f4-948f37126ecf",
+                    "i": "7f7cc9b5-13b3-4962-98f6-5b18a1d8ca80",
                     "y": 4
-                },
-                "title": "Data tier and data stream per day"
+                }
             }
         ],
-        "timeFrom": "now-3M",
         "timeRestore": true,
+        "timeFrom": "now-3M",
         "timeTo": "now",
-        "title": "[Chargeback] Usage & Cost Allocation"
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        }
     },
     "id": "chargeback-21588d0e-fb6a-4f76-ad2f-cd7b3d7a3d7c",
     "references": [
         {
-            "id": "chargeback_integration",
-            "name": "b680ef70-4697-41e5-bf5f-e7e1e700ec3e:optionsListDataView",
-            "type": "index-pattern"
+            "name": "controlGroup_b680ef70-4697-41e5-bf5f-e7e1e700ec3e:optionsListDataView",
+            "type": "index-pattern",
+            "id": "chargeback_integration"
         },
         {
-            "id": "chargeback_integration",
-            "name": "2c7df183-8a05-4ee0-b7db-415e874636cd:optionsListDataView",
-            "type": "index-pattern"
+            "name": "controlGroup_2c7df183-8a05-4ee0-b7db-415e874636cd:optionsListDataView",
+            "type": "index-pattern",
+            "id": "chargeback_integration"
         },
         {
-            "id": "chargeback-b6cecac0-ebe7-43de-bfc6-1ff287ad860a",
-            "name": "1dd3dbff-677c-7339-7873-1341bc8465c5:link_ea0417fa-630d-c656-8f4b-a8d7b9916b29_dashboard",
-            "type": "dashboard"
+            "name": "13cd2a6a-ec89-4553-ae64-cbc347770aa5:link_ea0417fa-630d-c656-8f4b-a8d7b9916b29_dashboard",
+            "type": "dashboard",
+            "id": "chargeback-b6cecac0-ebe7-43de-bfc6-1ff287ad860a"
         },
         {
-            "id": "chargeback-21588d0e-fb6a-4f76-ad2f-cd7b3d7a3d7c",
-            "name": "1dd3dbff-677c-7339-7873-1341bc8465c5:link_dc802531-4211-c74b-d9db-b197b528bbc8_dashboard",
-            "type": "dashboard"
+            "name": "13cd2a6a-ec89-4553-ae64-cbc347770aa5:link_dc802531-4211-c74b-d9db-b197b528bbc8_dashboard",
+            "type": "dashboard",
+            "id": "chargeback-21588d0e-fb6a-4f76-ad2f-cd7b3d7a3d7c"
         },
         {
-            "id": "chargeback-7ec9743a-ccfa-43d2-8311-2f25893dadae",
-            "name": "1dd3dbff-677c-7339-7873-1341bc8465c5:link_4e06e36e-f5d7-981f-8554-57756d1c59b8_dashboard",
-            "type": "dashboard"
+            "name": "13cd2a6a-ec89-4553-ae64-cbc347770aa5:link_4e06e36e-f5d7-981f-8554-57756d1c59b8_dashboard",
+            "type": "dashboard",
+            "id": "chargeback-7ec9743a-ccfa-43d2-8311-2f25893dadae"
         }
     ],
     "type": "dashboard"
