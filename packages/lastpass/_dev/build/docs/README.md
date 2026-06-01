@@ -4,6 +4,11 @@
 
 The [LastPass](https://www.lastpass.com/) integration allows users to monitor Detailed Shared Folder Data, User Data, and Event Report Logs. LastPass is a cloud-based password manager that stores users' login information online in a secure database and allows users to generate unique passwords for each site they visit. In addition, LastPass stores all users' passwords and enables them to log into their accounts with ease. It’s available on all major platforms, including mobile devices, computers, and browser extensions.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Data streams
 
 The LastPass integration collects logs for three types of events: Detailed Shared Folder Data, User Data, and Event Report.
