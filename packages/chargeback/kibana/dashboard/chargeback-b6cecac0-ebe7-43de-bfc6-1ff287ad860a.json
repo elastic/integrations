@@ -47,6 +47,44 @@
                     "order": 1,
                     "type": "optionsListControl",
                     "width": "medium"
+                },
+                "cost-category-control": {
+                    "explicitInput": {
+                        "dataViewId": "chargeback_integration",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "cost_category",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Cost Category"
+                    },
+                    "grow": false,
+                    "order": 2,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "cost-type-control": {
+                    "explicitInput": {
+                        "dataViewId": "chargeback_integration",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "cost_type",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Cost Type"
+                    },
+                    "grow": false,
+                    "order": 3,
+                    "type": "optionsListControl",
+                    "width": "medium"
                 }
             },
             "showApplySelections": false
@@ -78,7 +116,7 @@
                             {
                                 "destinationRefName": "link_94bf4612-f92b-cf6d-5c31-0ef3eaa2fc0d_dashboard",
                                 "id": "94bf4612-f92b-cf6d-5c31-0ef3eaa2fc0d",
-                                "label": "Billing Components Overview",
+                                "label": "[Chargeback] Billing Components Overview",
                                 "order": 0,
                                 "options": {
                                     "openInNewTab": false,
@@ -90,7 +128,7 @@
                             {
                                 "destinationRefName": "link_2652d69f-1f3e-7afa-e44e-08697f8e318e_dashboard",
                                 "id": "2652d69f-1f3e-7afa-e44e-08697f8e318e",
-                                "label": "Usage & Cost Allocation",
+                                "label": "[Chargeback] Usage & Cost Allocation",
                                 "order": 1,
                                 "options": {
                                     "openInNewTab": false,
@@ -102,7 +140,7 @@
                             {
                                 "destinationRefName": "link_b22db599-5a58-6f1f-cfdb-408e4543af73_dashboard",
                                 "id": "b22db599-5a58-6f1f-cfdb-408e4543af73",
-                                "label": "Configuration",
+                                "label": "[Chargeback] Configuration",
                                 "order": 2,
                                 "options": {
                                     "openInNewTab": false,
@@ -453,13 +491,31 @@
             },
             {
                 "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
                     "savedVis": {
-                        "type": "markdown",
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
                         "params": {
                             "fontSize": 12,
                             "markdown": "## Deployment group statistics\n**Source:** `billing_cluster_cost_lookup` \u2014 full invoice, all SKUs.\n\nCost is normalised using the configured chargeable-unit rate. Groups are derived from the `chargeback_group` tag on ESS deployments. Totals in this section match the full deployment bill shown above.",
                             "openLinksInNewTab": false
                         },
+                        "title": "",
+                        "type": "markdown",
                         "uiState": {}
                     }
                 },
@@ -546,14 +602,14 @@
                             "visualization": {
                                 "columns": [
                                     {
+                                        "columnId": "Deployment Group",
+                                        "isTransposed": false
+                                    },
+                                    {
                                         "columnId": "Normalised cost",
                                         "isMetric": true,
                                         "isTransposed": false,
                                         "summaryRow": "sum"
-                                    },
-                                    {
-                                        "columnId": "Deployment Group",
-                                        "isTransposed": false
                                     }
                                 ],
                                 "layerId": "b9429019-7f45-4333-8551-6642636e2db9",
@@ -675,12 +731,6 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "Normalised cost",
-                                        "isMetric": true,
-                                        "isTransposed": false,
-                                        "summaryRow": "sum"
-                                    },
-                                    {
                                         "columnId": "Deployment Group",
                                         "isTransposed": false
                                     },
@@ -688,6 +738,12 @@
                                         "columnId": "2f5e2665-1370-45f6-a2cd-973250b4d9d5",
                                         "isMetric": false,
                                         "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "Normalised cost",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "summaryRow": "sum"
                                     }
                                 ],
                                 "layerId": "b410b660-726b-4ecd-943b-c66510f2ce58",
@@ -848,13 +904,31 @@
             },
             {
                 "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
                     "savedVis": {
-                        "type": "markdown",
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
                         "params": {
                             "fontSize": 12,
                             "markdown": "## Component statistics\n**Source:** `billing_cluster_cost_lookup` \u2014 full invoice, filtered to SKUs with a classified `cost_type`.\n\nBilling components (`cost_type`) are derived from the ESS SKU string: data tiers (datahot/datacontent, datawarm, datacold, datafrozen), platform (ml, kibana, apm), data-transfer, snapshots, and on-premises nodes. FinOps categories (`cost_category`) group these into broader buckets: data_tier, platform, transfer, snapshot, onprem, other.\n\n\u26a0\ufe0f If any SKUs could not be classified (`cost_type IS NULL`), those rows are excluded \u2014 totals here may be slightly lower than the full bill above.",
                             "openLinksInNewTab": false
                         },
+                        "title": "",
+                        "type": "markdown",
                         "uiState": {}
                     }
                 },
@@ -1041,12 +1115,6 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "Normalised cost",
-                                        "isMetric": true,
-                                        "isTransposed": false,
-                                        "summaryRow": "sum"
-                                    },
-                                    {
                                         "columnId": "Deployment",
                                         "isTransposed": false,
                                         "width": 309.66666666666663
@@ -1060,6 +1128,12 @@
                                         "isMetric": false,
                                         "isTransposed": false,
                                         "width": 187
+                                    },
+                                    {
+                                        "columnId": "Normalised cost",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "summaryRow": "sum"
                                     }
                                 ],
                                 "layerId": "30d04f87-c476-4b48-9f90-18bda3ce5ff2",
@@ -1693,13 +1767,31 @@
             },
             {
                 "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
                     "savedVis": {
-                        "type": "markdown",
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
                         "params": {
                             "fontSize": 12,
                             "markdown": "## Deployment cost allocation (usage-based)\n**Source:** `cluster_tier_contribution_lookup` \u2014 usage-based allocation, **not** the full invoice.\n\n\u26a0\ufe0f **These totals will not match the billing figures above.** This section allocates the *chargeable pool* \u2014 allocatable data-tier ECU discounted by p95 utilization \u2014 across tiers by actual workload (indexing time, query time, storage). ML, Kibana, APM, snapshots, and data transfer are excluded. For the full usage-based breakdown see the *[Chargeback] Usage & Cost Allocation* dashboard.",
                             "openLinksInNewTab": false
                         },
+                        "title": "",
+                        "type": "markdown",
                         "uiState": {}
                     }
                 },
