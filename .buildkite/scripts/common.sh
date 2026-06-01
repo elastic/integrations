@@ -793,6 +793,7 @@ is_pr_affected() {
         '\.buildkite/scripts/run_buildkite_scripts_tests\.sh'
         '\.buildkite/scripts/run_dev_scripts_tests\.sh'
         '\.buildkite/scripts/test_check_changelog_entries\.sh'
+        '\.buildkite/scripts/test_helpers\.sh'
         '\.github/CODEOWNERS'
         '\.github/ISSUE_TEMPLATE/'
         '\.github/PULL_REQUEST_TEMPLATE\.md'

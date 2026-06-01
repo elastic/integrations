@@ -8,35 +8,10 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 
 # Source the script without executing main so its functions are available.
 source "${REPO_ROOT}/.buildkite/scripts/check_changelog_entries.sh"
+source "${REPO_ROOT}/.buildkite/scripts/test_helpers.sh"
 
 pass=0
 fail=0
-
-assert_equals() {
-    local description="$1"
-    local expected="$2"
-    local actual="$3"
-    if [[ "${actual}" == "${expected}" ]]; then
-        echo "PASS: ${description}"
-        (( pass++ )) || true
-    else
-        echo "FAIL: ${description} — expected '${expected}', got '${actual}'"
-        (( fail++ )) || true
-    fi
-}
-
-assert_exit_code() {
-    local description="$1"
-    local expected="$2"
-    local actual="$3"
-    if [[ "${actual}" == "${expected}" ]]; then
-        echo "PASS: ${description}"
-        (( pass++ )) || true
-    else
-        echo "FAIL: ${description} — expected exit code '${expected}', got '${actual}'"
-        (( fail++ )) || true
-    fi
-}
 
 # ---------------------------------------------------------------------------
 # Helpers: set up / tear down a minimal git repo that mimics a PR diff.
