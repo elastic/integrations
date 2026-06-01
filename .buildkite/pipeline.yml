@@ -103,6 +103,9 @@ steps:
     depends_on:
       - step: "check-buildkite-scripts"
         allow_failure: false
+    # The label name is hardcoded in the regex below because Buildkite's condition
+    # expression language does not support env var substitution inside regex literals.
+    # The canonical value is defined in CHANGELOG_SKIP_LABEL above and used by the script.
     if: |
       build.env('BUILDKITE_PULL_REQUEST') != "false" &&
       !(build.env("GITHUB_PR_LABELS") =~ /changelog-link-check:skip/)
