@@ -177,7 +177,7 @@ main() {
         message+=$'\n'"> [!TIP]"$'\n'"> Add the \`${CHANGELOG_SKIP_LABEL}\` label to skip this check."
         echo "${message}"
         if running_on_buildkite; then
-            message+=$'\n'"[View Buildkite build](${BUILDKITE_BUILD_URL})"
+            message+=$'\n\n'"[View Buildkite build](${BUILDKITE_BUILD_URL})"
             notify_changelog_mismatch "${message}" "${BUILDKITE_PULL_REQUEST}"
         fi
         exit 1
