@@ -6,7 +6,7 @@ The Chargeback integration provides FinOps visibility into Elastic usage across 
 
 ## What is FinOps?
 
-FinOps is an operational framework and cultural practice aimed at maximising the business value of cloud usage. It facilitates timely, data-driven decision-making and promotes financial accountability through collaboration among engineering, finance, and business teams.
+FinOps is an operational framework and cultural practice aimed at maximizing the business value of cloud usage. It facilitates timely, data-driven decision-making and promotes financial accountability through collaboration among engineering, finance, and business teams.
 
 ## Purpose
 
@@ -94,10 +94,10 @@ POST chargeback_conf_lookup/_doc
 - `conf_query_weight`: weight for query operations (default: `20`)
 - `conf_storage_weight`: weight for storage (default: `40`)
 
-**Utilisation score weights** (determine how heap and disk metrics are combined into the utilisation score):
-- `conf_utilization_memory_weight`: weight for heap p95 in utilisation score (default: `70`)
-- `conf_utilization_storage_weight`: weight for disk p95 in utilisation score (default: `30`)
-- `conf_utilization_floor`: minimum utilisation score applied to all deployments (default: `0.10`). Prevents realized cost from reaching zero for idle or unmonitored clusters.
+**Utilization score weights** (determine how heap and disk metrics are combined into the utilization score):
+- `conf_utilization_memory_weight`: weight for heap p95 in utilization score (default: `70`)
+- `conf_utilization_storage_weight`: weight for disk p95 in utilization score (default: `30`)
+- `conf_utilization_floor`: minimum utilization score applied to all deployments (default: `0.10`). Prevents realized cost from reaching zero for idle or unmonitored clusters.
 
 **Memory/storage cost split** (illustrative decomposition of the chargeable pool shown in the Usage and Cost Allocation dashboard):
 - `conf_memory_cost_weight`: weight for memory contribution display (default: `50`)
@@ -129,7 +129,7 @@ Where:
 
 **Why p95?** p95 captures the "reliably busy" signal: it accounts for peak hours without being distorted by brief maintenance spikes (which p99+ would amplify) or being washed out like daily averages.
 
-**Why a utilisation floor?** Without a floor, idle or unmonitored deployments produce zero realized cost; they appear to consume nothing even though they hold provisioned capacity. A floor of 10% (default) ensures every deployment contributes proportionally to the shared cost pool, even during quiet periods.
+**Why a utilization floor?** Without a floor, idle or unmonitored deployments produce zero realized cost; they appear to consume nothing even though they hold provisioned capacity. A floor of 10% (default) ensures every deployment contributes proportionally to the shared cost pool, even during quiet periods.
 
 ## Data and Transforms
 
@@ -140,8 +140,8 @@ The integration creates eight transforms to aggregate cost and usage data:
 2. **`billing_realized_pool`**: aggregates daily allocatable data-tier capacity per deployment (the provisioned ECU ceiling for data nodes only).
 3. **`chargeback_conf_lookup`**: configuration bootstrap; creates the `chargeback_conf_lookup` index with default values on install.
 
-**Utilisation transforms:**
-4. **`cluster_capacity_utilization`**: computes p95 heap and disk utilisation across data-role nodes per deployment/day from `node_stats`.
+**Utilization transforms:**
+4. **`cluster_capacity_utilization`**: computes p95 heap and disk utilization across data-role nodes per deployment/day from `node_stats`.
 
 **Usage transforms** (from monitoring indices):
 5. **`cluster_deployment_contribution`**: indexing, querying, and storage metrics per deployment/day.
@@ -183,11 +183,11 @@ Sections:
 
 Answers: *which data streams and tiers drive cost, and how efficiently are we using capacity?*
 
-**Source:** `cluster_tier_contribution_lookup` and related usage lookups. Totals reflect the chargeable pool (allocatable data-tier ECU discounted by utilisation) and will not equal the full invoice. ML, Kibana, snapshots, and data transfer are excluded.
+**Source:** `cluster_tier_contribution_lookup` and related usage lookups. Totals reflect the chargeable pool (allocatable data-tier ECU discounted by utilization) and will not equal the full invoice. ML, Kibana, snapshots, and data transfer are excluded.
 
 Sections:
-- **Deployment cost allocation (usage-based)**: normalised cost per deployment split by data tier (usage-weighted). Shows which deployments consume the most of their chargeable pool across tiers.
-- **Datatiers / utilisation**: provisioned capacity vs chargeable pool, utilisation p95 per deployment.
+- **Deployment cost allocation (usage-based)**: normalized cost per deployment split by data tier (usage-weighted). Shows which deployments consume the most of their chargeable pool across tiers.
+- **Datatiers / utilization**: provisioned capacity vs chargeable pool, utilization p95 per deployment.
 - **Data tier and data stream overview**: top-20 data streams by indexing / query / storage cost, blended cost totals, workload breakdown by tier.
 - **Data tier and data stream per day**: time-series panels (indexing, querying, storage, blended) broken out by data stream and data tier (usage-based), including absolute cost and percentage share.
 
@@ -195,7 +195,7 @@ Sections:
 
 ### [Chargeback] Configuration
 
-Reference dashboard showing all active configuration values: conversion rate, date windows, blended cost weights, utilisation score weights, and memory/storage cost split.
+Reference dashboard showing all active configuration values: conversion rate, date windows, blended cost weights, utilization score weights, and memory/storage cost split.
 
 ![Configuration](../img/chargeback-configuration.png)
 
@@ -206,11 +206,11 @@ Two distinct totals appear across the dashboards; both are valid and intentional
 | Total | Source | Dashboard |
 |---|---|---|
 | **Full deployment bill** | `SUM(total_chargeable_units)` over all SKUs in `billing_cluster_cost_lookup` | Billing Components Overview |
-| **Chargeable pool** | `billing_realized_pool_lookup` capacity x utilisation score | Usage and Cost Allocation |
+| **Chargeable pool** | `billing_realized_pool_lookup` capacity x utilization score | Usage and Cost Allocation |
 
-Do not expect the chargeable pool to equal the full deployment bill. Non-allocatable SKUs (ML, Kibana, transfer, snapshots) appear in the Billing Components Overview only. The utilisation discount is not spread to tiers or data streams by design.
+Do not expect the chargeable pool to equal the full deployment bill. Non-allocatable SKUs (ML, Kibana, transfer, snapshots) appear in the Billing Components Overview only. The utilization discount is not spread to tiers or data streams by design.
 
-When `node_stats` is missing for a deployment/day, utilisation defaults to 100%.
+When `node_stats` is missing for a deployment/day, utilization defaults to 100%.
 
 ## Deployment Groups
 
@@ -245,7 +245,7 @@ For more information, refer to the [Elastic documentation](https://www.elastic.c
 1. Upgrade the Fleet package to **0.4.0**.
 2. The two new transforms (`billing_realized_pool`, `cluster_capacity_utilization`) are created and auto-started.
 3. Reset the `billing_cluster_cost` transform to backfill `cost_type`, `cost_category`, and `is_allocatable` into existing lookup documents. Until backfill completes, the Component statistics panels will show no data.
-4. Ensure the Elasticsearch integration collects **`node_stats`** from data nodes. Without this, utilisation defaults to 100%.
+4. Ensure the Elasticsearch integration collects **`node_stats`** from data nodes. Without this, utilization defaults to 100%.
 5. The old `[Chargeback] Cost and Consumption breakdown` dashboard is replaced by three new dashboards. Delete the old dashboard from **Stack Management > Saved Objects** if it is not removed automatically.
 
 ### Upgrading from 0.3.1 to 0.3.2
