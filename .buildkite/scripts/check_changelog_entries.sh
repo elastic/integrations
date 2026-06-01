@@ -66,7 +66,7 @@ check_changelog_file() {
 # Usage: should_skip_changelog_check <labels>
 should_skip_changelog_check() {
     local labels="${1:-""}"
-    [[ "${labels}" == *"changelog-link-check:skip"* ]]
+    [[ "${labels}" == *"${CHANGELOG_SKIP_LABEL}"* ]]
 }
 
 # Returns the @mention string for the given user, substituting elastic/ecosystem
@@ -120,7 +120,7 @@ main() {
     fi
 
     if should_skip_changelog_check "${GITHUB_PR_LABELS:-""}"; then
-        echo "Skipping changelog link check: 'changelog-link-check:skip' label found."
+        echo "Skipping changelog link check: '${CHANGELOG_SKIP_LABEL}' label found."
         exit 0
     fi
 
