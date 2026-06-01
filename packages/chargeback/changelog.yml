@@ -1,4 +1,42 @@
 # newer versions go on top
+- version: 0.4.0
+  changes:
+    - description: "Split monolithic dashboard into two focused dashboards: '[Chargeback] Overview' (total billing, cost by SKU/deployment/tier, configuration) and '[Chargeback] Data Tiers' (realized cost, utilization, tier and data-stream cost allocation). Aligns with the two-dashboard architecture from elasticsearch-chargeback#8."
+      type: enhancement
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/8
+    - description: "Dashboard: remove @timestamp:exists filter, set default timepicker to last 3 months. Panels now open with data visible without adjusting the time picker."
+      type: bugfix
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/8
+    - description: "Dashboard panel fixes: rename 'Realized chargeable units per deployment' → 'Provisioned vs Realized Pool per Deployment' and fix adHocDataViews/column mismatch that caused 'column invalid: deployment_name' error. Rename 'Realized chargeable units' column in 'Chargeable pool by data tier' table to 'Normalised cost' (column is currency, not ECU). Remove misleading 'Provisioned capacity (ECU)' column from tier table (same value for every tier due to deployment-level lookup join)."
+      type: bugfix
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/8
+    - description: "Shorten verbose markdown section headers in 'Cost by component (SKU)' and 'Datatiers / utilization' sections to single-line summaries."
+      type: enhancement
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/8
+    - description: "Fix dashboard ES|QL: correct LOOKUP JOIN direction for tier panels (swap source to cluster_tier_contribution_lookup so all tiers are returned, not just one), add COALESCE 1.0 rate fallback, fix vis column UUIDs, remove stale 0.4.0-*.yml versioned pipeline files that caused Fleet install to fail, bump transform fleet_transform_version and pipeline references to 0.4.0."
+      type: bugfix
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/8
+    - description: "Realized cost (issue #8): data-tier capacity pool per deployment/day (`billing_realized_pool`), cluster-wide utilization p95 (`cluster_capacity_utilization`), utilization-weighted `chargeable_pool` for tier/data-stream allocation, SKU `cost_type`/`cost_category`/`onprem`, datatiers dashboard section, and FinOps reconciliation docs. Tier/DS ES|QL uses realized pool instead of per-SKU ECU. New conf weights for utilization and allocated memory/storage display. Requires Elasticsearch `node_stats` on data nodes. Bump transforms to 0.4.0."
+      type: enhancement
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/8
+    - description: "Fix dashboard ES|QL: remove duplicate `cluster_tier_contribution_lookup` joins in tier-based panels (panels were producing n-tier times inflated values), fix cartesian product between datastream and tier lookups in blended-cost panels 15 and 33 (now use `cluster_tier_and_datastream_contribution_lookup` for correct per-tier weighting), remove spurious joins in panel 16."
+      type: bugfix
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/8
+    - description: "Fix `billing.yml` ingest pipeline: content-tier SKUs (`*.es.datacontent.*`) were not renamed to `datahot/datacontent`, causing them to appear as a separate cost_type from hot-tier nodes. Both hot and content nodes now show consistently as `datahot/datacontent`."
+      type: bugfix
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/8
+    - description: "Fix 'Realized chargeable units per deployment' panel: it was showing `realized_chargeable_units` (which equals provisioned capacity) twice. Now shows provisioned ECU alongside the utilization-adjusted realized pool (`chargeable_pool = provisioned × utilization_score`)."
+      type: bugfix
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/8
+    - description: "Uncollapse 'Data tier and data stream overview' dashboard section: the key blended-cost-per-datastream panels (treemap, table, pie) were hidden by default."
+      type: bugfix
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/8
+    - description: "Fix dashboard panel layout: 'Provisioned vs Realized pool per deployment' and 'Chargeable pool by data tier' panels in the Datatiers section were both placed at y=0, causing them to overlap with the section header. Repositioned to render below the header."
+      type: bugfix
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/8
+    - description: "Rename auto-generated dashboard panel titles (e.g. 'agg_indexing over @timestamp', 'Bar vertical stacked', 'Treemap', 'Pie') to descriptive names so users can understand each panel without opening it."
+      type: enhancement
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/8
 - version: 0.3.2
   changes:
     - description: "Fix dashboard ES|QL verification errors on 0.3.1 (`Unknown column [total_ecu]` / `[conf_ecu_rate]`) by adding legacy ECU field aliases in lookup mappings (`total_ecu` -> `total_chargeable_units`, `conf_ecu_rate` -> `conf_chargeable_unit_rate`, `conf_ecu_rate_unit` -> `conf_chargeable_unit_rate_unit`)."

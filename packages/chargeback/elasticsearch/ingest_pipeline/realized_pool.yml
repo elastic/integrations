@@ -1,0 +1,27 @@
+---
+description: "Chargeback: realized pool lookup — composite_key and chargeable-unit aliases."
+processors:
+  - script:
+      ignore_failure: true
+      lang: painless
+      source: |
+        if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
+            ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.deployment_id;
+        }
+        if (ctx.data_tier_capacity_ecu != null) {
+            // provisioned pool — utilization discount is applied later in ES|QL
+            ctx.realized_chargeable_units = ctx.data_tier_capacity_ecu;
+            ctx.total_chargeable_units = ctx.data_tier_capacity_ecu;
+        }
+  - pipeline:
+      description: '[Fleet] Global pipeline for all data streams'
+      ignore_missing_pipeline: true
+      name: global@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for all data streams of type `metrics`'
+      ignore_missing_pipeline: true
+      name: metrics@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for all data streams of type `metrics` defined by the `chargeback` integration'
+      ignore_missing_pipeline: true
+      name: metrics-chargeback.integration@custom

@@ -1,0 +1,89 @@
+---
+description: "On-Prem Billing: map config lookup rows to ESS Billing metrics (no enrich)."
+processors:
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      description: Pass-through docs already in ESS Billing shape — only refresh event.ingested
+      if: ctx.ess?.billing?.deployment_id != null && ctx.ess?.billing?.sku != null
+  - set:
+      field: _pass_through_billing
+      value: true
+      if: ctx.ess?.billing?.deployment_id != null && ctx.ess?.billing?.sku != null
+  - script:
+      lang: painless
+      ignore_failure: true
+      description: Map pivot output to ess.billing schema with mERU as total_ecu
+      if: ctx._pass_through_billing != true
+      source: |
+        String deploymentId = ctx.deployment_id;
+        String deploymentName = ctx.deployment_name;
+        if (deploymentName == null) {
+          deploymentName = deploymentId;
+        }
+        long dailyMeru = 1000L;
+        if (ctx.daily_meru != null) {
+          if (ctx.daily_meru instanceof Number) {
+            dailyMeru = ((Number) ctx.daily_meru).longValue();
+          } else {
+            dailyMeru = Long.parseLong(ctx.daily_meru.toString());
+          }
+        }
+        List deploymentTags = new ArrayList();
+        Object rawTags = ctx.deployment_tags;
+        if (rawTags != null) {
+          if (rawTags instanceof List) {
+            deploymentTags = (List) rawTags;
+          } else {
+            deploymentTags.add(rawTags.toString());
+          }
+        }
+        if (ctx.ess == null) {
+          ctx.ess = new HashMap();
+        }
+        if (ctx.ess.billing == null) {
+          ctx.ess.billing = new HashMap();
+        }
+        ctx.ess.billing.deployment_id = deploymentId;
+        ctx.ess.billing.deployment_name = deploymentName;
+        ctx.ess.billing.deployment_type = 'onprem';
+        ctx.ess.billing.deployment_tags = deploymentTags;
+        ctx.ess.billing.kind = 'elasticsearch';
+        ctx.ess.billing.type = 'capacity';
+        ctx.ess.billing.unit = 'day';
+        ctx.ess.billing.zone_count = 1;
+        ctx.ess.billing.name = 'On-Premises: ' + deploymentName;
+        ctx.ess.billing.sku = 'onprem_node';
+        if (ctx['@timestamp'] != null) {
+          ctx.ess.billing.from = ctx['@timestamp'];
+          String ts = ctx['@timestamp'].toString();
+          if (ts.length() >= 10) {
+            ctx.ess.billing.to = ts.substring(0, 10) + 'T23:59:59.999Z';
+          }
+        }
+        ctx.ess.billing.total_ecu = dailyMeru;
+        ctx.ess.billing.put('quantity.value', 1.0);
+        ctx.ess.billing.put('quantity.formatted_value', '1 day');
+        ctx.ess.billing.put('display_quantity.value', 1.0);
+        ctx.ess.billing.put('display_quantity.formatted_value', '1 day');
+        ctx.ess.billing.put('display_quantity.type', 'default');
+        ctx.remove('deployment_id');
+        ctx.remove('deployment_name');
+        ctx.remove('deployment_tags');
+        ctx.remove('daily_meru');
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      description: Set event.ingested for Chargeback billing_cluster_cost sync
+      if: ctx._pass_through_billing != true
+  - remove:
+      field: _pass_through_billing
+      ignore_missing: true
+  - pipeline:
+      description: "[Fleet] Global pipeline for all data streams"
+      ignore_missing_pipeline: true
+      name: global@custom
+  - pipeline:
+      description: "[Fleet] Pipeline for all data streams of type metrics"
+      ignore_missing_pipeline: true
+      name: metrics@custom

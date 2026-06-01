@@ -35,9 +35,29 @@ source:
       type: date
       script:
         source: "emit(2430518399999L)"  # 2046-12-31T23:59:59.999Z - 20 years from now
+    conf_utilization_memory_weight:
+      type: long
+      script:
+        source: "emit(70)"
+    conf_utilization_storage_weight:
+      type: long
+      script:
+        source: "emit(30)"
+    conf_utilization_floor:
+      type: double
+      script:
+        source: "emit(0.10)"
+    conf_memory_cost_weight:
+      type: long
+      script:
+        source: "emit(50)"
+    conf_storage_cost_weight:
+      type: long
+      script:
+        source: "emit(50)"
 dest:
   index: chargeback_conf_lookup
-  pipeline: 0.3.2-chargeback_conf_lookup
+  pipeline: 0.4.0-chargeback_conf_lookup
 pivot:
   group_by:
     config_join_key:
@@ -65,10 +85,25 @@ pivot:
     conf_end_date:
       max:
         field: conf_end_date
+    conf_utilization_memory_weight:
+      max:
+        field: conf_utilization_memory_weight
+    conf_utilization_storage_weight:
+      max:
+        field: conf_utilization_storage_weight
+    conf_utilization_floor:
+      max:
+        field: conf_utilization_floor
+    conf_memory_cost_weight:
+      max:
+        field: conf_memory_cost_weight
+    conf_storage_cost_weight:
+      max:
+        field: conf_storage_cost_weight
 settings:
   deduce_mappings: false
   unattended: true
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.3.2
+  fleet_transform_version: 0.4.0

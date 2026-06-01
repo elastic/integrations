@@ -1,11 +1,17 @@
-description: Aggregates daily deployment data from Stack Monitoring, writing to ESS Billing compatible format with mERU (milli-ERU) cost allocation.
+description: Emit daily ESS Billing-compatible metrics from onprem_billing_config (mERU as total_ecu). No enrich policies required.
 source:
-  index:
-    # Matches default monitoring-indices and custom index-pivot destinations named monitoring-indices* (Elasticsearch integration).
-    - "monitoring-indices*"
-    - "*:monitoring-indices*"
+  index: onprem_billing_config
+  query:
+    term:
+      config_type: deployment
+  runtime_mappings:
+    "@timestamp":
+      type: date
+      script:
+        source: "emit(System.currentTimeMillis());"
 dest:
   index: metrics-ess_billing.billing-onprem
+  pipeline: 0.3.3-billing
 frequency: 60m
 sync:
   time:
@@ -13,24 +19,27 @@ sync:
     delay: 1h
 pivot:
   group_by:
+    deployment_id:
+      terms:
+        field: deployment_id
+    deployment_name:
+      terms:
+        field: deployment_name
+    deployment_tags:
+      terms:
+        field: deployment_tags
     "@timestamp":
       date_histogram:
         field: "@timestamp"
         calendar_interval: 1d
-    cluster_uuid:
-      terms:
-        field: elasticsearch.cluster.name
-    cluster_name:
-      terms:
-        field: elasticsearch.cluster.name
   aggregations:
-    doc_count:
-      value_count:
-        field: elasticsearch.cluster.name
+    daily_meru:
+      max:
+        field: daily_meru
 settings:
   deduce_mappings: false
   unattended: true
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.2.1
+  fleet_transform_version: 0.3.3
