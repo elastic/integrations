@@ -31,6 +31,15 @@ def _sync_pr_url(working_branch):
     return result.stdout.strip()
 
 
+def _branch_exists_on_remote(working_branch, repository):
+    result = subprocess.run(
+        ["gh", "api", f"repos/{repository}/branches/{working_branch}",
+         "--jq", ".name"],
+        capture_output=True, text=True,
+    )
+    return result.returncode == 0 and result.stdout.strip() == working_branch
+
+
 def post_comment(backport_pr_number, working_branch, not_found_packages,
                  create_outcome, run_id, repository):
     if not backport_pr_number:
@@ -61,6 +70,14 @@ def post_comment(backport_pr_number, working_branch, not_found_packages,
             )
     else:
         body = f"Changelog sync PR creation failed. See the [workflow run]({run_url}) for details."
+        if working_branch and _branch_exists_on_remote(working_branch, repository):
+            compare_url = (
+                f"https://github.com/{repository}/compare/main...{working_branch}?expand=1"
+            )
+            body += (
+                f"\n\nThe changelog entries were committed to `{working_branch}`. "
+                f"You can [create the sync PR manually]({compare_url}) from that branch."
+            )
 
     subprocess.run(["gh", "pr", "comment", backport_pr_number, "--body", body], check=True)
 
@@ -96,6 +113,9 @@ def main():
 
 
 # ── tests ─────────────────────────────────────────────────────────────────────
+
+_MODULE = __name__
+
 
 class TestPostComment(unittest.TestCase):
 
@@ -177,12 +197,33 @@ class TestPostComment(unittest.TestCase):
             comment_calls.append(cmd)
             return sp.CompletedProcess(cmd, 0, stdout="")
 
-        with unittest.mock.patch("subprocess.run", side_effect=fake_run):
+        with unittest.mock.patch("subprocess.run", side_effect=fake_run), \
+             unittest.mock.patch(f"{_MODULE}._branch_exists_on_remote", return_value=False):
             post_comment("42", "changelog/pr-42", "", "failure", "99999", "org/repo")
 
         gh_comment = next(c for c in comment_calls if "comment" in c)
         body_idx = gh_comment.index("--body") + 1
         self.assertIn("99999", gh_comment[body_idx])
+
+    def test_failure_outcome_with_pushed_branch_includes_manual_creation_link(self):
+        import unittest.mock
+        comment_calls = []
+
+        def fake_run(cmd, **kwargs):
+            import subprocess as sp
+            comment_calls.append(cmd)
+            return sp.CompletedProcess(cmd, 0, stdout="")
+
+        with unittest.mock.patch("subprocess.run", side_effect=fake_run), \
+             unittest.mock.patch(f"{_MODULE}._branch_exists_on_remote", return_value=True):
+            post_comment("42", "changelog/pr-42", "", "failure", "99999", "org/repo")
+
+        gh_comment = next(c for c in comment_calls if "comment" in c)
+        body_idx = gh_comment.index("--body") + 1
+        body = gh_comment[body_idx]
+        self.assertIn("changelog/pr-42", body)
+        self.assertIn("manually", body)
+        self.assertIn("compare/main...changelog/pr-42", body)
 
 
 if __name__ == "__main__":
