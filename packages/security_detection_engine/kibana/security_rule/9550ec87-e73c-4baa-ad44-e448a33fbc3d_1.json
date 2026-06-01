@@ -1,0 +1,140 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when the AmazonEKSClusterAdminPolicy or AmazonEKSAdminPolicy is associated with a principal via the EKS Access Entries API. This grants full cluster-admin equivalent access to the specified IAM user or role. Unlike the legacy aws-auth ConfigMap which is only visible in Kubernetes audit logs, Access Entries modifications appear in CloudTrail, providing an additional detection surface. Attackers who have obtained IAM permissions to manage EKS access entries can use this API to backdoor cluster access for persistence, mapping attacker-controlled IAM identities to cluster-admin privileges without modifying any Kubernetes resources.",
+        "false_positives": [
+            "Platform or security teams may legitimately associate these policies during cluster onboarding, break-glass admin setup, or controlled RBAC migrations from aws-auth. Validate the caller, change ticket, and target IAM principal."
+        ],
+        "from": "now-6m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS EKS Access Entry Granted Cluster Admin Policy",
+        "note": "## Triage and analysis\n\n### Investigating AWS EKS Access Entry Granted Cluster Admin Policy\n\nSuccessful AssociateAccessPolicy with AmazonEKSClusterAdminPolicy or AmazonEKSAdminPolicy binds highly privileged\nKubernetes access to an IAM principal. Review who invoked the API (user.name, aws.cloudtrail.user_identity fields),\nsource.ip, user_agent.original, cloud.account.id, and cloud.region.\n\n### Possible investigation steps\n\n- Parse aws.cloudtrail.request_parameters and response elements for cluster name, access entry ARN, and policy ARN.\n- Confirm whether the IAM principal receiving the policy is expected to have cluster-admin-class access.\n- Correlate with other EKS API calls (CreateAccessEntry, UpdateAccessEntry) and with Kubernetes audit activity from\n  newly authorized principals.\n- Compare against change records for migrations from aws-auth or new administrator onboarding.\n\n### Response and remediation\n\n- If unauthorized, disassociate the policy or remove the access entry per AWS guidance; audit who can call eks:*\n  APIs in IAM.\n- Rotate credentials for any suspected compromised IAM principal; review organizational SCPs and cluster auth mode.\n\n### Additional information\n\n- [Amazon EKS access entries](https://docs.aws.amazon.com/eks/latest/userguide/access-entries.html)\n- [AssociateAccessPolicy](https://docs.aws.amazon.com/eks/latest/APIReference/API_AssociateAccessPolicy.html)\n",
+        "query": "data_stream.dataset:\"aws.cloudtrail\" and\nevent.provider:\"eks.amazonaws.com\" and\nevent.action:\"AssociateAccessPolicy\" and\nevent.outcome:\"success\" and\naws.cloudtrail.request_parameters:(*AmazonEKSClusterAdminPolicy* or *AmazonEKSAdminPolicy*)\n",
+        "references": [
+            "https://docs.aws.amazon.com/eks/latest/userguide/access-entries.html",
+            "https://docs.aws.amazon.com/eks/latest/APIReference/API_AssociateAccessPolicy.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^6.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.request_parameters",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "9550ec87-e73c-4baa-ad44-e448a33fbc3d",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS CloudTrail",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "9550ec87-e73c-4baa-ad44-e448a33fbc3d_1",
+    "type": "security-rule"
+}

@@ -1,40 +1,53 @@
 {
-    "id": "memcached_otel-high-eviction-rate",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Memcached OTel] High eviction rate",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "memcached"
-        ],
-        "schedule": {
-            "interval": "5m"
-        },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "enabled": true,
-            "lookBackWindow": 6,
-            "statusChangeThreshold": 3
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "TS metrics-memcachedreceiver.otel-*\n| WHERE memcached.evictions IS NOT NULL\n// Eviction rate (evictions/sec) — rising evictions indicate memory pressure\n| STATS eviction_rate = SUM(RATE(memcached.evictions))\n  BY host.name, COALESCE(service.instance.id, host.name)\n// Alert when eviction rate exceeds 10/sec — tune for your workload\n| WHERE eviction_rate > 10.0\n| SORT eviction_rate DESC\n| LIMIT 20"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "host.name",
-            "termSize": 10,
-            "excludeHitsFromPreviousRun": true
+  "id": "memcached_otel-high-eviction-rate",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the eviction rate exceeds 10/sec. Rising evictions signal memory pressure and will drop the hit ratio.",
+    "name": "[Memcached OTel] High eviction rate",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "memcached"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "memcached_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Memcached high eviction rate\n\n### What fired\n`memcached.evictions` rate exceeded 10/sec over the window.\n\n### Why it matters\nEvictions happen when memory is full. Elevated eviction rates indicate the working set no longer fits, degrading hit ratio and driving load on the backing store.\n\n### Triage\n1. Compare against hit-ratio trend.\n2. Check for recent traffic or key-distribution changes.\n\n### Remediation\n- Increase memory (`-m`).\n- Reduce TTL or remove large keys.\n\n### Tuning\n- 10/sec is a generic threshold; tune to workload.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-memcachedreceiver.otel-*\n| WHERE memcached.evictions IS NOT NULL\n// Eviction rate (evictions/sec) \u2014 rising evictions indicate memory pressure\n| STATS eviction_rate = SUM(RATE(memcached.evictions))\n  BY host.name, COALESCE(service.instance.id, host.name)\n// Alert when eviction rate exceeds 10/sec \u2014 tune for your workload\n| WHERE eviction_rate > 10.0\n| SORT eviction_rate DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }
