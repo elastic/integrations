@@ -54,6 +54,14 @@ processors:
               {{{_ingest.on_failure_processor_tag}}} in pipeline
               {{{_ingest.on_failure_pipeline}}} failed with message:
               {{{_ingest.on_failure_message}}}
+  - date:
+      field: json.updated_at
+      target_field: '@timestamp'
+      tag: date_timestamp_updated_at
+      formats:
+        - strict_date_optional_time_nanos
+      if: ctx.json?.updated_at != null
+      ignore_failure: true
   - rename:
       field: json.cve_id
       tag: rename_cve_id
