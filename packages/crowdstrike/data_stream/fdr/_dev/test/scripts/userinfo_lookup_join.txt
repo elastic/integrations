@@ -32,17 +32,17 @@ stdout '"result":"created"'
 # Push the UserIdentity doc through the destination pipeline directly
 # into the lookup index. This exercises the field renames, composite key
 # construction, and keep logic without depending on transform checkpoints.
-exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X POST 'https://localhost:9200/logs-crowdstrike_lookup.dest_userinfo-1/_doc?refresh=true&pipeline='${CURRENT_VERSION}'-userinfo_lookup_namespaced' -H 'Content-Type: application/json' -d @useridentity_event.json
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X POST 'https://localhost:9200/crowdstrike_lookup.dest_userinfo-1/_doc?refresh=true&pipeline='${CURRENT_VERSION}'-userinfo_lookup_namespaced' -H 'Content-Type: application/json' -d @useridentity_event.json
 stdout '"result":"created"'
 
 # Verify the lookup index is populated.
-exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X GET 'https://localhost:9200/logs-crowdstrike_lookup.userinfo/_count'
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X GET 'https://localhost:9200/crowdstrike_lookup.userinfo/_count'
 cp stdout count.json
 exec jq -r '.count' count.json
 stdout '^[1-9]'
 
 # Verify the lookup document has the expected fields.
-exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X GET 'https://localhost:9200/logs-crowdstrike_lookup.userinfo/_search?size=10'
+exec curl -s -u elastic:changeme --cacert ${CONFIG_PROFILES}/${PROFILE}/certs/ca-cert.pem -X GET 'https://localhost:9200/crowdstrike_lookup.userinfo/_search?size=10'
 cp stdout lookup_docs.json
 
 # Check the synthetic composite key.
@@ -126,5 +126,5 @@ stdout 'jane.doe'
 }
 -- esql_query.json --
 {
-  "query": "FROM logs-crowdstrike.fdr-default | WHERE event.action == \"ProcessRollup2\" | EVAL host_user_key = CONCAT(host.id, \"::\", user.id) | LOOKUP JOIN logs-crowdstrike_lookup.userinfo ON host_user_key | KEEP event.action, user.id, crowdstrike.info.user.name | LIMIT 10"
+  "query": "FROM logs-crowdstrike.fdr-default | WHERE event.action == \"ProcessRollup2\" | EVAL host_user_key = CONCAT(host.id, \"::\", user.id) | LOOKUP JOIN crowdstrike_lookup.userinfo ON host_user_key | KEEP event.action, user.id, crowdstrike.info.user.name | LIMIT 10"
 }
