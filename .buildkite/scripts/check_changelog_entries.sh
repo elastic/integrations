@@ -3,6 +3,8 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
 
+CHANGELOG_SKIP_LABEL="${CHANGELOG_SKIP_LABEL:-"changelog-link-check:skip"}"
+
 # Extracts the GitHub org/repo path from a remote URL.
 # Handles SSH (git@github.com:org/repo.git) and HTTPS formats.
 github_repo_path() {
@@ -172,6 +174,7 @@ main() {
         for f in "${failed_files[@]}"; do
             message+="- \`${f}\`"$'\n'
         done
+        message+=$'\n'"> [!TIP]"$'\n'"> Add the \`${CHANGELOG_SKIP_LABEL}\` label to skip this check."
         echo "${message}"
         if running_on_buildkite; then
             message+=$'\n'"[View Buildkite build](${BUILDKITE_BUILD_URL})"
