@@ -8,7 +8,11 @@ The Anthropic Metrics integration collects API usage, cost, and rate limit data 
 
 ### Compatibility
 
-This integration requires an **Anthropic organization** with access to the [Admin API](https://platform.claude.com/docs/en/manage-claude/admin-api). Individual accounts cannot create the required Admin API keys. Enterprise, Team, and Claude Platform organizations are supported.
+This integration uses the **Anthropic Platform Admin API** (`platform.claude.com`) to collect workspace- and API-key-level cost, usage, and rate limit data. It requires an Anthropic organization on a **Team** or **Enterprise** plan with access to the [Admin API](https://platform.claude.com/docs/en/manage-claude/admin-api). Individual accounts (Free, Pro, Max) cannot create the required Admin API keys and are not supported.
+
+Enterprise plan customers can use this integration for workspace- and API-key-level data. 
+For per-user or per-product breakdowns (Chat, Claude Code, Cowork, etc.), the separate Enterprise Analytics API (`claude.ai/analytics/api-keys`) is required — that API is currently not covered by this integration.
+
 
 ### How it works
 
@@ -47,8 +51,8 @@ Rate limit configuration snapshots:
 
 ## What do I need to use this integration?
 
-- An **Anthropic organization** (Team, or Claude Platform) with Admin API access
-- An **Admin API key** (starts with `sk-ant-admin...`) provisioned by an organization admin via [Claude Console > Settings > Admin keys](https://console.anthropic.com/settings/admin-keys)
+- An **Anthropic organization** (Team or Enterprise) with Platform Admin API access
+- An **Admin API key** (starts with `sk-ant-admin...`) provisioned by an organization admin via [Claude Console > Settings > Admin keys](https://console.anthropic.com/settings/admin-keys).
 - **Elastic Agent** installed on a host with outbound HTTPS access to `api.anthropic.com`
 
 ## How do I deploy this integration?
