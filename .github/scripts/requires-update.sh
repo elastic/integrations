@@ -133,10 +133,10 @@ while IFS= read -r team_entry; do
   fi
   pr_number="${pr_url##*/}"
 
-  # Fixup pull/0 placeholder in this team's changelog files.
+  # Fixup pull/REPLACE_ME placeholder in this team's changelog files.
   changelog_files=$(jq -r '.packages[].files[] | select(endswith("changelog.yml"))' <<< "$team_entry")
   if [ -n "$changelog_files" ] && [ -n "$pr_number" ]; then
-    echo "$changelog_files" | xargs sed -i'' "s|pull/0|pull/${pr_number}|g"
+    echo "$changelog_files" | xargs sed -i'' "s|pull/REPLACE_ME|pull/${pr_number}|g"
     echo "$changelog_files" | xargs git add --
     git diff --cached --quiet || {
       git commit -m "Fix changelog PR links"
