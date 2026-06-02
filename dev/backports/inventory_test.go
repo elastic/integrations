@@ -6,6 +6,7 @@ package backports
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -15,13 +16,9 @@ import (
 
 func writeTemp(t *testing.T, content string) string {
 	t.Helper()
-	f, err := os.CreateTemp("", "backports-*.yml")
-	require.NoError(t, err)
-	t.Cleanup(func() { os.Remove(f.Name()) })
-	_, err = f.WriteString(content)
-	require.NoError(t, err)
-	require.NoError(t, f.Close())
-	return f.Name()
+	path := filepath.Join(t.TempDir(), "backports.yml")
+	require.NoError(t, os.WriteFile(path, []byte(content), 0600))
+	return path
 }
 
 const validEntry = `backports:
