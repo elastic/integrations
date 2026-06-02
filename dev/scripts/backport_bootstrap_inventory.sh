@@ -278,6 +278,20 @@ HEADER
 
         base_commit_short="${base_commit:0:10}"
 
+        # --- Check if base_commit is reachable from upstream/main ---
+        # Old branches whose entire history diverged from main before a force-push
+        # (or was never on main) produce a base_commit that is a valid branch ancestor
+        # but not reachable from the current main lineage.
+        base_commit_in_main="false"
+        if [[ -n "${base_commit}" ]]; then
+            if git merge-base --is-ancestor "${base_commit}" \
+                    "refs/remotes/${REMOTE}/main" 2>/dev/null; then
+                base_commit_in_main="true"
+            else
+                echo "    NOTE: base_commit ${base_commit_short} not reachable from ${REMOTE}/main" >&2
+            fi
+        fi
+
         # --- archived: true if last commit is older than one year ---
         archived="false"
         last_ts="$(git log -1 --format="%ct" "${ref}" 2>/dev/null)" || last_ts=0
@@ -293,7 +307,12 @@ HEADER
         printf '    branch: %s\n'          "${branch}"
         printf '    base_version: "%s"\n'  "${base_version}"
         if [[ -n "${base_commit_short}" ]]; then
-            printf '    base_commit: "%s"\n'  "${base_commit_short}"
+            if [[ "${base_commit_in_main}" == "false" ]]; then
+                printf '    base_commit: "%s"  # not in upstream/main; next commit is branch-exclusive\n' \
+                    "${base_commit_short}"
+            else
+                printf '    base_commit: "%s"\n'  "${base_commit_short}"
+            fi
         else
             printf '    base_commit: null  # WARN: could not determine\n'
         fi
@@ -303,7 +322,9 @@ HEADER
 
     done < <(git for-each-ref --format='%(refname:short)' \
         "refs/remotes/${REMOTE}/backport-*" \
-        | sort)
+        | sed -E 's|^[^/]+/backport-([a-z_]+)-([0-9]+\.[0-9]+(\.[0-9]+)?)$|\1 \2 &|' \
+        | sort -k1,1 -k2,2Vr \
+        | awk '{print $NF}')
 
 } > "${OUTPUT}"
 
