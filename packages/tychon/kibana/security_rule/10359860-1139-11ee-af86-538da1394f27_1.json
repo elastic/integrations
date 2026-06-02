@@ -1,19 +1,20 @@
 {
-    "id": "6839b82b-22bf-418f-a86b-7e7a4cd074d7",
+    "id": "10359860-1139-11ee-af86-538da1394f27_1",
     "type": "security-rule",
     "attributes": {
-        "name": "Endpoint Security Definitions are Out of Date",
+        "name": "CAT 1 IAVA Vulnerability Detected",
         "tags": [
-            "EPP",
-            "TYCHON"
+            "TYCHON",
+            "CVE",
+            "CCRI"
         ],
         "interval": "5m",
         "enabled": true,
         "revision": 0,
-        "description": "TYCHON has reported that the registered endpoint protection platform is out of date and needs to be updated.",
-        "risk_score": 73,
+        "description": "A category one IAVA has been detected as being vulnerable",
+        "risk_score": 90,
         "severity": "high",
-        "note": "Depending on the Endpoint Protection Vendor, you will need to push new updated to this endpoint.  See the vendor's user guides to determine how to install the most recent AV updates.",
+        "note": "Investigator should work to patch this system for this IAVA as quickly as possible.",
         "license": "",
         "output_index": "",
         "author": [
@@ -21,7 +22,7 @@
         ],
         "false_positives": [],
         "from": "now-360s",
-        "rule_id": "6839b82b-22bf-418f-a86b-7e7a4cd074d7",
+        "rule_id": "10359860-1139-11ee-af86-538da1394f27",
         "max_signals": 100,
         "risk_score_mapping": [],
         "severity_mapping": [],
@@ -29,9 +30,9 @@
             {
                 "framework": "MITRE ATT&CK",
                 "tactic": {
-                    "id": "TA0005",
-                    "name": "Defense Evasion",
-                    "reference": "https://attack.mitre.org/tactics/TA0005"
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001"
                 },
                 "technique": []
             }
@@ -47,9 +48,9 @@
         "type": "query",
         "language": "kuery",
         "index": [
-            "logs-tychon_latest.host"
+            "logs-tychon_latest.cve"
         ],
-        "query": "tychon.host.security.antivirus.status : *OutOfDate*",
+        "query": "tychon.vulnerability.iava_severity : \"CAT I\" and tychon.vulnerability.result : \"fail\" ",
         "filters": [],
         "actions": []
     }
