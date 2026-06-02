@@ -51,15 +51,30 @@ processors:
       if: ctx.message != null && ctx.message.contains('password check failed')
       patterns:
         - 'for user \(?%{USERNAME:_temp.pam_user}\)?'
+  - set:
+      tag: set_process_name-log_syslog_appname
+      field: process.name
+      copy_from: log.syslog.appname
+      override: false
+      ignore_empty_value: true
   - grok:
       description: Extract actor, target, and group from gpasswd membership change messages.
       tag: grok-gpasswd
       field: message
       ignore_missing: true
       ignore_failure: true
-      if: ctx.message != null && ctx.message.contains(' by ') && ctx.message.contains(' group ')
+      if: ctx.process?.name == 'gpasswd'
       patterns:
-        - 'user %{USERNAME:_temp.gpasswd_target} (?:added|removed) by %{USERNAME:_temp.pam_user} (?:to|from) group %{DATA:group.name}$'
+        - 'user %{USERNAME:_temp.gpasswd_target} %{WORD:_temp.gpasswd_action} by %{USERNAME:_temp.pam_user} (?:to|from) group %{DATA:group.name}$'
+  - grok:
+      description: Extract target user and group from usermod add-to-group messages.
+      tag: grok-usermod-group
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.process?.name == 'usermod'
+      patterns:
+        - "^add '%{USERNAME:_temp.usermod_user}' to (?:shadow )?group '%{DATA:_temp.usermod_group}'"
   - grok:
       description: Grok usernames from PAM messages.
       tag: grok-pam-users
@@ -128,6 +143,33 @@ processors:
       field: event.outcome
       value: success
       if: ctx._temp?.gpasswd_target != null
+  - set:
+      tag: set_action_group_user_added
+      field: event.action
+      value: group-user-added
+      if: ctx._temp?.gpasswd_action == 'added'
+  - set:
+      tag: set_action_group_user_removed
+      field: event.action
+      value: group-user-removed
+      if: ctx._temp?.gpasswd_action == 'removed'
+  - set:
+      tag: set_user_name_usermod_group
+      field: user.name
+      copy_from: _temp.usermod_user
+      ignore_empty_value: true
+      if: ctx._temp?.usermod_user != null
+  - set:
+      tag: set_group_name_usermod_group
+      field: group.name
+      copy_from: _temp.usermod_group
+      ignore_empty_value: true
+      if: ctx._temp?.usermod_group != null
+  - set:
+      tag: set_action_group_member_added
+      field: event.action
+      value: group-member-added
+      if: ctx._temp?.usermod_group != null
   - grok:
       description: Extract rhost and user from PAM key-value messages.
       tag: grok-pam-kv
@@ -270,6 +312,11 @@ processors:
       field: event.type
       value: info
       allow_duplicates: false
+      if: ctx.message != null && ctx.message.contains('password check failed')
+  - set:
+      tag: set_action_authentication_failure_chkpwd
+      field: event.action
+      value: authentication_failure
       if: ctx.message != null && ctx.message.contains('password check failed')
   - set:
       tag: set_action_logged-on
@@ -448,12 +495,6 @@ processors:
           ctx.event.action = "ssh_login";
           ctx.event.outcome = "failure";
         }
-  - set:
-      tag: set_process_name-log_syslog_appname
-      field: process.name
-      copy_from: log.syslog.appname
-      override: false
-      ignore_empty_value: true
   - append:
       tag: append_category-iam
       field: event.category
