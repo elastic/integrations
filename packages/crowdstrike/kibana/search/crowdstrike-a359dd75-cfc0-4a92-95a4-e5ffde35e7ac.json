@@ -1,9 +1,11 @@
 {
     "attributes": {
         "columns": [
-            "crowdstrike.event.Category",
-            "event.action",
-            "message"
+            "crowdstrike.alert.severity_name",
+            "crowdstrike.alert.status",
+            "message",
+            "host.hostname",
+            "user.name"
         ],
         "description": "",
         "grid": {},
@@ -24,13 +26,13 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": {
-                                "query": "crowdstrike.falcon"
+                                "query": "crowdstrike.alert"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "data_stream.dataset": "crowdstrike.falcon"
+                                "data_stream.dataset": "crowdstrike.alert"
                             }
                         }
                     },
@@ -41,17 +43,23 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
+                            "field": "event.severity",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-                            "key": "crowdstrike.event.Category",
+                            "key": "event.severity",
                             "negate": false,
                             "params": {
-                                "query": "Incidents"
+                                "gte": "73"
                             },
-                            "type": "phrase"
+                            "type": "range",
+                            "value": {
+                                "gte": "73"
+                            }
                         },
                         "query": {
-                            "match_phrase": {
-                                "crowdstrike.event.Category": "Incidents"
+                            "range": {
+                                "event.severity": {
+                                    "gte": "73"
+                                }
                             }
                         }
                     }
@@ -59,7 +67,7 @@
                 "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset : \"crowdstrike.falcon\""
+                    "query": ""
                 }
             }
         },
@@ -70,12 +78,11 @@
             ]
         ],
         "timeRestore": false,
-        "title": "[Crowdstrike] Newest Falcon Incidents",
-        "usesAdHocDataView": false
+        "title": "[CrowdStrike] High and critical alerts"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-05-26T05:44:58.919Z",
-    "id": "crowdstrike-a9e7ff80-8212-11ee-bae0-937af575b750",
+    "created_at": "2026-06-02T06:36:00.330Z",
+    "id": "crowdstrike-a359dd75-cfc0-4a92-95a4-e5ffde35e7ac",
     "references": [
         {
             "id": "logs-*",
