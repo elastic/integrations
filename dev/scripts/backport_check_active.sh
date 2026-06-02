@@ -37,6 +37,11 @@ EOF
     exit 2
 }
 
+if ! command -v yq &>/dev/null; then
+    echo "Error: yq is required but not installed. See https://github.com/mikefarah/yq" >&2
+    exit 2
+fi
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --branch)
