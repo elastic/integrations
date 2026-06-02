@@ -2431,6 +2431,8 @@ processors:
         def fileSize = new HashSet();
         def processPid = new HashSet();
         def processParentPid = new HashSet();
+        def processEntityId = new HashSet();
+        def processParentEntityId = new HashSet();
 
         for (evidence in ctx.json.alerts.evidence) {
           maybeAddExecutable(processExecutable, evidence?.image_file);
@@ -2450,6 +2452,12 @@ processors:
             if (evidence?.parent_process?.id != null) {
               processParentPid.add(evidence.parent_process.id);
             }
+            if (evidence?.process?.id != null && evidence?.process?.creation_datetime != null && evidence?.mde_device_id != null) {
+              processEntityId.add(evidence.process.id + '|' + evidence.process.creation_datetime + '|' + evidence.mde_device_id);
+            }
+            if (evidence?.parent_process?.id != null && evidence?.parent_process?.creation_datetime != null && evidence?.mde_device_id != null) {
+              processParentEntityId.add(evidence.parent_process.id + '|' + evidence.parent_process.creation_datetime + '|' + evidence.mde_device_id);
+            }
           }
         }
 
@@ -2465,6 +2473,12 @@ processors:
         }
         if (!processParentPid.isEmpty()) {
           ctx.process.parent.pid = convertToOrderedArray(processParentPid);
+        }
+        if (!processEntityId.isEmpty()) {
+          ctx.process.entity_id = convertToOrderedArray(processEntityId);
+        }
+        if (!processParentEntityId.isEmpty()) {
+          ctx.process.parent.entity_id = convertToOrderedArray(processParentEntityId);
         }
         if (!processExecutable.isEmpty()) {
           def execList = new ArrayList(processExecutable);
@@ -2698,25 +2712,27 @@ processors:
           ctx.process.user.name = convertToOrderedArray(processUserName);
         }
   - foreach:
-      field: process.pid
-      tag: foreach_process_pid
-      if: ctx.process?.pid instanceof List
+      field: process.parent.entity_id
+      tag: foreach_fingerprint_parent_process_entity_id
+      if: ctx.process?.parent?.entity_id instanceof List
       processor:
-        append:
-          field: process.entity_id
-          tag: append_process_pid_to_entity_id
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
+        fingerprint:
+          fields:
+            - _ingest._value
+          tag: fingerprint_parent_process_entity_id
+          target_field: _ingest._value
+          ignore_missing: true
   - foreach:
-      field: process.parent.pid
-      tag: foreach_process_parent_pid
-      if: ctx.process?.parent?.pid instanceof List
+      field: process.entity_id
+      tag: foreach_fingerprint_process_entity_id
+      if: ctx.process?.entity_id instanceof List
       processor:
-        append:
-          field: process.parent.entity_id
-          tag: append_process_parent_pid_to_entity_id
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
+        fingerprint:
+          fields:
+            - _ingest._value
+          tag: fingerprint_process_entity_id
+          target_field: _ingest._value
+          ignore_missing: true
   - foreach:
       tag: foreach_json_alerts_evidence_0076b16f
       field: json.alerts.evidence
