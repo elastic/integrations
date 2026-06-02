@@ -9,7 +9,7 @@ with_mage
 with_yq
 
 echo "--- Validate .backports.yml inventory schema"
-mage -v validateBackportsInventory
+mage -d "${WORKSPACE}" -v validateBackportsInventory
 
 echo "--- Check if any files modified"
 check_git_diff
