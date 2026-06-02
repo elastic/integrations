@@ -14,8 +14,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Masterminds/semver/v3"
-
 	"github.com/elastic/integrations/dev/citools"
 	"github.com/elastic/integrations/dev/codeowners"
 )
@@ -46,6 +44,7 @@ type updateResult struct {
 	Proposals  []proposal `json:"proposals"`
 	Applied    bool       `json:"applied"`
 	SkipReason string     `json:"skip_reason,omitempty"`
+	NewVersion string     `json:"new_version,omitempty"`
 }
 
 type packageSummary struct {
@@ -96,7 +95,7 @@ func Run() error {
 			continue
 		}
 
-		summary, err := processPackage(pkgPath, manifest.Name, manifest.Version, dryRun)
+		summary, err := processPackage(pkgPath, manifest.Name, dryRun)
 		if err != nil {
 			errs = append(errs, fmt.Sprintf("%s: %v", manifest.Name, err))
 			continue
@@ -120,8 +119,8 @@ func Run() error {
 	return nil
 }
 
-func processPackage(pkgPath, pkgName, currentVersion string, dryRun bool) (*packageSummary, error) {
-	args := []string{"requires", "update", "--format", "json"}
+func processPackage(pkgPath, pkgName string, dryRun bool) (*packageSummary, error) {
+	args := []string{"requires", "update", "--changelog", "--format", "json"}
 	if dryRun {
 		args = append(args, "--dry-run")
 	}
@@ -133,7 +132,6 @@ func processPackage(pkgPath, pkgName, currentVersion string, dryRun bool) (*pack
 
 	if err := cmd.Run(); err != nil {
 		if stdout.Len() == 0 {
-			// No output: package likely has no requires section.
 			return nil, nil
 		}
 		return nil, fmt.Errorf("elastic-package requires update: %w\nstderr: %s", err, stderr.String())
@@ -167,14 +165,7 @@ func processPackage(pkgPath, pkgName, currentVersion string, dryRun bool) (*pack
 	}
 
 	var writtenFiles []string
-	if !dryRun && len(applied) > 0 {
-		nextVersion, err := computeNextVersion(currentVersion, applied)
-		if err != nil {
-			return nil, fmt.Errorf("computing next version: %w", err)
-		}
-		if err := addChangelog(pkgPath, nextVersion, changelogType(applied)); err != nil {
-			return nil, fmt.Errorf("adding changelog: %w", err)
-		}
+	if result.NewVersion != "" {
 		writtenFiles = []string{
 			filepath.Join(pkgPath, citools.ManifestFileName),
 			filepath.Join(pkgPath, "changelog.yml"),
@@ -206,94 +197,6 @@ func resolveOwner(pkgName, fallback string) (string, error) {
 			pkgName, primary, fallback)
 	}
 	return primary, nil
-}
-
-// changelogType returns "breaking-change" if any applied proposal is a major
-// dep bump (the integration's public contract may change), "enhancement" otherwise.
-func changelogType(applied []proposal) string {
-	for _, p := range applied {
-		from, err1 := semver.NewVersion(p.Current)
-		to, err2 := semver.NewVersion(p.Proposed)
-		if err1 != nil || err2 != nil {
-			continue
-		}
-		if bumpTier(from, to) == 2 {
-			return "breaking-change"
-		}
-	}
-	return "enhancement"
-}
-
-func addChangelog(pkgPath, version, entryType string) error {
-	var stderr bytes.Buffer
-	cmd := exec.Command(elasticPackageBin(),
-		"changelog", "add",
-		"--description", "Update required package versions",
-		"--type", entryType,
-		"--link", "https://github.com/elastic/integrations/pull/0",
-		"--version", version,
-	)
-	cmd.Dir = pkgPath
-	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("elastic-package changelog add: %w\nstderr: %s", err, stderr.String())
-	}
-	return nil
-}
-
-// computeNextVersion bumps currentVersion by the largest semver tier found across
-// all applied dep proposals (major > minor > patch). The rationale: the integration's
-// own version must signal the highest severity change introduced by its dependencies.
-//
-//   - Any dep patch bump  → integration patch bump  (e.g. 1.2.3 → 1.2.4)
-//   - Any dep minor bump  → integration minor bump  (e.g. 1.2.3 → 1.3.0)
-//   - Any dep major bump  → integration major bump  (e.g. 1.2.3 → 2.0.0)
-//
-// When multiple deps update at different tiers in the same run, the largest tier
-// wins: a mix of patch and minor bumps yields a minor integration bump.
-func computeNextVersion(currentVersion string, applied []proposal) (string, error) {
-	current, err := semver.NewVersion(currentVersion)
-	if err != nil {
-		return "", fmt.Errorf("parsing current version %q: %w", currentVersion, err)
-	}
-
-	tier := 0 // 0=patch, 1=minor, 2=major
-	for _, p := range applied {
-		from, err := semver.NewVersion(p.Current)
-		if err != nil {
-			continue
-		}
-		to, err := semver.NewVersion(p.Proposed)
-		if err != nil {
-			continue
-		}
-		if t := bumpTier(from, to); t > tier {
-			tier = t
-		}
-	}
-
-	var next semver.Version
-	switch tier {
-	case 2:
-		next = current.IncMajor()
-	case 1:
-		next = current.IncMinor()
-	default:
-		next = current.IncPatch()
-	}
-	return next.String(), nil
-}
-
-// bumpTier returns the semver tier of a single dep version change:
-// 2 = major, 1 = minor, 0 = patch.
-func bumpTier(from, to *semver.Version) int {
-	if to.Major() > from.Major() {
-		return 2
-	}
-	if to.Minor() > from.Minor() {
-		return 1
-	}
-	return 0
 }
 
 func writeJSONReport(summaries []packageSummary, path string) error {
