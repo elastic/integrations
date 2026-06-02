@@ -1,6 +1,6 @@
 #!/bin/bash
 # Triggered from the main pipeline when .backports.yml changes in a PR.
-# For each entry that is new or has a changed base_commit, uploads a trigger
+# For each entry that is new (absent from the base branch), uploads a trigger
 # step that runs the integrations-backport pipeline in DRY_RUN mode.
 
 source .buildkite/scripts/common.sh
@@ -24,7 +24,7 @@ if ! git diff --name-only "${commit_merge}" "${to}" | grep -qE '^\.backports\.ym
     exit 0
 fi
 
-echo "--- .backports.yml changed — finding new or updated entries"
+echo "--- .backports.yml changed — finding new entries"
 
 BASE_BRANCH="${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
 
@@ -45,6 +45,16 @@ if ! git show "origin/${BASE_BRANCH}:.backports.yml" > "${OLD_INVENTORY}" 2>/dev
     echo "backports: []" > "${OLD_INVENTORY}"
 fi
 
+if ! yq '.backports | length' "${OLD_INVENTORY}" > /dev/null; then
+    echo "ERROR: old inventory is not valid YAML or missing 'backports' key: ${OLD_INVENTORY}"
+    exit 1
+fi
+
+if ! yq '.backports | length' "${NEW_INVENTORY}" > /dev/null; then
+    echo "ERROR: new inventory is not valid YAML or missing 'backports' key: ${NEW_INVENTORY}"
+    exit 1
+fi
+
 PIPELINE_FILE="$(mktemp --suffix=.yml)"
 entries_found=0
 
@@ -57,20 +67,21 @@ while IFS= read -r branch; do
         continue
     fi
 
-    pkg="$(yq "${entry} | .package" "${NEW_INVENTORY}")"
-    base_version="$(yq "${entry} | .base_version" "${NEW_INVENTORY}")"
-    base_commit="$(yq "${entry} | .base_commit" "${NEW_INVENTORY}")"
-
     # Only trigger for entries that are new (absent from the old inventory).
-    # If the entry already existed, the backport branch was already validated;
-    # edits to an existing entry (e.g. updating base_commit) do not need a re-run.
+    # If the entry already existed, the git branch is already created; there is
+    # nothing to provision. This also covers re-activating a previously archived
+    # entry (archived:true → false): the branch exists, so no dry-run is needed.
     old_branch="$(yq ".backports[] | select(.branch == \"${branch}\") | .branch" \
-        "${OLD_INVENTORY}" 2>/dev/null || true)"
+        "${OLD_INVENTORY}")"
 
     if [[ -n "${old_branch}" ]]; then
         echo "  Skipping existing entry: ${branch} (already present in base branch)"
         continue
     fi
+
+    pkg="$(yq "${entry} | .package" "${NEW_INVENTORY}")"
+    base_version="$(yq "${entry} | .base_version" "${NEW_INVENTORY}")"
+    base_commit="$(yq "${entry} | .base_commit" "${NEW_INVENTORY}")"
 
     echo "  Queuing dry-run: ${branch} (package=${pkg} version=${base_version} base_commit=${base_commit})"
 
