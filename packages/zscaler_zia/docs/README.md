@@ -49,6 +49,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
                 - **DNS**: 9011
                 - **Endpoint DLP**: 9023
                 - **Firewall**: 9012
+                - **SaaS Security**: 9024
                 - **Tunnel**: 9013
                 - **Web**: 9014
             - **Feed Output Type**: Select Custom in Feed output type and paste the appropriate response format in Feed output format as follows:
@@ -71,6 +72,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
               - **DNS**: 9556
               - **Endpoint DLP**: 9561
               - **Firewall**: 9557
+              - **SaaS Security**: 9563
               - **Tunnel**: 9558
               - **Web**: 9559
           - Select JSON as feed output type.
@@ -163,6 +165,79 @@ Zscaler Firewall Log response format (v2):
 Sample Response:
 ```json
 {"version":"v2","sourcetype":"zscalernss-fw","event":{"datetime":"Mon Oct 16 22:55:48 2023","cltdomain":"www.example.com","cdip":"2a02:cf40::","outbytes":"10000","cdport":"22","destcountry":"USA","devicemodel":"20L8S7WC08","sdip":"67.43.156.0","duration":"600","sdport":"443","tz":"GMT","action":"Blocked","devicehostname":"THINKPADSMITH","recordid":"123456","deviceosversion":"Version 10.14.2 (Build 18C54)","devicename":"admin","nwsvc":"HTTP","deviceostype":"iOS","ipsrulelabel":"Default IPS Rule","nwapp":"Skype","rdr_rulename":"FWD_Rule_1","proto":"TCP","rulelabel":"rule1","dnatrulelabel":"DNAT_Rule_1","srcipcountry":"United States","rule":"Default_Firewall_Filtering_Rule","ssip":"1.128.0.0","inbytes":"10000","ssport":"22","csip":"0.0.0.0","aggregate":"Yes","csport":"25","bypass_time":"Mon Oct 16 22:55:48 2023","user":"jdoe%40safemarch.com","datacentercountry":"US","bypassed_session":"1","day":"Mon","datacentercity":"Sa","department":"sales","datacenter":"CA Client Node DC","deviceappversion":"2.0.0.120","day_of_month":"16","avgduration":"600","dept":"Sales","eedone":"Yes","deviceowner":"jsmith","external_deviceid":"1234","durationms":"600","forward_gateway_name":"FWD_1","epochtime":"1578128400","ipcat":"Finance","flow_type":"Direct","location":"Headquarters","hour":"22","login":"jdo%40safemarch.com","ips_custom_signature":"0","month":"Oct","locationname":"Headquarters","dnat":"Yes","minute":"55","odevicename":"2175092224","month_of_year":"10","ofwd_gw_name":"8794487099","ocsip":"9960223283","oipcat":"5300295980","odeviceowner":"10831489","odnatlabel":"7956407282","odevicehostname":"2168890624","orulelabel":"624054738","oipsrulelabel":"6200694987","second":"48","ordr_rulename":"3399565100","stateful":"Yes","ozpa_app_seg_name":"7648246731","threatcat":"Botnet Callback","numsessions":"5","tsip":"89.160.20.128","threat_name":"Linux.Backdoor.Tsunami","year":"2023","threatname":"Linux.Backdoor","zpa_app_seg_name":"ZPA_test_app_segment","tuntype":"L2 tunnel","ztunnelversion":"ZTUNNEL_1_0"}}
+```
+
+### SaaS Security Log
+
+- Default port (NSS Feed): _9024_
+- Default port (Cloud NSS Feed): _9563_
+
+See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/nss-feed-output-format-saas-security-logs)
+
+To integrate SaaS Security data, create a separate NSS Feed in the ZIA Admin Portal for each SaaS subtype. All feeds should point to the same Elastic Agent listening port (TCP input for NSS `9024`; HTTP Endpoint input for Cloud NSS `9563`).
+
+The integration identifies and parses data from these multiple feeds (e.g., Collaboration, CRM, Email) by using the `sourcesubtype` field within the Feed Output Format. Ensure the `sourcesubtype` is correctly mapped to one of the supported values: `collaboration`, `crm`, `email`, `file`, `genai`, `itsm`, `public_cloud_storage`, and `repository`.
+
+> **Troubleshooting — `Test Connectivity Failed: Zscaler Internal Error (0)` or `Error found in the following segment: ...`**
+>
+> Some tokens in the templates below may not be enabled on every Zscaler tenant. When the ZIA Admin Portal rejects one, Test Connectivity fails or the UI flags the offending segment.
+>
+> **Fix:** remove the rejected field from the Feed Output Format and save again. Dropping fields is safe — the ingest pipeline tolerates missing values and only the corresponding ECS mapping will be empty.
+
+#### Collaboration
+
+Recommended Feed Output Format — Zscaler SaaS Security (Collaboration), v1:
+```
+\{"version":"v1","sourcetype":"zscalernss-saas_security","sourcesubtype":"collaboration","time":"%d{epochtime}","tz":"%s{tz}","record_id":"%d{recordid}","message_id":"%s{msgid}","message_id_obfuscated":"%s{omsgid}","severity":"%s{severity}","is_incident":"%s{any_incident}","policy":"%s{policy}","rule":\{"label":"%s{rulelabel}","label_obfuscated":"%s{orulelabel}","type":"%s{ruletype}"\},"company":\{"name":"%s{company}"\},"datacenter":\{"name":"%s{datacenter}","city":"%s{datacentercity}","country":"%s{datacentercountry}"\},"tenant":"%s{tenant}","tenant_obfuscated":"%s{otenant}","threat":\{"indicator":\{"name":"%s{threatname}"\},"malware":"%s{malware}","malware_class":"%s{malwareclass}"\},"copilot_accessible":"%s{copilot_accessible}","accessibility_flags":"%s{accessibility_flags}","label_name":"%s{labelname}","department":"%s{department}","application":\{"name":"%s{applicationname}"\},"dlp":\{"identifier":"%llu{dlpidentifier}","dict_names":"%s{dlpdictnames}","dict_names_obfuscated":"%s{odlpdictnames}","dict_counts":"%s{dlpdictcount}","engine_names":"%s{dlpenginenames}","engine_names_obfuscated":"%s{odlpenginenames}"\},"document":\{"type":"%s{upload_doctypename}"\},"user_name":"%s{owner}","user_name_obfuscated":"%s{oowner}","collaboration":\{"channel":\{"name":"%s{channel_name}","name_obfuscated":"%s{ochannel_name}","hostname":"%s{sharedchannel_hostname}","hostname_obfuscated":"%s{osharedchannel_hostname}"\},"external_recipients":"%s{external_recptnames}","external_recipients_obfuscated":"%s{oexternal_recptnames}","internal_recipients":"%s{internal_recptnames}","internal_recipients_obfuscated":"%s{ointernal_recptnames}","sender":"%s{sender}","sender_obfuscated":"%s{osender}"\},"file":\{"owner":"%s{extownername}","owner_obfuscated":"%s{oextownername}"\}\}
+```
+
+#### Email
+
+Recommended Feed Output Format — Zscaler SaaS Security (Email), v1:
+```
+\{"version":"v1","sourcetype":"zscalernss-saas_security","sourcesubtype":"email","time":"%d{epochtime}","tz":"%s{tz}","record_id":"%d{recordid}","message_id":"%s{messageid}","message_id_obfuscated":"%s{omessageid}","severity":"%s{severity}","is_incident":"%s{any_incident}","policy":"%s{policy}","rule":\{"label":"%s{rulelabel}","label_obfuscated":"%s{orulelabel}","type":"%s{ruletype}"\},"company":\{"id":"%d{companyid}","name":"%s{company}"\},"datacenter":\{"name":"%s{datacenter}","city":"%s{datacentercity}","country":"%s{datacentercountry}"\},"tenant":"%s{tenant}","tenant_obfuscated":"%s{otenant}","threat":\{"indicator":\{"name":"%s{threatname}"\},"malware":"%s{malware}","malware_class":"%s{malwareclass}"\},"copilot_accessible":"%s{copilot_accessible}","accessibility_flags":"%s{accessibility_flags}","label_name":"%s{labelname}","department":"%s{department}","application":\{"name":"%s{applicationname}"\},"dlp":\{"identifier":"%llu{dlpidentifier}","dict_names":"%s{dlpdictnames}","dict_names_obfuscated":"%s{odlpdictnames}","dict_counts":"%s{dlpdictcount}","engine_names":"%s{dlpenginenames}","engine_names_obfuscated":"%s{odlpenginenames}"\},"document":\{"type":"%s{upload_doctypename}","subtype":"%s{upload_doc_subtype}"\},"user_name":"%s{owner}","user_name_obfuscated":"%s{oowner}","file":\{"owner":"%s{externalownername}","owner_obfuscated":"%s{oexternalownername}","download_time_ms":"%d{filedownloadtimems}","scan_time_ms":"%d{filescantimems}"\},"email":\{"is_inbound":"%s{is_inbound}","received_time":"%d{repochtime}","external_recipients_count":"%d{num_ext_recpts}","internal_recipients_count":"%d{num_int_recpts}","external_recipients":"%s{extrecptnames}","external_recipients_obfuscated":"%s{oextrecptnames}","internal_recipients":"%s{intrecptnames}","internal_recipients_obfuscated":"%s{ointrecptnames}","message_size_bytes":"%d{msgsize}","attachments":\{"file_names":"%s{attchcomponentfilenames}","file_names_obfuscated":"%s{oattchcomponentfilenames}","file_sizes":"%s{attchcomponentfilesizes}","file_types":"%s{attchcomponentfiletypes}","md5s":"%s{attchcomponentmd5s}"\}\}\}
+```
+
+#### File Sharing
+
+Recommended Feed Output Format — Zscaler SaaS Security (File Sharing), v1:
+```
+\{"version":"v1","sourcetype":"zscalernss-saas_security","sourcesubtype":"file","time":"%d{epochtime}","tz":"%s{tz}","record_id":"%d{recordid}","severity":"%s{severity}","policy":"%s{policy}","rule":\{"label":"%s{rulelabel}","label_obfuscated":"%s{orulelabel}","type":"%s{ruletype}"\},"company":\{"name":"%s{company}"\},"datacenter":\{"name":"%s{datacenter}","city":"%s{datacentercity}","country":"%s{datacentercountry}"\},"tenant":"%s{tenant}","tenant_obfuscated":"%s{otenant}","threat":\{"indicator":\{"name":"%s{threatname}"\},"malware":"%s{malware}","malware_class":"%s{malwareclass}"\},"copilot_accessible":"%s{copilot_accessible}","accessibility_flags":"%s{accessibility_flags}","label_name":"%s{labelname}","department":"%s{department}","application":\{"name":"%s{applicationname}"\},"dlp":\{"identifier":"%llu{dlpidentifier}","dict_names":"%s{dlpdictnames}","dict_names_obfuscated":"%s{odlpdictnames}","dict_counts":"%s{dlpdictcount}","engine_names":"%s{dlpenginenames}","engine_names_obfuscated":"%s{odlpenginenames}"\},"document":\{"type":"%s{upload_doctypename}"\},"hostname":"%s{hostname}","hostname_obfuscated":"%s{ohostname}","user_name":"%s{user}","user_name_obfuscated":"%s{ouser}","external_collab_groups":"%s{extcollab_groups}","external_collab_groups_obfuscated":"%s{oextcollab_groups}","external_collab_names":"%s{extcollabnames}","external_collab_names_obfuscated":"%s{oextcollabnames}","internal_collab_groups":"%s{intcollab_groups}","internal_collab_groups_obfuscated":"%s{ointcollab_groups}","internal_collab_names":"%s{intcollabnames}","internal_collab_names_obfuscated":"%s{ointcollabnames}","file":\{"owner":"%s{extownername}","owner_obfuscated":"%s{oextownername}","id":"%s{fileid}","id_obfuscated":"%s{ofileid}","name":"%s{filename}","size":"%d{filesize}","directory":"%s{filesource}","extension":"%s{filetypename}","hash":\{"md5":"%s{filemd5}"\},"full_url":"%s{fullurl}","full_url_obfuscated":"%s{ofullurl}","sub_url":"%s{suburl}","last_modified_time":"%s{lastmodtime}","last_share_user":"%s{last_share_user}","last_shared_on":"%s{last_shared_on}","collaboration_scope":"%s{collabscope}","download_time_ms":"%d{filedownloadtimems}","scan_time_ms":"%d{filescantimems}"\}\}
+```
+
+#### Gen AI
+
+Recommended Feed Output Format — Zscaler SaaS Security (Gen AI), v1:
+```
+\{"version":"v1","sourcetype":"zscalernss-saas_security","sourcesubtype":"genai","time":"%d{epochtime}","tz":"%s{tz}","record_id":"%d{recordid}","message_id":"%s{msgid}","severity":"%s{severity}","is_incident":"%s{any_incident}","policy":"%s{policy}","rule":\{"label":"%s{rulelabel}","type":"%s{ruletype}"\},"company":\{"name":"%s{company}"\},"datacenter":\{"name":"%s{datacenter}","city":"%s{datacentercity}","country":"%s{datacentercountry}"\},"tenant":"%s{tenant}","threat":\{"indicator":\{"name":"%s{threatname}"\},"malware":"%s{malware}","malware_class":"%s{malwareclass}"\},"department":"%s{departmentname}","application":\{"name":"%s{appname}"\},"dlp":\{"identifier":"%llu{dlpidentifier}","dict_names":"%s{dlpdictnames}","dict_counts":"%s{dlpdictcnts}","engine_names":"%s{dlpengnames}"\},"document":\{"type":"%s{file_doctype}"\},"component":"%s{component}","user_name":"%s{owner}","internal_user_name":"%s{username}","external_user_name":"%s{extusername}","genai":\{"bot_name":"%s{botname}","run_id":"%d{runid}","scan_id":"%d{scanid}","sender_type":"%s{sender_type}"\},"file":\{"name":"%s{filename}","size":"%d{filesize}","extension":"%s{filetype}","hash":\{"md5":"%s{filemd5}","sha256":"%s{filesha}"\},"download_time_ms":"%d{download_time}","scan_time_ms":"%d{scan_time}"\}\}
+```
+
+#### CRM
+
+Recommended Feed Output Format — Zscaler SaaS Security (CRM), v1:
+```
+\{"version":"v1","sourcetype":"zscalernss-saas_security","sourcesubtype":"crm","time":"%d{epochtime}","tz":"%s{tz}","record_id":"%d{recordid}","message_id":"%s{file_msg_id}","message_id_obfuscated":"%s{ofile_msg_id}","severity":"%s{severity}","policy":"%s{policy}","rule":\{"label":"%s{rulelabel}","label_obfuscated":"%s{orulelabel}","type":"%s{ruletype}"\},"company":\{"name":"%s{company}"\},"datacenter":\{"name":"%s{datacenter}","city":"%s{datacentercity}","country":"%s{datacentercountry}"\},"tenant":"%s{tenant}","tenant_obfuscated":"%s{otenant}","threat":\{"indicator":\{"name":"%s{threatname}"\},"malware":"%s{malware}","malware_class":"%s{malwareclass}"\},"component":"%s{component}","department":"%s{department}","application":\{"name":"%s{applicationname}"\},"dlp":\{"identifier":"%llu{dlpidentifier}","dict_names":"%s{dlpdictnames}","dict_names_obfuscated":"%s{odlpdictnames}","dict_counts":"%s{dlpdictcount}","engine_names":"%s{dlpenginenames}","engine_names_obfuscated":"%s{odlpenginenames}"\},"document":\{"type":"%s{upload_doctypename}"\},"hostname":"%s{hostname}","hostname_obfuscated":"%s{ohostname}","user_name":"%s{owner}","user_name_obfuscated":"%s{oowner}","external_collab_count":"%d{num_external_collab}","internal_collab_count":"%d{num_internal_collab}","external_collab_names":"%s{external_collabnames}","external_collab_names_obfuscated":"%s{oexternal_collabnames}","internal_collab_names":"%s{internal_collabnames}","internal_collab_names_obfuscated":"%s{ointernal_collabnames}","object":\{"name":"%s{objectname}","type":"%s{objecttype}"\},"file":\{"owner":"%s{extownername}","owner_obfuscated":"%s{oextownername}","name":"%s{filename}","path":"%s{filepath}","size":"%d{filesize}","type_category":"%s{filetypecategory}","hash":\{"md5":"%s{filemd5}","sha256":"%s{sha}"\},"full_url":"%s{fullurl}","full_url_obfuscated":"%s{ofullurl}","last_modified_time":"%s{file_msg_mod_time}","collaboration_scope":"%s{collabscope}"\}\}
+```
+
+#### ITSM
+
+Recommended Feed Output Format — Zscaler SaaS Security (ITSM), v1:
+```
+\{"version":"v1","sourcetype":"zscalernss-saas_security","sourcesubtype":"itsm","time":"%d{epochtime}","tz":"%s{tz}","record_id":"%d{recordid}","message_id":"%s{file_msg_id}","message_id_obfuscated":"%s{ofile_msg_id}","severity":"%s{severity}","policy":"%s{policy}","rule":\{"label":"%s{rulelabel}","label_obfuscated":"%s{orulelabel}","type":"%s{ruletype}"\},"company":\{"name":"%s{company}"\},"datacenter":\{"name":"%s{datacenter}","city":"%s{datacentercity}","country":"%s{datacentercountry}"\},"tenant":"%s{tenant}","tenant_obfuscated":"%s{otenant}","threat":\{"indicator":\{"name":"%s{threatname}"\},"malware":"%s{malware}","malware_class":"%s{malwareclass}"\},"component":"%s{component}","department":"%s{department}","application":\{"name":"%s{applicationname}"\},"dlp":\{"identifier":"%llu{dlpidentifier}","dict_names":"%s{dlpdictnames}","dict_names_obfuscated":"%s{odlpdictnames}","dict_counts":"%s{dlpdictcount}","engine_names":"%s{dlpenginenames}","engine_names_obfuscated":"%s{odlpenginenames}"\},"document":\{"type":"%s{upload_doctypename}"\},"hostname":"%s{hostname}","hostname_obfuscated":"%s{ohostname}","user_name":"%s{owner}","user_name_obfuscated":"%s{oowner}","external_collab_count":"%d{num_external_collab}","internal_collab_count":"%d{num_internal_collab}","external_collab_names":"%s{external_collabnames}","external_collab_names_obfuscated":"%s{oexternal_collabnames}","internal_collab_names":"%s{internal_collabnames}","internal_collab_names_obfuscated":"%s{ointernal_collabnames}","object":\{"name":"%s{objectname}","type":"%s{objecttype}"\},"file":\{"owner":"%s{extownername}","owner_obfuscated":"%s{oextownername}","name":"%s{filename}","path":"%s{filepath}","size":"%d{filesize}","type_category":"%s{filetypecategory}","hash":\{"md5":"%s{filemd5}","sha256":"%s{sha}"\},"full_url":"%s{fullurl}","full_url_obfuscated":"%s{ofullurl}","last_modified_time":"%s{file_msg_mod_time}"\}\}
+```
+
+#### Public Cloud Storage
+
+Recommended Feed Output Format — Zscaler SaaS Security (Public Cloud Storage), v1:
+```
+\{"version":"v1","sourcetype":"zscalernss-saas_security","sourcesubtype":"public_cloud_storage","time":"%d{epochtime}","tz":"%s{tz}","record_id":"%d{recordid}","severity":"%s{severity}","policy":"%s{policy}","rule":\{"label":"%s{rulelabel}","label_obfuscated":"%s{orulelabel}","type":"%s{ruletype}"\},"company":\{"name":"%s{company}"\},"datacenter":\{"name":"%s{datacenter}","city":"%s{datacentercity}","country":"%s{datacentercountry}"\},"tenant":"%s{tenant}","tenant_obfuscated":"%s{otenant}","threat":\{"indicator":\{"name":"%s{threatname}"\},"malware":"%s{malware}","malware_class":"%s{malwareclass}"\},"department":"%s{department}","application":\{"name":"%s{applicationname}"\},"dlp":\{"identifier":"%llu{dlpidentifier}","dict_names":"%s{dlpdictnames}","dict_names_obfuscated":"%s{odlpdictnames}","dict_counts":"%s{dlpdictcount}","engine_names":"%s{dlpenginenames}","engine_names_obfuscated":"%s{odlpenginenames}"\},"document":\{"type":"%s{upload_doctypename}"\},"hostname":"%s{hostname}","hostname_obfuscated":"%s{ohostname}","user_name":"%s{owner}","user_name_obfuscated":"%s{oowner}","collab_count":"%d{numcollab}","collab_names":"%s{collabnames}","collab_names_obfuscated":"%s{ocollabnames}","bucket":\{"id":"%d{bucketid}","name":"%s{bucketname}","name_obfuscated":"%s{obucketname}","owner":"%s{bucketowner}","owner_obfuscated":"%s{obucketowner}"\},"file":\{"owner":"%s{extownername}","owner_obfuscated":"%s{oextownername}","id":"%s{fileid}","id_obfuscated":"%s{ofileid}","full_url":"%s{fullurl}","full_url_obfuscated":"%s{ofullurl}"\}\}
+```
+
+#### Repository
+
+Recommended Feed Output Format — Zscaler SaaS Security (Repository), v1:
+```
+\{"version":"v1","sourcetype":"zscalernss-saas_security","sourcesubtype":"repository","time":"%d{epochtime}","tz":"%s{tz}","record_id":"%d{recordid}","severity":"%s{severity}","policy":"%s{policy}","rule":\{"label":"%s{rulelabel}","label_obfuscated":"%s{orulelabel}","type":"%s{ruletype}"\},"company":\{"name":"%s{company}"\},"datacenter":\{"name":"%s{datacenter}","city":"%s{datacentercity}","country":"%s{datacentercountry}"\},"tenant":"%s{tenant}","tenant_obfuscated":"%s{otenant}","threat":\{"indicator":\{"name":"%s{threatname}"\},"malware":"%s{malware}","malware_class":"%s{malwareclass}"\},"department":"%s{department}","application":\{"name":"%s{applicationname}"\},"dlp":\{"identifier":"%llu{dlpidentifier}","dict_names":"%s{dlpdictnames}","dict_names_obfuscated":"%s{odlpdictnames}","dict_counts":"%s{dlpdictcount}","engine_names":"%s{dlpenginenames}","engine_names_obfuscated":"%s{odlpenginenames}"\},"document":\{"type":"%s{upload_doctypename}"\},"user_name":"%s{owner}","user_name_obfuscated":"%s{oowner}","external_collab_count":"%d{num_external_collab}","external_collab_names":"%s{external_collabnames}","external_collab_names_obfuscated":"%s{oexternal_collabnames}","internal_collab_names":"%s{internal_collabnames}","internal_collab_names_obfuscated":"%s{ointernal_collabnames}","repository":\{"name":"%s{reponame}","project_name":"%s{projectname}"\},"file":\{"owner":"%s{extownername}","owner_obfuscated":"%s{oextownername}","id":"%s{fileid}","id_obfuscated":"%s{ofileid}","name":"%s{filename}","path":"%s{filepath}","size":"%d{filesize}","type_category":"%s{filetypecategory}","hash":\{"md5":"%s{filemd5}","sha256":"%s{sha}"\}\}\}
 ```
 
 ### Tunnel Log
@@ -1235,6 +1310,307 @@ An example event for `firewall` looks as following:
 | zscaler_zia.firewall.year | Year. | long |
 | zscaler_zia.firewall.z_tunnel_version | The Z-Tunnel version. | keyword |
 | zscaler_zia.firewall.zpa_app_segment | The name of the Zscaler Private Access (ZPA) application segment. | keyword |
+
+
+### saas_security
+
+#### Example
+
+An example event for `saas_security` looks as following:
+
+```json
+{
+    "@timestamp": "2024-11-01T09:55:48.000Z",
+    "agent": {
+        "ephemeral_id": "9b4f8728-89a4-494b-9e96-833c36bd8337",
+        "id": "43cc9f88-ed20-4024-abcd-01e25da67e15",
+        "name": "elastic-agent-74083",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "zscaler_zia.saas_security",
+        "namespace": "22530",
+        "type": "logs"
+    },
+    "destination": {
+        "user": {
+            "email": [
+                "jane.doe@example.org",
+                "john.public@example.org",
+                "alice.smith@example.com",
+                "bob.jones@example.com"
+            ]
+        }
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "43cc9f88-ed20-4024-abcd-01e25da67e15",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network",
+            "intrusion_detection"
+        ],
+        "dataset": "zscaler_zia.saas_security",
+        "id": "7379788644480581634",
+        "ingested": "2026-05-20T06:26:58Z",
+        "kind": "event",
+        "original": "{\"application\":{\"name\":\"Slack\"},\"collaboration\":{\"channel\":{\"hostname\":\"teams.example.com\",\"hostname_obfuscated\":\"6389711095\",\"name\":\"engineering-private\",\"name_obfuscated\":\"9769110224\"},\"external_recipients\":\"jane.doe@example.org|john.public@example.org\",\"external_recipients_obfuscated\":\"7531480912|0912753148\",\"internal_recipients\":\"alice.smith@example.com|bob.jones@example.com\",\"internal_recipients_obfuscated\":\"2435617791|7791162435\",\"sender\":\"alice.smith@example.com\",\"sender_obfuscated\":\"6200694987\"},\"company\":{\"name\":\"Example Corp\"},\"copilot_accessible\":\"Yes\",\"datacenter\":{\"city\":\"San Jose\",\"country\":\"US\",\"name\":\"CA Client Node DC\"},\"department\":\"Engineering\",\"dlp\":{\"dict_counts\":\"4|2\",\"dict_names\":\"Credit Cards|Social Security Numbers\",\"engine_names\":\"PCI|HIPAA\",\"identifier\":\"6646484838839025669\"},\"document\":{\"type\":\"Corporate Finance\"},\"file\":{\"owner\":\"jane.doe@example.org\",\"owner_obfuscated\":\"7531480912\"},\"is_incident\":\"Yes\",\"label_name\":\"Confidential\",\"message_id\":\"01U7H7LGKE6AEZ7DPW7ZEYU2WADV7ET3CV\",\"message_id_obfuscated\":\"5300295980\",\"policy\":\"Make internal sharing read only\",\"record_id\":\"7379788644480581634\",\"rule\":{\"label\":\"DLP-Rule-Collab-1\",\"label_obfuscated\":\"3399565100\",\"type\":\"OfflineCASBDLPCOLLAB\"},\"severity\":\"High\",\"sourcesubtype\":\"collaboration\",\"sourcetype\":\"zscalernss-saas_security\",\"tenant\":\"example-tenant\",\"tenant_obfuscated\":\"8794487099\",\"threat\":{\"indicator\":{\"name\":\"None\"},\"malware\":\"None\",\"malware_class\":\"None\"},\"time\":\"1730454948\",\"tz\":\"GMT\",\"user_name\":\"alice.smith@example.com\",\"user_name_obfuscated\":\"6200694987\",\"version\":\"v1\"}",
+        "provider": "Zscaler",
+        "severity": 73,
+        "timezone": "GMT",
+        "type": [
+            "denied",
+            "info"
+        ]
+    },
+    "file": {
+        "owner": "jane.doe@example.org"
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "observer": {
+        "geo": {
+            "city_name": "San Jose",
+            "country_iso_code": "US",
+            "name": "CA Client Node DC"
+        },
+        "name": "CA Client Node DC",
+        "product": "Zscaler ZIA",
+        "vendor": "Zscaler"
+    },
+    "organization": {
+        "name": "Example Corp"
+    },
+    "related": {
+        "hosts": [
+            "teams.example.com"
+        ],
+        "user": [
+            "alice.smith@example.com",
+            "jane.doe@example.org",
+            "john.public@example.org",
+            "bob.jones@example.com"
+        ]
+    },
+    "rule": {
+        "name": "DLP-Rule-Collab-1",
+        "ruleset": "OfflineCASBDLPCOLLAB"
+    },
+    "source": {
+        "user": {
+            "email": "alice.smith@example.com"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "zscaler_zia-saas_security"
+    ],
+    "user": {
+        "email": "alice.smith@example.com",
+        "name": "alice.smith@example.com"
+    },
+    "zscaler_zia": {
+        "saas_security": {
+            "application": {
+                "name": "Slack"
+            },
+            "collaboration": {
+                "channel": {
+                    "hostname": "teams.example.com",
+                    "hostname_obfuscated": "6389711095",
+                    "name": "engineering-private",
+                    "name_obfuscated": "9769110224"
+                },
+                "external_recipients_obfuscated": [
+                    "7531480912",
+                    "0912753148"
+                ],
+                "internal_recipients_obfuscated": [
+                    "2435617791",
+                    "7791162435"
+                ],
+                "sender_obfuscated": "6200694987"
+            },
+            "copilot_accessible": true,
+            "department": "Engineering",
+            "dlp": {
+                "dict_counts": [
+                    4,
+                    2
+                ],
+                "dict_names": [
+                    "Credit Cards",
+                    "Social Security Numbers"
+                ],
+                "engine_names": [
+                    "PCI",
+                    "HIPAA"
+                ],
+                "identifier": "6646484838839025669"
+            },
+            "document": {
+                "type": "Corporate Finance"
+            },
+            "file": {
+                "owner_obfuscated": "7531480912"
+            },
+            "is_incident": true,
+            "label_name": "Confidential",
+            "message_id": "01U7H7LGKE6AEZ7DPW7ZEYU2WADV7ET3CV",
+            "message_id_obfuscated": "5300295980",
+            "policy": "Make internal sharing read only",
+            "rule": {
+                "label_obfuscated": "3399565100"
+            },
+            "severity": "High",
+            "sourcesubtype": "collaboration",
+            "sourcetype": "zscalernss-saas_security",
+            "tenant": "example-tenant",
+            "tenant_obfuscated": "8794487099",
+            "user_name_obfuscated": "6200694987",
+            "version": "v1"
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+| zscaler_zia.saas_security.accessibility_flags | A multivalue flag that provides the accessibility information of the asset. | keyword |
+| zscaler_zia.saas_security.application.name | The name of the sanctioned SaaS application. | keyword |
+| zscaler_zia.saas_security.bucket.id | The bucket ID. | keyword |
+| zscaler_zia.saas_security.bucket.name | The bucket name. | keyword |
+| zscaler_zia.saas_security.bucket.name_obfuscated | The obfuscated version of the bucket name. | keyword |
+| zscaler_zia.saas_security.bucket.owner | The bucket owner. | keyword |
+| zscaler_zia.saas_security.bucket.owner_obfuscated | The obfuscated version of the bucket name. | keyword |
+| zscaler_zia.saas_security.collab_count | The number of collaborators. | long |
+| zscaler_zia.saas_security.collab_names | The names of the collaborators. | keyword |
+| zscaler_zia.saas_security.collab_names_obfuscated | The obfuscated version of the names of the collaborators. | keyword |
+| zscaler_zia.saas_security.collaboration.channel.hostname | The hostname of the shared channel. | keyword |
+| zscaler_zia.saas_security.collaboration.channel.hostname_obfuscated | The obfuscated version of the hostname of the shared channel. | keyword |
+| zscaler_zia.saas_security.collaboration.channel.name | The name of the channel. | keyword |
+| zscaler_zia.saas_security.collaboration.channel.name_obfuscated | The obfuscated version of the channel name. | keyword |
+| zscaler_zia.saas_security.collaboration.external_recipients | The names of the external recipient names. | keyword |
+| zscaler_zia.saas_security.collaboration.external_recipients_obfuscated | The obfuscated version of the external recipient names. | keyword |
+| zscaler_zia.saas_security.collaboration.internal_recipients | The names of the internal recipients. | keyword |
+| zscaler_zia.saas_security.collaboration.internal_recipients_obfuscated | The obfuscated version of the internal recipient names. | keyword |
+| zscaler_zia.saas_security.collaboration.sender | The sender's email. | keyword |
+| zscaler_zia.saas_security.collaboration.sender_obfuscated | The obfuscated version of the sender's email. | keyword |
+| zscaler_zia.saas_security.company.id | The numeric ID given to a company by Zscaler. | keyword |
+| zscaler_zia.saas_security.company.name | The company name. | keyword |
+| zscaler_zia.saas_security.component | The type of component recorded. | keyword |
+| zscaler_zia.saas_security.copilot_accessible | Indicates whether the asset is accessible by the Microsoft Copilot Readiness Assessment. | boolean |
+| zscaler_zia.saas_security.datacenter.city | The city where the data center is located. | keyword |
+| zscaler_zia.saas_security.datacenter.country | The country where the data center is located. | keyword |
+| zscaler_zia.saas_security.datacenter.name | The name of the data center. | keyword |
+| zscaler_zia.saas_security.department | The user's department. If authentication is not required and the traffic comes from a location specified in the service, this field displays the name of the gateway location. | keyword |
+| zscaler_zia.saas_security.dlp.dict_counts | The number of hits for each of the DLP dictionaries that were matched in the transaction. This displays a string field separated by a vertical line ("|"). | long |
+| zscaler_zia.saas_security.dlp.dict_names | The Data Loss Prevention (DLP) dictionary names. | keyword |
+| zscaler_zia.saas_security.dlp.dict_names_obfuscated | The obfuscated version of the DLP dictionary names. | keyword |
+| zscaler_zia.saas_security.dlp.engine_names | The DLP engine names. | keyword |
+| zscaler_zia.saas_security.dlp.engine_names_obfuscated | The obfuscated version of the DLP engine names. | keyword |
+| zscaler_zia.saas_security.dlp.identifier | The DLP identifier. Whenever a DLP rule is hit, and the appropriate alert is configured, an email containing this ID is sent to your auditors. | keyword |
+| zscaler_zia.saas_security.document.subtype | The subtype of the document uploaded or downloaded during the transaction. | keyword |
+| zscaler_zia.saas_security.document.type | The type of document uploaded or downloaded during the transaction. | keyword |
+| zscaler_zia.saas_security.email.attachments.file_names | The name of the suspicious file detected by the Data at Rest Scanning policy. | keyword |
+| zscaler_zia.saas_security.email.attachments.file_names_obfuscated | The obfuscated version of the name of the suspicious file detected by the Data at Rest Scanning policy. | keyword |
+| zscaler_zia.saas_security.email.attachments.file_sizes | The size of the file in bytes. | long |
+| zscaler_zia.saas_security.email.attachments.file_types | The component file type. | keyword |
+| zscaler_zia.saas_security.email.attachments.md5s | The component file MD5. | keyword |
+| zscaler_zia.saas_security.email.external_recipients | The names of external recipients. | keyword |
+| zscaler_zia.saas_security.email.external_recipients_count | The number of external recipients. | long |
+| zscaler_zia.saas_security.email.external_recipients_obfuscated | The obfuscated version of the names of external recipients. | keyword |
+| zscaler_zia.saas_security.email.internal_recipients | The names of internal recipients. | keyword |
+| zscaler_zia.saas_security.email.internal_recipients_count | The number of internal recipients. | long |
+| zscaler_zia.saas_security.email.internal_recipients_obfuscated | The obfuscated version of the names of internal recipients. | keyword |
+| zscaler_zia.saas_security.email.is_inbound | Indicates whether the email was sent or received or not. | boolean |
+| zscaler_zia.saas_security.email.message_size_bytes | The size of the message in bytes. | long |
+| zscaler_zia.saas_security.email.received_time | The time at which the transaction was recorded. | date |
+| zscaler_zia.saas_security.external_collab_count | The number of external collaborators. | long |
+| zscaler_zia.saas_security.external_collab_groups | The group of collaborators outside your organization with whom the user shares assets. The field can have up to 8 values separated by a vertical line ("|"). | keyword |
+| zscaler_zia.saas_security.external_collab_groups_obfuscated | The obfuscated version of the group of collaborators outside your organization with whom the user shares assets. The field can have up to 8 values separated by a vertical line ("|"). | keyword |
+| zscaler_zia.saas_security.external_collab_names | The names of external collaborators. | keyword |
+| zscaler_zia.saas_security.external_collab_names_obfuscated | The obfuscated version of external collaborator names. | keyword |
+| zscaler_zia.saas_security.external_user_name | The username or email address of the external user who performs the transaction. | keyword |
+| zscaler_zia.saas_security.file.collaboration_scope | The collaboration scope and permissions for SaaS application tenant files. | keyword |
+| zscaler_zia.saas_security.file.directory | The source location of the files containing sensitive data that were detected by the Data at Rest Scanning DLP or Malware Detection policy. | keyword |
+| zscaler_zia.saas_security.file.download_time_ms | The download time (in milliseconds) of the suspicious file detected by the Data at Rest Scanning policy. | long |
+| zscaler_zia.saas_security.file.extension | The type of file that was either uploaded or downloaded. | keyword |
+| zscaler_zia.saas_security.file.full_url | The SaaS Security public URL used to access a shared file. | keyword |
+| zscaler_zia.saas_security.file.full_url_obfuscated | The obfuscated version of the full URL. | keyword |
+| zscaler_zia.saas_security.file.hash.md5 | The MD5 hash for the file. | keyword |
+| zscaler_zia.saas_security.file.hash.sha256 | The SHA-256 hash for the file. | keyword |
+| zscaler_zia.saas_security.file.id | The file ID value in a string format. | keyword |
+| zscaler_zia.saas_security.file.id_obfuscated | The obfuscated version of the file ID value in a string format. | keyword |
+| zscaler_zia.saas_security.file.last_modified_time | The last modification time of the file/message. | date |
+| zscaler_zia.saas_security.file.last_share_user | The user who last shared the file that triggered the DLP violation. | keyword |
+| zscaler_zia.saas_security.file.last_shared_on | The date and time when the file was shared. | date |
+| zscaler_zia.saas_security.file.name | The name of the suspicious file detected by the Data at Rest Scanning policy. | keyword |
+| zscaler_zia.saas_security.file.owner | The file owners (inside or outside your organization) who are not provisioned to Internet & SaaS (ZIA). | keyword |
+| zscaler_zia.saas_security.file.owner_obfuscated | The obfuscated version of the file owners (inside or outside your organization) who are not provisioned to Internet & SaaS. | keyword |
+| zscaler_zia.saas_security.file.path | The file path. | keyword |
+| zscaler_zia.saas_security.file.scan_time_ms | The amount of time (in milliseconds) the Data at Rest Scanning policy took to scan content within the tenant. | long |
+| zscaler_zia.saas_security.file.size | The size of the file in bytes. | long |
+| zscaler_zia.saas_security.file.sub_url | The URI portion of the full URL. | keyword |
+| zscaler_zia.saas_security.file.type_category | The category of the file type. | keyword |
+| zscaler_zia.saas_security.genai.bot_name | The name of the bot. | keyword |
+| zscaler_zia.saas_security.genai.run_id | The unique identifier of the run (i.e., when a scan is stopped and started). | keyword |
+| zscaler_zia.saas_security.genai.scan_id | The unique identifier of the scan defined in the Historic Scan Configuration. | keyword |
+| zscaler_zia.saas_security.genai.sender_type | The type of sender (i.e., bot, system, or user). | keyword |
+| zscaler_zia.saas_security.hostname | The hostname of the recorded internal URL. | keyword |
+| zscaler_zia.saas_security.hostname_obfuscated | The obfuscated version of the hostname. | keyword |
+| zscaler_zia.saas_security.internal_collab_count | The number of internal collaborators. | long |
+| zscaler_zia.saas_security.internal_collab_groups | The group of collaborators within your organization with whom the user shares assets. The field can have up to 8 values separated by a vertical line ("|"). | keyword |
+| zscaler_zia.saas_security.internal_collab_groups_obfuscated | The obfuscated version of the group of collaborators within your organization with whom the user shares assets. The field can have up to 8 values separated by a vertical line ("|"). | keyword |
+| zscaler_zia.saas_security.internal_collab_names | The names of internal collaborators. | keyword |
+| zscaler_zia.saas_security.internal_collab_names_obfuscated | The obfuscated version of the internal collaborator names. | keyword |
+| zscaler_zia.saas_security.internal_user_name | The username or email address of the internal user who performs the transaction. If an internet gateway location is specified and authentication is not required, this field displays the name of the gateway location. | keyword |
+| zscaler_zia.saas_security.is_incident | Indicates whether the transaction was an incident or not. | boolean |
+| zscaler_zia.saas_security.label_name | The type of Microsoft Information Protection (MIP) label applied to the assets. | keyword |
+| zscaler_zia.saas_security.message_id | The message ID assigned by the application. | keyword |
+| zscaler_zia.saas_security.message_id_obfuscated | The obfuscated version of the message ID assigned by the application. | keyword |
+| zscaler_zia.saas_security.object.name | The name of the object logged. | keyword |
+| zscaler_zia.saas_security.object.type | The type of the object logged. | keyword |
+| zscaler_zia.saas_security.policy | The Data at Rest Scanning policy rule action. | keyword |
+| zscaler_zia.saas_security.record_id | The unique record identifier for each log. | keyword |
+| zscaler_zia.saas_security.repository.name | The name of the repository. | keyword |
+| zscaler_zia.saas_security.repository.project_name | The name of the project. | keyword |
+| zscaler_zia.saas_security.rule.label | The name of the rule that triggered on the session or aggregated sessions. | keyword |
+| zscaler_zia.saas_security.rule.label_obfuscated | The obfuscated name of the rule that triggered on the session or aggregated sessions. | keyword |
+| zscaler_zia.saas_security.rule.type | The type of policy that took action during the transaction. | keyword |
+| zscaler_zia.saas_security.severity | The severity level of the incident detected by the Data at Rest Scanning DLP policy. | keyword |
+| zscaler_zia.saas_security.sourcesubtype |  | keyword |
+| zscaler_zia.saas_security.sourcetype |  | keyword |
+| zscaler_zia.saas_security.tenant | The sanctioned SaaS application tenant integrated with the Zscaler service. | keyword |
+| zscaler_zia.saas_security.tenant_obfuscated | The obfuscated version of the SaaS application tenant. | keyword |
+| zscaler_zia.saas_security.threat.indicator.name | If the service detects a threat in the transaction, it displays the name of the threat. | keyword |
+| zscaler_zia.saas_security.threat.malware | If the service detects a threat in the transaction, it displays the virus or spyware type, if applicable. | keyword |
+| zscaler_zia.saas_security.threat.malware_class | If the service detects a threat in the transaction, it displays the virus and spyware super category, if applicable. | keyword |
+| zscaler_zia.saas_security.time | The time of the incident in epoch format. | date |
+| zscaler_zia.saas_security.tz | The time zone. This is the same as the time zone you specified when you configured the NSS feed. | keyword |
+| zscaler_zia.saas_security.user_name | The username or email address of the user who performs the transaction. | keyword |
+| zscaler_zia.saas_security.user_name_obfuscated | The obfuscated username or email address of the user who performs the transaction. | keyword |
+| zscaler_zia.saas_security.version |  | keyword |
 
 
 ### sandbox_report
