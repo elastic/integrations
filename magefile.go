@@ -19,6 +19,7 @@ import (
 	"github.com/magefile/mage/sh"
 	"github.com/pkg/errors"
 
+	"github.com/elastic/integrations/dev/backports"
 	"github.com/elastic/integrations/dev/citools"
 	"github.com/elastic/integrations/dev/codeowners"
 	"github.com/elastic/integrations/dev/coverage"
@@ -216,6 +217,11 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 		Verbose:           verboseMode,
 	}
 	return testsreporter.Check(ctx, testResultsFolder, options)
+}
+
+// ValidateBackportsInventory validates the schema of .backports.yml at the repo root.
+func ValidateBackportsInventory() error {
+	return backports.ValidateInventory(".backports.yml")
 }
 
 // ListPackages lists all packages found under the packages directory.
