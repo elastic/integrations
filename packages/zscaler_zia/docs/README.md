@@ -1345,22 +1345,22 @@ An example event for `saas_security_activity` looks as following:
 {
     "@timestamp": "2024-03-15T11:30:00.000Z",
     "agent": {
-        "ephemeral_id": "d60b7a0e-94c6-446e-9ef5-690b324a07c9",
-        "id": "626449eb-3876-4527-81f1-edc8e121733f",
-        "name": "elastic-agent-50758",
+        "ephemeral_id": "b29c5410-623b-42c9-a787-06f7986404ba",
+        "id": "213c4a4d-0280-41fb-a648-98539fccf384",
+        "name": "elastic-agent-24278",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.saas_security_activity",
-        "namespace": "66992",
+        "namespace": "89548",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "626449eb-3876-4527-81f1-edc8e121733f",
+        "id": "213c4a4d-0280-41fb-a648-98539fccf384",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -1371,7 +1371,7 @@ An example event for `saas_security_activity` looks as following:
             "iam"
         ],
         "dataset": "zscaler_zia.saas_security_activity",
-        "ingested": "2026-05-27T05:59:12Z",
+        "ingested": "2026-06-02T06:32:41Z",
         "kind": "event",
         "original": "{\"activity\":{\"count\":\"1\",\"type\":\"Upload\"},\"application\":{\"name\":\"GOOGLE_DRIVE\"},\"event_time\":\"Fri Mar 15 11:30:00 2024\",\"external_owner\":\"vendor@partner.example.org\",\"is_admin\":\"0\",\"object\":{\"names\":\"[invoice-2024-Q1.xlsx]\",\"subnames\":\"[Shared with Vendors]\",\"subtype\":\"Folder\",\"type\":\"File\"},\"sourcetype\":\"zscalernss-saas_security_activity\",\"src_ip\":\"89.160.20.112\",\"tenant\":\"example.com\",\"time\":\"Fri Mar 15 11:30:00 2024\",\"tz\":\"GMT\",\"user_name\":\"finance.robot@example.com\",\"version\":\"v1\"}",
         "provider": "Zscaler",
