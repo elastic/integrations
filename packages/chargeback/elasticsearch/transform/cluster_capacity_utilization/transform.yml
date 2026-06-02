@@ -2,37 +2,30 @@ description: Aggregates daily p95 heap and disk utilization across data-role nod
 source:
   index:
     - metrics-elasticsearch.stack_monitoring.node_stats*
-    - .monitoring-es-*
-    - metricbeat-*
   query:
     bool:
-      should:
+      filter:
         - term:
-            elasticsearch.node.roles: data_hot
-        - term:
-            elasticsearch.node.roles: data_warm
-        - term:
-            elasticsearch.node.roles: data_cold
-        - term:
-            elasticsearch.node.roles: data_frozen
-        - term:
-            elasticsearch.node.roles: data_content
-        - term:
-            elasticsearch.node.roles: data
-      minimum_should_match: 1
+            event.dataset: elasticsearch.stack_monitoring.node_stats
+        - exists:
+            field: elasticsearch.node.roles
+        - terms:
+            elasticsearch.node.roles:
+              - data_hot
+              - data_warm
+              - data_cold
+              - data_frozen
+              - data_content
+              - data
   runtime_mappings:
     node_disk_used_pct:
       type: double
       script:
         source: |
-          def stats = params._source?.elasticsearch?.node?.stats;
-          if (stats == null) {
-            return;
-          }
-          def total = stats?.fs?.total?.total_in_bytes;
-          def avail = stats?.fs?.total?.available_in_bytes;
-          if (total != null && total > 0 && avail != null) {
-            emit((total - avail) * 100.0 / total);
+          def total = doc['elasticsearch.node.stats.fs.total.total_in_bytes'];
+          def avail = doc['elasticsearch.node.stats.fs.total.available_in_bytes'];
+          if (!total.empty && !avail.empty && total.value > 0) {
+            emit((total.value - avail.value) * 100.0 / total.value);
           }
 dest:
   index: cluster_capacity_utilization_lookup

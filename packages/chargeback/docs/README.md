@@ -27,16 +27,19 @@ Chargeback costs are presented based on a configured rate and unit, used to conv
 **Required integrations:**
 - [**Elasticsearch Service Billing**](https://www.elastic.co/docs/reference/integrations/ess_billing/) integration (v1.4.1+) must be installed and collecting billing data from your Elastic Cloud organisation (ESS / Elastic Cloud only).
 - **[On-Premises Billing](https://github.com/elastic/integrations/tree/main/packages/onprem_billing)** integration (v0.3.3+) as a replacement for ESS Billing when running on-premises (ECE, ECK, self-managed). See that integration's README for ERU/mERU configuration.
-- [**Elasticsearch**](https://www.elastic.co/docs/reference/integrations/elasticsearch/) integration (v1.16.0+) must be installed and collecting [usage data](https://www.elastic.co/docs/reference/integrations/elasticsearch/#indices-and-data-streams-usage-analysis) and **`node_stats`** from data nodes on all deployments included in chargeback calculations.
+- [**Elasticsearch**](https://www.elastic.co/docs/reference/integrations/elasticsearch/) integration (v1.16.0+) must be **installed and actively running** on all monitored deployments, with the following datasets enabled:
+  - **Index stats** (`elasticsearch.index` / `elasticsearch.stack_monitoring.index`) — required for tier and data stream cost allocation. The `logs-elasticsearch.index_pivot` transform must be running to aggregate these into `monitoring-indices`.
+  - **Node stats** (`elasticsearch.stack_monitoring.node_stats`) from data nodes — required for the realized cost utilization score (`cluster_capacity_utilization` transform). Node stats are written to `metrics-elasticsearch.stack_monitoring.node_stats-*` and are **not** available in `monitoring-indices`. Without node stats, utilization defaults to 100% and no utilization discount is applied.
 
 **Required transforms:**
-- The transform `logs-elasticsearch.index_pivot-default-{VERSION}` (from the Elasticsearch integration) must be running to aggregate usage metrics per index.
+- The transform `logs-elasticsearch.index_pivot-default-{VERSION}` (from the Elasticsearch integration) must be running to aggregate usage metrics per index into `monitoring-indices`.
 
 **Data flow:**
 1. ESS Billing data is collected into `metrics-ess_billing.billing-*`.
-2. Elasticsearch usage data is collected into `metrics-elasticsearch.stack_monitoring.*` or, when using the Elasticsearch integration index pivot, into indices matching `monitoring-indices*`.
-3. Chargeback transforms process and correlate this data.
-4. Dashboard queries the resulting lookup indices using ES|QL.
+2. Elasticsearch index usage data is aggregated into `monitoring-indices*` by the Elasticsearch integration index pivot transform.
+3. Elasticsearch node stats flow into `metrics-elasticsearch.stack_monitoring.node_stats-*` via the Elasticsearch integration's node stats dataset.
+4. Chargeback transforms process and correlate this data.
+5. Dashboard queries the resulting lookup indices using ES|QL.
 
 ## Configuration
 
@@ -153,11 +156,23 @@ These transforms produce lookup indices queried by the dashboards using ES|QL LO
 
 ### Transform auto-start
 
-All Chargeback transforms start automatically when the integration is installed. No manual intervention is required.
+All Chargeback transforms except `cluster_capacity_utilization` start automatically when the integration is installed.
 
-On clusters with months of historical monitoring data for multiple deployments, the initial transform execution may process a large volume of data. This can cause temporary performance impact during the first run. Transforms then run incrementally on their configured schedules (15 to 60 minute intervals), processing only new data with minimal overhead.
+**`cluster_capacity_utilization` requires a manual start.** This transform reads from broad monitoring source indices (including `.monitoring-es-*` and `metricbeat-*`) which may contain a large volume of historical data. Starting it automatically during package installation can cause a backend timeout. After installation, start it manually:
 
-You can verify the transforms are running by navigating to **Stack Management > Transforms** and filtering for `chargeback`.
+1. Navigate to **Stack Management > Transforms**.
+2. Filter for `chargeback`.
+3. Find `logs-chargeback.cluster_capacity_utilization-*` and click **Start**.
+
+Alternatively, use the API:
+
+```
+POST _transform/logs-chargeback.cluster_capacity_utilization-default-0.4.0/_start
+```
+
+On clusters with months of historical monitoring data for multiple deployments, the initial run may process a large volume of data and cause temporary performance impact. Transforms then run incrementally on their configured schedules (15 to 60 minute intervals), processing only new data with minimal overhead.
+
+You can verify all transforms are running by navigating to **Stack Management > Transforms** and filtering for `chargeback`.
 
 ### Transform health monitoring
 
