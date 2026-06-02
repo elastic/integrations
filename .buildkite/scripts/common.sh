@@ -786,6 +786,7 @@ is_pr_affected() {
         '\.buildkite/pipeline\.schedule-weekly\.yml'
         '\.buildkite/pull-requests\.json'
         '\.buildkite/scripts/backport_branch\.sh'
+        '\.buildkite/scripts/check_backports_inventory\.sh'
         '\.buildkite/scripts/build_packages\.sh'
         '\.buildkite/scripts/packages/.+\.sh'
         '\.github/dependabot\.yml'
