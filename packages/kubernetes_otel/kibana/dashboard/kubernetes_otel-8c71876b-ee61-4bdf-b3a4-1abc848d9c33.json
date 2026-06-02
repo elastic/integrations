@@ -695,11 +695,11 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "delta",
+                                                    "columnId": "cpu_util_last",
                                                     "customLabel": true,
-                                                    "fieldName": "delta",
+                                                    "fieldName": "cpu_util_last",
                                                     "inMetricDimension": true,
-                                                    "label": "Change",
+                                                    "label": "Last value",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -716,7 +716,7 @@
                                             ],
                                             "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                                             "query": {
-                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n  AND (k8s.node.cpu.usage IS NOT NULL OR k8s.node.allocatable_cpu IS NOT NULL)\n| INLINE STATS\n    cpu_latest_ts = MAX(CASE(k8s.node.cpu.usage IS NOT NULL, @timestamp, NULL)),\n    cpu_first_ts = MIN(CASE(k8s.node.cpu.usage IS NOT NULL, @timestamp, NULL)),\n    alloc_latest_ts = MAX(CASE(k8s.node.allocatable_cpu IS NOT NULL, @timestamp, NULL)),\n    alloc_first_ts = MIN(CASE(k8s.node.allocatable_cpu IS NOT NULL, @timestamp, NULL)),\n    last_seen = MAX(@timestamp)\n  BY k8s.node.name\n| EVAL cpu_usage_val = CASE(@timestamp == cpu_latest_ts, k8s.node.cpu.usage, NULL),\n    first_cpu_usage_val = CASE(@timestamp == cpu_first_ts, k8s.node.cpu.usage, NULL),\n    alloc_cpu_val = CASE(@timestamp == alloc_latest_ts, k8s.node.allocatable_cpu, NULL),\n    first_alloc_cpu_val = CASE(@timestamp == alloc_first_ts, k8s.node.allocatable_cpu, NULL)\n| STATS cpu_usage = MAX(cpu_usage_val),\n    first_cpu_usage = MAX(first_cpu_usage_val),\n    alloc_cpu = MAX(alloc_cpu_val),\n    first_alloc_cpu = MAX(first_alloc_cpu_val),\n    last_seen = MAX(last_seen)\n  BY k8s.node.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| STATS cpu_usage = SUM(cpu_usage), alloc_cpu = SUM(alloc_cpu),\n    first_cpu_usage = SUM(first_cpu_usage), first_alloc_cpu = SUM(first_alloc_cpu)\n| EVAL cpu_util = CASE(alloc_cpu > 0, ROUND(cpu_usage / alloc_cpu, 4), NULL),\n    previous_cpu_util = CASE(first_alloc_cpu > 0, ROUND(first_cpu_usage / first_alloc_cpu, 4), NULL)\n| EVAL delta = CASE(previous_cpu_util IS NOT NULL AND cpu_util IS NOT NULL, ROUND(cpu_util - previous_cpu_util, 4), NULL)\n| EVAL max_val = 1.0\n| KEEP cpu_util, max_val, delta"
+                                                "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.name != \"\"\n| STATS avg_usage = AVG(k8s.node.cpu.usage),\n    avg_alloc = AVG(k8s.node.allocatable_cpu)\n  BY timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| EVAL bucket_util = CASE(avg_alloc > 0, avg_usage / avg_alloc, NULL)\n| SORT timestamp\n| STATS cpu_util = ROUND(AVG(avg_usage) / AVG(avg_alloc), 4),\n    cpu_util_last = ROUND(LAST(bucket_util, timestamp), 4)\n| EVAL max_val = 1.0\n| KEEP cpu_util, cpu_util_last, max_val"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -726,7 +726,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n  AND (k8s.node.cpu.usage IS NOT NULL OR k8s.node.allocatable_cpu IS NOT NULL)\n| INLINE STATS\n    cpu_latest_ts = MAX(CASE(k8s.node.cpu.usage IS NOT NULL, @timestamp, NULL)),\n    cpu_first_ts = MIN(CASE(k8s.node.cpu.usage IS NOT NULL, @timestamp, NULL)),\n    alloc_latest_ts = MAX(CASE(k8s.node.allocatable_cpu IS NOT NULL, @timestamp, NULL)),\n    alloc_first_ts = MIN(CASE(k8s.node.allocatable_cpu IS NOT NULL, @timestamp, NULL)),\n    last_seen = MAX(@timestamp)\n  BY k8s.node.name\n| EVAL cpu_usage_val = CASE(@timestamp == cpu_latest_ts, k8s.node.cpu.usage, NULL),\n    first_cpu_usage_val = CASE(@timestamp == cpu_first_ts, k8s.node.cpu.usage, NULL),\n    alloc_cpu_val = CASE(@timestamp == alloc_latest_ts, k8s.node.allocatable_cpu, NULL),\n    first_alloc_cpu_val = CASE(@timestamp == alloc_first_ts, k8s.node.allocatable_cpu, NULL)\n| STATS cpu_usage = MAX(cpu_usage_val),\n    first_cpu_usage = MAX(first_cpu_usage_val),\n    alloc_cpu = MAX(alloc_cpu_val),\n    first_alloc_cpu = MAX(first_alloc_cpu_val),\n    last_seen = MAX(last_seen)\n  BY k8s.node.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| STATS cpu_usage = SUM(cpu_usage), alloc_cpu = SUM(alloc_cpu),\n    first_cpu_usage = SUM(first_cpu_usage), first_alloc_cpu = SUM(first_alloc_cpu)\n| EVAL cpu_util = CASE(alloc_cpu > 0, ROUND(cpu_usage / alloc_cpu, 4), NULL),\n    previous_cpu_util = CASE(first_alloc_cpu > 0, ROUND(first_cpu_usage / first_alloc_cpu, 4), NULL)\n| EVAL delta = CASE(previous_cpu_util IS NOT NULL AND cpu_util IS NOT NULL, ROUND(cpu_util - previous_cpu_util, 4), NULL)\n| EVAL max_val = 1.0\n| KEEP cpu_util, max_val, delta"
+                                "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.name != \"\"\n| STATS avg_usage = AVG(k8s.node.cpu.usage),\n    avg_alloc = AVG(k8s.node.allocatable_cpu)\n  BY timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| EVAL bucket_util = CASE(avg_alloc > 0, avg_usage / avg_alloc, NULL)\n| SORT timestamp\n| STATS cpu_util = ROUND(AVG(avg_usage) / AVG(avg_alloc), 4),\n    cpu_util_last = ROUND(LAST(bucket_util, timestamp), 4)\n| EVAL max_val = 1.0\n| KEEP cpu_util, cpu_util_last, max_val"
                             },
                             "visualization": {
                                 "applyColorTo": "bar",
@@ -782,16 +782,16 @@
                                 },
                                 "progressDirection": "horizontal",
                                 "showBar": true,
-                                "subtitle": "Last value",
-                                "secondaryMetricAccessor": "delta",
-                                "secondaryLabel": "",
+                                "subtitle": "Avg",
+                                "secondaryMetricAccessor": "cpu_util_last",
+                                "secondaryLabel": "Last value vs Avg",
                                 "secondaryLabelPosition": "before",
                                 "secondaryTrend": {
                                     "type": "dynamic",
                                     "visuals": "both",
                                     "paletteId": "compare_to",
                                     "reversed": true,
-                                    "baselineValue": 0
+                                    "baselineValue": "primary"
                                 }
                             }
                         },
@@ -799,7 +799,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Node CPU utilization based on latest CPU usage divided by latest allocatable CPU for the selected time range. Values near 100% can indicate CPU saturation.",
+                    "description": "Average node CPU utilization for the selected time range. \"Last value vs Avg\" compares the latest bucket to that average. Values near 100% can indicate CPU saturation.",
                     "title": ""
                 },
                 "gridData": {
@@ -876,11 +876,11 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "delta",
+                                                    "columnId": "disk_util_last",
                                                     "customLabel": true,
-                                                    "fieldName": "delta",
+                                                    "fieldName": "disk_util_last",
                                                     "inMetricDimension": true,
-                                                    "label": "Change",
+                                                    "label": "Last value",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -897,7 +897,7 @@
                                             ],
                                             "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                                             "query": {
-                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.filesystem.usage IS NOT NULL\n  AND k8s.node.filesystem.capacity IS NOT NULL\n| STATS fs_usage = LAST(k8s.node.filesystem.usage, @timestamp),\n    first_fs_usage = FIRST(k8s.node.filesystem.usage, @timestamp),\n    fs_cap = LAST(k8s.node.filesystem.capacity, @timestamp),\n    first_fs_cap = FIRST(k8s.node.filesystem.capacity, @timestamp),\n    last_seen = MAX(@timestamp)\n  BY k8s.node.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| STATS fs_usage = SUM(fs_usage), fs_cap = SUM(fs_cap),\n    first_fs_usage = SUM(first_fs_usage), first_fs_cap = SUM(first_fs_cap)\n| EVAL disk_util = CASE(fs_cap > 0, ROUND(TO_DOUBLE(fs_usage) / TO_DOUBLE(fs_cap), 4), NULL),\n    previous_disk_util = CASE(first_fs_cap > 0, ROUND(TO_DOUBLE(first_fs_usage) / TO_DOUBLE(first_fs_cap), 4), NULL)\n| EVAL delta = CASE(previous_disk_util IS NOT NULL AND disk_util IS NOT NULL, ROUND(disk_util - previous_disk_util, 4), NULL)\n| EVAL max_val = 1.0\n| KEEP disk_util, max_val, delta"
+                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.name != \"\"\n  AND k8s.node.filesystem.usage IS NOT NULL\n  AND k8s.node.filesystem.capacity IS NOT NULL\n| STATS avg_usage = AVG(k8s.node.filesystem.usage),\n    avg_cap = AVG(k8s.node.filesystem.capacity)\n  BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL bucket_util = CASE(avg_cap > 0, TO_DOUBLE(avg_usage) / TO_DOUBLE(avg_cap), NULL)\n| SORT timestamp\n| STATS disk_util = ROUND(AVG(avg_usage) / AVG(avg_cap), 4),\n    disk_util_last = ROUND(LAST(bucket_util, timestamp), 4)\n| EVAL max_val = 1.0\n| KEEP disk_util, disk_util_last, max_val"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -907,7 +907,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.filesystem.usage IS NOT NULL\n  AND k8s.node.filesystem.capacity IS NOT NULL\n| STATS fs_usage = LAST(k8s.node.filesystem.usage, @timestamp),\n    first_fs_usage = FIRST(k8s.node.filesystem.usage, @timestamp),\n    fs_cap = LAST(k8s.node.filesystem.capacity, @timestamp),\n    first_fs_cap = FIRST(k8s.node.filesystem.capacity, @timestamp),\n    last_seen = MAX(@timestamp)\n  BY k8s.node.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| STATS fs_usage = SUM(fs_usage), fs_cap = SUM(fs_cap),\n    first_fs_usage = SUM(first_fs_usage), first_fs_cap = SUM(first_fs_cap)\n| EVAL disk_util = CASE(fs_cap > 0, ROUND(TO_DOUBLE(fs_usage) / TO_DOUBLE(fs_cap), 4), NULL),\n    previous_disk_util = CASE(first_fs_cap > 0, ROUND(TO_DOUBLE(first_fs_usage) / TO_DOUBLE(first_fs_cap), 4), NULL)\n| EVAL delta = CASE(previous_disk_util IS NOT NULL AND disk_util IS NOT NULL, ROUND(disk_util - previous_disk_util, 4), NULL)\n| EVAL max_val = 1.0\n| KEEP disk_util, max_val, delta"
+                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.name != \"\"\n  AND k8s.node.filesystem.usage IS NOT NULL\n  AND k8s.node.filesystem.capacity IS NOT NULL\n| STATS avg_usage = AVG(k8s.node.filesystem.usage),\n    avg_cap = AVG(k8s.node.filesystem.capacity)\n  BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL bucket_util = CASE(avg_cap > 0, TO_DOUBLE(avg_usage) / TO_DOUBLE(avg_cap), NULL)\n| SORT timestamp\n| STATS disk_util = ROUND(AVG(avg_usage) / AVG(avg_cap), 4),\n    disk_util_last = ROUND(LAST(bucket_util, timestamp), 4)\n| EVAL max_val = 1.0\n| KEEP disk_util, disk_util_last, max_val"
                             },
                             "visualization": {
                                 "layerId": "a58687be-3cf7-4d7a-9a8f-a681fff2f58c",
@@ -963,16 +963,16 @@
                                 },
                                 "progressDirection": "horizontal",
                                 "showBar": true,
-                                "subtitle": "Last value",
-                                "secondaryMetricAccessor": "delta",
-                                "secondaryLabel": "",
+                                "subtitle": "Avg",
+                                "secondaryMetricAccessor": "disk_util_last",
+                                "secondaryLabel": "Last value vs Avg",
                                 "secondaryLabelPosition": "before",
                                 "secondaryTrend": {
                                     "type": "dynamic",
                                     "visuals": "both",
                                     "paletteId": "compare_to",
                                     "reversed": true,
-                                    "baselineValue": 0
+                                    "baselineValue": "primary"
                                 }
                             }
                         },
@@ -980,7 +980,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Node disk utilization based on latest filesystem usage divided by latest filesystem capacity for the selected time range. Values near 100% can indicate disk pressure.",
+                    "description": "Average node disk utilization for the selected time range. \"Last value vs Avg\" compares the latest bucket to that average. Values near 100% can indicate disk pressure.",
                     "hide_title": true,
                     "title": ""
                 },
@@ -1058,11 +1058,11 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "delta",
+                                                    "columnId": "mem_util_last",
                                                     "customLabel": true,
-                                                    "fieldName": "delta",
+                                                    "fieldName": "mem_util_last",
                                                     "inMetricDimension": true,
-                                                    "label": "Change",
+                                                    "label": "Last value",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -1079,7 +1079,7 @@
                                             ],
                                             "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                                             "query": {
-                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n  AND (k8s.node.memory.working_set IS NOT NULL OR k8s.node.allocatable_memory IS NOT NULL)\n| STATS mem_ws = LAST(k8s.node.memory.working_set, CASE(k8s.node.memory.working_set IS NOT NULL, @timestamp, NULL)),\n    first_mem_ws = FIRST(k8s.node.memory.working_set, CASE(k8s.node.memory.working_set IS NOT NULL, @timestamp, NULL)),\n    alloc_mem = LAST(k8s.node.allocatable_memory, CASE(k8s.node.allocatable_memory IS NOT NULL, @timestamp, NULL)),\n    first_alloc_mem = FIRST(k8s.node.allocatable_memory, CASE(k8s.node.allocatable_memory IS NOT NULL, @timestamp, NULL)),\n    last_seen = MAX(@timestamp)\n  BY k8s.node.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| STATS mem_ws = SUM(mem_ws), alloc_mem = SUM(alloc_mem),\n    first_mem_ws = SUM(first_mem_ws), first_alloc_mem = SUM(first_alloc_mem)\n| EVAL mem_util = CASE(alloc_mem > 0, ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem), 4), NULL),\n    previous_mem_util = CASE(first_alloc_mem > 0, ROUND(TO_DOUBLE(first_mem_ws) / TO_DOUBLE(first_alloc_mem), 4), NULL)\n| EVAL delta = CASE(previous_mem_util IS NOT NULL AND mem_util IS NOT NULL, ROUND(mem_util - previous_mem_util, 4), NULL)\n| EVAL max_val = 1.0\n| KEEP mem_util, max_val, delta"
+                                                "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.name != \"\"\n| STATS avg_ws = AVG(k8s.node.memory.working_set),\n    avg_alloc = AVG(k8s.node.allocatable_memory)\n  BY timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| EVAL bucket_util = CASE(avg_alloc > 0, avg_ws / avg_alloc, NULL)\n| SORT timestamp\n| STATS mem_util = ROUND(AVG(avg_ws) / AVG(avg_alloc), 4),\n    mem_util_last = ROUND(LAST(bucket_util, timestamp), 4)\n| EVAL max_val = 1.0\n| KEEP mem_util, mem_util_last, max_val"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1089,7 +1089,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n  AND (k8s.node.memory.working_set IS NOT NULL OR k8s.node.allocatable_memory IS NOT NULL)\n| STATS mem_ws = LAST(k8s.node.memory.working_set, CASE(k8s.node.memory.working_set IS NOT NULL, @timestamp, NULL)),\n    first_mem_ws = FIRST(k8s.node.memory.working_set, CASE(k8s.node.memory.working_set IS NOT NULL, @timestamp, NULL)),\n    alloc_mem = LAST(k8s.node.allocatable_memory, CASE(k8s.node.allocatable_memory IS NOT NULL, @timestamp, NULL)),\n    first_alloc_mem = FIRST(k8s.node.allocatable_memory, CASE(k8s.node.allocatable_memory IS NOT NULL, @timestamp, NULL)),\n    last_seen = MAX(@timestamp)\n  BY k8s.node.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| STATS mem_ws = SUM(mem_ws), alloc_mem = SUM(alloc_mem),\n    first_mem_ws = SUM(first_mem_ws), first_alloc_mem = SUM(first_alloc_mem)\n| EVAL mem_util = CASE(alloc_mem > 0, ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(alloc_mem), 4), NULL),\n    previous_mem_util = CASE(first_alloc_mem > 0, ROUND(TO_DOUBLE(first_mem_ws) / TO_DOUBLE(first_alloc_mem), 4), NULL)\n| EVAL delta = CASE(previous_mem_util IS NOT NULL AND mem_util IS NOT NULL, ROUND(mem_util - previous_mem_util, 4), NULL)\n| EVAL max_val = 1.0\n| KEEP mem_util, max_val, delta"
+                                "esql": "TS metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.node.name IS NOT NULL\n  AND k8s.node.name != \"\"\n| STATS avg_ws = AVG(k8s.node.memory.working_set),\n    avg_alloc = AVG(k8s.node.allocatable_memory)\n  BY timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| EVAL bucket_util = CASE(avg_alloc > 0, avg_ws / avg_alloc, NULL)\n| SORT timestamp\n| STATS mem_util = ROUND(AVG(avg_ws) / AVG(avg_alloc), 4),\n    mem_util_last = ROUND(LAST(bucket_util, timestamp), 4)\n| EVAL max_val = 1.0\n| KEEP mem_util, mem_util_last, max_val"
                             },
                             "visualization": {
                                 "layerId": "25f5360b-a67f-42eb-ac6a-dc98ea362ce7",
@@ -1145,16 +1145,16 @@
                                 },
                                 "progressDirection": "horizontal",
                                 "showBar": true,
-                                "subtitle": "Last value",
-                                "secondaryMetricAccessor": "delta",
-                                "secondaryLabel": "",
+                                "subtitle": "Avg",
+                                "secondaryMetricAccessor": "mem_util_last",
+                                "secondaryLabel": "Last value vs Avg",
                                 "secondaryLabelPosition": "before",
                                 "secondaryTrend": {
                                     "type": "dynamic",
                                     "visuals": "both",
                                     "paletteId": "compare_to",
                                     "reversed": true,
-                                    "baselineValue": 0
+                                    "baselineValue": "primary"
                                 }
                             }
                         },
@@ -1162,7 +1162,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Node memory working set utilization based on latest working set divided by latest allocatable memory for the selected time range. Values near 100% can indicate memory pressure.",
+                    "description": "Average node memory working set utilization for the selected time range. \"Last value vs Avg\" compares the latest bucket to that average. Values near 100% can indicate memory pressure.",
                     "hide_title": true,
                     "title": ""
                 },
@@ -1318,7 +1318,16 @@
                                         "layerId": "ad2c3067-a6aa-4483-a933-8d369bdcd22c",
                                         "layerType": "data",
                                         "seriesType": "line",
-                                        "xAccessor": "@timestamp"
+                                        "xAccessor": "@timestamp",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "alloc_mem",
+                                                "color": "#E7664C",
+                                                "lineStyle": "solid",
+                                                "lineWidth": 2
+                                            }
+                                        ]
                                     }
                                 ],
                                 "legend": {
@@ -1485,7 +1494,16 @@
                                         "layerId": "6e426eb4-5606-4038-92ce-2eb92d0ffe87",
                                         "layerType": "data",
                                         "seriesType": "line",
-                                        "xAccessor": "@timestamp"
+                                        "xAccessor": "@timestamp",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "alloc_cpu",
+                                                "color": "#E7664C",
+                                                "lineStyle": "solid",
+                                                "lineWidth": 2
+                                            }
+                                        ]
                                     }
                                 ],
                                 "legend": {
@@ -1660,7 +1678,16 @@
                                         "layerId": "89fa5610-b1e2-4b35-ad8c-f030df8ac144",
                                         "layerType": "data",
                                         "seriesType": "line",
-                                        "xAccessor": "@timestamp"
+                                        "xAccessor": "@timestamp",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "disk_cap",
+                                                "color": "#E7664C",
+                                                "lineStyle": "solid",
+                                                "lineWidth": 2
+                                            }
+                                        ]
                                     }
                                 ],
                                 "legend": {
@@ -2886,7 +2913,7 @@
                                                     "customLabel": true,
                                                     "fieldName": "cpu_usage",
                                                     "inMetricDimension": true,
-                                                    "label": "CPU utilization",
+                                                    "label": "Avg CPU utilization",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -2905,7 +2932,7 @@
                                                     "customLabel": true,
                                                     "fieldName": "mem_ws",
                                                     "inMetricDimension": true,
-                                                    "label": "Memory working set",
+                                                    "label": "Avg memory working set",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
