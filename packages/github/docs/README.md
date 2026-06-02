@@ -131,6 +131,60 @@ For Filebeat input documentation, refer to the following pages:
 | github.repository_public | Whether the GitHub repository is publicly visible. | boolean |
 | github.repository_selection | Whether all repositories have been selected or there's a selection involved. | keyword |
 | github.request_category |  | keyword |
+| github.ruleset_bypass_actors.actor_id |  | long |
+| github.ruleset_bypass_actors.actor_type |  | keyword |
+| github.ruleset_bypass_actors.bypass_mode |  | keyword |
+| github.ruleset_bypass_actors.id |  | long |
+| github.ruleset_bypass_actors_added.actor_id |  | long |
+| github.ruleset_bypass_actors_added.actor_type |  | keyword |
+| github.ruleset_bypass_actors_added.bypass_mode |  | keyword |
+| github.ruleset_bypass_actors_added.id |  | long |
+| github.ruleset_bypass_actors_deleted.actor_id |  | long |
+| github.ruleset_bypass_actors_deleted.actor_type |  | keyword |
+| github.ruleset_bypass_actors_deleted.bypass_mode |  | keyword |
+| github.ruleset_bypass_actors_deleted.id |  | long |
+| github.ruleset_bypass_actors_updated.actor_id |  | long |
+| github.ruleset_bypass_actors_updated.actor_type |  | keyword |
+| github.ruleset_bypass_actors_updated.bypass_mode |  | keyword |
+| github.ruleset_bypass_actors_updated.id |  | long |
+| github.ruleset_conditions.id |  | long |
+| github.ruleset_conditions.old_parameters.exclude |  | keyword |
+| github.ruleset_conditions.old_parameters.include |  | keyword |
+| github.ruleset_conditions.old_parameters.repository_ids |  | keyword |
+| github.ruleset_conditions.parameters.exclude |  | keyword |
+| github.ruleset_conditions.parameters.include |  | keyword |
+| github.ruleset_conditions.parameters.repository_ids |  | keyword |
+| github.ruleset_conditions.target |  | keyword |
+| github.ruleset_conditions_added.id |  | long |
+| github.ruleset_conditions_added.old_parameters.exclude |  | keyword |
+| github.ruleset_conditions_added.old_parameters.include |  | keyword |
+| github.ruleset_conditions_added.old_parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_added.parameters.exclude |  | keyword |
+| github.ruleset_conditions_added.parameters.include |  | keyword |
+| github.ruleset_conditions_added.parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_added.target |  | keyword |
+| github.ruleset_conditions_deleted.id |  | long |
+| github.ruleset_conditions_deleted.old_parameters.exclude |  | keyword |
+| github.ruleset_conditions_deleted.old_parameters.include |  | keyword |
+| github.ruleset_conditions_deleted.old_parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_deleted.parameters.exclude |  | keyword |
+| github.ruleset_conditions_deleted.parameters.include |  | keyword |
+| github.ruleset_conditions_deleted.parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_deleted.target |  | keyword |
+| github.ruleset_conditions_updated.id |  | long |
+| github.ruleset_conditions_updated.old_parameters.exclude |  | keyword |
+| github.ruleset_conditions_updated.old_parameters.include |  | keyword |
+| github.ruleset_conditions_updated.old_parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_updated.parameters.exclude |  | keyword |
+| github.ruleset_conditions_updated.parameters.include |  | keyword |
+| github.ruleset_conditions_updated.parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_updated.target |  | keyword |
+| github.ruleset_enforcement | Enforcement state of the ruleset (active, disabled, evaluate). | keyword |
+| github.ruleset_id | Unique identifier of the ruleset. | keyword |
+| github.ruleset_name | Name of the ruleset. | keyword |
+| github.ruleset_old_enforcement | Previous enforcement state of the ruleset on update (active, disabled, evaluate). | keyword |
+| github.ruleset_old_name | Previous name of the ruleset, emitted on rename. | keyword |
+| github.ruleset_source_type | Source type of the ruleset (Organization, Repository). | keyword |
 | github.secret_type |  | keyword |
 | github.secret_type_display_name |  | keyword |
 | github.secrets_updated |  | keyword |
