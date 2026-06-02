@@ -108,7 +108,7 @@ An example event for `log` looks as following:
 | auditd.log.a3 | The fourth argument to the system call. | keyword |
 | auditd.log.addr |  | ip |
 | auditd.log.apparmor |  | keyword |
-| auditd.log.audit_backlog_limit |  | long |
+| auditd.log.audit_backlog_limit |  | keyword |
 | auditd.log.audit_failure |  | keyword |
 | auditd.log.avc.action |  | keyword |
 | auditd.log.avc.request |  | keyword |
