@@ -802,6 +802,8 @@ is_pr_affected() {
         'README\.md'
         '\.agents/skills/'
         'dev/scripts/'
+        'dev/backports/'
+        '\.backports\.yml'
         '\.buildkite/scripts/run_dev_scripts_tests\.sh'
     )
     local non_package_regex
