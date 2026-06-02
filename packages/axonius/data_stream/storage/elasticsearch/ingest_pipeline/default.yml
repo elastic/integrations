@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 9.2.0
+      value: 9.3.0
   - terminate:
       description: error message set and no data to process.
       tag: terminate_data_collection_error
@@ -38,6 +38,7 @@ processors:
       field: event.original
       tag: json_event_original
       target_field: axonius.storage
+  # Fingerprint the full raw payload because the Axonius API does not expose a stable entity ID for storage assets; the transform keys on this value for deduplication.
   - fingerprint:
       fields:
         - event.original
@@ -68,13 +69,17 @@ processors:
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            field: axonius.storage.adapter_list_length
+            ignore_missing: true
+            tag: remove_adapter_list_length_to_long
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       tag: script_rename_event_data_fields
       lang: painless
-      description: Renames all event.data.* fields to root level (removes event.data prefix). Prefixes conflicting keys with 'data_' to avoid overwriting root-level fields.
+      description: Renames all axonius.storage.event.data.* fields to root level (removes event.data prefix). Prefixes conflicting keys with 'data_' to avoid overwriting custom data-stream-root-level fields.
       source: |-
         if (ctx.axonius?.storage?.event?.data instanceof Map) {
           Map eventData = ctx.axonius.storage.event.data;
@@ -97,6 +102,10 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.storage?.event?.accurate_for_datetime != null && ctx.axonius.storage.event.accurate_for_datetime != ''
       on_failure:
+        - remove:
+            field: axonius.storage.event.accurate_for_datetime
+            ignore_missing: true
+            tag: remove_event_accurate_for_datetime
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -115,6 +124,10 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.storage?.accurate_for_datetime != null && ctx.axonius.storage.accurate_for_datetime != ''
       on_failure:
+        - remove:
+            field: axonius.storage.accurate_for_datetime
+            ignore_missing: true
+            tag: remove_event_data_accurate_for_datetime
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -128,6 +141,10 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.storage?.create_time != null && ctx.axonius.storage.create_time != ''
       on_failure:
+        - remove:
+            field: axonius.storage.create_time
+            ignore_missing: true
+            tag: remove_event_data_create_time
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -135,7 +152,7 @@ processors:
       field: event.created
       tag: set_event_created_from_storage_event_data_create_time
       copy_from: axonius.storage.create_time
-      if: ctx.axonius?.storage?.asset_type != null && ctx.axonius.storage.asset_type == 'disks'
+      if: ctx.axonius?.storage?.asset_type == 'disks'
       ignore_empty_value: true
   - date:
       field: axonius.storage.creation_date
@@ -147,6 +164,10 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.storage?.creation_date != null && ctx.axonius.storage.creation_date != ''
       on_failure:
+        - remove:
+            field: axonius.storage.creation_date
+            ignore_missing: true
+            tag: remove_event_data_creation_date
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -154,7 +175,7 @@ processors:
       field: event.created
       tag: set_event_created_from_storage_event_data_creation_date
       copy_from: axonius.storage.creation_date
-      if: ctx.axonius?.storage?.asset_type != null && ctx.axonius.storage.asset_type == 'object_storages'
+      if: ctx.axonius?.storage?.asset_type == 'object_storages'
       ignore_empty_value: true
   - date:
       field: axonius.storage.fetch_time
@@ -166,6 +187,10 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.storage?.fetch_time != null && ctx.axonius.storage.fetch_time != ''
       on_failure:
+        - remove:
+            field: axonius.storage.fetch_time
+            ignore_missing: true
+            tag: remove_event_data_fetch_time
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -179,6 +204,10 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.storage?.first_fetch_time != null && ctx.axonius.storage.first_fetch_time != ''
       on_failure:
+        - remove:
+            field: axonius.storage.first_fetch_time
+            ignore_missing: true
+            tag: remove_event_data_first_fetch_time
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -188,6 +217,10 @@ processors:
       type: boolean
       ignore_missing: true
       on_failure:
+        - remove:
+            field: axonius.storage.from_last_fetch
+            ignore_missing: true
+            tag: remove_event_data_from_last_fetch_to_boolean
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -197,15 +230,40 @@ processors:
       type: boolean
       ignore_missing: true
       on_failure:
+        - remove:
+            field: axonius.storage.is_fetched_from_adapter
+            ignore_missing: true
+            tag: remove_event_data_is_fetched_from_adapter_to_boolean
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.storage.tenant_number
+      tag: foreach_storage_tenant_number
+      if: ctx.axonius?.storage?.tenant_number instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_storage_tenant_number_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.storage.not_fetched_count
       tag: convert_event_data_not_fetched_count_to_long
       type: long
       ignore_missing: true
       on_failure:
+        - remove:
+            field: axonius.storage.not_fetched_count
+            ignore_missing: true
+            tag: remove_event_data_not_fetched_count_to_long
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -215,6 +273,10 @@ processors:
       type: double
       ignore_missing: true
       on_failure:
+        - remove:
+            field: axonius.storage.size
+            ignore_missing: true
+            tag: remove_event_data_size_to_double
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

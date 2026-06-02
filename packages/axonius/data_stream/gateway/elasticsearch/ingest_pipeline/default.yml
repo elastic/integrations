@@ -4,7 +4,7 @@ processors:
   - set:
       tag: set_ecs_version_to_9_2_0_3273339c
       field: ecs.version
-      value: 9.2.0
+      value: 9.3.0
   - terminate:
       description: error message set and no data to process.
       tag: terminate_data_collection_error_4c75f12b
@@ -167,12 +167,9 @@ processors:
       value: '{{{axonius.gateway.dns_server}}}'
       allow_duplicates: false
 
-  # Remove duplicate custom fields if preserve_duplicate_custom_fields are not enabled
   - remove:
       tag: remove_custom_duplicate_fields_7e246e5f
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
       field:
-        - axonius.gateway.dns_server
         - axonius.gateway.email_recipients
         - axonius.gateway.id
       ignore_missing: true

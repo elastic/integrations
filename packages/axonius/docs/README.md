@@ -261,7 +261,6 @@ The `adapter` data stream provides adapter logs from axonius.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
-| log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
 
@@ -269,11 +268,11 @@ An example event for `adapter` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-03-08T10:29:49.689Z",
+    "@timestamp": "2026-06-02T09:34:47.892Z",
     "agent": {
-        "ephemeral_id": "9a81630d-c062-42af-8986-2201678e7e3e",
-        "id": "7f353f45-1956-4d42-a68f-1d562b665594",
-        "name": "elastic-agent-56763",
+        "ephemeral_id": "a3dfc8ca-2d2d-44f2-8c89-3872b60d2a46",
+        "id": "d137c075-75fa-4a45-b7c3-01be21d4f23d",
+        "name": "elastic-agent-22634",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -302,7 +301,6 @@ An example event for `adapter` looks as following:
                 "total_count": 1,
                 "warning_count": 0
             },
-            "id": "a_cloud_guru_adapter",
             "is_master": true,
             "node_id": "c69070d9e5e145e4861f2843d1951ab2",
             "node_name": "Primary",
@@ -313,14 +311,14 @@ An example event for `adapter` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.adapter",
-        "namespace": "97527",
+        "namespace": "95822",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.2.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "7f353f45-1956-4d42-a68f-1d562b665594",
+        "id": "d137c075-75fa-4a45-b7c3-01be21d4f23d",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -328,7 +326,7 @@ An example event for `adapter` looks as following:
         "agent_id_status": "verified",
         "dataset": "axonius.adapter",
         "id": "a_cloud_guru_adapter",
-        "ingested": "2026-03-08T10:29:52Z",
+        "ingested": "2026-06-02T09:34:50Z",
         "kind": "event",
         "original": "{\"adapter_configs\":{},\"connections\":[{\"active\":true,\"adapter_name\":\"a_cloud_guru_adapter\",\"connection_adapter_config\":{},\"connection_advanced_config\":{},\"connection_config\":{},\"connection_discovery\":{},\"connection_id\":\"conn_12345\",\"curl\":null,\"did_notify_error\":false,\"error\":null,\"failed_connections_limit_exceeded\":false,\"id\":\"conn_12345\",\"last_fetch_time\":\"Sat, 08 Mar 2025 18:53:09 GMT\",\"last_successful_fetch\":\"Sat, 08 Mar 2025 18:53:09 GMT\",\"node_id\":\"c69070d9e5e145e4861f2843d1951ab2\",\"note\":\"\",\"status\":\"success\",\"tunnel_id\":\"khnsjhgvcskdbvnksdjahubnkvdhb\",\"uuid\":\"c69070fgredffedfgrfedcfd9e5e145e4861f2843d1951ab2\"}],\"connections_count\":{\"error_count\":0,\"inactive_count\":0,\"success_count\":1,\"total_count\":1,\"warning_count\":0},\"id\":\"a_cloud_guru_adapter\",\"is_master\":true,\"node_id\":\"c69070d9e5e145e4861f2843d1951ab2\",\"node_name\":\"Primary\",\"plugin_name\":\"a_cloud_guru_adapter\",\"status\":\"success\",\"unique_plugin_name\":\"a_cloud_guru_adapter_0\"}",
         "outcome": "success"
@@ -338,7 +336,6 @@ An example event for `adapter` looks as following:
     },
     "tags": [
         "preserve_original_event",
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "axonius-adapter"
     ]
@@ -378,7 +375,6 @@ The `user` data stream provides user events from axonius.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Indicates whether a user is in the raw source data stream, or in the latest destination index. | constant_keyword |
-| log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
 
@@ -386,11 +382,11 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-03-08T10:36:22.699Z",
+    "@timestamp": "2026-06-02T09:47:12.793Z",
     "agent": {
-        "ephemeral_id": "c4c5da8b-3d8f-49c8-9394-d28c443b2121",
-        "id": "bb06870c-9cd5-4b78-996a-85700cff78c2",
-        "name": "elastic-agent-13827",
+        "ephemeral_id": "77df7ace-099e-4f95-b854-cd03c356beb2",
+        "id": "7ce2fe7f-fdd5-45e4-9328-76bf679c2eb7",
+        "name": "elastic-agent-45097",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -403,7 +399,6 @@ An example event for `user` looks as following:
             "data_scope_id": "fgreg63622d93d274d9489db6a1cf",
             "data_scope_name": "test data scope",
             "department": "test",
-            "email": "alias.doe@example.com",
             "first_name": "alias",
             "last_login": "2025-03-09T18:53:09.000Z",
             "last_name": "doe",
@@ -411,28 +406,26 @@ An example event for `user` looks as following:
             "role_id": "63622vfed93d274d9489dbbgresdcv6a1cf",
             "role_name": "test role",
             "source": "test source",
-            "title": "Security Analyst",
-            "user_name": "alias.doe",
-            "uuid": "63622d93d274ihvbngvbhd9489db6a1cf"
+            "title": "Security Analyst"
         }
     },
     "data_stream": {
         "dataset": "axonius.user",
-        "namespace": "81026",
+        "namespace": "72546",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.2.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "bb06870c-9cd5-4b78-996a-85700cff78c2",
+        "id": "7ce2fe7f-fdd5-45e4-9328-76bf679c2eb7",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "axonius.user",
-        "ingested": "2026-03-08T10:36:25Z",
+        "ingested": "2026-06-02T09:47:15Z",
         "kind": "event",
         "original": "{\"allowed_scopes_impersonation\":[\"63622d93d27cvdsfa4d9489db6a1cf\",\"63622d93d2dvfwe74d9489db6a1cc\"],\"data_scope_id\":\"fgreg63622d93d274d9489db6a1cf\",\"data_scope_name\":\"test data scope\",\"department\":\"test\",\"email\":\"alias.doe@example.com\",\"first_name\":\"alias\",\"last_login\":\"Sun, 09 Mar 2025 18:53:09 GMT\",\"last_name\":\"doe\",\"last_updated\":\"Sun, 11 Mar 2025 18:53:09 GMT\",\"role_id\":\"63622vfed93d274d9489dbbgresdcv6a1cf\",\"role_name\":\"test role\",\"source\":\"test source\",\"title\":\"Security Analyst\",\"user_name\":\"alias.doe\",\"uuid\":\"63622d93d274ihvbngvbhd9489db6a1cf\"}"
     },
@@ -449,7 +442,6 @@ An example event for `user` looks as following:
     },
     "tags": [
         "preserve_original_event",
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "axonius-user"
     ],
@@ -497,7 +489,6 @@ The `gateway` data stream provides gateway events from axonius.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Indicates whether a gateway is in the raw source data stream, or in the latest destination index. | constant_keyword |
-| log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
 
@@ -505,11 +496,11 @@ An example event for `gateway` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-03-08T10:34:24.064Z",
+    "@timestamp": "2026-06-02T09:39:41.324Z",
     "agent": {
-        "ephemeral_id": "6232d0e4-1c81-4525-8c9e-fc1dec972f15",
-        "id": "59805247-73ac-40fd-8735-4bd1a66b01da",
-        "name": "elastic-agent-33691",
+        "ephemeral_id": "c35dc506-67e1-4aed-ba32-fcd5ae73ad29",
+        "id": "26bc6a2d-a86e-41e1-b35a-804a0a977a8b",
+        "name": "elastic-agent-42290",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -521,12 +512,8 @@ An example event for `gateway` looks as following:
             ],
             "default": false,
             "dns_server": "1.128.0.0",
-            "email_recipients": [
-                "john.doe@example.com"
-            ],
             "email_when_connected": false,
             "email_when_disconnected": false,
-            "id": "tunnel3",
             "name": "Gateway_1",
             "status": "pending",
             "tunnel_proxy_settings": {
@@ -539,14 +526,14 @@ An example event for `gateway` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.gateway",
-        "namespace": "80572",
+        "namespace": "61494",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.2.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "59805247-73ac-40fd-8735-4bd1a66b01da",
+        "id": "26bc6a2d-a86e-41e1-b35a-804a0a977a8b",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -561,7 +548,7 @@ An example event for `gateway` looks as following:
         "agent_id_status": "verified",
         "dataset": "axonius.gateway",
         "id": "tunnel3",
-        "ingested": "2026-03-08T10:34:27Z",
+        "ingested": "2026-06-02T09:39:44Z",
         "kind": "event",
         "original": "{\"backup_ids\":[\"backup1\",\"backup2\"],\"default\":false,\"dns_server\":\"1.128.0.0\",\"email_recipients\":[\"john.doe@example.com\"],\"email_when_connected\":false,\"email_when_disconnected\":false,\"id\":\"tunnel3\",\"name\":\"Gateway_1\",\"status\":\"pending\",\"tunnel_proxy_settings\":{\"enabled\":false,\"tunnel_proxy_addr\":\"addr\",\"tunnel_proxy_port\":8080,\"tunnel_proxy_user\":\"tunnel-proxy-01\"}}"
     },
@@ -578,7 +565,6 @@ An example event for `gateway` looks as following:
     },
     "tags": [
         "preserve_original_event",
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "axonius-gateway"
     ]
@@ -596,130 +582,59 @@ The `exposure` data stream provides exposure logs from axonius.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| axonius.exposure.accurate_for_datetime |  | date |
+| axonius.exposure.action |  | keyword |
 | axonius.exposure.adapter_list_length |  | long |
 | axonius.exposure.adapters |  | keyword |
+| axonius.exposure.added |  | date |
 | axonius.exposure.asset_type |  | keyword |
+| axonius.exposure.associated_asset_type |  | keyword |
+| axonius.exposure.associated_asset_type_name |  | keyword |
+| axonius.exposure.axonius_remediation_date |  | date |
+| axonius.exposure.axonius_risk_score |  | double |
+| axonius.exposure.axonius_status |  | keyword |
+| axonius.exposure.axonius_status_last_update |  | date |
+| axonius.exposure.cisa.action |  | keyword |
+| axonius.exposure.cisa.added |  | date |
+| axonius.exposure.cisa.cve_id |  | keyword |
+| axonius.exposure.cisa.desc |  | keyword |
+| axonius.exposure.cisa.due_date |  | date |
+| axonius.exposure.cisa.notes |  | keyword |
+| axonius.exposure.cisa.product |  | keyword |
+| axonius.exposure.cisa.used_in_ransomware |  | boolean |
+| axonius.exposure.cisa.vendor |  | keyword |
+| axonius.exposure.cisa.vulnerability_name |  | keyword |
+| axonius.exposure.cisa_date_added |  | date |
+| axonius.exposure.creation_date |  | date |
+| axonius.exposure.custom_business_unit |  | keyword |
+| axonius.exposure.cve_description |  | keyword |
+| axonius.exposure.cve_from_sw_analysis |  | keyword |
+| axonius.exposure.cve_id |  | keyword |
+| axonius.exposure.cve_list |  | keyword |
+| axonius.exposure.cve_references.tags |  | keyword |
+| axonius.exposure.cve_references.url |  | keyword |
+| axonius.exposure.cve_severity |  | keyword |
+| axonius.exposure.cve_synopsis |  | keyword |
+| axonius.exposure.cvss |  | float |
+| axonius.exposure.cvss2_score |  | float |
+| axonius.exposure.cvss2_score_num |  | float |
+| axonius.exposure.cvss3_score |  | float |
+| axonius.exposure.cvss3_score_num |  | float |
+| axonius.exposure.cvss_str |  | keyword |
+| axonius.exposure.cvss_vector |  | keyword |
+| axonius.exposure.cvss_version |  | keyword |
+| axonius.exposure.cwe_id |  | keyword |
+| axonius.exposure.desc |  | keyword |
+| axonius.exposure.device_internal_axon_id |  | keyword |
+| axonius.exposure.due_date |  | date |
+| axonius.exposure.epss.creation_date |  | date |
+| axonius.exposure.epss.cve_id |  | keyword |
+| axonius.exposure.epss.percentile |  | double |
+| axonius.exposure.epss.score |  | double |
 | axonius.exposure.event.accurate_for_datetime |  | date |
 | axonius.exposure.event.associated_adapter_plugin_name |  | keyword |
 | axonius.exposure.event.association_type |  | keyword |
 | axonius.exposure.event.client_used |  | keyword |
-| axonius.exposure.event.data.accurate_for_datetime |  | date |
-| axonius.exposure.event.data.action |  | keyword |
-| axonius.exposure.event.data.added |  | date |
-| axonius.exposure.event.data.associated_asset_type |  | keyword |
-| axonius.exposure.event.data.associated_asset_type_name |  | keyword |
-| axonius.exposure.event.data.axonius_remediation_date |  | date |
-| axonius.exposure.event.data.axonius_risk_score |  | double |
-| axonius.exposure.event.data.axonius_status |  | keyword |
-| axonius.exposure.event.data.axonius_status_last_update |  | date |
-| axonius.exposure.event.data.cisa.action |  | keyword |
-| axonius.exposure.event.data.cisa.added |  | date |
-| axonius.exposure.event.data.cisa.cve_id |  | keyword |
-| axonius.exposure.event.data.cisa.desc |  | keyword |
-| axonius.exposure.event.data.cisa.due_date |  | date |
-| axonius.exposure.event.data.cisa.notes |  | keyword |
-| axonius.exposure.event.data.cisa.product |  | keyword |
-| axonius.exposure.event.data.cisa.used_in_ransomware |  | boolean |
-| axonius.exposure.event.data.cisa.vendor |  | keyword |
-| axonius.exposure.event.data.cisa.vulnerability_name |  | keyword |
-| axonius.exposure.event.data.cisa_date_added |  | date |
-| axonius.exposure.event.data.creation_date |  | date |
-| axonius.exposure.event.data.custom_business_unit |  | keyword |
-| axonius.exposure.event.data.cve_description |  | keyword |
-| axonius.exposure.event.data.cve_from_sw_analysis |  | keyword |
-| axonius.exposure.event.data.cve_id |  | keyword |
-| axonius.exposure.event.data.cve_list |  | keyword |
-| axonius.exposure.event.data.cve_references.tags |  | keyword |
-| axonius.exposure.event.data.cve_references.url |  | keyword |
-| axonius.exposure.event.data.cve_severity |  | keyword |
-| axonius.exposure.event.data.cve_synopsis |  | keyword |
-| axonius.exposure.event.data.cvss |  | float |
-| axonius.exposure.event.data.cvss2_score |  | float |
-| axonius.exposure.event.data.cvss2_score_num |  | float |
-| axonius.exposure.event.data.cvss3_score |  | float |
-| axonius.exposure.event.data.cvss3_score_num |  | float |
-| axonius.exposure.event.data.cvss_str |  | keyword |
-| axonius.exposure.event.data.cvss_vector |  | keyword |
-| axonius.exposure.event.data.cvss_version |  | keyword |
-| axonius.exposure.event.data.cwe_id |  | keyword |
-| axonius.exposure.event.data.desc |  | keyword |
-| axonius.exposure.event.data.device_internal_axon_id |  | keyword |
-| axonius.exposure.event.data.due_date |  | date |
-| axonius.exposure.event.data.epss.creation_date |  | date |
-| axonius.exposure.event.data.epss.cve_id |  | keyword |
-| axonius.exposure.event.data.epss.percentile |  | double |
-| axonius.exposure.event.data.epss.score |  | double |
-| axonius.exposure.event.data.exploitability_score |  | double |
-| axonius.exposure.event.data.fields_to_unset |  | keyword |
-| axonius.exposure.event.data.first_fetch_time |  | date |
-| axonius.exposure.event.data.first_seen |  | date |
-| axonius.exposure.event.data.hash_id |  | keyword |
-| axonius.exposure.event.data.id |  | keyword |
-| axonius.exposure.event.data.impact_score |  | float |
-| axonius.exposure.event.data.is_cve |  | boolean |
-| axonius.exposure.event.data.last_fetch |  | date |
-| axonius.exposure.event.data.last_fetch_time |  | date |
-| axonius.exposure.event.data.last_modified_date |  | date |
-| axonius.exposure.event.data.mitigated |  | boolean |
-| axonius.exposure.event.data.msrc.creation_date |  | date |
-| axonius.exposure.event.data.msrc.cve_id |  | keyword |
-| axonius.exposure.event.data.msrc.title |  | keyword |
-| axonius.exposure.event.data.msrc_remediations.affected_files |  | keyword |
-| axonius.exposure.event.data.msrc_remediations.description |  | keyword |
-| axonius.exposure.event.data.msrc_remediations.fixed_build |  | keyword |
-| axonius.exposure.event.data.msrc_remediations.supercedence |  | keyword |
-| axonius.exposure.event.data.msrc_remediations.url |  | keyword |
-| axonius.exposure.event.data.name |  | keyword |
-| axonius.exposure.event.data.notes |  | keyword |
-| axonius.exposure.event.data.nvd_publish_age |  | long |
-| axonius.exposure.event.data.nvd_status |  | keyword |
-| axonius.exposure.event.data.percentile |  | double |
-| axonius.exposure.event.data.plugin |  | keyword |
-| axonius.exposure.event.data.potential_applications_names.software_name |  | keyword |
-| axonius.exposure.event.data.potential_applications_names.vendor_name |  | keyword |
-| axonius.exposure.event.data.product |  | keyword |
-| axonius.exposure.event.data.publish_date |  | date |
-| axonius.exposure.event.data.qualys_agent_vuln.first_found |  | date |
-| axonius.exposure.event.data.qualys_agent_vuln.last_found |  | date |
-| axonius.exposure.event.data.qualys_agent_vuln.qid |  | keyword |
-| axonius.exposure.event.data.qualys_agent_vuln.qualys_cve_id |  | keyword |
-| axonius.exposure.event.data.qualys_agent_vuln.qualys_solution |  | keyword |
-| axonius.exposure.event.data.qualys_agent_vuln.severity |  | long |
-| axonius.exposure.event.data.qualys_agent_vuln.vuln_id |  | keyword |
-| axonius.exposure.event.data.score |  | double |
-| axonius.exposure.event.data.short_description |  | keyword |
-| axonius.exposure.event.data.software_name |  | keyword |
-| axonius.exposure.event.data.software_type |  | keyword |
-| axonius.exposure.event.data.software_vendor |  | keyword |
-| axonius.exposure.event.data.software_version |  | keyword |
-| axonius.exposure.event.data.solution_hash_id |  | keyword |
-| axonius.exposure.event.data.status |  | keyword |
-| axonius.exposure.event.data.suggested_remediations.description |  | keyword |
-| axonius.exposure.event.data.tags_from_associated_asset |  | keyword |
-| axonius.exposure.event.data.tenable_vuln.cve |  | keyword |
-| axonius.exposure.event.data.tenable_vuln.has_been_mitigated |  | boolean |
-| axonius.exposure.event.data.tenable_vuln.mitigated |  | boolean |
-| axonius.exposure.event.data.tenable_vuln.plugin |  | keyword |
-| axonius.exposure.event.data.tenable_vuln.solution |  | keyword |
-| axonius.exposure.event.data.title |  | keyword |
-| axonius.exposure.event.data.used_in_ransomware |  | boolean |
-| axonius.exposure.event.data.vector.access_complexity |  | keyword |
-| axonius.exposure.event.data.vector.access_vector |  | keyword |
-| axonius.exposure.event.data.vector.attack_complexity |  | keyword |
-| axonius.exposure.event.data.vector.attack_vector |  | keyword |
-| axonius.exposure.event.data.vector.authentication |  | keyword |
-| axonius.exposure.event.data.vector.availability |  | keyword |
-| axonius.exposure.event.data.vector.confidentiality |  | keyword |
-| axonius.exposure.event.data.vector.integrity |  | keyword |
-| axonius.exposure.event.data.vector.privileges_required |  | keyword |
-| axonius.exposure.event.data.vector.scope |  | keyword |
-| axonius.exposure.event.data.vector.user_interaction |  | keyword |
-| axonius.exposure.event.data.vector.version |  | keyword |
-| axonius.exposure.event.data.vendor |  | keyword |
-| axonius.exposure.event.data.vendor_project |  | keyword |
-| axonius.exposure.event.data.version_raw |  | keyword |
-| axonius.exposure.event.data.vulnerability_name |  | keyword |
-| axonius.exposure.event.data.vulnerability_status |  | keyword |
 | axonius.exposure.event.initial_plugin_unique_name |  | keyword |
 | axonius.exposure.event.name |  | keyword |
 | axonius.exposure.event.plugin_name |  | keyword |
@@ -727,8 +642,79 @@ The `exposure` data stream provides exposure logs from axonius.
 | axonius.exposure.event.plugin_unique_name |  | keyword |
 | axonius.exposure.event.quick_id |  | keyword |
 | axonius.exposure.event.type |  | keyword |
+| axonius.exposure.exploitability_score |  | double |
+| axonius.exposure.fields_to_unset |  | keyword |
+| axonius.exposure.first_fetch_time |  | date |
+| axonius.exposure.first_seen |  | date |
+| axonius.exposure.hash_id |  | keyword |
+| axonius.exposure.id |  | keyword |
+| axonius.exposure.impact_score |  | float |
 | axonius.exposure.internal_axon_id |  | keyword |
+| axonius.exposure.is_cve |  | boolean |
+| axonius.exposure.last_fetch |  | date |
+| axonius.exposure.last_fetch_time |  | date |
+| axonius.exposure.last_modified_date |  | date |
+| axonius.exposure.mitigated |  | boolean |
+| axonius.exposure.msrc.creation_date |  | date |
+| axonius.exposure.msrc.cve_id |  | keyword |
+| axonius.exposure.msrc.title |  | keyword |
+| axonius.exposure.msrc_remediations.affected_files |  | keyword |
+| axonius.exposure.msrc_remediations.description |  | text |
+| axonius.exposure.msrc_remediations.fixed_build |  | keyword |
+| axonius.exposure.msrc_remediations.supercedence |  | keyword |
+| axonius.exposure.msrc_remediations.url |  | keyword |
+| axonius.exposure.name |  | keyword |
+| axonius.exposure.notes |  | keyword |
+| axonius.exposure.nvd_publish_age |  | long |
+| axonius.exposure.nvd_status |  | keyword |
+| axonius.exposure.percentile |  | double |
+| axonius.exposure.plugin |  | keyword |
+| axonius.exposure.potential_applications_names.software_name |  | keyword |
+| axonius.exposure.potential_applications_names.vendor_name |  | keyword |
+| axonius.exposure.product |  | keyword |
+| axonius.exposure.publish_date |  | date |
+| axonius.exposure.qualys_agent_vuln.first_found |  | date |
+| axonius.exposure.qualys_agent_vuln.last_found |  | date |
+| axonius.exposure.qualys_agent_vuln.qid |  | keyword |
+| axonius.exposure.qualys_agent_vuln.qualys_cve_id |  | keyword |
+| axonius.exposure.qualys_agent_vuln.qualys_solution |  | keyword |
+| axonius.exposure.qualys_agent_vuln.severity |  | long |
+| axonius.exposure.qualys_agent_vuln.vuln_id |  | keyword |
+| axonius.exposure.score |  | double |
+| axonius.exposure.short_description |  | keyword |
+| axonius.exposure.software_name |  | keyword |
+| axonius.exposure.software_type |  | keyword |
+| axonius.exposure.software_vendor |  | keyword |
+| axonius.exposure.software_version |  | keyword |
+| axonius.exposure.solution_hash_id |  | keyword |
+| axonius.exposure.status |  | keyword |
+| axonius.exposure.suggested_remediations.description |  | text |
+| axonius.exposure.tags_from_associated_asset |  | keyword |
+| axonius.exposure.tenable_vuln.cve |  | keyword |
+| axonius.exposure.tenable_vuln.has_been_mitigated |  | boolean |
+| axonius.exposure.tenable_vuln.mitigated |  | boolean |
+| axonius.exposure.tenable_vuln.plugin |  | keyword |
+| axonius.exposure.tenable_vuln.solution |  | keyword |
+| axonius.exposure.title |  | keyword |
 | axonius.exposure.transform_unique_id |  | keyword |
+| axonius.exposure.used_in_ransomware |  | boolean |
+| axonius.exposure.vector.access_complexity |  | keyword |
+| axonius.exposure.vector.access_vector |  | keyword |
+| axonius.exposure.vector.attack_complexity |  | keyword |
+| axonius.exposure.vector.attack_vector |  | keyword |
+| axonius.exposure.vector.authentication |  | keyword |
+| axonius.exposure.vector.availability |  | keyword |
+| axonius.exposure.vector.confidentiality |  | keyword |
+| axonius.exposure.vector.integrity |  | keyword |
+| axonius.exposure.vector.privileges_required |  | keyword |
+| axonius.exposure.vector.scope |  | keyword |
+| axonius.exposure.vector.user_interaction |  | keyword |
+| axonius.exposure.vector.version |  | keyword |
+| axonius.exposure.vendor |  | keyword |
+| axonius.exposure.vendor_project |  | keyword |
+| axonius.exposure.version_raw |  | keyword |
+| axonius.exposure.vulnerability_name |  | keyword |
+| axonius.exposure.vulnerability_status |  | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
@@ -736,7 +722,6 @@ The `exposure` data stream provides exposure logs from axonius.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Indicates whether a compute event is in the raw source data stream, or in the latest destination index. | constant_keyword |
-| log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
 
@@ -746,45 +731,23 @@ An example event for `exposure` looks as following:
 {
     "@timestamp": "2025-12-03T00:02:28.000Z",
     "agent": {
-        "ephemeral_id": "cd5890a3-cb62-40b1-aa86-d3685872b4dc",
-        "id": "d6d8fa5b-5338-4451-8462-24abaa401d06",
-        "name": "elastic-agent-24426",
+        "ephemeral_id": "93795cdd-598c-499d-84bd-8bb4d2b2f212",
+        "id": "2e2eb7a0-79f2-40c0-baf2-53f942c588c3",
+        "name": "elastic-agent-74104",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "axonius": {
         "exposure": {
+            "accurate_for_datetime": "Wed, 03 Dec 2025 00:02:28 GMT",
             "adapters": [
                 "aws_adapter",
                 "adapter_01"
             ],
             "asset_type": "vulnerabilities",
+            "cvss3_score": 5,
             "event": {
-                "accurate_for_datetime": "2025-12-03T00:02:28.000Z",
                 "client_used": "67fd09ab731ccb57309230fc",
-                "data": {
-                    "accurate_for_datetime": "2025-12-03T00:02:28.000Z",
-                    "cve_id": "CVE-2024-32021",
-                    "cve_severity": "LOW",
-                    "cvss": 5,
-                    "cvss3_score": 5,
-                    "fields_to_unset": [
-                        "other"
-                    ],
-                    "first_seen": "2025-04-29T12:00:39.000Z",
-                    "id": "CVE-2024-32021",
-                    "is_cve": true,
-                    "last_fetch": "2025-12-03T00:02:17.000Z",
-                    "software_name": [
-                        "Git"
-                    ],
-                    "software_vendor": [
-                        "The Git Project"
-                    ],
-                    "software_version": [
-                        "2.39.2"
-                    ]
-                },
                 "initial_plugin_unique_name": "aws_adapter_0",
                 "plugin_name": "aws_adapter",
                 "plugin_type": "Adapter",
@@ -792,20 +755,36 @@ An example event for `exposure` looks as following:
                 "quick_id": "aws_adapter_0!CVE-2024-32021",
                 "type": "entitydata"
             },
+            "fields_to_unset": [
+                "other"
+            ],
+            "first_seen": "Tue, 29 Apr 2025 12:00:39 GMT",
+            "id": "CVE-2024-32021",
             "internal_axon_id": "e018a2831e3ab36e86dd7a4a0782c892",
+            "is_cve": true,
+            "last_fetch": "Wed, 03 Dec 2025 00:02:17 GMT",
+            "software_name": [
+                "Git"
+            ],
+            "software_vendor": [
+                "The Git Project"
+            ],
+            "software_version": [
+                "2.39.2"
+            ],
             "transform_unique_id": "7oVTQrrn+0WjVHu/4YZCgjIyM60="
         }
     },
     "data_stream": {
         "dataset": "axonius.exposure",
-        "namespace": "98169",
+        "namespace": "58717",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.2.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "d6d8fa5b-5338-4451-8462-24abaa401d06",
+        "id": "2e2eb7a0-79f2-40c0-baf2-53f942c588c3",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -815,7 +794,7 @@ An example event for `exposure` looks as following:
             "vulnerability"
         ],
         "dataset": "axonius.exposure",
-        "ingested": "2026-03-08T10:31:56Z",
+        "ingested": "2026-06-02T09:38:41Z",
         "kind": "event",
         "type": [
             "info"
@@ -825,14 +804,10 @@ An example event for `exposure` looks as following:
         "type": "cel"
     },
     "tags": [
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "axonius-exposure"
     ],
     "vulnerability": {
-        "id": [
-            "CVE-2024-32021"
-        ],
         "score": {
             "base": 5
         },
@@ -881,7 +856,6 @@ The `alert_finding` data stream provides alert findings asset logs from axonius.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Indicates whether an alert and incident are in the raw source data stream, or in the latest destination index. | constant_keyword |
-| log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
 
@@ -891,9 +865,9 @@ An example event for `alert_finding` looks as following:
 {
     "@timestamp": "2025-04-14T13:38:49.000Z",
     "agent": {
-        "ephemeral_id": "ebde8c49-0a66-49b9-860a-6d2997ff932b",
-        "id": "6f1a1813-fc58-4325-b0df-63c91b0d3fb4",
-        "name": "elastic-agent-55783",
+        "ephemeral_id": "e2f22a72-ec78-4548-a156-596208bf105f",
+        "id": "c86c59bf-a727-4eeb-89c2-20562daaf8b4",
+        "name": "elastic-agent-88414",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -922,20 +896,19 @@ An example event for `alert_finding` looks as following:
             "plugin_unique_name": "axonius_findings_adapter",
             "source": "alert_rule",
             "status": "open",
-            "transform_unique_id": "w1+34emZxJa3DZk0q9QeacisnaY=",
-            "trigger_date": "2025-04-14T13:38:49.000Z"
+            "transform_unique_id": "w1+34emZxJa3DZk0q9QeacisnaY="
         }
     },
     "data_stream": {
         "dataset": "axonius.alert_finding",
-        "namespace": "33595",
+        "namespace": "17164",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.2.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "6f1a1813-fc58-4325-b0df-63c91b0d3fb4",
+        "id": "c86c59bf-a727-4eeb-89c2-20562daaf8b4",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -943,14 +916,13 @@ An example event for `alert_finding` looks as following:
         "agent_id_status": "verified",
         "dataset": "axonius.alert_finding",
         "id": "66447fe5e6c4840f32a5b94f",
-        "ingested": "2026-03-08T10:30:57Z",
+        "ingested": "2026-06-02T09:35:51Z",
         "kind": "alert"
     },
     "input": {
         "type": "cel"
     },
     "tags": [
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "axonius-alert_finding"
     ]
@@ -988,7 +960,7 @@ The `incident` data stream provides incident asset logs from axonius.
 | axonius.incident.asset_distribution_name |  | keyword |
 | axonius.incident.asset_distribution_version |  | keyword |
 | axonius.incident.asset_type |  | keyword |
-| axonius.incident.description |  | keyword |
+| axonius.incident.description |  | text |
 | axonius.incident.details |  | keyword |
 | axonius.incident.event.accurate_for_datetime |  | date |
 | axonius.incident.event.adapter_categories |  | keyword |
@@ -1012,7 +984,7 @@ The `incident` data stream provides incident asset logs from axonius.
 | axonius.incident.pretty_id |  | keyword |
 | axonius.incident.recommendation |  | keyword |
 | axonius.incident.source_application |  | keyword |
-| axonius.incident.tenant_number |  | keyword |
+| axonius.incident.tenant_number | The tenant or organization number associated with the incident. | long |
 | axonius.incident.transform_unique_id |  | keyword |
 | axonius.incident.type |  | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
@@ -1022,7 +994,6 @@ The `incident` data stream provides incident asset logs from axonius.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Indicates whether an alert and incident are in the raw source data stream, or in the latest destination index. | constant_keyword |
-| log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
 
@@ -1032,9 +1003,9 @@ An example event for `incident` looks as following:
 {
     "@timestamp": "2025-12-07T12:02:42.000Z",
     "agent": {
-        "ephemeral_id": "e312e6ef-a2ad-4bc3-a684-e31d3be751fe",
-        "id": "0c49058d-c08f-4d6b-9b0f-3ca3db43f47c",
-        "name": "elastic-agent-65706",
+        "ephemeral_id": "71e6cc62-7d0c-4be5-8a2e-61e41d1bf455",
+        "id": "c4a85adc-93c5-4bf5-aba3-80ede094b49e",
+        "name": "elastic-agent-45287",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -1051,14 +1022,10 @@ An example event for `incident` looks as following:
                 "mitre: initial access",
                 "remote_code_execution"
             ],
-            "alert_source": "sshd",
             "alert_state": {
-                "alert_created_at": "2025-02-17T21:01:22.000Z",
                 "alert_high_since": "2025-02-20T15:09:00.000Z",
-                "alert_last_seen": "2025-03-30T18:30:48.000Z",
                 "alert_orca_score_number": 5.7,
                 "alert_risk_level": "medium",
-                "alert_score": 3,
                 "alert_severity": "hazardous",
                 "alert_status": "open",
                 "alert_status_time": "2025-02-20T15:09:00.000Z"
@@ -1069,10 +1036,7 @@ An example event for `incident` looks as following:
             "asset_distribution_name": "Ubuntu",
             "asset_distribution_version": "20.04",
             "asset_type": "incidents",
-            "description": "The following vulnerabilities were found on service: sshd 8.2p1",
-            "details": "We have found vulnerabilities on service: sshd 8.2p1",
             "event": {
-                "accurate_for_datetime": "2025-12-07T12:02:42.000Z",
                 "adapter_categories": [
                     "Cloud Security",
                     "VA Tool"
@@ -1099,7 +1063,7 @@ An example event for `incident` looks as following:
             "recommendation": "Patch the listed packages",
             "source_application": "Orca",
             "tenant_number": [
-                "2"
+                2
             ],
             "transform_unique_id": "C/glUmsoIRqZIqJLnK9BZo1KeAI=",
             "type": "Incidents"
@@ -1107,14 +1071,14 @@ An example event for `incident` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.incident",
-        "namespace": "56627",
+        "namespace": "95135",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.2.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "0c49058d-c08f-4d6b-9b0f-3ca3db43f47c",
+        "id": "c4a85adc-93c5-4bf5-aba3-80ede094b49e",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -1123,7 +1087,7 @@ An example event for `incident` looks as following:
         "created": "2025-02-17T21:01:22.000Z",
         "dataset": "axonius.incident",
         "end": "2025-03-30T18:30:48.000Z",
-        "ingested": "2026-03-08T10:35:26Z",
+        "ingested": "2026-06-02T09:41:43Z",
         "kind": "alert",
         "provider": "sshd",
         "reason": "We have found vulnerabilities on service: sshd 8.2p1",
@@ -1134,7 +1098,6 @@ An example event for `incident` looks as following:
     },
     "message": "The following vulnerabilities were found on service: sshd 8.2p1",
     "tags": [
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "axonius-incident"
     ]
@@ -1182,7 +1145,7 @@ The `storage` data stream provides storage asset logs from axonius.
 | axonius.storage.not_fetched_count |  | long |
 | axonius.storage.size |  | double |
 | axonius.storage.source_application |  | keyword |
-| axonius.storage.tenant_number |  | keyword |
+| axonius.storage.tenant_number |  | long |
 | axonius.storage.transform_unique_id |  | keyword |
 | axonius.storage.type |  | keyword |
 | axonius.storage.urls |  | keyword |
@@ -1193,7 +1156,6 @@ The `storage` data stream provides storage asset logs from axonius.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Indicates whether a storage is in the raw source data stream, or in the latest destination index. | constant_keyword |
-| log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
 
@@ -1203,9 +1165,9 @@ An example event for `storage` looks as following:
 {
     "@timestamp": "2025-12-09T00:02:07.000Z",
     "agent": {
-        "ephemeral_id": "ba04ddcf-e21a-4a1c-90a9-29d23b9d5d75",
-        "id": "7b0f536f-933f-4941-897b-2432cf39c90b",
-        "name": "elastic-agent-61612",
+        "ephemeral_id": "d43efe8f-6a8b-4823-bf38-968e03cf39ce",
+        "id": "91a59cbe-1593-4098-81b2-cacc4a328885",
+        "name": "elastic-agent-98511",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -1218,10 +1180,8 @@ An example event for `storage` looks as following:
             ],
             "application_and_account_name": "aws/aws-demo",
             "asset_type": "object_storages",
-            "creation_date": "2024-12-25T22:16:51.000Z",
             "data_asset_type": "AWS S3",
             "event": {
-                "accurate_for_datetime": "2025-12-09T00:02:07.000Z",
                 "adapter_categories": [
                     "Cloud Infra"
                 ],
@@ -1246,7 +1206,7 @@ An example event for `storage` looks as following:
             "not_fetched_count": 0,
             "source_application": "AWS",
             "tenant_number": [
-                "3"
+                3
             ],
             "transform_unique_id": "F4v8WC8HAVaWiuI1JMnuCrtPcl8=",
             "type": "ObjectStorage",
@@ -1257,14 +1217,14 @@ An example event for `storage` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.storage",
-        "namespace": "80424",
+        "namespace": "17099",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.2.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "7b0f536f-933f-4941-897b-2432cf39c90b",
+        "id": "91a59cbe-1593-4098-81b2-cacc4a328885",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -1276,7 +1236,7 @@ An example event for `storage` looks as following:
         ],
         "created": "2024-12-25T22:16:51.000Z",
         "dataset": "axonius.storage",
-        "ingested": "2026-03-12T09:39:21Z",
+        "ingested": "2026-06-02T09:43:45Z",
         "kind": "event",
         "type": [
             "info"
@@ -1286,7 +1246,6 @@ An example event for `storage` looks as following:
         "type": "cel"
     },
     "tags": [
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "axonius-storage"
     ]
@@ -1352,7 +1311,6 @@ The `ticket` data stream provides ticket asset logs from axonius.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Indicates whether a ticket is in the raw source data stream, or in the latest destination index. | constant_keyword |
-| log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
 
@@ -1362,9 +1320,9 @@ An example event for `ticket` looks as following:
 {
     "@timestamp": "2024-08-10T16:21:10.000Z",
     "agent": {
-        "ephemeral_id": "6bc19b7c-541f-4d51-9ee2-2ce3d20a24c5",
-        "id": "06edafcd-bf62-4330-b3da-d7c210c44f7f",
-        "name": "elastic-agent-45583",
+        "ephemeral_id": "b39408ce-16c7-4acd-9d1d-8d89a8071598",
+        "id": "00984908-67db-4107-813f-53b9eb5d15b1",
+        "name": "elastic-agent-97336",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -1378,9 +1336,6 @@ An example event for `ticket` looks as following:
             "application_and_account_name": "servicenow/servicenow-dev",
             "asset_type": "tickets",
             "category": "Access Reviewer",
-            "closed": "2024-08-10T16:21:10.000Z",
-            "created": "2024-07-14T23:21:10.000Z",
-            "description": "Access Reviewer - Needs addressing",
             "display_id": "INC3566938",
             "event": {
                 "accurate_for_datetime": "2025-12-08T00:02:48.000Z",
@@ -1418,20 +1373,19 @@ An example event for `ticket` looks as following:
             ],
             "ticket_id": "b59da9ea-6814-4ee9-b7b1-ad9088b601cd",
             "transform_unique_id": "17k4++79l2/seCorLsaz4cuv6tA=",
-            "type": "Tickets",
-            "updated": "2024-08-10T16:21:10.000Z"
+            "type": "Tickets"
         }
     },
     "data_stream": {
         "dataset": "axonius.ticket",
-        "namespace": "49563",
+        "namespace": "49181",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.2.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "06edafcd-bf62-4330-b3da-d7c210c44f7f",
+        "id": "00984908-67db-4107-813f-53b9eb5d15b1",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -1440,7 +1394,7 @@ An example event for `ticket` looks as following:
         "created": "2024-07-14T23:21:10.000Z",
         "dataset": "axonius.ticket",
         "end": "2024-08-10T16:21:10.000Z",
-        "ingested": "2026-03-25T07:18:20Z",
+        "ingested": "2026-06-02T09:44:39Z",
         "kind": "event"
     },
     "input": {
@@ -1453,7 +1407,6 @@ An example event for `ticket` looks as following:
         ]
     },
     "tags": [
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "axonius-ticket"
     ]
@@ -1990,7 +1943,6 @@ The `network` data stream provides network events from axonius.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
-| log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
 
@@ -2000,9 +1952,9 @@ An example event for `network` looks as following:
 {
     "@timestamp": "2025-12-16T00:02:05.000Z",
     "agent": {
-        "ephemeral_id": "4e336b5a-d5c0-4ce6-9dc8-e54685263e6c",
-        "id": "d8b9844e-5cb3-4ade-b75c-03bd66ca704d",
-        "name": "elastic-agent-49461",
+        "ephemeral_id": "82e01c64-a437-42c9-a0a2-d141affec7c4",
+        "id": "dfa60728-6e8e-4752-8a58-33a27683662d",
+        "name": "elastic-agent-13888",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -2019,9 +1971,7 @@ An example event for `network` looks as following:
             "connected_assets": [
                 "subscription_id::64062aef-14a6-42a4-86b1-8a25d0c7cb24"
             ],
-            "direction": "Inbound",
             "event": {
-                "accurate_for_datetime": "2025-12-16T00:02:05.000Z",
                 "adapter_categories": [
                     "Cloud Infra"
                 ],
@@ -2042,12 +1992,10 @@ An example event for `network` looks as following:
             "is_fetched_from_adapter": true,
             "last_fetch_connection_id": "67fd09ca731ccb5730923106",
             "last_fetch_connection_label": "azure-demo",
-            "location": "New York City",
             "name": "FTP-ENABLED-Allowedcb5E-",
             "not_fetched_count": 0,
             "pretty_id": "AX-1156168648572164619",
             "priority": 1937,
-            "protocol": "UDP",
             "provisioningState": "Succeeded",
             "source_application": "Azure",
             "subscription_id": "b3fa20bb-a9c1-4cb6-80a9-13bcc9d68da5",
@@ -2061,14 +2009,14 @@ An example event for `network` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.network",
-        "namespace": "48120",
+        "namespace": "84013",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.2.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "d8b9844e-5cb3-4ade-b75c-03bd66ca704d",
+        "id": "dfa60728-6e8e-4752-8a58-33a27683662d",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -2078,7 +2026,7 @@ An example event for `network` looks as following:
             "network"
         ],
         "dataset": "axonius.network",
-        "ingested": "2026-03-27T12:14:37Z",
+        "ingested": "2026-06-02T09:42:41Z",
         "kind": "event",
         "type": [
             "info"
@@ -2097,7 +2045,6 @@ An example event for `network` looks as following:
         "protocol": "udp"
     },
     "tags": [
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "axonius-network"
     ]
@@ -2545,7 +2492,6 @@ The `identity` data stream provides identity asset logs from axonius.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
-| log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
 
@@ -2555,11 +2501,11 @@ An example event for `identity` looks as following:
 {
     "@timestamp": "2025-12-09T12:02:11.000Z",
     "agent": {
-        "ephemeral_id": "6c2ee39f-525e-43d8-944a-47612be02d1b",
-        "id": "496b1f94-3c28-464e-9240-4b419904e269",
-        "name": "elastic-agent-61091",
+        "ephemeral_id": "7714de5a-daf2-4d12-af66-023e7d6cae82",
+        "id": "a235fdaf-a810-41bf-b414-1492eae890e2",
+        "name": "elastic-agent-46402",
         "type": "filebeat",
-        "version": "9.3.0"
+        "version": "8.18.0"
     },
     "axonius": {
         "identity": {
@@ -2572,12 +2518,12 @@ An example event for `identity` looks as following:
             ],
             "application_and_account_name": "microsoft/azure_ad-demo",
             "asset_type": "users",
-            "associated_groups": {
-                "display_name": "developers-group",
-                "remote_id": "a3e70162"
-            },
-            "azure_account_id": "c8103abe-eda9-472b-894a-6260bb2ba8cc",
-            "cloud_provider": "Azure",
+            "associated_groups": [
+                {
+                    "display_name": "developers-group",
+                    "remote_id": "a3e70162"
+                }
+            ],
             "email_activity": {
                 "is_deleted": false,
                 "product_license": "MICROSOFT FABRIC (FREE)+MICROSOFT TEAMS PHONE STANDARD+MICROSOFT DEFENDER FOR OFFICE365 (PLAN 2)+MICROSOFT 365 AUDIO CONFERENCING+ENTERPRISE MOBILITY + SECURITY E3+OFFICE365 E3+MICROSOFT 365 E3 EXTRA FEATURES",
@@ -2588,7 +2534,6 @@ An example event for `identity` looks as following:
                 "send_count": 3030
             },
             "event": {
-                "accurate_for_datetime": "2025-12-09T12:02:11.000Z",
                 "adapter_categories": [
                     "Directory",
                     "IAM",
@@ -2620,42 +2565,49 @@ An example event for `identity` looks as following:
             "last_fetch_connection_label": "azure_ad-demo",
             "last_logon": "2025-11-30T18:50:39.000Z",
             "last_seen": "2025-11-10T22:18:25.000Z",
-            "mail": "helen.jordan@demo.local",
-            "nested_applications": {
-                "app_display_name": "Calendly",
-                "assignment_type": "Direct",
-                "extension_type": "User Consent",
-                "is_managed": false,
-                "is_unmanaged_extension": true,
-                "name": "Calendly",
-                "permissions": {
-                    "name": "openid"
-                },
-                "relation_extension_name": "Calendly",
-                "source_application": "Microsoft",
-                "value": "2E2a2e7c9f758BDcC0E2",
-                "vendor_category": "Productivity"
-            },
+            "nested_applications": [
+                {
+                    "app_display_name": "Calendly",
+                    "assignment_type": "Direct",
+                    "extension_type": "User Consent",
+                    "is_managed": false,
+                    "is_unmanaged_extension": true,
+                    "name": "Calendly",
+                    "permissions": [
+                        {
+                            "name": "openid"
+                        }
+                    ],
+                    "relation_extension_name": "Calendly",
+                    "source_application": "Microsoft",
+                    "value": "2E2a2e7c9f758BDcC0E2",
+                    "vendor_category": "Productivity"
+                }
+            ],
             "nested_grants_last_updated": "2025-12-09T12:10:06.000Z",
             "nested_grants_managers_last_updated": "2025-12-09T12:10:10.000Z",
-            "nested_groups": {
-                "assignment_type": "Direct",
-                "name": "Office365 Users",
-                "value": "d8e66837"
-            },
+            "nested_groups": [
+                {
+                    "assignment_type": "Direct",
+                    "name": "Office365 Users",
+                    "value": "d8e66837"
+                }
+            ],
             "not_fetched_count": 0,
             "sm_entity_type": "saas_user",
             "source_application": "Microsoft",
-            "tenant_number": 2,
+            "tenant_number": [
+                2
+            ],
             "transform_unique_id": "N8G3qDAOmSElCdviQ3d6FpD76pE=",
-            "user_created": "2024-06-28T08:49:28.000Z",
-            "user_permissions": {
-                "is_admin": false,
-                "name": "OnlineMeetings.ReadWrite"
-            },
+            "user_permissions": [
+                {
+                    "is_admin": false,
+                    "name": "OnlineMeetings.ReadWrite"
+                }
+            ],
             "user_remote_id": "63d52bb0-7ce0-4467-9004-2b19c06b86ae",
-            "user_type": "Member",
-            "username": "helen.jordan@demo.local"
+            "user_type": "Member"
         }
     },
     "cloud": {
@@ -2666,16 +2618,16 @@ An example event for `identity` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.identity",
-        "namespace": "28372",
+        "namespace": "73119",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.2.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "496b1f94-3c28-464e-9240-4b419904e269",
+        "id": "a235fdaf-a810-41bf-b414-1492eae890e2",
         "snapshot": false,
-        "version": "9.3.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -2684,21 +2636,14 @@ An example event for `identity` looks as following:
         ],
         "created": "2024-06-28T08:49:28.000Z",
         "dataset": "axonius.identity",
-        "ingested": "2026-05-04T12:35:33Z",
+        "ingested": "2026-06-02T09:40:40Z",
         "kind": "event",
-        "module": "axonius",
         "type": [
             "info"
         ]
     },
     "input": {
         "type": "cel"
-    },
-    "labels": {
-        "is_transform_source": "true"
-    },
-    "observer": {
-        "vendor": "Axonius"
     },
     "related": {
         "user": [
@@ -2707,7 +2652,6 @@ An example event for `identity` looks as following:
         ]
     },
     "tags": [
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "axonius-identity"
     ],
@@ -2974,7 +2918,7 @@ The `compute` data stream provides compute asset logs from axonius.
 | axonius.compute.linked_tickets.priority | The priority on the linked tickets for this compute asset. | keyword |
 | axonius.compute.linked_tickets.reporter | The reporter on the linked tickets for this compute asset. | keyword |
 | axonius.compute.linked_tickets.status | The status on the linked tickets for this compute asset. | keyword |
-| axonius.compute.linked_tickets.summary | The summary on the linked tickets for this compute asset. | keyword |
+| axonius.compute.linked_tickets.summary | The summary on the linked tickets for this compute asset. | text |
 | axonius.compute.linked_tickets.updated | The updated on the linked tickets for this compute asset. | date |
 | axonius.compute.lock | The lock for this compute asset. | keyword |
 | axonius.compute.meeting_id | The meeting id for this compute asset. | keyword |
@@ -3181,7 +3125,6 @@ The `compute` data stream provides compute asset logs from axonius.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Indicates whether a compute event is in the raw source data stream, or in the latest destination index. | constant_keyword |
-| log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
 
@@ -3191,9 +3134,9 @@ An example event for `compute` looks as following:
 {
     "@timestamp": "2025-12-05T00:02:00.000Z",
     "agent": {
-        "ephemeral_id": "e3a92fe8-e31b-4c1d-9cb0-b2c25a906af6",
-        "id": "3823cc12-b8ea-44b3-8df1-4788882631b6",
-        "name": "elastic-agent-33963",
+        "ephemeral_id": "34331363-0965-40f2-a321-0e4e88214749",
+        "id": "47176027-94f7-411a-8eaa-f62c8e6ea073",
+        "name": "elastic-agent-10144",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -3212,7 +3155,6 @@ An example event for `compute` looks as following:
             ],
             "data_asset_type": "Kubernetes Container",
             "event": {
-                "accurate_for_datetime": "2025-12-05T00:02:00.000Z",
                 "adapter_categories": [
                     "Cloud Infra"
                 ],
@@ -3261,14 +3203,14 @@ An example event for `compute` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.compute",
-        "namespace": "48748",
+        "namespace": "19341",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.2.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "3823cc12-b8ea-44b3-8df1-4788882631b6",
+        "id": "47176027-94f7-411a-8eaa-f62c8e6ea073",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -3279,7 +3221,7 @@ An example event for `compute` looks as following:
             "vulnerability"
         ],
         "dataset": "axonius.compute",
-        "ingested": "2026-05-15T04:58:43Z",
+        "ingested": "2026-06-02T09:37:42Z",
         "kind": "event",
         "type": [
             "info"
@@ -3289,7 +3231,6 @@ An example event for `compute` looks as following:
         "type": "cel"
     },
     "tags": [
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "axonius-compute"
     ]
@@ -3551,7 +3492,7 @@ The `application` data stream provides application asset logs from axonius.
 | axonius.compute.linked_tickets.priority | The priority on the linked tickets for this compute asset. | keyword |
 | axonius.compute.linked_tickets.reporter | The reporter on the linked tickets for this compute asset. | keyword |
 | axonius.compute.linked_tickets.status | The status on the linked tickets for this compute asset. | keyword |
-| axonius.compute.linked_tickets.summary | The summary on the linked tickets for this compute asset. | keyword |
+| axonius.compute.linked_tickets.summary | The summary on the linked tickets for this compute asset. | text |
 | axonius.compute.linked_tickets.updated | The updated on the linked tickets for this compute asset. | date |
 | axonius.compute.lock | The lock for this compute asset. | keyword |
 | axonius.compute.meeting_id | The meeting id for this compute asset. | keyword |
@@ -3758,7 +3699,6 @@ The `application` data stream provides application asset logs from axonius.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Indicates whether a compute event is in the raw source data stream, or in the latest destination index. | constant_keyword |
-| log.offset | Log offset. | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 
 
@@ -3768,9 +3708,9 @@ An example event for `application` looks as following:
 {
     "@timestamp": "2025-11-13T00:10:22.000Z",
     "agent": {
-        "ephemeral_id": "2eb8d180-18c3-4e23-acbd-6c84a4db7a0c",
-        "id": "ae117eca-84f7-450a-9633-9c95c077b0e5",
-        "name": "elastic-agent-99800",
+        "ephemeral_id": "8dc1b101-0d14-4808-93d4-87927ea6199b",
+        "id": "f254fa73-4f83-4898-ada7-a70acbe15168",
+        "name": "elastic-agent-25264",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -3786,7 +3726,6 @@ An example event for `application` looks as following:
                 "Data Base Management"
             ],
             "event": {
-                "accurate_for_datetime": "2025-11-13T00:10:22.000Z",
                 "adapter_categories": [
                     "Data Base Management"
                 ],
@@ -3822,14 +3761,14 @@ An example event for `application` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.application",
-        "namespace": "16426",
+        "namespace": "47966",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.2.0"
+        "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "ae117eca-84f7-450a-9633-9c95c077b0e5",
+        "id": "f254fa73-4f83-4898-ada7-a70acbe15168",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -3839,7 +3778,7 @@ An example event for `application` looks as following:
             "configuration"
         ],
         "dataset": "axonius.application",
-        "ingested": "2026-05-27T07:09:02Z",
+        "ingested": "2026-06-02T09:36:52Z",
         "kind": "event",
         "type": [
             "info"
@@ -3849,7 +3788,6 @@ An example event for `application` looks as following:
         "type": "cel"
     },
     "tags": [
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "axonius-application"
     ]

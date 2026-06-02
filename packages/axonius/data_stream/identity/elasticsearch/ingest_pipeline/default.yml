@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 9.2.0
+      value: 9.3.0
   - terminate:
       description: error message set and no data to process.
       tag: terminate_data_collection_error
@@ -72,7 +72,7 @@ processors:
   - script:
       tag: script_rename_fields
       lang: painless
-      description:  Renames all axonius.identity.event.data.* fields to root level (removes event.data prefix). Prefixes conflicting keys with 'data_' to avoid overwriting custom data-stream-root-level fields.
+      description: Renames all axonius.identity.event.data.* fields to root level (removes event.data prefix). Prefixes conflicting keys with 'data_' to avoid overwriting custom data-stream-root-level fields.
       source: |-
         if (ctx.axonius?.identity?.event?.data instanceof Map) {
           Map eventData = ctx.axonius.identity.event.data;
@@ -589,35 +589,35 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-     field: axonius.identity.permissions
-     tag: convert_permissions_to_long
-     type: long
-     ignore_missing: true
-     on_failure:
-       - rename:
-           field: axonius.identity.permissions
-           target_field: axonius.identity.permissions_list
-           ignore_missing: true
+      field: axonius.identity.permissions
+      tag: convert_permissions_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - rename:
+            field: axonius.identity.permissions
+            target_field: axonius.identity.permissions_list
+            ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline-account" }}'
       tag: pipeline-account
       if: >-
-        ctx.axonius?.identity?.asset_type?.contains('accounts') == true
+        ctx.axonius?.identity?.asset_type == 'accounts'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-group" }}'
       tag: pipeline-group
       if: >-
-        ctx.axonius?.identity?.asset_type?.contains('groups') == true
+        ctx.axonius?.identity?.asset_type == 'groups'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-certificate" }}'
       tag: pipeline-certificate
       if: >-
-        ctx.axonius?.identity?.asset_type?.contains('certificates') == true
+        ctx.axonius?.identity?.asset_type == 'certificates'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-user" }}'
       tag: pipeline-user
       if: >-
-        ctx.axonius?.identity?.asset_type?.contains('users') == true
+        ctx.axonius?.identity?.asset_type == 'users'
   - remove:
       field:
         - axonius.identity.event.accurate_for_datetime
@@ -646,7 +646,6 @@ processors:
         - axonius.identity.username
       tag: remove_custom_duplicate_fields
       ignore_missing: true
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
       tag: remove_json

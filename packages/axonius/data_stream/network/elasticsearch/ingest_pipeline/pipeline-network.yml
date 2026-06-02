@@ -11,6 +11,10 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.network?.creation_time_stamp != null && ctx.axonius.network.creation_time_stamp != ''
       on_failure:
+        - remove:
+            field: axonius.network.creation_time_stamp
+            ignore_missing: true
+            tag: remove_creation_time_stamp
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
