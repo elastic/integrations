@@ -1,4 +1,4 @@
-# Logstash OpenTelemetry Metrics
+# Logstash OpenTelemetry Assets
 
 ## Overview
 
