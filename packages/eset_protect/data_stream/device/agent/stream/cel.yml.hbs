@@ -1,0 +1,113 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: https://{{region}}.device-management.eset.systems
+auth.oauth2:
+  user: {{escape_string username}}
+  password: {{escape_string password}}
+  token_url: https://{{region}}.business-account.iam.eset.systems/oauth/token
+  endpoint_params:
+    grant_type:
+      - password
+state:
+  page_size: {{batch_size}}
+  want_more: false
+redact:
+  fields: ~
+program: |-
+  request(
+    "GET",
+    state.url.trim_right("/") + "/v1/devices?" + {
+      "pageSize": [string(state.page_size)],
+      "pageToken": [state.?page_token.orValue("")],
+    }.format_query()
+  ).as(request,
+    (has(state.?cursor.response_id) && state.cursor.response_id != null) ?
+      request.with(
+        {
+          "Header": {
+            "response-id": [state.cursor.response_id],
+            "3rd-integration": ["Elastic"],
+          },
+        }
+      )
+    :
+      request
+  ).do_request().as(resp,
+    (resp.StatusCode == 200) ?
+      resp.Body.decode_json().as(body,
+        {
+          "events": body.devices.map(e,
+            {
+              "message": e.encode_json(),
+            }
+          ),
+          "page_token": body.nextPageToken,
+          "want_more": body.nextPageToken != "",
+          "page_size": state.page_size,
+          "cursor": {},
+        }
+      )
+    : (resp.StatusCode == 202) ?
+      state.with(
+        {
+          "events": [{"message": "retry"}],
+          "want_more": true,
+          "cursor": {
+            "response_id": resp.Header["Response-Id"][0],
+          },
+        }
+      )
+    :
+      state.with(
+        {
+          "events": [
+            {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.url.trim_right("/") + "/v1/devices :" + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+          ],
+          "page_token": "",
+          "want_more": false,
+          "cursor": {},
+        }
+      )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event:
+    when:
+      equals:
+        message: retry
+{{#if processors}}
+{{processors}}
+{{/if}}

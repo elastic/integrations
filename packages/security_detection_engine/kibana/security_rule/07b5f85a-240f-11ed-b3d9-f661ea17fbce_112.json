@@ -1,0 +1,121 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when Google Workspace administrators initiate bulk movement or export of user Drive data. This includes admin data transfer requests that reassign a user's Drive files to another account, and Customer Takeout export jobs that package organizational data for download or off-platform transfer. Adversaries with administrative access may abuse these mechanisms to stage or exfiltrate sensitive files.",
+        "false_positives": [
+            "Administrators may create Drive data transfer requests during employee offboarding to preserve files for a manager or successor account.",
+            "Customer Takeout exports may be created for legal hold, compliance, migration, or user-requested backups. Verify the initiator, target user, and export scope are expected."
+        ],
+        "from": "now-130m",
+        "index": [
+            "filebeat-*",
+            "logs-google_workspace.admin-*"
+        ],
+        "interval": "10m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.email",
+                "source.ip",
+                "google_workspace.actor.type",
+                "user.target.email",
+                "google_workspace.admin.new_value",
+                "event.action",
+                "cloud.account.id",
+                "google_workspace.admin.OBFUSCATED_CUSTOMER_TAKEOUT_REQUEST_ID"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Google Workspace Drive Data Transfer or Takeout Export Initiated",
+        "note": "## Triage and analysis\n\n### Investigating Google Workspace Drive Data Transfer or Takeout Export Initiated\n\nGoogle Drive is a cloud storage service available to Google Workspace users. Administrators can bulk-transfer a\ndeparting user's Drive files to another in-domain account, or create Customer Takeout exports that package user or\norganizational data for download or transfer to an external destination (for example, another cloud provider).\n\nAdversaries with compromised administrator credentials may abuse these workflows to collect sensitive files without\nrelying on per-file sharing changes. This rule detects two related admin audit actions:\n\n- `CREATE_DATA_TRANSFER_REQUEST` with Drive application scope \u2014 ownership or bulk transfer to another user.\n- `CUSTOMER_TAKEOUT_CREATED` \u2014 initiation of a Customer Takeout export job.\n\n### Possible investigation steps\n\n- Review admin logs for involved user accounts.\n- For data transfer requests, confirm the request initiator, source and destination users in `user.email`, `user.target.email`, and `google_workspace.admin.new_value`.\n- For Customer Takeout events (`CUSTOMER_TAKEOUT_CREATED`):\n  - In Elasticsearch, pivot on `google_workspace.admin.OBFUSCATED_CUSTOMER_TAKEOUT_REQUEST_ID` to find related admin events for the same export job (for example completion or failure). The Admin console Data export UI does not expose or accept this ID for search.\n  - In the Admin console, go to Data > Data import & export > Data export and identify the export by correlating `@timestamp`, Set up by (`user.email`), and Last start date / Status. The export Name shown in the console is not present in Workspace admin logs.\n  - Open the matching row and select View archive to review exported data scope and where the archive is stored (Google-provided bucket or customer-owned Cloud Storage).\n- Determine if involved user accounts are active.\n- Check if involved user accounts were recently disabled, suspended, or scheduled for deletion.\n- Review involved user accounts for potentially misconfigured permissions or roles.\n- Review the involved shared drives, My Drive files, or export scope to determine if this action was expected.\n- Triage potentially related alerts based on the users involved.\n\n### False positive analysis\n\n- Drive data transfers require Google Workspace administration permissions. Confirm the transfer was planned during offboarding or role change and targets the correct receiver.\n- Customer Takeout exports are common for compliance, migration, and departures. Validate the initiator is authorized and the export scope matches policy.\n\n### Response and remediation\n\n- Initiate the incident response process based on the outcome of the triage.\n- Disable or limit the account during the investigation and response.\n- Identify the possible impact of the incident and prioritize accordingly; the following actions can help you gain context:\n    - Identify the account role in the cloud environment.\n    - Assess the criticality of affected services and servers.\n    - Work with your IT team to identify and minimize the impact on users.\n    - Identify if the attacker is moving laterally and compromising other accounts, servers, or services.\n    - Identify any regulatory or legal ramifications related to this activity.\n- Investigate credential exposure on systems compromised or used by the attacker to ensure all compromised accounts are identified. Reset passwords or delete API keys as needed to revoke the attacker's access to the environment. Work with your IT teams to minimize the impact on business operations during these actions.\n- Review the permissions assigned to the implicated user to ensure that the least privilege principle is being followed.\n- Implement security best practices [outlined](https://support.google.com/a/answer/7587183) by Google.\n- Determine the initial vector abused by the attacker and take action to prevent reinfection via the same vector.\n- Using the incident response data, update logging and audit policies to improve the mean time to detect (MTTD) and the mean time to respond (MTTR).\n\n\n\n### Important Information Regarding Google Workspace Event Lag Times\n- As per Google's documentation, Google Workspace administrators may observe lag times ranging from minutes up to 3 days between the time of an event's occurrence and the event being visible in the Google Workspace admin/audit logs.\n- This rule is configured to run every 10 minutes with a lookback time of 130 minutes.\n- To reduce the risk of false negatives, consider reducing the interval that the Google Workspace (formerly G Suite) Filebeat module polls Google's reporting API for new events.\n- By default, `var.interval` is set to 2 hours (2h). Consider changing this interval to a lower value, such as 10 minutes (10m).\n- See the following references for further information:\n  - https://support.google.com/a/answer/7061566\n  - https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-module-google_workspace.html",
+        "query": "data_stream.dataset:\"google_workspace.admin\" and (\n  (event.action:\"CREATE_DATA_TRANSFER_REQUEST\" and google_workspace.admin.application.name:Drive*) or\n  event.action:\"CUSTOMER_TAKEOUT_CREATED\"\n)\n",
+        "references": [
+            "https://support.google.com/a/answer/1247799?hl=en",
+            "https://support.google.com/a/answer/10276199",
+            "https://www.elastic.co/security-labs/google-workspace-attack-surface-part-one",
+            "https://www.elastic.co/security-labs/google-workspace-attack-surface-part-two"
+        ],
+        "related_integrations": [
+            {
+                "package": "google_workspace",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "google_workspace.admin.application.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "07b5f85a-240f-11ed-b3d9-f661ea17fbce",
+        "setup": "The Google Workspace Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Google Workspace",
+            "Tactic: Collection",
+            "Tactic: Exfiltration",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0009",
+                    "name": "Collection",
+                    "reference": "https://attack.mitre.org/tactics/TA0009/"
+                },
+                "technique": [
+                    {
+                        "id": "T1074",
+                        "name": "Data Staged",
+                        "reference": "https://attack.mitre.org/techniques/T1074/",
+                        "subtechnique": [
+                            {
+                                "id": "T1074.002",
+                                "name": "Remote Data Staging",
+                                "reference": "https://attack.mitre.org/techniques/T1074/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1537",
+                        "name": "Transfer Data to Cloud Account",
+                        "reference": "https://attack.mitre.org/techniques/T1537/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 112
+    },
+    "id": "07b5f85a-240f-11ed-b3d9-f661ea17fbce_112",
+    "type": "security-rule"
+}
