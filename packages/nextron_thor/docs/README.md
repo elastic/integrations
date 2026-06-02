@@ -120,6 +120,7 @@ To completely set up the Nextron Thor APT Scanner integration:
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |  |
 | tags | List of keywords used to tag each event. | keyword |  |
 | thor.alerts | Number of alerts generated during the THOR scan. | long | counter |
+| thor.campaign_id | Campaign ID of a THOR scan. | keyword |  |
 | thor.command | Command line or executable path associated with a scheduled task, service, or process. | keyword |  |
 | thor.connection_count | Total number of network connections associated with a process. | long | gauge |
 | thor.created | creation time | date |  |
@@ -251,31 +252,31 @@ An example event for `thor_forwarding` looks as following:
 {
     "@timestamp": "2025-11-10T17:52:49.000Z",
     "agent": {
-        "ephemeral_id": "e54573c2-f5e4-4e78-b614-ad0d11b51769",
-        "id": "23617f49-e7ce-42ae-ba5b-26fbb5ae1a06",
-        "name": "elastic-agent-37213",
+        "ephemeral_id": "d19073f3-c079-49cd-acc9-bee532a04c98",
+        "id": "94d55e09-8bee-4d3c-9a56-7122f344472e",
+        "name": "elastic-agent-56458",
         "type": "filebeat",
-        "version": "9.2.3"
+        "version": "9.4.1"
     },
     "data_stream": {
         "dataset": "nextron_thor_apt_scanner.thor_forwarding",
-        "namespace": "20381",
+        "namespace": "90783",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "23617f49-e7ce-42ae-ba5b-26fbb5ae1a06",
+        "id": "94d55e09-8bee-4d3c-9a56-7122f344472e",
         "snapshot": false,
-        "version": "9.2.3"
+        "version": "9.4.1"
     },
     "event": {
         "category": [
             "file"
         ],
         "dataset": "nextron_thor_apt_scanner.thor_forwarding",
-        "ingested": "2026-02-10T08:51:53Z",
+        "ingested": "2026-05-28T09:45:16Z",
         "kind": "event",
         "module": "AtJobs",
         "type": [
@@ -302,6 +303,7 @@ An example event for `thor_forwarding` looks as following:
         "forwarded"
     ],
     "thor": {
+        "campaign_id": "2b054111-bad7-4bac-a14e-8fa8a88f1111",
         "command": "",
         "job": "C:\\Windows\\System32\\Tasks\\Microsoft\\Windows\\Task Manager\\Interactive",
         "logontype": "",
