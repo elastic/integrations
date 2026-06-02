@@ -50,6 +50,19 @@ processors:
         field: openai.completions.object
         target_field: openai.base.usage_object_type
         ignore_missing: true
+    - script:
+        tag: set_base_usage_tokens
+        lang: painless
+        description: Normalized total tokens for rate-limit headroom calculations.
+        source: >-
+          long t = 0;
+          if (ctx.openai?.completions?.input_tokens != null) { t += ((Number)ctx.openai.completions.input_tokens).longValue(); }
+          if (ctx.openai?.completions?.output_tokens != null) { t += ((Number)ctx.openai.completions.output_tokens).longValue(); }
+          if (ctx.openai?.completions?.input_audio_tokens != null) { t += ((Number)ctx.openai.completions.input_audio_tokens).longValue(); }
+          if (ctx.openai?.completions?.output_audio_tokens != null) { t += ((Number)ctx.openai.completions.output_audio_tokens).longValue(); }
+          if (ctx.openai == null) { ctx.openai = [:]; }
+          if (ctx.openai.base == null) { ctx.openai.base = [:]; }
+          ctx.openai.base.usage_tokens = t;
     - date:
         field: openai.completions.start_time
         target_field: openai.base.start_time

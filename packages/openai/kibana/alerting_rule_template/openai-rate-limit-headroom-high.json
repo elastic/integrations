@@ -1,0 +1,51 @@
+{
+  "id": "openai-rate-limit-headroom-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when peak per-minute token usage reaches 80% or more of the configured rate limit (TPM) for a project and model. Sustained high utilization risks request throttling (HTTP 429).",
+    "name": "[OpenAI] Rate limit headroom low",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "openai"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "openai-651bb059-f606-44fc-b704-2078d0af26da"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## OpenAI rate limit headroom low\n\n### What fired\nPeak 1-minute token usage (TPM) reached 80% or more of the configured per-minute token limit for a project and model during the look-back window.\n\n### Why it matters\nWhen usage approaches the configured rate limit, OpenAI begins rejecting requests with HTTP 429 (Too Many Requests). Sustained high utilization indicates the project is close to throttling and may already be dropping requests at peak.\n\n### How it is computed\nUsage from the `completions`, `embeddings` and `moderations` streams is summed per project, model and 1-minute bucket, then the peak minute in the window is compared against the limit collected by the `rate_limits` stream. The limit and the usage join on the exact `project_id` and `model` string. This requires the usage streams to run with `bucket_width: 1m`.\n\n### Triage\n1. Identify the project and model in the alert (`alert_key` is `project_id::model`).\n2. Open the OpenAI dashboard and review the \"Rate limit headroom\" panel to confirm the trend.\n3. Check for HTTP 429 errors in the consuming application.\n\n### Remediation\n- Spread load across time, projects, or models.\n- Request a rate limit increase from OpenAI for the affected project.\n- Add client-side backoff/retry handling.\n\n### Tuning\n- The 80% threshold lives inside the rule's ES|QL query (`WHERE tpm_utilization >= 0.8`). Edit the query to change it.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM logs-openai.*\n| WHERE event.dataset IN (\"openai.rate_limits\", \"openai.completions\", \"openai.embeddings\", \"openai.moderations\")\n| EVAL project_id = COALESCE(openai.rate_limits.project_id, openai.base.project_id)\n| EVAL model = COALESCE(openai.rate_limits.model, openai.base.model)\n// usage_tokens is normalized by each usage pipeline into openai.base.usage_tokens,\n// so this rule resolves even when some usage streams have no data.\n| EVAL usage_tokens = COALESCE(openai.base.usage_tokens, 0)\n// Peak 1-minute usage per project and model, joined to the configured limit\n| STATS\n    tpm_used_minute = SUM(usage_tokens),\n    tpm_limit = MAX(openai.rate_limits.max_tokens_per_1_minute)\n  BY project_id, model, minute = BUCKET(@timestamp, 1 minute)\n| STATS\n    peak_tpm_used = MAX(tpm_used_minute),\n    tpm_limit = MAX(tpm_limit)\n  BY project_id, model\n| WHERE tpm_limit > 0\n// TO_DOUBLE avoids integer division (otherwise utilization is always 0 until usage exceeds the limit)\n| EVAL tpm_utilization = TO_DOUBLE(peak_tpm_used) / tpm_limit\n// 80% threshold — edit this value to tune sensitivity\n| WHERE tpm_utilization >= 0.8\n| EVAL alert_key = CONCAT(TO_STRING(project_id), \"::\", TO_STRING(model))\n| SORT tpm_utilization DESC\n| LIMIT 100"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "alert_key",
+      "termSize": 100
+    }
+  }
+}

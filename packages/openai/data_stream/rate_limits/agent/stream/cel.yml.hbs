@@ -1,0 +1,184 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/openai-rate-limits-http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+resource.url: {{api_url}}
+fields_under_root: true
+keep_null: true
+state:
+  access_token: {{admin_token}}
+  batch_size: {{batch_size}}
+  include_archived: {{include_archived}}
+redact:
+  fields:
+    - access_token
+program: |
+  state.with(
+    // PHASE 1: page the project list into a work list before draining rate limits.
+    !state.?projects_listed.orValue(false) ?
+      request(
+        "GET",
+        state.url.trim_right("/") + "?" + {
+          "limit": [string(int(state.batch_size))],
+          "after": state.?project_after.orValue("") != "" ? [state.project_after] : [],
+          "include_archived": [string(state.include_archived)],
+        }.format_query()
+      ).with({
+        "Header": {
+          "Authorization": ["Bearer " + string(state.access_token)],
+          "Content-Type": ["application/json"],
+        }
+      }).do_request().as(resp, resp.StatusCode == 200 ?
+        bytes(resp.Body).decode_json().as(body,
+          (state.?worklist.orValue([]) + body.?data.orValue([]).map(p, {
+            "id": p.id,
+            "name": p.?name.orValue(""),
+            "status": p.?status.orValue(""),
+          })).as(worklist,
+            body.?has_more.orValue(false) ?
+              {
+                // More project pages to fetch before draining.
+                "worklist": worklist,
+                "project_after": body.?last_id.orValue(""),
+                "projects_listed": false,
+                "next": 0,
+                "rl_after": "",
+                "events": [],
+                "want_more": true,
+              }
+            : size(worklist) > 0 ?
+              {
+                // Project listing complete; begin draining rate limits.
+                "worklist": worklist,
+                "project_after": "",
+                "projects_listed": true,
+                "next": 0,
+                "rl_after": "",
+                "events": [],
+                "want_more": true,
+              }
+            :
+              {
+                // No projects; reset for the next interval.
+                "worklist": [],
+                "project_after": "",
+                "projects_listed": false,
+                "next": 0,
+                "rl_after": "",
+                "events": [],
+                "want_more": false,
+              }
+          )
+        )
+      :
+        // Project listing failed: emit an error and reset so the next interval retries.
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET:" + state.url + ": " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "worklist": [],
+          "project_after": "",
+          "projects_listed": false,
+          "next": 0,
+          "rl_after": "",
+          "want_more": false,
+        }
+      )
+    // PHASE 2: drain the work list, paging each project's rate limits.
+    : int(state.?next.orValue(0)) < size(state.?worklist.orValue([])) ?
+      state.worklist[int(state.?next.orValue(0))].as(proj,
+        request(
+          "GET",
+          state.url.trim_right("/") + "/" + string(proj.id) + "/rate_limits?" + {
+            "limit": [string(int(state.batch_size))],
+            "after": state.?rl_after.orValue("") != "" ? [state.rl_after] : [],
+          }.format_query()
+        ).with({
+          "Header": {
+            "Authorization": ["Bearer " + string(state.access_token)],
+            "Content-Type": ["application/json"],
+          }
+        }).do_request().as(resp, resp.StatusCode == 200 ?
+          bytes(resp.Body).decode_json().as(body, body.?has_more.orValue(false).as(more,
+            {
+              "events": body.?data.orValue([]).map(rl, {
+                "message": {
+                  "id": rl.?id.orValue(null),
+                  "object": rl.?object.orValue(null),
+                  "model": rl.?model.orValue(null),
+                  "project_id": proj.id,
+                  "project_name": proj.name,
+                  "project_status": proj.status,
+                  "max_requests_per_1_minute": rl.?max_requests_per_1_minute.orValue(null),
+                  "max_tokens_per_1_minute": rl.?max_tokens_per_1_minute.orValue(null),
+                  "max_images_per_1_minute": rl.?max_images_per_1_minute.orValue(null),
+                  "max_audio_megabytes_per_1_minute": rl.?max_audio_megabytes_per_1_minute.orValue(null),
+                  "max_requests_per_1_day": rl.?max_requests_per_1_day.orValue(null),
+                  "max_tokens_per_1_day": rl.?max_tokens_per_1_day.orValue(null),
+                  "batch_1_day_max_input_tokens": rl.?batch_1_day_max_input_tokens.orValue(null),
+                  "collected_at": now.format(time_layout.RFC3339),
+                }.encode_json(),
+              }),
+              "rl_after": more ? body.?last_id.orValue("") : "",
+              "next": more ? int(state.?next.orValue(0)) : int(state.?next.orValue(0)) + 1,
+              "want_more": more || (int(state.?next.orValue(0)) + 1 < size(state.worklist)),
+            }
+          ))
+        :
+          // Rate-limit call failed for this project: emit an error and continue with the rest.
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET:" + state.url.trim_right("/") + "/" + string(proj.id) + "/rate_limits: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "rl_after": "",
+            "next": int(state.?next.orValue(0)) + 1,
+            "want_more": int(state.?next.orValue(0)) + 1 < size(state.worklist),
+          }
+        )
+      )
+    :
+      // Work list drained: reset for the next interval.
+      {
+        "events": [],
+        "worklist": [],
+        "project_after": "",
+        "projects_listed": false,
+        "next": 0,
+        "rl_after": "",
+        "want_more": false,
+      }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

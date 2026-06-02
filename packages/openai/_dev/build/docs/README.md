@@ -6,11 +6,13 @@ With the OpenAI integration, you can track API usage metrics across their models
 
 ## Data collection
 
-The OpenAI integration leverages two OpenAI APIs for data collection:
+The OpenAI integration leverages the following OpenAI APIs for data collection:
 
 - **Usage API**: The [OpenAI Usage API](https://platform.openai.com/docs/api-reference/usage) delivers comprehensive insights into your API activity, helping you understand and optimize your organization's OpenAI API usage.
 
 - **Audit Logs API**: The [OpenAI Audit Logs API](https://platform.openai.com/docs/api-reference/audit-logs) collects organization audit logs, providing visibility into user actions, API key lifecycle events, login attempts, role assignments, and other platform activity for security oversight and compliance.
+
+- **Rate Limits API**: The [OpenAI Rate Limits API](https://platform.openai.com/docs/api-reference/project-rate-limits) collects the configured per-project, per-model rate limits (requests, tokens and images per minute, plus daily and batch limits). Combined with usage data, this lets you monitor how close each project is to being throttled.
 
 ## Data streams
 
@@ -24,6 +26,7 @@ The OpenAI integration collects the following data streams:
 - `embeddings`: Collects embeddings usage metrics.
 - `images`: Collects images usage metrics.
 - `moderations`: Collects moderations usage metrics.
+- `rate_limits`: Collects per-project, per-model rate limits.
 - `vector_stores`: Collects vector stores usage metrics.
 
 > Note: Users can view OpenAI metrics in the `logs-*` index pattern using Kibana Discover.
@@ -104,6 +107,38 @@ With default settings (Interval: `5m`, Bucket width: `1m`, Initial interval: `24
 
 The integration starts at 10:00 AM, collects data from 10:00 AM the previous day, and continues until 9:59 AM the current day. The next collection starts at 10:05 AM, collecting from the 10:00 AM bucket to the 10:04 AM bucket, as the "Interval" is 5 minutes.
 
+## Rate limit headroom
+
+The `rate_limits` data stream collects the per-project, per-model limits OpenAI enforces (requests, tokens and images per minute, plus daily and batch limits). On its own a limit is just a number; it becomes actionable when compared against actual usage. The OpenAI dashboard ships a **Rate limit headroom** panel and a prebuilt **[OpenAI] Rate limit headroom low** threshold alert that do exactly this.
+
+### How the comparison works
+
+Limits and usage are joined on the exact `project_id` and `model` strings. The Usage API reports dated model snapshots (for example `gpt-4o-mini-2024-07-18`), and the Rate Limits API contains that same snapshot string as its own row, so an exact-string join matches without any normalization.
+
+Utilization is computed as `usage / limit`, where usage is the **peak** value over the look-back window:
+
+1. Usage is summed per project, model and 1-minute bucket.
+2. The peak (maximum) minute in the window is taken.
+3. That peak is divided by the configured limit.
+
+Only matching units are compared:
+
+- tokens ↔ tokens per minute (TPM)
+- requests ↔ requests per minute (RPM)
+- images ↔ images per minute
+
+Usage measured in seconds, characters, bytes or sessions has no corresponding rate limit and stays usage-only.
+
+> **Hard requirement:** the peak 1-minute calculation depends on the usage streams (`completions`, `embeddings`, `moderations`, ...) running with **`bucket_width: 1m`**. This is the default, but the value is user-editable — if it is changed to `1h` or `1d`, the headroom numbers will be wrong because a wider bucket smears per-minute peaks.
+
+> **Note on aggregation:** OpenAI returns identical limits for both the model family (`gpt-4o-mini`) and its dated snapshot (`gpt-4o-mini-2024-07-18`). Because these duplicate the same capacity, every headroom aggregation is driven off the usage side of the join (usage matches exactly one row). Do not sum limit rows independently, or capacity will be double-counted. Family rows with no matching usage appear as 0%-utilization rows.
+
+### Alert
+
+The **[OpenAI] Rate limit headroom low** rule fires when peak 1-minute token usage (TPM) reaches 80% or more of the configured limit for a project and model. It is grouped by `project_id::model`, evaluates over a 15-minute window every 5 minutes, and reflects sustained utilization rather than a single real-time spike.
+
+To tune the threshold, edit the `WHERE tpm_utilization >= 0.8` line in the rule's ES|QL query.
+
 ## Metrics reference
 
 **ECS Field Reference**
@@ -173,6 +208,14 @@ The `moderations` data stream captures moderations usage metrics.
 {{event "moderations"}}
 
 {{fields "moderations"}}
+
+### Rate limits
+
+The `rate_limits` data stream captures per-project, per-model rate limits.
+
+{{event "rate_limits"}}
+
+{{fields "rate_limits"}}
 
 ### Vector stores
 
