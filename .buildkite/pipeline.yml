@@ -83,6 +83,14 @@ steps:
       - "dev/scripts/**.sh"
       - "dev/backports/**"
 
+  - label: ":git: Trigger backport dry-runs"
+    key: "trigger-backport-dryrun"
+    command: ".buildkite/scripts/trigger_backport_dryrun.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+    if_changed:
+      - ".backports.yml"
+
   - label: ":junit: Sources Junit annotate"
     agents:
       # requires at least "bash", "curl" and "git"

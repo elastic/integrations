@@ -15,10 +15,11 @@ steps:
     command:
       - "buildkite-agent annotate \"The $BUILDKITE_PIPELINE_SLUG is used only for running from UI!\" --style 'warning'"
       - "exit 1"
-    if: "build.source != 'ui'"
+    if: "build.source != 'ui' && build.source != 'trigger_job'"
 
   - input: "Input values for the variables"
     key: "input-variables"
+    if: "build.source != 'trigger_job'"
     fields:
     - select: "DRY_RUN"
       key: "DRY_RUN"
