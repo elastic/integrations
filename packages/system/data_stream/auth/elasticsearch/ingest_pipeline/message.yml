@@ -51,6 +51,28 @@ processors:
       patterns:
         - '^pam_unix(%{DATA}:%{WORD:_temp.category})'
       if: ctx.message != null && ctx.message.contains('pam_unix(')
+  - append:
+      tag: append_category_iam_chauthtok
+      field: event.category
+      value: iam
+      allow_duplicates: false
+      if: ctx._temp?.category == 'chauthtok'
+  - append:
+      tag: append_type_change_chauthtok
+      field: event.type
+      value: change
+      allow_duplicates: false
+      if: ctx._temp?.category == 'chauthtok'
+  - set:
+      tag: set_outcome_success_chauthtok
+      field: event.outcome
+      value: success
+      if: ctx._temp?.category == 'chauthtok'
+  - set:
+      tag: set_action_password_changed
+      field: event.action
+      value: password-changed
+      if: ctx._temp?.category == 'chauthtok'
   - grok:
       description: Extract rhost and user from PAM key-value messages.
       tag: grok-pam-kv
@@ -201,6 +223,12 @@ processors:
       ignore_missing: true
       ignore_failure: true
       if: ctx._temp?.pam_user != null && ctx._temp.pam_user != '' && (ctx.user?.name == null || ctx.user?.name == '')
+  - set:
+      tag: set_user_target_name_chauthtok
+      field: user.target.name
+      copy_from: user.name
+      ignore_empty_value: true
+      if: ctx._temp?.category == 'chauthtok' && ctx.user?.name != null && ctx.user?.name != ''
   - remove:
       tag: remove_temp
       field: _temp
@@ -366,6 +394,12 @@ processors:
       value: "{{{ user.effective.name }}}"
       allow_duplicates: false
       if: ctx.user?.effective?.name != null && ctx.user?.effective?.name != ''
+  - append:
+      tag: append_related-user-target-name
+      field: related.user
+      value: "{{{ user.target.name }}}"
+      allow_duplicates: false
+      if: ctx.user?.target?.name != null && ctx.user?.target?.name != ''
   - append:
       tag: append_related-ip
       field: related.ip
