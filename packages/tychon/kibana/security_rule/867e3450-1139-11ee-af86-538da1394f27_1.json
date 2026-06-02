@@ -1,20 +1,19 @@
 {
-    "id": "beeea32f-31ba-4be8-9e2c-14de47280aac",
+    "id": "867e3450-1139-11ee-af86-538da1394f27_1",
     "type": "security-rule",
     "attributes": {
-        "name": "Past Due Vulnerability Failed",
+        "name": "High STIG/SCAP Check Failed",
         "tags": [
             "TYCHON",
-            "CVE",
-            "CCRI"
+            "CCRI",
+            "SCAP"
         ],
         "interval": "5m",
         "enabled": true,
         "revision": 0,
-        "description": "TYCHON tracks when vulnerabilities are past expiration to ensure systems are patched before exploits are released or to reduce the attack surface of the endpoint.  Due dates are generated from 3 rules:\n1. CISA - Exact CISA Due Date\n2. IAVA - 18 Days from when TYCHON records an IAVA is released\n3. NVD - If a Vulnerability is marked as critical, the due date is generated as 30 days after its release.",
-        "risk_score": 99,
-        "severity": "critical",
-        "note": "Analysts should quarantine hosts that have out-of-date vulnerabilities, these are normally weaknesses that have active exploits in the wild. ",
+        "description": "A High Severity STIG/SCAP Check failed on an endpoint.",
+        "risk_score": 60,
+        "severity": "medium",
         "license": "",
         "output_index": "",
         "author": [
@@ -22,7 +21,7 @@
         ],
         "false_positives": [],
         "from": "now-360s",
-        "rule_id": "beeea32f-31ba-4be8-9e2c-14de47280aac",
+        "rule_id": "867e3450-1139-11ee-af86-538da1394f27",
         "max_signals": 100,
         "risk_score_mapping": [],
         "severity_mapping": [],
@@ -38,9 +37,7 @@
             }
         ],
         "to": "now",
-        "references": [
-            "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
-        ],
+        "references": [],
         "version": 1,
         "exceptions_list": [],
         "immutable": true,
@@ -50,9 +47,9 @@
         "type": "query",
         "language": "kuery",
         "index": [
-            "logs-tychon_latest.cve"
+            "logs-tychon_latest.stig"
         ],
-        "query": "tychon.vulnerability.result : \"fail\" and tychon.vulnerability.due_date < now",
+        "query": "tychon.rule.result : \"fail\" and tychon.rule.severity : \"high\" ",
         "filters": [],
         "actions": []
     }

@@ -1,27 +1,27 @@
 {
-    "id": "2140f083-6e39-4df4-ba41-aa1f41cb81b8",
+    "id": "5be38411-3902-4686-8209-1ab75a6d3847_1",
     "type": "security-rule",
     "attributes": {
-        "name": "High number of SCAP Failures",
+        "name": "Large number of failed Vulnerabilities ",
         "tags": [
-            "TYCHON",
-            "CCRI"
+            "CVE",
+            "TYCHON"
         ],
         "interval": "1h",
         "enabled": true,
         "revision": 0,
-        "description": "TYCHON has reported a high number of SCAP failures for an endpoint.  This can indicate a very weak security posture for an endpoint.",
-        "risk_score": 47,
-        "severity": "medium",
-        "note": "The system may need to be isolated.  Investigate the SCAP results for this system and perform fixes for all High and Medium checks.  ",
+        "description": "This endpoint has been determined to have a high number of total vulnerabilities failed, this can indicate an extremely exposed endpoint.",
+        "risk_score": 73,
+        "severity": "high",
+        "note": "Due to the high number of failed CVE checks, it is recommended that the security administrator quarantine this system immediately and bring the machine up to date with all patches. ",
         "license": "",
         "output_index": "",
         "author": [
             "TYCHON"
         ],
         "false_positives": [],
-        "from": "now-3660s",
-        "rule_id": "2140f083-6e39-4df4-ba41-aa1f41cb81b8",
+        "from": "now-3900s",
+        "rule_id": "5be38411-3902-4686-8209-1ab75a6d3847",
         "max_signals": 100,
         "risk_score_mapping": [],
         "severity_mapping": [],
@@ -29,9 +29,9 @@
             {
                 "framework": "MITRE ATT&CK",
                 "tactic": {
-                    "id": "TA0007",
-                    "name": "Discovery",
-                    "reference": "https://attack.mitre.org/tactics/TA0007"
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001"
                 },
                 "technique": []
             }
@@ -47,15 +47,15 @@
         "type": "threshold",
         "language": "kuery",
         "index": [
-            "logs-tychon_latest.stig"
+            "logs-tychon_latest.cve"
         ],
-        "query": "tychon.rule.result : \"fail\" and not tychon.rule.severity : \"low\" ",
+        "query": "tychon.vulnerability.result : \"fail\" ",
         "filters": [],
         "threshold": {
             "field": [
-                "tychon.id"
+                "tychon.tychon.id"
             ],
-            "value": 20,
+            "value": 30,
             "cardinality": []
         },
         "actions": []

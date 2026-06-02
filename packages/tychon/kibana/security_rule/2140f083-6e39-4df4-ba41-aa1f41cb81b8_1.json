@@ -1,27 +1,27 @@
 {
-    "id": "55faa99b-ce17-4a41-9f63-4a7439e3543a",
+    "id": "2140f083-6e39-4df4-ba41-aa1f41cb81b8_1",
     "type": "security-rule",
     "attributes": {
-        "name": "New Device Discovered",
+        "name": "High number of SCAP Failures",
         "tags": [
             "TYCHON",
-            "ARP"
+            "CCRI"
         ],
-        "interval": "8h",
+        "interval": "1h",
         "enabled": true,
         "revision": 0,
-        "description": "TYCHON pulls the ARP tables from endpoints, when new devices are found they should be investigated and validated.",
-        "risk_score": 21,
-        "severity": "low",
-        "note": "New devices come online and offline constantly, the MAC address should be investigated and resolved.",
+        "description": "TYCHON has reported a high number of SCAP failures for an endpoint.  This can indicate a very weak security posture for an endpoint.",
+        "risk_score": 47,
+        "severity": "medium",
+        "note": "The system may need to be isolated.  Investigate the SCAP results for this system and perform fixes for all High and Medium checks.  ",
         "license": "",
         "output_index": "",
         "author": [
             "TYCHON"
         ],
         "false_positives": [],
-        "from": "now-32400s",
-        "rule_id": "55faa99b-ce17-4a41-9f63-4a7439e3543a",
+        "from": "now-3660s",
+        "rule_id": "2140f083-6e39-4df4-ba41-aa1f41cb81b8",
         "max_signals": 100,
         "risk_score_mapping": [],
         "severity_mapping": [],
@@ -44,17 +44,20 @@
         "related_integrations": [],
         "required_fields": [],
         "setup": "",
-        "type": "new_terms",
-        "query": "not tychon.destination.mac : \"ff-ff-ff-ff-ff-ff\" ",
-        "new_terms_fields": [
-            "tychon.destination.mac"
-        ],
-        "history_window_start": "now-7d",
-        "index": [
-            "logs-tychon_latest.arp"
-        ],
-        "filters": [],
+        "type": "threshold",
         "language": "kuery",
+        "index": [
+            "logs-tychon_latest.stig"
+        ],
+        "query": "tychon.rule.result : \"fail\" and not tychon.rule.severity : \"low\" ",
+        "filters": [],
+        "threshold": {
+            "field": [
+                "tychon.id"
+            ],
+            "value": 20,
+            "cardinality": []
+        },
         "actions": []
     }
 }
