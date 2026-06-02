@@ -156,23 +156,11 @@ These transforms produce lookup indices queried by the dashboards using ES|QL LO
 
 ### Transform auto-start
 
-All Chargeback transforms except `cluster_capacity_utilization` start automatically when the integration is installed.
+All Chargeback transforms start automatically when the integration is installed.
 
-**`cluster_capacity_utilization` requires a manual start.** This transform reads from monitoring source indices covering all deployment types (`.monitoring-es-*`, `metricbeat-*`, `metrics-elasticsearch.stack_monitoring.node_stats-*`). To avoid a heavy historical backfill on first run, the transform is configured to process only the last 26 hours of data — so it builds utilization from the current day forward, not historically. Starting it automatically during package installation can cause a backend timeout. After installation, start it manually:
+The `cluster_capacity_utilization` transform reads from broad monitoring source indices covering all deployment types. To avoid a heavy historical backfill that could impact cluster performance on first run, it is configured to process only the last 26 hours of data — building utilization from the current day forward rather than historically. Utilization data from before installation is not backfilled; the 100% default applies until the transform has run for its first full day.
 
-1. Navigate to **Stack Management > Transforms**.
-2. Filter for `chargeback`.
-3. Find `logs-chargeback.cluster_capacity_utilization-*` and click **Start**.
-
-Alternatively, use the API:
-
-```
-POST _transform/logs-chargeback.cluster_capacity_utilization-default-0.4.0/_start
-```
-
-On clusters with months of historical monitoring data for multiple deployments, the initial run may process a large volume of data and cause temporary performance impact. Transforms then run incrementally on their configured schedules (15 to 60 minute intervals), processing only new data with minimal overhead.
-
-You can verify all transforms are running by navigating to **Stack Management > Transforms** and filtering for `chargeback`.
+You can verify the transforms are running by navigating to **Stack Management > Transforms** and filtering for `chargeback`.
 
 ### Transform health monitoring
 
