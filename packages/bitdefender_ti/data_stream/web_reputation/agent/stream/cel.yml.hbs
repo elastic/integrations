@@ -1,0 +1,81 @@
+type: cel
+interval: {{interval}}
+
+resource.url: {{resource_url}}
+
+resource.headers:
+  Auth-Token:
+    - {{api_token}}
+  Accept-Encoding:
+    - identity
+
+redact:
+  fields:
+    - api_token
+
+program: |
+  state.with({
+    "safe_to": now - duration("{{safety_lag}}"),
+    "window": duration("{{max_window}}"),
+    "overlap": duration("{{overlap}}"),
+    "initial_lookback": duration("{{initial_lookback}}"),
+    "feed_name": "{{feed_name}}"
+  }).as(st,
+    (
+      has(st.cursor) && has(st.cursor.next_from) ?
+      timestamp(st.cursor.next_from)
+      :
+      has(st.cursor) && has(st.cursor.last_success_at) ?
+      timestamp(st.cursor.last_success_at) - st.overlap
+      :
+      st.safe_to - st.initial_lookback
+    ).as(from_t,
+      (
+        from_t + st.window < st.safe_to ?
+        from_t + st.window
+        :
+        st.safe_to
+      ).as(to_t,
+        from_t >= to_t ?
+        {
+          "events": [],
+          "cursor": {
+            "last_success_at": st.safe_to.format(time_layout.RFC3339)
+          }
+        }
+        :
+        get(
+          st.url + "?" + {
+            "feed_name": [st.feed_name],
+            "{{from_param}}": [string(int(from_t))],
+            "{{to_param}}": [string(int(to_t))]
+          }.format_query()
+        ).as(resp,
+          resp.StatusCode == 200 ?
+          {
+            "events": resp.Body.decode_json_stream(),
+            "cursor": to_t < st.safe_to ?
+              {
+                "last_success_at": to_t.format(time_layout.RFC3339),
+                "next_from": to_t.format(time_layout.RFC3339)
+              }
+              :
+              {
+                "last_success_at": to_t.format(time_layout.RFC3339)
+              },
+            "want_more": to_t < st.safe_to
+          }
+          :
+          {
+            "events": [],
+            "error": {
+              "message": "HTTP " + string(resp.StatusCode)
+            },
+            "cursor": has(st.cursor) ? st.cursor : {
+              "last_success_at": from_t.format(time_layout.RFC3339)
+            }
+          }
+        )
+      )
+    )
+  )
