@@ -29,7 +29,7 @@ Chargeback costs are presented based on a configured rate and unit, used to conv
 - **[On-Premises Billing](https://github.com/elastic/integrations/tree/main/packages/onprem_billing)** integration (v0.3.3+) as a replacement for ESS Billing when running on-premises (ECE, ECK, self-managed). See that integration's README for ERU/mERU configuration.
 - [**Elasticsearch**](https://www.elastic.co/docs/reference/integrations/elasticsearch/) integration (v1.16.0+) must be **installed and actively running** on all monitored deployments, with the following datasets enabled:
   - **Index stats** (`elasticsearch.index` / `elasticsearch.stack_monitoring.index`) — required for tier and data stream cost allocation. The `logs-elasticsearch.index_pivot` transform must be running to aggregate these into `monitoring-indices`.
-  - **Node stats** (`elasticsearch.stack_monitoring.node_stats`) from data nodes — required for the realized cost utilization score (`cluster_capacity_utilization` transform). Node stats are written to `metrics-elasticsearch.stack_monitoring.node_stats-*` and are **not** available in `monitoring-indices`. Without node stats, utilization defaults to 100% and no utilization discount is applied.
+  - **Node stats** from data nodes — required for the realized cost utilization score (`cluster_capacity_utilization` transform). Node stats are read from `metrics-elasticsearch.stack_monitoring.node_stats-*` (Elasticsearch integration), `.monitoring-es-*` (cloud/on-prem monitoring), or `metricbeat-*` (Metricbeat) depending on your deployment type. They are **not** available in `monitoring-indices`. Without node stats, utilization defaults to 100% and no utilization discount is applied.
 
 **Required transforms:**
 - The transform `logs-elasticsearch.index_pivot-default-{VERSION}` (from the Elasticsearch integration) must be running to aggregate usage metrics per index into `monitoring-indices`.
@@ -158,7 +158,7 @@ These transforms produce lookup indices queried by the dashboards using ES|QL LO
 
 All Chargeback transforms except `cluster_capacity_utilization` start automatically when the integration is installed.
 
-**`cluster_capacity_utilization` requires a manual start.** This transform reads from broad monitoring source indices (including `.monitoring-es-*` and `metricbeat-*`) which may contain a large volume of historical data. Starting it automatically during package installation can cause a backend timeout. After installation, start it manually:
+**`cluster_capacity_utilization` requires a manual start.** This transform reads from monitoring source indices covering all deployment types (`.monitoring-es-*`, `metricbeat-*`, `metrics-elasticsearch.stack_monitoring.node_stats-*`). To avoid a heavy historical backfill on first run, the transform is configured to process only the last 26 hours of data — so it builds utilization from the current day forward, not historically. Starting it automatically during package installation can cause a backend timeout. After installation, start it manually:
 
 1. Navigate to **Stack Management > Transforms**.
 2. Filter for `chargeback`.

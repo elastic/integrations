@@ -2,11 +2,18 @@ description: Aggregates daily p95 heap and disk utilization across data-role nod
 source:
   index:
     - metrics-elasticsearch.stack_monitoring.node_stats*
+    - .monitoring-es-*
+    - metricbeat-*
   query:
     bool:
       filter:
-        - term:
-            event.dataset: elasticsearch.stack_monitoring.node_stats
+        - range:
+            "@timestamp":
+              gte: now-26h
+        - terms:
+            event.dataset:
+              - elasticsearch.node_stats
+              - elasticsearch.stack_monitoring.node_stats
         - exists:
             field: elasticsearch.node.roles
         - terms:
