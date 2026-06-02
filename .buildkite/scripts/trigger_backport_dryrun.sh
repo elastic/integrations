@@ -50,6 +50,12 @@ while IFS= read -r branch; do
     base_version="$(yq "${entry} | .base_version" "${NEW_INVENTORY}")"
     base_commit="$(yq "${entry} | .base_commit" "${NEW_INVENTORY}")"
 
+    # Determine whether this entry is new or has a meaningful change worth re-validating.
+    # base_commit is the key input to backport_branch.sh: it is the commit on main from
+    # which the backport branch is (or would be) created.  If it is unchanged from the
+    # previous version of the inventory the branch already exists with the right base, so
+    # there is nothing new to validate.  If it differs (or the branch is absent in the old
+    # inventory, in which case old_base_commit is empty) a dry-run is warranted.
     old_base_commit="$(yq ".backports[] | select(.branch == \"${branch}\") | .base_commit" \
         "${OLD_INVENTORY}" 2>/dev/null || true)"
 
