@@ -221,7 +221,7 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 
 // ValidateBackportsInventory validates the schema of .backports.yml at the repo root.
 func ValidateBackportsInventory() error {
-	return backports.ValidateInventory(".backports.yml")
+	return backports.ValidateInventory(".backports.yml", "packages")
 }
 
 // ListPackages lists all packages found under the packages directory.

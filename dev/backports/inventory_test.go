@@ -21,6 +21,21 @@ func writeTemp(t *testing.T, content string) string {
 	return path
 }
 
+// writePackagesDir creates a minimal packages/ directory under t.TempDir()
+// containing one package per name, each with a valid manifest.yml.
+// Returns the path to the packages/ directory.
+func writePackagesDir(t *testing.T, packageNames ...string) string {
+	t.Helper()
+	base := t.TempDir()
+	for _, name := range packageNames {
+		dir := filepath.Join(base, "packages", name)
+		require.NoError(t, os.MkdirAll(dir, 0700))
+		manifest := "format_version: \"1.0.0\"\nname: " + name + "\ntype: integration\nversion: \"1.0.0\"\n"
+		require.NoError(t, os.WriteFile(filepath.Join(dir, "manifest.yml"), []byte(manifest), 0600))
+	}
+	return filepath.Join(base, "packages")
+}
+
 const validEntry = `backports:
   - package: aws
     branch: backport-aws-3.17
@@ -32,9 +47,9 @@ const validEntry = `backports:
 
 func TestValidateInventory(t *testing.T) {
 	cases := []struct {
-		title      string
-		contents   string
-		wantErr    bool
+		title       string
+		contents    string
+		wantErr     bool
 		errContains []string
 	}{
 		{
@@ -49,6 +64,17 @@ func TestValidateInventory(t *testing.T) {
     base_version: "8.19.0"
     base_commit: "abcdef1234"
     maintained_until: "2027-01-15"
+    archived: false
+`,
+		},
+		{
+			title: "valid entry with prerelease base_version",
+			contents: `backports:
+  - package: apm
+    branch: backport-apm-8.15
+    base_version: "8.15.0-preview-1716438434"
+    base_commit: "86356203eb"
+    maintained_until: null
     archived: false
 `,
 		},
@@ -117,6 +143,71 @@ func TestValidateInventory(t *testing.T) {
 			errContains: []string{"missing required field 'archived'"},
 		},
 		{
+			title: "invalid base_version — not a semver",
+			contents: `backports:
+  - package: aws
+    branch: backport-aws-3.17
+    base_version: "not-a-version"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{"invalid base_version", "semantic version"},
+		},
+		{
+			title: "invalid base_version — missing patch segment",
+			contents: `backports:
+  - package: aws
+    branch: backport-aws-3.17
+    base_version: "3.17"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{"invalid base_version"},
+		},
+		{
+			title: "invalid base_commit — not hex",
+			contents: `backports:
+  - package: aws
+    branch: backport-aws-3.17
+    base_version: "3.17.0"
+    base_commit: "xyz_not_hex"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{"invalid base_commit", "lowercase hex SHA"},
+		},
+		{
+			title: "invalid base_commit — too short",
+			contents: `backports:
+  - package: aws
+    branch: backport-aws-3.17
+    base_version: "3.17.0"
+    base_commit: "abc12"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{"invalid base_commit", "lowercase hex SHA"},
+		},
+		{
+			title: "invalid base_commit — uppercase hex",
+			contents: `backports:
+  - package: aws
+    branch: backport-aws-3.17
+    base_version: "3.17.0"
+    base_commit: "5B593F6681"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{"invalid base_commit", "lowercase hex SHA"},
+		},
+		{
 			title: "invalid maintained_until format",
 			contents: `backports:
   - package: aws
@@ -152,7 +243,7 @@ func TestValidateInventory(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.title, func(t *testing.T) {
 			path := writeTemp(t, tc.contents)
-			err := ValidateInventory(path)
+			err := ValidateInventory(path, "")
 			if tc.wantErr {
 				require.Error(t, err)
 				for _, substr := range tc.errContains {
@@ -166,8 +257,41 @@ func TestValidateInventory(t *testing.T) {
 	}
 }
 
+func TestValidateInventoryPackageValidation(t *testing.T) {
+	contents := func(pkg string) string {
+		return `backports:
+  - package: ` + pkg + `
+    branch: backport-` + pkg + `-1.0
+    base_version: "1.0.0"
+    base_commit: "abcdef1234"
+    maintained_until: null
+    archived: false
+`
+	}
+
+	t.Run("known package passes", func(t *testing.T) {
+		packagesDir := writePackagesDir(t, "aws", "kubernetes")
+		path := writeTemp(t, contents("aws"))
+		require.NoError(t, ValidateInventory(path, packagesDir))
+	})
+
+	t.Run("unknown package fails", func(t *testing.T) {
+		packagesDir := writePackagesDir(t, "aws")
+		path := writeTemp(t, contents("no_such_package"))
+		err := ValidateInventory(path, packagesDir)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "unknown package")
+		assert.Contains(t, err.Error(), "no_such_package")
+	})
+
+	t.Run("empty packagesDir skips package check", func(t *testing.T) {
+		path := writeTemp(t, contents("totally_made_up"))
+		require.NoError(t, ValidateInventory(path, ""))
+	})
+}
+
 func TestValidateInventoryFileNotFound(t *testing.T) {
-	err := ValidateInventory("/no/such/file.yml")
+	err := ValidateInventory("/no/such/file.yml", "")
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "reading inventory")
 }
