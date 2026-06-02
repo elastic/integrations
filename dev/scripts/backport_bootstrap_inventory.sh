@@ -97,7 +97,6 @@ find_manifest_path() {
     fi
 
     # 3. Full scan: match by name field (handles deeper or unusual layouts)
-    local all_manifests
     while IFS= read -r candidate; do
         local name
         name="$(git show "${ref}:${candidate}" 2>/dev/null \

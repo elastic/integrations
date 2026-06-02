@@ -27,6 +27,16 @@ fi
 echo "--- .backports.yml changed — finding new or updated entries"
 
 BASE_BRANCH="${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
+
+OLD_INVENTORY=""
+PIPELINE_FILE=""
+
+cleanup() {
+    [[ -n "${OLD_INVENTORY}" ]] && rm -f "${OLD_INVENTORY}"
+    [[ -n "${PIPELINE_FILE}" ]] && rm -f "${PIPELINE_FILE}"
+}
+trap cleanup EXIT
+
 OLD_INVENTORY="$(mktemp)"
 NEW_INVENTORY=".backports.yml"
 
