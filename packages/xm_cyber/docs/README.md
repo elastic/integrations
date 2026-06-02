@@ -123,22 +123,22 @@ An example event for `audit_trail` looks as following:
 {
     "@timestamp": "2023-01-03T19:13:54.358Z",
     "agent": {
-        "ephemeral_id": "264cd8ef-875d-4e14-a2c0-3b35c29827f8",
-        "id": "c7ed7c43-bba7-4c00-9d81-ef2ed5ea7d76",
-        "name": "elastic-agent-69092",
+        "ephemeral_id": "82c58df4-60d3-4f5e-acfc-8487938b89be",
+        "id": "60d4174b-a8ab-4553-87d1-babcd72f3d97",
+        "name": "elastic-agent-45805",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.audit_trail",
-        "namespace": "31658",
+        "namespace": "38562",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "c7ed7c43-bba7-4c00-9d81-ef2ed5ea7d76",
+        "id": "60d4174b-a8ab-4553-87d1-babcd72f3d97",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -147,9 +147,12 @@ An example event for `audit_trail` looks as following:
         "agent_id_status": "verified",
         "dataset": "xm_cyber.audit_trail",
         "id": "63b47e72ee320700106d4381",
-        "ingested": "2026-05-27T06:51:07Z",
+        "ingested": "2026-06-02T07:28:02Z",
         "kind": "event",
-        "original": "{\"_id\":\"63b47e72ee320700106d4381\",\"details\":\"john.doe@example.com Logged in via user\",\"eventSubType\":\"XM_LOGIN\",\"eventType\":\"ACCESS\",\"objectName\":\"User\",\"objectType\":\"USER\",\"tenant\":\"acme\",\"terminalId\":{\"hostname\":\"acme.clients.xmcyber.com\",\"ip\":\"192.0.2.0\"},\"timestamp\":\"2023-01-03T19:13:54.358Z\",\"userId\":{\"email\":\"john.doe@example.com\",\"name\":\"John Doe\"}}"
+        "original": "{\"_id\":\"63b47e72ee320700106d4381\",\"details\":\"john.doe@example.com Logged in via user\",\"eventSubType\":\"XM_LOGIN\",\"eventType\":\"ACCESS\",\"objectName\":\"User\",\"objectType\":\"USER\",\"tenant\":\"acme\",\"terminalId\":{\"hostname\":\"acme.clients.xmcyber.com\",\"ip\":\"192.0.2.0\"},\"timestamp\":\"2023-01-03T19:13:54.358Z\",\"userId\":{\"email\":\"john.doe@example.com\",\"name\":\"John Doe\"}}",
+        "type": [
+            "access"
+        ]
     },
     "input": {
         "type": "cel"
@@ -202,8 +205,7 @@ An example event for `audit_trail` looks as following:
     "xm_cyber": {
         "audit_trail": {
             "details": "john.doe@example.com Logged in via user",
-            "event_sub_type": "XM_LOGIN",
-            "event_type": "ACCESS",
+            "event_type": "access",
             "object_name": "User",
             "object_type": "USER",
             "tenant": "acme"

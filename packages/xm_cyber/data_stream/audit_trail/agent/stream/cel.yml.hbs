@@ -1,4 +1,3 @@
-config_version: 2
 interval: {{interval}}
 resource.tracer:
   enabled: {{enable_request_tracer}}
@@ -99,7 +98,7 @@ program: |-
                       has(body.paging) && has(body.paging.nextLink) && body.paging.nextLink != null
                     ) ? optional.of(string(body.paging.nextLink)) : optional.none(),
                   },
-                  "want_more": has(body.paging) && has(body.paging.nextLink) && body.paging.nextLink != null,
+                  "want_more": body.paging.nextLink.orValue(null) != null,
                 }
               )
             : (resp.StatusCode == 401 || resp.StatusCode == 419) ?

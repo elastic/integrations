@@ -14,7 +14,7 @@ processors:
   - drop:
       description: Drops CEL retry messages from the ingest stream.
       tag: drop_cel_retry_message
-      if: ctx.message instanceof String && ctx.message == 'retry'
+      if: ctx.message == 'retry'
   # remove agentless metadata
   - remove:
       description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
@@ -95,6 +95,19 @@ processors:
       field: event.id
       copy_from: xm_cyber.audit_trail._id
       ignore_empty_value: true
+  - lowercase:
+      tag: lowercase_event_type
+      field: xm_cyber.audit_trail.eventType
+      ignore_missing: true
+  - append:
+      tag: append_event_type_to_event_type
+      field: event.type
+      value: '{{{xm_cyber.audit_trail.eventType}}}'
+      allow_duplicates: false
+      if: >-
+        ctx.xm_cyber?.audit_trail?.eventType != null
+        && ctx.xm_cyber.audit_trail.eventType != ''
+        && ["access","admin","allowed","change","connection","creation","deletion","denied","device","end","error","group","indicator","info","installation","protocol","start","user"].contains(ctx.xm_cyber.audit_trail.eventType)
   - set:
       tag: set_event_action_from_audit_event_sub_type
       field: event.action
@@ -273,6 +286,7 @@ processors:
         - xm_cyber.audit_trail.user_id
         - xm_cyber.audit_trail.terminal_id.ip
         - xm_cyber.audit_trail.terminal_id.hostname
+        - xm_cyber.audit_trail.event_sub_type
       ignore_missing: true
 
   # Drop null/empty values from the document
