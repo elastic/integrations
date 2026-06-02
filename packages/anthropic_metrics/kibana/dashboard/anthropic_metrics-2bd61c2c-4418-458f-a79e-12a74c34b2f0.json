@@ -28,7 +28,7 @@
                     "layout": "horizontal",
                     "links": [
                         {
-                            "destinationRefName": "link_8ab6f142-af28-4351-82a3-be1ce5cb4ec7_dashboard",
+                            "destinationRefName": "link_8e32cb47-1d33-41ec-b827-9b4728226456_dashboard",
                             "label": "Cost \u0026 Billing",
                             "options": {
                                 "open_in_new_tab": false,
@@ -38,7 +38,7 @@
                             "type": "dashboardLink"
                         },
                         {
-                            "destinationRefName": "link_45d10643-b40d-4862-a2de-1e7d08ec9ab0_dashboard",
+                            "destinationRefName": "link_741402d0-813f-47b7-90c2-c38d8c24f896_dashboard",
                             "label": "Usage \u0026 Rate Limit Monitor",
                             "options": {
                                 "open_in_new_tab": false,
@@ -1427,6 +1427,155 @@
                 },
                 "panelIndex": "3c21c089-6b80-40e1-a6b4-dcb3fe4475ae",
                 "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.cost-*-@timestamp": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.cost-*-@timestamp",
+                                    "name": "metrics-anthropic_metrics.cost-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-anthropic_metrics.cost-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_x",
+                                                    "customLabel": true,
+                                                    "fieldName": "bucket",
+                                                    "label": "Date",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_y_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Total Cost (USD)",
+                                                    "label": "Total Cost (USD)",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 2,
+                                                                "suffix": " USD"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.cost-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS `Total Cost (USD)` = SUM(amount_usd) BY bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.cost-*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-bar_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS `Total Cost (USD)` = SUM(amount_usd) BY bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT bucket ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_y_0"
+                                        ],
+                                        "layerId": "bar_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar",
+                                        "xAccessor": "bar_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_y_0"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "maxLines": 1,
+                                    "position": "bottom"
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Daily / Monthly Cost Over Time",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": " Cost Over Time"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "3297ec6d-4cb9-4477-91a7-8fec069861db",
+                    "w": 48,
+                    "x": 0,
+                    "y": 59
+                },
+                "panelIndex": "3297ec6d-4cb9-4477-91a7-8fec069861db",
+                "type": "vis"
             }
         ],
         "pinned_panels": {
@@ -1495,12 +1644,12 @@
     "references": [
         {
             "id": "anthropic_metrics-2bd61c2c-4418-458f-a79e-12a74c34b2f0",
-            "name": "1d92f8b8-c16a-4452-bdb8-dafbf7125147:link_8ab6f142-af28-4351-82a3-be1ce5cb4ec7_dashboard",
+            "name": "1d92f8b8-c16a-4452-bdb8-dafbf7125147:link_8e32cb47-1d33-41ec-b827-9b4728226456_dashboard",
             "type": "dashboard"
         },
         {
             "id": "anthropic_metrics-602de168-1b42-4dd6-a463-9c4878e5db94",
-            "name": "1d92f8b8-c16a-4452-bdb8-dafbf7125147:link_45d10643-b40d-4862-a2de-1e7d08ec9ab0_dashboard",
+            "name": "1d92f8b8-c16a-4452-bdb8-dafbf7125147:link_741402d0-813f-47b7-90c2-c38d8c24f896_dashboard",
             "type": "dashboard"
         },
         {
