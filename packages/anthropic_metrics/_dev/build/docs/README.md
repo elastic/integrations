@@ -31,7 +31,7 @@ Token usage metrics aggregated in configurable time buckets (1 minute, 1 hour, o
 
 ### Cost
 
-Daily cost data in USD:
+Daily cost data (amounts reported by the API in lowest units (eg cents)):
 - Token usage costs, web search costs, and code execution costs
 - Breakdowns by workspace and description (includes model and inference geography)
 
