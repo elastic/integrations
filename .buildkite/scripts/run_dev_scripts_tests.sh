@@ -11,8 +11,10 @@ pass=0
 fail=0
 
 DUMMY_REPO=""
+DUMMY_INVENTORY=""
 cleanup() {
-    [[ -n "$DUMMY_REPO" ]] && teardown_dummy_repo "$DUMMY_REPO"
+    [[ -n "${DUMMY_REPO}" ]] && teardown_dummy_repo "${DUMMY_REPO}"
+    [[ -n "${DUMMY_INVENTORY}" ]] && rm -f "${DUMMY_INVENTORY}"
 }
 trap cleanup EXIT
 
@@ -142,9 +144,8 @@ echo "--- Running backport_check_active.sh tests"
 ACTIVE_SCRIPT="${REPO_ROOT}/dev/scripts/backport_check_active.sh"
 
 # Create a temporary inventory file with known entries for all test cases.
+# DUMMY_INVENTORY is declared at the top so the shared EXIT trap cleans it up.
 DUMMY_INVENTORY="$(mktemp)"
-cleanup_inventory() { rm -f "${DUMMY_INVENTORY}"; }
-trap 'cleanup_inventory; [[ -n "$DUMMY_REPO" ]] && teardown_dummy_repo "$DUMMY_REPO"' EXIT
 cat > "${DUMMY_INVENTORY}" <<'YAML'
 backports:
   - package: mypkg
@@ -247,8 +248,6 @@ assert_exit_code "missing --branch exits 2" "2" "${exit_code}"
 exit_code=0
 run_check --unknown-flag > /dev/null 2>&1 || exit_code=$?
 assert_exit_code "unknown flag exits 2" "2" "${exit_code}"
-
-cleanup_inventory
 
 echo "--- Results: ${pass} passed, ${fail} failed"
 if [[ "${fail}" -gt 0 ]]; then

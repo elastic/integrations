@@ -5,6 +5,8 @@
 #   inactive if:  archived == true
 #             OR  (maintained_until != null AND maintained_until < today)
 #
+# Requires: yq (https://github.com/mikefarah/yq)
+#
 # Usage: backport_check_active.sh --branch <branch-name> [--json]
 # Exit codes: 0 = active, 1 = inactive, 2 = error (missing args, not found, etc.)
 
@@ -66,55 +68,15 @@ if [[ ! -f "${INVENTORY}" ]]; then
     exit 2
 fi
 
-# Parse .backports.yml with awk and extract the fields for the target branch.
-# The file has a predictable structure: each entry starts with "  - " at the
-# top level and has 4-space-indented fields beneath it.
-parse_entry() {
-    local inventory="$1"
-    local target="$2"
-    awk -v target="${target}" '
-        /^  - / {
-            if (found) {
-                print "archived=" archived
-                print "maintained_until=" maintained_until
-                found = 0
-            }
-            in_entry = 1; found = 0; archived = ""; maintained_until = ""
-        }
-        in_entry && /^    branch: / {
-            val = $0
-            sub(/^[ ]*branch:[ ]*/, "", val)
-            gsub(/^"|"$/, "", val)
-            if (val == target) found = 1
-        }
-        found && /^    archived: /        { archived = $2 }
-        found && /^    maintained_until: / {
-            val = $2
-            gsub(/"/, "", val)
-            maintained_until = val
-        }
-        END {
-            if (found) {
-                print "archived=" archived
-                print "maintained_until=" maintained_until
-            }
-        }
-    ' "${inventory}"
-}
+entry=".backports[] | select(.branch == \"${BRANCH}\")"
 
-archived=""
-maintained_until=""
-while IFS='=' read -r key val; do
-    case "${key}" in
-        archived)         archived="${val}" ;;
-        maintained_until) maintained_until="${val}" ;;
-    esac
-done < <(parse_entry "${INVENTORY}" "${BRANCH}")
-
-if [[ -z "${archived}" ]]; then
+if [[ "$(yq "[${entry}] | length" "${INVENTORY}")" -eq 0 ]]; then
     echo "Error: branch '${BRANCH}' not found in ${INVENTORY}" >&2
     exit 2
 fi
+
+archived="$(yq "${entry} | .archived" "${INVENTORY}")"
+maintained_until="$(yq "${entry} | .maintained_until" "${INVENTORY}")"
 
 # Apply active logic.
 active="true"
