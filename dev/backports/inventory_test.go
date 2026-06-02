@@ -208,6 +208,99 @@ func TestValidateInventory(t *testing.T) {
 			errContains: []string{"invalid base_commit", "lowercase hex SHA"},
 		},
 		{
+			title: "valid branch with x wildcard version",
+			contents: `backports:
+  - package: aws
+    branch: backport-aws-6.x
+    base_version: "6.0.0"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+`,
+		},
+		{
+			title: "valid branch with x wildcard and minor",
+			contents: `backports:
+  - package: aws
+    branch: backport-aws-6.14.x
+    base_version: "6.14.0"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+`,
+		},
+		{
+			title: "invalid branch — missing backport- prefix",
+			contents: `backports:
+  - package: aws
+    branch: aws-3.17
+    base_version: "3.17.0"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{"invalid branch"},
+		},
+		{
+			title: "invalid branch — version does not start with a digit",
+			contents: `backports:
+  - package: aws
+    branch: backport-aws-v3.17
+    base_version: "3.17.0"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{"invalid branch"},
+		},
+		{
+			title: "invalid branch — contains whitespace",
+			contents: `backports:
+  - package: aws
+    branch: "backport-aws 3.17"
+    base_version: "3.17.0"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{"invalid branch"},
+		},
+		{
+			title: "invalid branch — contains colon",
+			contents: `backports:
+  - package: aws
+    branch: "backport-aws:3.17"
+    base_version: "3.17.0"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{"invalid branch"},
+		},
+		{
+			title: "invalid branch — contains single quote",
+			contents: "backports:\n  - package: aws\n    branch: \"backport-aws-3'17\"\n    base_version: \"3.17.0\"\n    base_commit: \"5b593f6681\"\n    maintained_until: null\n    archived: false\n",
+			wantErr:     true,
+			errContains: []string{"invalid branch"},
+		},
+		{
+			title: "invalid branch — no version segment",
+			contents: `backports:
+  - package: aws
+    branch: backport-aws
+    base_version: "3.17.0"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{"invalid branch"},
+		},
+		{
 			title: "invalid maintained_until format",
 			contents: `backports:
   - package: aws

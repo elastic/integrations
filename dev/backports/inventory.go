@@ -36,6 +36,17 @@ const maintainedUntilLayout = "2006-01-02"
 // shaRE matches a lowercase hexadecimal git SHA (short or full, 7–40 chars).
 var shaRE = regexp.MustCompile(`^[0-9a-f]{7,40}$`)
 
+// branchRE matches a valid backport branch name:
+//
+//	backport-<package>-<version>
+//
+// where <package> is one or more letters, digits, or underscores, and
+// <version> starts with a digit followed by digits, dots, and an optional
+// trailing 'x' wildcard (e.g. "6.x" or "6.14.x").
+// Whitespace, quotes, colons, semicolons, and all other special characters
+// are not permitted.
+var branchRE = regexp.MustCompile(`^backport-[a-zA-Z0-9_]+-[0-9][0-9.]*x?$`)
+
 // ValidateInventory reads the .backports.yml inventory at path and returns a
 // combined error listing every schema violation found across all entries.
 //
@@ -75,6 +86,10 @@ func ValidateInventory(path, packagesDir string) error {
 
 		if e.Branch == "" {
 			errs = append(errs, fmt.Errorf("%s: missing required field 'branch'", id))
+		} else if !branchRE.MatchString(e.Branch) {
+			errs = append(errs, fmt.Errorf("%s: invalid branch %q: must match backport-<package>-<version> "+
+				"(letters/digits/underscores in package name, version starts with a digit; "+
+				"no whitespace, quotes, colons, semicolons or other special characters)", id, e.Branch))
 		}
 
 		if e.BaseVersion == "" {
