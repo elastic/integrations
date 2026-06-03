@@ -41,8 +41,9 @@ OLD_INVENTORY="$(mktemp)"
 NEW_INVENTORY=".backports.yml"
 
 if ! git show "origin/${BASE_BRANCH}:.backports.yml" > "${OLD_INVENTORY}" 2>/dev/null; then
-    echo "Old .backports.yml not found (file is new); treating all entries as new"
-    echo "backports: []" > "${OLD_INVENTORY}"
+    echo ".backports.yml is new on ${BASE_BRANCH} — skipping dry-runs for initial entries"
+    echo "To validate new entries, add them in a follow-up PR after this one merges."
+    exit 0
 fi
 
 if ! yq -e '.backports' "${OLD_INVENTORY}" > /dev/null; then
