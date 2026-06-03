@@ -45,12 +45,12 @@ if ! git show "origin/${BASE_BRANCH}:.backports.yml" > "${OLD_INVENTORY}" 2>/dev
     echo "backports: []" > "${OLD_INVENTORY}"
 fi
 
-if ! yq '.backports | length' "${OLD_INVENTORY}" > /dev/null; then
+if ! yq -e '.backports' "${OLD_INVENTORY}" > /dev/null; then
     echo "ERROR: old inventory is not valid YAML or missing 'backports' key: ${OLD_INVENTORY}"
     exit 1
 fi
 
-if ! yq '.backports | length' "${NEW_INVENTORY}" > /dev/null; then
+if ! yq -e '.backports' "${NEW_INVENTORY}" > /dev/null; then
     echo "ERROR: new inventory is not valid YAML or missing 'backports' key: ${NEW_INVENTORY}"
     exit 1
 fi
@@ -71,8 +71,7 @@ while IFS= read -r branch; do
     # If the entry already existed, the git branch is already created; there is
     # nothing to provision. This also covers re-activating a previously archived
     # entry (archived:true → false): the branch exists, so no dry-run is needed.
-    old_branch="$(yq ".backports[] | select(.branch == \"${branch}\") | .branch" \
-        "${OLD_INVENTORY}")"
+    old_branch="$(yq "${entry} | .branch" "${OLD_INVENTORY}")"
 
     if [[ -n "${old_branch}" ]]; then
         echo "  Skipping existing entry: ${branch} (already present in base branch)"
@@ -107,7 +106,7 @@ done < <(yq '.backports[].branch' "${NEW_INVENTORY}")
 rm -f "${OLD_INVENTORY}"
 
 if [[ "${entries_found}" -eq 0 ]]; then
-    echo "No new or changed non-archived entries found, skipping dry-run trigger"
+    echo "No new non-archived entries found, skipping dry-run trigger"
     rm -f "${PIPELINE_FILE}"
     exit 0
 fi
