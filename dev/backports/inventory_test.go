@@ -282,8 +282,8 @@ func TestValidateInventory(t *testing.T) {
 			errContains: []string{"invalid branch"},
 		},
 		{
-			title: "invalid branch — contains single quote",
-			contents: "backports:\n  - package: aws\n    branch: \"backport-aws-3'17\"\n    base_version: \"3.17.0\"\n    base_commit: \"5b593f6681\"\n    maintained_until: null\n    archived: false\n",
+			title:       "invalid branch — contains single quote",
+			contents:    "backports:\n  - package: aws\n    branch: \"backport-aws-3'17\"\n    base_version: \"3.17.0\"\n    base_commit: \"5b593f6681\"\n    maintained_until: null\n    archived: false\n",
 			wantErr:     true,
 			errContains: []string{"invalid branch"},
 		},

@@ -28,7 +28,7 @@ type entry struct {
 	BaseVersion     string  `yaml:"base_version"`
 	BaseCommit      string  `yaml:"base_commit"`
 	MaintainedUntil *string `yaml:"maintained_until"` // null → nil; "YYYY-MM-DD" → &string
-	Archived        *bool   `yaml:"archived"`          // nil when field is absent
+	Archived        *bool   `yaml:"archived"`         // nil when field is absent
 }
 
 const maintainedUntilLayout = "2006-01-02"
