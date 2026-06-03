@@ -114,20 +114,23 @@ program: |
             {
               "events": body.?data.orValue([]).map(rl, {
                 "message": {
-                  "id": rl.?id.orValue(null),
-                  "object": rl.?object.orValue(null),
-                  "model": rl.?model.orValue(null),
                   "project_id": proj.id,
                   "project_name": proj.name,
                   "project_status": proj.status,
-                  "max_requests_per_1_minute": rl.?max_requests_per_1_minute.orValue(null),
-                  "max_tokens_per_1_minute": rl.?max_tokens_per_1_minute.orValue(null),
-                  "max_images_per_1_minute": rl.?max_images_per_1_minute.orValue(null),
-                  "max_audio_megabytes_per_1_minute": rl.?max_audio_megabytes_per_1_minute.orValue(null),
-                  "max_requests_per_1_day": rl.?max_requests_per_1_day.orValue(null),
-                  "max_tokens_per_1_day": rl.?max_tokens_per_1_day.orValue(null),
-                  "batch_1_day_max_input_tokens": rl.?batch_1_day_max_input_tokens.orValue(null),
                   "collected_at": now.format(time_layout.RFC3339),
+                  // Optional map entries: a field is included only when present in the
+                  // API response, so sparse records never emit null (which would fail the
+                  // long-typed field mappings on ingest).
+                  ?"id": rl.?id,
+                  ?"object": rl.?object,
+                  ?"model": rl.?model,
+                  ?"max_requests_per_1_minute": rl.?max_requests_per_1_minute,
+                  ?"max_tokens_per_1_minute": rl.?max_tokens_per_1_minute,
+                  ?"max_images_per_1_minute": rl.?max_images_per_1_minute,
+                  ?"max_audio_megabytes_per_1_minute": rl.?max_audio_megabytes_per_1_minute,
+                  ?"max_requests_per_1_day": rl.?max_requests_per_1_day,
+                  ?"max_tokens_per_1_day": rl.?max_tokens_per_1_day,
+                  ?"batch_1_day_max_input_tokens": rl.?batch_1_day_max_input_tokens,
                 }.encode_json(),
               }),
               "rl_after": more ? body.?last_id.orValue("") : "",
