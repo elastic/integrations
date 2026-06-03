@@ -107,11 +107,14 @@ program: |
         ).do_request().as(resp, (resp.StatusCode == 200 || resp.StatusCode == 206) ?
             bytes(resp.Body).decode_json().as(body,
                 {
-                    "events": body.objects.map(e,
-                        {
-                            "message": e.encode_json(),
-                        }
-                    ),
+                    "events": has(body.objects) && type(body.objects) == list ?
+                        body.objects.map(e,
+                            {
+                                "message": e.encode_json(),
+                            }
+                        )
+                    :
+                        [],
                     "accept_header": state.accept_header,
                     "content_header": state.?content_header.orValue(""),
                     "url": state.url,
