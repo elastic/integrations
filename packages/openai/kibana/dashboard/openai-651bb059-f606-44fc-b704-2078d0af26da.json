@@ -4052,13 +4052,28 @@
                     "columnId": "d74a783a-c5bd-4893-a284-519bb1227e2d",
                     "isTransposed": false,
                     "isMetric": true
+                  },
+                  {
+                    "columnId": "2a110b02-ac3b-4bcd-9ca9-a79814bf7c80",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "9a8af9ac-42b1-4874-9a1c-a3d9c9ea58e7",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "12f87bdd-3261-4a56-8936-33e2a37bd302",
+                    "isTransposed": false,
+                    "isMetric": true
                   }
                 ],
                 "layerId": "f263fc83-4830-4169-b380-33a45b8181f7",
                 "layerType": "data"
               },
               "query": {
-                "esql": "FROM logs-openai.*\n| WHERE event.dataset IN (\"openai.rate_limits\", \"openai.completions\", \"openai.embeddings\", \"openai.moderations\", \"openai.audio_speeches\", \"openai.audio_transcriptions\", \"openai.images\")\n| EVAL project_id = COALESCE(openai.rate_limits.project_id, openai.base.project_id)\n| EVAL model = COALESCE(openai.rate_limits.model, openai.base.model)\n// Every usage stream carries num_model_requests (RPM), but only completions/embeddings/moderations\n// carry tokens. usage_tokens is normalized into openai.base.usage_tokens and COALESCEd to 0, so the\n// audio/image streams contribute to RPM without inflating TPM, and the panel still resolves when a\n// usage stream has no data.\n| EVAL usage_tokens = COALESCE(openai.base.usage_tokens, 0)\n| STATS\n    tpm_used_minute = SUM(usage_tokens),\n    rpm_used_minute = SUM(openai.base.num_model_requests),\n    tpm_limit = MAX(openai.rate_limits.max_tokens_per_1_minute),\n    rpm_limit = MAX(openai.rate_limits.max_requests_per_1_minute)\n  BY project_id, model, minute = BUCKET(@timestamp, 1 minute)\n| STATS\n    tpm_used = MAX(tpm_used_minute), rpm_used = MAX(rpm_used_minute),\n    tpm_limit = MAX(tpm_limit), rpm_limit = MAX(rpm_limit)\n  BY project_id, model\n| WHERE tpm_limit IS NOT NULL OR rpm_limit IS NOT NULL\n// TO_DOUBLE avoids integer division (otherwise utilization is always 0 until usage exceeds the limit)\n| EVAL tpm_utilization = CASE(tpm_limit > 0, TO_DOUBLE(tpm_used) / tpm_limit, null)\n| EVAL rpm_utilization = CASE(rpm_limit > 0, TO_DOUBLE(rpm_used) / rpm_limit, null)\n// Push models with no usage (infinite headroom, not actionable) to the bottom,\n// and rank the rest by their highest utilization.\n| EVAL has_usage = CASE(COALESCE(tpm_used, 0) > 0 OR COALESCE(rpm_used, 0) > 0, 1, 0)\n| EVAL sort_util = GREATEST(COALESCE(tpm_utilization, 0), COALESCE(rpm_utilization, 0))\n| SORT has_usage DESC, sort_util DESC, tpm_used DESC\n| KEEP project_id, model, rpm_used, rpm_limit, rpm_utilization, tpm_used, tpm_limit, tpm_utilization\n| LIMIT 100"
+                "esql": "FROM logs-openai.*\n| WHERE event.dataset IN (\"openai.rate_limits\", \"openai.completions\", \"openai.embeddings\", \"openai.moderations\", \"openai.audio_speeches\", \"openai.audio_transcriptions\", \"openai.images\")\n| EVAL project_id = COALESCE(openai.rate_limits.project_id, openai.base.project_id)\n| EVAL model = COALESCE(openai.rate_limits.model, openai.base.model)\n// Every usage stream carries num_model_requests (RPM), but only completions/embeddings/moderations\n// carry tokens and only the images stream carries an image count. usage_tokens and usage_images are\n// normalized and COALESCEd to 0, so each stream contributes only to the dimensions it reports without\n// inflating the others, and the panel still resolves when a usage stream has no data.\n| EVAL usage_tokens = COALESCE(openai.base.usage_tokens, 0)\n| EVAL usage_images = COALESCE(openai.images.images, 0)\n| STATS\n    tpm_used_minute = SUM(usage_tokens),\n    rpm_used_minute = SUM(openai.base.num_model_requests),\n    ipm_used_minute = SUM(usage_images),\n    tpm_limit = MAX(openai.rate_limits.max_tokens_per_1_minute),\n    rpm_limit = MAX(openai.rate_limits.max_requests_per_1_minute),\n    ipm_limit = MAX(openai.rate_limits.max_images_per_1_minute)\n  BY project_id, model, minute = BUCKET(@timestamp, 1 minute)\n| STATS\n    tpm_used = MAX(tpm_used_minute), rpm_used = MAX(rpm_used_minute), ipm_used = MAX(ipm_used_minute),\n    tpm_limit = MAX(tpm_limit), rpm_limit = MAX(rpm_limit), ipm_limit = MAX(ipm_limit)\n  BY project_id, model\n| WHERE tpm_limit IS NOT NULL OR rpm_limit IS NOT NULL OR ipm_limit IS NOT NULL\n// TO_DOUBLE avoids integer division (otherwise utilization is always 0 until usage exceeds the limit)\n| EVAL tpm_utilization = CASE(tpm_limit > 0, TO_DOUBLE(tpm_used) / tpm_limit, null)\n| EVAL rpm_utilization = CASE(rpm_limit > 0, TO_DOUBLE(rpm_used) / rpm_limit, null)\n| EVAL ipm_utilization = CASE(ipm_limit > 0, TO_DOUBLE(ipm_used) / ipm_limit, null)\n// Push models with no usage (infinite headroom, not actionable) to the bottom,\n// and rank the rest by their highest utilization.\n| EVAL has_usage = CASE(COALESCE(tpm_used, 0) > 0 OR COALESCE(rpm_used, 0) > 0 OR COALESCE(ipm_used, 0) > 0, 1, 0)\n| EVAL sort_util = GREATEST(COALESCE(tpm_utilization, 0), COALESCE(rpm_utilization, 0), COALESCE(ipm_utilization, 0))\n| SORT has_usage DESC, sort_util DESC, tpm_used DESC\n| KEEP project_id, model, rpm_used, rpm_limit, rpm_utilization, tpm_used, tpm_limit, tpm_utilization, ipm_used, ipm_limit, ipm_utilization\n| LIMIT 100"
               },
               "filters": [],
               "datasourceStates": {
@@ -4066,7 +4081,7 @@
                   "layers": {
                     "f263fc83-4830-4169-b380-33a45b8181f7": {
                       "query": {
-                        "esql": "FROM logs-openai.*\n| WHERE event.dataset IN (\"openai.rate_limits\", \"openai.completions\", \"openai.embeddings\", \"openai.moderations\", \"openai.audio_speeches\", \"openai.audio_transcriptions\", \"openai.images\")\n| EVAL project_id = COALESCE(openai.rate_limits.project_id, openai.base.project_id)\n| EVAL model = COALESCE(openai.rate_limits.model, openai.base.model)\n// Every usage stream carries num_model_requests (RPM), but only completions/embeddings/moderations\n// carry tokens. usage_tokens is normalized into openai.base.usage_tokens and COALESCEd to 0, so the\n// audio/image streams contribute to RPM without inflating TPM, and the panel still resolves when a\n// usage stream has no data.\n| EVAL usage_tokens = COALESCE(openai.base.usage_tokens, 0)\n| STATS\n    tpm_used_minute = SUM(usage_tokens),\n    rpm_used_minute = SUM(openai.base.num_model_requests),\n    tpm_limit = MAX(openai.rate_limits.max_tokens_per_1_minute),\n    rpm_limit = MAX(openai.rate_limits.max_requests_per_1_minute)\n  BY project_id, model, minute = BUCKET(@timestamp, 1 minute)\n| STATS\n    tpm_used = MAX(tpm_used_minute), rpm_used = MAX(rpm_used_minute),\n    tpm_limit = MAX(tpm_limit), rpm_limit = MAX(rpm_limit)\n  BY project_id, model\n| WHERE tpm_limit IS NOT NULL OR rpm_limit IS NOT NULL\n// TO_DOUBLE avoids integer division (otherwise utilization is always 0 until usage exceeds the limit)\n| EVAL tpm_utilization = CASE(tpm_limit > 0, TO_DOUBLE(tpm_used) / tpm_limit, null)\n| EVAL rpm_utilization = CASE(rpm_limit > 0, TO_DOUBLE(rpm_used) / rpm_limit, null)\n// Push models with no usage (infinite headroom, not actionable) to the bottom,\n// and rank the rest by their highest utilization.\n| EVAL has_usage = CASE(COALESCE(tpm_used, 0) > 0 OR COALESCE(rpm_used, 0) > 0, 1, 0)\n| EVAL sort_util = GREATEST(COALESCE(tpm_utilization, 0), COALESCE(rpm_utilization, 0))\n| SORT has_usage DESC, sort_util DESC, tpm_used DESC\n| KEEP project_id, model, rpm_used, rpm_limit, rpm_utilization, tpm_used, tpm_limit, tpm_utilization\n| LIMIT 100"
+                        "esql": "FROM logs-openai.*\n| WHERE event.dataset IN (\"openai.rate_limits\", \"openai.completions\", \"openai.embeddings\", \"openai.moderations\", \"openai.audio_speeches\", \"openai.audio_transcriptions\", \"openai.images\")\n| EVAL project_id = COALESCE(openai.rate_limits.project_id, openai.base.project_id)\n| EVAL model = COALESCE(openai.rate_limits.model, openai.base.model)\n// Every usage stream carries num_model_requests (RPM), but only completions/embeddings/moderations\n// carry tokens and only the images stream carries an image count. usage_tokens and usage_images are\n// normalized and COALESCEd to 0, so each stream contributes only to the dimensions it reports without\n// inflating the others, and the panel still resolves when a usage stream has no data.\n| EVAL usage_tokens = COALESCE(openai.base.usage_tokens, 0)\n| EVAL usage_images = COALESCE(openai.images.images, 0)\n| STATS\n    tpm_used_minute = SUM(usage_tokens),\n    rpm_used_minute = SUM(openai.base.num_model_requests),\n    ipm_used_minute = SUM(usage_images),\n    tpm_limit = MAX(openai.rate_limits.max_tokens_per_1_minute),\n    rpm_limit = MAX(openai.rate_limits.max_requests_per_1_minute),\n    ipm_limit = MAX(openai.rate_limits.max_images_per_1_minute)\n  BY project_id, model, minute = BUCKET(@timestamp, 1 minute)\n| STATS\n    tpm_used = MAX(tpm_used_minute), rpm_used = MAX(rpm_used_minute), ipm_used = MAX(ipm_used_minute),\n    tpm_limit = MAX(tpm_limit), rpm_limit = MAX(rpm_limit), ipm_limit = MAX(ipm_limit)\n  BY project_id, model\n| WHERE tpm_limit IS NOT NULL OR rpm_limit IS NOT NULL OR ipm_limit IS NOT NULL\n// TO_DOUBLE avoids integer division (otherwise utilization is always 0 until usage exceeds the limit)\n| EVAL tpm_utilization = CASE(tpm_limit > 0, TO_DOUBLE(tpm_used) / tpm_limit, null)\n| EVAL rpm_utilization = CASE(rpm_limit > 0, TO_DOUBLE(rpm_used) / rpm_limit, null)\n| EVAL ipm_utilization = CASE(ipm_limit > 0, TO_DOUBLE(ipm_used) / ipm_limit, null)\n// Push models with no usage (infinite headroom, not actionable) to the bottom,\n// and rank the rest by their highest utilization.\n| EVAL has_usage = CASE(COALESCE(tpm_used, 0) > 0 OR COALESCE(rpm_used, 0) > 0 OR COALESCE(ipm_used, 0) > 0, 1, 0)\n| EVAL sort_util = GREATEST(COALESCE(tpm_utilization, 0), COALESCE(rpm_utilization, 0), COALESCE(ipm_utilization, 0))\n| SORT has_usage DESC, sort_util DESC, tpm_used DESC\n| KEEP project_id, model, rpm_used, rpm_limit, rpm_utilization, tpm_used, tpm_limit, tpm_utilization, ipm_used, ipm_limit, ipm_utilization\n| LIMIT 100"
                       },
                       "columns": [
                         {
@@ -4188,6 +4203,63 @@
                           "fieldName": "tpm_utilization",
                           "columnId": "d74a783a-c5bd-4893-a284-519bb1227e2d",
                           "label": "TPM utilization",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "ipm_used",
+                          "columnId": "2a110b02-ac3b-4bcd-9ca9-a79814bf7c80",
+                          "label": "Images used (peak)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "ipm_limit",
+                          "columnId": "9a8af9ac-42b1-4874-9a1c-a3d9c9ea58e7",
+                          "label": "Images limit",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "ipm_utilization",
+                          "columnId": "12f87bdd-3261-4a56-8936-33e2a37bd302",
+                          "label": "Images utilization",
                           "customLabel": true,
                           "meta": {
                             "type": "number",
@@ -4324,6 +4396,63 @@
                           "fieldName": "tpm_utilization",
                           "columnId": "d74a783a-c5bd-4893-a284-519bb1227e2d",
                           "label": "TPM utilization",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "ipm_used",
+                          "columnId": "2a110b02-ac3b-4bcd-9ca9-a79814bf7c80",
+                          "label": "Images used (peak)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "ipm_limit",
+                          "columnId": "9a8af9ac-42b1-4874-9a1c-a3d9c9ea58e7",
+                          "label": "Images limit",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "ipm_utilization",
+                          "columnId": "12f87bdd-3261-4a56-8936-33e2a37bd302",
+                          "label": "Images utilization",
                           "customLabel": true,
                           "meta": {
                             "type": "number",

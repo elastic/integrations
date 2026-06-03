@@ -127,7 +127,7 @@ Only matching units are compared:
 - requests ↔ requests per minute (RPM)
 - images ↔ images per minute
 
-Usage measured in seconds, characters, bytes or sessions has no corresponding rate limit and stays usage-only.
+Audio is deliberately left out. OpenAI enforces an audio limit (`max_audio_megabytes_per_1_minute`), but the Usage API reports audio only in seconds (`audio_transcriptions`) and characters (`audio_speeches`) — never in megabytes — so there is no comparable usage figure to divide by the limit. Audio therefore stays usage-only until a megabyte-denominated usage metric is available. Usage measured in characters or sessions likewise has no corresponding rate limit and stays usage-only.
 
 > **Hard requirement:** the peak 1-minute calculation depends on the usage streams (`completions`, `embeddings`, `moderations`, ...) running with **`bucket_width: 1m`**. This is the default, but the value is user-editable — if it is changed to `1h` or `1d`, the headroom numbers will be wrong because a wider bucket smears per-minute peaks.
 
