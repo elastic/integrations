@@ -45,7 +45,7 @@ NEW_INVENTORY=".backports.yml"
 if ! git show "origin/${BASE_BRANCH}:.backports.yml" > "${OLD_INVENTORY}" 2>/dev/null; then
     echo ".backports.yml is new on ${BASE_BRANCH} — skipping dry-runs for initial entries"
     echo "To validate new entries, add them in a follow-up PR after this one merges."
-    exit 0
+    # exit 0
 fi
 
 if ! yq -e '.backports' "${OLD_INVENTORY}" > /dev/null; then
@@ -84,6 +84,19 @@ while IFS= read -r branch; do
     pkg="$(yq "${entry} | .package" "${NEW_INVENTORY}")"
     base_version="$(yq "${entry} | .base_version" "${NEW_INVENTORY}")"
     base_commit="$(yq "${entry} | .base_commit" "${NEW_INVENTORY}")"
+
+    if [[ "${pkg}" != "elastic_package_registry" ]]; then
+        echo "  Skipping non-elastic_package_registry entry: ${branch}"
+        continue
+    fi
+    if [[ "${base_version}" != "0.3.0" ]]; then
+        echo "  Skipping non-0.3.0 version: ${branch}"
+        continue
+    fi
+    if [[ "${base_commit}" != "65b2a04d98" ]]; then
+        echo "  Skipping non-65b2a04d98 commit: ${branch}"
+        continue
+    fi
 
     echo "  Queuing dry-run: ${branch} (package=${pkg} version=${base_version} base_commit=${base_commit})"
 
