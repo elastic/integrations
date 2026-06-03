@@ -13,9 +13,13 @@ steps:
   - label: "Check that it runs from UI"
     key: "check-ui"
     command:
-      - "buildkite-agent annotate \"The $BUILDKITE_PIPELINE_SLUG is used only for running from UI!\" --style 'warning'"
+      - "buildkite-agent annotate \"The $BUILDKITE_PIPELINE_SLUG is used only for running from UI or a trigger step!\" --style 'warning'"
       - "exit 1"
-    if: "build.source != 'ui' && build.source != 'trigger_job'"
+    if: |
+      !(
+        build.source == 'ui' ||
+        (build.source == 'trigger_job' && build.env('BUILDKITE_PIPELINE_SLUG') == 'integrations')
+      )
 
   - input: "Input values for the variables"
     key: "input-variables"
