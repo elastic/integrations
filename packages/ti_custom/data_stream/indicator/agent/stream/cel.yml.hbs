@@ -84,7 +84,7 @@ program: |
                         ?"added_after": state.?cursor.last_timestamp.optMap(ts,
                             [ts]
                         ).or(
-                            state.?initial_interval.optMap(i, [(now() - duration(i)).format(time_layout.RFC3339)])
+                            state.?initial_interval.optMap(i, [(now() - duration(i)).format("2006-01-02T15:04:05.000000Z07:00")])
                         ),
                         ?"limit": state.?limit.optMap(l, [string(int(l))]),
                     }.format_query()
@@ -107,11 +107,14 @@ program: |
         ).do_request().as(resp, (resp.StatusCode == 200 || resp.StatusCode == 206) ?
             bytes(resp.Body).decode_json().as(body,
                 {
-                    "events": body.objects.map(e,
-                        {
-                            "message": e.encode_json(),
-                        }
-                    ),
+                    "events": has(body.objects) && type(body.objects) == list ?
+                        body.objects.map(e,
+                            {
+                                "message": e.encode_json(),
+                            }
+                        )
+                    :
+                        [],
                     "accept_header": state.accept_header,
                     "content_header": state.?content_header.orValue(""),
                     "url": state.url,

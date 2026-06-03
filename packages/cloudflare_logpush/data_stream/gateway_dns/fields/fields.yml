@@ -1,6 +1,5 @@
 - name: cloudflare_logpush.gateway_dns
   type: group
-  description: Integration for parsing Cloudflare Logpush Gateway DNS logs.
   fields:
     - name: account_id
       type: keyword
@@ -55,7 +54,7 @@
           fields:
             - name: ids
               type: keyword
-              description: Custom resolver policy UUID, if matched.
+              description: Custom resolver policy UUIDs, if matched.
             - name: names
               type: keyword
               description: Custom resolver policy name, if matched.
@@ -98,6 +97,27 @@
         - name: names
           type: keyword
           description: Name or names of category that the queried domains belongs to.
+    - name: initial_resolved_ips
+      type: ip
+      description: The IPs used to correlate existing FQDN matching policy between Gateway DNS and Gateway proxy.
+    - name: internal_dns
+      type: group
+      fields:
+        - name: duration_ms
+          type: long
+          description: The time it took for the internal DNS to respond.
+        - name: fallback_strategy
+          type: keyword
+          description: The fallback strategy applied over the internal DNS response.
+        - name: rcode
+          type: long
+          description: The return code sent back by the internal DNS service.
+        - name: view_id
+          type: keyword
+          description: The DNS internal view identifier that was sent to the internal DNS service.
+        - name: zone_id
+          type: keyword
+          description: The DNS zone identifier returned by the internal DNS service.
     - name: is_response_cached
       type: boolean
       description: Response comes from cache or not.
@@ -139,13 +159,22 @@
           description: ID of the policy/rule that was applied (if any).
         - name: name
           type: keyword
-          description: Name of the policy that was applied (if any)
+          description: Name of the policy that was applied (if any).
     - name: protocol
       type: keyword
       description: The protocol used for the DNS query by the client.
     - name: question
       type: group
       fields:
+        - name: application
+          type: group
+          fields:
+            - name: ids
+              type: keyword
+              description: ID or IDs of applications the queried domain belongs to.
+            - name: names
+              type: keyword
+              description: Name or names of applications the queried domain belongs to.
         - name: category
           type: group
           fields:
@@ -182,6 +211,21 @@
         - name: type_id
           type: long
           description: ID of the type of DNS query.
+    - name: redirect_target_uri
+      type: keyword
+      description: Custom URI to which the user was redirected, if any.
+    - name: registration_id
+      type: keyword
+      description: The UUID of the device registration from which the HTTP request originated.
+    - name: request_context_category
+      type: group
+      fields:
+        - name: ids
+          type: keyword
+          description: ID or IDs of the category that was sent to gateway in the EDNS request for filtering.
+        - name: names
+          type: keyword
+          description: Name or names of the category that was sent to gateway in the EDNS request for filtering.
     - name: resolved_ip
       type: ip
       description: The resolved IPs in the response, if any.
@@ -212,9 +256,9 @@
         - name: policy
           type: group
           fields:
-            - name: id
+            - name: ids
               type: keyword
-              description: Resolver policy UUID, if any matched.
+              description: Resolver policy UUIDs, if any matched.
             - name: names
               type: keyword
               description: Resolver policy name, if any matched.

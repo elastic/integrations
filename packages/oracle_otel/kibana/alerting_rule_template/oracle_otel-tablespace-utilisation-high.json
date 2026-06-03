@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when a tablespace utilisation exceeds 90%. Critical for SYSTEM/SYSAUX; write failures at full.",
     "name": "[Oracle OTel] Tablespace utilisation high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 8,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "oracle_otel-resource-capacity"
+        },
+        {
+          "id": "oracle_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Oracle tablespace utilisation high\n\n### What fired\nTablespace utilisation exceeded 90% during the window.\n\n### Why it matters\nFull tablespaces cause ORA-01653 / ORA-01654 write failures. SYSTEM/SYSAUX full is particularly dangerous.\n\n### Triage\n1. Identify large segments.\n2. Check autoextend and maxsize.\n\n### Remediation\n- Extend datafiles or add new ones.\n- Archive/purge historical data.\n\n### Tuning\n- 90% threshold; tighten for SYSTEM/SYSAUX.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-oracledbreceiver.otel-*\n// Tablespace metrics are dimensioned by attributes.tablespace_name\n| WHERE oracledb.tablespace_size.usage IS NOT NULL\n        AND oracledb.tablespace_size.limit IS NOT NULL\n| STATS usage = MAX(oracledb.tablespace_size.usage),\n        limit_val = MAX(oracledb.tablespace_size.limit)\n        BY oracledb.instance.name, host.name, attributes.tablespace_name\n// Exclude unlimited tablespaces (limit -1)\n| WHERE limit_val > 0\n// Utilisation threshold: 90% — critical for SYSTEM/SYSAUX; write failures at full\n// Adjust threshold per environment (e.g. 85 for stricter monitoring)\n| EVAL utilisation_pct = ROUND(usage * 100.0 / limit_val, 1)\n| WHERE utilisation_pct > 90\n| SORT utilisation_pct DESC"
+        "esql": "FROM metrics-oracledbreceiver.otel-*\n// Tablespace metrics are dimensioned by attributes.tablespace_name\n| WHERE oracledb.tablespace_size.usage IS NOT NULL\n        AND oracledb.tablespace_size.limit IS NOT NULL\n| STATS usage = MAX(oracledb.tablespace_size.usage),\n        limit_val = MAX(oracledb.tablespace_size.limit)\n        BY oracledb.instance.name, host.name, attributes.tablespace_name\n// Exclude unlimited tablespaces (limit -1)\n| WHERE limit_val > 0\n// Utilisation threshold: 90% \u2014 critical for SYSTEM/SYSAUX; write failures at full\n// Adjust threshold per environment (e.g. 85 for stricter monitoring)\n| EVAL utilisation_pct = ROUND(usage * 100.0 / limit_val, 1)\n| WHERE utilisation_pct > 90\n| SORT utilisation_pct DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

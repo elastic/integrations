@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `sqlserver.database.execution.errors > 0`. Any engine-reported execution errors warrant investigation.",
     "name": "[SQL Server OTel] Execution errors",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "microsoft_sqlserver_otel-concurrency-errors"
+        },
+        {
+          "id": "microsoft_sqlserver_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## SQL Server execution errors\n\n### What fired\nExecution error counter increased during the window.\n\n### Why it matters\nThe engine counts failed executions across the instance. Sustained counts usually correlate with deadlocks, permission issues, or application bugs.\n\n### Triage\n1. Correlate with deadlocks, lock timeouts, and memory grant pending counts.\n2. Inspect application logs for the affected queries.\n\n### Remediation\n- Fix the root cause in the application or DB config.\n\n### Tuning\n- Fires on any non-zero total.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-sqlserverreceiver.otel-default\n// Direct error count from the engine\n| WHERE metrics.sqlserver.database.execution.errors IS NOT NULL\n| STATS total_errors = SUM(metrics.sqlserver.database.execution.errors),\n       instance_id = MAX(resource.attributes.service.instance.id)\n  BY COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\")\n| WHERE total_errors > 0\n| KEEP instance_id, total_errors"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,
