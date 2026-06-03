@@ -40,3 +40,7 @@ echo "+++ Running tests"
 python3 "${FIND_OLDEST_SCRIPT}" --test
 echo "--- Deactivating venv"
 deactivate
+
+echo ""
+echo "=== Running check_changelog_entries.sh tests ==="
+run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_check_changelog_entries.sh"

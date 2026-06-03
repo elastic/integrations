@@ -782,18 +782,23 @@ is_pr_affected() {
         '\.agents/skills/'
         '\.buildkite/pipeline\.backport\.yml'
         '\.buildkite/pipeline\.publish\.yml'
-        '\.buildkite/pipeline\.serverless\.yml'
         '\.buildkite/pipeline\.schedule-daily\.yml'
         '\.buildkite/pipeline\.schedule-weekly\.yml'
+        '\.buildkite/pipeline\.serverless\.yml'
         '\.buildkite/pull-requests\.json'
         '\.buildkite/scripts/backport_branch\.sh'
         '\.buildkite/scripts/build_packages\.sh'
+        '\.buildkite/scripts/check_changelog_entries\.sh'
         '\.buildkite/scripts/packages/.+\.sh'
+        '\.buildkite/scripts/requirements-ci-python-scripts\.txt'
         '\.buildkite/scripts/run_buildkite_scripts_tests\.sh'
         '\.buildkite/scripts/run_dev_scripts_tests\.sh'
+        '\.buildkite/scripts/test_check_changelog_entries\.sh'
+        '\.buildkite/scripts/test_helpers\.sh'
         '\.github/dependabot\.yml'
         '\.github/workflows/'
         '\.github/stale\.yml'
+        '\.github/workflows/'
         '\.github/CODEOWNERS'
         '\.github/ISSUE_TEMPLATE/'
         '\.github/PULL_REQUEST_TEMPLATE\.md'
@@ -1188,7 +1193,8 @@ add_or_edit_gh_pr_comment() {
     if [[ "${comment_id}" == "" ]]; then
         echo "Creating new comment"
         gh pr comment \
-          "${BUILDKITE_PULL_REQUEST}" \
+          "${pr_number}" \
+          --repo "${owner}/${repo}" \
           --body "${contents}"
         return
     fi
@@ -1200,6 +1206,36 @@ add_or_edit_gh_pr_comment() {
       -H "X-GitHub-Api-Version: 2022-11-28" \
       "/repos/${owner}/${repo}/issues/comments/${comment_id}" \
       -f body="${contents}" | jq -r '.html_url'
+}
+
+delete_and_create_gh_pr_comment() {
+    local owner="$1"
+    local repo="$2"
+    local pr_number="$3"
+    local id="$4"
+    local comment_file="$5"
+    local metadata="<!--COMMENT_GENERATED_WITH_ID_${id}-->"
+
+    local comment_id
+    comment_id=$(get_comment_with_pattern "${owner}" "${repo}" "${pr_number}" "${metadata}")
+    if [[ -n "${comment_id}" ]]; then
+        echo "Deleting existing comment: ${comment_id}"
+        gh api \
+            --method DELETE \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/repos/${owner}/${repo}/issues/comments/${comment_id}"
+    fi
+
+    local contents
+    contents="$(cat "${comment_file}")"
+    printf -v contents '%s\n%s' "${contents}" "${metadata}"
+
+    echo "Creating new comment"
+    gh pr comment \
+        "${pr_number}" \
+        --repo "${owner}/${repo}" \
+        --body "${contents}"
 }
 
 # FIXME: In a Pull Request that there are more than 100 comments,

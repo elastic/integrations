@@ -15,4 +15,5 @@ run_tests_if_exists() {
     "${script}"
 }
 
+echo "=== Running get_release_commit.sh tests ==="
 run_tests_if_exists "${REPO_ROOT}/dev/scripts/test_get_release_commit.sh"
