@@ -109,7 +109,7 @@ The integration starts at 10:00 AM, collects data from 10:00 AM the previous day
 
 ## Rate limit headroom
 
-The `rate_limits` data stream collects the per-project, per-model limits OpenAI enforces (requests, tokens and images per minute, plus daily and batch limits). On its own a limit is just a number; it becomes actionable when compared against actual usage. The OpenAI dashboard ships a **Rate limit headroom** panel and a prebuilt **[OpenAI] Rate limit headroom low** threshold alert that do exactly this.
+The `rate_limits` data stream collects the per-project, per-model limits OpenAI enforces (requests, tokens and images per minute, plus daily and batch limits). On its own a limit is just a number; it becomes actionable when compared against actual usage. The OpenAI dashboard ships two **Rate limit headroom** panels — one broken down per project and model, and an org-wide rollup by model across all active projects — plus a prebuilt **[OpenAI] Rate limit headroom low** threshold alert that do exactly this.
 
 ### How the comparison works
 
@@ -132,6 +132,12 @@ Audio is deliberately left out. OpenAI enforces an audio limit (`max_audio_megab
 > **Hard requirement:** the peak 1-minute calculation depends on the usage streams (`completions`, `embeddings`, `moderations`, ...) running with **`bucket_width: 1m`**. This is the default, but the value is user-editable — if it is changed to `1h` or `1d`, the headroom numbers will be wrong because a wider bucket smears per-minute peaks.
 
 > **Note on aggregation:** OpenAI returns identical limits for both the model family (`gpt-4o-mini`) and its dated snapshot (`gpt-4o-mini-2024-07-18`). Because these duplicate the same capacity, every headroom aggregation is driven off the usage side of the join (usage matches exactly one row). Do not sum limit rows independently, or capacity will be double-counted. Family rows with no matching usage appear as 0%-utilization rows.
+
+### Org-wide rollup by model
+
+The **Rate limit headroom - by model (org-wide)** panel answers a different question: "how is model X doing across the whole org?" It drops the `project_id` breakdown and aggregates by model alone — usage is summed across all active projects per 1-minute bucket, and the peak minute is taken just as in the per-project panel.
+
+OpenAI enforces rate limits **per project**, so there is no single org-wide throttle boundary to divide against. The rollup therefore presents its limit columns as a **synthetic aggregate** (the sum of the per-project limits) and labels both the limit and utilization columns accordingly (`limit (aggregate)`, `utilization (approx.)`). Use these for relative comparison and trend-spotting across models; the exact throttle distance for any individual project still lives in the per-project panel and the alert.
 
 ### Alert
 

@@ -4487,6 +4487,481 @@
             "language": "kuery"
           }
         }
+      },
+      {
+        "panelIndex": "f7351fee-5c28-40ec-ba72-f10078f93457",
+        "gridData": {
+          "x": 0,
+          "y": 139,
+          "w": 48,
+          "h": 12,
+          "i": "f7351fee-5c28-40ec-ba72-f10078f93457"
+        },
+        "type": "lens",
+        "title": "Rate limit headroom - by model (org-wide)",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "Rate limit headroom - by model (org-wide)",
+            "description": "Org-wide rollup of peak 1-minute usage by model across all active projects. Usage is summed across projects; the limit columns are a synthetic aggregate (sum of per-project limits) and are NOT a real throttle boundary - OpenAI enforces limits per project - so utilization is indicative only.",
+            "visualizationType": "lnsDatatable",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "columns": [
+                  {
+                    "columnId": "bc8fbfc6-779b-441c-8cd7-5562dac599c3",
+                    "isTransposed": false
+                  },
+                  {
+                    "columnId": "5cbc4f5b-3ab0-49f9-b53f-335f3f541bcd",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "c9ca5efa-68a8-47bf-91ba-5eb9929463b9",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "c0e3f477-8bd5-4ac5-ab0f-8aba6f33d812",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "63388f26-c3c8-4fea-b978-3e6fbb08b9dc",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "a1b759a8-7cef-4bfc-9420-fd1ea5e6d18c",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "eb477556-d4cc-42e0-9ed8-c841ae33519a",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "9580f07a-a15e-458b-a53d-bf1b5a0bf21a",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "43404e7e-15a4-4a97-9a52-e8dc2c663aaf",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "83430089-106c-4cfb-8f1e-9415fcf8ba74",
+                    "isTransposed": false,
+                    "isMetric": true
+                  }
+                ],
+                "layerId": "dd03fabd-0b57-4533-86a6-8b141a9b15c1",
+                "layerType": "data"
+              },
+              "query": {
+                "esql": "FROM logs-openai.*\n| WHERE event.dataset IN (\"openai.rate_limits\", \"openai.completions\", \"openai.embeddings\", \"openai.moderations\", \"openai.audio_speeches\", \"openai.audio_transcriptions\", \"openai.images\")\n| EVAL project_id = COALESCE(openai.rate_limits.project_id, openai.base.project_id)\n| EVAL model = COALESCE(openai.rate_limits.model, openai.base.model)\n// Org-wide rollup by model across projects. Usage is summed across projects within each minute,\n// then the peak minute is taken. The per-project limits are summed into a synthetic aggregate\n// capacity -- this is NOT a real org throttle boundary (OpenAI enforces limits per project), so\n// the aggregate utilization here is indicative, not an exact throttle distance.\n| EVAL usage_tokens = COALESCE(openai.base.usage_tokens, 0)\n| EVAL usage_images = COALESCE(openai.images.images, 0)\n| STATS\n    tpm_used_minute = SUM(usage_tokens),\n    rpm_used_minute = SUM(openai.base.num_model_requests),\n    ipm_used_minute = SUM(usage_images),\n    tpm_limit = MAX(openai.rate_limits.max_tokens_per_1_minute),\n    rpm_limit = MAX(openai.rate_limits.max_requests_per_1_minute),\n    ipm_limit = MAX(openai.rate_limits.max_images_per_1_minute)\n  BY project_id, model, minute = BUCKET(@timestamp, 1 minute)\n| STATS\n    tpm_used_minute = SUM(tpm_used_minute),\n    rpm_used_minute = SUM(rpm_used_minute),\n    ipm_used_minute = SUM(ipm_used_minute),\n    tpm_limit_minute = SUM(tpm_limit),\n    rpm_limit_minute = SUM(rpm_limit),\n    ipm_limit_minute = SUM(ipm_limit)\n  BY model, minute\n| STATS\n    tpm_used = MAX(tpm_used_minute), rpm_used = MAX(rpm_used_minute), ipm_used = MAX(ipm_used_minute),\n    tpm_limit = MAX(tpm_limit_minute), rpm_limit = MAX(rpm_limit_minute), ipm_limit = MAX(ipm_limit_minute)\n  BY model\n| WHERE tpm_limit IS NOT NULL OR rpm_limit IS NOT NULL OR ipm_limit IS NOT NULL\n// TO_DOUBLE avoids integer division (otherwise utilization is always 0 until usage exceeds the limit)\n| EVAL tpm_utilization = CASE(tpm_limit > 0, TO_DOUBLE(tpm_used) / tpm_limit, null)\n| EVAL rpm_utilization = CASE(rpm_limit > 0, TO_DOUBLE(rpm_used) / rpm_limit, null)\n| EVAL ipm_utilization = CASE(ipm_limit > 0, TO_DOUBLE(ipm_used) / ipm_limit, null)\n// Push models with no usage (infinite headroom, not actionable) to the bottom,\n// then rank by TPM utilization first (the dimension the headroom alert tracks),\n// with RPM and image utilization, then absolute tokens, as tie-breakers.\n| EVAL has_usage = CASE(COALESCE(tpm_used, 0) > 0 OR COALESCE(rpm_used, 0) > 0 OR COALESCE(ipm_used, 0) > 0, 1, 0)\n| SORT has_usage DESC, COALESCE(tpm_utilization, -1) DESC, COALESCE(rpm_utilization, -1) DESC, COALESCE(ipm_utilization, -1) DESC, tpm_used DESC\n| KEEP model, rpm_used, rpm_limit, rpm_utilization, tpm_used, tpm_limit, tpm_utilization, ipm_used, ipm_limit, ipm_utilization\n| LIMIT 100"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "dd03fabd-0b57-4533-86a6-8b141a9b15c1": {
+                      "query": {
+                        "esql": "FROM logs-openai.*\n| WHERE event.dataset IN (\"openai.rate_limits\", \"openai.completions\", \"openai.embeddings\", \"openai.moderations\", \"openai.audio_speeches\", \"openai.audio_transcriptions\", \"openai.images\")\n| EVAL project_id = COALESCE(openai.rate_limits.project_id, openai.base.project_id)\n| EVAL model = COALESCE(openai.rate_limits.model, openai.base.model)\n// Org-wide rollup by model across projects. Usage is summed across projects within each minute,\n// then the peak minute is taken. The per-project limits are summed into a synthetic aggregate\n// capacity -- this is NOT a real org throttle boundary (OpenAI enforces limits per project), so\n// the aggregate utilization here is indicative, not an exact throttle distance.\n| EVAL usage_tokens = COALESCE(openai.base.usage_tokens, 0)\n| EVAL usage_images = COALESCE(openai.images.images, 0)\n| STATS\n    tpm_used_minute = SUM(usage_tokens),\n    rpm_used_minute = SUM(openai.base.num_model_requests),\n    ipm_used_minute = SUM(usage_images),\n    tpm_limit = MAX(openai.rate_limits.max_tokens_per_1_minute),\n    rpm_limit = MAX(openai.rate_limits.max_requests_per_1_minute),\n    ipm_limit = MAX(openai.rate_limits.max_images_per_1_minute)\n  BY project_id, model, minute = BUCKET(@timestamp, 1 minute)\n| STATS\n    tpm_used_minute = SUM(tpm_used_minute),\n    rpm_used_minute = SUM(rpm_used_minute),\n    ipm_used_minute = SUM(ipm_used_minute),\n    tpm_limit_minute = SUM(tpm_limit),\n    rpm_limit_minute = SUM(rpm_limit),\n    ipm_limit_minute = SUM(ipm_limit)\n  BY model, minute\n| STATS\n    tpm_used = MAX(tpm_used_minute), rpm_used = MAX(rpm_used_minute), ipm_used = MAX(ipm_used_minute),\n    tpm_limit = MAX(tpm_limit_minute), rpm_limit = MAX(rpm_limit_minute), ipm_limit = MAX(ipm_limit_minute)\n  BY model\n| WHERE tpm_limit IS NOT NULL OR rpm_limit IS NOT NULL OR ipm_limit IS NOT NULL\n// TO_DOUBLE avoids integer division (otherwise utilization is always 0 until usage exceeds the limit)\n| EVAL tpm_utilization = CASE(tpm_limit > 0, TO_DOUBLE(tpm_used) / tpm_limit, null)\n| EVAL rpm_utilization = CASE(rpm_limit > 0, TO_DOUBLE(rpm_used) / rpm_limit, null)\n| EVAL ipm_utilization = CASE(ipm_limit > 0, TO_DOUBLE(ipm_used) / ipm_limit, null)\n// Push models with no usage (infinite headroom, not actionable) to the bottom,\n// then rank by TPM utilization first (the dimension the headroom alert tracks),\n// with RPM and image utilization, then absolute tokens, as tie-breakers.\n| EVAL has_usage = CASE(COALESCE(tpm_used, 0) > 0 OR COALESCE(rpm_used, 0) > 0 OR COALESCE(ipm_used, 0) > 0, 1, 0)\n| SORT has_usage DESC, COALESCE(tpm_utilization, -1) DESC, COALESCE(rpm_utilization, -1) DESC, COALESCE(ipm_utilization, -1) DESC, tpm_used DESC\n| KEEP model, rpm_used, rpm_limit, rpm_utilization, tpm_used, tpm_limit, tpm_utilization, ipm_used, ipm_limit, ipm_utilization\n| LIMIT 100"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "model",
+                          "columnId": "bc8fbfc6-779b-441c-8cd7-5562dac599c3",
+                          "label": "Model",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "string",
+                            "esType": "keyword"
+                          }
+                        },
+                        {
+                          "fieldName": "rpm_used",
+                          "columnId": "5cbc4f5b-3ab0-49f9-b53f-335f3f541bcd",
+                          "label": "RPM used (peak)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "rpm_limit",
+                          "columnId": "c9ca5efa-68a8-47bf-91ba-5eb9929463b9",
+                          "label": "RPM limit (aggregate)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "rpm_utilization",
+                          "columnId": "c0e3f477-8bd5-4ac5-ab0f-8aba6f33d812",
+                          "label": "RPM utilization (approx.)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "tpm_used",
+                          "columnId": "63388f26-c3c8-4fea-b978-3e6fbb08b9dc",
+                          "label": "TPM used (peak)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "tpm_limit",
+                          "columnId": "a1b759a8-7cef-4bfc-9420-fd1ea5e6d18c",
+                          "label": "TPM limit (aggregate)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "tpm_utilization",
+                          "columnId": "eb477556-d4cc-42e0-9ed8-c841ae33519a",
+                          "label": "TPM utilization (approx.)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "ipm_used",
+                          "columnId": "9580f07a-a15e-458b-a53d-bf1b5a0bf21a",
+                          "label": "Images used (peak)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "ipm_limit",
+                          "columnId": "43404e7e-15a4-4a97-9a52-e8dc2c663aaf",
+                          "label": "Images limit (aggregate)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "ipm_utilization",
+                          "columnId": "83430089-106c-4cfb-8f1e-9415fcf8ba74",
+                          "label": "Images utilization (approx.)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "model",
+                          "columnId": "bc8fbfc6-779b-441c-8cd7-5562dac599c3",
+                          "label": "Model",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "string",
+                            "esType": "keyword"
+                          }
+                        },
+                        {
+                          "fieldName": "rpm_used",
+                          "columnId": "5cbc4f5b-3ab0-49f9-b53f-335f3f541bcd",
+                          "label": "RPM used (peak)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "rpm_limit",
+                          "columnId": "c9ca5efa-68a8-47bf-91ba-5eb9929463b9",
+                          "label": "RPM limit (aggregate)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "rpm_utilization",
+                          "columnId": "c0e3f477-8bd5-4ac5-ab0f-8aba6f33d812",
+                          "label": "RPM utilization (approx.)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "tpm_used",
+                          "columnId": "63388f26-c3c8-4fea-b978-3e6fbb08b9dc",
+                          "label": "TPM used (peak)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "tpm_limit",
+                          "columnId": "a1b759a8-7cef-4bfc-9420-fd1ea5e6d18c",
+                          "label": "TPM limit (aggregate)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "tpm_utilization",
+                          "columnId": "eb477556-d4cc-42e0-9ed8-c841ae33519a",
+                          "label": "TPM utilization (approx.)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "ipm_used",
+                          "columnId": "9580f07a-a15e-458b-a53d-bf1b5a0bf21a",
+                          "label": "Images used (peak)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "ipm_limit",
+                          "columnId": "43404e7e-15a4-4a97-9a52-e8dc2c663aaf",
+                          "label": "Images limit (aggregate)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "ipm_utilization",
+                          "columnId": "83430089-106c-4cfb-8f1e-9415fcf8ba74",
+                          "label": "Images utilization (approx.)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "filters": [],
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
       }
     ],
     "timeRestore": false,
