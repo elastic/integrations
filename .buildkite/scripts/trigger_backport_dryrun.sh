@@ -114,6 +114,9 @@ while IFS= read -r branch; do
         PACKAGE_NAME: "${pkg}"
         PACKAGE_VERSION: "${base_version}"
         BASE_COMMIT: "${base_commit}"
+        # test PR branch
+        BUILDKITE_REFSPEC: "refs/pull/${BUILDKITE_PULL_REQUEST}/merge"
+        BUILDKITE_COMMIT: "${BUILDKITE_COMMIT}"
 EOF
 
     entries_found=$(( entries_found + 1 ))
