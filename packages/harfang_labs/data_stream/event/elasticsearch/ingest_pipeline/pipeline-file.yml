@@ -1,0 +1,99 @@
+---
+description: Parse HarfangLab syslog file telemetry events.
+processors:
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-common-agent" }}'
+      tag: map_common_agent
+  - rename:
+      field: harfang_labs.event_path
+      target_field: file.path
+      ignore_missing: true
+      tag: rename_file_path
+  - rename:
+      field: harfang_labs.operation
+      target_field: harfang_labs.event.file.operation
+      ignore_missing: true
+      tag: rename_file_operation
+  - rename:
+      field: harfang_labs.process_image_path
+      target_field: process.executable
+      ignore_missing: true
+      tag: rename_process_executable
+  - rename:
+      field: harfang_labs.pid
+      target_field: process.pid
+      ignore_missing: true
+      tag: rename_process_pid
+  - rename:
+      field: harfang_labs.process_unique_id
+      target_field: process.entity_id
+      ignore_missing: true
+      tag: rename_process_entity_id
+  - rename:
+      field: harfang_labs.tid
+      target_field: harfang_labs.event.file.thread_id
+      ignore_missing: true
+      tag: rename_thread_id
+  - rename:
+      field: harfang_labs.event_id
+      target_field: harfang_labs.event.file.event_id
+      ignore_missing: true
+      tag: rename_file_event_id
+  - date:
+      field: harfang_labs.utc_time
+      target_field: file.accessed
+      formats:
+        - ISO8601
+      tag: date_file_utc_time
+      if: ctx.harfang_labs?.utc_time != null
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: file
+  - append:
+      field: event.type
+      tag: append_event_type_creation
+      value: creation
+      if: ctx.harfang_labs?.event?.file?.operation == 'create'
+  - append:
+      field: event.type
+      tag: append_event_type_deletion
+      value: deletion
+      if: ctx.harfang_labs?.event?.file?.operation == 'delete'
+  - append:
+      field: event.type
+      tag: append_event_type_change
+      value: change
+      if: ctx.harfang_labs?.event?.file?.operation != null && ctx.harfang_labs.event.file.operation != 'create' && ctx.harfang_labs.event.file.operation != 'delete'
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+  - set:
+      field: event.outcome
+      tag: set_event_outcome
+      value: unknown
+  - remove:
+      field:
+        - _temp
+      ignore_missing: true
+      tag: remove_temp_fields
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
