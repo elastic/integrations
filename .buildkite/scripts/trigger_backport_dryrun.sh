@@ -45,6 +45,7 @@ NEW_INVENTORY=".backports.yml"
 if ! git show "origin/${BASE_BRANCH}:.backports.yml" > "${OLD_INVENTORY}" 2>/dev/null; then
     echo ".backports.yml is new on ${BASE_BRANCH} — skipping dry-runs for initial entries"
     echo "To validate new entries, add them in a follow-up PR after this one merges."
+    echo "backports: []" > "${OLD_INVENTORY}"
     # exit 0
 fi
 
