@@ -26,27 +26,27 @@ All metrics carry resource attributes including `service.name`, `service.version
 
 This package includes six dashboards linked together via a navigation panel.
 
-### [Metrics Logstash] Logstash Overview (OTel)
+### [Logstash Metrics OTel] Logstash Overview
 
 Top-level fleet view across all Logstash nodes. Shows node count, total JVM heap used, events received and emitted per second, and average event latency.
 
-### [Metrics Logstash] Nodes Overview (OTel)
+### [Logstash Metrics OTel] Nodes Overview
 
 Summary datatable of all nodes with columns for CPU usage, JVM heap %, events received and emitted, reload successes and failures, and Logstash version. Useful for comparing health across multiple instances at a glance.
 
-### [Metrics Logstash] Single Node Overview (OTel)
+### [Logstash Metrics OTel] Single Node Overview
 
 High-level view of a single node. Shows events received and emitted per second, JVM heap usage (MB), process CPU utilization, events latency, HTTP address, version, reload counts, uptime, and a drillable list of running pipelines.
 
-### [Metrics Logstash] Single Node Advanced View (OTel)
+### [Logstash Metrics OTel] Single Node Advanced View
 
 Deep-dive into a single node. Includes a node summary table (host name, HTTP address, version, events, reloads, uptime), process CPU utilization, persistent queue utilization and size, file descriptors (open, peak, max), Java thread count, and cgroup CFS and CPU performance panels (Linux containers with CFS quota only).
 
-### [Metrics Logstash] Pipelines Overview (OTel)
+### [Logstash Metrics OTel] Pipelines Overview
 
 Cross-node pipelines view filtered by node. Shows per-pipeline event throughput (received and emitted per second), average processing time per event, persistent queue utilization and size, and batch event count and byte size.
 
-### [Metrics Logstash] Single Pipeline View (OTel)
+### [Logstash Metrics OTel] Single Pipeline View
 
 Per-pipeline deep-dive. Shows event rates, persistent queue utilization, batch stats, worker utilization, and per-plugin breakdown (inputs, filters, outputs) of events received and emitted per second and average processing time.
 
