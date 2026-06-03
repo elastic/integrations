@@ -709,6 +709,7 @@ An example event for `images` looks as following:
 | openai.base.num_model_requests | Number of requests made to the model | long |
 | openai.base.project_id | Identifier of the project | keyword |
 | openai.base.start_time | Start timestamp of the usage bucket | date |
+| openai.base.usage_images | Number of images processed by a usage record, normalized across usage data streams. | long |
 | openai.base.usage_object_type | Type of the usage record | keyword |
 | openai.base.user_id | Identifier of the user | keyword |
 | openai.images.images | Number of images processed | long |
@@ -843,6 +844,7 @@ An example event for `rate_limits` looks as following:
 | openai.base.model | Name of the OpenAI model used. | keyword |
 | openai.base.num_model_requests | Number of requests made to the model. | long |
 | openai.base.project_id | Identifier of the project. | keyword |
+| openai.base.usage_images | Number of images processed by a usage record, normalized across usage data streams. | long |
 | openai.base.usage_tokens | Total tokens consumed by a usage record, normalized across usage data streams. | long |
 | openai.rate_limits.batch_1_day_max_input_tokens | Maximum batch input tokens per day, when provided by OpenAI. | long |
 | openai.rate_limits.collected_at | Time when the rate-limit document was collected. | date |
