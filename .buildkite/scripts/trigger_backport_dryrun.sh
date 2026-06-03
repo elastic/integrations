@@ -32,8 +32,10 @@ OLD_INVENTORY=""
 PIPELINE_FILE=""
 
 cleanup() {
+    local exit_code=$?
     [[ -n "${OLD_INVENTORY}" ]] && rm -f "${OLD_INVENTORY}"
     [[ -n "${PIPELINE_FILE}" ]] && rm -f "${PIPELINE_FILE}"
+    exit "${exit_code}"
 }
 trap cleanup EXIT
 
