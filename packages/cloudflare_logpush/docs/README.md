@@ -190,8 +190,8 @@ When configuring the integration to read from S3-Compatible Buckets such as Clou
 
 - Configure [Cloudflare Logpush to Microsoft Azure](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/azure/) to ingest data into Azure Blob Storage containers.
 - Configure Azure Blob Storage container names and credentials along with the required configurations under the "Collect Cloudflare Logpush logs via Azure Blob Storage" section.
-- Make sure the storage account and authentication being used has proper levels of access to the Azure Blob Storage Container. Please follow the documentation [here](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-data-operations-portal) for more details.
-- If you want to use RBAC for your account, please follow the documentation [here](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-access-azure-active-directory).
+- Make sure the storage account and authentication being used has proper levels of access to the Azure Blob Storage Container. Follow the documentation [here](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-data-operations-portal) for more details.
+- If you want to use RBAC for your account, follow the documentation [here](https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-access-azure-active-directory).
 
 **Note:**
 - The Azure Blob Storage input does not support fetching from containers using container prefixes, so the containers' names must be configured manually for each data stream.
