@@ -325,21 +325,31 @@ An example event for `audio_speeches` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| openai.audio_speeches.characters | Number of characters processed | long |
-| openai.base.api_key_id | Identifier for the API key used | keyword |
-| openai.base.end_time | End timestamp of the usage bucket | date |
-| openai.base.model | Name of the OpenAI model used | keyword |
-| openai.base.num_model_requests | Number of requests made to the model | long |
-| openai.base.project_id | Identifier of the project | keyword |
-| openai.base.start_time | Start timestamp of the usage bucket | date |
-| openai.base.usage_object_type | Type of the usage record | keyword |
-| openai.base.user_id | Identifier of the user | keyword |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| openai.audio_speeches.characters | Number of characters processed | long |  |
+| openai.audio_transcriptions.seconds | Number of seconds processed | long | s |
+| openai.base.api_key_id | Identifier for the API key used | keyword |  |
+| openai.base.end_time | End timestamp of the usage bucket | date |  |
+| openai.base.model | Name of the OpenAI model used | keyword |  |
+| openai.base.num_model_requests | Number of requests made to the model | long |  |
+| openai.base.project_id | Identifier of the project | keyword |  |
+| openai.base.start_time | Start timestamp of the usage bucket | date |  |
+| openai.base.usage_object_type | Type of the usage record | keyword |  |
+| openai.base.user_id | Identifier of the user | keyword |  |
+| openai.completions.input_audio_tokens | Number of audio input tokens used, including cached tokens | long |  |
+| openai.completions.input_cached_tokens | Number of text input tokens that has been cached from previous requests. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.completions.input_tokens | Number of text input tokens used, including cached tokens. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.completions.output_audio_tokens | Number of audio output tokens used | long |  |
+| openai.completions.output_tokens | Number of text output tokens used. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.embeddings.input_tokens | Number of input tokens used. | long |  |
+| openai.images.images | Number of images processed | long |  |
+| openai.images.size | Image size (dimension of the generated image) | keyword |  |
+| openai.moderations.input_tokens | Number of input tokens used. | long |  |
 
 
 ### Audio transcriptions
@@ -396,6 +406,7 @@ An example event for `audio_transcriptions` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
+| openai.audio_speeches.characters | Number of characters processed | long |  |
 | openai.audio_transcriptions.seconds | Number of seconds processed | long | s |
 | openai.base.api_key_id | Identifier for the API key used | keyword |  |
 | openai.base.end_time | End timestamp of the usage bucket | date |  |
@@ -405,6 +416,15 @@ An example event for `audio_transcriptions` looks as following:
 | openai.base.start_time | Start timestamp of the usage bucket | date |  |
 | openai.base.usage_object_type | Type of the usage record | keyword |  |
 | openai.base.user_id | Identifier of the user | keyword |  |
+| openai.completions.input_audio_tokens | Number of audio input tokens used, including cached tokens | long |  |
+| openai.completions.input_cached_tokens | Number of text input tokens that has been cached from previous requests. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.completions.input_tokens | Number of text input tokens used, including cached tokens. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.completions.output_audio_tokens | Number of audio output tokens used | long |  |
+| openai.completions.output_tokens | Number of text output tokens used. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.embeddings.input_tokens | Number of input tokens used. | long |  |
+| openai.images.images | Number of images processed | long |  |
+| openai.images.size | Image size (dimension of the generated image) | keyword |  |
+| openai.moderations.input_tokens | Number of input tokens used. | long |  |
 
 
 ### Code interpreter sessions
@@ -517,26 +537,32 @@ An example event for `completions` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| openai.base.api_key_id | Identifier for the API key used | keyword |
-| openai.base.end_time | End timestamp of the usage bucket | date |
-| openai.base.model | Name of the OpenAI model used | keyword |
-| openai.base.num_model_requests | Number of requests made to the model | long |
-| openai.base.project_id | Identifier of the project | keyword |
-| openai.base.start_time | Start timestamp of the usage bucket | date |
-| openai.base.usage_object_type | Type of the usage record | keyword |
-| openai.base.user_id | Identifier of the user | keyword |
-| openai.completions.batch | Whether the request was processed as a batch | boolean |
-| openai.completions.input_audio_tokens | Number of audio input tokens used, including cached tokens | long |
-| openai.completions.input_cached_tokens | Number of text input tokens that has been cached from previous requests. For customers subscribe to scale tier, this includes scale tier tokens | long |
-| openai.completions.input_tokens | Number of text input tokens used, including cached tokens. For customers subscribe to scale tier, this includes scale tier tokens | long |
-| openai.completions.output_audio_tokens | Number of audio output tokens used | long |
-| openai.completions.output_tokens | Number of text output tokens used. For customers subscribe to scale tier, this includes scale tier tokens | long |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| openai.audio_speeches.characters | Number of characters processed | long |  |
+| openai.audio_transcriptions.seconds | Number of seconds processed | long | s |
+| openai.base.api_key_id | Identifier for the API key used | keyword |  |
+| openai.base.end_time | End timestamp of the usage bucket | date |  |
+| openai.base.model | Name of the OpenAI model used | keyword |  |
+| openai.base.num_model_requests | Number of requests made to the model | long |  |
+| openai.base.project_id | Identifier of the project | keyword |  |
+| openai.base.start_time | Start timestamp of the usage bucket | date |  |
+| openai.base.usage_object_type | Type of the usage record | keyword |  |
+| openai.base.user_id | Identifier of the user | keyword |  |
+| openai.completions.batch | Whether the request was processed as a batch | boolean |  |
+| openai.completions.input_audio_tokens | Number of audio input tokens used, including cached tokens | long |  |
+| openai.completions.input_cached_tokens | Number of text input tokens that has been cached from previous requests. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.completions.input_tokens | Number of text input tokens used, including cached tokens. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.completions.output_audio_tokens | Number of audio output tokens used | long |  |
+| openai.completions.output_tokens | Number of text output tokens used. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.embeddings.input_tokens | Number of input tokens used. | long |  |
+| openai.images.images | Number of images processed | long |  |
+| openai.images.size | Image size (dimension of the generated image) | keyword |  |
+| openai.moderations.input_tokens | Number of input tokens used. | long |  |
 
 
 ### Embeddings
@@ -587,21 +613,31 @@ An example event for `embeddings` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| openai.base.api_key_id | Identifier for the API key used | keyword |
-| openai.base.end_time | End timestamp of the usage bucket | date |
-| openai.base.model | Name of the OpenAI model used | keyword |
-| openai.base.num_model_requests | Number of requests made to the model | long |
-| openai.base.project_id | Identifier of the project | keyword |
-| openai.base.start_time | Start timestamp of the usage bucket | date |
-| openai.base.usage_object_type | Type of the usage record | keyword |
-| openai.base.user_id | Identifier of the user | keyword |
-| openai.embeddings.input_tokens | Number of input tokens used. | long |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| openai.audio_speeches.characters | Number of characters processed | long |  |
+| openai.audio_transcriptions.seconds | Number of seconds processed | long | s |
+| openai.base.api_key_id | Identifier for the API key used | keyword |  |
+| openai.base.end_time | End timestamp of the usage bucket | date |  |
+| openai.base.model | Name of the OpenAI model used | keyword |  |
+| openai.base.num_model_requests | Number of requests made to the model | long |  |
+| openai.base.project_id | Identifier of the project | keyword |  |
+| openai.base.start_time | Start timestamp of the usage bucket | date |  |
+| openai.base.usage_object_type | Type of the usage record | keyword |  |
+| openai.base.user_id | Identifier of the user | keyword |  |
+| openai.completions.input_audio_tokens | Number of audio input tokens used, including cached tokens | long |  |
+| openai.completions.input_cached_tokens | Number of text input tokens that has been cached from previous requests. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.completions.input_tokens | Number of text input tokens used, including cached tokens. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.completions.output_audio_tokens | Number of audio output tokens used | long |  |
+| openai.completions.output_tokens | Number of text output tokens used. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.embeddings.input_tokens | Number of input tokens used. | long |  |
+| openai.images.images | Number of images processed | long |  |
+| openai.images.size | Image size (dimension of the generated image) | keyword |  |
+| openai.moderations.input_tokens | Number of input tokens used. | long |  |
 
 
 ### Images
@@ -654,23 +690,32 @@ An example event for `images` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| openai.base.api_key_id | Identifier for the API key used | keyword |
-| openai.base.end_time | End timestamp of the usage bucket | date |
-| openai.base.model | Name of the OpenAI model used | keyword |
-| openai.base.num_model_requests | Number of requests made to the model | long |
-| openai.base.project_id | Identifier of the project | keyword |
-| openai.base.start_time | Start timestamp of the usage bucket | date |
-| openai.base.usage_object_type | Type of the usage record | keyword |
-| openai.base.user_id | Identifier of the user | keyword |
-| openai.images.images | Number of images processed | long |
-| openai.images.size | Image size (dimension of the generated image) | keyword |
-| openai.images.source | Source of the grouped usage result, possible values are `image.generation`, `image.edit`, `image.variation` | keyword |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| openai.audio_speeches.characters | Number of characters processed | long |  |
+| openai.audio_transcriptions.seconds | Number of seconds processed | long | s |
+| openai.base.api_key_id | Identifier for the API key used | keyword |  |
+| openai.base.end_time | End timestamp of the usage bucket | date |  |
+| openai.base.model | Name of the OpenAI model used | keyword |  |
+| openai.base.num_model_requests | Number of requests made to the model | long |  |
+| openai.base.project_id | Identifier of the project | keyword |  |
+| openai.base.start_time | Start timestamp of the usage bucket | date |  |
+| openai.base.usage_object_type | Type of the usage record | keyword |  |
+| openai.base.user_id | Identifier of the user | keyword |  |
+| openai.completions.input_audio_tokens | Number of audio input tokens used, including cached tokens | long |  |
+| openai.completions.input_cached_tokens | Number of text input tokens that has been cached from previous requests. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.completions.input_tokens | Number of text input tokens used, including cached tokens. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.completions.output_audio_tokens | Number of audio output tokens used | long |  |
+| openai.completions.output_tokens | Number of text output tokens used. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.embeddings.input_tokens | Number of input tokens used. | long |  |
+| openai.images.images | Number of images processed | long |  |
+| openai.images.size | Image size (dimension of the generated image) | keyword |  |
+| openai.images.source | Source of the grouped usage result, possible values are `image.generation`, `image.edit`, `image.variation` | keyword |  |
+| openai.moderations.input_tokens | Number of input tokens used. | long |  |
 
 
 ### Moderations
@@ -721,21 +766,31 @@ An example event for `moderations` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| openai.base.api_key_id | Identifier for the API key used | keyword |
-| openai.base.end_time | End timestamp of the usage bucket | date |
-| openai.base.model | Name of the OpenAI model used | keyword |
-| openai.base.num_model_requests | Number of requests made to the model | long |
-| openai.base.project_id | Identifier of the project | keyword |
-| openai.base.start_time | Start timestamp of the usage bucket | date |
-| openai.base.usage_object_type | Type of the usage record | keyword |
-| openai.base.user_id | Identifier of the user | keyword |
-| openai.moderations.input_tokens | Number of input tokens used. | long |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| openai.audio_speeches.characters | Number of characters processed | long |  |
+| openai.audio_transcriptions.seconds | Number of seconds processed | long | s |
+| openai.base.api_key_id | Identifier for the API key used | keyword |  |
+| openai.base.end_time | End timestamp of the usage bucket | date |  |
+| openai.base.model | Name of the OpenAI model used | keyword |  |
+| openai.base.num_model_requests | Number of requests made to the model | long |  |
+| openai.base.project_id | Identifier of the project | keyword |  |
+| openai.base.start_time | Start timestamp of the usage bucket | date |  |
+| openai.base.usage_object_type | Type of the usage record | keyword |  |
+| openai.base.user_id | Identifier of the user | keyword |  |
+| openai.completions.input_audio_tokens | Number of audio input tokens used, including cached tokens | long |  |
+| openai.completions.input_cached_tokens | Number of text input tokens that has been cached from previous requests. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.completions.input_tokens | Number of text input tokens used, including cached tokens. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.completions.output_audio_tokens | Number of audio output tokens used | long |  |
+| openai.completions.output_tokens | Number of text output tokens used. For customers subscribe to scale tier, this includes scale tier tokens | long |  |
+| openai.embeddings.input_tokens | Number of input tokens used. | long |  |
+| openai.images.images | Number of images processed | long |  |
+| openai.images.size | Image size (dimension of the generated image) | keyword |  |
+| openai.moderations.input_tokens | Number of input tokens used. | long |  |
 
 
 ### Vector stores
