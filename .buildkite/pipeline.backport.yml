@@ -18,8 +18,11 @@ steps:
     if: |
       !(
         build.source == 'ui' ||
-        (build.source == 'trigger_job' && build.env('BUILDKITE_PIPELINE_SLUG') == 'integrations')
+        (build.source == 'trigger_job' && build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == 'integrations')
       )
+
+  # Ensure that the check-ui step runs before any other step
+  - wait: ~
 
   - input: "Input values for the variables"
     key: "input-variables"
