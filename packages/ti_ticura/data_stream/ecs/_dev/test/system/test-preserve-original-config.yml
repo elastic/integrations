@@ -9,9 +9,12 @@ data_stream:
     preserve_original_event: true
 
 wait_for_data_timeout: 90s
-# Exercises the preserve_original_event=true path.
-# The pipeline-level test already verifies event.original is set correctly;
-# here we verify the integration remains stable (no crashes, correct doc count)
-# when the flag is enabled.
+# Exercises the preserve_original_event=true path end-to-end against the real
+# (mock) feed, whose lines carry their own top-level `event` object. This is a
+# regression guard: the json add_to_root "replace" step will delete a
+# pre-written event.original, so we assert event.original actually survives to
+# _source — not just that the doc count is right.
 assert:
   hit_count: 10
+  fields_present:
+    - event.original
