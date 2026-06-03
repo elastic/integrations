@@ -591,6 +591,7 @@ The `log` data stream provides events from Juniper SRX devices. These logs inclu
 | juniper.srx.index | index | keyword |
 | juniper.srx.index1 |  | keyword |
 | juniper.srx.index2 |  | keyword |
+| juniper.srx.interface_index |  | keyword |
 | juniper.srx.ip_mon_reth_scan.trigger |  | keyword |
 | juniper.srx.kern_arp_addr_change.ip |  | ip |
 | juniper.srx.kern_arp_addr_change.mac1 |  | keyword |
@@ -659,6 +660,7 @@ The `log` data stream provides events from Juniper SRX devices. These logs inclu
 | juniper.srx.sub_category | sub category | keyword |
 | juniper.srx.system.aux_spi |  | integer |
 | juniper.srx.system.direction |  | keyword |
+| juniper.srx.system.if_trace |  | keyword |
 | juniper.srx.system.ike_version |  | integer |
 | juniper.srx.system.local |  | keyword |
 | juniper.srx.system.local_gateway |  | ip |
