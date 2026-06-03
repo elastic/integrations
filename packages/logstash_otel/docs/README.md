@@ -4,7 +4,9 @@
 
 This package contains dashboards that visualize metrics exported from Logstash via the OpenTelemetry Protocol (OTLP).
 
-Logstash can push metrics directly to any OTLP-compatible backend — including Elastic — using its built-in OpenTelemetry metrics exporter. This integration makes those metrics visible in Kibana without requiring an Elastic Agent or Beats collector.
+Logstash metrics should be sent to the **Managed OTLP endpoint** provided by Elastic Cloud. This endpoint receives OTLP data, applies the managed ingest pipeline to normalise the metrics, and routes them into the `metrics-logstash.otel-*` data stream where these dashboards can read them.
+
+Logstash can push metrics directly to the Managed OTLP endpoint using its built-in OpenTelemetry metrics exporter. This integration makes those metrics visible in Kibana without requiring an Elastic Agent or Beats collector.
 
 ## What metrics are included?
 
@@ -50,13 +52,13 @@ Per-pipeline deep-dive. Shows event rates, persistent queue utilization, batch s
 
 ## Prerequisites
 
-Logstash 9.5.0 or later configured to send metrics to Elastic via OTLP.
+Logstash 9.5.0 or later configured to send metrics to the Elastic Cloud Managed OTLP endpoint.
 
 Add the following to `logstash.yml`:
 
 ```yaml
 otel.metrics.enabled: true
-otel.exporter.otlp.endpoint: "https://your-deployment.apm.us-central1.gcp.cloud.es.io:443"
+otel.exporter.otlp.endpoint: "https://your-managed-otlp-endpoint.elastic.cloud"
 otel.exporter.otlp.protocol: "grpc"
 otel.exporter.otlp.headers: "Authorization=ApiKey your-base64-encoded-api-key"
 ```
