@@ -111,6 +111,11 @@ program: |
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
           bytes(resp.Body).decode_json().as(body, body.?has_more.orValue(false).as(more,
+            // Whether more pages or projects remain after this result. When false this is the
+            // final page of the final project, so reset scheduling state in the same result that
+            // emits events. Otherwise the next interval would burn a no-op run draining the stale
+            // worklist before resuming, collecting only every other interval.
+            (more || (int(state.?next.orValue(0)) + 1 < size(state.worklist))).as(want_more,
             {
               "events": body.?data.orValue([]).map(rl, {
                 "message": {
@@ -133,13 +138,19 @@ program: |
                   ?"batch_1_day_max_input_tokens": rl.?batch_1_day_max_input_tokens,
                 }.encode_json(),
               }),
+              "worklist": want_more ? state.worklist : [],
+              "project_after": "",
+              "projects_listed": want_more,
               "rl_after": more ? body.?last_id.orValue("") : "",
-              "next": more ? int(state.?next.orValue(0)) : int(state.?next.orValue(0)) + 1,
-              "want_more": more || (int(state.?next.orValue(0)) + 1 < size(state.worklist)),
+              "next": want_more ? (more ? int(state.?next.orValue(0)) : int(state.?next.orValue(0)) + 1) : 0,
+              "want_more": want_more,
             }
-          ))
+          )))
         :
           // Rate-limit call failed for this project: emit an error and continue with the rest.
+          // If the failed project was the last item, reset scheduling state here so the next
+          // interval starts a fresh listing instead of wasting a run on the drained worklist.
+          (int(state.?next.orValue(0)) + 1 < size(state.worklist)).as(want_more,
           {
             "events": {
               "error": {
@@ -153,10 +164,13 @@ program: |
                 ),
               },
             },
+            "worklist": want_more ? state.worklist : [],
+            "project_after": "",
+            "projects_listed": want_more,
             "rl_after": "",
-            "next": int(state.?next.orValue(0)) + 1,
-            "want_more": int(state.?next.orValue(0)) + 1 < size(state.worklist),
-          }
+            "next": want_more ? int(state.?next.orValue(0)) + 1 : 0,
+            "want_more": want_more,
+          })
         )
       )
     :
