@@ -25,127 +25,232 @@ state:
   page_size: {{batch_size}}
   want_more: false
   initial_interval: {{initial_interval}}
-  page_token: ""
+  device_url: https://{{region}}.device-management.eset.systems
+  devices_fetched: false
 redact:
   fields: ~
-program: |
+program: |-
   (
-    state.want_more
-    ?
+    state.want_more ?
       state
     :
-      state.with({
-        "page_size": string(state.page_size),
-        "start_time": (
-          has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null
-          ?
+      state.drop(
+        [
+          "page_token",
+          "device_keys",
+          "device_values",
+          "device_page_token",
+          "device_response_id",
+        ]
+      ).with(
+        {
+          "page_size": string(state.page_size),
+          "start_time": (has(state.cursor) && has(state.cursor.last_timestamp) &&
+          state.cursor.last_timestamp != null) ?
             state.cursor.last_timestamp
           :
-            (now - duration(state.initial_interval)).format(time_layout.RFC3339)
-        ),
-        "end_time": now.format(time_layout.RFC3339),
-        "page_token": state.page_token
-      })
+            (now - duration(state.initial_interval)).format(time_layout.RFC3339),
+          "end_time": now.format(time_layout.RFC3339),
+          "devices_fetched": false,
+        }
+      )
   ).as(state,
-    request(
-      "GET",
-      state.url.trim_right("/") + "/v1/detections?" + {
-        "page_size": [state.page_size],
-        "start_time": [state.start_time],
-        "end_time": [state.end_time],
-        "page_token": [state.page_token]
-      }.format_query()
-    ).as(request, (
-      has(state.cursor) && has(state.cursor.response_id) && state.cursor.response_id != null
-      ?
-        request.with({
-          "Header":{
-            "response-id": [state.cursor.response_id],
-            "3rd-integration": ["Elastic"],
-          }
-        })
-      :
-        request
-    )).do_request().as(resp, (
-      resp.StatusCode == 200
-      ?
-        resp.Body.decode_json().as(body, {
-          "events": (
-            has(body.detections) && body.detections != null
-            ?
-              body.detections.map(e, {
-                "message": e.encode_json(),
-              })
-            :
-              []
-          ),
-          "page_token": (
-            has(body.nextPageToken) && body.nextPageToken != null
-            ?
-              body.nextPageToken
-            :
-              ""
-          ),
-          "want_more": has(body.nextPageToken) && body.nextPageToken != null && body.nextPageToken != "",
-          "page_size": state.page_size,
-          "initial_interval": state.initial_interval,
-          "start_time": string(state.start_time),
-          "end_time": string(state.end_time),
-          "cursor": {
-            "response_id": null,
-            "last_timestamp": (
-              has(body.nextPageToken) && body.nextPageToken != null && body.nextPageToken != ""
-              ?
-                (
-                  has(state.cursor) && has(state.cursor.last_timestamp)
-                  ?
-                    state.cursor.last_timestamp
-                  :
-                    null
-                )
-              :
-                has(body.detections) && body.detections != null && body.detections.size() > 0
-                ?
-                  body.detections.map(e, e.occurTime).max()
-                :
-                  state.end_time
-            )
-          }
-        })
-      :
-        (
-          resp.StatusCode == 202 ?
-            state.with({
-              "events": [{"message":"retry"}],
-              "want_more": true,
-              "cursor": {
-                "last_timestamp": state.start_time,
-                "response_id": resp.Header["Response-Id"][0]
-              }
-            })
-          :
-            state.with({
-              "events": [{
-                "error": {
-                  "code": string(resp.StatusCode),
-                  "id": string(resp.Status),
-                  "message": "GET " + state.url.trim_right("/") + "/v1/detections :" + (
-                    size(resp.Body) != 0 ?
-                      string(resp.Body)
-                    :
-                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+    !state.?devices_fetched.orValue(false) ?
+      // Phase 1: Fetch all devices and build UUID -> display name lookup lists.
+      request(
+        "GET",
+        state.device_url.trim_right("/") + "/v1/devices?" + {
+          "pageSize": [state.page_size],
+          "pageToken": [state.?device_page_token.orValue("")],
+        }.format_query()
+      ).as(request,
+        (state.?device_response_id.orValue("") != "") ?
+          request.with(
+            {
+              "Header": {
+                "response-id": [state.device_response_id],
+                "3rd-integration": ["Elastic"],
+              },
+            }
+          )
+        :
+          request
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            (body.nextPageToken != "").as(has_more,
+              state.drop(
+                "device_response_id"
+              ).with(
+                {
+                  "events": [{"message": "retry"}],
+                  "want_more": true,
+                  "device_keys": state.?device_keys.orValue([]) + body.devices.map(d, d.uuid),
+                  "device_values": state.?device_values.orValue([]) + body.devices.map(d,
+                    {
+                      "displayName": d.?displayName.orValue(""),
+                      "primaryIp": d.?primaryLocalIpAddress.orValue(""),
+                      "publicIp": d.?publicIpAddress.orValue(""),
+                      "osFull": has(d.operatingSystem) ? d.operatingSystem.?displayName.orValue("") : "",
+                      "osVersion": (has(d.operatingSystem) && has(d.operatingSystem.version)) ? d.operatingSystem.version.?name.orValue("") : "",
+                    }
                   ),
+                  "device_page_token": has_more ? body.nextPageToken : "",
+                  "devices_fetched": !has_more,
+                }
+              )
+            )
+          )
+        : (resp.StatusCode == 202) ?
+          state.with(
+            {
+              "events": [{"message": "retry"}],
+              "want_more": true,
+              "device_response_id": resp.Header["Response-Id"][0],
+            }
+          )
+        :
+          state.drop(
+            [
+              "device_keys",
+              "device_values",
+              "device_page_token",
+              "device_response_id",
+            ]
+          ).with(
+            {
+              "events": [
+                {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "GET " + state.device_url.trim_right("/") + "/v1/devices :" + (
+                      (size(resp.Body) != 0) ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                    ),
+                  },
                 },
-              }],
-              "page_token": "",
-              "want_more": false,
-              "cursor": {
-                "last_timestamp": state.start_time,
-                "response_id": null
+              ],
+              "want_more": true,
+              "devices_fetched": true,
+            }
+          )
+      )
+    :
+      // Phase 2: Fetch detections, embedding device display name from the lookup map.
+      zip(state.?device_keys.orValue([]), state.?device_values.orValue([])).as(device_map,
+        request(
+          "GET",
+          state.url.trim_right("/") + "/v1/detections?" + {
+            "page_size": [state.page_size],
+            "start_time": [state.start_time],
+            "end_time": [state.end_time],
+            "page_token": [state.?page_token.orValue("")],
+          }.format_query()
+        ).as(request,
+          (has(state.?cursor.response_id) && state.cursor.response_id != null) ?
+            request.with(
+              {
+                "Header": {
+                  "response-id": [state.cursor.response_id],
+                  "3rd-integration": ["Elastic"],
+                },
               }
-            })
+            )
+          :
+            request
+        ).do_request().as(resp,
+          (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              state.drop(
+                "device_page_token"
+              ).with(
+                {
+                  "events": body.detections.map(e,
+                    {
+                      "message": e.with(
+                        {
+                          "deviceDisplayName": has(e.?context.deviceUuid) ?
+                            device_map[?e.context.deviceUuid].displayName.orValue("")
+                          :
+                            "",
+                          "deviceInfo": has(e.?context.deviceUuid) ?
+                            device_map[?e.context.deviceUuid].orValue({})
+                          :
+                            {},
+                        }
+                      ).encode_json(),
+                    }
+                  ),
+                  "page_token": body.nextPageToken,
+                  "want_more": body.nextPageToken != "",
+                  "cursor": {
+                    "response_id": null,
+                    "last_timestamp": (body.nextPageToken != "") ?
+                      (
+                        (has(state.cursor) && has(state.cursor.last_timestamp)) ?
+                          state.cursor.last_timestamp
+                        :
+                          null
+                      )
+                    : (body.detections.size() > 0) ?
+                      body.detections.map(e, e.occurTime).max()
+                    :
+                      state.end_time,
+                  },
+                  "device_keys": (body.nextPageToken != "") ? state.device_keys : [],
+                  "device_values": (body.nextPageToken != "") ? state.device_values : [],
+                  "devices_fetched": body.nextPageToken != "",
+                }
+              )
+            )
+          : (resp.StatusCode == 202) ?
+            state.with(
+              {
+                "events": [{"message": "retry"}],
+                "want_more": true,
+                "cursor": {
+                  "last_timestamp": state.start_time,
+                  "response_id": resp.Header["Response-Id"][0],
+                },
+              }
+            )
+          :
+            state.drop(
+              [
+                "page_token",
+                "device_keys",
+                "device_values",
+                "device_page_token",
+              ]
+            ).with(
+              {
+                "events": [
+                  {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": string(resp.Status),
+                      "message": "GET " + state.url.trim_right("/") + "/v1/detections :" + (
+                        (size(resp.Body) != 0) ?
+                          string(resp.Body)
+                        :
+                          string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                      ),
+                    },
+                  },
+                ],
+                "want_more": false,
+                "cursor": {
+                  "last_timestamp": state.start_time,
+                  "response_id": null,
+                },
+                "devices_fetched": false,
+              }
+            )
         )
-    ))
+      )
   )
 tags:
 {{#if preserve_original_event}}
