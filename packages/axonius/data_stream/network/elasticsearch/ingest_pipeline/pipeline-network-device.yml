@@ -2431,7 +2431,7 @@ processors:
           field:
             - _ingest._value.cve_id
             - _ingest._value.desc
-          tag: remove_custom_duplicate_fields_from_axonius_network_cisa_vulnerabilities
+          tag: remove_network_cisa_vulnerabilities_mapped_fields
           ignore_missing: true
   - foreach:
       field: axonius.network.normalization_reasons
@@ -2440,7 +2440,7 @@ processors:
       processor:
         remove:
           field: _ingest._value.reason
-          tag: remove_custom_duplicate_fields_from_axonius_network_normalization_reasons
+          tag: remove_network_normalization_reasons_reason
           ignore_missing: true
   - foreach:
       field: axonius.network.plugin_and_severities
@@ -2451,7 +2451,7 @@ processors:
           field:
             - _ingest._value.cve
             - _ingest._value.severity
-          tag: remove_custom_duplicate_fields_from_axonius_network_plugin_and_severities
+          tag: remove_network_plugin_and_severities_mapped_fields
           ignore_missing: true
 on_failure:
   - append:
@@ -2464,7 +2464,3 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
-  - append:
-      field: tags
-      value: preserve_original_event
-      allow_duplicates: false

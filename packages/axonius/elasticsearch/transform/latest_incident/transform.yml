@@ -10,7 +10,7 @@ dest:
 # Unique key for latest transform:
 # - The Axonius API does not provide a stable unique identifier for incident assets.
 # - axonius.incident.transform_unique_id is a fingerprint of event.original (the full raw document).
-# - Per the vendor, incident assets are only created or deleted, not updated in place.
+# - According to the vendor, incident assets are only created or deleted, not updated in place.
 # - If the API response shape changes (field ordering, new fields, etc.), the fingerprint can differ and duplicate rows may appear in the destination index.
 latest:
   unique_key:
@@ -18,7 +18,7 @@ latest:
     - axonius.incident.transform_unique_id
   sort: '@timestamp'
 description: >-
-  Deduplicates incident asset documents produced by repeated Axonius API polling: identical payloads (same fingerprint in axonius.incident.transform_unique_id) collapse to one row per event.dataset, keeping the document with the latest @timestamp. This is content-based deduplication, not tracking mutable entity state per the vendor, assets are created and deleted rather than updated in place.
+  Deduplicates incident asset documents produced by repeated Axonius API polling: identical payloads (same fingerprint in axonius.incident.transform_unique_id) collapse to one row per event.dataset, keeping the document with the latest @timestamp. This is content-based deduplication, not tracking mutable entity state According to the vendor, assets are created and deleted rather than updated in place.
 frequency: 5m
 settings:
   # This is required to prevent the transform from clobbering the Fleet-managed mappings.

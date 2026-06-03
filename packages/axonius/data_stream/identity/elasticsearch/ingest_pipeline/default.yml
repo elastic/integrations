@@ -644,7 +644,7 @@ processors:
         - axonius.identity.user_created
         - axonius.identity.user_full_name
         - axonius.identity.username
-      tag: remove_custom_duplicate_fields
+      tag: remove_identity_fields_mapped_to_ecs
       ignore_missing: true
   - remove:
       field: json
@@ -681,11 +681,6 @@ processors:
       tag: set_pipeline_error_into_event_kind
       value: pipeline_error
       if: ctx.error?.message != null
-  - append:
-      field: tags
-      value: preserve_original_event
-      allow_duplicates: false
-      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
@@ -697,7 +692,3 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
-  - append:
-      field: tags
-      value: preserve_original_event
-      allow_duplicates: false

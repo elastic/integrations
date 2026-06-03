@@ -2526,7 +2526,7 @@ processors:
             - _ingest._value.desc
             - _ingest._value.notes
             - _ingest._value.vulnerability_name
-          tag: remove_custom_duplicate_fields_from_axonius_compute_cisa_vulnerabilities
+          tag: remove_compute_cisa_vulnerabilities_mapped_fields
           ignore_missing: true
   - foreach:
       field: axonius.compute.normalization_reasons
@@ -2535,7 +2535,7 @@ processors:
       processor:
         remove:
           field: _ingest._value.reason
-          tag: remove_custom_duplicate_fields_from_axonius_compute_normalization_reasons
+          tag: remove_compute_normalization_reasons_reason
           ignore_missing: true
   - foreach:
       field: axonius.compute.plugin_and_severities
@@ -2544,7 +2544,7 @@ processors:
       processor:
         remove:
           field: _ingest._value.cve
-          tag: remove_custom_duplicate_fields_from_axonius_compute_plugin_and_severities
+          tag: remove_compute_plugin_and_severities_cve
           ignore_missing: true
   - foreach:
       field: axonius.compute.software_cves
@@ -2556,7 +2556,7 @@ processors:
             - _ingest._value.cve_id
             - _ingest._value.epss.cve_id
             - _ingest._value.msrc.cve_id
-          tag: remove_custom_duplicate_fields_from_axonius_compute_software_cves
+          tag: remove_compute_software_cves_mapped_fields
           ignore_missing: true
   - foreach:
       field: axonius.compute.qualys_agent_vulns
@@ -2578,7 +2578,3 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
-  - append:
-      field: tags
-      value: preserve_original_event
-      allow_duplicates: false

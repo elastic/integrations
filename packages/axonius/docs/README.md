@@ -268,11 +268,11 @@ An example event for `adapter` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-06-02T09:34:47.892Z",
+    "@timestamp": "2026-06-03T07:42:08.732Z",
     "agent": {
-        "ephemeral_id": "a3dfc8ca-2d2d-44f2-8c89-3872b60d2a46",
-        "id": "d137c075-75fa-4a45-b7c3-01be21d4f23d",
-        "name": "elastic-agent-22634",
+        "ephemeral_id": "3b5e0382-2578-41d9-aa9e-b67afb5fda1f",
+        "id": "14821fc1-2179-4137-b70d-b1273d706291",
+        "name": "elastic-agent-29859",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -311,14 +311,14 @@ An example event for `adapter` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.adapter",
-        "namespace": "95822",
+        "namespace": "75866",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "d137c075-75fa-4a45-b7c3-01be21d4f23d",
+        "id": "14821fc1-2179-4137-b70d-b1273d706291",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -326,7 +326,7 @@ An example event for `adapter` looks as following:
         "agent_id_status": "verified",
         "dataset": "axonius.adapter",
         "id": "a_cloud_guru_adapter",
-        "ingested": "2026-06-02T09:34:50Z",
+        "ingested": "2026-06-03T07:42:11Z",
         "kind": "event",
         "original": "{\"adapter_configs\":{},\"connections\":[{\"active\":true,\"adapter_name\":\"a_cloud_guru_adapter\",\"connection_adapter_config\":{},\"connection_advanced_config\":{},\"connection_config\":{},\"connection_discovery\":{},\"connection_id\":\"conn_12345\",\"curl\":null,\"did_notify_error\":false,\"error\":null,\"failed_connections_limit_exceeded\":false,\"id\":\"conn_12345\",\"last_fetch_time\":\"Sat, 08 Mar 2025 18:53:09 GMT\",\"last_successful_fetch\":\"Sat, 08 Mar 2025 18:53:09 GMT\",\"node_id\":\"c69070d9e5e145e4861f2843d1951ab2\",\"note\":\"\",\"status\":\"success\",\"tunnel_id\":\"khnsjhgvcskdbvnksdjahubnkvdhb\",\"uuid\":\"c69070fgredffedfgrfedcfd9e5e145e4861f2843d1951ab2\"}],\"connections_count\":{\"error_count\":0,\"inactive_count\":0,\"success_count\":1,\"total_count\":1,\"warning_count\":0},\"id\":\"a_cloud_guru_adapter\",\"is_master\":true,\"node_id\":\"c69070d9e5e145e4861f2843d1951ab2\",\"node_name\":\"Primary\",\"plugin_name\":\"a_cloud_guru_adapter\",\"status\":\"success\",\"unique_plugin_name\":\"a_cloud_guru_adapter_0\"}",
         "outcome": "success"
@@ -382,11 +382,11 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-06-02T09:47:12.793Z",
+    "@timestamp": "2026-06-03T08:32:50.343Z",
     "agent": {
-        "ephemeral_id": "77df7ace-099e-4f95-b854-cd03c356beb2",
-        "id": "7ce2fe7f-fdd5-45e4-9328-76bf679c2eb7",
-        "name": "elastic-agent-45097",
+        "ephemeral_id": "a1c19a6d-3aa1-47d3-a3bb-a16a21544746",
+        "id": "e51be873-4470-4ac9-b544-f8d1cd55df45",
+        "name": "elastic-agent-19686",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -411,21 +411,21 @@ An example event for `user` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.user",
-        "namespace": "72546",
+        "namespace": "57839",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "7ce2fe7f-fdd5-45e4-9328-76bf679c2eb7",
+        "id": "e51be873-4470-4ac9-b544-f8d1cd55df45",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "axonius.user",
-        "ingested": "2026-06-02T09:47:15Z",
+        "ingested": "2026-06-03T08:32:53Z",
         "kind": "event",
         "original": "{\"allowed_scopes_impersonation\":[\"63622d93d27cvdsfa4d9489db6a1cf\",\"63622d93d2dvfwe74d9489db6a1cc\"],\"data_scope_id\":\"fgreg63622d93d274d9489db6a1cf\",\"data_scope_name\":\"test data scope\",\"department\":\"test\",\"email\":\"alias.doe@example.com\",\"first_name\":\"alias\",\"last_login\":\"Sun, 09 Mar 2025 18:53:09 GMT\",\"last_name\":\"doe\",\"last_updated\":\"Sun, 11 Mar 2025 18:53:09 GMT\",\"role_id\":\"63622vfed93d274d9489dbbgresdcv6a1cf\",\"role_name\":\"test role\",\"source\":\"test source\",\"title\":\"Security Analyst\",\"user_name\":\"alias.doe\",\"uuid\":\"63622d93d274ihvbngvbhd9489db6a1cf\"}"
     },
@@ -496,11 +496,11 @@ An example event for `gateway` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-06-02T09:39:41.324Z",
+    "@timestamp": "2026-06-03T07:47:09.781Z",
     "agent": {
-        "ephemeral_id": "c35dc506-67e1-4aed-ba32-fcd5ae73ad29",
-        "id": "26bc6a2d-a86e-41e1-b35a-804a0a977a8b",
-        "name": "elastic-agent-42290",
+        "ephemeral_id": "201b3384-8891-496c-ac31-7112d8998e07",
+        "id": "48b8f756-211b-4384-876b-8344e3695645",
+        "name": "elastic-agent-38396",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -526,14 +526,14 @@ An example event for `gateway` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.gateway",
-        "namespace": "61494",
+        "namespace": "36604",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "26bc6a2d-a86e-41e1-b35a-804a0a977a8b",
+        "id": "48b8f756-211b-4384-876b-8344e3695645",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -548,7 +548,7 @@ An example event for `gateway` looks as following:
         "agent_id_status": "verified",
         "dataset": "axonius.gateway",
         "id": "tunnel3",
-        "ingested": "2026-06-02T09:39:44Z",
+        "ingested": "2026-06-03T07:47:12Z",
         "kind": "event",
         "original": "{\"backup_ids\":[\"backup1\",\"backup2\"],\"default\":false,\"dns_server\":\"1.128.0.0\",\"email_recipients\":[\"john.doe@example.com\"],\"email_when_connected\":false,\"email_when_disconnected\":false,\"id\":\"tunnel3\",\"name\":\"Gateway_1\",\"status\":\"pending\",\"tunnel_proxy_settings\":{\"enabled\":false,\"tunnel_proxy_addr\":\"addr\",\"tunnel_proxy_port\":8080,\"tunnel_proxy_user\":\"tunnel-proxy-01\"}}"
     },
@@ -731,15 +731,15 @@ An example event for `exposure` looks as following:
 {
     "@timestamp": "2025-12-03T00:02:28.000Z",
     "agent": {
-        "ephemeral_id": "93795cdd-598c-499d-84bd-8bb4d2b2f212",
-        "id": "2e2eb7a0-79f2-40c0-baf2-53f942c588c3",
-        "name": "elastic-agent-74104",
+        "ephemeral_id": "8be1125a-7f38-427d-80dc-d3b478d821e6",
+        "id": "c984995b-1d3f-4883-bb15-c9434aca184b",
+        "name": "elastic-agent-78702",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "axonius": {
         "exposure": {
-            "accurate_for_datetime": "Wed, 03 Dec 2025 00:02:28 GMT",
+            "accurate_for_datetime": "2025-12-03T00:02:28.000Z",
             "adapters": [
                 "aws_adapter",
                 "adapter_01"
@@ -758,11 +758,11 @@ An example event for `exposure` looks as following:
             "fields_to_unset": [
                 "other"
             ],
-            "first_seen": "Tue, 29 Apr 2025 12:00:39 GMT",
+            "first_seen": "2025-04-29T12:00:39.000Z",
             "id": "CVE-2024-32021",
             "internal_axon_id": "e018a2831e3ab36e86dd7a4a0782c892",
             "is_cve": true,
-            "last_fetch": "Wed, 03 Dec 2025 00:02:17 GMT",
+            "last_fetch": "2025-12-03T00:02:17.000Z",
             "software_name": [
                 "Git"
             ],
@@ -777,14 +777,14 @@ An example event for `exposure` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.exposure",
-        "namespace": "58717",
+        "namespace": "21987",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "2e2eb7a0-79f2-40c0-baf2-53f942c588c3",
+        "id": "c984995b-1d3f-4883-bb15-c9434aca184b",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -794,7 +794,7 @@ An example event for `exposure` looks as following:
             "vulnerability"
         ],
         "dataset": "axonius.exposure",
-        "ingested": "2026-06-02T09:38:41Z",
+        "ingested": "2026-06-03T07:46:11Z",
         "kind": "event",
         "type": [
             "info"
@@ -808,6 +808,9 @@ An example event for `exposure` looks as following:
         "axonius-exposure"
     ],
     "vulnerability": {
+        "id": [
+            "CVE-2024-32021"
+        ],
         "score": {
             "base": 5
         },
@@ -865,9 +868,9 @@ An example event for `alert_finding` looks as following:
 {
     "@timestamp": "2025-04-14T13:38:49.000Z",
     "agent": {
-        "ephemeral_id": "e2f22a72-ec78-4548-a156-596208bf105f",
-        "id": "c86c59bf-a727-4eeb-89c2-20562daaf8b4",
-        "name": "elastic-agent-88414",
+        "ephemeral_id": "102b0833-134b-4648-92ed-1070a95f71b2",
+        "id": "a06a56bf-4d9f-43fe-b5de-7e0a8ef420a7",
+        "name": "elastic-agent-30390",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -901,14 +904,14 @@ An example event for `alert_finding` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.alert_finding",
-        "namespace": "17164",
+        "namespace": "95597",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "c86c59bf-a727-4eeb-89c2-20562daaf8b4",
+        "id": "a06a56bf-4d9f-43fe-b5de-7e0a8ef420a7",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -916,7 +919,7 @@ An example event for `alert_finding` looks as following:
         "agent_id_status": "verified",
         "dataset": "axonius.alert_finding",
         "id": "66447fe5e6c4840f32a5b94f",
-        "ingested": "2026-06-02T09:35:51Z",
+        "ingested": "2026-06-03T07:43:10Z",
         "kind": "alert"
     },
     "input": {
@@ -1003,9 +1006,9 @@ An example event for `incident` looks as following:
 {
     "@timestamp": "2025-12-07T12:02:42.000Z",
     "agent": {
-        "ephemeral_id": "71e6cc62-7d0c-4be5-8a2e-61e41d1bf455",
-        "id": "c4a85adc-93c5-4bf5-aba3-80ede094b49e",
-        "name": "elastic-agent-45287",
+        "ephemeral_id": "58bf479d-b404-4080-bf2b-c64ed1a3b780",
+        "id": "4a19befd-dfeb-490a-ae01-9c5af81e6225",
+        "name": "elastic-agent-64283",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -1071,14 +1074,14 @@ An example event for `incident` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.incident",
-        "namespace": "95135",
+        "namespace": "60016",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "c4a85adc-93c5-4bf5-aba3-80ede094b49e",
+        "id": "4a19befd-dfeb-490a-ae01-9c5af81e6225",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -1087,7 +1090,7 @@ An example event for `incident` looks as following:
         "created": "2025-02-17T21:01:22.000Z",
         "dataset": "axonius.incident",
         "end": "2025-03-30T18:30:48.000Z",
-        "ingested": "2026-06-02T09:41:43Z",
+        "ingested": "2026-06-03T07:49:09Z",
         "kind": "alert",
         "provider": "sshd",
         "reason": "We have found vulnerabilities on service: sshd 8.2p1",
@@ -1165,9 +1168,9 @@ An example event for `storage` looks as following:
 {
     "@timestamp": "2025-12-09T00:02:07.000Z",
     "agent": {
-        "ephemeral_id": "d43efe8f-6a8b-4823-bf38-968e03cf39ce",
-        "id": "91a59cbe-1593-4098-81b2-cacc4a328885",
-        "name": "elastic-agent-98511",
+        "ephemeral_id": "3b94b470-a638-445f-b513-7e99edec75cb",
+        "id": "309c48b0-7459-46eb-a2f8-dcde33d565ba",
+        "name": "elastic-agent-15395",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -1217,14 +1220,14 @@ An example event for `storage` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.storage",
-        "namespace": "17099",
+        "namespace": "71306",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "91a59cbe-1593-4098-81b2-cacc4a328885",
+        "id": "309c48b0-7459-46eb-a2f8-dcde33d565ba",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -1236,7 +1239,7 @@ An example event for `storage` looks as following:
         ],
         "created": "2024-12-25T22:16:51.000Z",
         "dataset": "axonius.storage",
-        "ingested": "2026-06-02T09:43:45Z",
+        "ingested": "2026-06-03T07:51:11Z",
         "kind": "event",
         "type": [
             "info"
@@ -1320,9 +1323,9 @@ An example event for `ticket` looks as following:
 {
     "@timestamp": "2024-08-10T16:21:10.000Z",
     "agent": {
-        "ephemeral_id": "b39408ce-16c7-4acd-9d1d-8d89a8071598",
-        "id": "00984908-67db-4107-813f-53b9eb5d15b1",
-        "name": "elastic-agent-97336",
+        "ephemeral_id": "39dde3db-cf29-4d14-a136-c802246dd246",
+        "id": "adf692ff-579e-49bd-88bc-fa14bf027e3b",
+        "name": "elastic-agent-96346",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -1378,14 +1381,14 @@ An example event for `ticket` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.ticket",
-        "namespace": "49181",
+        "namespace": "30457",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "00984908-67db-4107-813f-53b9eb5d15b1",
+        "id": "adf692ff-579e-49bd-88bc-fa14bf027e3b",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -1394,7 +1397,7 @@ An example event for `ticket` looks as following:
         "created": "2024-07-14T23:21:10.000Z",
         "dataset": "axonius.ticket",
         "end": "2024-08-10T16:21:10.000Z",
-        "ingested": "2026-06-02T09:44:39Z",
+        "ingested": "2026-06-03T07:52:12Z",
         "kind": "event"
     },
     "input": {
@@ -1952,9 +1955,9 @@ An example event for `network` looks as following:
 {
     "@timestamp": "2025-12-16T00:02:05.000Z",
     "agent": {
-        "ephemeral_id": "82e01c64-a437-42c9-a0a2-d141affec7c4",
-        "id": "dfa60728-6e8e-4752-8a58-33a27683662d",
-        "name": "elastic-agent-13888",
+        "ephemeral_id": "8a021b63-4d23-435e-9ff1-52e29b77aaa7",
+        "id": "10b8b948-620f-4a69-ac44-12197b5c5a65",
+        "name": "elastic-agent-60246",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -2009,14 +2012,14 @@ An example event for `network` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.network",
-        "namespace": "84013",
+        "namespace": "28271",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "dfa60728-6e8e-4752-8a58-33a27683662d",
+        "id": "10b8b948-620f-4a69-ac44-12197b5c5a65",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -2026,7 +2029,7 @@ An example event for `network` looks as following:
             "network"
         ],
         "dataset": "axonius.network",
-        "ingested": "2026-06-02T09:42:41Z",
+        "ingested": "2026-06-03T07:50:13Z",
         "kind": "event",
         "type": [
             "info"
@@ -2501,9 +2504,9 @@ An example event for `identity` looks as following:
 {
     "@timestamp": "2025-12-09T12:02:11.000Z",
     "agent": {
-        "ephemeral_id": "7714de5a-daf2-4d12-af66-023e7d6cae82",
-        "id": "a235fdaf-a810-41bf-b414-1492eae890e2",
-        "name": "elastic-agent-46402",
+        "ephemeral_id": "9bf5d9aa-5fef-4f19-a5fe-5780fcd649a2",
+        "id": "57760dc1-591b-4a34-ba06-c4f7604fdb10",
+        "name": "elastic-agent-81971",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -2618,14 +2621,14 @@ An example event for `identity` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.identity",
-        "namespace": "73119",
+        "namespace": "52896",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "a235fdaf-a810-41bf-b414-1492eae890e2",
+        "id": "57760dc1-591b-4a34-ba06-c4f7604fdb10",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -2636,7 +2639,7 @@ An example event for `identity` looks as following:
         ],
         "created": "2024-06-28T08:49:28.000Z",
         "dataset": "axonius.identity",
-        "ingested": "2026-06-02T09:40:40Z",
+        "ingested": "2026-06-03T07:48:12Z",
         "kind": "event",
         "type": [
             "info"
@@ -3134,9 +3137,9 @@ An example event for `compute` looks as following:
 {
     "@timestamp": "2025-12-05T00:02:00.000Z",
     "agent": {
-        "ephemeral_id": "34331363-0965-40f2-a321-0e4e88214749",
-        "id": "47176027-94f7-411a-8eaa-f62c8e6ea073",
-        "name": "elastic-agent-10144",
+        "ephemeral_id": "ef953a4a-0c2d-413a-8180-529bd686bb14",
+        "id": "80bc8918-8f12-4faf-b69f-14eae4d5990a",
+        "name": "elastic-agent-26769",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -3203,14 +3206,14 @@ An example event for `compute` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.compute",
-        "namespace": "19341",
+        "namespace": "71660",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "47176027-94f7-411a-8eaa-f62c8e6ea073",
+        "id": "80bc8918-8f12-4faf-b69f-14eae4d5990a",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -3221,7 +3224,7 @@ An example event for `compute` looks as following:
             "vulnerability"
         ],
         "dataset": "axonius.compute",
-        "ingested": "2026-06-02T09:37:42Z",
+        "ingested": "2026-06-03T07:45:10Z",
         "kind": "event",
         "type": [
             "info"
@@ -3708,9 +3711,9 @@ An example event for `application` looks as following:
 {
     "@timestamp": "2025-11-13T00:10:22.000Z",
     "agent": {
-        "ephemeral_id": "8dc1b101-0d14-4808-93d4-87927ea6199b",
-        "id": "f254fa73-4f83-4898-ada7-a70acbe15168",
-        "name": "elastic-agent-25264",
+        "ephemeral_id": "601f8736-7bae-4370-b155-edc81597bc61",
+        "id": "7d8c1499-c3fc-4215-a47f-e1b1d1497a8b",
+        "name": "elastic-agent-53767",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -3761,14 +3764,14 @@ An example event for `application` looks as following:
     },
     "data_stream": {
         "dataset": "axonius.application",
-        "namespace": "47966",
+        "namespace": "48459",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "f254fa73-4f83-4898-ada7-a70acbe15168",
+        "id": "7d8c1499-c3fc-4215-a47f-e1b1d1497a8b",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -3778,7 +3781,7 @@ An example event for `application` looks as following:
             "configuration"
         ],
         "dataset": "axonius.application",
-        "ingested": "2026-06-02T09:36:52Z",
+        "ingested": "2026-06-03T07:44:09Z",
         "kind": "event",
         "type": [
             "info"

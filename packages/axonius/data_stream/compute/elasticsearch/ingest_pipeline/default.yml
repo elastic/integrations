@@ -305,7 +305,7 @@ processors:
         - axonius.compute.uuid
         - axonius.compute.vendor
         - axonius.compute.event.enrichment_type
-      tag: remove_custom_duplicate_fields
+      tag: remove_compute_fields_mapped_to_ecs
       ignore_missing: true
   - script:
       tag: script_to_drop_null_values
@@ -338,12 +338,6 @@ processors:
       tag: set_pipeline_error_into_event_kind
       value: pipeline_error
       if: ctx.error?.message != null
-  - append:
-      field: tags
-      value: preserve_original_event
-      tag: append_preserve_original_event_into_tags
-      allow_duplicates: false
-      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
@@ -355,7 +349,3 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
-  - append:
-      field: tags
-      value: preserve_original_event
-      allow_duplicates: false

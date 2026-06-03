@@ -1200,7 +1200,7 @@ processors:
             - _ingest._value.device_id
             - _ingest._value.device_model
             - _ingest._value.device_serial
-          tag: remove_custom_duplicate_fields_from_axonius_identity_associated_devices
+          tag: remove_identity_associated_devices_mapped_fields
           ignore_missing: true
   - foreach:
       field: axonius.identity.breaches_data
@@ -1209,7 +1209,7 @@ processors:
       processor:
         remove:
           field: _ingest._value.added_date
-          tag: remove_custom_duplicate_fields_from_axonius_identity_breaches_data
+          tag: remove_identity_breaches_data_added_date
           ignore_missing: true
 on_failure:
   - append:
@@ -1222,7 +1222,3 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
-  - append:
-      field: tags
-      value: preserve_original_event
-      allow_duplicates: false
