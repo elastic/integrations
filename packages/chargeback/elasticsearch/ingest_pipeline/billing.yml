@@ -16,7 +16,7 @@ processors:
   - set:
       field: cost_type
       value: 'snapshots'
-      if: ctx.sku =~ /^(aws|gcp|azure).snapshot-storage&/
+      if: ctx.sku =~ /^(aws|gcp|azure).snapshot-storage.*/
   - set:
       field: cost_type
       value: 'inference'
@@ -34,7 +34,53 @@ processors:
   - set:
       field: cost_type
       value: 'datahot/datacontent'
-      if: ctx.cost_type == 'datahot'
+      if: ctx.cost_type == 'datahot' || ctx.cost_type == 'datacontent'
+  - set:
+      field: cost_type
+      value: 'onprem'
+      if: ctx.sku == 'onprem_node'
+  - script:
+      ignore_failure: true
+      lang: painless
+      description: |
+        cost_category: data_tier | platform | transfer | snapshot | onprem | other
+        is_allocatable: true for data_tier SKUs and onprem_node (realized pool, §6.1)
+      source: |
+        if (ctx.sku == 'onprem_node' || ctx.cost_type == 'onprem') {
+          ctx.cost_category = 'onprem';
+          ctx.is_allocatable = true;
+          return;
+        }
+        if (ctx.cost_type == 'data-transfer') {
+          ctx.cost_category = 'transfer';
+          ctx.is_allocatable = false;
+          return;
+        }
+        if (ctx.cost_type == 'snapshots') {
+          ctx.cost_category = 'snapshot';
+          ctx.is_allocatable = false;
+          return;
+        }
+        def sku = ctx.sku;
+        if (sku != null) {
+          if (sku.contains('.es.datahot.') || sku.contains('.es.datawarm.')
+              || sku.contains('.es.datacold.') || sku.contains('.es.datafrozen.')
+              || sku.contains('.es.datacontent.')) {
+            ctx.cost_category = 'data_tier';
+            ctx.is_allocatable = true;
+            return;
+          }
+        }
+        if (ctx.cost_type != null) {
+          if (ctx.cost_type == 'ml' || ctx.cost_type == 'kibana' || ctx.cost_type == 'apm'
+              || ctx.cost_type == 'enterprise_search' || ctx.cost_type == 'integrations_server') {
+            ctx.cost_category = 'platform';
+            ctx.is_allocatable = false;
+            return;
+          }
+        }
+        ctx.cost_category = 'other';
+        ctx.is_allocatable = false;
   - pipeline:
       description: '[Fleet] Global pipeline for all data streams'
       ignore_missing_pipeline: true

@@ -1,11 +1,36 @@
-description: Aggregates daily total chargeable units (ECU/ERU) per deployment from billing metrics, using ingested timestamps with a 1-hour sync delay and running every 60 minutes.
+description: Aggregates daily allocatable data-tier capacity (chargeable units) per deployment for realized-cost allocation.
 source:
   index:
     - metrics-ess_billing.billing-*
   query:
-    range:
-      ess.billing.total_ecu:
-        gt: 0
+    bool:
+      must:
+        - range:
+            ess.billing.total_ecu:
+              gt: 0
+      should:
+        - term:
+            ess.billing.sku: onprem_node
+        - bool:
+            must:
+              - term:
+                  ess.billing.type: capacity
+              - term:
+                  ess.billing.kind: elasticsearch
+              - bool:
+                  should:
+                    - wildcard:
+                        ess.billing.sku: "*.es.datahot.*"
+                    - wildcard:
+                        ess.billing.sku: "*.es.datawarm.*"
+                    - wildcard:
+                        ess.billing.sku: "*.es.datacold.*"
+                    - wildcard:
+                        ess.billing.sku: "*.es.datafrozen.*"
+                    - wildcard:
+                        ess.billing.sku: "*.es.datacontent.*"
+                  minimum_should_match: 1
+      minimum_should_match: 1
   runtime_mappings:
     deployment_group:
       type: keyword
@@ -29,8 +54,8 @@ source:
           }
           emit('');
 dest:
-  index: billing_cluster_cost_lookup
-  pipeline: 0.4.0-billing
+  index: billing_realized_pool_lookup
+  pipeline: 0.4.0-realized_pool
 frequency: 60m
 sync:
   time:
@@ -51,20 +76,20 @@ pivot:
     deployment_name:
       terms:
         field: ess.billing.deployment_name
-    sku:
-      terms:
-        field: ess.billing.sku
   aggregations:
-    total_chargeable_units:
+    data_tier_capacity_ecu:
       sum:
         field: ess.billing.total_ecu
+    data_tier_capacity_hours:
+      max:
+        field: ess.billing.quantity.value
+    data_tier_ram_per_zone_mb:
+      max:
+        field: ess.billing.ram_per_zone
 settings:
-  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
   deduce_mappings: false
   unattended: true
 _meta:
   managed: true
   run_as_kibana_system: false
-  # Bump this version to delete, reinstall, and restart the transform during package.
-  # Version bump is needed if there is any code change in transform.
   fleet_transform_version: 0.4.0
