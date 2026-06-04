@@ -78,11 +78,74 @@ func ValidateInventory(path, packagesDir string) error {
 		return fmt.Errorf("loading packages from %s: %w", packagesDir, err)
 	}
 
+	var errs []error
+	for i, e := range inv.Backports {
+		errs = append(errs, validateEntryFields(i, e, knownPackages, packagesDir)...)
+	}
+	errs = append(errs, validateDuplicates(inv.Backports)...)
+
+	return errors.Join(errs...)
+}
+
+// validateEntryFields checks that all required fields of a single entry are
+// present and contain valid values.
+func validateEntryFields(i int, e entry, knownPackages map[string]struct{}, packagesDir string) []error {
+	id := fmt.Sprintf("entry[%d]", i)
+	if e.Branch != "" {
+		id = fmt.Sprintf("branch %q", e.Branch)
+	}
+
+	var errs []error
+
+	if e.Package == "" {
+		errs = append(errs, fmt.Errorf("%s: missing required field 'package'", id))
+	} else if knownPackages != nil {
+		if _, ok := knownPackages[e.Package]; !ok {
+			errs = append(errs, fmt.Errorf("%s: unknown package %q: not found under %s", id, e.Package, packagesDir))
+		}
+	}
+
+	if e.Branch == "" {
+		errs = append(errs, fmt.Errorf("%s: missing required field 'branch'", id))
+	} else if !branchRE.MatchString(e.Branch) {
+		errs = append(errs, fmt.Errorf("%s: invalid branch %q: must match backport-<package>-<version> "+
+			"(letters/digits/underscores in package name, version starts with a digit; "+
+			"no whitespace, quotes, colons, semicolons or other special characters)", id, e.Branch))
+	}
+
+	if e.BaseVersion == "" {
+		errs = append(errs, fmt.Errorf("%s: missing required field 'base_version'", id))
+	} else if _, parseErr := semver.StrictNewVersion(e.BaseVersion); parseErr != nil {
+		errs = append(errs, fmt.Errorf("%s: invalid base_version %q: must be a valid semantic version", id, e.BaseVersion))
+	}
+
+	if e.BaseCommit == "" {
+		errs = append(errs, fmt.Errorf("%s: missing required field 'base_commit'", id))
+	} else if !shaRE.MatchString(e.BaseCommit) {
+		errs = append(errs, fmt.Errorf("%s: invalid base_commit %q: must be a lowercase hex SHA (7–40 chars)", id, e.BaseCommit))
+	}
+
+	if e.Archived == nil {
+		errs = append(errs, fmt.Errorf("%s: missing required field 'archived'", id))
+	}
+
+	if e.MaintainedUntil != nil {
+		if _, parseErr := time.Parse(maintainedUntilLayout, *e.MaintainedUntil); parseErr != nil {
+			errs = append(errs, fmt.Errorf("%s: invalid maintained_until %q: must be YYYY-MM-DD", id, *e.MaintainedUntil))
+		}
+	}
+
+	return errs
+}
+
+// validateDuplicates checks for duplicate branch names and duplicate
+// package/version pairs across all entries.
+func validateDuplicates(entries []entry) []error {
 	seenBranches := make(map[string]struct{})
 	seenPackageVersions := make(map[string]struct{})
 
 	var errs []error
-	for i, e := range inv.Backports {
+	for i, e := range entries {
 		id := fmt.Sprintf("entry[%d]", i)
 		if e.Branch != "" {
 			id = fmt.Sprintf("branch %q", e.Branch)
@@ -106,46 +169,9 @@ func ValidateInventory(path, packagesDir string) error {
 				}
 			}
 		}
-
-		if e.Package == "" {
-			errs = append(errs, fmt.Errorf("%s: missing required field 'package'", id))
-		} else if knownPackages != nil {
-			if _, ok := knownPackages[e.Package]; !ok {
-				errs = append(errs, fmt.Errorf("%s: unknown package %q: not found under %s", id, e.Package, packagesDir))
-			}
-		}
-
-		if e.Branch == "" {
-			errs = append(errs, fmt.Errorf("%s: missing required field 'branch'", id))
-		} else if !branchRE.MatchString(e.Branch) {
-			errs = append(errs, fmt.Errorf("%s: invalid branch %q: must match backport-<package>-<version> "+
-				"(letters/digits/underscores in package name, version starts with a digit; "+
-				"no whitespace, quotes, colons, semicolons or other special characters)", id, e.Branch))
-		}
-
-		if e.BaseVersion == "" {
-			errs = append(errs, fmt.Errorf("%s: missing required field 'base_version'", id))
-		} else if _, parseErr := semver.StrictNewVersion(e.BaseVersion); parseErr != nil {
-			errs = append(errs, fmt.Errorf("%s: invalid base_version %q: must be a valid semantic version", id, e.BaseVersion))
-		}
-
-		if e.BaseCommit == "" {
-			errs = append(errs, fmt.Errorf("%s: missing required field 'base_commit'", id))
-		} else if !shaRE.MatchString(e.BaseCommit) {
-			errs = append(errs, fmt.Errorf("%s: invalid base_commit %q: must be a lowercase hex SHA (7–40 chars)", id, e.BaseCommit))
-		}
-
-		if e.Archived == nil {
-			errs = append(errs, fmt.Errorf("%s: missing required field 'archived'", id))
-		}
-		if e.MaintainedUntil != nil {
-			if _, parseErr := time.Parse(maintainedUntilLayout, *e.MaintainedUntil); parseErr != nil {
-				errs = append(errs, fmt.Errorf("%s: invalid maintained_until %q: must be YYYY-MM-DD", id, *e.MaintainedUntil))
-			}
-		}
 	}
 
-	return errors.Join(errs...)
+	return errs
 }
 
 // buildKnownPackages scans packagesDir and returns a set of valid package names.
