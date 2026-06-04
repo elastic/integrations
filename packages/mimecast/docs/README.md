@@ -855,7 +855,7 @@ An example event for `siem` looks as following:
 | mimecast.route | The route of the message. (Inbound; Outbound; Internal; External) | keyword |
 | mimecast.scanResults | The reason that the click was blocked. | keyword |
 | mimecast.senderDomain | The sender domain. | keyword |
-| mimecast.senderDomainInternal | The sender domain is a registered internal domain. | keyword |
+| mimecast.senderDomainInternal | Whether the sender domain is a registered internal domain. | keyword |
 | mimecast.senderEnvelope | The sender of the email. | keyword |
 | mimecast.senderHeader | Sender address found in the from header of the email. | keyword |
 | mimecast.senderIp | The source IP of the original message or sending mail server. | keyword |
