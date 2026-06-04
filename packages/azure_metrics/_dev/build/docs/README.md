@@ -16,10 +16,10 @@ The following data streams are available:
 aggregation list, namespaces and metric dimensions. The monitor metrics will have a minimum timegrain of 5 minutes, so the `period` for `monitor` dataset should be `300s` or multiples of `300s`.
 
 **`compute_vm`** - Collects metrics from the virtual machines, these metrics will have a timegrain every 5 minutes,
-so the `period` for `compute_vm` should be `300s` or multiples of `300s`.
+so the `period` for `compute_vm` should be `300s` or multiples of `300s`. The default metric list includes both `Available Memory Bytes` and `Available Memory Percentage`.
 
 **`compute_vm_scaleset`** - Collects metrics from the virtual machine scalesets, these metrics will have a timegrain every 5 minutes,
-so the `period` for `compute_vm_scaleset` should be `300s` or multiples of `300s`.
+so the `period` for `compute_vm_scaleset` should be `300s` or multiples of `300s`. The default metric list includes both `Available Memory Bytes` and `Available Memory Percentage`.
 
 **`storage_account`** - Collects metrics from the storage accounts, these metrics will have a timegrain every 5 minutes,
 so the `period` for `storage_account` should be `300s` or multiples of `300s`.
@@ -256,13 +256,13 @@ aggregation list, namespaces and metric dimensions. The monitor metrics will hav
 
 `compute_vm`
 This data stream will collect metrics from the virtual machines, these metrics will have a timegrain every 5 minutes,
-so the `period` for `compute_vm` should be `300s` or multiples of `300s`.
+so the `period` for `compute_vm` should be `300s` or multiples of `300s`. The default metric list includes both `Available Memory Bytes` and `Available Memory Percentage`.
 
 {{fields "compute_vm"}}
 
 `compute_vm_scaleset`
 This data stream will collect metrics from the virtual machine scalesets, these metrics will have a timegrain every 5 minutes,
-so the `period` for `compute_vm_scaleset` should be `300s` or multiples of `300s`.
+so the `period` for `compute_vm_scaleset` should be `300s` or multiples of `300s`. The default metric list includes both `Available Memory Bytes` and `Available Memory Percentage`.
 
 {{fields "compute_vm_scaleset"}}
 
