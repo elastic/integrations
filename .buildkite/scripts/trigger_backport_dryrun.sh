@@ -14,6 +14,7 @@ fi
 
 add_bin_path
 with_yq
+with_mage
 
 from="$(get_from_changeset)"
 to="$(get_to_changeset)"
