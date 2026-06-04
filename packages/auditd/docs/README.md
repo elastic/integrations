@@ -108,6 +108,7 @@ An example event for `log` looks as following:
 | auditd.log.a3 | The fourth argument to the system call. | keyword |
 | auditd.log.addr |  | ip |
 | auditd.log.apparmor |  | keyword |
+| auditd.log.audit_backlog_limit |  | keyword |
 | auditd.log.audit_failure |  | keyword |
 | auditd.log.avc.action |  | keyword |
 | auditd.log.avc.request |  | keyword |
@@ -116,6 +117,7 @@ An example event for `log` looks as following:
 | auditd.log.context |  | keyword |
 | auditd.log.data |  | keyword |
 | auditd.log.default-context |  | keyword |
+| auditd.log.denied_mask |  | keyword |
 | auditd.log.dev |  | keyword |
 | auditd.log.direction |  | keyword |
 | auditd.log.dst_prefixlen |  | long |
@@ -168,6 +170,7 @@ An example event for `log` looks as following:
 | auditd.log.operation |  | keyword |
 | auditd.log.original_field | The original field name if the event was parsed from an enriched format auditd log. | keyword |
 | auditd.log.path |  | keyword |
+| auditd.log.peer |  | keyword |
 | auditd.log.permissive |  | keyword |
 | auditd.log.pfs |  | keyword |
 | auditd.log.proctitle |  | keyword |
@@ -176,6 +179,7 @@ An example event for `log` looks as following:
 | auditd.log.reason |  | keyword |
 | auditd.log.record_type |  | keyword |
 | auditd.log.request |  | keyword |
+| auditd.log.requested_mask |  | keyword |
 | auditd.log.reset |  | keyword |
 | auditd.log.root_dir |  | keyword |
 | auditd.log.rport |  | long |
@@ -185,6 +189,7 @@ An example event for `log` looks as following:
 | auditd.log.scontext |  | keyword |
 | auditd.log.selected-context |  | keyword |
 | auditd.log.sequence | The audit event sequence number. | long |
+| auditd.log.seresult |  | keyword |
 | auditd.log.ses |  | keyword |
 | auditd.log.sig |  | keyword |
 | auditd.log.spid |  | keyword |
