@@ -803,6 +803,7 @@ is_pr_affected() {
         '\.github/PULL_REQUEST_TEMPLATE\.md'
         '\.mergify\.yml'
         'catalog-info\.yaml'
+        'dev/backports/'
         'dev/scripts/'
         'docs/'
         'CODE_OF_CONDUCT\.md'
