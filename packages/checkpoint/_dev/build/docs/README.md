@@ -167,12 +167,12 @@ Check Point Security Gateways identify themselves in syslog payloads through two
 
 | Check Point field | Value | ECS target fields |
 |---|---|---|
-| `origin` | Gateway IP address (typed as `ipaddr` in Check Point's `LogFields.xml`) | `observer.ip`, `host.ip` |
-| `originsicname` (`CN=<hostname>,O=<management>..<random>`) | Gateway hostname extracted from the `CN` component of the SIC distinguished name | `observer.name`, `observer.hostname`, `host.name`, `host.hostname` |
+| `origin` | Gateway IP address (typed as `ipaddr` in Check Point's `LogFields.xml`) | `observer.ip` (and `observer.name`) |
+| `originsicname` (`CN=<hostname>,O=<management>..<random>`) | Gateway hostname extracted from the `CN` component of the SIC distinguished name | `observer.hostname` |
 
-The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Because Check Point gateways are self-reporting network appliances, the `observer.*` and `host.*` field sets describe the same device.
+The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Because the firewall is observed remotely over syslog, the gateway is represented through the `observer.*` field set rather than `host.*`.
 
-> **Upgrading from `< 1.47.0`:** In earlier versions, the `origin` IP was written to `observer.name` (a `keyword` field), so dashboards and detection rules may have filtered or grouped on an IP value there. Update those queries to use `observer.ip` for the gateway IP, or `observer.name` for the gateway hostname.
+> **Note:** `observer.name` continues to hold the gateway IP (`origin`) for backward compatibility. To query the gateway by IP use `observer.ip`, and to query it by hostname use `observer.hostname`.
 
 #### firewall fields
 
