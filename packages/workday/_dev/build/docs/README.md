@@ -37,7 +37,7 @@ Built-in filters make it easier to narrow events by attributes such as **task**,
 ##### Enable User Activity Logging
 
 1. Sign in to your Workday tenant as a Security Administrator.
-2 .In the Workday search bar, search for and open the Edit Tenant Setup - System task.
+2. In the Workday search bar, search for and open the Edit Tenant Setup - System task.
 3. In the Security section, select the Enable User Activity Logging checkbox.
 4. Click OK to save the changes.
 
@@ -111,6 +111,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
         - Configure **Tenant**.
         - Configure **Client ID**.
         - Configure **Client Secret**.
+        - Configure **Refresh Token**.
         - Adjust the integration configuration parameters if required, including the **Interval**, **Initial Interval**, **Preserve original event** etc. to enable data collection.
 
 6. Select **Save and continue** to save the integration.
