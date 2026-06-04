@@ -56,6 +56,61 @@ var duplicatePackageVersionExceptions = map[string]struct{}{
 // are not permitted.
 var branchRE = regexp.MustCompile(`^backport-[a-zA-Z0-9_]+-[0-9][0-9.]*x?$`)
 
+// ActiveResult is the result of a CheckActive call.
+type ActiveResult struct {
+	Branch          string  `json:"branch"`
+	Active          bool    `json:"active"`
+	Archived        bool    `json:"archived"`
+	MaintainedUntil *string `json:"maintained_until"`
+}
+
+// CheckActive looks up branch in the inventory at path and reports whether it
+// is currently active. now is injected so callers can test with a fixed date.
+// Returns an error if the inventory cannot be read, parsed, or the branch is not found.
+func CheckActive(path, branch string, now time.Time) (ActiveResult, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return ActiveResult{}, fmt.Errorf("reading inventory: %w", err)
+	}
+	var inv inventory
+	if err := yaml.Unmarshal(data, &inv); err != nil {
+		return ActiveResult{}, fmt.Errorf("parsing inventory: %w", err)
+	}
+	for _, e := range inv.Backports {
+		if e.Branch == branch {
+			return e.activeResult(now), nil
+		}
+	}
+	return ActiveResult{}, fmt.Errorf("branch %q not found in %s", branch, path)
+}
+
+// activeResult applies the active-branch rules for a single entry.
+//
+// A branch is inactive when:
+//   - archived == true, OR
+//   - maintained_until is set and is strictly before today (UTC).
+func (e entry) activeResult(now time.Time) ActiveResult {
+	archived := e.Archived != nil && *e.Archived
+	result := ActiveResult{
+		Branch:          e.Branch,
+		Active:          true,
+		Archived:        archived,
+		MaintainedUntil: e.MaintainedUntil,
+	}
+	if archived {
+		result.Active = false
+		return result
+	}
+	if e.MaintainedUntil != nil {
+		t, err := time.Parse(maintainedUntilLayout, *e.MaintainedUntil)
+		today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+		if err == nil && t.Before(today) {
+			result.Active = false
+		}
+	}
+	return result
+}
+
 // ValidateInventory reads the .backports.yml inventory at path and returns a
 // combined error listing every schema violation found across all entries.
 //

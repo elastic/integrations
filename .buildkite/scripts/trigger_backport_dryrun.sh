@@ -64,9 +64,14 @@ entries_found=0
 while IFS= read -r branch; do
     entry=".backports[] | select(.branch == \"${branch}\")"
 
-    archived="$(yq "${entry} | .archived" "${NEW_INVENTORY}")"
-    if [[ "${archived}" == "true" ]]; then
-        echo "  Skipping archived entry: ${branch}"
+    active_exit=0
+    mage CheckBackportBranchActive "${branch}" || active_exit=$?
+    if [[ "${active_exit}" -eq 2 ]]; then
+        echo "ERROR: failed to check active status for branch '${branch}'"
+        exit 1
+    fi
+    if [[ "${active_exit}" -ne 0 ]]; then
+        echo "  Skipping inactive entry: ${branch}"
         continue
     fi
 

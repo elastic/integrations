@@ -6,14 +6,5 @@ set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 
-if [[ "${BUILDKITE:-false}" == "true" ]]; then
-    source "${REPO_ROOT}/.buildkite/scripts/common.sh"
-    add_bin_path
-    with_yq
-fi
-
 echo "=== Running get_release_commit.sh tests ==="
 bash "${REPO_ROOT}/dev/scripts/test_get_release_commit.sh"
-
-echo "=== Running backport_check_active.sh tests ==="
-bash "${REPO_ROOT}/dev/scripts/test_backport_check_active.sh"

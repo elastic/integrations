@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -496,3 +497,136 @@ func TestValidateInventoryFileNotFound(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "reading inventory")
 }
+
+const checkActiveInventory = `backports:
+  - package: mypkg
+    branch: backport-mypkg-1.0
+    base_version: "1.0.0"
+    base_commit: "aabbccddee"
+    maintained_until: null
+    archived: false
+
+  - package: mypkg
+    branch: backport-mypkg-2.0
+    base_version: "2.0.0"
+    base_commit: "11223344ff"
+    maintained_until: null
+    archived: true
+
+  - package: mypkg
+    branch: backport-mypkg-3.0
+    base_version: "3.0.0"
+    base_commit: "aabbccddee"
+    maintained_until: "2020-01-01"
+    archived: false
+
+  - package: mypkg
+    branch: backport-mypkg-4.0
+    base_version: "4.0.0"
+    base_commit: "aabbccddee"
+    maintained_until: "2099-12-31"
+    archived: false
+
+  - package: mypkg
+    branch: backport-mypkg-5.0
+    base_version: "5.0.0"
+    base_commit: "aabbccddee"
+    maintained_until: "2099-12-31"
+    archived: true
+`
+
+func TestCheckActive(t *testing.T) {
+	now := time.Date(2026, 6, 4, 12, 0, 0, 0, time.UTC)
+	path := writeTemp(t, checkActiveInventory)
+
+	cases := []struct {
+		branch         string
+		wantActive     bool
+		wantArchived   bool
+		wantMaintained *string
+		wantErr        bool
+	}{
+		{
+			branch:       "backport-mypkg-1.0",
+			wantActive:   true,
+			wantArchived: false,
+		},
+		{
+			branch:       "backport-mypkg-2.0",
+			wantActive:   false,
+			wantArchived: true,
+		},
+		{
+			branch:         "backport-mypkg-3.0",
+			wantActive:     false,
+			wantArchived:   false,
+			wantMaintained: ptr("2020-01-01"),
+		},
+		{
+			branch:         "backport-mypkg-4.0",
+			wantActive:     true,
+			wantArchived:   false,
+			wantMaintained: ptr("2099-12-31"),
+		},
+		{
+			branch:         "backport-mypkg-5.0",
+			wantActive:     false,
+			wantArchived:   true,
+			wantMaintained: ptr("2099-12-31"),
+		},
+		{
+			branch:  "backport-mypkg-no-such",
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.branch, func(t *testing.T) {
+			result, err := CheckActive(path, tc.branch, now)
+			if tc.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tc.branch, result.Branch)
+			assert.Equal(t, tc.wantActive, result.Active)
+			assert.Equal(t, tc.wantArchived, result.Archived)
+			assert.Equal(t, tc.wantMaintained, result.MaintainedUntil)
+		})
+	}
+}
+
+func TestCheckActiveMaintainedUntilBoundary(t *testing.T) {
+	mu := "2026-06-04"
+	inv := `backports:
+  - package: mypkg
+    branch: backport-mypkg-1.0
+    base_version: "1.0.0"
+    base_commit: "aabbccddee"
+    maintained_until: "` + mu + `"
+    archived: false
+`
+	path := writeTemp(t, inv)
+
+	t.Run("same day is still active", func(t *testing.T) {
+		now := time.Date(2026, 6, 4, 23, 59, 59, 0, time.UTC)
+		result, err := CheckActive(path, "backport-mypkg-1.0", now)
+		require.NoError(t, err)
+		assert.True(t, result.Active)
+	})
+
+	t.Run("day after is inactive", func(t *testing.T) {
+		now := time.Date(2026, 6, 5, 0, 0, 0, 0, time.UTC)
+		result, err := CheckActive(path, "backport-mypkg-1.0", now)
+		require.NoError(t, err)
+		assert.False(t, result.Active)
+	})
+}
+
+func TestCheckActiveFileNotFound(t *testing.T) {
+	_, err := CheckActive("/no/such/file.yml", "some-branch", time.Now())
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "reading inventory")
+}
+
+func ptr(s string) *string { return &s }
