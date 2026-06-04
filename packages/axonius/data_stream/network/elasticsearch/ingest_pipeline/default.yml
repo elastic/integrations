@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 9.2.0
+      value: 9.3.0
   - terminate:
       description: error message set and no data to process.
       tag: terminate_data_collection_error
@@ -72,9 +72,9 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_rename_event_data_fields
+      tag: script_rename_fields
       lang: painless
-      description:  Renames all axonius.network.event.data.* fields to root level (removes event.data prefix). Prefixes conflicting keys with 'data_' to avoid overwriting custom data-stream-root-level fields.
+      description: Renames all axonius.network.event.data.* fields to root level (removes event.data prefix). Prefixes conflicting keys with 'data_' to avoid overwriting custom data-stream-root-level fields.
       source: |-
         if (ctx.axonius?.network?.event?.data instanceof Map) {
           Map eventData = ctx.axonius.network.event.data;
@@ -97,6 +97,10 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.network?.event?.accurate_for_datetime != null && ctx.axonius.network.event.accurate_for_datetime != ''
       on_failure:
+        - remove:
+            field: axonius.network.event.accurate_for_datetime
+            ignore_missing: true
+            tag: remove_event_accurate_for_datetime
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -107,7 +111,7 @@ processors:
       ignore_empty_value: true
   - date:
       field: axonius.network.accurate_for_datetime
-      tag: date_event_data_accurate_for_datetime
+      tag: date_accurate_for_datetime
       target_field: axonius.network.accurate_for_datetime
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -115,12 +119,16 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.network?.accurate_for_datetime != null && ctx.axonius.network.accurate_for_datetime != ''
       on_failure:
+        - remove:
+            field: axonius.network.accurate_for_datetime
+            ignore_missing: true
+            tag: remove_accurate_for_datetime
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.network.fetch_time
-      tag: date_event_data_fetch_time
+      tag: date_fetch_time
       target_field: axonius.network.fetch_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -128,12 +136,16 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.network?.fetch_time != null && ctx.axonius.network.fetch_time != ''
       on_failure:
+        - remove:
+            field: axonius.network.fetch_time
+            ignore_missing: true
+            tag: remove_fetch_time
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.network.first_fetch_time
-      tag: date_event_data_first_fetch_time
+      tag: date_first_fetch_time
       target_field: axonius.network.first_fetch_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -141,12 +153,16 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.network?.first_fetch_time != null && ctx.axonius.network.first_fetch_time != ''
       on_failure:
+        - remove:
+            field: axonius.network.first_fetch_time
+            ignore_missing: true
+            tag: remove_first_fetch_time
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.network.first_seen
-      tag: date_event_data_first_seen
+      tag: date_first_seen
       target_field: axonius.network.first_seen
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -154,6 +170,10 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.network?.first_seen != null && ctx.axonius.network.first_seen != ''
       on_failure:
+        - remove:
+            field: axonius.network.first_seen
+            ignore_missing: true
+            tag: remove_first_seen
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -176,7 +196,7 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.network.from_last_fetch
-      tag: convert_event_data_from_last_fetch_to_boolean
+      tag: convert_from_last_fetch_to_boolean
       type: boolean
       ignore_missing: true
       on_failure:
@@ -188,7 +208,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.network.is_exposing_public_traffic
-      tag: convert_event_data_is_exposing_public_traffic_to_boolean
+      tag: convert_is_exposing_public_traffic_to_boolean
       type: boolean
       ignore_missing: true
       on_failure:
@@ -200,7 +220,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.network.is_fetched_from_adapter
-      tag: convert_event_data_is_fetched_from_adapter_to_boolean
+      tag: convert_is_fetched_from_adapter_to_boolean
       type: boolean
       ignore_missing: true
       on_failure:
@@ -212,7 +232,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.network.last_seen
-      tag: date_event_data_last_seen
+      tag: date_last_seen
       target_field: axonius.network.last_seen
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -220,12 +240,16 @@ processors:
         - EEE,dd MMM yyyy HH:mm:ss 'GMT'
       if: ctx.axonius?.network?.last_seen != null && ctx.axonius.network.last_seen != ''
       on_failure:
+        - remove:
+            field: axonius.network.last_seen
+            ignore_missing: true
+            tag: remove_last_seen
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.network.not_fetched_count
-      tag: convert_event_data_not_fetched_count_to_long
+      tag: convert_not_fetched_count_to_long
       type: long
       ignore_missing: true
       on_failure:
@@ -237,7 +261,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: network.protocol
-      tag: set_network_protocol_from_network_event_data_protocol
+      tag: set_network_protocol_from_network_protocol
       copy_from: axonius.network.protocol
       ignore_empty_value: true
   - lowercase:
@@ -246,12 +270,12 @@ processors:
       ignore_missing: true
   - foreach:
       field: axonius.network.source_addresses
-      tag: foreach_event_data_source_addresses
+      tag: foreach_source_addresses
       if: ctx.axonius?.network?.source_addresses instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_event_data_source_addresses_to_ip
+          tag: convert_source_addresses_to_ip
           type: ip
           ignore_missing: true
           on_failure:
@@ -263,54 +287,54 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.network.source_addresses
-      tag: foreach_event_data_source_addresses
+      tag: foreach_source_addresses
       if: ctx.axonius?.network?.source_addresses instanceof List
       processor:
         append:
           field: source.address
-          tag: append_event_data_source_addresses_into_source_address
+          tag: append_source_addresses_into_source_address
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
       field: axonius.network.source_addresses
-      tag: foreach_event_data_source_addresses
+      tag: foreach_source_addresses
       if: ctx.axonius?.network?.source_addresses instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_event_data_source_addresses_into_related_ip
+          tag: append_source_addresses_into_related_ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - pipeline:
       name: '{{ IngestPipeline "pipeline-network" }}'
       tag: pipeline_network
       if: >-
-        ctx.axonius?.network?.asset_type != null && ctx.axonius.network.asset_type.contains('networks')
+        ctx.axonius?.network?.asset_type == 'networks'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-load-balancer" }}'
       tag: pipeline_load_balancer
       if: >-
-        ctx.axonius?.network?.asset_type != null && ctx.axonius.network.asset_type.contains('load_balancers')
+        ctx.axonius?.network?.asset_type == 'load_balancers'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-network-device" }}'
       tag: pipeline_network_device
       if: >-
-        ctx.axonius?.network?.asset_type != null && ctx.axonius.network.asset_type.contains('network_devices')
+        ctx.axonius?.network?.asset_type == 'network_devices'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-firewall" }}'
       tag: pipeline_firewall
       if: >-
-        ctx.axonius?.network?.asset_type != null && ctx.axonius.network.asset_type.contains('firewalls')
+        ctx.axonius?.network?.asset_type == 'firewalls'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-nat-rule" }}'
       tag: pipeline_nat_rule
       if: >-
-        ctx.axonius?.network?.asset_type != null && ctx.axonius.network.asset_type.contains('nat_rules')
+        ctx.axonius?.network?.asset_type == 'nat_rules'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-network-route" }}'
       tag: pipeline_network_route
       if: >-
-        ctx.axonius?.network?.asset_type != null && ctx.axonius.network.asset_type.contains('network_routes')
+        ctx.axonius?.network?.asset_type == 'network_routes'
   - remove:
       field:
         - axonius.network.event.accurate_for_datetime
@@ -332,9 +356,8 @@ processors:
         - axonius.network.creation_time_stamp
         - axonius.network.direction
         - axonius.network.location
-      tag: remove_custom_duplicate_fields
+      tag: remove_network_fields_mapped_to_ecs
       ignore_missing: true
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - script:
       tag: script_to_drop_null_values
       lang: painless
@@ -371,11 +394,6 @@ processors:
       tag: set_pipeline_error_into_event_kind
       value: pipeline_error
       if: ctx.error?.message != null
-  - append:
-      field: tags
-      value: preserve_original_event
-      allow_duplicates: false
-      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
@@ -387,7 +405,3 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
-  - append:
-      field: tags
-      value: preserve_original_event
-      allow_duplicates: false

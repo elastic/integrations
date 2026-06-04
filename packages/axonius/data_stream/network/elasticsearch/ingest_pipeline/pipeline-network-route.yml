@@ -273,9 +273,8 @@ processors:
           field:
             - _ingest._value.nat.from_destination_ip_address
             - _ingest._value.nat.from_source_ip_address
-          tag: remove_custom_duplicate_fields_from_axonius_network_route
+          tag: remove_network_route_nat_mapped_fields
           ignore_missing: true
-          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
 on_failure:
   - append:
       field: error.message
@@ -287,7 +286,3 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
-  - append:
-      field: tags
-      value: preserve_original_event
-      allow_duplicates: false

@@ -50,7 +50,52 @@
         "description": "Overview of Incident assets in Axonius.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "labels.is_transform_source",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "labels.is_transform_source",
+                            "negate": false,
+                            "params": {
+                                "query": "false"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "labels.is_transform_source": "false"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "axonius.incident"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "axonius.incident"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -849,7 +894,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Overview**\n\nThis dashboard provides a comprehensive view of Incident Assets collected from Axonius.\n\nIt highlights the incident activity observed across the environment, giving immediate visibility into the most frequent and high-impact security events. \n\nAdditional views show how incidents evolve from the alerts, including distributions by risk level, severity, and alert status. Time-based trends and top source tables provide further context, helping teams identify recurring trouble areas and understand which systems or integrations generate the most incidents. These perspectives help analysts detect emerging threats, assess incident impact, and prioritize response efforts efficiently.\n\n**[Integration Page](/app/integrations/detail/axonius)**\n\n",
+                            "markdown": "**Overview**\n\nThis dashboard provides a comprehensive view of Incident Assets collected from Axonius.\n\nIt highlights the incident activity observed across the environment, giving immediate visibility into the most frequent and high-impact security events. \n\nAdditional views show how incidents evolve from the alerts, including distributions by risk level, severity, and alert status. Time-based trends and top source tables provide further context, helping teams identify recurring trouble areas and understand which systems or integrations generate the most incidents. These perspectives help analysts detect emerging threats, assess incident impact, and prioritize response efforts efficiently.\n\n**Note:** Assets deleted from Axonius may reappear in a future discovery cycle if they are still present in connected data sources and get re-detected. Because the exact duration for which a deleted asset may remain dormant before being rediscovered is unknown, the transform retention period is set to **90 days** to reduce the risk of data loss for such assets. This means deleted assets will continue to appear in dashboards for up to 90 days after deletion.\n\n**[Integration Page](/app/integrations/detail/axonius)**\n\n",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -1435,9 +1480,19 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-05-21T13:26:24.199Z",
+    "created_at": "2026-05-29T10:07:35.568Z",
     "id": "axonius-1b395a2d-b8dd-464b-aee9-ceb999d41063",
     "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "axonius-63085108-53e8-4c7f-8da4-daa1879645eb",
             "name": "50e26aad-5a45-434b-8ac0-7b3a86a9ea5b:panel_50e26aad-5a45-434b-8ac0-7b3a86a9ea5b",
@@ -1519,16 +1574,6 @@
             "type": "index-pattern"
         },
         {
-            "id": "logs-*",
-            "name": "controlGroup_7774f19c-b2c8-432f-a359-f88016a717b7:optionsListDataView",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "controlGroup_06a9d5c0-1dfa-4a4a-8a23-14a30c9b8682:optionsListDataView",
-            "type": "index-pattern"
-        },
-        {
             "id": "axonius-45c76e49-59d4-4f27-85f5-7f32edf6e0e5",
             "name": "94569d3a-7866-4ef0-8610-f63ad41e8036:link_aad8cdde-fe5e-494a-8623-6453d7752827_dashboard",
             "type": "dashboard"
@@ -1582,6 +1627,26 @@
             "id": "axonius-50841034-1314-4e26-8be3-47d38241c359",
             "name": "94569d3a-7866-4ef0-8610-f63ad41e8036:link_50841034-1314-4e26-8be3-47d38241c359_dashboard",
             "type": "dashboard"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_7774f19c-b2c8-432f-a359-f88016a717b7:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_06a9d5c0-1dfa-4a4a-8a23-14a30c9b8682:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard",
