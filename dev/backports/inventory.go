@@ -36,6 +36,15 @@ const maintainedUntilLayout = "2006-01-02"
 // shaRE matches a lowercase hexadecimal git SHA (short or full, 7–40 chars).
 var shaRE = regexp.MustCompile(`^[0-9a-f]{7,40}$`)
 
+// duplicatePackageVersionExceptions lists package@version pairs that are
+// intentionally allowed to appear more than once in the inventory.
+// Each entry must include a comment explaining why the exception exists.
+var duplicatePackageVersionExceptions = map[string]struct{}{
+	// backport-security_detection_engine-8.17 and -8.18 share the same base
+	// release (8.17.7) because the 8.18 branch was cut from the same tag.
+	"security_detection_engine@8.17.7": {},
+}
+
 // branchRE matches a valid backport branch name:
 //
 //	backport-<package>-<version>
@@ -69,11 +78,33 @@ func ValidateInventory(path, packagesDir string) error {
 		return fmt.Errorf("loading packages from %s: %w", packagesDir, err)
 	}
 
+	seenBranches := make(map[string]struct{})
+	seenPackageVersions := make(map[string]struct{})
+
 	var errs []error
 	for i, e := range inv.Backports {
 		id := fmt.Sprintf("entry[%d]", i)
 		if e.Branch != "" {
 			id = fmt.Sprintf("branch %q", e.Branch)
+		}
+
+		if e.Branch != "" {
+			if _, seen := seenBranches[e.Branch]; seen {
+				errs = append(errs, fmt.Errorf("%s: duplicate branch %q", id, e.Branch))
+			} else {
+				seenBranches[e.Branch] = struct{}{}
+			}
+		}
+
+		if e.Package != "" && e.BaseVersion != "" {
+			key := e.Package + "@" + e.BaseVersion
+			if _, isException := duplicatePackageVersionExceptions[key]; !isException {
+				if _, seen := seenPackageVersions[key]; seen {
+					errs = append(errs, fmt.Errorf("%s: duplicate package/version %q/%q", id, e.Package, e.BaseVersion))
+				} else {
+					seenPackageVersions[key] = struct{}{}
+				}
+			}
 		}
 
 		if e.Package == "" {

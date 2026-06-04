@@ -331,6 +331,114 @@ func TestValidateInventory(t *testing.T) {
 			wantErr:     true,
 			errContains: []string{"missing required field 'package'", "invalid maintained_until"},
 		},
+		{
+			title: "duplicate branch name",
+			contents: `backports:
+  - package: aws
+    branch: backport-aws-3.17
+    base_version: "3.17.0"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+  - package: aws
+    branch: backport-aws-3.17
+    base_version: "3.18.0"
+    base_commit: "aabbccddee"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{`duplicate branch "backport-aws-3.17"`},
+		},
+		{
+			title: "duplicate package and base_version",
+			contents: `backports:
+  - package: aws
+    branch: backport-aws-3.17
+    base_version: "3.17.0"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+  - package: aws
+    branch: backport-aws-3.17x
+    base_version: "3.17.0"
+    base_commit: "aabbccddee"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{"duplicate package/version", "aws", "3.17.0"},
+		},
+		{
+			title: "same package different versions is valid",
+			contents: `backports:
+  - package: aws
+    branch: backport-aws-3.17
+    base_version: "3.17.0"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+  - package: aws
+    branch: backport-aws-3.13
+    base_version: "3.13.0"
+    base_commit: "aabbccddee"
+    maintained_until: null
+    archived: false
+`,
+		},
+		{
+			title: "same version different packages is valid",
+			contents: `backports:
+  - package: aws
+    branch: backport-aws-1.0
+    base_version: "1.0.0"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+  - package: azure
+    branch: backport-azure-1.0
+    base_version: "1.0.0"
+    base_commit: "aabbccddee"
+    maintained_until: null
+    archived: false
+`,
+		},
+		{
+			title: "security_detection_engine 8.17.7 duplicate is allowed (known exception)",
+			contents: `backports:
+  - package: security_detection_engine
+    branch: backport-security_detection_engine-8.17
+    base_version: "8.17.7"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+  - package: security_detection_engine
+    branch: backport-security_detection_engine-8.18
+    base_version: "8.17.7"
+    base_commit: "aabbccddee"
+    maintained_until: null
+    archived: false
+`,
+		},
+		{
+			title: "both duplicate branch and duplicate package/version are reported",
+			contents: `backports:
+  - package: aws
+    branch: backport-aws-3.17
+    base_version: "3.17.0"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+  - package: aws
+    branch: backport-aws-3.17
+    base_version: "3.17.0"
+    base_commit: "aabbccddee"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{"duplicate branch", "duplicate package/version"},
+		},
 	}
 
 	for _, tc := range cases {
