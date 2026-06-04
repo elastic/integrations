@@ -1,0 +1,22 @@
+---
+description: "On-Prem Billing: compute daily_meru on deployment config rows (no enrich)."
+processors:
+  - script:
+      lang: painless
+      ignore_failure: true
+      description: Compute daily_meru from ERU or RAM fields on deployment config documents
+      if: ctx.config_type == 'deployment'
+      source: |
+        int eruToRamGb = 64;
+        if (ctx.eru_to_ram_gb != null) {
+          eruToRamGb = (int) ctx.eru_to_ram_gb;
+        }
+        long dailyMeru = 1000L;
+        if (ctx.deployment_erus != null) {
+          dailyMeru = (long) (ctx.deployment_erus * 1000.0);
+        } else if (ctx.node_count != null && ctx.ram_per_node_gb != null) {
+          int totalRamGb = (int) ctx.node_count * (int) ctx.ram_per_node_gb;
+          ctx.total_ram_gb = totalRamGb;
+          dailyMeru = (long) ((double) totalRamGb / (double) eruToRamGb * 1000.0);
+        }
+        ctx.daily_meru = dailyMeru;

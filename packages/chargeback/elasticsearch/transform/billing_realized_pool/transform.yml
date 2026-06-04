@@ -1,0 +1,95 @@
+description: Aggregates daily allocatable data-tier capacity (chargeable units) per deployment for realized-cost allocation.
+source:
+  index:
+    - metrics-ess_billing.billing-*
+  query:
+    bool:
+      must:
+        - range:
+            ess.billing.total_ecu:
+              gt: 0
+      should:
+        - term:
+            ess.billing.sku: onprem_node
+        - bool:
+            must:
+              - term:
+                  ess.billing.type: capacity
+              - term:
+                  ess.billing.kind: elasticsearch
+              - bool:
+                  should:
+                    - wildcard:
+                        ess.billing.sku: "*.es.datahot.*"
+                    - wildcard:
+                        ess.billing.sku: "*.es.datawarm.*"
+                    - wildcard:
+                        ess.billing.sku: "*.es.datacold.*"
+                    - wildcard:
+                        ess.billing.sku: "*.es.datafrozen.*"
+                    - wildcard:
+                        ess.billing.sku: "*.es.datacontent.*"
+                  minimum_should_match: 1
+      minimum_should_match: 1
+  runtime_mappings:
+    deployment_group:
+      type: keyword
+      script:
+        source: |
+          if (params._source?.ess?.billing?.deployment_tags != null) {
+            def tags = params._source.ess.billing.deployment_tags;
+            if (tags instanceof List) {
+              for (tag in tags) {
+                if (tag.startsWith('chargeback_group:')) {
+                  emit(tag.substring('chargeback_group:'.length()));
+                  return;
+                }
+              }
+            } else if (tags instanceof String) {
+              if (tags.startsWith('chargeback_group:')) {
+                emit(tags.substring('chargeback_group:'.length()));
+                return;
+              }
+            }
+          }
+          emit('');
+dest:
+  index: billing_realized_pool_lookup
+  pipeline: 0.4.0-realized_pool
+frequency: 60m
+sync:
+  time:
+    field: event.ingested
+    delay: 1h
+pivot:
+  group_by:
+    "@timestamp":
+      date_histogram:
+        field: "@timestamp"
+        calendar_interval: 1d
+    deployment_group:
+      terms:
+        field: deployment_group
+    deployment_id:
+      terms:
+        field: ess.billing.deployment_id
+    deployment_name:
+      terms:
+        field: ess.billing.deployment_name
+  aggregations:
+    data_tier_capacity_ecu:
+      sum:
+        field: ess.billing.total_ecu
+    data_tier_capacity_hours:
+      max:
+        field: ess.billing.quantity.value
+    data_tier_ram_per_zone_mb:
+      max:
+        field: ess.billing.ram_per_zone
+settings:
+  deduce_mappings: false
+  unattended: true
+_meta:
+  managed: true
+  run_as_kibana_system: false
+  fleet_transform_version: 0.4.0

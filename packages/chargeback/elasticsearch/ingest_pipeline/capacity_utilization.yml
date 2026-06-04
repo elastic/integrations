@@ -1,0 +1,62 @@
+---
+description: "Chargeback: cluster capacity utilization lookup — composite_key and normalized utilization fields."
+processors:
+  - set:
+      field: deployment_id
+      copy_from: cluster_name
+      ignore_empty_value: true
+  - script:
+      ignore_failure: true
+      lang: painless
+      source: |
+        if (ctx['@timestamp'] != null && ctx.deployment_id != null) {
+            ctx.composite_key = ZonedDateTime.parse(ctx['@timestamp']).toLocalDate().toString() + '_' + ctx.deployment_id;
+        }
+        if (ctx.heap_used_pct_p95 != null) {
+            def heap = ctx.heap_used_pct_p95;
+            def v = null;
+            if (heap instanceof Map) {
+              if (heap.values != null) {
+                v = heap.values['95.0'];
+                if (v == null) { v = heap.values['95']; }
+              }
+              if (v == null) { v = heap['95.0']; }
+              if (v == null) { v = heap['95']; }
+              // Map present but no scalar found — remove to avoid double mapping conflict
+              if (v == null) { ctx.remove('heap_used_pct_p95'); }
+            }
+            if (v != null) {
+              ctx.heap_used_pct_p95 = v;
+              ctx.memory_utilization = v / 100.0;
+            }
+        }
+        if (ctx.disk_used_pct_p95 != null) {
+            def disk = ctx.disk_used_pct_p95;
+            def v = null;
+            if (disk instanceof Map) {
+              if (disk.values != null) {
+                v = disk.values['95.0'];
+                if (v == null) { v = disk.values['95']; }
+              }
+              if (v == null) { v = disk['95.0']; }
+              if (v == null) { v = disk['95']; }
+              // Map present but no scalar found — remove to avoid double mapping conflict
+              if (v == null) { ctx.remove('disk_used_pct_p95'); }
+            }
+            if (v != null) {
+              ctx.disk_used_pct_p95 = v;
+              ctx.storage_utilization = v / 100.0;
+            }
+        }
+  - pipeline:
+      description: '[Fleet] Global pipeline for all data streams'
+      ignore_missing_pipeline: true
+      name: global@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for all data streams of type `metrics`'
+      ignore_missing_pipeline: true
+      name: metrics@custom
+  - pipeline:
+      description: '[Fleet] Pipeline for all data streams of type `metrics` defined by the `chargeback` integration'
+      ignore_missing_pipeline: true
+      name: metrics-chargeback.integration@custom

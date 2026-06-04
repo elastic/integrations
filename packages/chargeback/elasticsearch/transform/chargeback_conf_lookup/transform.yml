@@ -7,11 +7,11 @@ source:
       type: keyword
       script:
         source: "emit('chargeback_config')"
-    conf_ecu_rate:
+    conf_chargeable_unit_rate:
       type: double
       script:
         source: "emit(0.85)"
-    conf_ecu_rate_unit:
+    conf_chargeable_unit_rate_unit:
       type: keyword
       script:
         source: "emit('EUR')"
@@ -35,20 +35,41 @@ source:
       type: date
       script:
         source: "emit(2430518399999L)"  # 2046-12-31T23:59:59.999Z - 20 years from now
+    conf_utilization_memory_weight:
+      type: long
+      script:
+        source: "emit(70)"
+    conf_utilization_storage_weight:
+      type: long
+      script:
+        source: "emit(30)"
+    conf_utilization_floor:
+      type: double
+      script:
+        source: "emit(0.10)"
+    conf_memory_cost_weight:
+      type: long
+      script:
+        source: "emit(50)"
+    conf_storage_cost_weight:
+      type: long
+      script:
+        source: "emit(50)"
 dest:
   index: chargeback_conf_lookup
+  pipeline: 0.4.0-chargeback_conf_lookup
 pivot:
   group_by:
     config_join_key:
       terms:
         field: config_join_key
-    conf_ecu_rate_unit:
+    conf_chargeable_unit_rate_unit:
       terms:
-        field: conf_ecu_rate_unit
+        field: conf_chargeable_unit_rate_unit
   aggregations:
-    conf_ecu_rate:
+    conf_chargeable_unit_rate:
       max:
-        field: conf_ecu_rate
+        field: conf_chargeable_unit_rate
     conf_indexing_weight:
       max:
         field: conf_indexing_weight
@@ -64,10 +85,25 @@ pivot:
     conf_end_date:
       max:
         field: conf_end_date
+    conf_utilization_memory_weight:
+      max:
+        field: conf_utilization_memory_weight
+    conf_utilization_storage_weight:
+      max:
+        field: conf_utilization_storage_weight
+    conf_utilization_floor:
+      max:
+        field: conf_utilization_floor
+    conf_memory_cost_weight:
+      max:
+        field: conf_memory_cost_weight
+    conf_storage_cost_weight:
+      max:
+        field: conf_storage_cost_weight
 settings:
   deduce_mappings: false
   unattended: true
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.3.0
+  fleet_transform_version: 0.4.0

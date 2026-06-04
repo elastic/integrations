@@ -1,9 +1,34 @@
 # newer versions go on top
+- version: "0.3.3"
+  changes:
+    - description: "Fix billing transform: add `deployment_tags` to pivot group_by so chargeback groups are correctly propagated to `metrics-ess_billing.billing-onprem` and picked up by the Chargeback `billing_cluster_cost` transform. Without this, all on-prem deployments showed an empty `deployment_group` in Chargeback regardless of configured tags. Bump `fleet_transform_version` to 0.3.3 to force transform recreation."
+      type: bugfix
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/8
+- version: "0.3.2"
+  changes:
+    - description: "Billing pipeline pass-through for documents already in ESS Billing shape; fixes E2E seed and direct bulk index when default_pipeline is set on the data stream."
+      type: bugfix
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/90
+- version: "0.3.1"
+  changes:
+    - description: "Fix billing transform runtime @timestamp (System.currentTimeMillis) and pivot group_by (keyword fields cannot use max aggregation)."
+      type: bugfix
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/90
+- version: "0.3.0"
+  changes:
+    - description: "Ship packaged ingest pipelines (no enrich processor). Billing transform reads `onprem_billing_config` instead of Stack Monitoring; daily mERU is computed on config rows and emitted to `metrics-ess_billing.billing-onprem`. Removes manual enrich policies and `calculate_cost` pipeline setup required for Chargeback testing."
+      type: enhancement
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/90
+- version: "0.2.1"
+  changes:
+    - description: "Use `monitoring-indices*` and `*:monitoring-indices*` as transform sources so Elasticsearch integration index-pivot output remains discoverable when the destination index name is customized under the same prefix. Aligns with Chargeback and elasticsearch-chargeback#90."
+      type: enhancement
+      link: https://github.com/elastic/elasticsearch-chargeback/issues/90
 - version: "0.2.0"
   changes:
     - description: "Release 0.2.0 with ERU calculation layout. Organization config (total_erus_purchased, eru_to_ram_gb, currency). Per-deployment config via deployment_erus or RAM (node_count, ram_per_node_gb). Dual enrich policies (org + deployment). calculate_cost pipeline outputs mERU as total_ecu for Chargeback. Config bootstrap populates onprem_billing_config with config_type deployment and daily_meru."
       type: enhancement
-      link: https://github.com/elastic/elasticsearch-chargeback
+      link: https://github.com/elastic/elasticsearch-chargeback/pull/89
 - version: "0.1.0"
   changes:
     - description: Initial release of On-Premises Billing integration with ERU-based cost model. Per-deployment ERU allocation only (no organization-level config, no RAM-based allocation).

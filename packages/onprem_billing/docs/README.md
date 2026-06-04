@@ -26,8 +26,9 @@ Using mERU solves this:
 ┌──────────────────────────────────────────────────────────────────┐
 │                     Monitoring Cluster                           │
 │  ┌─────────────────┐    ┌──────────────────┐    ┌────────────┐   │
-│  │ monitoring-     │───▶│ onprem_billing   │───▶│ Chargeback │   │
-│  │ indices         │    │ integration      │    │            │   │
+│  │ monitoring-     │───▶│ config_bootstrap │    │ Chargeback │   │
+│  │ indices         │    │  → config index  │───▶│            │   │
+│  │                 │    │ billing transform│    │            │   │
 │  └────────▲────────┘    └──────────────────┘    └────────────┘   │
 │           │                      │                               │
 │           │                      ▼                               │
@@ -44,11 +45,11 @@ Using mERU solves this:
 ## Requirements
 
 - Elastic Stack 9.2.0+
-- Elasticsearch Integration (for Stack Monitoring data in `monitoring-indices`)
+- Elasticsearch Integration (for Stack Monitoring data in indices matching `monitoring-indices*`, default `monitoring-indices`)
 
 This integration enables the Chargeback integration (0.2.x+) to work on non-cloud deployments (on-premises, ECE, ECK).
 
-> **Important:** Install on the **monitoring/management cluster** where `monitoring-indices` exists.
+> **Important:** Install on the **monitoring/management cluster** where Elasticsearch index-pivot output exists (names must match `monitoring-indices*`; default index name is `monitoring-indices`).
 
 ---
 
@@ -176,7 +177,7 @@ POST onprem_billing_config/_update/<document_id>
 }
 ```
 
-The integration will compute: `daily_meru = deployment_erus × 1000`
+Set `daily_meru` to `deployment_erus × 1000` (the config bootstrap pipeline computes this on transform writes; include it on manual `_update` calls).
 
 #### Option B: RAM-Based Input (Recommended for Ops Teams)
 
@@ -218,120 +219,30 @@ The integration will compute:
 | production | ERU | `deployment_erus: 5.0` | 5000 mERU/day |
 | **Total** | | **6 ERU licensed** | **6000 mERU/day** |
 
-### Step 3: Create Enrich Policy and Pipeline
+### Step 3: Refresh `daily_meru` after deployment updates (0.3.0+)
 
-After ALL deployments are configured:
+From **0.3.0** onward, ingest pipelines ship with the integration and the billing transform reads `onprem_billing_config` directly (no enrich policies or manual `calculate_cost` pipeline).
 
-**3a. Create and execute the enrich policy:**
-
-```json
-PUT /_enrich/policy/onprem_billing_config_enrich_policy
-{
-  "match": {
-    "indices": "onprem_billing_config",
-    "match_field": "deployment_id",
-    "enrich_fields": ["daily_meru", "deployment_erus", "deployment_name", "deployment_tags", "node_count", "ram_per_node_gb"]
-  }
-}
-
-POST /_enrich/policy/onprem_billing_config_enrich_policy/_execute
-```
-
-**3b. Create the organization config enrich policy:**
+When you change `deployment_erus` or RAM fields with `_update`, also set `daily_meru` (mERU per day = ERU × 1000), or re-index the document through the packaged config pipeline:
 
 ```json
-PUT /_enrich/policy/onprem_billing_org_config_policy
+POST onprem_billing_config/_update/<document_id>?pipeline=0.3.3-config_bootstrap
 {
-  "match": {
-    "indices": "onprem_billing_config",
-    "match_field": "config_type",
-    "enrich_fields": ["total_annual_license_cost", "total_erus_purchased", "eru_to_ram_gb", "currency_unit"]
-  }
-}
-
-POST /_enrich/policy/onprem_billing_org_config_policy/_execute
-```
-
-**3c. Create the ingest pipeline:**
-
-> **Note:** This pipeline must be created manually because it uses the `enrich` processor, which is not supported in packaged integration pipelines.
-
-```json
-PUT _ingest/pipeline/calculate_cost
-{
-  "description": "On-Prem Billing: Computes mERU from ERU or RAM config and maps to ESS Billing schema",
-  "processors": [
-    {
-      "set": {
-        "field": "_org_lookup",
-        "value": "organization",
-        "description": "Set lookup key for org config"
-      }
-    },
-    {
-      "enrich": {
-        "policy_name": "onprem_billing_org_config_policy",
-        "field": "_org_lookup",
-        "target_field": "org_config",
-        "max_matches": 1,
-        "ignore_missing": true,
-        "ignore_failure": true
-      }
-    },
-    {
-      "enrich": {
-        "policy_name": "onprem_billing_config_enrich_policy",
-        "field": "cluster_uuid",
-        "target_field": "cost_config",
-        "max_matches": 1,
-        "ignore_missing": true,
-        "ignore_failure": true
-      }
-    },
-    {
-      "script": {
-        "lang": "painless",
-        "ignore_failure": true,
-        "description": "Compute mERU from ERU or RAM config and map to ESS Billing schema",
-        "source": "String deploymentId = ctx.cluster_uuid; String deploymentName = ctx.cluster_name; long dailyMeru = 1000L; List deploymentTags = new ArrayList(); int eruToRamGb = 64; if (ctx.org_config != null && ctx.org_config.eru_to_ram_gb != null) { eruToRamGb = (int) ctx.org_config.eru_to_ram_gb; } if (ctx.cost_config != null) { if (ctx.cost_config.deployment_name != null) { deploymentName = ctx.cost_config.deployment_name; } Object rawTags = ctx.cost_config.deployment_tags; if (rawTags != null) { if (rawTags instanceof List) { deploymentTags = (List) rawTags; } else { deploymentTags.add(rawTags.toString()); } } if (ctx.cost_config.daily_meru != null) { dailyMeru = (long) ctx.cost_config.daily_meru; } else if (ctx.cost_config.deployment_erus != null) { dailyMeru = (long) (ctx.cost_config.deployment_erus * 1000.0); } else if (ctx.cost_config.node_count != null && ctx.cost_config.ram_per_node_gb != null) { int totalRamGb = (int) ctx.cost_config.node_count * (int) ctx.cost_config.ram_per_node_gb; dailyMeru = (long) ((double) totalRamGb / (double) eruToRamGb * 1000.0); } } if (ctx.ess == null) ctx.ess = new HashMap(); if (ctx.ess.billing == null) ctx.ess.billing = new HashMap(); ctx.ess.billing.deployment_id = deploymentId; ctx.ess.billing.deployment_name = deploymentName; ctx.ess.billing.deployment_type = 'onprem'; ctx.ess.billing.deployment_tags = deploymentTags != null ? deploymentTags : new ArrayList(); ctx.ess.billing.kind = 'elasticsearch'; ctx.ess.billing.type = 'capacity'; ctx.ess.billing.unit = 'day'; ctx.ess.billing.zone_count = 1; ctx.ess.billing.name = 'On-Premises: ' + deploymentName; ctx.ess.billing.sku = 'onprem_node'; if (ctx['@timestamp'] != null) { ctx.ess.billing.from = ctx['@timestamp']; String ts = ctx['@timestamp'].toString(); if (ts.length() >= 10) { ctx.ess.billing.to = ts.substring(0, 10) + 'T23:59:59.999Z'; } } ctx.ess.billing.total_ecu = dailyMeru; ctx.ess.billing.put('quantity.value', 1.0); ctx.ess.billing.put('quantity.formatted_value', '1 day'); ctx.ess.billing.put('display_quantity.value', 1.0); ctx.ess.billing.put('display_quantity.formatted_value', '1 day'); ctx.ess.billing.put('display_quantity.type', 'default'); ctx.remove('cluster_uuid'); ctx.remove('cluster_name'); ctx.remove('cost_config'); ctx.remove('org_config'); ctx.remove('_org_lookup'); ctx.remove('doc_count');"
-      }
-    },
-    {
-      "pipeline": {
-        "description": "[Fleet] Global pipeline for all data streams",
-        "ignore_missing_pipeline": true,
-        "name": "global@custom"
-      }
-    },
-    {
-      "pipeline": {
-        "description": "[Fleet] Pipeline for all data streams of type metrics",
-        "ignore_missing_pipeline": true,
-        "name": "metrics@custom"
-      }
-    }
-  ]
-}
-```
-
-This pipeline is identical to the one in [elasticsearch-chargeback](https://github.com/elastic/elasticsearch-chargeback) (`scripts/onprem_billing_calculate_cost_pipeline.json`). Processor order: set `_org_lookup`, enrich org config, enrich deployment config, script, then Fleet pipelines.
-
-**3d. Update the billing transform to use the pipeline:**
-
-```json
-POST _transform/logs-onprem_billing.billing-default-0.2.0/_update
-{
-  "dest": {
-    "index": "metrics-ess_billing.billing-onprem",
-    "pipeline": "calculate_cost"
+  "doc": {
+    "deployment_erus": 3.0,
+    "deployment_tags": ["chargeback_group:platform_team"]
   }
 }
 ```
+
+> **Upgrading from 0.3.2 to 0.3.3:** The billing transform now includes `deployment_tags` in its pivot group_by, which is required for Chargeback group assignment. After upgrading, reset and restart the `billing` transform so the lookup index is recreated with the updated pivot key. Your existing `onprem_billing_config` deployment tags are preserved; no re-configuration is needed.
+
+> **Upgrading from 0.2.x:** Delete legacy enrich policies and the manual `calculate_cost` pipeline if you created them. Re-install the integration, then complete Steps 1–2 and start the billing transform below.
 
 ### Step 4: Start the Billing Transform
 
 ```json
-POST _transform/logs-onprem_billing.billing-default-0.2.0/_start
+POST _transform/logs-onprem_billing.billing-*/_start
 ```
 
 Or via Kibana: **Stack Management → Transforms** → Find `billing` transform → **Start**
@@ -438,13 +349,9 @@ PUT onprem_billing_config/_doc/<new-cluster-uuid>
 }
 ```
 
-**2. Re-execute the enrich policy:**
+After adding the deployment, start (or restart) the billing transform so today's billing rows are emitted.
 
-```json
-POST /_enrich/policy/onprem_billing_config_enrich_policy/_execute
-```
-
-> **Warning:** Do not re-run the bootstrap transform - it would overwrite existing configurations with defaults.
+> **Warning:** Do not re-run the bootstrap transform — it would overwrite existing configurations with defaults.
 
 ---
 
@@ -467,15 +374,10 @@ POST _transform/logs-onprem_billing.billing-*/_start
 **Check Stack Monitoring data availability:**
 
 ```json
-GET monitoring-indices/_count
+GET monitoring-indices*/_count
 ```
 
-**Check enrich policies exist:**
-
-```json
-GET /_enrich/policy/onprem_billing_config_enrich_policy
-GET /_enrich/policy/onprem_billing_org_config_policy
-```
+**0.3.0+:** Confirm deployment rows have `daily_meru` set in `onprem_billing_config`.
 
 ### Bootstrap Transform Issues
 
@@ -511,23 +413,18 @@ GET onprem_billing_config/_search
 GET onprem_billing_config/_doc/organization
 ```
 
-**Re-execute enrich policies after config changes:**
-
-```json
-POST /_enrich/policy/onprem_billing_config_enrich_policy/_execute
-POST /_enrich/policy/onprem_billing_org_config_policy/_execute
-```
+**After config changes (0.3.0+):** Update `daily_meru` on deployment docs, then reset/start the billing transform.
 
 ### Common Errors
 
-**"Enrich policy not found"** - Create and execute both enrich policies (see Step 3).
+**"Enrich policy not found" (0.2.x only)** - Create and execute enrich policies, or upgrade to 0.3.0+.
 
-**"Enrich policy execution failed"** - Config index is empty. Wait for bootstrap or check bootstrap transform status.
+**No billing rows (0.3.0+)** - Ensure deployment docs exist with `daily_meru` and the billing transform is started.
 
 **mERU values seem wrong** - Check if `eru_to_ram_gb` in organization config matches your license terms.
 
 ### Getting Help
 
 1. Check transform stats: `GET _transform/logs-onprem_billing*/_stats?human`
-2. Check enrich policies: `GET /_enrich/policy/onprem_billing*`
+2. Check config: `GET onprem_billing_config/_search`
 3. Open an issue at [elasticsearch-chargeback](https://github.com/elastic/elasticsearch-chargeback)
