@@ -47,7 +47,7 @@ To generate an Admin key, please generate a key or use an existing one from the 
 
 ## Collection behavior
 
-Among the configuration options for the OpenAI integration, the following settings are particularly relevant: "Initial interval" and "Bucket width" for usage metrics, and "Initial interval" and "Interval" for audit logs.
+Among the configuration options for the OpenAI integration, the following settings are particularly relevant: "Initial interval", "Bucket width" and "Finalization grace period" for usage metrics, and "Initial interval" and "Interval" for audit logs.
 
 ### Initial interval
 
@@ -91,21 +91,32 @@ Example: For 100 API calls to a particular model per hour:
 
 > For optimal results with historical data, use 1-day bucket widths for long periods (15+ days), 1-hour for medium periods (1-15 days), and 1-minute only for the most recent 24 hours of data.
 
+### Finalization grace period
+
+OpenAI's Usage API does not finalize a per-minute bucket the moment it ends — a bucket's token and request counts keep climbing for several minutes afterward as late usage is accounted for. To avoid ingesting these partial, still-changing counts, each usage data stream waits a configurable **finalization grace period** before treating a bucket as final.
+
+- Controls how long to wait after a bucket's end time before the bucket is ingested
+- Default value: 15 minutes (`15m`)
+- Buckets whose end time is younger than this period are skipped and re-fetched on a later poll, so only finalized counts are stored
+- Trade-off: a longer grace period is safer against undercounting (heavy bursts take OpenAI longer to finalize) but delays when usage first appears in Elasticsearch
+
+> If usage metrics read lower than the OpenAI dashboard under high-volume bursts, increase the finalization grace period.
+
 ### Collection process
 
 With default settings (Interval: `5m`, Bucket width: `1m`, Initial interval: `24h`), the OpenAI integration follows this collection pattern:
 
 1. Starts collection from (current_time - initial_interval)
-2. Collects data up to (current_time - bucket_width)
-3. Excludes incomplete current bucket for data accuracy and wait for bucket completion
+2. Collects data up to (current_time - finalization_grace)
+3. Skips buckets OpenAI has not yet finalized (those whose end time is within the finalization grace period) and re-fetches them on a later poll once they are final
 4. Runs every 5 minutes by default (configurable)
-5. From second collection, start from end of previous bucket timestamp and collect up to (current_time - bucket_width)
+5. From the second collection onward, resumes from the oldest not-yet-finalized bucket so late-arriving counts are captured without duplication
 
 #### Example timeline
 
 With default settings (Interval: `5m`, Bucket width: `1m`, Initial interval: `24h`):
 
-The integration starts at 10:00 AM, collects data from 10:00 AM the previous day, and continues until 9:59 AM the current day. The next collection starts at 10:05 AM, collecting from the 10:00 AM bucket to the 10:04 AM bucket, as the "Interval" is 5 minutes.
+The integration starts at 10:00 AM and collects data from 10:00 AM the previous day up to 9:45 AM the current day — the most recent 15 minutes are still finalizing and are skipped. The next collection starts at 10:05 AM and resumes from the 9:45 AM bucket, re-fetching any of those buckets that have since been finalized and continuing up to 9:50 AM.
 
 ## Rate limit headroom
 
