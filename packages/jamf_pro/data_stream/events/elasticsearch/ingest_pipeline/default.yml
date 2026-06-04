@@ -74,6 +74,11 @@ processors:
     formats:
       - UNIX_MS
 
+- set:
+    field: host.entity.lifecycle.last_activity
+    copy_from: jamf_pro.events.webhook.event_timestamp
+    ignore_empty_value: true
+
 ##############
 #   IP src   #
 ##############
@@ -124,12 +129,12 @@ processors:
 
 - set:
     if: ctx.jamf_pro.events.event.os_version != null
-    field: os.version
+    field: host.os.version
     copy_from: jamf_pro.events.event.os_version
 
 - set:
     if: ctx.jamf_pro.events.event.computer?.os_version != null
-    field: os.version
+    field: host.os.version
     copy_from: jamf_pro.events.event.computer.os_version
 
 

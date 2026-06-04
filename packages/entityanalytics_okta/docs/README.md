@@ -277,6 +277,7 @@ This is the `Device` dataset.
 | entityanalytics_okta.device.users | Users associated with the device. | flattened |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
+| host.entity.attributes.managed | Indicates whether the entity is managed by an external administration or control system. Typically applicable to Host and Service entities. | boolean |
 | input.type | Type of filebeat input. | keyword |
 | labels.identity_source |  | keyword |
 | log.offset | Log offset. | long |
@@ -340,6 +341,10 @@ This is the `User` dataset.
 | entityanalytics_okta.roles.id | The ID for the role. | keyword |
 | entityanalytics_okta.roles.label | Name of the role. | keyword |
 | entityanalytics_okta.roles.last_updated | When the role was last updated. | date |
+| entityanalytics_okta.roles.permissions.created | When the permission was created. | date |
+| entityanalytics_okta.roles.permissions.label | Permission label. | keyword |
+| entityanalytics_okta.roles.permissions.last_updated | When the permission was last updated. | date |
+| entityanalytics_okta.roles.role | The role definition ID for custom roles. | keyword |
 | entityanalytics_okta.roles.status | Role status. | keyword |
 | entityanalytics_okta.roles.type | Okta role type. | keyword |
 | entityanalytics_okta.user._embedded | embedded resources related to the user. | flattened |
@@ -349,6 +354,7 @@ This is the `User` dataset.
 | entityanalytics_okta.user.credentials.provider.name |  | keyword |
 | entityanalytics_okta.user.credentials.provider.type |  | keyword |
 | entityanalytics_okta.user.credentials.recovery_question.is_set |  | boolean |
+| entityanalytics_okta.user.devices | Devices enrolled for the user. | flattened |
 | entityanalytics_okta.user.id | unique key for user. | keyword |
 | entityanalytics_okta.user.last_login | timestamp of last login. | date |
 | entityanalytics_okta.user.last_updated | timestamp when user was last updated. | date |
@@ -387,6 +393,9 @@ This is the `User` dataset.
 | entityanalytics_okta.user.profile.zip_code | ZIP code or postal code component of user's address (postalCode). | keyword |
 | entityanalytics_okta.user.status | current status of user. | keyword |
 | entityanalytics_okta.user.status_changed | timestamp when status last changed. | date |
+| entityanalytics_okta.user.supervises.user.email | The supervised user's email address. | keyword |
+| entityanalytics_okta.user.supervises.user.id | The supervised user's ID. | keyword |
+| entityanalytics_okta.user.supervises.user.name | The supervised user's login name. | keyword |
 | entityanalytics_okta.user.transitioning_to_status | target status of an in-progress asynchronous status transition. | keyword |
 | entityanalytics_okta.user.type | user type that determines the schema for the user's profile. | flattened |
 | event.dataset | Event dataset. | constant_keyword |
@@ -403,6 +412,14 @@ This is the `User` dataset.
 | user.account.status.password_expired |  | boolean |
 | user.account.status.recovery |  | boolean |
 | user.account.status.suspended |  | boolean |
+| user.entity.attributes.mfa_enabled | Indicates whether multi-factor authentication is enabled for this entity. Typically applicable to User entities. | boolean |
+| user.entity.attributes.permissions | Action-level permissions associated with this entity (not roles or groups). Typically applicable to User, Host, and Service entities. | keyword |
+| user.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
+| user.entity.relationships.owns.host.id | Referenced host ids. | keyword |
+| user.entity.relationships.owns.host.name | Referenced host names. | keyword |
+| user.entity.relationships.supervises.user.email | Referenced user email addresses. | keyword |
+| user.entity.relationships.supervises.user.id | Referenced user ids. | keyword |
+| user.entity.relationships.supervises.user.name | Referenced user short names or logins. | keyword |
 | user.geo.city_name |  | keyword |
 | user.geo.country_iso_code |  | keyword |
 | user.geo.name |  | keyword |
