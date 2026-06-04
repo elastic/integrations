@@ -801,6 +801,7 @@ is_pr_affected() {
         '\.github/CODEOWNERS'
         '\.github/ISSUE_TEMPLATE/'
         '\.github/PULL_REQUEST_TEMPLATE\.md'
+        '\.gitignore'
         '\.mergify\.yml'
         'catalog-info\.yaml'
         'dev/backports/'
