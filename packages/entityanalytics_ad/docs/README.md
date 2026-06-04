@@ -161,6 +161,7 @@ This is the `User` dataset.
 | entityanalytics_ad.user.constrained_delegation | True if the account is trusted for constrained delegation. | boolean |
 | entityanalytics_ad.user.country_code |  | keyword |
 | entityanalytics_ad.user.description |  | keyword |
+| entityanalytics_ad.user.direct_reports |  | keyword |
 | entityanalytics_ad.user.distinguished_name |  | keyword |
 | entityanalytics_ad.user.dont_require_preauth | True if the account does not require Kerberos pre-authentication. | boolean |
 | entityanalytics_ad.user.ds_core_propagation_data |  | date |
@@ -174,6 +175,7 @@ This is the `User` dataset.
 | entityanalytics_ad.user.logon_count |  | keyword |
 | entityanalytics_ad.user.logon_script_enabled | True if a logon script is configured for the account. | boolean |
 | entityanalytics_ad.user.mail | The user's email address from Active Directory. | keyword |
+| entityanalytics_ad.user.managed_objects |  | keyword |
 | entityanalytics_ad.user.member_of |  | keyword |
 | entityanalytics_ad.user.msDS-\* |  | keyword |
 | entityanalytics_ad.user.name |  | keyword |
@@ -215,6 +217,14 @@ This is the `User` dataset.
 | user.account.status.password_expired |  | boolean |
 | user.account.status.recovery |  | boolean |
 | user.account.status.suspended |  | boolean |
+| user.entity.attributes.mfa_enabled | Indicates whether multi-factor authentication is enabled for this entity. Typically applicable to User entities. | boolean |
+| user.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
+| user.entity.relationships.administers.host.id | Referenced host ids. | keyword |
+| user.entity.relationships.administers.host.name | Referenced host names. | keyword |
+| user.entity.relationships.administers.user.domain | Referenced user directory or AD/LDAP domain names (same semantics as ECS `user.domain`). | keyword |
+| user.entity.relationships.supervises.user.domain | Referenced user directory or AD/LDAP domain names (same semantics as ECS `user.domain`). | keyword |
+| user.entity.relationships.supervises.user.id | Referenced user ids. | keyword |
+| user.entity.relationships.supervises.user.name | Referenced user short names or logins. | keyword |
 | user.geo.city_name |  | keyword |
 | user.geo.country_iso_code |  | keyword |
 | user.geo.name |  | keyword |
@@ -269,6 +279,7 @@ This is the `Device` dataset.
 | entityanalytics_ad.device.constrained_delegation | True if the account is trusted for constrained delegation. | boolean |
 | entityanalytics_ad.device.country_code |  | keyword |
 | entityanalytics_ad.device.description |  | keyword |
+| entityanalytics_ad.device.direct_reports |  | keyword |
 | entityanalytics_ad.device.distinguished_name |  | keyword |
 | entityanalytics_ad.device.dont_require_preauth | True if the account does not require Kerberos pre-authentication. | boolean |
 | entityanalytics_ad.device.ds_core_propagation_data |  | date |
@@ -281,6 +292,7 @@ This is the `Device` dataset.
 | entityanalytics_ad.device.locked | True if the account is locked out. | boolean |
 | entityanalytics_ad.device.logon_count |  | keyword |
 | entityanalytics_ad.device.logon_script_enabled | True if a logon script is configured for the account. | boolean |
+| entityanalytics_ad.device.managed_objects |  | keyword |
 | entityanalytics_ad.device.member_of |  | keyword |
 | entityanalytics_ad.device.msDS-\* |  | keyword |
 | entityanalytics_ad.device.name |  | keyword |
@@ -333,6 +345,14 @@ This is the `Device` dataset.
 | entityanalytics_ad.when_changed |  | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| host.entity.attributes.managed | Indicates whether the entity is managed by an external administration or control system. Typically applicable to Host and Service entities. | boolean |
+| host.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
+| host.entity.relationships.administers.host.id | Referenced host ids. | keyword |
+| host.entity.relationships.administers.host.name | Referenced host names. | keyword |
+| host.entity.relationships.administers.user.domain | Referenced user directory or AD/LDAP domain names (same semantics as ECS `user.domain`). | keyword |
+| host.entity.relationships.supervises.user.domain | Referenced user directory or AD/LDAP domain names (same semantics as ECS `user.domain`). | keyword |
+| host.entity.relationships.supervises.user.id | Referenced user ids. | keyword |
+| host.entity.relationships.supervises.user.name | Referenced user short names or logins. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.identity_source |  | keyword |
 | user.account.activated_date |  | date |

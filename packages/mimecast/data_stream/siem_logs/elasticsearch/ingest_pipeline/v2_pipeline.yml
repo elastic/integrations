@@ -188,10 +188,17 @@ processors:
       field: mimecast.md5
       target_field: email.attachments.file.hash.md5
       ignore_missing: true
-  - rename:
+  - convert:
       field: mimecast.senderDomainInternal
-      target_field: source.domain
+      tag: convert_sender_domain_internal_to_boolean
+      type: boolean
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: mimecast.senderDomainInternal
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: mimecast.sha1
       target_field: email.attachments.file.hash.sha1
