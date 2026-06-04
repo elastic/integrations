@@ -33,51 +33,47 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Collect changelog changes
-        id: collect
-        if: steps.guard.outputs.proceed == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          python3 dev/scripts/backport_collect_entries.py \
-            --before     "${{ github.event.before }}" \
-            --after      "${{ github.event.after }}" \
-            --repository "${{ github.repository }}"
-
       - name: Set up Go
-        if: steps.collect.outputs.has_changes == 'true'
+        if: steps.guard.outputs.proceed == 'true'
         uses: actions/setup-go@v6
         with:
           go-version-file: .go-version
 
       - name: Install mage
-        if: steps.collect.outputs.has_changes == 'true'
-        # Required by backport_resolve_package_dir.py, which uses `mage listPackages`.
+        if: steps.guard.outputs.proceed == 'true'
         run: go install github.com/magefile/mage
+
+      - name: Collect changelog changes
+        id: collect
+        if: steps.guard.outputs.proceed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
+          REPOSITORY: ${{ github.repository }}
+        run: mage -d "$GITHUB_WORKSPACE" collectChangelogEntries
 
       - name: Create changelog sync PR
         id: create
         if: steps.collect.outputs.has_changes == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          python3 dev/scripts/backport_create_sync_pr.py \
-            --entries-tsv        "${{ steps.collect.outputs.entries_tsv }}" \
-            --working-branch     "${{ steps.collect.outputs.working_branch }}" \
-            --backport-pr-number "${{ steps.collect.outputs.backport_pr_number }}" \
-            --backport-branch    "${{ github.ref_name }}" \
-            --after              "${{ github.event.after }}" \
-            --repository         "${{ github.repository }}"
+          ENTRIES_TSV: ${{ steps.collect.outputs.entries_tsv }}
+          WORKING_BRANCH: ${{ steps.collect.outputs.working_branch }}
+          BACKPORT_PR_NUMBER: ${{ steps.collect.outputs.backport_pr_number }}
+          BACKPORT_BRANCH: ${{ github.ref_name }}
+          PACKAGES_DIR: ${{ github.workspace }}/packages
+          REPOSITORY: ${{ github.repository }}
+        run: mage -d "$GITHUB_WORKSPACE" createChangelogSyncPR
 
       - name: Comment on backport PR
         if: always() && steps.guard.outputs.proceed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          python3 dev/scripts/backport_comment_result.py \
-            --backport-pr-number "${{ steps.collect.outputs.backport_pr_number }}" \
-            --working-branch     "${{ steps.collect.outputs.working_branch }}" \
-            --not-found-packages "${{ steps.create.outputs.not_found_packages }}" \
-            --create-outcome     "${{ steps.create.outcome }}" \
-            --run-id             "${{ github.run_id }}" \
-            --repository         "${{ github.repository }}"
+          BACKPORT_PR_NUMBER: ${{ steps.collect.outputs.backport_pr_number }}
+          WORKING_BRANCH: ${{ steps.collect.outputs.working_branch }}
+          NOT_FOUND_PACKAGES: ${{ steps.create.outputs.not_found_packages }}
+          CREATE_OUTCOME: ${{ steps.create.outputs.create_outcome }}
+          RUN_ID: ${{ github.run_id }}
+          REPOSITORY: ${{ github.repository }}
+        run: mage -d "$GITHUB_WORKSPACE" postBackportComment

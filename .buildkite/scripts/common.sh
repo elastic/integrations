@@ -796,7 +796,6 @@ is_pr_affected() {
         '\.buildkite/scripts/test_check_changelog_entries\.sh'
         '\.buildkite/scripts/test_helpers\.sh'
         '\.github/dependabot\.yml'
-        '\.github/workflows/'
         '\.github/stale\.yml'
         '\.github/workflows/'
         '\.github/CODEOWNERS'
