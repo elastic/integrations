@@ -11,24 +11,28 @@ processors:
       value: metric
   - rename:
       field: message
-      tag: rename_message_to_results
-      target_field: openai.rate_limits.results
+      tag: rename_message_to_event_original
+      target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
       tag: remove_message
       ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
-      field: openai.rate_limits.results
-      tag: json_results
+      field: event.original
+      tag: json_event_original
       target_field: openai.rate_limits
-      if: ctx.openai?.rate_limits?.results != null
+      if: ctx.event?.original != null
   - remove:
-      field: openai.rate_limits.results
-      tag: remove_results
+      field: event.original
+      tag: remove_event_original
       ignore_missing: true
+      description: Removes the copy of the original message unless the user opted in to preserve it.
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
   - date:
       field: openai.rate_limits.collected_at
       tag: date_collected_at
