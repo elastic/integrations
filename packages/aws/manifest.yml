@@ -1,7 +1,7 @@
-format_version: 3.6.0
+format_version: 3.6.4
 name: aws
 title: AWS
-version: 7.0.0
+version: 7.1.0
 description: Collect logs and metrics from Amazon Web Services (AWS) with Elastic Agent.
 type: integration
 categories:
@@ -25,6 +25,34 @@ conditions:
   # auth.aws support in CEL and HTTPJSON inputs requires Elastic Agent 9.4.0+.
   agent:
     version: "^9.4.0"
+provider_permissions:
+  - provider: aws
+    description: >-
+      Baseline permissions required by every AWS data stream. Metric data streams
+      read CloudWatch metrics, and all data streams resolve the account identity,
+      enumerate regions, and collect resource tags for enrichment.
+    roles:
+      - name: SecurityAudit
+        id: arn:aws:iam::aws:policy/SecurityAudit
+        description: >-
+          AWS managed policy granting read-only access to configuration and
+          metadata across services. Covers the describe/list calls used for
+          resource discovery and tag enrichment across the integration.
+    permissions:
+      - name: sts:GetCallerIdentity
+        description: Resolve the AWS account ID associated with the configured credentials.
+      - name: iam:ListAccountAliases
+        description: Resolve the human-readable account alias used to enrich events.
+      - name: ec2:DescribeRegions
+        description: Discover the set of regions to collect from when none are configured.
+      - name: tag:GetResources
+        description: Collect resource tags (resourcegroupstaggingapi) for metric and log enrichment.
+      - name: cloudwatch:ListMetrics
+        description: Enumerate the CloudWatch metrics published by the monitored services.
+      - name: cloudwatch:GetMetricData
+        description: Read CloudWatch metric values for all metric data streams.
+      - name: cloudwatch:GetMetricStatistics
+        description: Read aggregated CloudWatch metric statistics for metric data streams.
 screenshots:
   - src: /img/metricbeat-aws-overview.png
     title: metricbeat aws overview
@@ -153,6 +181,16 @@ var_groups:
 policy_templates:
   - name: awshealth
     title: AWS Health
+    provider_permissions:
+      - provider: aws
+        description: Read AWS Health events and the entities they affect.
+        permissions:
+          - name: health:DescribeEvents
+            description: List AWS Health events affecting the account.
+          - name: health:DescribeEventDetails
+            description: Retrieve details for AWS Health events.
+          - name: health:DescribeAffectedEntities
+            description: List entities affected by AWS Health events.
     description: Collect AWS Health metrics with Elastic Agent (experimental)
     data_streams:
       - awshealth
@@ -186,6 +224,16 @@ policy_templates:
         type: image/png
   - name: billing
     title: AWS Billing
+    provider_permissions:
+      - provider: aws
+        description: Read cost data from Cost Explorer in addition to the CloudWatch billing metrics.
+        permissions:
+          - name: ce:GetCostAndUsage
+            description: Retrieve cost and usage amounts from AWS Cost Explorer.
+          - name: cur:DescribeReportDefinitions
+            description: Discover configured Cost and Usage Report definitions.
+          - name: budgets:ViewBudget
+            description: Read configured budgets for billing context.
     description: Collect billing metrics with Elastic Agent
     data_streams:
       - billing
@@ -219,6 +267,16 @@ policy_templates:
         type: image/png
   - name: cloudtrail
     title: AWS CloudTrail
+    provider_permissions:
+      - provider: aws
+        description: Identify CloudTrail trails so their delivered logs can be located.
+        permissions:
+          - name: cloudtrail:DescribeTrails
+            description: List configured CloudTrail trails.
+          - name: cloudtrail:GetTrailStatus
+            description: Read the delivery status of CloudTrail trails.
+          - name: cloudtrail:LookupEvents
+            description: Look up CloudTrail management events.
     description: Collect AWS CloudTrail logs with Elastic Agent
     data_streams:
       - cloudtrail
@@ -229,10 +287,40 @@ policy_templates:
         title: Collect CloudTrail logs from S3
         description: Collecting logs from CloudTrail using aws-s3 input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read delivered log objects from S3, using SQS queue notifications when configured.
+            permissions:
+              - name: s3:GetObject
+                description: Read log objects from the configured S3 bucket.
+              - name: s3:ListBucket
+                description: List objects in the configured S3 bucket.
+              - name: s3:GetBucketLocation
+                description: Resolve the region of the configured S3 bucket.
+              - name: sqs:ReceiveMessage
+                description: Receive S3 object-created notifications from the configured SQS queue.
+              - name: sqs:DeleteMessage
+                description: Delete processed messages from the SQS queue.
+              - name: sqs:ChangeMessageVisibility
+                description: Extend the visibility timeout while processing SQS messages.
+              - name: sqs:GetQueueAttributes
+                description: Read attributes of the configured SQS queue.
       - type: aws-cloudwatch
         title: Collect CloudTrail logs from CloudWatch
         description: Collecting logs from CloudTrail using aws-cloudwatch input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read log events from CloudWatch Logs.
+            permissions:
+              - name: logs:DescribeLogGroups
+                description: Discover CloudWatch log groups to collect from.
+              - name: logs:DescribeLogStreams
+                description: Enumerate log streams within a log group.
+              - name: logs:FilterLogEvents
+                description: Read log events matching the configured filters.
+              - name: logs:GetLogEvents
+                description: Read log events from a CloudWatch log stream.
     icons:
       - src: /img/logo_cloudtrail.svg
         title: AWS Cloudtrail logo
@@ -245,6 +333,14 @@ policy_templates:
         type: image/png
   - name: cloudwatch
     title: AWS CloudWatch
+    provider_permissions:
+      - provider: aws
+        description: Enumerate CloudWatch log groups and metrics for the generic CloudWatch collection.
+        permissions:
+          - name: logs:DescribeLogGroups
+            description: Discover CloudWatch log groups to collect logs from.
+          - name: cloudwatch:ListMetrics
+            description: Enumerate available CloudWatch metrics.
     description: Use this integration to collect logs and metrics from Amazon CloudWatch with Elastic Agent, where no out of the box integration is available.
     data_streams:
       - cloudwatch_logs
@@ -257,6 +353,18 @@ policy_templates:
         title: Collect logs from CloudWatch
         description: Collecting logs using aws-cloudwatch input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read log events from CloudWatch Logs.
+            permissions:
+              - name: logs:DescribeLogGroups
+                description: Discover CloudWatch log groups to collect from.
+              - name: logs:DescribeLogStreams
+                description: Enumerate log streams within a log group.
+              - name: logs:FilterLogEvents
+                description: Read log events matching the configured filters.
+              - name: logs:GetLogEvents
+                description: Read log events from a CloudWatch log stream.
       - type: aws/metrics
         title: Collect metrics from CloudWatch
         description: Collecting metrics using AWS CloudWatch
@@ -277,6 +385,16 @@ policy_templates:
         type: image/svg+xml
   - name: config
     title: AWS Config
+    provider_permissions:
+      - provider: aws
+        description: Read AWS Config rules and compliance findings via the AWS Config API.
+        permissions:
+          - name: config:DescribeConfigRules
+            description: List AWS Config rules.
+          - name: config:DescribeComplianceByConfigRule
+            description: Read compliance state per AWS Config rule.
+          - name: config:GetComplianceDetailsByConfigRule
+            description: Retrieve detailed compliance results for AWS Config rules.
     description: Collect AWS Config Logs with Elastic Agent.
     deployment_modes:
       default:
@@ -299,6 +417,16 @@ policy_templates:
         description: Collecting AWS Config logs via API.
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        provider_permissions:
+          - provider: aws
+            description: Read AWS Config rules and compliance findings via the AWS Config API.
+            permissions:
+              - name: config:DescribeConfigRules
+                description: List AWS Config rules.
+              - name: config:DescribeComplianceByConfigRule
+                description: Read compliance state per AWS Config rule.
+              - name: config:GetComplianceDetailsByConfigRule
+                description: Retrieve detailed compliance results for AWS Config rules.
     icons:
       - src: /img/logo-aws-config.svg
         title: AWS Config logo
@@ -311,6 +439,14 @@ policy_templates:
         type: image/png
   - name: dynamodb
     title: Amazon DynamoDB
+    provider_permissions:
+      - provider: aws
+        description: Identify DynamoDB tables to attach CloudWatch metrics to.
+        permissions:
+          - name: dynamodb:ListTables
+            description: List DynamoDB tables in the account.
+          - name: dynamodb:DescribeTable
+            description: Read DynamoDB table configuration for enrichment.
     description: Collect Amazon DynamoDB metrics with Elastic Agent
     data_streams:
       - dynamodb
@@ -345,6 +481,12 @@ policy_templates:
         type: image/png
   - name: ebs
     title: Amazon EBS
+    provider_permissions:
+      - provider: aws
+        description: Identify EBS volumes to attach CloudWatch metrics to.
+        permissions:
+          - name: ec2:DescribeVolumes
+            description: List EBS volumes and their attributes.
     description: Collect Amazon Elastic Block Storage metrics with Elastic Agent
     data_streams:
       - ebs
@@ -377,6 +519,14 @@ policy_templates:
         type: image/png
   - name: ec2
     title: Amazon EC2
+    provider_permissions:
+      - provider: aws
+        description: Identify EC2 instances for metric and log enrichment.
+        permissions:
+          - name: ec2:DescribeInstances
+            description: List EC2 instances and their attributes.
+          - name: ec2:DescribeInstanceStatus
+            description: Read EC2 instance status checks.
     description: Collect logs and metrics for Amazon Elastic Compute Cloud service with Elastic Agent
     data_streams:
       - ec2_logs
@@ -388,10 +538,40 @@ policy_templates:
         title: Collect EC2 logs from S3
         description: Collecting logs from EC2 using aws-s3 input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read delivered log objects from S3, using SQS queue notifications when configured.
+            permissions:
+              - name: s3:GetObject
+                description: Read log objects from the configured S3 bucket.
+              - name: s3:ListBucket
+                description: List objects in the configured S3 bucket.
+              - name: s3:GetBucketLocation
+                description: Resolve the region of the configured S3 bucket.
+              - name: sqs:ReceiveMessage
+                description: Receive S3 object-created notifications from the configured SQS queue.
+              - name: sqs:DeleteMessage
+                description: Delete processed messages from the SQS queue.
+              - name: sqs:ChangeMessageVisibility
+                description: Extend the visibility timeout while processing SQS messages.
+              - name: sqs:GetQueueAttributes
+                description: Read attributes of the configured SQS queue.
       - type: aws-cloudwatch
         title: Collect EC2 logs from CloudWatch
         description: Collecting logs from EC2 using aws-cloudwatch input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read log events from CloudWatch Logs.
+            permissions:
+              - name: logs:DescribeLogGroups
+                description: Discover CloudWatch log groups to collect from.
+              - name: logs:DescribeLogStreams
+                description: Enumerate log streams within a log group.
+              - name: logs:FilterLogEvents
+                description: Read log events matching the configured filters.
+              - name: logs:GetLogEvents
+                description: Read log events from a CloudWatch log stream.
       - type: aws/metrics
         title: Collect EC2 metrics
         description: Collecting EC2 metrics using AWS CloudWatch
@@ -417,6 +597,18 @@ policy_templates:
         type: image/png
   - name: ecs
     title: Amazon ECS
+    provider_permissions:
+      - provider: aws
+        description: Identify ECS clusters and services to attach CloudWatch metrics to.
+        permissions:
+          - name: ecs:ListClusters
+            description: List ECS clusters in the account.
+          - name: ecs:DescribeClusters
+            description: Read ECS cluster configuration for enrichment.
+          - name: ecs:ListServices
+            description: List ECS services within clusters.
+          - name: ecs:DescribeServices
+            description: Read ECS service configuration for enrichment.
     description: Collect metrics for Amazon Elastic Container Service with Elastic Agent
     data_streams:
       - ecs_metrics
@@ -444,6 +636,16 @@ policy_templates:
         type: image/svg+xml
   - name: elb
     title: AWS ELB
+    provider_permissions:
+      - provider: aws
+        description: Identify Elastic Load Balancers and their targets for metric and log enrichment.
+        permissions:
+          - name: elasticloadbalancing:DescribeLoadBalancers
+            description: List classic, application, and network load balancers.
+          - name: elasticloadbalancing:DescribeTargetGroups
+            description: List target groups associated with load balancers.
+          - name: elasticloadbalancing:DescribeTargetHealth
+            description: Read the health of registered load balancer targets.
     description: Collect logs and metrics for Amazon Elastic Load Balancing service with Elastic Agent
     data_streams:
       - elb_logs
@@ -458,12 +660,42 @@ policy_templates:
         input_group: logs
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        provider_permissions:
+          - provider: aws
+            description: Read delivered log objects from S3, using SQS queue notifications when configured.
+            permissions:
+              - name: s3:GetObject
+                description: Read log objects from the configured S3 bucket.
+              - name: s3:ListBucket
+                description: List objects in the configured S3 bucket.
+              - name: s3:GetBucketLocation
+                description: Resolve the region of the configured S3 bucket.
+              - name: sqs:ReceiveMessage
+                description: Receive S3 object-created notifications from the configured SQS queue.
+              - name: sqs:DeleteMessage
+                description: Delete processed messages from the SQS queue.
+              - name: sqs:ChangeMessageVisibility
+                description: Extend the visibility timeout while processing SQS messages.
+              - name: sqs:GetQueueAttributes
+                description: Read attributes of the configured SQS queue.
       - type: aws-cloudwatch
         title: Collect ELB logs from CloudWatch
         description: Collecting logs from ELB using aws-cloudwatch input
         input_group: logs
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        provider_permissions:
+          - provider: aws
+            description: Read log events from CloudWatch Logs.
+            permissions:
+              - name: logs:DescribeLogGroups
+                description: Discover CloudWatch log groups to collect from.
+              - name: logs:DescribeLogStreams
+                description: Enumerate log streams within a log group.
+              - name: logs:FilterLogEvents
+                description: Read log events matching the configured filters.
+              - name: logs:GetLogEvents
+                description: Read log events from a CloudWatch log stream.
       - type: aws/metrics
         title: Collect ELB metrics
         description: Collecting ELB metrics using AWS CloudWatch
@@ -511,6 +743,14 @@ policy_templates:
         type: image/png
   - name: lambda
     title: AWS Lambda
+    provider_permissions:
+      - provider: aws
+        description: Identify Lambda functions for metric and log enrichment.
+        permissions:
+          - name: lambda:ListFunctions
+            description: List Lambda functions in the account.
+          - name: lambda:GetFunction
+            description: Read Lambda function configuration for enrichment.
     description: Collect Lambda metrics and logs with Elastic Agent
     data_streams:
       - lambda
@@ -530,6 +770,18 @@ policy_templates:
         input_group: logs
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        provider_permissions:
+          - provider: aws
+            description: Read log events from CloudWatch Logs.
+            permissions:
+              - name: logs:DescribeLogGroups
+                description: Discover CloudWatch log groups to collect from.
+              - name: logs:DescribeLogStreams
+                description: Enumerate log streams within a log group.
+              - name: logs:FilterLogEvents
+                description: Read log events matching the configured filters.
+              - name: logs:GetLogEvents
+                description: Read log events from a CloudWatch log stream.
     deployment_modes:
       default:
         enabled: true
@@ -555,6 +807,12 @@ policy_templates:
         type: image/png
   - name: natgateway
     title: Amazon NAT Gateway
+    provider_permissions:
+      - provider: aws
+        description: Identify NAT gateways to attach CloudWatch metrics to.
+        permissions:
+          - name: ec2:DescribeNatGateways
+            description: List NAT gateways and their attributes.
     description: Collect Amazon NAT Gateways metrics with Elastic Agent
     data_streams:
       - natgateway
@@ -573,6 +831,16 @@ policy_templates:
         type: image/svg+xml
   - name: firewall
     title: AWS Network Firewall
+    provider_permissions:
+      - provider: aws
+        description: Identify Network Firewalls and their logging configuration for metric and log enrichment.
+        permissions:
+          - name: network-firewall:ListFirewalls
+            description: List AWS Network Firewalls in the account.
+          - name: network-firewall:DescribeFirewall
+            description: Read Network Firewall configuration for enrichment.
+          - name: network-firewall:DescribeLoggingConfiguration
+            description: Read the logging configuration of a Network Firewall.
     description: Collect AWS Network Firewall logs and metrics with Elastic Agent
     categories:
       - security
@@ -585,10 +853,40 @@ policy_templates:
         title: Collect Network Firewall logs from S3
         description: Collecting logs from Network Firewall using aws-s3 input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read delivered log objects from S3, using SQS queue notifications when configured.
+            permissions:
+              - name: s3:GetObject
+                description: Read log objects from the configured S3 bucket.
+              - name: s3:ListBucket
+                description: List objects in the configured S3 bucket.
+              - name: s3:GetBucketLocation
+                description: Resolve the region of the configured S3 bucket.
+              - name: sqs:ReceiveMessage
+                description: Receive S3 object-created notifications from the configured SQS queue.
+              - name: sqs:DeleteMessage
+                description: Delete processed messages from the SQS queue.
+              - name: sqs:ChangeMessageVisibility
+                description: Extend the visibility timeout while processing SQS messages.
+              - name: sqs:GetQueueAttributes
+                description: Read attributes of the configured SQS queue.
       - type: aws-cloudwatch
         title: Collect Network Firewall logs from CloudWatch
         description: Collecting logs from Network Firewall using aws-cloudwatch input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read log events from CloudWatch Logs.
+            permissions:
+              - name: logs:DescribeLogGroups
+                description: Discover CloudWatch log groups to collect from.
+              - name: logs:DescribeLogStreams
+                description: Enumerate log streams within a log group.
+              - name: logs:FilterLogEvents
+                description: Read log events matching the configured filters.
+              - name: logs:GetLogEvents
+                description: Read log events from a CloudWatch log stream.
       - type: aws/metrics
         title: Collect Network Firewall metrics
         description: Collecting AWS Network Firewall metrics using AWS CloudWatch
@@ -617,6 +915,16 @@ policy_templates:
         type: image/png
   - name: rds
     title: Amazon RDS
+    provider_permissions:
+      - provider: aws
+        description: Identify RDS instances and clusters to attach CloudWatch metrics to.
+        permissions:
+          - name: rds:DescribeDBInstances
+            description: List RDS database instances.
+          - name: rds:DescribeDBClusters
+            description: List RDS database clusters.
+          - name: rds:ListTagsForResource
+            description: Read tags on RDS resources for enrichment.
     description: Collect Amazon Relational Database Service metrics with Elastic Agent
     data_streams:
       - rds
@@ -651,6 +959,16 @@ policy_templates:
         type: image/png
   - name: s3
     title: Amazon S3
+    provider_permissions:
+      - provider: aws
+        description: Enumerate S3 buckets and read their metadata for metric and access-log enrichment.
+        permissions:
+          - name: s3:ListAllMyBuckets
+            description: List S3 buckets in the account.
+          - name: s3:GetBucketTagging
+            description: Read S3 bucket tags for enrichment.
+          - name: s3:GetBucketLocation
+            description: Resolve the region of an S3 bucket.
     description: Monitor Amazon S3 buckets by collecting access logs, storage & request metrics with Elastic Agent
     data_streams:
       - s3_daily_storage
@@ -664,6 +982,24 @@ policy_templates:
         title: Collect S3 access logs from S3
         description: Collecting S3 access logs using aws-s3 input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read delivered S3 access-log objects from S3, using SQS queue notifications when configured.
+            permissions:
+              - name: s3:GetObject
+                description: Read log objects from the configured S3 bucket.
+              - name: s3:ListBucket
+                description: List objects in the configured S3 bucket.
+              - name: s3:GetBucketLocation
+                description: Resolve the region of the configured S3 bucket.
+              - name: sqs:ReceiveMessage
+                description: Receive S3 object-created notifications from the configured SQS queue.
+              - name: sqs:DeleteMessage
+                description: Delete processed messages from the SQS queue.
+              - name: sqs:ChangeMessageVisibility
+                description: Extend the visibility timeout while processing SQS messages.
+              - name: sqs:GetQueueAttributes
+                description: Read attributes of the configured SQS queue.
       - type: aws/metrics
         title: Collect S3 metrics
         description: Collecting S3 metrics using AWS CloudWatch
@@ -693,6 +1029,14 @@ policy_templates:
         type: image/png
   - name: s3_storage_lens
     title: Amazon S3 Storage Lens
+    provider_permissions:
+      - provider: aws
+        description: Read S3 Storage Lens configurations and their published metrics.
+        permissions:
+          - name: s3:ListStorageLensConfigurations
+            description: List configured S3 Storage Lens dashboards.
+          - name: s3:GetStorageLensConfiguration
+            description: Read an S3 Storage Lens configuration for enrichment.
     description: Collect Amazon S3 Storage Lens metrics with Elastic Agent
     data_streams:
       - s3_storage_lens
@@ -715,6 +1059,14 @@ policy_templates:
         type: image/png
   - name: sns
     title: Amazon SNS
+    provider_permissions:
+      - provider: aws
+        description: Identify SNS topics to attach CloudWatch metrics to.
+        permissions:
+          - name: sns:ListTopics
+            description: List SNS topics in the account.
+          - name: sns:GetTopicAttributes
+            description: Read SNS topic attributes for enrichment.
     description: Collect Amazon SNS metrics with Elastic Agent
     data_streams:
       - sns
@@ -749,6 +1101,14 @@ policy_templates:
         type: image/png
   - name: sqs
     title: Amazon SQS
+    provider_permissions:
+      - provider: aws
+        description: Identify SQS queues to attach CloudWatch metrics to.
+        permissions:
+          - name: sqs:ListQueues
+            description: List SQS queues in the account.
+          - name: sqs:GetQueueAttributes
+            description: Read SQS queue attributes for enrichment.
     description: Collect Amazon SQS metrics with Elastic Agent
     data_streams:
       - sqs
@@ -782,6 +1142,14 @@ policy_templates:
         type: image/png
   - name: transitgateway
     title: AWS Transit Gateway
+    provider_permissions:
+      - provider: aws
+        description: Identify Transit Gateways and their attachments to attach CloudWatch metrics to.
+        permissions:
+          - name: ec2:DescribeTransitGateways
+            description: List Transit Gateways in the account.
+          - name: ec2:DescribeTransitGatewayAttachments
+            description: List Transit Gateway attachments for enrichment.
     description: Collect AWS Transit Gateways metrics with Elastic Agent
     data_streams:
       - transitgateway
@@ -810,6 +1178,12 @@ policy_templates:
         type: image/svg+xml
   - name: usage
     title: AWS Usage
+    provider_permissions:
+      - provider: aws
+        description: Read the AWS/Usage CloudWatch namespace; covered by the package-level CloudWatch baseline.
+        permissions:
+          - name: cloudwatch:GetMetricData
+            description: Read AWS usage metrics from the CloudWatch AWS/Usage namespace.
     description: Collect AWS usage metrics with Elastic Agent
     data_streams:
       - usage
@@ -827,6 +1201,12 @@ policy_templates:
         type: image/png
   - name: vpcflow
     title: Amazon VPC
+    provider_permissions:
+      - provider: aws
+        description: Identify VPC flow log configurations so their delivered logs can be located.
+        permissions:
+          - name: ec2:DescribeFlowLogs
+            description: List configured VPC flow logs and their destinations.
     description: Collect Amazon VPC flow logs with Elastic Agent
     data_streams:
       - vpcflow
@@ -838,10 +1218,40 @@ policy_templates:
         title: Collect VPC flow logs from S3
         description: Collecting VPC Flow logs using aws-s3 input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read delivered log objects from S3, using SQS queue notifications when configured.
+            permissions:
+              - name: s3:GetObject
+                description: Read log objects from the configured S3 bucket.
+              - name: s3:ListBucket
+                description: List objects in the configured S3 bucket.
+              - name: s3:GetBucketLocation
+                description: Resolve the region of the configured S3 bucket.
+              - name: sqs:ReceiveMessage
+                description: Receive S3 object-created notifications from the configured SQS queue.
+              - name: sqs:DeleteMessage
+                description: Delete processed messages from the SQS queue.
+              - name: sqs:ChangeMessageVisibility
+                description: Extend the visibility timeout while processing SQS messages.
+              - name: sqs:GetQueueAttributes
+                description: Read attributes of the configured SQS queue.
       - type: aws-cloudwatch
         title: Collect VPC flow logs from CloudWatch
         description: Collecting VPC Flow logs using aws-cloudwatch input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read log events from CloudWatch Logs.
+            permissions:
+              - name: logs:DescribeLogGroups
+                description: Discover CloudWatch log groups to collect from.
+              - name: logs:DescribeLogStreams
+                description: Enumerate log streams within a log group.
+              - name: logs:FilterLogEvents
+                description: Read log events matching the configured filters.
+              - name: logs:GetLogEvents
+                description: Read log events from a CloudWatch log stream.
     icons:
       - src: /img/logo_vpcflow.svg
         title: AWS VPC logo
@@ -849,6 +1259,14 @@ policy_templates:
         type: image/svg+xml
   - name: vpn
     title: Amazon VPN
+    provider_permissions:
+      - provider: aws
+        description: Identify VPN connections to attach CloudWatch metrics to.
+        permissions:
+          - name: ec2:DescribeVpnConnections
+            description: List Site-to-Site VPN connections.
+          - name: ec2:DescribeVpnGateways
+            description: List virtual private gateways for enrichment.
     description: Collect VPN metrics with Elastic Agent
     data_streams:
       - vpn
@@ -867,6 +1285,16 @@ policy_templates:
         type: image/svg+xml
   - name: waf
     title: AWS WAF
+    provider_permissions:
+      - provider: aws
+        description: Identify WAF web ACLs and their logging configuration so their delivered logs can be located.
+        permissions:
+          - name: wafv2:ListWebACLs
+            description: List WAFv2 web ACLs in the account.
+          - name: wafv2:GetWebACL
+            description: Read a WAFv2 web ACL configuration for enrichment.
+          - name: wafv2:GetLoggingConfiguration
+            description: Read the logging configuration of a WAFv2 web ACL.
     description: Collect AWS WAF logs with Elastic Agent
     data_streams:
       - waf
@@ -878,10 +1306,40 @@ policy_templates:
         title: Collect WAF logs from S3
         description: Collecting WAF logs using aws-s3 input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read delivered log objects from S3, using SQS queue notifications when configured.
+            permissions:
+              - name: s3:GetObject
+                description: Read log objects from the configured S3 bucket.
+              - name: s3:ListBucket
+                description: List objects in the configured S3 bucket.
+              - name: s3:GetBucketLocation
+                description: Resolve the region of the configured S3 bucket.
+              - name: sqs:ReceiveMessage
+                description: Receive S3 object-created notifications from the configured SQS queue.
+              - name: sqs:DeleteMessage
+                description: Delete processed messages from the SQS queue.
+              - name: sqs:ChangeMessageVisibility
+                description: Extend the visibility timeout while processing SQS messages.
+              - name: sqs:GetQueueAttributes
+                description: Read attributes of the configured SQS queue.
       - type: aws-cloudwatch
         title: Collect WAF logs from CloudWatch
         description: Collecting WAF logs using aws-cloudwatch input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read log events from CloudWatch Logs.
+            permissions:
+              - name: logs:DescribeLogGroups
+                description: Discover CloudWatch log groups to collect from.
+              - name: logs:DescribeLogStreams
+                description: Enumerate log streams within a log group.
+              - name: logs:FilterLogEvents
+                description: Read log events matching the configured filters.
+              - name: logs:GetLogEvents
+                description: Read log events from a CloudWatch log stream.
     icons:
       - src: /img/logo_waf.svg
         title: AWS VPC logo
@@ -894,6 +1352,14 @@ policy_templates:
         type: image/png
   - name: route53
     title: AWS Route 53
+    provider_permissions:
+      - provider: aws
+        description: Identify Route 53 hosted zones and resolver query-log configurations so their logs can be located.
+        permissions:
+          - name: route53:ListHostedZones
+            description: List Route 53 public hosted zones.
+          - name: route53resolver:ListResolverQueryLogConfigs
+            description: List Route 53 Resolver query-logging configurations.
     description: Collect AWS Route53 logs with Elastic Agent
     data_streams:
       - route53_public_logs
@@ -906,10 +1372,40 @@ policy_templates:
         title: Collect Route53 logs
         description: Collecting Route53 logs using aws-cloudwatch input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read log events from CloudWatch Logs.
+            permissions:
+              - name: logs:DescribeLogGroups
+                description: Discover CloudWatch log groups to collect from.
+              - name: logs:DescribeLogStreams
+                description: Enumerate log streams within a log group.
+              - name: logs:FilterLogEvents
+                description: Read log events matching the configured filters.
+              - name: logs:GetLogEvents
+                description: Read log events from a CloudWatch log stream.
       - type: aws-s3
         title: Collect Route53 logs
         description: Collecting Route53 logs using aws-s3 input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read delivered log objects from S3, using SQS queue notifications when configured.
+            permissions:
+              - name: s3:GetObject
+                description: Read log objects from the configured S3 bucket.
+              - name: s3:ListBucket
+                description: List objects in the configured S3 bucket.
+              - name: s3:GetBucketLocation
+                description: Resolve the region of the configured S3 bucket.
+              - name: sqs:ReceiveMessage
+                description: Receive S3 object-created notifications from the configured SQS queue.
+              - name: sqs:DeleteMessage
+                description: Delete processed messages from the SQS queue.
+              - name: sqs:ChangeMessageVisibility
+                description: Extend the visibility timeout while processing SQS messages.
+              - name: sqs:GetQueueAttributes
+                description: Read attributes of the configured SQS queue.
     icons:
       - src: /img/logo_route53.svg
         title: AWS Route53 logo
@@ -917,6 +1413,14 @@ policy_templates:
         type: image/svg+xml
   - name: cloudfront
     title: Amazon CloudFront
+    provider_permissions:
+      - provider: aws
+        description: Identify CloudFront distributions so their delivered logs can be located.
+        permissions:
+          - name: cloudfront:ListDistributions
+            description: List CloudFront distributions in the account.
+          - name: cloudfront:GetDistributionConfig
+            description: Read a CloudFront distribution configuration for enrichment.
     description: Collect Amazon CloudFront logs with Elastic Agent
     data_streams:
       - cloudfront_logs
@@ -928,6 +1432,24 @@ policy_templates:
         title: Collect CloudFront logs
         description: Collecting CloudFront logs using aws-s3 input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read delivered log objects from S3, using SQS queue notifications when configured.
+            permissions:
+              - name: s3:GetObject
+                description: Read log objects from the configured S3 bucket.
+              - name: s3:ListBucket
+                description: List objects in the configured S3 bucket.
+              - name: s3:GetBucketLocation
+                description: Resolve the region of the configured S3 bucket.
+              - name: sqs:ReceiveMessage
+                description: Receive S3 object-created notifications from the configured SQS queue.
+              - name: sqs:DeleteMessage
+                description: Delete processed messages from the SQS queue.
+              - name: sqs:ChangeMessageVisibility
+                description: Extend the visibility timeout while processing SQS messages.
+              - name: sqs:GetQueueAttributes
+                description: Read attributes of the configured SQS queue.
     icons:
       - src: /img/logo_cloudfront.svg
         title: AWS CloudFront logo
@@ -935,6 +1457,12 @@ policy_templates:
         type: image/svg+xml
   - name: redshift
     title: Amazon Redshift
+    provider_permissions:
+      - provider: aws
+        description: Identify Redshift clusters to attach CloudWatch metrics to.
+        permissions:
+          - name: redshift:DescribeClusters
+            description: List Redshift clusters and their attributes.
     description: Collect Amazon Redshift metrics with Elastic Agent
     data_streams:
       - redshift
@@ -958,6 +1486,16 @@ policy_templates:
         type: image/png
   - name: kinesis
     title: Amazon Kinesis Data Stream
+    provider_permissions:
+      - provider: aws
+        description: Identify Kinesis data streams to attach CloudWatch metrics to.
+        permissions:
+          - name: kinesis:ListStreams
+            description: List Kinesis data streams in the account.
+          - name: kinesis:DescribeStreamSummary
+            description: Read a Kinesis data stream summary for enrichment.
+          - name: kinesis:ListShards
+            description: List the shards of a Kinesis data stream.
     description: Collect Amazon Kinesis Data Stream metrics with Elastic Agent
     data_streams:
       - kinesis
@@ -981,6 +1519,18 @@ policy_templates:
         type: image/png
   - name: securityhub
     title: AWS Security Hub CSPM
+    provider_permissions:
+      - provider: aws
+        description: Read AWS Security Hub findings and insights via the Security Hub API.
+        permissions:
+          - name: securityhub:GetFindings
+            description: Retrieve Security Hub findings.
+          - name: securityhub:GetInsights
+            description: Retrieve Security Hub insight definitions.
+          - name: securityhub:GetInsightResults
+            description: Retrieve the results of Security Hub insights.
+          - name: securityhub:DescribeHub
+            description: Read the Security Hub configuration for the account.
     description: Collect AWS Security Hub CSPM Logs with Elastic Agent.
     deployment_modes:
       default:
@@ -1005,6 +1555,16 @@ policy_templates:
         description: Collecting AWS Security Hub CSPM logs via API.
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        provider_permissions:
+          - provider: aws
+            description: Read Security Hub findings and insights via the Security Hub API.
+            permissions:
+              - name: securityhub:GetFindings
+                description: Retrieve Security Hub findings.
+              - name: securityhub:GetInsights
+                description: Retrieve Security Hub insight definitions.
+              - name: securityhub:GetInsightResults
+                description: Retrieve the results of Security Hub insights.
     screenshots:
       - src: /img/securityhub_cspm_findings_insights_dashboard.png
         title: Security Hub CSPM Findings and Insights dashboard screenshot
@@ -1021,6 +1581,14 @@ policy_templates:
         type: image/svg+xml
   - name: inspector
     title: Amazon Inspector
+    provider_permissions:
+      - provider: aws
+        description: Read Amazon Inspector findings and coverage via the Inspector2 API.
+        permissions:
+          - name: inspector2:ListFindings
+            description: Retrieve Amazon Inspector findings.
+          - name: inspector2:ListCoverage
+            description: Read the resource coverage state for Amazon Inspector.
     description: Collect Amazon Inspector Logs with Elastic Agent.
     deployment_modes:
       default:
@@ -1043,6 +1611,14 @@ policy_templates:
         description: Collecting Amazon Inspector logs via API.
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        provider_permissions:
+          - provider: aws
+            description: Read Amazon Inspector findings via the Inspector2 API.
+            permissions:
+              - name: inspector2:ListFindings
+                description: Retrieve Amazon Inspector findings.
+              - name: inspector2:ListCoverage
+                description: Read Amazon Inspector resource coverage.
     screenshots:
       - src: /img/inspector-findings-overview-dashboard.png
         title: Inspector Findings Overview dashboard
@@ -1067,6 +1643,16 @@ policy_templates:
         type: image/svg+xml
   - name: guardduty
     title: Amazon GuardDuty
+    provider_permissions:
+      - provider: aws
+        description: Read Amazon GuardDuty findings via the GuardDuty API (logs may also be delivered via S3/SQS).
+        permissions:
+          - name: guardduty:ListDetectors
+            description: List GuardDuty detectors in the account.
+          - name: guardduty:ListFindings
+            description: List GuardDuty finding identifiers.
+          - name: guardduty:GetFindings
+            description: Retrieve GuardDuty finding details.
     description: Collect Amazon GuardDuty logs with Elastic Agent.
     deployment_modes:
       default:
@@ -1085,11 +1671,39 @@ policy_templates:
       - type: httpjson
         title: Collect Amazon GuardDuty logs via API
         description: Collecting Amazon GuardDuty logs via API.
+        provider_permissions:
+          - provider: aws
+            description: Read Amazon GuardDuty findings via the GuardDuty API.
+            permissions:
+              - name: guardduty:ListDetectors
+                description: List GuardDuty detectors.
+              - name: guardduty:ListFindings
+                description: List GuardDuty finding identifiers.
+              - name: guardduty:GetFindings
+                description: Retrieve GuardDuty finding details.
       - type: aws-s3
         title: Collect Amazon GuardDuty logs via AWS S3 or SQS
         description: Collecting Amazon GuardDuty logs via AWS S3 or SQS input.
         hide_in_var_group_options:
           credential_type: [identity_federation]
+        provider_permissions:
+          - provider: aws
+            description: Read delivered GuardDuty finding objects from S3, using SQS queue notifications when configured.
+            permissions:
+              - name: s3:GetObject
+                description: Read finding export objects from the configured S3 bucket.
+              - name: s3:ListBucket
+                description: List objects in the configured S3 bucket.
+              - name: s3:GetBucketLocation
+                description: Resolve the region of the configured S3 bucket.
+              - name: sqs:ReceiveMessage
+                description: Receive S3 object-created notifications from the configured SQS queue.
+              - name: sqs:DeleteMessage
+                description: Delete processed messages from the SQS queue.
+              - name: sqs:ChangeMessageVisibility
+                description: Extend the visibility timeout while processing SQS messages.
+              - name: sqs:GetQueueAttributes
+                description: Read attributes of the configured SQS queue.
     screenshots:
       - src: /img/guardduty-findings-overview.png
         title: GuardDuty Findings Overview dashboard screenshot
@@ -1110,6 +1724,12 @@ policy_templates:
         type: image/svg+xml
   - name: apigateway
     title: AWS API Gateway
+    provider_permissions:
+      - provider: aws
+        description: Identify API Gateway APIs and stages for metric and log enrichment.
+        permissions:
+          - name: apigateway:GET
+            description: Read API Gateway REST/HTTP API and stage configuration.
     description: Collect logs and metrics for AWS API Gateway with Elastic Agent.
     data_streams:
       - apigateway_metrics
@@ -1125,10 +1745,40 @@ policy_templates:
         title: Collect API Gateway logs from S3
         description: Collecting API Gateway logs using aws-s3 input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read delivered log objects from S3, using SQS queue notifications when configured.
+            permissions:
+              - name: s3:GetObject
+                description: Read log objects from the configured S3 bucket.
+              - name: s3:ListBucket
+                description: List objects in the configured S3 bucket.
+              - name: s3:GetBucketLocation
+                description: Resolve the region of the configured S3 bucket.
+              - name: sqs:ReceiveMessage
+                description: Receive S3 object-created notifications from the configured SQS queue.
+              - name: sqs:DeleteMessage
+                description: Delete processed messages from the SQS queue.
+              - name: sqs:ChangeMessageVisibility
+                description: Extend the visibility timeout while processing SQS messages.
+              - name: sqs:GetQueueAttributes
+                description: Read attributes of the configured SQS queue.
       - type: aws-cloudwatch
         title: Collect API Gateway logs from CloudWatch
         description: Collecting API Gateway logs using aws-cloudwatch input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read log events from CloudWatch Logs.
+            permissions:
+              - name: logs:DescribeLogGroups
+                description: Discover CloudWatch log groups to collect from.
+              - name: logs:DescribeLogStreams
+                description: Enumerate log streams within a log group.
+              - name: logs:FilterLogEvents
+                description: Read log events matching the configured filters.
+              - name: logs:GetLogEvents
+                description: Read log events from a CloudWatch log stream.
     screenshots:
       - src: /img/filebeat-aws-apigateway-overview.png
         title: filebeat aws api gateway overview
@@ -1145,6 +1795,14 @@ policy_templates:
         type: image/svg+xml
   - name: emr
     title: Amazon EMR
+    provider_permissions:
+      - provider: aws
+        description: Identify EMR clusters for metric and log enrichment.
+        permissions:
+          - name: elasticmapreduce:ListClusters
+            description: List EMR clusters in the account.
+          - name: elasticmapreduce:DescribeCluster
+            description: Read EMR cluster configuration for enrichment.
     description: Collect logs and metrics for Amazon EMR service with Elastic Agent
     data_streams:
       - emr_metrics
@@ -1160,10 +1818,40 @@ policy_templates:
         title: Collect EMR logs from S3
         description: Collecting logs from EMR using aws-s3 input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read delivered log objects from S3, using SQS queue notifications when configured.
+            permissions:
+              - name: s3:GetObject
+                description: Read log objects from the configured S3 bucket.
+              - name: s3:ListBucket
+                description: List objects in the configured S3 bucket.
+              - name: s3:GetBucketLocation
+                description: Resolve the region of the configured S3 bucket.
+              - name: sqs:ReceiveMessage
+                description: Receive S3 object-created notifications from the configured SQS queue.
+              - name: sqs:DeleteMessage
+                description: Delete processed messages from the SQS queue.
+              - name: sqs:ChangeMessageVisibility
+                description: Extend the visibility timeout while processing SQS messages.
+              - name: sqs:GetQueueAttributes
+                description: Read attributes of the configured SQS queue.
       - type: aws-cloudwatch
         title: Collect EMR logs from CloudWatch
         description: Collecting logs from EMR using aws-cloudwatch input
         input_group: logs
+        provider_permissions:
+          - provider: aws
+            description: Read log events from CloudWatch Logs.
+            permissions:
+              - name: logs:DescribeLogGroups
+                description: Discover CloudWatch log groups to collect from.
+              - name: logs:DescribeLogStreams
+                description: Enumerate log streams within a log group.
+              - name: logs:FilterLogEvents
+                description: Read log events matching the configured filters.
+              - name: logs:GetLogEvents
+                description: Read log events from a CloudWatch log stream.
     screenshots:
       - src: /img/filebeat-aws-emr-overview.png
         title: filebeat aws emr overview
@@ -1176,6 +1864,16 @@ policy_templates:
         type: image/svg+xml
   - name: kafka
     title: Amazon Managed Streaming for Apache Kafka (MSK)
+    provider_permissions:
+      - provider: aws
+        description: Identify MSK clusters to attach CloudWatch metrics to.
+        permissions:
+          - name: kafka:ListClusters
+            description: List Amazon MSK clusters in the account.
+          - name: kafka:DescribeCluster
+            description: Read Amazon MSK cluster configuration for enrichment.
+          - name: kafka:ListNodes
+            description: List the broker nodes of an Amazon MSK cluster.
     description: Collect Amazon MSK metrics with Elastic Agent
     data_streams:
       - kafka_metrics
