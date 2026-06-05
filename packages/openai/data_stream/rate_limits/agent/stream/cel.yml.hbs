@@ -86,7 +86,7 @@ program: |
                   }).do_request().as(resp, resp.StatusCode == 200 ?
                     bytes(resp.Body).decode_json().as(body, body.?has_more.orValue(false).as(more,
                     {
-                      "events": body.?data.orValue([]).map(rl, {
+                      "events": size(body.?data.orValue([])) > 0 ? body.?data.orValue([]).map(rl, {
                         "message": {
                           "project_id": proj.id,
                           "project_name": proj.name,
@@ -106,7 +106,11 @@ program: |
                           ?"max_tokens_per_1_day": rl.?max_tokens_per_1_day,
                           ?"batch_1_day_max_input_tokens": rl.?batch_1_day_max_input_tokens,
                         }.encode_json(),
-                      }),
+                      }) :
+                      // Empty rate-limit page (a project with no configured limits): emit a keep-alive
+                      // sentinel (dropped at ingest) so this eval never returns zero events, which would
+                      // end filebeat's CEL cycle before want_more is read and stall the worklist.
+                      [{"message": {"skip": true}.encode_json()}],
                       "worklist": worklist,
                       "project_after": pbody.?last_id.orValue(""),
                       "projects_done": !more_projects,
@@ -143,7 +147,11 @@ program: |
                 // Project page added no new projects. If more pages remain, continue listing on
                 // the next interval; otherwise the cycle is complete.
                 {
-                  "events": [],
+                  // When more project pages remain, want_more is true below, so this eval must still
+                  // emit: a zero-event evaluation would end the cycle before want_more is read. Emit a
+                  // keep-alive sentinel (dropped at ingest). When listing is complete, [] is fine
+                  // because want_more is false and the next interval starts a fresh cycle.
+                  "events": more_projects ? [{"message": {"skip": true}.encode_json()}] : [],
                   "worklist": worklist,
                   "project_after": pbody.?last_id.orValue(""),
                   "projects_done": !more_projects,
@@ -193,7 +201,7 @@ program: |
           }).do_request().as(resp, resp.StatusCode == 200 ?
             bytes(resp.Body).decode_json().as(body, body.?has_more.orValue(false).as(more,
             {
-              "events": body.?data.orValue([]).map(rl, {
+              "events": size(body.?data.orValue([])) > 0 ? body.?data.orValue([]).map(rl, {
                 "message": {
                   "project_id": proj.id,
                   "project_name": proj.name,
@@ -210,7 +218,11 @@ program: |
                   ?"max_tokens_per_1_day": rl.?max_tokens_per_1_day,
                   ?"batch_1_day_max_input_tokens": rl.?batch_1_day_max_input_tokens,
                 }.encode_json(),
-              }),
+              }) :
+              // Empty rate-limit page (a project with no configured limits): emit a keep-alive
+              // sentinel (dropped at ingest) so this eval never returns zero events, which would
+              // end filebeat's CEL cycle before want_more is read and stall the worklist.
+              [{"message": {"skip": true}.encode_json()}],
               "rl_after": more ? body.?last_id.orValue("") : "",
               "next": more ? int(state.?next.orValue(0)) : int(state.?next.orValue(0)) + 1,
               // More rate-limit pages, more projects in the worklist, or more project pages to load.

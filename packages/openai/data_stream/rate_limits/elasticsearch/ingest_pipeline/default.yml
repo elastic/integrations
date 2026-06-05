@@ -27,6 +27,14 @@ processors:
       tag: json_event_original
       target_field: openai.rate_limits
       if: ctx.event?.original != null
+  - drop:
+      tag: drop_pagination_sentinel
+      if: ctx.openai?.rate_limits?.skip != null
+      description: >-
+        Drops the keep-alive sentinel the CEL program emits for an empty project or rate-limit
+        page. The sentinel exists only to keep filebeat's want_more chain alive (a zero-event
+        evaluation ends the polling cycle early); it carries no rate-limit data and must not be
+        indexed.
   - remove:
       field: event.original
       tag: remove_event_original
