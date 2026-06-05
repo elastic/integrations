@@ -92,16 +92,16 @@ while IFS= read -r branch; do
     base_version="$(yq "${entry} | .base_version" "${NEW_INVENTORY}")"
     base_commit="$(yq "${entry} | .base_commit" "${NEW_INVENTORY}")"
 
-    if [[ "${pkg}" != "elastic_package_registry" ]]; then
-        echo "  Skipping non-elastic_package_registry entry: ${branch}"
+    if [[ "${pkg}" != "security_detection_engine" ]]; then
+        echo "  Skipping non-security_detection_engine entry: ${branch}"
         continue
     fi
-    if [[ "${base_version}" != "0.3.0" ]]; then
-        echo "  Skipping non-0.3.0 version: ${branch}"
+    if [[ "${base_version}" != "8.15.9" ]]; then
+        echo "  Skipping non-8.15.9 version: ${branch}"
         continue
     fi
-    if [[ "${base_commit}" != "65b2a04d98" ]]; then
-        echo "  Skipping non-65b2a04d98 commit: ${branch}"
+    if [[ "${base_commit}" != "945a941aee" ]]; then
+        echo "  Skipping non-6945a941aee commit: ${branch}"
         continue
     fi
 
