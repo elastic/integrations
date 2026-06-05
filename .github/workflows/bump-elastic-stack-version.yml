@@ -24,8 +24,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: .go-version
+
+      - name: Install mage
+        run: go install github.com/magefile/mage
+
       - name: Install Updatecli in the runner
-        uses: updatecli/updatecli-action@b846825b298f5351abd80f94c4f9eab63a38a804 #v2.98.0
+        uses: updatecli/updatecli-action@e71be7554f3f940bc439cf720b3e4e379823c562 #v3.2.0
 
       - name: Select diff action
         if: ${{ github.event_name == 'pull_request' }}

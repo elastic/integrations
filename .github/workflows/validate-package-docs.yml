@@ -1,0 +1,96 @@
+name: Validate Package Docs
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'packages/*/docs/*.md'
+      - 'packages/*/*/docs/*.md'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-package-docs:
+    name: Validate Package Docs (docs-builder)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Find changed package docs
+        id: changed-docs
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          FILES=$(git diff --name-only --diff-filter=d "origin/$BASE_REF"...HEAD \
+            | grep '^packages/.*/docs/[^/]*\.md$' \
+            | grep -v '_dev/build/' || true)
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          if [ -z "$FILES" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate with docs-builder
+        id: validate
+        if: steps.changed-docs.outputs.skip != 'true'
+        continue-on-error: true
+        env:
+          CHANGED_FILES: ${{ steps.changed-docs.outputs.files }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # Build an isolated directory so docs-builder only sees our
+          # generated docset and not docs/docset.yml or other repo files.
+          mkdir -p .validate
+          git init .validate
+          echo "$CHANGED_FILES" | while read f; do
+            [ -n "$f" ] || continue
+            dir=".validate/$(dirname "$f")"
+            mkdir -p "$dir"
+            # docs-builder requires lowercase filenames
+            base="$(basename "$f" | tr '[:upper:]' '[:lower:]')"
+            cp "$f" "$dir/$base"
+            # Copy sibling img/ directory so image references resolve
+            pkg_dir="$(dirname "$(dirname "$f")")"
+            if [ -d "$pkg_dir/img" ] && [ ! -d ".validate/$pkg_dir/img" ]; then
+              cp -r "$pkg_dir/img" ".validate/$pkg_dir/img"
+            fi
+          done
+          {
+            echo "project: 'Package Docs Validation'"
+            echo "cross_links:"
+            echo "  - beats"
+            echo "  - docs-content"
+            echo "  - ecs"
+            echo "  - elasticsearch"
+            echo "  - integrations"
+            echo "toc:"
+            echo "$CHANGED_FILES" | while read f; do
+              [ -n "$f" ] || continue
+              dir="$(dirname "$f")"
+              base="$(basename "$f" | tr '[:upper:]' '[:lower:]')"
+              echo "  - file: $dir/$base"
+            done
+          } > .validate/docset.yml
+          cat .validate/docset.yml
+          mkdir -p "$PWD/validate-result"
+          if ! docker run --rm -v "$PWD/.validate:/workspace" -w /workspace \
+            ghcr.io/elastic/docs-builder:edge \
+            --metadata-only --strict; then
+            echo "${PR_NUMBER}" > "$PWD/validate-result/pr_number"
+          fi
+
+      - name: Upload failure signal
+        if: steps.changed-docs.outputs.skip != 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: docs-validation-failed
+          path: validate-result/pr_number
+          if-no-files-found: ignore
+          retention-days: 1
