@@ -12,6 +12,11 @@ if [[ "${BUILDKITE_PULL_REQUEST}" == "false" ]]; then
     exit 0
 fi
 
+if [[ "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}" != "main" ]]; then
+    echo "Pull request does not target main (base branch: ${BUILDKITE_PULL_REQUEST_BASE_BRANCH}), skipping backport dry-run trigger"
+    exit 0
+fi
+
 add_bin_path
 with_yq
 with_mage
