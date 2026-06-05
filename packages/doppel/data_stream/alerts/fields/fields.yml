@@ -1,0 +1,104 @@
+- name: doppel
+  type: group
+  fields:
+    - name: alert_updated_at
+      type: date
+      description: The timestamp when the alert was last updated.
+    - name: queue_state
+      type: keyword
+      description: The current workflow queue state of the alert in Doppel (e.g., review, resolved).
+    - name: entity_state
+      type: keyword
+      description: The current status of the targeted entity (e.g., parked, active, offline).
+    - name: product
+      type: keyword
+      description: The Doppel product category that generated the alert (e.g., domains, social).
+    - name: platform
+      type: keyword
+      description: The platform where the threat was detected.
+    - name: assignee
+      type: keyword
+      description: The analyst or user currently assigned to investigate the alert.
+    - name: uploaded_by
+      type: keyword
+      description: The user or system account that uploaded the alert.
+    - name: notes
+      type: text
+      description: Internal notes, comments, or analyst observations added to the alert.
+    - name: tags
+      type: keyword
+      description: Custom tags associated with the alert for categorization.
+    - name: darkweb
+      type: group
+      fields:
+        - name: credential_url
+          type: keyword
+          description: The URL where the leaked credentials or data were found.
+        - name: leak_name
+          type: keyword
+          description: The name of the data breach or leak source.
+        - name: cred_leaks_password
+          type: keyword
+          index: false
+          doc_values: false
+          description: The exposed password associated with the credential leak.
+    - name: domain
+      type: group
+      fields:
+        - name: registrar
+          type: keyword
+          description: The domain registrar for the malicious or spoofed domain.
+        - name: hosting_provider
+          type: keyword
+          description: The hosting provider for the malicious domain infrastructure.
+    - name: telco
+      type: group
+      fields:
+        - name: country_code
+          type: keyword
+          description: The country code associated with the telecommunications threat.
+        - name: provider
+          type: keyword
+          description: The telecommunications provider or carrier.
+    - name: social
+      type: group
+      fields:
+        - name: profile_url
+          type: keyword
+          description: The URL of the malicious or impersonating social media profile.
+        - name: profile_image_url
+          type: keyword
+          description: The URL of the malicious social media profile image.
+        - name: num_followers
+          type: long
+          description: The number of followers the impersonating social media profile has.
+    - name: app
+      type: group
+      fields:
+        - name: title
+          type: keyword
+          description: The title of the rogue or impersonating application.
+        - name: platform
+          type: keyword
+          description: The app store platform (e.g., iOS, Android) hosting the app.
+        - name: bundle_id
+          type: keyword
+          description: The unique bundle identifier of the application.
+        - name: developer_name
+          type: keyword
+          description: The listed developer name for the rogue application.
+    - name: ecommerce
+      type: group
+      fields:
+        - name: title
+          type: keyword
+          description: The title of the fraudulent or counterfeit e-commerce listing.
+        - name: seller_name
+          type: keyword
+          description: The name of the seller offering the fraudulent item.
+        - name: price
+          type: float
+          description: The listed price of the fraudulent item.
+        - name: num_units
+          type: long
+          description: The number of units available in the fraudulent listing.
