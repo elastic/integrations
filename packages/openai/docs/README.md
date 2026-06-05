@@ -152,9 +152,11 @@ Audio is deliberately left out. OpenAI enforces an audio limit (`max_audio_megab
 
 ### Org-wide rollup by model
 
-The **Rate limit headroom - by model (org-wide)** panel answers a different question: "how is model X doing across the whole org?" It drops the `project_id` breakdown and aggregates by model alone — usage is summed across all active projects per 1-minute bucket, and the peak minute is taken just as in the per-project panel.
+The **Rate limit headroom - by model (org-wide)** panel answers a different question: "how is model X doing across the whole org?" It drops the `project_id` breakdown and aggregates by model alone. For each project it first takes that project's peak 1-minute usage over the window (exactly as the per-project panel does), then sums those per-project peaks into the org-wide usage figure.
 
-OpenAI enforces rate limits **per project**, so there is no single org-wide throttle boundary to divide against. The rollup therefore presents its limit columns as a **synthetic aggregate** (the sum of the per-project limits) and labels both the limit and utilization columns accordingly (`limit (aggregate)`, `utilization (approx.)`). Use these for relative comparison and trend-spotting across models; the exact throttle distance for any individual project still lives in the per-project panel and the alert.
+Because each project's peak can fall in a different minute, this sum-of-peaks is an **indicative upper bound** rather than a true simultaneous org-wide peak — it assumes every project peaked at once, so it can read higher than the actual combined load in any single minute. This is intentional: it keeps the usage rollup aligned with the limit rollup (see below) and errs toward flagging pressure rather than hiding it.
+
+OpenAI enforces rate limits **per project**, so there is no single org-wide throttle boundary to divide against. The rollup therefore presents its limit columns as a **synthetic aggregate** (each project's limit stabilized as the max over the window, then summed across projects) and labels both the limit and utilization columns accordingly (`limit (aggregate)`, `utilization (approx.)`). Use these for relative comparison and trend-spotting across models; the exact throttle distance for any individual project still lives in the per-project panel and the alert.
 
 ### Alert
 
