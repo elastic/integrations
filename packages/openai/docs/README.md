@@ -128,7 +128,7 @@ The `rate_limits` data stream collects the per-project, per-model limits OpenAI 
 
 ### How the comparison works
 
-Limits and usage are joined on the exact `project_id` and `model` strings. The Usage API reports dated model snapshots (for example `gpt-4o-mini-2024-07-18`), and the Rate Limits API contains that same snapshot string as its own row, so an exact-string join matches without any normalization.
+Limits and usage are joined on the exact `project_id`, but the `model` is **normalized** before joining: a trailing dated snapshot suffix (`-YYYY-MM-DD`) is stripped from both sides so that each model collapses to its base family. The Usage API reports per dated snapshot (for example `gpt-image-1-2025-04-23`, `omni-moderation-2024-09-26`), while the Rate Limits API often lists only the base family name (`gpt-image-1`, `omni-moderation`). Without normalization the dated usage row would find no matching limit and be dropped from the join, so the queries apply `REPLACE(<model>, "-[0-9]{4}-[0-9]{2}-[0-9]{2}$", "")` to align dated usage snapshots with base rate-limit names. When the Rate Limits API does report the dated snapshot as its own row, normalization simply collapses it onto the same base key as the family row.
 
 Utilization is computed as `usage / limit`, where usage is the **peak** value over the look-back window:
 
@@ -146,7 +146,7 @@ Audio is deliberately left out. OpenAI enforces an audio limit (`max_audio_megab
 
 > **Hard requirement:** the peak 1-minute calculation depends on the usage streams (`completions`, `embeddings`, `moderations`, ...) running with **`bucket_width: 1m`**. This is the default, but the value is user-editable — if it is changed to `1h` or `1d`, the headroom numbers will be wrong because a wider bucket smears per-minute peaks.
 
-> **Note on aggregation:** OpenAI returns identical limits for both the model family (`gpt-4o-mini`) and its dated snapshot (`gpt-4o-mini-2024-07-18`). Because these duplicate the same capacity, every headroom aggregation is driven off the usage side of the join (usage matches exactly one row). Do not sum limit rows independently, or capacity will be double-counted. Family rows with no matching usage appear as 0%-utilization rows.
+> **Note on aggregation:** OpenAI returns identical limits for both the model family (`gpt-4o-mini`) and its dated snapshot (`gpt-4o-mini-2024-07-18`). After normalization both collapse onto the same base `model` key, so the per-minute aggregation takes the limit as `MAX(...)` over the rows in each `project_id`/`model`/minute bucket. `MAX` (not `SUM`) is what prevents the duplicated family and snapshot limit rows from double-counting capacity — they report the same number, so the max equals either one. A base model that has a limit but no usage in the window appears as a 0%-utilization row.
 
 ### Org-wide rollup by model
 
