@@ -33,7 +33,7 @@ get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 4 -confirm 15s -timeout 5m
 cp stdout got_docs_before.json
 
 # Verify all 4 distinct event IDs are present.
-exec jq '[.hits.hits[]._source.o365.audit.Id] | sort | join(",")' got_docs_before.json
+exec jq '[.hits.hits[]._source.event.id] | sort | join(",")' got_docs_before.json
 stdout '"gen-event-001,gen-event-002,sp-event-001,sp-event-002"'
 
 # --- Simulate mid-collection restart (pod death) ---
@@ -54,7 +54,7 @@ get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 6 -confirm 15s -timeout 5m
 cp stdout got_docs_after.json
 
 # Verify all 6 distinct event IDs are present.
-exec jq '[.hits.hits[]._source.o365.audit.Id] | sort | join(",")' got_docs_after.json
+exec jq '[.hits.hits[]._source.event.id] | sort | join(",")' got_docs_after.json
 stdout '"gen-event-001,gen-event-002,gen-event-003,sp-event-001,sp-event-002,sp-event-003"'
 
 # Verify no duplicate documents indexed (fingerprint dedup on o365audit.Id).
