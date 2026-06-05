@@ -102,6 +102,10 @@ OpenAI's Usage API does not finalize a per-minute bucket the moment it ends — 
 
 > If usage metrics read lower than the OpenAI dashboard under high-volume bursts, increase the finalization grace period.
 
+#### Known limitation: residual undercount under high-volume bursts
+
+The finalization grace period eliminates the bulk of the undercount, but it cannot fully remove it. OpenAI's per-minute usage finalization is non-monotonic: during high-volume bursts a bucket's counts can continue to be revised upward for hours — beyond any fixed grace period. Because each bucket is ingested once and not re-fetched after it is treated as final, those late revisions are not reflected, so a small residual undercount (observed at a few percent of a single minute's volume) may remain for the busiest buckets. This does not affect the headroom dashboard's ability to flag over-limit conditions, since the gap is small relative to the limit. If you require usage counts that exactly match the OpenAI dashboard, prefer a larger bucket width (`1h` or `1d`), which OpenAI finalizes more stably than `1m`.
+
 ### Collection process
 
 With default settings (Interval: `5m`, Bucket width: `1m`, Initial interval: `24h`), the OpenAI integration follows this collection pattern:
