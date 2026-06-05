@@ -152,7 +152,7 @@
                                 "titlesTextSize": "xxs",
                                 "valueFontMode": "fit",
                                 "valuesTextSize": "xs",
-                                "primaryPosition": "top"
+                                "primaryPosition": "bottom"
                             },
                             "adHocDataViews": {
                                 "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
@@ -340,7 +340,7 @@
                                 "valueFontMode": "fit",
                                 "valuesTextSize": "xs",
                                 "titlesTextAlign": "left",
-                                "primaryPosition": "top"
+                                "primaryPosition": "bottom"
                             },
                             "adHocDataViews": {
                                 "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
@@ -1147,7 +1147,7 @@
                                     },
                                     "type": "palette"
                                 },
-                                "progressDirection": "horizontal",
+                                "progressDirection": "vertical",
                                 "showBar": true,
                                 "subtitle": "Avg",
                                 "secondaryMetricAccessor": "cpu_util_last",
@@ -1330,7 +1330,7 @@
                                     },
                                     "type": "palette"
                                 },
-                                "progressDirection": "horizontal",
+                                "progressDirection": "vertical",
                                 "showBar": true,
                                 "subtitle": "Avg",
                                 "secondaryMetricAccessor": "vol_util_last",
@@ -1512,7 +1512,7 @@
                                     },
                                     "type": "palette"
                                 },
-                                "progressDirection": "horizontal",
+                                "progressDirection": "vertical",
                                 "showBar": true,
                                 "subtitle": "Avg",
                                 "secondaryMetricAccessor": "mem_util_last",
@@ -2804,6 +2804,17 @@
                                                     }
                                                 },
                                                 {
+                                                    "columnId": "restarts",
+                                                    "customLabel": true,
+                                                    "fieldName": "restarts",
+                                                    "inMetricDimension": true,
+                                                    "label": "Container restarts",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
                                                     "columnId": "phase",
                                                     "customLabel": true,
                                                     "fieldName": "phase",
@@ -2870,22 +2881,11 @@
                                                             }
                                                         }
                                                     }
-                                                },
-                                                {
-                                                    "columnId": "restarts",
-                                                    "customLabel": true,
-                                                    "fieldName": "restarts",
-                                                    "inMetricDimension": true,
-                                                    "label": "Container restarts",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
-                                                    }
                                                 }
                                             ],
                                             "index": "940e9622ed5a553d64d70de28a6d22ade679d741e867ed5246ccd555c690adf4",
                                             "query": {
-                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.namespace.name IS NOT NULL\n  AND k8s.pod.name IS NOT NULL\n| STATS phase_num = LAST(k8s.pod.phase, CASE(k8s.pod.phase IS NOT NULL, @timestamp, NULL)),\n    node_name_values = VALUES(k8s.node.name),\n    cpu_usage = AVG(k8s.pod.cpu.usage),\n    mem_ws = AVG(k8s.pod.memory.working_set),\n    mem_limit_util = AVG(k8s.pod.memory_limit_utilization),\n    restarts = MAX(k8s.container.restarts),\n    last_seen = MAX(@timestamp)\n  BY k8s.pod.uid, k8s.pod.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| EVAL phase = CASE(\n    phase_num == 1, \"Pending\",\n    phase_num == 2, \"Running\",\n    phase_num == 3, \"Succeeded\",\n    phase_num == 4, \"Failed\",\n    phase_num == 5, \"Unknown\",\n    \"N/A\"\n  ),\n  k8s.node.name = MV_FIRST(node_name_values)\n| KEEP k8s.pod.name, k8s.node.name, restarts, phase, cpu_usage, mem_ws, mem_limit_util\n| SORT restarts DESC, k8s.pod.name ASC"
+                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.namespace.name IS NOT NULL\n  AND k8s.pod.name IS NOT NULL\n| STATS phase_num = LAST(k8s.pod.phase, CASE(k8s.pod.phase IS NOT NULL, @timestamp, NULL)),\n    node_name_values = VALUES(k8s.node.name),\n    cpu_usage = AVG(k8s.pod.cpu.usage),\n    mem_ws = AVG(k8s.pod.memory.working_set),\n    mem_limit_util = AVG(k8s.pod.memory_limit_utilization),\n    restarts = MAX(k8s.container.restarts),\n    last_seen = MAX(@timestamp)\n  BY k8s.pod.uid, k8s.pod.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| EVAL restarts = COALESCE(restarts, TO_LONG(0)),\n  phase = CASE(\n    phase_num == 1, \"Pending\",\n    phase_num == 2, \"Running\",\n    phase_num == 3, \"Succeeded\",\n    phase_num == 4, \"Failed\",\n    phase_num == 5, \"Unknown\",\n    \"Unknown\"\n  ),\n  k8s.node.name = MV_FIRST(node_name_values)\n| KEEP k8s.pod.name, k8s.node.name, restarts, phase, cpu_usage, mem_ws, mem_limit_util\n| SORT restarts DESC, k8s.pod.name ASC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2894,7 +2894,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.namespace.name IS NOT NULL\n  AND k8s.pod.name IS NOT NULL\n| STATS phase_num = LAST(k8s.pod.phase, CASE(k8s.pod.phase IS NOT NULL, @timestamp, NULL)),\n    node_name_values = VALUES(k8s.node.name),\n    cpu_usage = AVG(k8s.pod.cpu.usage),\n    mem_ws = AVG(k8s.pod.memory.working_set),\n    mem_limit_util = AVG(k8s.pod.memory_limit_utilization),\n    restarts = MAX(k8s.container.restarts),\n    last_seen = MAX(@timestamp)\n  BY k8s.pod.uid, k8s.pod.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| EVAL phase = CASE(\n    phase_num == 1, \"Pending\",\n    phase_num == 2, \"Running\",\n    phase_num == 3, \"Succeeded\",\n    phase_num == 4, \"Failed\",\n    phase_num == 5, \"Unknown\",\n    \"N/A\"\n  ),\n  k8s.node.name = MV_FIRST(node_name_values)\n| KEEP k8s.pod.name, k8s.node.name, restarts, phase, cpu_usage, mem_ws, mem_limit_util\n| SORT restarts DESC, k8s.pod.name ASC"
+                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.namespace.name IS NOT NULL\n  AND k8s.pod.name IS NOT NULL\n| STATS phase_num = LAST(k8s.pod.phase, CASE(k8s.pod.phase IS NOT NULL, @timestamp, NULL)),\n    node_name_values = VALUES(k8s.node.name),\n    cpu_usage = AVG(k8s.pod.cpu.usage),\n    mem_ws = AVG(k8s.pod.memory.working_set),\n    mem_limit_util = AVG(k8s.pod.memory_limit_utilization),\n    restarts = MAX(k8s.container.restarts),\n    last_seen = MAX(@timestamp)\n  BY k8s.pod.uid, k8s.pod.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| EVAL restarts = COALESCE(restarts, TO_LONG(0)),\n  phase = CASE(\n    phase_num == 1, \"Pending\",\n    phase_num == 2, \"Running\",\n    phase_num == 3, \"Succeeded\",\n    phase_num == 4, \"Failed\",\n    phase_num == 5, \"Unknown\",\n    \"Unknown\"\n  ),\n  k8s.node.name = MV_FIRST(node_name_values)\n| KEEP k8s.pod.name, k8s.node.name, restarts, phase, cpu_usage, mem_ws, mem_limit_util\n| SORT restarts DESC, k8s.pod.name ASC"
                             },
                             "visualization": {
                                 "columns": [
@@ -2993,6 +2993,21 @@
                                                         }
                                                     ],
                                                     "touched": false
+                                                },
+                                                {
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#D3DAE6"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "match",
+                                                            "pattern": "Unknown",
+                                                            "matchEntireWord": true,
+                                                            "matchCase": true
+                                                        }
+                                                    ],
+                                                    "touched": false
                                                 }
                                             ],
                                             "specialAssignments": [
@@ -3077,14 +3092,14 @@
                             "dashboardRefName": "dashboard_drilldown_kubernetes_otel-8c71876b-ee61-4bdf-b3a4-1abc848d9c33"
                         }
                     ],
-                    "description": "Lists pods in this namespace. Phase and restart counts use the latest values in the selected time range; CPU usage, memory working set, and memory limit utilization are averaged across the range. Sorted by container restarts so noisy pods appear first."
+                    "description": "Pods in this namespace, ranked by container restarts (highest first). Click a pod name to drill into pod details, or a node name to drill into node details. Phase reflects the latest collected value. Avg CPU usage, avg memory working set and avg memory limit utilization are averaged over the selected time range. Container restarts = sum across all containers over the selected time range."
                 },
                 "panelIndex": "ec26c2d2-35e5-49d5-b06d-bc2ac6a42637",
                 "gridData": {
-                    "y": 16,
+                    "y": 15,
                     "x": 0,
                     "w": 48,
-                    "h": 10,
+                    "h": 12,
                     "i": "ec26c2d2-35e5-49d5-b06d-bc2ac6a42637",
                     "sectionId": "f5a4bc3b-24af-4aba-a861-5a9e527d3975"
                 }
@@ -3171,7 +3186,7 @@
                     "y": 12,
                     "x": 8,
                     "w": 8,
-                    "h": 4,
+                    "h": 3,
                     "i": "c5fe5ddb-750c-4f2a-8d95-b01b37f62761",
                     "sectionId": "f5a4bc3b-24af-4aba-a861-5a9e527d3975"
                 }
@@ -3294,7 +3309,7 @@
                     "y": 12,
                     "x": 16,
                     "w": 8,
-                    "h": 4,
+                    "h": 3,
                     "i": "e45752b8-e38d-46a6-b059-68643dc64638",
                     "sectionId": "f5a4bc3b-24af-4aba-a861-5a9e527d3975"
                 }
@@ -3417,7 +3432,7 @@
                     "y": 12,
                     "x": 24,
                     "w": 8,
-                    "h": 4,
+                    "h": 3,
                     "i": "b51b8980-633d-4166-aa43-cda840524565",
                     "sectionId": "f5a4bc3b-24af-4aba-a861-5a9e527d3975"
                 }
@@ -3505,7 +3520,7 @@
                     "y": 12,
                     "x": 32,
                     "w": 8,
-                    "h": 4,
+                    "h": 3,
                     "i": "eb209566-4fe3-40a4-8fcd-cb062e44f507",
                     "sectionId": "f5a4bc3b-24af-4aba-a861-5a9e527d3975"
                 }
@@ -3562,42 +3577,7 @@
                                 "primaryAlign": "left",
                                 "primaryPosition": "top",
                                 "showBar": false,
-                                "applyColorTo": "value",
-                                "palette": {
-                                    "name": "custom",
-                                    "type": "palette",
-                                    "params": {
-                                        "colorStops": [
-                                            {
-                                                "color": "#24C292",
-                                                "stop": 0
-                                            },
-                                            {
-                                                "color": "#EE4C48",
-                                                "stop": 1
-                                            }
-                                        ],
-                                        "continuity": "above",
-                                        "maxSteps": 5,
-                                        "name": "custom",
-                                        "progression": "fixed",
-                                        "rangeMax": null,
-                                        "rangeMin": 0,
-                                        "rangeType": "number",
-                                        "reverse": false,
-                                        "steps": 3,
-                                        "stops": [
-                                            {
-                                                "color": "#24C292",
-                                                "stop": 1
-                                            },
-                                            {
-                                                "color": "#EE4C48",
-                                                "stop": 2
-                                            }
-                                        ]
-                                    }
-                                }
+                                "colorMode": "none"
                             },
                             "adHocDataViews": {
                                 "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
@@ -3627,7 +3607,7 @@
                     "y": 12,
                     "x": 40,
                     "w": 8,
-                    "h": 4,
+                    "h": 3,
                     "i": "v4-nsd-pods-unknown",
                     "sectionId": "f5a4bc3b-24af-4aba-a861-5a9e527d3975"
                 }
@@ -3714,7 +3694,7 @@
                     "y": 12,
                     "x": 0,
                     "w": 8,
-                    "h": 4,
+                    "h": 3,
                     "i": "v4-nsd-pods-total",
                     "sectionId": "f5a4bc3b-24af-4aba-a861-5a9e527d3975"
                 }

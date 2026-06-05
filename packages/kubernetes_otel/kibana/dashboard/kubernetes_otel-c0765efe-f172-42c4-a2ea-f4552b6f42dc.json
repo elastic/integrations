@@ -154,12 +154,31 @@
                                         "e1c39e8c-449e-4922-a824-654b1561c24b": {
                                             "columns": [
                                                 {
+                                                    "columnId": "42fa1747-9978-4bb3-9003-474a55c912ba",
+                                                    "fieldName": "k8s.namespace.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
                                                     "columnId": "k8s.cluster.name",
                                                     "fieldName": "k8s.cluster.name",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "restarts",
+                                                    "customLabel": true,
+                                                    "fieldName": "restarts",
+                                                    "inMetricDimension": true,
+                                                    "label": "Container restarts",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
                                                     }
                                                 },
                                                 {
@@ -278,30 +297,11 @@
                                                             }
                                                         }
                                                     }
-                                                },
-                                                {
-                                                    "columnId": "restarts",
-                                                    "customLabel": true,
-                                                    "fieldName": "restarts",
-                                                    "inMetricDimension": true,
-                                                    "label": "Container restarts",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "42fa1747-9978-4bb3-9003-474a55c912ba",
-                                                    "fieldName": "k8s.namespace.name",
-                                                    "meta": {
-                                                        "esType": "keyword",
-                                                        "type": "string"
-                                                    }
                                                 }
                                             ],
                                             "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                                             "query": {
-                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n| STATS\n    pod_name = MAX(k8s.pod.name),\n    deployment_name = MAX(k8s.deployment.name),\n    cpu_usage = MAX(k8s.pod.cpu.usage),\n    cpu_limit = MAX(k8s.container.cpu_limit),\n    mem_ws = MAX(k8s.pod.memory.working_set),\n    mem_limit = MAX(k8s.container.memory_limit),\n    vol_avail = MAX(k8s.volume.available),\n    vol_cap = MAX(k8s.volume.capacity),\n    container_restarts = MAX(k8s.container.restarts),\n    last_seen = MAX(@timestamp)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, k8s.container.name\n| INLINE STATS latest_ts = MAX(last_seen) BY k8s.cluster.name, k8s.namespace.name\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| STATS\n    pods = COUNT_DISTINCT(pod_name),\n    deployments = COUNT_DISTINCT(deployment_name),\n    cpu_usage = MAX(cpu_usage),\n    cpu_limit = MAX(cpu_limit),\n    mem_ws = MAX(mem_ws),\n    mem_limit = MAX(mem_limit),\n    vol_avail = MAX(vol_avail),\n    vol_cap = MAX(vol_cap),\n    restarts = SUM(container_restarts)\n  BY k8s.cluster.name, k8s.namespace.name\n| EVAL\n    cpu_limit_util = CASE(cpu_limit > 0, ROUND(cpu_usage / cpu_limit, 4), NULL),\n    mem_limit_util = CASE(mem_limit > 0, ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(mem_limit), 4), NULL),\n    disk_util = CASE(vol_cap > 0, ROUND(1.0 - TO_DOUBLE(vol_avail) / TO_DOUBLE(vol_cap), 4), NULL)\n| KEEP k8s.namespace.name, k8s.cluster.name, restarts, pods, deployments, cpu_usage, cpu_limit_util, mem_ws, mem_limit_util, disk_util\n| SORT restarts DESC"
+                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n| STATS\n    pod_name = MAX(k8s.pod.name),\n    deployment_name = MAX(k8s.deployment.name),\n    cpu_usage = AVG(k8s.pod.cpu.usage),\n    cpu_limit = AVG(k8s.container.cpu_limit),\n    mem_ws = AVG(k8s.pod.memory.working_set),\n    mem_limit = AVG(k8s.container.memory_limit),\n    vol_avail = LAST(k8s.volume.available, CASE(k8s.volume.available IS NOT NULL, @timestamp, NULL)),\n    vol_cap = LAST(k8s.volume.capacity, CASE(k8s.volume.capacity IS NOT NULL, @timestamp, NULL)),\n    container_restarts = LAST(k8s.container.restarts, CASE(k8s.container.restarts IS NOT NULL, @timestamp, NULL)),\n    last_seen = MAX(@timestamp)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, k8s.container.name, k8s.volume.name\n| INLINE STATS latest_ts = MAX(last_seen) BY k8s.cluster.name\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| STATS\n    pod_name = MAX(pod_name),\n    deployment_name = MAX(deployment_name),\n    pod_cpu_usage = MAX(cpu_usage),\n    pod_mem_ws = MAX(mem_ws),\n    pod_cpu_limit = SUM(cpu_limit),\n    pod_mem_limit = SUM(mem_limit),\n    pod_vol_avail = SUM(vol_avail),\n    pod_vol_cap = SUM(vol_cap),\n    pod_restarts = SUM(container_restarts)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid\n| STATS\n    pods = COUNT_DISTINCT(pod_name),\n    deployments = COUNT_DISTINCT(deployment_name),\n    cpu_usage = SUM(pod_cpu_usage),\n    cpu_limit = SUM(pod_cpu_limit),\n    mem_ws = SUM(pod_mem_ws),\n    mem_limit = SUM(pod_mem_limit),\n    vol_avail = SUM(pod_vol_avail),\n    vol_cap = SUM(pod_vol_cap),\n    restarts = SUM(pod_restarts)\n  BY k8s.cluster.name, k8s.namespace.name\n| EVAL\n    restarts = COALESCE(restarts, TO_LONG(0)),\n    cpu_usage = COALESCE(cpu_usage, 0.0),\n    mem_ws = COALESCE(mem_ws, 0.0),\n    cpu_limit_util = CASE(cpu_limit > 0, ROUND(cpu_usage / cpu_limit, 4), NULL),\n    mem_limit_util = CASE(mem_limit > 0, ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(mem_limit), 4), NULL),\n    disk_util = CASE(vol_cap > 0, ROUND(1.0 - TO_DOUBLE(vol_avail) / TO_DOUBLE(vol_cap), 4), NULL)\n| KEEP k8s.namespace.name, k8s.cluster.name, restarts, pods, deployments, cpu_usage, cpu_limit_util, mem_ws, mem_limit_util, disk_util\n| SORT restarts DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -311,7 +311,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n| STATS\n    pod_name = MAX(k8s.pod.name),\n    deployment_name = MAX(k8s.deployment.name),\n    cpu_usage = MAX(k8s.pod.cpu.usage),\n    cpu_limit = MAX(k8s.container.cpu_limit),\n    mem_ws = MAX(k8s.pod.memory.working_set),\n    mem_limit = MAX(k8s.container.memory_limit),\n    vol_avail = MAX(k8s.volume.available),\n    vol_cap = MAX(k8s.volume.capacity),\n    container_restarts = MAX(k8s.container.restarts),\n    last_seen = MAX(@timestamp)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, k8s.container.name\n| INLINE STATS latest_ts = MAX(last_seen) BY k8s.cluster.name, k8s.namespace.name\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| STATS\n    pods = COUNT_DISTINCT(pod_name),\n    deployments = COUNT_DISTINCT(deployment_name),\n    cpu_usage = MAX(cpu_usage),\n    cpu_limit = MAX(cpu_limit),\n    mem_ws = MAX(mem_ws),\n    mem_limit = MAX(mem_limit),\n    vol_avail = MAX(vol_avail),\n    vol_cap = MAX(vol_cap),\n    restarts = SUM(container_restarts)\n  BY k8s.cluster.name, k8s.namespace.name\n| EVAL\n    cpu_limit_util = CASE(cpu_limit > 0, ROUND(cpu_usage / cpu_limit, 4), NULL),\n    mem_limit_util = CASE(mem_limit > 0, ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(mem_limit), 4), NULL),\n    disk_util = CASE(vol_cap > 0, ROUND(1.0 - TO_DOUBLE(vol_avail) / TO_DOUBLE(vol_cap), 4), NULL)\n| KEEP k8s.namespace.name, k8s.cluster.name, restarts, pods, deployments, cpu_usage, cpu_limit_util, mem_ws, mem_limit_util, disk_util\n| SORT restarts DESC"
+                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*, metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n| STATS\n    pod_name = MAX(k8s.pod.name),\n    deployment_name = MAX(k8s.deployment.name),\n    cpu_usage = AVG(k8s.pod.cpu.usage),\n    cpu_limit = AVG(k8s.container.cpu_limit),\n    mem_ws = AVG(k8s.pod.memory.working_set),\n    mem_limit = AVG(k8s.container.memory_limit),\n    vol_avail = LAST(k8s.volume.available, CASE(k8s.volume.available IS NOT NULL, @timestamp, NULL)),\n    vol_cap = LAST(k8s.volume.capacity, CASE(k8s.volume.capacity IS NOT NULL, @timestamp, NULL)),\n    container_restarts = LAST(k8s.container.restarts, CASE(k8s.container.restarts IS NOT NULL, @timestamp, NULL)),\n    last_seen = MAX(@timestamp)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, k8s.container.name, k8s.volume.name\n| INLINE STATS latest_ts = MAX(last_seen) BY k8s.cluster.name\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) <= 5\n| STATS\n    pod_name = MAX(pod_name),\n    deployment_name = MAX(deployment_name),\n    pod_cpu_usage = MAX(cpu_usage),\n    pod_mem_ws = MAX(mem_ws),\n    pod_cpu_limit = SUM(cpu_limit),\n    pod_mem_limit = SUM(mem_limit),\n    pod_vol_avail = SUM(vol_avail),\n    pod_vol_cap = SUM(vol_cap),\n    pod_restarts = SUM(container_restarts)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid\n| STATS\n    pods = COUNT_DISTINCT(pod_name),\n    deployments = COUNT_DISTINCT(deployment_name),\n    cpu_usage = SUM(pod_cpu_usage),\n    cpu_limit = SUM(pod_cpu_limit),\n    mem_ws = SUM(pod_mem_ws),\n    mem_limit = SUM(pod_mem_limit),\n    vol_avail = SUM(pod_vol_avail),\n    vol_cap = SUM(pod_vol_cap),\n    restarts = SUM(pod_restarts)\n  BY k8s.cluster.name, k8s.namespace.name\n| EVAL\n    restarts = COALESCE(restarts, TO_LONG(0)),\n    cpu_usage = COALESCE(cpu_usage, 0.0),\n    mem_ws = COALESCE(mem_ws, 0.0),\n    cpu_limit_util = CASE(cpu_limit > 0, ROUND(cpu_usage / cpu_limit, 4), NULL),\n    mem_limit_util = CASE(mem_limit > 0, ROUND(TO_DOUBLE(mem_ws) / TO_DOUBLE(mem_limit), 4), NULL),\n    disk_util = CASE(vol_cap > 0, ROUND(1.0 - TO_DOUBLE(vol_avail) / TO_DOUBLE(vol_cap), 4), NULL)\n| KEEP k8s.namespace.name, k8s.cluster.name, restarts, pods, deployments, cpu_usage, cpu_limit_util, mem_ws, mem_limit_util, disk_util\n| SORT restarts DESC"
                             },
                             "visualization": {
                                 "columns": [
@@ -319,11 +319,13 @@
                                         "columnId": "42fa1747-9978-4bb3-9003-474a55c912ba",
                                         "isMetric": false,
                                         "isTransposed": false,
-                                        "oneClickFilter": true
+                                        "oneClickFilter": true,
+                                        "width": 220
                                     },
                                     {
                                         "columnId": "k8s.cluster.name",
-                                        "oneClickFilter": true
+                                        "oneClickFilter": true,
+                                        "width": 180
                                     },
                                     {
                                         "colorMode": "badge",
@@ -361,28 +363,36 @@
                                                 ]
                                             },
                                             "type": "palette"
-                                        }
+                                        },
+                                        "width": 132
                                     },
                                     {
-                                        "columnId": "pods"
+                                        "columnId": "pods",
+                                        "width": 72
                                     },
                                     {
-                                        "columnId": "deployments"
+                                        "columnId": "deployments",
+                                        "width": 108
                                     },
                                     {
-                                        "columnId": "cpu_usage"
+                                        "columnId": "cpu_usage",
+                                        "width": 112
                                     },
                                     {
-                                        "columnId": "cpu_limit_util"
+                                        "columnId": "cpu_limit_util",
+                                        "width": 138
                                     },
                                     {
-                                        "columnId": "mem_ws"
+                                        "columnId": "mem_ws",
+                                        "width": 142
                                     },
                                     {
-                                        "columnId": "mem_limit_util"
+                                        "columnId": "mem_limit_util",
+                                        "width": 176
                                     },
                                     {
-                                        "columnId": "disk_util"
+                                        "columnId": "disk_util",
+                                        "width": 112
                                     }
                                 ],
                                 "layerId": "e1c39e8c-449e-4922-a824-654b1561c24b",
@@ -402,7 +412,7 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Lists namespaces with latest pod and deployment counts, average resource usage/utilization, and current container restarts over the selected time range. Sorted by container restarts so noisy namespaces appear first.",
+                    "description": "Namespaces ranked by container restarts (highest first). Click a namespace name to drill into namespace details, or a cluster to drill into cluster details. Pod and deployment counts are latest values. Avg CPU usage, avg CPU limit utilization, avg memory working set and avg memory working set limit utilization are averaged over the selected time range. Disk utilization and container restarts reflect the latest collected values.",
                     "drilldowns": [
                         {
                             "dashboardRefName": "dashboard_drilldown_kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
@@ -423,10 +433,10 @@
                             "use_time_range": true
                         }
                     ],
-                    "title": "Namespaces"
+                    "title": ""
                 },
                 "gridData": {
-                    "h": 16,
+                    "h": 13,
                     "i": "e20403f7-7875-4e9a-ba5c-a7898601506a",
                     "w": 48,
                     "x": 0,
@@ -1441,7 +1451,7 @@
                 "collapsed": false,
                 "gridData": {
                     "i": "v3-ns-per-namespace-metrics",
-                    "y": 18
+                    "y": 15
                 },
                 "title": "Namespaces metrics"
             }
