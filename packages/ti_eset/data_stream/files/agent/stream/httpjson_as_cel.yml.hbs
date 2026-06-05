@@ -1,38 +1,41 @@
 interval: {{interval}}
-{{#if http_client_timeout}}
-resource.timeout: {{http_client_timeout}}
-{{/if}}
-resource.url: {{url}}
+request.method: "GET"
+request.url: {{url}}
 {{#if ssl}}
-resource.ssl: {{ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
 {{/if}}
 {{#if proxy_url}}
-resource.proxy_url: {{proxy_url}}
+request.proxy_url: {{proxy_url}}
 {{/if}}
-
-resource.tracer:
+request.tracer:
   enabled: {{enable_request_tracer}}
   filename: "../../logs/cel/http-request-trace-*.ndjson"
   maxbackups: 5
 
-state:
+run_as_cel: true
+
+cel.state:
   url: {{url}}
   username: {{username}}
   password: {{password}}
   page_size: {{page_size}}
   initial_interval: {{initial_interval}}
   want_more: false
-redact:
+
+cel.redact:
   fields:
     - username
     - password
 
-program: |
+cel.program: |-
   state.with({
     "added_after": state.?want_more.orValue(false) ?
       state.added_after
     :
-      state.?cursor.last_timestamp.orValue(
+      state.?cursor.timestamp.orValue(
         (now - duration(state.initial_interval)).format(time_layout.RFC3339)
       ),
   }).as(state, state.with(
@@ -59,7 +62,7 @@ program: |
           "added_after": resp.Header[?"X-Taxii-Date-Added-Last"][0].orValue(state.added_after),
           "want_more": body.?more.orValue(false) && size(objects) > 0,
           "cursor": {
-            "last_timestamp": resp.Header[?"X-Taxii-Date-Added-Last"][0].orValue(state.added_after),
+            "timestamp": resp.Header[?"X-Taxii-Date-Added-Last"][0].orValue(state.added_after),
           },
         })
       )
@@ -83,6 +86,7 @@ program: |
   ))
 
 tags:
+  - run_as_cel
 {{#if preserve_original_event}}
   - preserve_original_event
 {{/if}}
