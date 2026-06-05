@@ -2,11 +2,179 @@
 description: Pipeline for backstage audit logs
 processors:
 - set:
+    tag: set_ecs_version
     field: ecs.version
     value: '9.4.0'
-- user_agent:
-    tag: extract_user_agent
+- rename:
+    field: message
+    tag: rename_message_to_event_original
+    target_field: event.original
     ignore_missing: true
+    description: >-
+      Renames the original `message` field to `event.original` to store a copy of the original message.
+      The `event.original` field is not touched if the document already has one.
+    if: ctx.event?.original == null
+- remove:
+    field: message
+    tag: remove_message
+    ignore_missing: true
+    description: The `message` field is no longer required if the document has an `event.original` field.
+    if: ctx.event?.original != null
+- json:
+    field: event.original
+    target_field: json
+    tag: parse_event_original_json
+    if: ctx.event?.original != null
+- drop:
+    if: ctx.json.isAuditEvent == null
+    tag: drop_if_not_audit_event
+    description: >-
+      Drops messages that do not contain the isAuditEvent key
+- set:
+    field: event.category
+    value: 'api'
+    if: ctx.json.message == "catalog.entity"
+- date:
+    field: json.timestamp
+    target_field: '@timestamp'
+    formats:
+      - ISO8601
+    tag: extract_audit_timestamp
+    if: ctx.json?.timestamp != null
+- rename:
+    field: json.message
+    target_field: message
+    tag: rename_json_message
+- rename:
+    field: json.severityLevel
+    target_field: backstage.audit.severity_level
+    tag: rename_audit_severity_level
+- set:
+    field: event.severity
+    value: 3
+    if: 'ctx.backstage.audit?.severity_level == "low"'
+- set:
+    field: event.severity
+    value: 5
+    if: 'ctx.backstage.audit?.severity_level == "medium"'
+- set:
+    field: event.severity
+    value: 7
+    if: 'ctx.backstage.audit?.severity_level == "high"'
+- set:
+    field: event.type
+    value: 'access'
+    if: 'ctx.json.status == "initiated" && ctx.json.message == "catalog.entity-fetch"'
+- set:
+    field: event.action
+    value: "{{{message}}}:{{{json.status}}}"
+- rename:
+    field: json.plugin
+    target_field: event.module
+    tag: rename_json_plugin_to_event_module
+- rename:
+    field: json.eventId
+    target_field: event.code
+    ignore_missing: true
+    tag: rename_eventId
+- rename:
+    field: json.level
+    target_field: log.level
+    if: ctx.json?.level != null
+- uri_parts:
+    field: json.request.url
+    tag: decode_request_uri
+    description: Decode the path for the requested URL against backstage
+- rename:
+    field: json.actor.userAgent
+    target_field: user_agent.original
+    ignore_missing: true
+    tag: rename_actor_user_agent
+- user_agent:
+    field: user_agent.original
+    tag: actor_user_agent
+    ignore_missing: true
+    if: ctx.user_agent?.original != null
+- rename:
+    field: json.request.method
+    target_field: http.request.method
+    ignore_missing: true
+    tag: rename_http_request_method
+- append:
+    field: related.hosts
+    copy_from: json.actor.hostname
+    ignore_empty_values: true
+    description: Append the hostname of the actor who initiated the request to backstage to the related hostnames array
+    tag: append_request_hostname_ecs_related
+- append:
+    field: related.ip
+    copy_from: json.actor.ip
+    ignore_empty_values: true
+    description: Append the hostname of the actor who initiated the request to backstage to the related hostnames array
+    tag: append_request_hostname_ecs_related
+- remove:
+    field: json.timestamp
+    ignore_missing: true
+    tag: remove_json_timestamp
+- remove:
+    field: json.user_agent
+    ignore_missing: true
+    tag: remove_json_useragent
+- remove:
+    field: json.isAuditEvent
+    ignore_missing: true
+    tag: remove_json_isauditevent
+- remove:
+    field: json.request.url
+    ignore_missing: true
+    tag: remove_json_request
+- remove:
+    field: url.domain
+    ignore_missing: true
+    tag: remove_null_url_domain
+    if: ctx.url.domain == null
+- remove:
+    field: url.scheme
+    ignore_missing: true
+    tag: remove_null_url_scheme
+    if: ctx.url.scheme == null
+- remove:
+    field: json.request
+    ignore_missing: true
+    tag: remove_empty_json_request
+- remove:
+    field: json.actor.hostname
+    ignore_missing: true
+    tag: remove_json_actor_hostname
+- remove:
+    field: json.actor.ip
+    ignore_missing: true
+    tag: remove_json_actor_hostname
+- remove:
+    field: json.actor
+    ignore_missing: true
+    tag: remove_json_empty_actor
+    if: ctx.json?.actor?.size() == 0
+- remove:
+    field: json.message
+    ignore_missing: true
+    tag: remove_json_message
+- remove:
+    field: json.service
+    ignore_missing: true
+    tag: remove_json_service
+    description: >-
+      This field should have been removed at the filebeat level
+      because of OTEL conventions.
+- remove:
+    field: json.status
+    ignore_missing: true
+    tag: remove_json_status
+# TODO: See what we can do with meta data
+- remove:
+    field: json.meta
+    ignore_missing: true
+    tag: remove_json_status
 on_failure:
 - set:
     field: error.message
