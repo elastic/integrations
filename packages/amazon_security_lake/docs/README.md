@@ -86,6 +86,7 @@ This is the `Event` dataset.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
 | event.dataset | Event dataset. | constant_keyword |
 | event.message | Log message optimized for viewing in a log viewer. | text |
 | event.module | Event module. | constant_keyword |
@@ -2121,3 +2122,4 @@ This is the `Event` dataset.
 | process.user.full_name |  | keyword |
 | process.user.group.id |  | keyword |
 | process.user.group.name |  | keyword |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
