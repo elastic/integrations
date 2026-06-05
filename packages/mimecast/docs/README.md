@@ -324,6 +324,7 @@ An example event for `cloud_integrated` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -762,6 +763,13 @@ An example event for `siem` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
+| email.attachments.file.hash.md5 | MD5 hash. | keyword |
+| email.attachments.file.hash.sha1 | SHA1 hash. | keyword |
+| email.attachments.file.hash.sha256 | SHA256 hash. | keyword |
+| email.attachments.file.mime_type | The MIME media type of the attachment. This value will typically be extracted from the `Content-Type` MIME header field. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
+| email.attachments.file.size | Attachment file size in bytes. | long |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -981,6 +989,8 @@ An example event for `threat_intel_malware_customer` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -1099,6 +1109,8 @@ An example event for `threat_intel_malware_grid` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -1223,6 +1235,10 @@ An example event for `ttp_ap` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
+| email.attachments.file.hash.sha256 | SHA256 hash. | keyword |
+| email.attachments.file.mime_type | The MIME media type of the attachment. This value will typically be extracted from the `Content-Type` MIME header field. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |

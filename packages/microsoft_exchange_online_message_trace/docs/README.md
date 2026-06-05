@@ -292,6 +292,7 @@ An example event for `log` looks as following:
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.size | Attachment file size in bytes. | long |
 | event.dataset | Event dataset | constant_keyword |
 | input.type |  | keyword |
 | log.offset |  | long |
