@@ -97,7 +97,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
-### configure
+### Configure the integration
 
 1. In the top search bar in Kibana, search for **Integrations**.
 2. In the search bar, type **Workday**.

@@ -5,6 +5,21 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 9.3.0
+  - remove:
+      field:
+        - cloud.account.id
+        - cloud.availability_zone
+        - cloud.image.id
+        - cloud.instance.id
+        - cloud.instance.name
+        - cloud.machine.type
+        - cloud.provider
+        - cloud.region
+        - cloud.service.name
+        - host
+      tag: remove_agentless_fields
+      ignore_missing: true
+      if: ctx.input?.type == 'cel'
   - terminate:
       tag: data_collection_error
       description: error message set and no data to process.
@@ -90,6 +105,10 @@ processors:
       tag: set_device_type_from_activity_device_type
       copy_from: workday.activity.device_type
       ignore_empty_value: true
+  - lowercase:
+      field: device.type
+      tag: lowercase_device_type
+      ignore_missing: true
   - convert:
       field: json.ipAddress
       tag: convert_ipAddress_to_ip
@@ -162,6 +181,17 @@ processors:
       tag: rename_systemAccount
       target_field: workday.activity.system_account
       ignore_missing: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_activity_system_account
+      copy_from: workday.activity.system_account
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_activity_system_account_into_related_user
+      value: '{{{workday.activity.system_account}}}'
+      allow_duplicates: false
+      if: ctx.workday?.activity?.system_account != null
   - rename:
       field: json.target.descriptor
       tag: rename_target_descriptor
@@ -222,7 +252,8 @@ processors:
         - workday.activity.request_time
         - workday.activity.user_agent
         - workday.activity.device_type
-      tag: remove_custom_duplicate_fields
+        - workday.activity.system_account
+      tag: remove_activity_fields_mapped_with_ecs
       ignore_missing: true
   - remove:
       field:
@@ -271,7 +302,7 @@ on_failure:
       field: error.message
       value: |-
         Processor '{{{_ingest.on_failure_processor_type}}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind

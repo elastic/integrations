@@ -97,7 +97,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
-### configure
+### Configure the integration
 
 1. In the top search bar in Kibana, search for **Integrations**.
 2. In the search bar, type **Workday**.
@@ -151,18 +151,13 @@ For more information on architectures that can be used for scaling this integrat
 | input.type | Type of Filebeat input. | keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | workday.activity.activity_action | The type of action that was executed. | keyword |
-| workday.activity.device_type | The device type from the user signon used to make the request. | keyword |
-| workday.activity.ip_address | The user's IP Address from the user signon used to make the request. | ip |
-| workday.activity.request_time | The request time of the action. | date |
 | workday.activity.session_id | The system ID for tracking signons from the user signon used to make the request. | keyword |
-| workday.activity.system_account | The system account that initiated the request. | keyword |
 | workday.activity.target.descriptor | The display name of the instance. | keyword |
 | workday.activity.target.href | A link to the instance. | keyword |
 | workday.activity.target.id | Workday Id or Reference Id of the instance. | keyword |
 | workday.activity.task_display_name | The action executed in the transaction. | keyword |
 | workday.activity.task_id | The Workday ID of the task executed in the transaction. | keyword |
 | workday.activity.user_activity_entry_count | Returns the User Activity Count for the inputted filter parameters. | long |
-| workday.activity.user_agent | The client browser and operating system information from the user signon used to make this request. | keyword |
 
 
 ### Example event
@@ -175,25 +170,25 @@ An example event for `activity` looks as following:
 {
     "@timestamp": "2026-04-02T12:46:18.012Z",
     "agent": {
-        "ephemeral_id": "3149c1d9-b379-460e-bf10-90e69c7b3750",
-        "id": "69116729-7442-49c0-9b78-1cfb4c4af3d7",
-        "name": "elastic-agent-15391",
+        "ephemeral_id": "56b15ab2-aac3-4167-a87e-300667f9c510",
+        "id": "49c06832-6dd8-4eea-8c9d-702a4bcee941",
+        "name": "elastic-agent-15161",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "workday.activity",
-        "namespace": "38716",
+        "namespace": "58781",
         "type": "logs"
     },
     "device": {
-        "type": "Desktop"
+        "type": "desktop"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "69116729-7442-49c0-9b78-1cfb4c4af3d7",
+        "id": "49c06832-6dd8-4eea-8c9d-702a4bcee941",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -204,7 +199,7 @@ An example event for `activity` looks as following:
             "iam"
         ],
         "dataset": "workday.activity",
-        "ingested": "2026-06-01T13:19:31Z",
+        "ingested": "2026-06-05T11:40:39Z",
         "kind": "event",
         "original": "{\"activityAction\":\"READ\",\"deviceType\":\"Desktop\",\"ipAddress\":\"127.0.0.1\",\"requestTime\":\"2026-04-02T12:46:18.012Z\",\"sessionId\":\"c7c6ff\",\"systemAccount\":\"wd-implementer\",\"taskDisplayName\":\"privacy/activityLogging/userActivity (GET) (v1 -  )\",\"taskId\":\"e67b812850dc100047be196f396d745f\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\"}",
         "type": [
@@ -217,6 +212,9 @@ An example event for `activity` looks as following:
     "related": {
         "ip": [
             "127.0.0.1"
+        ],
+        "user": [
+            "wd-implementer"
         ]
     },
     "source": {
@@ -227,6 +225,9 @@ An example event for `activity` looks as following:
         "forwarded",
         "workday-activity"
     ],
+    "user": {
+        "name": "wd-implementer"
+    },
     "user_agent": {
         "device": {
             "name": "Other"
@@ -244,7 +245,6 @@ An example event for `activity` looks as following:
         "activity": {
             "activity_action": "READ",
             "session_id": "c7c6ff",
-            "system_account": "wd-implementer",
             "task_display_name": "privacy/activityLogging/userActivity (GET) (v1 -  )",
             "task_id": "e67b812850dc100047be196f396d745f"
         }

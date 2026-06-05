@@ -1,4 +1,3 @@
-config_version: 2
 interval: {{interval}}
 resource.tracer:
   enabled: {{enable_request_tracer}}
@@ -21,9 +20,13 @@ state:
   token_url:  https://{{hostname}}/ccx/oauth2/{{tenant}}/token
   initial_interval: {{initial_interval}}
   batch_size : {{batch_size}}
-  Offset: 0
+  offset: 0
 redact:
-  fields: ~
+  fields:
+    - client_id
+    - client_secret
+    - refresh_token
+    - cursor.access_token
 program: |-
   (
     state.?want_more.orValue(false) ?
@@ -54,15 +57,15 @@ program: |-
                 authResp.Body.decode_json().as(ao,
                   {
                     "ok": true,
-                    "access_token": string(ao.access_token),
+                    "access_token": ao.access_token,
                   }
                 )
               :
                 {
                   "ok": false,
                   "err_code": string(authResp.StatusCode),
-                  "err_status": string(authResp.Status),
-                  "err_body": (size(authResp.Body) != 0) ? string(authResp.Body) : string(authResp.Status),
+                  "err_status": authResp.Status,
+                  "err_body": (size(authResp.Body) != 0) ? string(authResp.Body) : authResp.Status,
                 }
             )
           :
@@ -86,13 +89,13 @@ program: |-
                 "access_token": "",
               },
               "want_more": false,
-              "Offset": 0,
+              "offset": 0,
             }
           :
             request(
               "GET",
               base_url + "/activityLogging?" + {
-                "offset": [string(state.Offset)],
+                "offset": [string(state.offset)],
                 "limit": [string(state.batch_size)],
                 "from": [string(state.start_time)],
                 "to": [string(state.end_time)],
@@ -107,14 +110,14 @@ program: |-
             ).do_request().as(resp,
               (resp.StatusCode == 200) ?
                 resp.Body.decode_json().as(body,
-                  (int(state.Offset) + body.data.size()).as(new_offset,
+                  (int(state.offset) + body.data.size()).as(new_offset,
                     (
                       body.data.size() > 0 && has(body.total) && new_offset < int(body.total)
                     ).as(has_more,
                       {
                         "events": body.data.map(e, {"message": e.encode_json()}),
                         "batch_size": state.batch_size,
-                        "Offset": has_more ? new_offset : 0,
+                        "offset": has_more ? new_offset : 0,
                         "want_more": has_more,
                         "cursor": {
                           "access_token": tok.access_token,
@@ -150,26 +153,32 @@ program: |-
                 )
               : (resp.StatusCode == 401) ?
                 {
-                  "events": [{"message": "retry"}],
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": resp.Status,
+                      "message": "GET " + base_url + "/activityLogging: token expired, retrying",
+                    },
+                  },
                   "cursor": {
                     ?"last_timestamp": state.?cursor.last_timestamp,
                     ?"max_ingested_time": state.?cursor.max_ingested_time,
                     "access_token": "",
                   },
                   "want_more": true,
-                  "Offset": state.Offset,
+                  "offset": state.offset,
                 }
               :
                 {
                   "events": {
                     "error": {
                       "code": string(resp.StatusCode),
-                      "id": string(resp.Status),
+                      "id": resp.Status,
                       "message": "GET " + base_url + "/activityLogging: " + (
                         (size(resp.Body) != 0) ?
                           string(resp.Body)
                         :
-                          string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                          resp.Status + " (" + string(resp.StatusCode) + ")"
                       ),
                     },
                   },
@@ -179,7 +188,7 @@ program: |-
                     "access_token": tok.access_token,
                   },
                   "want_more": false,
-                  "Offset": 0,
+                  "offset": 0,
                 }
             )
         )
