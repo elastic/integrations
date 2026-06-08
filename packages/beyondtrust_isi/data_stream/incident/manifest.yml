@@ -42,13 +42,13 @@ streams:
       - name: username
         type: text
         title: Username
-        description: If basic_auth is enabled, this is the username used for authentication against the HTTP listener. Requires password to also be set.
+        description: If Basic Authentication is enabled, this is the username used for authentication against the HTTP listener. It also requires the password to be set.
         required: false
         show_user: true
       - name: password
         type: password
         title: Password
-        description: If basic_auth is enabled, this is the password used for authentication against the HTTP listener. Requires username to also be set.
+        description: If Basic Authentication is enabled, this is the password used for authentication against the HTTP listener. It also requires the username to be set.
         required: false
         show_user: true
         secret: true
@@ -101,14 +101,6 @@ streams:
         type: bool
         multi: false
         default: false
-      - name: preserve_duplicate_custom_fields
-        required: true
-        show_user: false
-        title: Preserve duplicate custom fields
-        description: Preserve beyondtrust_isi.incident fields that were copied to Elastic Common Schema (ECS) fields.
-        type: bool
-        multi: false
-        default: false
       - name: processors
         type: yaml
         title: Processors
@@ -117,3 +109,12 @@ streams:
         show_user: false
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs HTTP requests to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-http_endpoint.html#_tracer_enabled_3) for details.

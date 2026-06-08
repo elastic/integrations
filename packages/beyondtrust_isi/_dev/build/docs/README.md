@@ -19,7 +19,7 @@ This integration collects incidents from BeyondTrust ISI using HTTP Endpoint and
 This integration collects events of the following type:
 
 - `Incidents`: Collects BeyondTrust ISI incidents using the **HTTP Endpoint**.
-- `Incidents`: BeyondTrust ISI incidents pushed directly to Elasticsearch via the **native Elastic integration**.
+- `Events`: BeyondTrust ISI incidents pushed directly to Elasticsearch via the **native Elastic integration**.
 
 ### Supported use cases
 
@@ -77,7 +77,7 @@ Then, in BeyondTrust ISI:
 
 The integration will appear under the **Configured** section. Changes to the Cloud ID or API Key may take up to two minutes to take effect.
 
-For more details, check Documentation for [HTTP Endpoint](https://docs.beyondtrust.com/insights/docs/webhooks) and [Native Elastic Push](https://docs.beyondtrust.com/insights/docs/elastic).
+For more details, check documentation for [HTTP Endpoint](https://docs.beyondtrust.com/insights/docs/webhooks) and [Native Elastic Push](https://docs.beyondtrust.com/insights/docs/elastic).
 
 ## How do I deploy this integration?
 
@@ -123,6 +123,6 @@ This is the `incident` dataset.
 
 ### Inputs used
 
-These inputs can be used in this integration:
+This input is used in the integration::
 
 - [HTTP Endpoint](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-http_endpoint)

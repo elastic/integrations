@@ -19,7 +19,7 @@ This integration collects incidents from BeyondTrust ISI using HTTP Endpoint and
 This integration collects events of the following type:
 
 - `Incidents`: Collects BeyondTrust ISI incidents using the **HTTP Endpoint**.
-- `Incidents`: BeyondTrust ISI incidents pushed directly to Elasticsearch via the **native Elastic integration**.
+- `Events`: BeyondTrust ISI incidents pushed directly to Elasticsearch via the **native Elastic integration**.
 
 ### Supported use cases
 
@@ -77,7 +77,7 @@ Then, in BeyondTrust ISI:
 
 The integration will appear under the **Configured** section. Changes to the Cloud ID or API Key may take up to two minutes to take effect.
 
-For more details, check Documentation for [HTTP Endpoint](https://docs.beyondtrust.com/insights/docs/webhooks) and [Native Elastic Push](https://docs.beyondtrust.com/insights/docs/elastic).
+For more details, check documentation for [HTTP Endpoint](https://docs.beyondtrust.com/insights/docs/webhooks) and [Native Elastic Push](https://docs.beyondtrust.com/insights/docs/elastic).
 
 ## How do I deploy this integration?
 
@@ -123,16 +123,14 @@ An example event for `incident` looks as following:
 {
     "@timestamp": "2026-04-20T07:14:08.000Z",
     "agent": {
-        "ephemeral_id": "beea11fb-4409-40d7-8179-d506e229a91d",
-        "id": "63860753-c265-4799-927f-6a2b78a8c288",
-        "name": "elastic-agent-25074",
+        "ephemeral_id": "9dc9de85-5d2b-4104-ada9-0076efa1ff2c",
+        "id": "3e45c8ae-a4f7-4598-9051-39b6cc53c5c3",
+        "name": "elastic-agent-19333",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "beyondtrust_isi": {
         "incident": {
-            "definition_id": "TEST_06c0e85f-390b-4967-9e23-b0b1630b9f6b",
-            "definition_summary": "TEST Account Associated With Personal Email Address",
             "entity_name": [
                 "TEST AccountOne@notgmail.com",
                 "TEST AccountTwo@nothotmail.com"
@@ -141,9 +139,7 @@ An example event for `incident` looks as following:
                 "TEST Account",
                 "TEST Account"
             ],
-            "incident_id": "TEST_70ca6c38-0175-435d-814a-a9121079c5e3",
             "incident_type": "Detection",
-            "link": "https://app.beyondtrust.io/insights/TEST_f34a35b0-b34a-43ca-ac31-1a2ee7db38c3/detections/details/TEST_06c0e85f-390b-4967-9e23-b0b1630b9f6b/instance/TEST_70ca6c38-0175-435d-814a-a9121079c5e3",
             "location": [
                 "okta_instance/https://test-fake.okta.com",
                 "okta_instance/https://another-test-fake.okta.com"
@@ -152,9 +148,7 @@ An example event for `incident` looks as following:
             "source": [
                 "https://test-fake.okta.com",
                 "https://another-test-fake.okta.com"
-            ],
-            "tenant_id": "TEST_f34a35b0-b34a-43ca-ac31-1a2ee7db38c3",
-            "timestamp": "2026-04-20T07:14:08.000Z"
+            ]
         }
     },
     "cloud": {
@@ -164,14 +158,14 @@ An example event for `incident` looks as following:
     },
     "data_stream": {
         "dataset": "beyondtrust_isi.incident",
-        "namespace": "86173",
+        "namespace": "53280",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "63860753-c265-4799-927f-6a2b78a8c288",
+        "id": "3e45c8ae-a4f7-4598-9051-39b6cc53c5c3",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -182,7 +176,7 @@ An example event for `incident` looks as following:
         ],
         "dataset": "beyondtrust_isi.incident",
         "id": "TEST_70ca6c38-0175-435d-814a-a9121079c5e3",
-        "ingested": "2026-04-24T11:43:14Z",
+        "ingested": "2026-06-06T10:56:54Z",
         "kind": "event",
         "original": "{\"definitionId\":\"TEST_06c0e85f-390b-4967-9e23-b0b1630b9f6b\",\"definitionSummary\":\"TEST Account Associated With Personal Email Address\",\"entityName\":\"TEST AccountOne@notgmail.com,TEST AccountTwo@nothotmail.com\",\"entityType\":\"TEST Account,TEST Account\",\"incidentId\":\"TEST_70ca6c38-0175-435d-814a-a9121079c5e3\",\"incidentType\":\"Detection\",\"link\":\"https://app.beyondtrust.io/insights/TEST_f34a35b0-b34a-43ca-ac31-1a2ee7db38c3/detections/details/TEST_06c0e85f-390b-4967-9e23-b0b1630b9f6b/instance/TEST_70ca6c38-0175-435d-814a-a9121079c5e3\",\"location\":\"okta_instance/https://test-fake.okta.com,okta_instance/https://another-test-fake.okta.com\",\"severity\":\"Medium\",\"source\":\"https://test-fake.okta.com,https://another-test-fake.okta.com\",\"tenantId\":\"TEST_f34a35b0-b34a-43ca-ac31-1a2ee7db38c3\",\"timestamp\":\"04/20/2026 07:14:08\"}",
         "severity": 47,
@@ -202,7 +196,6 @@ An example event for `incident` looks as following:
     },
     "tags": [
         "preserve_original_event",
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "beyondtrust_isi-incident"
     ]
@@ -240,6 +233,6 @@ An example event for `incident` looks as following:
 
 ### Inputs used
 
-These inputs can be used in this integration:
+This input is used in the integration::
 
 - [HTTP Endpoint](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-http_endpoint)
