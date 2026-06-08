@@ -100,27 +100,6 @@ sqs.notification_parsing_script.source: |
       }
     } else {
       // FDR queue
-      files.sort(function(a, b) {
-        var isMetadata = function(a) {
-          return a.path && ((a.path.indexOf("aidmaster") !== -1) || (a.path.indexOf("userinfo") !== -1));
-        };
-        var cmp = function(a, b) {
-          if (a < b) {
-            return -1;
-          }
-          if (a > b) {
-            return 1;
-          }
-          return 0;
-        };
-        if (isMetadata(a) === isMetadata(b)) {
-          return cmp(a.path, b.path);
-        }
-        if (isMetadata(a)) {
-          return -1;
-        }
-        return 1;
-      });
       files.forEach(function(f){
         var evt = new S3EventV2();
         evt.SetS3BucketName(bucket);
@@ -132,18 +111,18 @@ sqs.notification_parsing_script.source: |
   }
   function test() {
     // Test FDR queue
-    var fdrEvents = parse("{\"bucket\":\"fdrBucket\",\"files\":[{\"path\":\"prefix/aidmaster\",\"size\":89118480,\"checksum\":\"d0f566f37295e46f28c75f71ddce9422\"},{\"path\":\"prefix/data\"}]}");
+    var fdrEvents = parse("{\"bucket\":\"fdrBucket\",\"files\":[{\"path\":\"prefix/data\",\"size\":89118480,\"checksum\":\"d0f566f37295e46f28c75f71ddce9422\"},{\"path\":\"prefix/aidmaster\"}]}");
     if (fdrEvents.length !== 2) {
       throw "expecting two events";
     }
     if (fdrEvents[0].S3.Bucket.Name !== "fdrBucket") {
         throw "expected bucket === fdrBucket";
     }
-    if (fdrEvents[0].S3.Object.Key !== "prefix/aidmaster") {
-        throw "expected object key === prefix/aidmaster";
-    }
-    if (fdrEvents[1].S3.Object.Key !== "prefix/data") {
+    if (fdrEvents[0].S3.Object.Key !== "prefix/data") {
         throw "expected object key === prefix/data";
+    }
+    if (fdrEvents[1].S3.Object.Key !== "prefix/aidmaster") {
+        throw "expected object key === prefix/aidmaster";
     }
     // Test S3 -> SQS
     var sqsEvents = parse("{\"Records\":[{\"eventVersion\":\"2.1\",\"eventSource\":\"aws:s3\",\"awsRegion\":\"us-west-2\",\"eventTime\":\"2025-05-27T11:38:32.511Z\",\"eventName\":\"ObjectCreated:Put\",\"userIdentity\":{\"principalId\":\"AWS:DKASHW31673218\"},\"requestParameters\":{\"sourceIPAddress\":\"81.2.69.142\"},\"responseElements\":{\"x-amz-request-id\":\"adqw312EASDS\",\"x-amz-id-2\":\"SD312ESDAD/ASDASDQX1E21XE/6aeP0eHq4aYCvF\"},\"s3\":{\"s3SchemaVersion\":\"1.0\",\"configurationId\":\"test-sqs-cs-s3-evt-notif-sqs\",\"bucket\":{\"name\":\"test-sqs-cs-s3\",\"ownerIdentity\":{\"principalId\":\"321DSAVDW2E1\"},\"arn\":\"arn:aws:s3:::test-sqs-cs-s3\"},\"object\":{\"key\":\"fdr-sample.log\",\"size\":114782,\"eTag\":\"41cdbd1843a4c49ef0255e2ccd48cb9d\",\"sequencer\":\"006835A4387B4406AF\"}}}]}");
@@ -213,74 +192,6 @@ fields:
     enable_geoip_destination_ip: {{enable_geoip_destination_ip}}
 processors:
 - add_locale: ~
-{{#if enrich_metadata}}
-- decode_json_fields:
-    fields: message
-    target: crowdstrike
-- if:
-    contains:
-      log.file.path: aidmaster
-  then:
-    - cache:
-        backend:
-          capacity: {{metadata_cache_capacity}}
-          file:
-            id: aidmaster
-            write_interval: {{metadata_cache_write_interval}}
-        put:
-          ttl: {{metadata_ttl}}
-          key_field: crowdstrike.aid
-          value_field: crowdstrike
-          ignore_missing: true
-{{#unless keep_metadata}}
-    - drop_event:
-        when:
-          contains:
-            log.file.path: aidmaster
-{{/unless}}
-  else:
-    - if:
-        contains:
-          log.file.path: userinfo
-      then:
-        - cache:
-            backend:
-              capacity: {{metadata_cache_capacity}}
-              file:
-                id: userinfo
-                write_interval: {{metadata_cache_write_interval}}
-            put:
-              ttl: {{metadata_ttl}}
-              key_field: crowdstrike.UserSid_readable
-              value_field: crowdstrike
-              ignore_missing: true
-{{#unless keep_metadata}}
-        - drop_event:
-            when:
-              contains:
-                log.file.path: userinfo
-{{/unless}}
-      else:
-        - cache:
-            backend:
-              file:
-                id: aidmaster
-            get:
-              key_field: crowdstrike.aid
-              target_field: metadata.host
-              ignore_missing: true
-        - cache:
-            backend:
-              file:
-                id: userinfo
-            get:
-              key_field: crowdstrike.UserSid
-              target_field: metadata.user
-              ignore_missing: true
-- drop_fields:
-    fields:
-      - crowdstrike
-{{/if}}
 {{#if processors}}
 {{processors}}
 {{/if}}
