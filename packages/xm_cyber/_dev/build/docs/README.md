@@ -24,14 +24,22 @@ The XM Cyber integration collects the following types of data:
 
 | Data stream | Description | Endpoint |
 |---|---|---|
+| `audit_trail` | Audit Records | `/api/audit-trail/auditRecords` |
 | `vulnerability` | CVE records from XM Cyber's Vulnerability Risk Management (VRM) feed, including CVSS v2/v3/v4 scores, EPSS metrics, CISA KEV / in-the-wild exploitation flags, and per-CVE counts of devices, products, and critical assets at risk | `/api/v2/vrm/public/vulnerabilities` |
 
 ### Supported use cases
 
+- **Audit and compliance monitoring**: Track administrative and user activity within your XM Cyber tenant — including console logins, sensor scan results, and configuration changes — and correlate it with the rest of your security telemetry to support compliance reviews and incident investigations.
 - **Risk-based vulnerability prioritization**: Rank CVEs by CVSS impact, EPSS exploit probability, and CISA KEV / in-the-wild exploitation flags to focus remediation effort where it actually reduces business risk.
 - **Attack-path-aware exposure analysis**: Correlate detected CVEs with XM Cyber's attack-technique simulations to identify which vulnerabilities act as choke points or stepping stones to crown-jewel assets.
 
 ## What do I need to use this integration?
+
+### From Elastic
+
+This integration installs [Elastic latest transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview). For more details, check the [Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup) setup and requirements.
+
+### From XM Cyber
 
 - **XM Cyber tenant**: An active XM Cyber deployment with access to `https://<your-org>.clients.xmcyber.com`
 - **API key**: An XM Cyber API key associated with a user holding at minimum the **Security Analyst** role. Create one in **Settings → API / Integrations** in your XM Cyber admin console (refer to the XM Cyber customer portal at https://customers.xmcyber.com for current navigation steps)
@@ -68,6 +76,20 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 1. In the top search bar in Kibana, search for **Dashboards**.
 2. In the search bar, type **XM Cyber**, and verify the dashboard information is populated.
 
+#### Transforms healthy
+
+1. In the top search bar in Kibana, search for **Transforms**.
+2. Select the **Data / Transforms** from the search results.
+3. In the search bar, type **XM Cyber**.
+4. All transforms from the search results should indicate **Healthy** under the **Health** column.
+
+An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for each data stream, to provide a view of the most recent, active XM Cyber data. Use the relevant destination alias from the table below to access the latest data, whether for use in dashboards, rules, or elsewhere.
+Destinations indices are aliased to `logs-xm_cyber_latest.<data_stream_name>`.
+
+| Source Data stream                 | Destination Index Pattern                        | Destination Alias                       |
+|:-----------------------------------|:-------------------------------------------------|-----------------------------------------|
+| `logs-xm_cyber.vulnerability-*`           | `logs-xm_cyber_latest.dest_vulnerability-*`             | `logs-xm_cyber_latest.vulnerability`           |
+
 ## Scaling
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
@@ -81,6 +103,18 @@ For more information on architectures that can be used for scaling this integrat
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
 ## Reference
+
+### Audit Trail
+
+#### Audit Trail fields
+
+{{fields "audit_trail"}}
+
+### Example event
+
+#### Audit Trail
+
+{{event "audit_trail"}}
 
 ### Vulnerability
 
@@ -106,4 +140,9 @@ These XM Cyber REST API endpoints are used by this integration:
 |---|---|---|---|
 | `/api/auth` | POST | all | Exchange API key for Bearer access token |
 | `/api/refresh-token` | POST | all | Refresh an expired access token |
+| `/api/audit-trail/auditRecords` | GET | `audit_trail` | Audit Records |
 | `/api/v2/vrm/public/vulnerabilities` | GET | `vulnerabilities` | Paginated exposure rows (attack techniques / CVE context) |
+
+### ILM Policy
+
+To facilitate vulnerability data stream-backed indices `.ds-logs-xm_cyber.vulnerability-*` is allowed to contain duplicates from each polling interval. ILM policies `logs-xm_cyber.vulnerability-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.

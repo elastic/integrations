@@ -1,54 +1,53 @@
-title: Vulnerability
+title: Audit Trail
 type: logs
-ilm_policy: logs-xm_cyber.vulnerability-default_policy
 streams:
   - input: cel
-    title: Vulnerability
-    description: Collect Vulnerability logs from XM Cyber.
+    title: Audit Trail
+    description: Collect Audit Trail logs from XM Cyber.
     template_path: cel.yml.hbs
     vars:
       - name: interval
         type: text
-        title: Interval
-        description: How often to poll the XM Cyber Vulnerability API. Supported time units are s, m, h.
+        title: Polling interval
+        description: 'How often to poll the XM Cyber Audit Trail API. Supported time units: s, m, h.'
         required: true
         show_user: true
         default: 24h
       - name: page_size
         type: integer
         title: Page size
-        description: Number of vulnerability records to request per page. Must be between 1 and 100.
-        required: true
+        description: 'Number of audit records to request per page.'
+        required: false
         show_user: false
-        default: 100
+        default: 1000
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
-        description: Duration before the HTTP client request times out (e.g. 60s).
+        description: 'Duration before the HTTP client request times out (e.g. 60s).'
         required: true
         show_user: false
         default: 60s
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
-        description: Log HTTP request/response traces to the agent for debugging. Do not enable in production.
+        description: 'Log HTTP request/response traces to the agent for debugging. Do not enable in production.'
         required: false
         show_user: false
         default: false
       - name: tags
         type: text
         title: Tags
-        description: Tags to add to every collected event.
+        description: 'Tags to add to every collected event.'
         multi: true
         required: true
         show_user: true
         default:
           - forwarded
-          - xm_cyber-vulnerability
+          - xm_cyber-audit_trail
       - name: preserve_original_event
         type: bool
         title: Preserve original event
-        description: Keep a copy of the raw event in `event.original`.
+        description: 'Keep a copy of the raw event in `event.original`.'
         required: true
         show_user: true
         default: false

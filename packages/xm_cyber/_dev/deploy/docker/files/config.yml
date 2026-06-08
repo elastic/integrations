@@ -1,5 +1,5 @@
 rules:
-  # ----- Authentication -----
+  # Auth — X-Api-Key header
   - path: /api/auth
     methods: ['POST']
     request_headers:
@@ -12,12 +12,11 @@ rules:
         body: |-
           {{ minify_json `
           {
-            "accessToken": "mock-access-token-vuln",
-            "refreshToken": "mock-refresh-token-vuln"
+            "accessToken": "mock-access-token-abc123",
+            "refreshToken": "mock-refresh-token-xyz789"
           }
           `}}
-
-  # ----- Refresh-token -----
+  # Token refresh
   - path: /api/refresh-token
     methods: ['POST']
     request_headers:
@@ -32,8 +31,115 @@ rules:
         body: |-
           {{ minify_json `
           {
-            "accessToken": "mock-access-token-vuln-refreshed",
-            "refreshToken": "mock-refresh-token-vuln-refreshed"
+            "accessToken": "mock-access-token-refreshed-abc123",
+            "refreshToken": "mock-refresh-token-refreshed-xyz789"
+          }
+          `}}
+  # Page 2 — fetched via nextLink cursor=page2 (more specific match, must precede page 1)
+  - path: /api/audit-trail/auditRecords
+    methods: ['GET']
+    query_params:
+      cursor: 'page2'
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "_id": "643e75920104eb0010544582",
+                "details": "Sentinel-02 failed to perform domain scan",
+                "eventSubType": "SENSOR_SCAN_FAILED",
+                "eventType": "ACTIVE_DIRECTORY",
+                "objectName": "Corporate.xm",
+                "objectType": "DOMAIN",
+                "tenant": "acme",
+                "terminalId": {
+                  "hostname": "acme",
+                  "ip": "acme"
+                },
+                "timestamp": "2023-04-18T10:48:50.768Z",
+                "userId": {
+                  "name": "Automated"
+                }
+              }
+            ],
+            "paging": {
+              "page": 1,
+              "pageSize": 100,
+              "total": 3,
+              "totalPages": 2,
+              "nextLink": null
+            },
+            "metadata": {}
+          }
+          `}}
+  # Page 1 — initial full fetch (no cursor; only pageSize+sort)
+  - path: /api/audit-trail/auditRecords
+    methods: ['GET']
+    query_params:
+      pageSize: '100'
+      sort: '-timestamp'
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "_id": "643bd2b60104eb001054259c",
+                "details": "CorporateDC failed to perform domain scan",
+                "eventSubType": "SENSOR_SCAN_FAILED",
+                "eventType": "ACTIVE_DIRECTORY",
+                "objectName": "Corporate.xm",
+                "objectType": "DOMAIN",
+                "tenant": "acme",
+                "terminalId": {
+                  "hostname": "acme",
+                  "ip": "acme"
+                },
+                "timestamp": "2023-04-16T10:49:26.855Z",
+                "userId": {
+                  "name": "Automated"
+                }
+              },
+              {
+                "_id": "63b47e72ee320700106d4381",
+                "details": "john.doe@example.com Logged in via user",
+                "eventSubType": "XM_LOGIN",
+                "eventType": "ACCESS",
+                "objectName": "User",
+                "objectType": "USER",
+                "tenant": "acme",
+                "terminalId": {
+                  "hostname": "acme.clients.xmcyber.com",
+                  "ip": "192.0.2.0"
+                },
+                "timestamp": "2023-01-03T19:13:54.358Z",
+                "userId": {
+                  "email": "john.doe@example.com",
+                  "name": "John Doe"
+                }
+              }
+            ],
+            "paging": {
+              "page": 0,
+              "pageSize": 100,
+              "total": 3,
+              "totalPages": 2,
+              "nextLink": "/api/audit-trail/auditRecords?cursor=page2"
+            },
+            "metadata": {}
           }
           `}}
 
@@ -42,7 +148,7 @@ rules:
     query_params:
       pageSize: '2'
     request_headers:
-      Authorization: "Bearer mock-access-token-vuln"
+      Authorization: "Bearer mock-access-token-abc123"
     responses:
       - status_code: 200
         headers:
