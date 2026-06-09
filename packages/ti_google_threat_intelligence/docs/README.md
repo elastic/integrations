@@ -57,7 +57,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 - An API key will be used to authenticate your request.
 - **Time Selection of Initial Interval and Interval**:
   - Users need to specify the **initial interval** and **interval** in an hourly format, such as **2h**, **3h**, etc.
-**Note:** Please make sure both initial interval and interval are in hours and the initial interval is greater than 2 hours.
+**Note:** Threat-list packages are published hourly with a configurable availability delay (default `2h`). Set `initial_interval` and `interval` using hour units (for example `2h`, `3h`). The collector clamps requests to the latest available package hour.
 
 ### Enabling the integration in Elastic:
 
@@ -385,6 +385,7 @@ An example event for `cryptominer` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### First Stage Delivery Vectors
@@ -598,6 +599,7 @@ An example event for `first_stage_delivery_vectors` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Infostealers
@@ -811,6 +813,7 @@ An example event for `infostealer` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### IOC Stream
@@ -1342,6 +1345,7 @@ An example event for `ioc_stream` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Internet of Things
@@ -1555,6 +1559,7 @@ An example event for `iot` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Linux
@@ -1768,6 +1773,7 @@ An example event for `linux` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Malicious Network Infrastructure
@@ -1983,6 +1989,7 @@ An example event for `malicious_network_infrastructure` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Malware
@@ -2198,6 +2205,7 @@ An example event for `malware` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Mobile
@@ -2411,6 +2419,7 @@ An example event for `mobile` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### OS X
@@ -2624,6 +2633,7 @@ An example event for `osx` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Phishing
@@ -2837,6 +2847,7 @@ An example event for `phishing` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Ransomware
@@ -3050,6 +3061,7 @@ An example event for `ransomware` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Threat Actor
@@ -3263,6 +3275,7 @@ An example event for `threat_actor` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Daily Top trending
@@ -3476,6 +3489,7 @@ An example event for `trending` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Vulnerability Weaponization
@@ -3689,4 +3703,5 @@ An example event for `vulnerability_weaponization` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 

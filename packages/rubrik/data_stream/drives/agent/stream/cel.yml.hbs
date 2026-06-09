@@ -38,6 +38,9 @@ processors:
 
 state:
   index: 0
+  page_size: {{pageSize}}
+  filters:
+    {{filters}}
   queries:
     - |
         query AllClusterListQuery($first: Int, $after: String) {
@@ -78,21 +81,20 @@ program: |-
         "Body": {
           "query": state.queries[state.index],
           "variables": {
-              {{#if pageSize}}
-              "first": {{pageSize}},
-              {{/if}}
-              "after": has(state.cursor) ? state.cursor.after : null,
-              "filter": [
-                {{#if filters}}
-                  {{#each filters}}
-                    {
-                      "field": "{{field}}",
-                      "texts": [{{#each values}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}]
-                    }{{#unless @last}},{{/unless}}
-                  {{/each}}
-                {{/if}}
-              ]
-            }
+            ?"first": state.?page_size.orValue(null) != null ? optional.of(int(state.page_size)) : optional.none(),
+            "after": has(state.cursor) ? state.cursor.after : null,
+            "filter": (
+              state.?filters.orValue(null) == null ?
+                []
+              : type(state.filters) == list ?
+                state.filters
+              :
+                state.?filters.filter.orValue([])
+            ).map(f, {
+              "field": f.field,
+              "texts": f.?texts.or(f.?values).orValue([]),
+            }),
+          }
         }.encode_json(),
       }
     ).do_request().as(resp, (resp.StatusCode == 200) ?
