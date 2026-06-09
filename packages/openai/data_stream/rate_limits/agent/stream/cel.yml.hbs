@@ -115,6 +115,10 @@ program: |
                       "project_after": pbody.?last_id.orValue(""),
                       "projects_done": !more_projects,
                       "rl_after": more ? body.?last_id.orValue("") : "",
+                      // Advance next only when this project's rate-limit pages are exhausted (!more).
+                      // Advancing here is safe because the remaining projects from this project-list
+                      // page were already appended to worklist above; the DRAIN branch below will
+                      // visit them in subsequent evals. Advancing while more=true would skip pages.
                       "next": more ? int(state.?next.orValue(0)) : int(state.?next.orValue(0)) + 1,
                       "want_more": more || (int(state.?next.orValue(0)) + 1 < size(worklist)) || more_projects,
                     }

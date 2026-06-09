@@ -52,6 +52,9 @@ program: |
               "events": body.data.filter(bucket, bucket.end_time <= int(timestamp(now - duration(state.finalization_grace))))
                   .map(bucket, size(bucket.results) > 0 ? bucket.results.map(result, { "message": result.with({"start_time": bucket.start_time, "end_time": bucket.end_time }).encode_json() }) : [{}]).flatten()
               ,
+              // OpenAI returns buckets ascending by time, so not-yet-finalized (pending) buckets
+              // land on the last has_more page. last_bucket_start rewinds to the earliest pending
+              // bucket so they are re-fetched on the next poll. Correctness hinges on ascending order.
               "cursor": {
                 "last_bucket_start": size(body.data) == 0 ? state.?cursor.last_bucket_start : body.data.filter(bucket, bucket.end_time > int(timestamp(now - duration(state.finalization_grace)))).as(pending, size(pending) > 0 ? pending.map(bucket, bucket.start_time).min() : body.data.map(bucket, bucket.end_time).max()),
                 "last_bucket_end": size(body.data) > 0 ? body.data.map(bucket, bucket.end_time).max() : state.?cursor.last_bucket_end

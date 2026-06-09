@@ -47,8 +47,13 @@ processors:
       target_field: '@timestamp'
       formats:
         - ISO8601
-      ignore_failure: true
       if: ctx.openai?.rate_limits?.collected_at != null
+      on_failure:
+        - append:
+            field: tags
+            tag: append_date_collected_at_failure
+            value: _date_collected_at_parse_failure
+            allow_duplicates: false
   - set:
       field: event.created
       tag: set_event_created
