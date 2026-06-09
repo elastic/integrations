@@ -87,6 +87,8 @@ This is the `Event` dataset.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
+| email.attachments.file.size | Attachment file size in bytes. | long |
 | event.dataset | Event dataset. | constant_keyword |
 | event.message | Log message optimized for viewing in a log viewer. | text |
 | event.module | Event module. | constant_keyword |
