@@ -26,6 +26,25 @@ processors:
       if: ctx.ticura?.uuid == null
       ignore_failure: true
 
+  # ----- Normalize ECS array-typed fields -----
+  # event.category, event.type, and threat.indicator.id are defined in ECS as
+  # arrays, but Ticura may deliver them as scalars. `append` with an empty value
+  # list converts a scalar into a single-element array and is a no-op when the
+  # field is already an array, guaranteeing ECS-compliant array shape regardless
+  # of how the source delivered the value.
+  - append:
+      field: event.category
+      value: []
+      if: ctx.event?.category != null
+  - append:
+      field: event.type
+      value: []
+      if: ctx.event?.type != null
+  - append:
+      field: threat.indicator.id
+      value: []
+      if: ctx.threat?.indicator?.id != null
+
   - set:
       field: ecs.version
       value: '9.3.0'
