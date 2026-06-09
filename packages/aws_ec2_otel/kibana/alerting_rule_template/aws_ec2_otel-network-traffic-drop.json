@@ -1,0 +1,43 @@
+{
+    "id": "aws_ec2_otel-network-traffic-drop",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when both inbound and outbound network bytes are near zero, which may indicate a dead application even when status checks still pass.",
+        "name": "[AWS EC2 OTel] Network traffic drop",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws",
+            "ec2",
+            "otel"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## EC2 Network Traffic Drop\n\n### Meaning\nAn instance with near-zero network traffic may have a hung or crashed application while still passing EC2 status checks. This rule flags instances where both ingress and egress bytes are below the configured threshold.\n\n### Triage\n1. Verify the instance is expected to have network activity (exclude intentionally idle or stopped workloads).\n2. Check application health endpoints and process status on the instance.\n3. Compare against historical baseline — tune the byte threshold to avoid alerting on legitimately quiet instances.\n4. Review status check metrics — instance may need reboot if the application is unresponsive."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/EC2\"\n    AND attributes.MetricName IN (\"NetworkIn\", \"NetworkOut\")\n    AND attributes.stat == \"Sum\"\n| EVAL ec2_instance = CONCAT(attributes.InstanceId, \" (\", resource.attributes.cloud.region, \")\")\n| STATS\n    net_in = SUM(`metrics.amazonaws.com/AWS/EC2/NetworkIn`) WHERE attributes.MetricName == \"NetworkIn\",\n    net_out = SUM(`metrics.amazonaws.com/AWS/EC2/NetworkOut`) WHERE attributes.MetricName == \"NetworkOut\"\n  BY ec2_instance\n// Low-traffic threshold (bytes): tune to exclude legitimately idle instances\n| WHERE net_in < 1024 AND net_out < 1024\n| SORT net_in ASC\n| LIMIT 100"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "ec2_instance",
+            "termSize": 100,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
