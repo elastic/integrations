@@ -1,14 +1,22 @@
-# Test that restarting the agent mid-collection does not lose events.
+# Test that replacing the agent (full re-enrollment, no cursor carried over)
+# does not lose events.
 #
 # The mock API serves two content types (Audit.SharePoint and Audit.General),
 # each with two content blobs. After the first collection cycle produces 4
-# events, the agent is stopped (simulating a pod death mid-collection) and
-# restarted. On resume, the mock continues to return the same blobs.
+# events, the agent is destroyed and a new one is enrolled from scratch.
+# The new agent has no cursor state -- it re-collects from initial_interval.
+# The mock is swapped to include the original blobs plus new ones.
 #
 # The test verifies:
-# 1. All 4 original events survive the restart (deduplicated by _id/fingerprint).
-# 2. Post-restart collection produces 2 new events (from newly available blobs).
-# 3. Total event count is 6 (no skipped windows, no lost data).
+# 1. Original events are not duplicated (fingerprint dedup on o365audit.Id).
+# 2. New events arriving during the outage window are picked up.
+# 3. Total event count is 6: 4 original (deduplicated) + 2 new.
+#
+# NOTE: This does NOT test mid-drain cursor consistency (cursor.last_for
+# advancing ahead of todo_content). That scenario requires killing the
+# agent container while blobs are still queued and preserving the cursor
+# across restart -- which the script test infrastructure does not support
+# (uninstall_agent destroys the enrollment and cursor).
 
 [!external_stack] skip 'Skipping external stack test.'
 [!exec:jq] skip 'Skipping test requiring absent jq command'
@@ -36,18 +44,22 @@ cp stdout got_docs_before.json
 exec jq '[.hits.hits[]._source.event.id] | sort | join(",")' got_docs_before.json
 stdout '"gen-event-001,gen-event-002,sp-event-001,sp-event-002"'
 
-# --- Simulate mid-collection restart (pod death) ---
-# Stop and restart the agent. The cursor is persisted by Fleet, so on
-# restart the CEL program resumes from cursor.last_for and cursor.todo_content.
+# --- Simulate agent replacement (node rotation, pod eviction) ---
+# Destroy the agent entirely. The new agent will have no cursor state
+# and will re-collect from initial_interval.
 uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down o365-mock
 
 # Swap mock to phase 2: original blobs still available, plus new blobs.
-docker_down o365-mock
 cp o365-mock/config-phase2.yml o365-mock/config.yml
+
+# Install agent first so NETWORK_NAME is refreshed, then start the mock
+# on the agent's network so DNS resolution works.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
 docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} o365-mock
 
-# Reinstall agent (simulates pod restart with fresh agent connecting to Fleet).
-install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+# Re-assign the package policy so the new agent collects o365 data.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
 
 # Wait for 6 total events: 4 original (deduplicated) + 2 new.
 get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 6 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
