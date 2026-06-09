@@ -1,0 +1,49 @@
+{
+    "id": "aws_lambda_otel-throttling",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when a Lambda function is throttled due to concurrency limits. Throttles should be near zero in healthy environments.",
+        "name": "[AWS Lambda OTel] Throttling detected",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws",
+            "lambda",
+            "otel"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## Throttling Detected\n\n### Triage Steps\n1. Check `ConcurrentExecutions` and `UnreservedConcurrentExecutions` for the affected function.\n2. Review account-level and per-function reserved concurrency settings in AWS Console.\n3. Determine if traffic spiked or concurrency is pinned at the limit.\n4. Consider increasing reserved concurrency or optimizing function duration to free slots faster.\n5. Check for downstream slowness causing invocations to hold concurrency longer.\n\n### Escalation\nSustained throttling causes dropped requests — treat as a capacity incident."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/Lambda\"\n    AND attributes.MetricName == \"Throttles\"\n    AND attributes.stat == \"Sum\"\n| STATS total_throttles = SUM(`metrics.amazonaws.com/AWS/Lambda/Throttles`)\n  BY attributes.FunctionName, resource.attributes.cloud.region\n// Any throttling indicates concurrency exhaustion — target is zero\n| WHERE total_throttles > 0\n| EVAL function_id = CONCAT(attributes.FunctionName, \"/\", resource.attributes.cloud.region)\n| SORT total_throttles DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "function_id",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
