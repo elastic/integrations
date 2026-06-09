@@ -210,6 +210,50 @@
         - name: type
           type: flattened
           description: user type that determines the schema for the user's profile.
+        - name: factors
+          type: group
+          description: MFA factors enrolled for the user.
+          fields:
+            - name: id
+              type: keyword
+              description: The ID for the factor.
+            - name: factorType
+              type: keyword
+              description: Type of factor.
+            - name: provider
+              type: keyword
+              description: Factor provider.
+            - name: vendorName
+              type: keyword
+              description: Factor vendor name.
+            - name: status
+              type: keyword
+              description: Factor status.
+            - name: created
+              type: date
+              description: When the factor was created.
+            - name: lastUpdated
+              type: date
+              description: When the factor was last updated.
+            - name: profile
+              type: flattened
+              description: Factor profile details.
+        - name: devices
+          type: flattened
+          description: Devices enrolled for the user.
+        - name: supervises
+          type: group
+          description: Users supervised by (direct reports of) this user.
+          fields:
+            - name: user.id
+              type: keyword
+              description: The supervised user's ID.
+            - name: user.email
+              type: keyword
+              description: The supervised user's email address.
+            - name: user.name
+              type: keyword
+              description: The supervised user's login name.
     - name: groups
       type: group
       fields:
@@ -245,3 +289,18 @@
         - name: assignment_type
           type: keyword
           description: The Okta type the role is assigned to.
+        - name: role
+          type: keyword
+          description: The role definition ID for custom roles.
+        - name: permissions
+          type: group
+          fields:
+            - name: label
+              type: keyword
+              description: Permission label.
+            - name: created
+              type: date
+              description: When the permission was created.
+            - name: last_updated
+              type: date
+              description: When the permission was last updated.

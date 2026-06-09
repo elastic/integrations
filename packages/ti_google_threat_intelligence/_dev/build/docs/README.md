@@ -57,7 +57,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 - An API key will be used to authenticate your request.
 - **Time Selection of Initial Interval and Interval**:
   - Users need to specify the **initial interval** and **interval** in an hourly format, such as **2h**, **3h**, etc.
-**Note:** Please make sure both initial interval and interval are in hours and the initial interval is greater than 2 hours.
+**Note:** Threat-list packages are published hourly with a configurable availability delay (default `2h`). Set `initial_interval` and `interval` using hour units (for example `2h`, `3h`). The collector clamps requests to the latest available package hour.
 
 ### Enabling the integration in Elastic:
 
