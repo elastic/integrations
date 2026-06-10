@@ -1286,11 +1286,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Databases whose minimum `FreeStorageSpace.min` dropped below 5 GiB. Aurora instances have null FreeStorageSpace and are excluded.",
+          "description": "Databases whose lowest observed Average `FreeStorageSpace` dropped below 5 GiB. Aurora instances have null FreeStorageSpace and are excluded.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Databases whose minimum `FreeStorageSpace.min` dropped below 5 GiB. Aurora instances have null FreeStorageSpace and are excluded.",
+            "description": "Databases whose lowest observed Average `FreeStorageSpace` dropped below 5 GiB. Aurora instances have null FreeStorageSpace and are excluded.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1877,11 +1877,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Sum across all (non-Aurora) databases of minimum `FreeStorageSpace.min` in GB.",
+          "description": "Sum across all (non-Aurora) databases of each database's lowest observed Average `FreeStorageSpace`, in GiB.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Sum across all (non-Aurora) databases of minimum `FreeStorageSpace.min` in GB.",
+            "description": "Sum across all (non-Aurora) databases of each database's lowest observed Average `FreeStorageSpace`, in GiB.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1892,13 +1892,13 @@
                     "layer-kpi-net-out": {
                       "index": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL DBInstanceIdentifier = attributes.DBInstanceIdentifier | WHERE LENGTH(TO_STRING(DBInstanceIdentifier)) > 0 | STATS total_storage = SUM(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/FreeStorageSpace`, NULL)) / 1073741824.0"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL DBInstanceIdentifier = attributes.DBInstanceIdentifier | WHERE LENGTH(TO_STRING(DBInstanceIdentifier)) > 0 | STATS f_storage = MIN(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/FreeStorageSpace`, NULL)) BY DBInstanceIdentifier | STATS total_storage = SUM(f_storage) / 1073741824.0"
                       },
                       "columns": [
                         {
                           "columnId": "col-kpi-net-out",
                           "fieldName": "total_storage",
-                          "label": "Total free storage (GB)",
+                          "label": "Total free storage (GiB)",
                           "customLabel": true,
                           "meta": {
                             "type": "number",
@@ -1921,7 +1921,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL DBInstanceIdentifier = attributes.DBInstanceIdentifier | WHERE LENGTH(TO_STRING(DBInstanceIdentifier)) > 0 | STATS total_storage = SUM(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/FreeStorageSpace`, NULL)) / 1073741824.0"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL DBInstanceIdentifier = attributes.DBInstanceIdentifier | WHERE LENGTH(TO_STRING(DBInstanceIdentifier)) > 0 | STATS f_storage = MIN(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/FreeStorageSpace`, NULL)) BY DBInstanceIdentifier | STATS total_storage = SUM(f_storage) / 1073741824.0"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-out",
@@ -2301,11 +2301,11 @@
       {
         "type": "vis",
         "embeddableConfig": {
-          "title": "Freeable memory (GB)",
-          "description": "Average minimum freeable memory in GB per database, 5-minute buckets (CloudWatch `FreeableMemory.min`).",
+          "title": "Freeable memory (GiB)",
+          "description": "Average FreeableMemory in GiB per database, 5-minute buckets (CloudWatch Average statistic).",
           "attributes": {
-            "title": "Freeable memory (GB)",
-            "description": "Average minimum freeable memory in GB per database, 5-minute buckets (CloudWatch `FreeableMemory.min`).",
+            "title": "Freeable memory (GiB)",
+            "description": "Average FreeableMemory in GiB per database, 5-minute buckets (CloudWatch Average statistic).",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],

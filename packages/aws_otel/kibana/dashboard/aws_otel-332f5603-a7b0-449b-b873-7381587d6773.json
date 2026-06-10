@@ -1147,7 +1147,7 @@
                     "tbl-layer-tbl-instances": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName, ClusterName = attributes.ClusterName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 | STATS c_cpu_avg = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), c_cpu_max = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), c_mem_avg = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)), c_mem_max = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)), c_network_rx_mb = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/ECS/ContainerInsights/NetworkRxBytes`, NULL)) / 1048576.0, c_running_tasks = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/ECS/ContainerInsights/RunningTaskCount`, NULL)), c_bytes_mb = AVG(CASE(attributes.stat == \"Average\", COALESCE(`metrics.amazonaws.com/ECS/ContainerInsights/NetworkRxBytes`, 0.0) + COALESCE(`metrics.amazonaws.com/ECS/ContainerInsights/NetworkTxBytes`, 0.0), NULL)) / 1048576.0 BY ServiceName, ClusterName, cloud.region | EVAL c_state = CASE(c_cpu_max > 80 OR c_mem_max > 80, \"saturated\", c_cpu_max > 50 OR c_mem_max > 50, \"hot\", c_cpu_max < 5, \"idle\", \"healthy\"), c_state_sort = CASE(c_cpu_max > 80 OR c_mem_max > 80, 1, c_cpu_max > 50 OR c_mem_max > 50, 2, c_cpu_max < 5, 4, 3) | SORT c_state_sort ASC"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName, ClusterName = attributes.ClusterName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 | STATS c_cpu_avg = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), c_cpu_max = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), c_mem_avg = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)), c_mem_max = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)), c_new_conn = AVG(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), c_active_conn = AVG(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)), c_processed_bytes_mb = AVG(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ProcessedBytes`, NULL)) / 1048576.0 BY ServiceName, ClusterName, cloud.region | EVAL c_state = CASE(c_cpu_max > 80 OR c_mem_max > 80, \"saturated\", c_cpu_max > 50 OR c_mem_max > 50, \"hot\", c_cpu_max < 5, \"idle\", \"healthy\"), c_state_sort = CASE(c_cpu_max > 80 OR c_mem_max > 80, 1, c_cpu_max > 50 OR c_mem_max > 50, 2, c_cpu_max < 5, 4, 3) | SORT c_state_sort ASC"
                       },
                       "columns": [
                         {
@@ -1247,9 +1247,9 @@
                           "inMetricDimension": true
                         },
                         {
-                          "columnId": "c_network_rx_mb",
-                          "fieldName": "c_network_rx_mb",
-                          "label": "Avg new conns/min",
+                          "columnId": "c_new_conn",
+                          "fieldName": "c_new_conn",
+                          "label": "Avg new connections",
                           "customLabel": true,
                           "meta": {
                             "type": "number",
@@ -1258,8 +1258,8 @@
                           "inMetricDimension": true
                         },
                         {
-                          "columnId": "c_running_tasks",
-                          "fieldName": "c_running_tasks",
+                          "columnId": "c_active_conn",
+                          "fieldName": "c_active_conn",
                           "label": "Avg active conns",
                           "customLabel": true,
                           "meta": {
@@ -1269,9 +1269,9 @@
                           "inMetricDimension": true
                         },
                         {
-                          "columnId": "c_bytes_mb",
-                          "fieldName": "c_bytes_mb",
-                          "label": "Avg SC throughput (MiB/min)",
+                          "columnId": "c_processed_bytes_mb",
+                          "fieldName": "c_processed_bytes_mb",
+                          "label": "Avg processed bytes (MiB)",
                           "customLabel": true,
                           "meta": {
                             "type": "number",
@@ -1287,7 +1287,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName, ClusterName = attributes.ClusterName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 | STATS c_cpu_avg = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), c_cpu_max = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), c_mem_avg = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)), c_mem_max = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)), c_network_rx_mb = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/ECS/ContainerInsights/NetworkRxBytes`, NULL)) / 1048576.0, c_running_tasks = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/ECS/ContainerInsights/RunningTaskCount`, NULL)), c_bytes_mb = AVG(CASE(attributes.stat == \"Average\", COALESCE(`metrics.amazonaws.com/ECS/ContainerInsights/NetworkRxBytes`, 0.0) + COALESCE(`metrics.amazonaws.com/ECS/ContainerInsights/NetworkTxBytes`, 0.0), NULL)) / 1048576.0 BY ServiceName, ClusterName, cloud.region | EVAL c_state = CASE(c_cpu_max > 80 OR c_mem_max > 80, \"saturated\", c_cpu_max > 50 OR c_mem_max > 50, \"hot\", c_cpu_max < 5, \"idle\", \"healthy\"), c_state_sort = CASE(c_cpu_max > 80 OR c_mem_max > 80, 1, c_cpu_max > 50 OR c_mem_max > 50, 2, c_cpu_max < 5, 4, 3) | SORT c_state_sort ASC"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName, ClusterName = attributes.ClusterName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 | STATS c_cpu_avg = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), c_cpu_max = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), c_mem_avg = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)), c_mem_max = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)), c_new_conn = AVG(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), c_active_conn = AVG(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)), c_processed_bytes_mb = AVG(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ProcessedBytes`, NULL)) / 1048576.0 BY ServiceName, ClusterName, cloud.region | EVAL c_state = CASE(c_cpu_max > 80 OR c_mem_max > 80, \"saturated\", c_cpu_max > 50 OR c_mem_max > 50, \"hot\", c_cpu_max < 5, \"idle\", \"healthy\"), c_state_sort = CASE(c_cpu_max > 80 OR c_mem_max > 80, 1, c_cpu_max > 50 OR c_mem_max > 50, 2, c_cpu_max < 5, 4, 3) | SORT c_state_sort ASC"
               },
               "visualization": {
                 "columns": [
@@ -1416,17 +1416,17 @@
                     "isMetric": true
                   },
                   {
-                    "columnId": "c_network_rx_mb",
+                    "columnId": "c_new_conn",
                     "isTransposed": false,
                     "isMetric": true
                   },
                   {
-                    "columnId": "c_running_tasks",
+                    "columnId": "c_active_conn",
                     "isTransposed": false,
                     "isMetric": true
                   },
                   {
-                    "columnId": "c_bytes_mb",
+                    "columnId": "c_processed_bytes_mb",
                     "isTransposed": false,
                     "isMetric": true
                   }
@@ -1571,13 +1571,13 @@
                     "layer-kpi-net-in": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/ECS/ContainerInsights/NetworkRxBytes`, NULL) IS NOT NULL | STATS network_rx_mb = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/ECS/ContainerInsights/NetworkRxBytes`, NULL)) / 1048576.0 | KEEP network_rx_mb"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL | STATS new_conn = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)) | KEEP new_conn"
                       },
                       "columns": [
                         {
-                          "columnId": "network_rx_mb",
-                          "fieldName": "network_rx_mb",
-                          "label": "Network RX (sum)",
+                          "columnId": "new_conn",
+                          "fieldName": "new_conn",
+                          "label": "New connections (sum)",
                           "customLabel": true,
                           "meta": {
                             "type": "number",
@@ -1593,12 +1593,12 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/ECS/ContainerInsights/NetworkRxBytes`, NULL) IS NOT NULL | STATS network_rx_mb = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/ECS/ContainerInsights/NetworkRxBytes`, NULL)) / 1048576.0 | KEEP network_rx_mb"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL | STATS new_conn = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)) | KEEP new_conn"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-in",
                 "layerType": "data",
-                "metricAccessor": "network_rx_mb",
+                "metricAccessor": "new_conn",
                 "showBar": false,
                 "color": "#61a2ff00",
                 "colorMode": "background",
@@ -1606,7 +1606,7 @@
                 "primaryPosition": "top",
                 "titlesTextAlign": "left",
                 "primaryAlign": "left",
-                "label": "Network RX (sum)"
+                "label": "New connections (sum)"
               },
               "adHocDataViews": {
                 "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
@@ -1663,13 +1663,13 @@
                     "layer-kpi-net-out": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/ECS/ContainerInsights/RunningTaskCount`, NULL) IS NOT NULL | STATS running_tasks_avg = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/ECS/ContainerInsights/RunningTaskCount`, NULL)) | KEEP running_tasks_avg"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL | STATS active_conn_avg = AVG(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)) | KEEP active_conn_avg"
                       },
                       "columns": [
                         {
-                          "columnId": "running_tasks_avg",
-                          "fieldName": "running_tasks_avg",
-                          "label": "Running tasks (avg)",
+                          "columnId": "active_conn_avg",
+                          "fieldName": "active_conn_avg",
+                          "label": "Active connections (avg)",
                           "customLabel": true,
                           "meta": {
                             "type": "number",
@@ -1685,12 +1685,12 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/ECS/ContainerInsights/RunningTaskCount`, NULL) IS NOT NULL | STATS running_tasks_avg = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/ECS/ContainerInsights/RunningTaskCount`, NULL)) | KEEP running_tasks_avg"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL | STATS active_conn_avg = AVG(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)) | KEEP active_conn_avg"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-out",
                 "layerType": "data",
-                "metricAccessor": "running_tasks_avg",
+                "metricAccessor": "active_conn_avg",
                 "showBar": false,
                 "color": "#61a2ff00",
                 "colorMode": "background",
@@ -1698,7 +1698,7 @@
                 "primaryPosition": "top",
                 "titlesTextAlign": "left",
                 "primaryAlign": "left",
-                "label": "Running tasks (avg)"
+                "label": "Active connections (avg)"
               },
               "adHocDataViews": {
                 "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
@@ -1754,7 +1754,7 @@
                     "xy-layer-chart-net": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Average\", COALESCE(`metrics.amazonaws.com/ECS/ContainerInsights/NetworkRxBytes`, 0.0) + COALESCE(`metrics.amazonaws.com/ECS/ContainerInsights/NetworkTxBytes`, 0.0), NULL) IS NOT NULL | STATS col_bytes = AVG(CASE(attributes.stat == \"Average\", COALESCE(`metrics.amazonaws.com/ECS/ContainerInsights/NetworkRxBytes`, 0.0) + COALESCE(`metrics.amazonaws.com/ECS/ContainerInsights/NetworkTxBytes`, 0.0), NULL)) / 1048576.0 BY timestamp = BUCKET(@timestamp, 5 minutes), ServiceName | SORT timestamp ASC"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ProcessedBytes`, NULL) IS NOT NULL | STATS col_bytes = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ProcessedBytes`, NULL)) / 1048576.0 BY timestamp = BUCKET(@timestamp, 5 minutes), ServiceName | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -1789,7 +1789,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Average\", COALESCE(`metrics.amazonaws.com/ECS/ContainerInsights/NetworkRxBytes`, 0.0) + COALESCE(`metrics.amazonaws.com/ECS/ContainerInsights/NetworkTxBytes`, 0.0), NULL) IS NOT NULL | STATS col_bytes = AVG(CASE(attributes.stat == \"Average\", COALESCE(`metrics.amazonaws.com/ECS/ContainerInsights/NetworkRxBytes`, 0.0) + COALESCE(`metrics.amazonaws.com/ECS/ContainerInsights/NetworkTxBytes`, 0.0), NULL)) / 1048576.0 BY timestamp = BUCKET(@timestamp, 5 minutes), ServiceName | SORT timestamp ASC"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ProcessedBytes`, NULL) IS NOT NULL | STATS col_bytes = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ProcessedBytes`, NULL)) / 1048576.0 BY timestamp = BUCKET(@timestamp, 5 minutes), ServiceName | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -1857,11 +1857,11 @@
       {
         "type": "vis",
         "embeddableConfig": {
-          "title": "Network RX MiB (+) / running tasks (−)",
-          "description": "Network RX (top) and running tasks (bottom, mirrored) per service over time.",
+          "title": "New connections (+) / active connections (−)",
+          "description": "NewConnectionCount (top) and ActiveConnectionCount (bottom, mirrored) per service over time.",
           "attributes": {
-            "title": "Network RX MiB (+) / running tasks (−)",
-            "description": "Network RX (top) and running tasks (bottom, mirrored) per service over time.",
+            "title": "New connections (+) / active connections (−)",
+            "description": "NewConnectionCount (top) and ActiveConnectionCount (bottom, mirrored) per service over time.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1872,7 +1872,7 @@
                     "xy-layer-chart-disk": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/ECS/ContainerInsights/NetworkRxBytes`, NULL) IS NOT NULL | STATS col_network_rx_mb = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/ECS/ContainerInsights/NetworkRxBytes`, NULL)) / 1048576.0, col_running_tasks = -AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/ECS/ContainerInsights/RunningTaskCount`, NULL)) BY timestamp = BUCKET(@timestamp, 5 minutes), ServiceName | SORT timestamp ASC"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL | STATS col_new_conn = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), col_active_conn = -SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)) BY timestamp = BUCKET(@timestamp, 5 minutes), ServiceName | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -1891,8 +1891,8 @@
                           }
                         },
                         {
-                          "columnId": "col_network_rx_mb",
-                          "fieldName": "col_network_rx_mb",
+                          "columnId": "col_new_conn",
+                          "fieldName": "col_new_conn",
                           "meta": {
                             "type": "number",
                             "esType": "double"
@@ -1900,8 +1900,8 @@
                           "inMetricDimension": true
                         },
                         {
-                          "columnId": "col_running_tasks",
-                          "fieldName": "col_running_tasks",
+                          "columnId": "col_active_conn",
+                          "fieldName": "col_active_conn",
                           "meta": {
                             "type": "number",
                             "esType": "double"
@@ -1916,15 +1916,15 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/ECS/ContainerInsights/NetworkRxBytes`, NULL) IS NOT NULL | STATS col_network_rx_mb = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/ECS/ContainerInsights/NetworkRxBytes`, NULL)) / 1048576.0, col_running_tasks = -AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/ECS/ContainerInsights/RunningTaskCount`, NULL)) BY timestamp = BUCKET(@timestamp, 5 minutes), ServiceName | SORT timestamp ASC"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL | STATS col_new_conn = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), col_active_conn = -SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)) BY timestamp = BUCKET(@timestamp, 5 minutes), ServiceName | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
                   {
                     "layerId": "xy-layer-chart-disk",
                     "accessors": [
-                      "col_network_rx_mb",
-                      "col_running_tasks"
+                      "col_new_conn",
+                      "col_active_conn"
                     ],
                     "layerType": "data",
                     "seriesType": "line",
@@ -1935,11 +1935,11 @@
                     ],
                     "yConfig": [
                       {
-                        "forAccessor": "col_network_rx_mb",
+                        "forAccessor": "col_new_conn",
                         "color": "#54B399"
                       },
                       {
-                        "forAccessor": "col_running_tasks",
+                        "forAccessor": "col_active_conn",
                         "color": "#6092C0"
                       }
                     ]
@@ -2214,10 +2214,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Top 10 services by new connections",
-          "description": "Top 10 Fargate services ranked by total ApplicationELB NewConnectionCount (sum) over the dashboard time range.",
+          "description": "Top 10 Fargate services ranked by total ECS Service Connect NewConnectionCount (sum) over the dashboard time range.",
           "attributes": {
             "title": "Top 10 services by new connections",
-            "description": "Top 10 Fargate services ranked by total ApplicationELB NewConnectionCount (sum) over the dashboard time range.",
+            "description": "Top 10 Fargate services ranked by total ECS Service Connect NewConnectionCount (sum) over the dashboard time range.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2228,7 +2228,7 @@
                     "xy-layer-top10-ebswrite": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/NewConnectionCount`, NULL) IS NOT NULL | STATS total_new_conn = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/NewConnectionCount`, NULL)) BY ServiceName | SORT total_new_conn DESC | LIMIT 10"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL | STATS total_new_conn = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)) BY ServiceName | SORT total_new_conn DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -2257,7 +2257,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/NewConnectionCount`, NULL) IS NOT NULL | STATS total_new_conn = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/NewConnectionCount`, NULL)) BY ServiceName | SORT total_new_conn DESC | LIMIT 10"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL ServiceName = attributes.ServiceName | WHERE LENGTH(TO_STRING(ServiceName)) > 0 AND CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL | STATS total_new_conn = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)) BY ServiceName | SORT total_new_conn DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [

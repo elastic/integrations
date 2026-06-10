@@ -933,7 +933,7 @@
                             "esType": "double"
                           },
                           "inMetricDimension": true,
-                          "label": "Avg EBS read (MB)",
+                          "label": "Avg disk read (MiB)",
                           "customLabel": true
                         },
                         {
@@ -944,7 +944,7 @@
                             "esType": "double"
                           },
                           "inMetricDimension": true,
-                          "label": "Avg EBS write (MB)",
+                          "label": "Avg disk write (MiB)",
                           "customLabel": true
                         },
                         {
@@ -1256,7 +1256,7 @@
                         {
                           "columnId": "col-kpi-net-in",
                           "fieldName": "net_in",
-                          "label": "Total network in (GB/min)",
+                          "label": "Total network in (GiB)",
                           "customLabel": true,
                           "meta": {
                             "type": "number",
@@ -1341,13 +1341,13 @@
                     "layer-kpi-net-out": {
                       "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL InstanceId = attributes.InstanceId | WHERE LENGTH(TO_STRING(InstanceId)) > 0 AND LENGTH(TO_STRING(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL))) > 0 | STATS net_out = SUM(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL)) / 1073741824.0"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL InstanceId = attributes.InstanceId | WHERE LENGTH(TO_STRING(InstanceId)) > 0 AND LENGTH(TO_STRING(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL))) > 0 | STATS net_out = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL)) / 1073741824.0"
                       },
                       "columns": [
                         {
                           "columnId": "col-kpi-net-out",
                           "fieldName": "net_out",
-                          "label": "Total network out (GB/min)",
+                          "label": "Total network out (GiB)",
                           "customLabel": true,
                           "meta": {
                             "type": "number",
@@ -1363,7 +1363,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL InstanceId = attributes.InstanceId | WHERE LENGTH(TO_STRING(InstanceId)) > 0 AND LENGTH(TO_STRING(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL))) > 0 | STATS net_out = SUM(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL)) / 1073741824.0"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL InstanceId = attributes.InstanceId | WHERE LENGTH(TO_STRING(InstanceId)) > 0 AND LENGTH(TO_STRING(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL))) > 0 | STATS net_out = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL)) / 1073741824.0"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-out",
@@ -1545,10 +1545,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Disk read (+) / write (−) MiB/period",
-          "description": "Average EBS read and write byte rates per instance, MiB/period. Write series negated.",
+          "description": "Average EC2 disk read and write byte volume per instance, MiB/period. Write series negated.",
           "attributes": {
             "title": "Disk read (+) / write (−) MiB/period",
-            "description": "Average EBS read and write byte rates per instance, MiB/period. Write series negated.",
+            "description": "Average EC2 disk read and write byte volume per instance, MiB/period. Write series negated.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1891,11 +1891,11 @@
       {
         "type": "vis",
         "embeddableConfig": {
-          "title": "Top 10 instances by total EBS writes (GB)",
-          "description": "Top 10 EC2 instances ranked by cumulative EBSWriteBytes over the dashboard time range (gigabytes).",
+          "title": "Top 10 instances by total disk writes (GiB)",
+          "description": "Top 10 EC2 instances ranked by cumulative DiskWriteBytes over the dashboard time range (GiB).",
           "attributes": {
-            "title": "Top 10 instances by total EBS writes (GB)",
-            "description": "Top 10 EC2 instances ranked by cumulative EBSWriteBytes over the dashboard time range (gigabytes).",
+            "title": "Top 10 instances by total disk writes (GiB)",
+            "description": "Top 10 EC2 instances ranked by cumulative DiskWriteBytes over the dashboard time range (GiB).",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1924,7 +1924,7 @@
                             "esType": "double"
                           },
                           "inMetricDimension": true,
-                          "label": "Total EBS writes (GB)",
+                          "label": "Total disk writes (GiB)",
                           "customLabel": true
                         }
                       ],
