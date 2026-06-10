@@ -38,6 +38,9 @@ processors:
       target_field: '@timestamp'
       formats:
         - UNIX
+  - remove:
+      field: time
+      ignore_missing: true
 
   # Map DNS query fields to ECS
   - rename:
@@ -60,10 +63,25 @@ processors:
       field: client_name
       target_field: source.domain
       ignore_missing: true
+
+  # Map upstream to destination.address; extract IP and port when value is host#port
   - rename:
       field: upstream_name
-      target_field: destination.ip
+      target_field: destination.address
       ignore_missing: true
+      tag: rename_upstream_to_destination_address
+  - dissect:
+      field: destination.address
+      pattern: '%{destination.ip}#%{destination.port}'
+      ignore_missing: true
+      ignore_failure: true
+      tag: dissect_upstream_ip_port
+  - convert:
+      field: destination.port
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+      tag: convert_destination_port
 
   # Map Pi-hole specific fields
   - rename:
@@ -109,6 +127,12 @@ processors:
   - set:
       field: observer.type
       value: "dns"
+
+  # Remove debug marker left by CEL on logout failure
+  - remove:
+      field: _logout_failed
+      ignore_missing: true
+      tag: remove_logout_failed_marker
 
 on_failure:
   - set:

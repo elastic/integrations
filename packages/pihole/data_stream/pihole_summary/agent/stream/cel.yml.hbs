@@ -16,6 +16,7 @@ resource.timeout: {{http_client_timeout}}
 resource.url: {{url}}
 state:
   url: {{url}}
+  api_password: {{api_password}}
 redact:
   fields:
     - api_password
@@ -25,7 +26,7 @@ program: |
     state.url.trim_right("/") + "/api/auth",
     "application/json",
     {
-      "password": "{{api_password}}"
+      "password": state.api_password
     }.encode_json()
   ).do_request().as(auth_resp,
     auth_resp.StatusCode != 200 ?

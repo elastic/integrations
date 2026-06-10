@@ -1,6 +1,10 @@
 ---
 description: Pipeline for processing Pi-hole top clients statistics
 processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+      tag: set_ecs_version
   # Set event fields
   - set:
       field: event.kind
@@ -55,6 +59,10 @@ processors:
   - remove:
       field: error
       ignore_missing: true
+  - remove:
+      field: _logout_failed
+      ignore_missing: true
+      tag: remove_logout_failed_marker
 
 on_failure:
   - set:

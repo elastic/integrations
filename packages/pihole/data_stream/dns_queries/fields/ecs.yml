@@ -29,9 +29,15 @@
   type: group
   description: Destination information (upstream DNS server)
   fields:
-    - name: ip
+    - name: address
       type: keyword
-      description: Upstream DNS server that handled the query
+      description: Raw upstream value from Pi-hole (may include port suffix, e.g. 8.8.8.8#53, or non-IP values like cache or blocked)
+    - name: ip
+      type: ip
+      description: IP address of the upstream DNS server (extracted from destination.address when present)
+    - name: port
+      type: long
+      description: Port of the upstream DNS server (extracted from destination.address when present)
 - name: observer
   type: group
   description: Observer (Pi-hole) information

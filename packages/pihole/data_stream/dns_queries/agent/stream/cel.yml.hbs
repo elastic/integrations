@@ -16,15 +16,19 @@ resource.timeout: {{http_client_timeout}}
 resource.url: {{url}}
 state:
   url: {{url}}
+  api_password: {{api_password}}
   cursor:
     last_timestamp: 0.0
+redact:
+  fields:
+    - api_password
 program: |
   // Authenticate and collect queries in a single flow
   post_request(
     state.url.trim_right("/") + "/api/auth",
     "application/json",
     {
-      "password": "{{api_password}}"
+      "password": state.api_password
     }.encode_json()
   ).do_request().as(auth_resp,
     auth_resp.StatusCode != 200 ?

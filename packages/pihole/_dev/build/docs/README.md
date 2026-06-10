@@ -69,8 +69,11 @@ The integration uses timestamp-based pagination to avoid duplicate records:
 
 **Metrics Data Streams:**
 Query History, Pi-hole Summary, Top Clients, and Top Domains collect point-in-time snapshots at each collection interval:
-- Default collection interval: 5 minutes (configurable per data stream)
-- No pagination required - each collection captures the current state
+- Pi-hole Summary: 60s (default)
+- Query History: 10m (default)
+- Top Clients: 1h (default)
+- Top Domains: 1h (default)
+- No pagination required — each collection captures the current state
 - Query History provides 10-minute interval buckets for time-series analysis
 - Top Clients and Top Domains each collect top 10 allowed and top 10 blocked items per collection
 
@@ -106,7 +109,7 @@ The integration maps Pi-hole data to the Elastic Common Schema (ECS):
 | `reply_type` | `dns.response_code` | DNS response code |
 | `client_ip` | `source.ip` | Client IP address |
 | `client_name` | `source.domain` | Client hostname |
-| `upstream_name` | `destination.ip` | Upstream DNS server |
+| `upstream_name` | `destination.address` | Upstream DNS server (raw value; IP extracted to `destination.ip` when available) |
 | `time` | `@timestamp` | Query timestamp |
 
 #### Exported fields
