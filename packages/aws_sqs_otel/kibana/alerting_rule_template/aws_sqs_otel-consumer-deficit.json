@@ -1,0 +1,48 @@
+{
+    "id": "aws_sqs_otel-consumer-deficit",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when messages sent to a queue significantly exceed messages deleted in the evaluation window, indicating consumers are falling behind.",
+        "name": "[AWS SQS OTel] Consumer completion deficit",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws",
+            "aws-sqs"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## Consumer Completion Deficit\n\nWhen `NumberOfMessagesDeleted` persistently trails `NumberOfMessagesSent`, the queue is accumulating work. Delete rate is the truest measure of completed processing.\n\n### Triage Steps\n1. Check consumer count, CPU, and error rates — are workers healthy and scaled?\n2. Compare `NumberOfMessagesReceived` vs `NumberOfMessagesDeleted` — are messages received but not deleted (stuck in-flight)?\n3. Inspect `ApproximateNumberOfMessagesNotVisible` for in-flight saturation.\n4. Review recent deployments or config changes to consumer services.\n5. Check for poison messages cycling through visibility timeout without deletion.\n\n### Customisation\n- Tune `sent > 10` to require minimum traffic before evaluating (avoids idle-queue noise).\n- Tune `deficit > 10` to set the allowed gap between sent and deleted messages in the window.\n- For bursty workloads, increase `timeWindowSize` or `alertDelay` to tolerate short spikes."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/SQS\"\n    AND attributes.MetricName IN (\"NumberOfMessagesSent\", \"NumberOfMessagesDeleted\")\n    AND attributes.stat == \"Sum\"\n    AND attributes.QueueName NOT LIKE \"*-dlq\"\n| STATS\n    sent = SUM(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`) WHERE attributes.MetricName == \"NumberOfMessagesSent\",\n    deleted = SUM(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`) WHERE attributes.MetricName == \"NumberOfMessagesDeleted\"\n    BY attributes.QueueName, resource.attributes.cloud.region\n// Minimum traffic to avoid alerting on idle queues\n| WHERE sent > 10\n| EVAL deficit = sent - deleted\n// Tune: sustained completion gap (messages sent but not deleted in window)\n| WHERE deficit > 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "attributes.QueueName",
+            "termSize": 100,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
