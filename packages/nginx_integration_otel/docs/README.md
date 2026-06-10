@@ -91,7 +91,7 @@ location /server-status {
 
 ### Access and error log fields not parsed from raw log lines
 
-The fields `attributes.http.request.method`, `attributes.http.response.status_code`, `attributes.http.version`, `attributes.source.address`, `attributes.url.original`, and `attributes.user_agent.name` (access logs), and `attributes.log.level` and `attributes.process.pid` (error logs) are declared in the index mappings so Elasticsearch accepts and stores them correctly when they are present. However, these fields are **not populated today**. The `filelog_otel` input package is a generic log tailer: it emits the raw log line as `body.text` and `message` but does not parse the Nginx Combined Log Format or the Nginx error log format into OTel semantic conventions.
+Semantic fields such as `attributes.http.request.method`, `attributes.http.response.status_code`, `attributes.http.version`, `attributes.source.address`, `attributes.url.original`, and `attributes.user_agent.name` (access logs), or `attributes.log.level` and `attributes.process.pid` (error logs), are **not populated today**. The `filelog_otel` input package is a generic log tailer: it emits the raw log line as `body.text` and `message` but does not parse the Nginx Combined Log Format or the Nginx error log format into OTel semantic conventions. When these fields are eventually emitted, they will be dynamically mapped under the `attributes` passthrough provided by the OTel index templates.
 
 As a result, the **[Nginx OTel] Request Health** and **[Nginx OTel] Traffic & Capacity** dashboard panels that rely on these parsed fields (status code breakdowns, top URLs, client addresses, user agents, log levels) will be empty until the limitation is addressed upstream.
 
@@ -134,18 +134,9 @@ The `access` data stream collects Nginx HTTP access log lines from files matched
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| attributes.http.request.method | HTTP request method. | keyword |
-| attributes.http.response.status_code | HTTP response status code. | long |
-| attributes.http.version | HTTP protocol version. | keyword |
-| attributes.log.file.name | Log file name. | keyword |
-| attributes.source.address | Source IP address of the client. | keyword |
-| attributes.url.original | Original URL path as seen in the access log. | wildcard |
-| attributes.user_agent.name | Parsed user agent name. | keyword |
-| body.text | Raw log line as emitted by the OTel filelog receiver. | match_only_text |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| observed_timestamp | Timestamp when the log line was collected by the OTel receiver. | date |
 
 
 ##### access sample event
@@ -194,14 +185,9 @@ The `error` data stream collects Nginx error log lines from files matched by the
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| attributes.log.file.name | Log file name. | keyword |
-| attributes.log.level | Nginx error log severity level (e.g., warn, error, crit). | keyword |
-| attributes.process.pid | Process ID of the nginx worker that emitted the log entry. | long |
-| body.text | Raw log line as emitted by the OTel filelog receiver. | match_only_text |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| observed_timestamp | Timestamp when the log line was collected by the OTel receiver. | date |
 
 
 ##### error sample event
