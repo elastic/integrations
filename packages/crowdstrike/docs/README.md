@@ -10,7 +10,7 @@ For a demo, refer to the following video (click to view).
 
 ### Compatibility
 
-This integration is compatible with CrowdStrike Falcon SIEM Connector v2.0, REST API, and CrowdStrike Event Streams API.
+This integration is compatible with CrowdStrike Falcon SIEM Connector 2.29.0, REST API, and CrowdStrike Event Streams API.
 
 ### How it works
 
@@ -26,8 +26,9 @@ The integration collects data from multiple sources within CrowdStrike Falcon an
 
 2. **CrowdStrike REST API** — Pulls alerts, host inventory, and vulnerability data (indexed into the `alert`, `host`, and `vulnerability` datasets).
 
-    **Identity Protection (GraphQL)** — Additional datasets use the CrowdStrike Identity Protection **GraphQL** API (`/identity-protection/combined/graphql/v1`).:
+    **Identity Protection (GraphQL)** — Additional datasets use the CrowdStrike Identity Protection **GraphQL** API (`/identity-protection/combined/graphql/v1`).
     - **Security assessments** (`identity_protection_assessment`) — Discovers domains, then ingests per-domain security assessment results.
+    - **Timeline** (`identity_protection_timeline`) — Collects identity protection timeline events including authentication, service access, LDAP search, account lifecycle, and privilege escalation activity.
 
     :::{note}
     GovCloud CID users must enable the GovCloud option in the integration configuration to query the `/devices/queries/devices/v1` endpoint instead of the unsupported `/devices/combined/devices/v1` endpoint.
@@ -44,6 +45,7 @@ The integration collects data from multiple sources within CrowdStrike Falcon an
 - **Vulnerability** (vulnerability dataset)
 - **Identity Protection (GraphQL)**:
     - **Security assessments** (identity_protection_assessment dataset)
+    - **Timeline** (identity_protection_timeline dataset)
 
 ## What do I need to use this integration?
 
@@ -90,6 +92,7 @@ You can use the Falcon SIEM Connector as an alternative to the Event Streams API
 
 The following event types are supported for CrowdStrike Event Streams (whether you use the Falcon SIEM Connector or the Event Streams API):
 
+- AutomatedLeadSummaryEvent
 - CustomerIOCEvent
 - DataProtectionDetectionSummaryEvent
 - DetectionSummaryEvent
@@ -125,6 +128,7 @@ The following parameters from your CrowdStrike instance are required:
     | Host          | read:host     |
     | Vulnerability | read:vulnerability |
     | Identity protection assessment | read:Identity Protection Assessment, write:Identity Protection GraphQL |
+    | Identity protection timeline | read:Identity Protection Timeline, write:Identity Protection GraphQL |
 
 ### Collect data using CrowdStrike Falcon Data Replicator (FDR)
 
@@ -831,6 +835,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.device.external_ip |  | ip |
 | crowdstrike.alert.device.first_seen |  | date |
 | crowdstrike.alert.device.groups |  | keyword |
+| crowdstrike.alert.device.host_hidden_status |  | keyword |
 | crowdstrike.alert.device.hostinfo.active_directory_dn_display |  | keyword |
 | crowdstrike.alert.device.hostinfo.domain |  | keyword |
 | crowdstrike.alert.device.hostname |  | keyword |
@@ -860,6 +865,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.documents_accessed.timestamp |  | date |
 | crowdstrike.alert.email_sent |  | boolean |
 | crowdstrike.alert.end_time |  | date |
+| crowdstrike.alert.event_correlation_id |  | keyword |
 | crowdstrike.alert.event_id |  | keyword |
 | crowdstrike.alert.executables_written.filename |  | keyword |
 | crowdstrike.alert.executables_written.filepath |  | keyword |
@@ -919,8 +925,11 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.ioc_type |  | keyword |
 | crowdstrike.alert.ioc_value |  | keyword |
 | crowdstrike.alert.ioc_values |  | keyword |
+| crowdstrike.alert.is_closed |  | boolean |
 | crowdstrike.alert.is_synthetic_quarantine_disposition |  | boolean |
 | crowdstrike.alert.ldap_search_query_attack |  | long |
+| crowdstrike.alert.lead_id |  | keyword |
+| crowdstrike.alert.lead_type |  | keyword |
 | crowdstrike.alert.local_prevalence |  | keyword |
 | crowdstrike.alert.local_process_id |  | keyword |
 | crowdstrike.alert.location_country_code |  | keyword |
@@ -996,6 +1005,8 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.platform |  | keyword |
 | crowdstrike.alert.poly_id |  | keyword |
 | crowdstrike.alert.prevented |  | boolean |
+| crowdstrike.alert.prevention_policy_id |  | keyword |
+| crowdstrike.alert.prevention_policy_name |  | keyword |
 | crowdstrike.alert.process_end_time |  | date |
 | crowdstrike.alert.process_id |  | keyword |
 | crowdstrike.alert.process_start_time |  | date |
@@ -1014,6 +1025,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.rule_instance_version |  | keyword |
 | crowdstrike.alert.scan_id |  | keyword |
 | crowdstrike.alert.scenario |  | keyword |
+| crowdstrike.alert.score |  | long |
 | crowdstrike.alert.seconds_to_resolved |  | long |
 | crowdstrike.alert.seconds_to_triaged |  | long |
 | crowdstrike.alert.severity |  | long |
@@ -1021,6 +1033,9 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.sha1 |  | keyword |
 | crowdstrike.alert.sha256 |  | keyword |
 | crowdstrike.alert.show_in_ui |  | boolean |
+| crowdstrike.alert.signal_end_timestamp |  | date |
+| crowdstrike.alert.signal_start_timestamp |  | date |
+| crowdstrike.alert.signal_updated_timestamp |  | date |
 | crowdstrike.alert.source.account_azure_id |  | keyword |
 | crowdstrike.alert.source.account_domain |  | keyword |
 | crowdstrike.alert.source.account_name |  | keyword |
@@ -1037,6 +1052,8 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.source.endpoint_sensor_id |  | keyword |
 | crowdstrike.alert.source.ip_isp_classification |  | long |
 | crowdstrike.alert.source.ip_isp_domain |  | keyword |
+| crowdstrike.alert.source_hosts |  | keyword |
+| crowdstrike.alert.source_ips |  | keyword |
 | crowdstrike.alert.source_products |  | keyword |
 | crowdstrike.alert.source_vendors |  | keyword |
 | crowdstrike.alert.start_time |  | date |
@@ -1056,6 +1073,18 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.technique |  | keyword |
 | crowdstrike.alert.technique_id |  | keyword |
 | crowdstrike.alert.template_instance_id |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.description |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.display_name |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.host_id |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.hostname |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.indicator_id |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.indicator_type |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.pattern_disposition |  | long |
+| crowdstrike.alert.threatgraph_indicators.pattern_id |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.process_id |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.severity |  | long |
+| crowdstrike.alert.threatgraph_indicators.signal_association_timestamp |  | date |
+| crowdstrike.alert.threatgraph_indicators.template_instance_id |  | keyword |
 | crowdstrike.alert.timestamp |  | date |
 | crowdstrike.alert.tree_id |  | keyword |
 | crowdstrike.alert.tree_root |  | keyword |
@@ -1064,6 +1093,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.updated_timestamp |  | date |
 | crowdstrike.alert.user_id |  | keyword |
 | crowdstrike.alert.user_name |  | keyword |
+| crowdstrike.alert.user_names |  | keyword |
 | crowdstrike.alert.user_principal |  | keyword |
 | crowdstrike.alert.worker_node_name |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
@@ -1304,6 +1334,8 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.LMHostIDs | Array of host IDs seen to have experienced lateral movement because of the incident. | keyword |
 | crowdstrike.event.LateralMovement | Lateral movement field for incident. | long |
 | crowdstrike.event.LdapSearchQueryAttack | Detected LDAP tool attack. | keyword |
+| crowdstrike.event.LeadId | The ID given to the automated lead. | keyword |
+| crowdstrike.event.LeadType | The type of automated lead. | keyword |
 | crowdstrike.event.LoadedObjects | Provides one or more JSON objects describing the loaded objects related to the detection. | nested |
 | crowdstrike.event.LocalIP | IP address of the host associated with the detection. | keyword |
 | crowdstrike.event.LocalIPv6 |  | ip |
@@ -1425,11 +1457,15 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.ScheduledSearchId | Unique identifier of the associated scheduled search. | keyword |
 | crowdstrike.event.ScheduledSearchUserId | User ID of the user that created the the associated scheduled search. | keyword |
 | crowdstrike.event.ScheduledSearchUserUUID | UUID of the user that created the the associated scheduled search. | keyword |
+| crowdstrike.event.Score | The confidence score of the automated lead. Values range from 0 to 100. | long |
 | crowdstrike.event.SensorId | Unique ID associated with the Falcon sensor. | keyword |
 | crowdstrike.event.ServiceName | Description of which related service was involved in the event. | keyword |
 | crowdstrike.event.SessionId | Session ID of the remote response session. | keyword |
 | crowdstrike.event.Severity | The integer severity level using Crowdstrike scaling. | integer |
 | crowdstrike.event.SeverityName | The severity level of the detection, as a string (High/Medium/Informational). | keyword |
+| crowdstrike.event.SignalEndTimestamp | Timestamp of when the last indicator was added to the lead. | date |
+| crowdstrike.event.SignalStartTimestamp | Timestamp of when the first indicator was added to the lead. | date |
+| crowdstrike.event.SignalUpdatedTimestamp | The last time the lead was updated with new information or when it was closed. | date |
 | crowdstrike.event.SourceAccountUpn | Source user UPN. | keyword |
 | crowdstrike.event.SourceEndpointAccountObjectGuid | Source endpoint object GUID | keyword |
 | crowdstrike.event.SourceEndpointAccountObjectSid | Source endpoint object SID. | keyword |
@@ -1454,6 +1490,17 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.TargetEndpointHostName | Target endpoint hostname. | keyword |
 | crowdstrike.event.TargetEndpointSensorId | Target endpoint agent ID. | keyword |
 | crowdstrike.event.TargetServiceAccessIdentifier | Target SPN. | keyword |
+| crowdstrike.event.ThreatgraphIndicators.Description |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.DisplayName |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.HostId |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.Hostname |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.IndicatorId |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.PatternDisposition |  | long |
+| crowdstrike.event.ThreatgraphIndicators.PatternId |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.ProcessId |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.Severity |  | long |
+| crowdstrike.event.ThreatgraphIndicators.SignalAssociationTimestamp |  | date |
+| crowdstrike.event.ThreatgraphIndicators.TemplateInstanceId |  | keyword |
 | crowdstrike.event.Timestamp | Firewall rule triggered timestamp. | date |
 | crowdstrike.event.Trampolines | Provides one or more JSON objects describing the relevant functions and processes performing inline API hooks. | nested |
 | crowdstrike.event.TreeID | CrowdStrike tree id. | keyword |
@@ -1468,7 +1515,7 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.VerifiedBootState | Provides the device’s current boot state. | keyword |
 | crowdstrike.event.XdrType | Type of detection: xdr or xdr-scheduled-search. | keyword |
 | crowdstrike.metadata.customerIDString | Customer identifier | keyword |
-| crowdstrike.metadata.eventType | DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, or UserActivityAuditEvent | keyword |
+| crowdstrike.metadata.eventType | DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, UserActivityAuditEvent, or AutomatedLeadSummaryEvent | keyword |
 | crowdstrike.metadata.offset | Offset number that tracks the location of the event in stream. This is used to identify unique detection events. | integer |
 | crowdstrike.metadata.version | Schema version | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
@@ -2191,6 +2238,8 @@ An example event for `fdr` looks as following:
 | crowdstrike.LaunchItemType |  | match_only_text |
 | crowdstrike.LaunchItemUrl |  | match_only_text |
 | crowdstrike.LdapSearchFilterSample |  | match_only_text |
+| crowdstrike.LeadId |  | keyword |
+| crowdstrike.LeadType |  | keyword |
 | crowdstrike.LfoUploadFlags |  | keyword |
 | crowdstrike.LightningLatencyState |  | keyword |
 | crowdstrike.Line |  | keyword |
@@ -2251,6 +2300,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.ModuleSize |  | keyword |
 | crowdstrike.MountedVolumeAction |  | keyword |
 | crowdstrike.NDRoot |  | keyword |
+| crowdstrike.Name |  | keyword |
 | crowdstrike.NegateInterface |  | keyword |
 | crowdstrike.NegateLocalAddress |  | keyword |
 | crowdstrike.NegateRemoteAddress |  | keyword |
@@ -2505,6 +2555,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.SamAccountName |  | match_only_text |
 | crowdstrike.ScopeLevel |  | keyword |
 | crowdstrike.ScopeZone |  | keyword |
+| crowdstrike.Score |  | long |
 | crowdstrike.ScreenshotType |  | keyword |
 | crowdstrike.ScreenshotsTakenCount |  | long |
 | crowdstrike.ScriptContent |  | match_only_text |
@@ -2543,6 +2594,9 @@ An example event for `fdr` looks as following:
 | crowdstrike.ShareSecurity |  | keyword |
 | crowdstrike.ShareSecuritySddl |  | keyword |
 | crowdstrike.SignInfoFlags |  | keyword |
+| crowdstrike.SignalEndTimestamp |  | date |
+| crowdstrike.SignalStartTimestamp |  | date |
+| crowdstrike.SignalUpdatedTimestamp |  | date |
 | crowdstrike.SignatureErrorState |  | keyword |
 | crowdstrike.SignatureState |  | keyword |
 | crowdstrike.SiteName |  | keyword |
@@ -2630,6 +2684,17 @@ An example event for `fdr` looks as following:
 | crowdstrike.ThreadStartAddress |  | keyword |
 | crowdstrike.ThreadStartBytes |  | match_only_text |
 | crowdstrike.ThreadStartContext |  | keyword |
+| crowdstrike.ThreatgraphIndicators.Description |  | keyword |
+| crowdstrike.ThreatgraphIndicators.DisplayName |  | keyword |
+| crowdstrike.ThreatgraphIndicators.HostId |  | keyword |
+| crowdstrike.ThreatgraphIndicators.Hostname |  | keyword |
+| crowdstrike.ThreatgraphIndicators.IndicatorId |  | keyword |
+| crowdstrike.ThreatgraphIndicators.PatternDisposition |  | long |
+| crowdstrike.ThreatgraphIndicators.PatternId |  | keyword |
+| crowdstrike.ThreatgraphIndicators.ProcessId |  | keyword |
+| crowdstrike.ThreatgraphIndicators.Severity |  | long |
+| crowdstrike.ThreatgraphIndicators.SignalAssociationTimestamp |  | date |
+| crowdstrike.ThreatgraphIndicators.TemplateInstanceId |  | keyword |
 | crowdstrike.Timeout |  | long |
 | crowdstrike.TokenType |  | keyword |
 | crowdstrike.TotalCount |  | long |
@@ -3790,6 +3855,165 @@ An example event for `identity_protection_assessment` looks as following:
 | crowdstrike.idp.security_assessment.assessment_factors_nested.severity |  | keyword |
 | crowdstrike.idp.security_assessment.overall_score | Falcon Identity Protection overall score (0-1). | double |
 | crowdstrike.idp.security_assessment.overall_score_level | Qualitative level (e.g. LOW, MEDIUM, HIGH). | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | keyword |
+| observer.vendor | Vendor name of the observer. | keyword |
+
+
+
+### Identity Protection Timeline
+
+This is the `identity_protection_timeline` dataset.
+
+#### Example
+
+An example event for `identity_protection_timeline` looks as following:
+
+```json
+{
+    "@timestamp": "2026-02-20T12:05:14.000Z",
+    "agent": {
+        "ephemeral_id": "17a462db-747d-477c-856c-4153a3e17b58",
+        "id": "0931a3c6-d5bf-408e-9e60-f863df79a77b",
+        "name": "elastic-agent-76776",
+        "type": "filebeat",
+        "version": "8.19.0"
+    },
+    "crowdstrike": {
+        "idp": {
+            "timeline": {
+                "entity": {
+                    "accounts": [
+                        {
+                            "object_sid": "S-1-5-21-1819694714-1249303988-2979750736-1104",
+                            "sam_account_name": "DESKTOP-MF7IFEI$",
+                            "service_principal_names": [
+                                "TERMSRV/DESKTOP-MF7IFEI",
+                                "TERMSRV/DESKTOP-MF7IFEI.cresttest.local",
+                                "RestrictedKrbHost/DESKTOP-MF7IFEI",
+                                "HOST/DESKTOP-MF7IFEI",
+                                "RestrictedKrbHost/DESKTOP-MF7IFEI.cresttest.local",
+                                "HOST/DESKTOP-MF7IFEI.cresttest.local"
+                            ]
+                        }
+                    ],
+                    "secondary_display_name": "desktop-mf7ifei.cresttest.local",
+                    "type": "ENDPOINT"
+                },
+                "event_label": "Account Created"
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "crowdstrike.identity_protection_timeline",
+        "namespace": "43265",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "0931a3c6-d5bf-408e-9e60-f863df79a77b",
+        "snapshot": false,
+        "version": "8.19.0"
+    },
+    "event": {
+        "action": "ACCOUNT_CREATED",
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "dataset": "crowdstrike.identity_protection_timeline",
+        "end": "2026-02-20T12:05:14.000Z",
+        "id": "jppp54",
+        "ingested": "2026-05-20T09:23:34Z",
+        "kind": "event",
+        "original": "{\"endTime\":\"2026-02-20T12:05:14.000Z\",\"entity\":{\"accounts\":[{\"objectSid\":\"S-1-5-21-1819694714-1249303988-2979750736-1104\",\"samAccountName\":\"DESKTOP-MF7IFEI$\",\"servicePrincipalNames\":[\"TERMSRV/DESKTOP-MF7IFEI\",\"TERMSRV/DESKTOP-MF7IFEI.cresttest.local\",\"RestrictedKrbHost/DESKTOP-MF7IFEI\",\"HOST/DESKTOP-MF7IFEI\",\"RestrictedKrbHost/DESKTOP-MF7IFEI.cresttest.local\",\"HOST/DESKTOP-MF7IFEI.cresttest.local\"]}],\"primaryDisplayName\":\"DESKTOP-MF7IFEI\",\"secondaryDisplayName\":\"desktop-mf7ifei.cresttest.local\",\"type\":\"ENDPOINT\"},\"eventId\":\"jppp54\",\"eventLabel\":\"Account Created\",\"eventSeverity\":\"NEUTRAL\",\"eventType\":\"ACCOUNT_CREATED\",\"startTime\":\"2026-02-20T12:05:14.000Z\",\"timestamp\":\"2026-02-20T12:05:14.000Z\"}",
+        "severity": 21,
+        "start": "2026-02-20T12:05:14.000Z",
+        "type": [
+            "creation"
+        ]
+    },
+    "host": {
+        "hostname": "desktop-mf7ifei.cresttest.local",
+        "id": "S-1-5-21-1819694714-1249303988-2979750736-1104",
+        "name": "DESKTOP-MF7IFEI"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "hosts": [
+            "DESKTOP-MF7IFEI",
+            "desktop-mf7ifei.cresttest.local"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "crowdstrike-identity-protection-timeline"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| crowdstrike.idp.timeline.active_directory_site_name | If the activity is known to have occurred within an Active Directory site, this is set to the site's name. | keyword |
+| crowdstrike.idp.timeline.authentication_type | Vendor authentication mechanism. | keyword |
+| crowdstrike.idp.timeline.data_source_vendor_name | Name of the upstream identity. | keyword |
+| crowdstrike.idp.timeline.end_time | The event end time. For non-continuous events, its value is identical with startTime and timestamp. | date |
+| crowdstrike.idp.timeline.endpoint_display_name | A display-oriented label reflecting the best available display name for the origin endpoint. | keyword |
+| crowdstrike.idp.timeline.endpoint_entity.primary_display_name | The primary display name used to represent this endpoint in user-facing data. | keyword |
+| crowdstrike.idp.timeline.entity.accounts.object_sid | Active Directory objectSid string. | keyword |
+| crowdstrike.idp.timeline.entity.accounts.sam_account_name | sAMAccountName for the AD account. | keyword |
+| crowdstrike.idp.timeline.entity.accounts.service_principal_names | SPNs registered on the account. | keyword |
+| crowdstrike.idp.timeline.entity.primary_display_name | Primary display name for the directory object. | keyword |
+| crowdstrike.idp.timeline.entity.secondary_display_name | Qualified display form. | keyword |
+| crowdstrike.idp.timeline.entity.type | Entity kind from the vendor. | keyword |
+| crowdstrike.idp.timeline.event_id | A unique identifier for the event. | keyword |
+| crowdstrike.idp.timeline.event_label | The display name for the event. This is typically based on the event type, but may also depend on additional data, such as the event data source. | keyword |
+| crowdstrike.idp.timeline.event_severity | The event severity. Defaults to NEUTRAL. | keyword |
+| crowdstrike.idp.timeline.event_type | The event type. | keyword |
+| crowdstrike.idp.timeline.geo_location.city | City derived from GeoIP for ipAddress. | keyword |
+| crowdstrike.idp.timeline.geo_location.country | Country derived from GeoIP for ipAddress. | keyword |
+| crowdstrike.idp.timeline.host_name | The origin endpoint host name. | keyword |
+| crowdstrike.idp.timeline.ip_address | The origin endpoint IP address. | ip |
+| crowdstrike.idp.timeline.ip_address_reputations | Vendor IP reputation signals; exact shape depends on API schema. | keyword |
+| crowdstrike.idp.timeline.isp_classification | ISP or IP reputation category from vendor enrichment. | keyword |
+| crowdstrike.idp.timeline.isp_domain | ISP or organization domain string when provided. | keyword |
+| crowdstrike.idp.timeline.kerberos_encryption_types | Kerberos etypes offered or used. | keyword |
+| crowdstrike.idp.timeline.ldap_search_attributes | LDAP attributes requested in the search. | keyword |
+| crowdstrike.idp.timeline.ldap_search_filter_sample | Sampled LDAP filter text for the search. | keyword |
+| crowdstrike.idp.timeline.ldap_search_query_signatures | Vendor signatures classifying the LDAP query pattern. | keyword |
+| crowdstrike.idp.timeline.ldap_search_scope | LDAP search scope value. | keyword |
+| crowdstrike.idp.timeline.ldap_search_size_limit | LDAP size limit when provided. | long |
+| crowdstrike.idp.timeline.ldap_security_type | LDAP binding / security mode when relevant. | keyword |
+| crowdstrike.idp.timeline.network_tag | The subnet label, as defined in the system configuration, associated with the origin endpoint IP address at the time the activity was performed. | keyword |
+| crowdstrike.idp.timeline.network_type | The subnet type, as defined in the system configuration, associated with the origin endpoint IP address at the time the activity was performed. | keyword |
+| crowdstrike.idp.timeline.protocol_type | The primary network protocol used for performing the activity. | keyword |
+| crowdstrike.idp.timeline.protocol_version |  | keyword |
+| crowdstrike.idp.timeline.smb_dialect | SMB dialect when SMB was involved. | keyword |
+| crowdstrike.idp.timeline.start_time | An alias for the timestamp field. Use it in conjunction with endTime for continuous events. | date |
+| crowdstrike.idp.timeline.target_endpoint_entity.primary_display_name | Display name of the endpoint that was targeted. | keyword |
+| crowdstrike.idp.timeline.target_service_description | Longer description of the targeted service context. | keyword |
+| crowdstrike.idp.timeline.target_service_display_name | Human-readable name of the targeted service. | keyword |
+| crowdstrike.idp.timeline.target_service_identifier | Technical identifier for the targeted service. | keyword |
+| crowdstrike.idp.timeline.target_service_type | Enum or category for the targeted service. | keyword |
+| crowdstrike.idp.timeline.timestamp | The event start time. This is the primary sort-key in timeline queries. | date |
+| crowdstrike.idp.timeline.tls_version | TLS protocol version when the auth path used TLS. | keyword |
+| crowdstrike.idp.timeline.user_display_name | A display-oriented label of the best available display name for the user associated with this event. | keyword |
+| crowdstrike.idp.timeline.user_entity.email_addresses | The list of unique email addresses available for this entity from all known data sources. | keyword |
+| crowdstrike.idp.timeline.user_entity.primary_display_name | The primary display name representing this user in user-facing data. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
