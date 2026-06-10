@@ -10,7 +10,7 @@ For a demo, refer to the following video (click to view).
 
 ### Compatibility
 
-This integration is compatible with CrowdStrike Falcon SIEM Connector v2.0, REST API, and CrowdStrike Event Streams API.
+This integration is compatible with CrowdStrike Falcon SIEM Connector 2.29.0, REST API, and CrowdStrike Event Streams API.
 
 ### How it works
 
@@ -92,6 +92,7 @@ You can use the Falcon SIEM Connector as an alternative to the Event Streams API
 
 The following event types are supported for CrowdStrike Event Streams (whether you use the Falcon SIEM Connector or the Event Streams API):
 
+- AutomatedLeadSummaryEvent
 - CustomerIOCEvent
 - DataProtectionDetectionSummaryEvent
 - DetectionSummaryEvent
@@ -834,6 +835,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.device.external_ip |  | ip |
 | crowdstrike.alert.device.first_seen |  | date |
 | crowdstrike.alert.device.groups |  | keyword |
+| crowdstrike.alert.device.host_hidden_status |  | keyword |
 | crowdstrike.alert.device.hostinfo.active_directory_dn_display |  | keyword |
 | crowdstrike.alert.device.hostinfo.domain |  | keyword |
 | crowdstrike.alert.device.hostname |  | keyword |
@@ -863,6 +865,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.documents_accessed.timestamp |  | date |
 | crowdstrike.alert.email_sent |  | boolean |
 | crowdstrike.alert.end_time |  | date |
+| crowdstrike.alert.event_correlation_id |  | keyword |
 | crowdstrike.alert.event_id |  | keyword |
 | crowdstrike.alert.executables_written.filename |  | keyword |
 | crowdstrike.alert.executables_written.filepath |  | keyword |
@@ -922,8 +925,11 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.ioc_type |  | keyword |
 | crowdstrike.alert.ioc_value |  | keyword |
 | crowdstrike.alert.ioc_values |  | keyword |
+| crowdstrike.alert.is_closed |  | boolean |
 | crowdstrike.alert.is_synthetic_quarantine_disposition |  | boolean |
 | crowdstrike.alert.ldap_search_query_attack |  | long |
+| crowdstrike.alert.lead_id |  | keyword |
+| crowdstrike.alert.lead_type |  | keyword |
 | crowdstrike.alert.local_prevalence |  | keyword |
 | crowdstrike.alert.local_process_id |  | keyword |
 | crowdstrike.alert.location_country_code |  | keyword |
@@ -999,6 +1005,8 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.platform |  | keyword |
 | crowdstrike.alert.poly_id |  | keyword |
 | crowdstrike.alert.prevented |  | boolean |
+| crowdstrike.alert.prevention_policy_id |  | keyword |
+| crowdstrike.alert.prevention_policy_name |  | keyword |
 | crowdstrike.alert.process_end_time |  | date |
 | crowdstrike.alert.process_id |  | keyword |
 | crowdstrike.alert.process_start_time |  | date |
@@ -1017,6 +1025,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.rule_instance_version |  | keyword |
 | crowdstrike.alert.scan_id |  | keyword |
 | crowdstrike.alert.scenario |  | keyword |
+| crowdstrike.alert.score |  | long |
 | crowdstrike.alert.seconds_to_resolved |  | long |
 | crowdstrike.alert.seconds_to_triaged |  | long |
 | crowdstrike.alert.severity |  | long |
@@ -1024,6 +1033,9 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.sha1 |  | keyword |
 | crowdstrike.alert.sha256 |  | keyword |
 | crowdstrike.alert.show_in_ui |  | boolean |
+| crowdstrike.alert.signal_end_timestamp |  | date |
+| crowdstrike.alert.signal_start_timestamp |  | date |
+| crowdstrike.alert.signal_updated_timestamp |  | date |
 | crowdstrike.alert.source.account_azure_id |  | keyword |
 | crowdstrike.alert.source.account_domain |  | keyword |
 | crowdstrike.alert.source.account_name |  | keyword |
@@ -1040,6 +1052,8 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.source.endpoint_sensor_id |  | keyword |
 | crowdstrike.alert.source.ip_isp_classification |  | long |
 | crowdstrike.alert.source.ip_isp_domain |  | keyword |
+| crowdstrike.alert.source_hosts |  | keyword |
+| crowdstrike.alert.source_ips |  | keyword |
 | crowdstrike.alert.source_products |  | keyword |
 | crowdstrike.alert.source_vendors |  | keyword |
 | crowdstrike.alert.start_time |  | date |
@@ -1059,6 +1073,18 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.technique |  | keyword |
 | crowdstrike.alert.technique_id |  | keyword |
 | crowdstrike.alert.template_instance_id |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.description |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.display_name |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.host_id |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.hostname |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.indicator_id |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.indicator_type |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.pattern_disposition |  | long |
+| crowdstrike.alert.threatgraph_indicators.pattern_id |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.process_id |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.severity |  | long |
+| crowdstrike.alert.threatgraph_indicators.signal_association_timestamp |  | date |
+| crowdstrike.alert.threatgraph_indicators.template_instance_id |  | keyword |
 | crowdstrike.alert.timestamp |  | date |
 | crowdstrike.alert.tree_id |  | keyword |
 | crowdstrike.alert.tree_root |  | keyword |
@@ -1067,6 +1093,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.updated_timestamp |  | date |
 | crowdstrike.alert.user_id |  | keyword |
 | crowdstrike.alert.user_name |  | keyword |
+| crowdstrike.alert.user_names |  | keyword |
 | crowdstrike.alert.user_principal |  | keyword |
 | crowdstrike.alert.worker_node_name |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
@@ -1307,6 +1334,8 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.LMHostIDs | Array of host IDs seen to have experienced lateral movement because of the incident. | keyword |
 | crowdstrike.event.LateralMovement | Lateral movement field for incident. | long |
 | crowdstrike.event.LdapSearchQueryAttack | Detected LDAP tool attack. | keyword |
+| crowdstrike.event.LeadId | The ID given to the automated lead. | keyword |
+| crowdstrike.event.LeadType | The type of automated lead. | keyword |
 | crowdstrike.event.LoadedObjects | Provides one or more JSON objects describing the loaded objects related to the detection. | nested |
 | crowdstrike.event.LocalIP | IP address of the host associated with the detection. | keyword |
 | crowdstrike.event.LocalIPv6 |  | ip |
@@ -1428,11 +1457,15 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.ScheduledSearchId | Unique identifier of the associated scheduled search. | keyword |
 | crowdstrike.event.ScheduledSearchUserId | User ID of the user that created the the associated scheduled search. | keyword |
 | crowdstrike.event.ScheduledSearchUserUUID | UUID of the user that created the the associated scheduled search. | keyword |
+| crowdstrike.event.Score | The confidence score of the automated lead. Values range from 0 to 100. | long |
 | crowdstrike.event.SensorId | Unique ID associated with the Falcon sensor. | keyword |
 | crowdstrike.event.ServiceName | Description of which related service was involved in the event. | keyword |
 | crowdstrike.event.SessionId | Session ID of the remote response session. | keyword |
 | crowdstrike.event.Severity | The integer severity level using Crowdstrike scaling. | integer |
 | crowdstrike.event.SeverityName | The severity level of the detection, as a string (High/Medium/Informational). | keyword |
+| crowdstrike.event.SignalEndTimestamp | Timestamp of when the last indicator was added to the lead. | date |
+| crowdstrike.event.SignalStartTimestamp | Timestamp of when the first indicator was added to the lead. | date |
+| crowdstrike.event.SignalUpdatedTimestamp | The last time the lead was updated with new information or when it was closed. | date |
 | crowdstrike.event.SourceAccountUpn | Source user UPN. | keyword |
 | crowdstrike.event.SourceEndpointAccountObjectGuid | Source endpoint object GUID | keyword |
 | crowdstrike.event.SourceEndpointAccountObjectSid | Source endpoint object SID. | keyword |
@@ -1457,6 +1490,17 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.TargetEndpointHostName | Target endpoint hostname. | keyword |
 | crowdstrike.event.TargetEndpointSensorId | Target endpoint agent ID. | keyword |
 | crowdstrike.event.TargetServiceAccessIdentifier | Target SPN. | keyword |
+| crowdstrike.event.ThreatgraphIndicators.Description |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.DisplayName |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.HostId |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.Hostname |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.IndicatorId |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.PatternDisposition |  | long |
+| crowdstrike.event.ThreatgraphIndicators.PatternId |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.ProcessId |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.Severity |  | long |
+| crowdstrike.event.ThreatgraphIndicators.SignalAssociationTimestamp |  | date |
+| crowdstrike.event.ThreatgraphIndicators.TemplateInstanceId |  | keyword |
 | crowdstrike.event.Timestamp | Firewall rule triggered timestamp. | date |
 | crowdstrike.event.Trampolines | Provides one or more JSON objects describing the relevant functions and processes performing inline API hooks. | nested |
 | crowdstrike.event.TreeID | CrowdStrike tree id. | keyword |
@@ -1471,7 +1515,7 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.VerifiedBootState | Provides the device’s current boot state. | keyword |
 | crowdstrike.event.XdrType | Type of detection: xdr or xdr-scheduled-search. | keyword |
 | crowdstrike.metadata.customerIDString | Customer identifier | keyword |
-| crowdstrike.metadata.eventType | DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, or UserActivityAuditEvent | keyword |
+| crowdstrike.metadata.eventType | DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, UserActivityAuditEvent, or AutomatedLeadSummaryEvent | keyword |
 | crowdstrike.metadata.offset | Offset number that tracks the location of the event in stream. This is used to identify unique detection events. | integer |
 | crowdstrike.metadata.version | Schema version | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
@@ -2262,6 +2306,8 @@ An example event for `fdr` looks as following:
 | crowdstrike.LaunchItemType |  | match_only_text |
 | crowdstrike.LaunchItemUrl |  | match_only_text |
 | crowdstrike.LdapSearchFilterSample |  | match_only_text |
+| crowdstrike.LeadId |  | keyword |
+| crowdstrike.LeadType |  | keyword |
 | crowdstrike.LfoUploadFlags |  | keyword |
 | crowdstrike.LightningLatencyState |  | keyword |
 | crowdstrike.LightningResponseStatus |  | keyword |
@@ -2332,6 +2378,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.MsiTransactionStartTimeStamp |  | keyword |
 | crowdstrike.MsiTransactionType |  | keyword |
 | crowdstrike.NDRoot |  | keyword |
+| crowdstrike.Name |  | keyword |
 | crowdstrike.NegateInterface |  | keyword |
 | crowdstrike.NegateLocalAddress |  | keyword |
 | crowdstrike.NegateRemoteAddress |  | keyword |
@@ -2616,6 +2663,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.SamAccountName |  | match_only_text |
 | crowdstrike.ScopeLevel |  | keyword |
 | crowdstrike.ScopeZone |  | keyword |
+| crowdstrike.Score |  | long |
 | crowdstrike.ScreenshotType |  | keyword |
 | crowdstrike.ScreenshotsTakenCount |  | long |
 | crowdstrike.ScriptContent |  | match_only_text |
@@ -2655,6 +2703,9 @@ An example event for `fdr` looks as following:
 | crowdstrike.ShareSecurity |  | keyword |
 | crowdstrike.ShareSecuritySddl |  | keyword |
 | crowdstrike.SignInfoFlags |  | keyword |
+| crowdstrike.SignalEndTimestamp |  | date |
+| crowdstrike.SignalStartTimestamp |  | date |
+| crowdstrike.SignalUpdatedTimestamp |  | date |
 | crowdstrike.SignatureErrorState |  | keyword |
 | crowdstrike.SignatureState |  | keyword |
 | crowdstrike.SiteName |  | keyword |
@@ -2742,6 +2793,17 @@ An example event for `fdr` looks as following:
 | crowdstrike.ThreadStartAddress |  | keyword |
 | crowdstrike.ThreadStartBytes |  | match_only_text |
 | crowdstrike.ThreadStartContext |  | keyword |
+| crowdstrike.ThreatgraphIndicators.Description |  | keyword |
+| crowdstrike.ThreatgraphIndicators.DisplayName |  | keyword |
+| crowdstrike.ThreatgraphIndicators.HostId |  | keyword |
+| crowdstrike.ThreatgraphIndicators.Hostname |  | keyword |
+| crowdstrike.ThreatgraphIndicators.IndicatorId |  | keyword |
+| crowdstrike.ThreatgraphIndicators.PatternDisposition |  | long |
+| crowdstrike.ThreatgraphIndicators.PatternId |  | keyword |
+| crowdstrike.ThreatgraphIndicators.ProcessId |  | keyword |
+| crowdstrike.ThreatgraphIndicators.Severity |  | long |
+| crowdstrike.ThreatgraphIndicators.SignalAssociationTimestamp |  | date |
+| crowdstrike.ThreatgraphIndicators.TemplateInstanceId |  | keyword |
 | crowdstrike.Timeout |  | long |
 | crowdstrike.TlsVersion |  | keyword |
 | crowdstrike.TokenType |  | keyword |
