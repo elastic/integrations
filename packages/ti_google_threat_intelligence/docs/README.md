@@ -159,7 +159,7 @@ These transforms are automatically started to populate `Threat Intelligence`, `A
 ## Limitations
 
 1. If an event contains multiple matching mappings (e.g., two file hash fields within the same event match GTI data), only one alert per detection rule will be generated for that event.
-2. If GTI information is ingested and procesed by a transform, and the GTI source information is updated later, the changes are not reflected in the dashboards because the Elastic detection rules only run on the transformed (destination) data.
+2. If GTI information is ingested and processed by a transform, and the GTI source information is updated later, the changes are not reflected in the dashboards because the Elastic detection rules only run on the transformed (destination) data.
 
 ## Troubleshooting
 
