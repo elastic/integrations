@@ -95,14 +95,16 @@ Example: For 100 API calls to a particular model per hour:
 
 OpenAI's Usage API does not finalize a per-minute bucket the moment it ends — a bucket's token and request counts keep climbing for several minutes afterward as late usage is accounted for. To avoid ingesting these partial, still-changing counts, each of the six token- and request-based usage data streams — `completions`, `embeddings`, `moderations`, `images`, `audio_speeches`, and `audio_transcriptions` — waits a configurable **finalization grace period** before treating a bucket as final. (The `code_interpreter_sessions` and `vector_stores` streams do not report token or request counts, do not feed the rate limit headroom dashboard, and have no grace setting.)
 
-- Controls how long to wait after a bucket's end time before the bucket is ingested
-- Default value: 15 minutes (`15m`)
-- Buckets whose end time is younger than this period are skipped and re-fetched on a later poll, so only finalized counts are stored
-- Trade-off: a longer grace period is safer against undercounting (heavy bursts take OpenAI longer to finalize) but delays when usage first appears in Elasticsearch
-- Latency: with the default, these six usage data streams — and the rate limit headroom panels and alert that read from them — trail real time by roughly the grace period (about 15 minutes). This is the cost of ingesting only finalized counts.
-- Where to change it: the setting lives under **Advanced options** for each of these six usage data streams. Lower it to trade some accuracy for less lag, or set it to `0s` to disable the grace entirely and ingest each bucket as soon as it is returned (freshest data, but recent minutes will undercount until OpenAI finalizes them).
+> **Note:** This finalization lag is *observed* behavior, not a documented OpenAI guarantee. The Usage API reference does not specify a revision window or finalization delay, so the recommended `15m` value below is an empirically chosen buffer, not a figure published by OpenAI; the lag may change without notice.
 
-> If usage metrics read lower than the OpenAI dashboard under high-volume bursts, increase the finalization grace period. If you need fresher dashboards and can tolerate undercounting the most recent minutes, lower it (or set `0s`).
+- Controls how long to wait after a bucket's end time before the bucket is ingested
+- Default value: `0s`. Buckets are ingested as soon as they are read, with no added delay. This keeps usage data fresh and is the least disruptive setting for existing deployments, but it can undercount usage during heavy bursts, because OpenAI is still revising a bucket's counts for several minutes after its end time and the bucket is read before those counts settle.
+- Recommended for accurate counts: `15m`. Setting the grace to 15 minutes gives each per-minute bucket time to finalize before it is ingested, so the stored token and request counts match what OpenAI eventually reports. Choose this when accurate usage and rate limit headroom matter more than freshness — for example, when reconciling against the OpenAI dashboard or driving the headroom alert.
+- How it works: buckets whose end time is younger than the grace period are skipped and re-fetched on a later poll, so only finalized counts are stored.
+- Trade-off: a longer grace period is safer against undercounting (heavy bursts take OpenAI longer to finalize) but delays when usage first appears in Elasticsearch by up to the grace period. With `15m`, these six usage data streams — and the rate limit headroom panels and alert that read from them — trail real time by roughly 15 minutes. With the default `0s` there is no added lag, but the most recent minutes can be permanently undercounted: each bucket is ingested as soon as its minute closes — before OpenAI finishes revising it — and is not re-read afterward, so later upward revisions are never reflected.
+- Where to change it: the setting lives under **Advanced options** for each of these six usage data streams.
+
+> If usage metrics read lower than the OpenAI dashboard under high-volume bursts, increase the finalization grace period — `15m` is recommended. If you need the freshest possible dashboards and can tolerate undercounting the most recent minutes, keep the default `0s`.
 
 #### Known limitation: residual undercount under high-volume bursts
 
@@ -120,9 +122,11 @@ With default settings (Interval: `5m`, Bucket width: `1m`, Initial interval: `24
 
 #### Example timeline
 
-With default settings (Interval: `5m`, Bucket width: `1m`, Initial interval: `24h`):
+With these settings (Interval: `5m`, Bucket width: `1m`, Initial interval: `24h`) and a finalization grace period of `15m` (the recommended setting for accurate counts):
 
 The integration starts at 10:00 AM and collects data from 10:00 AM the previous day up to 9:45 AM the current day — the most recent 15 minutes are still finalizing and are skipped. The next collection starts at 10:05 AM and resumes from the 9:45 AM bucket, re-fetching any of those buckets that have since been finalized and continuing up to 9:50 AM.
+
+With the default grace period of `0s`, collection instead runs all the way up to the current time and no buckets are skipped — each bucket is ingested as soon as its minute closes. Those buckets appear immediately, but because they are read before OpenAI finishes revising them and are not re-read once ingested, any later upward revisions are not reflected and the counts can stay undercounted.
 
 ## Rate limit headroom
 
