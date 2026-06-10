@@ -1,0 +1,48 @@
+{
+    "id": "aws_elb_otel-unhealthy-hosts",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when any target in a target group is failing health checks (UnHealthyHostCount > 0). Early warning before healthy capacity collapses to zero.",
+        "name": "[AWS ELB OTel] Unhealthy targets detected",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws",
+            "aws-elb"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## Unhealthy Targets Detected\n\n`UnHealthyHostCount > 0` means at least one target in the group failed ALB health checks during the window. If all targets become unhealthy, the ALB serves ELB 5XX and the service is effectively down.\n\n### Triage Steps\n1. Identify the affected load balancer, target group, and region.\n2. Check which targets are unhealthy in the AWS console (EC2/ECS/EKS target health view).\n3. Verify health check path, port, protocol, and expected response codes match the application.\n4. Inspect target instance/container logs for crashes, OOM, or failed readiness probes.\n5. Check security group and NACL rules between the ALB and targets.\n6. Monitor `HealthyHostCount` — if trending toward zero, treat as an outage.\n\n### Note\nThis source collects `Maximum` for `UnHealthyHostCount` (not `Minimum` as AWS recommends for AZ-wide alarms) — any unhealthy target in the period triggers the alert."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/ApplicationELB\"\n    AND attributes.MetricName == \"UnHealthyHostCount\"\n    AND attributes.stat == \"Maximum\"\n| STATS unhealthy_hosts = MAX(`metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`)\n    BY attributes.LoadBalancer, attributes.TargetGroup, resource.attributes.cloud.region\n// Any unhealthy target in the window — threshold is intentionally 0\n| WHERE unhealthy_hosts > 0\n| SORT unhealthy_hosts DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "attributes.TargetGroup",
+            "termSize": 50,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
