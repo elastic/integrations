@@ -10,7 +10,7 @@ For a demo, refer to the following video (click to view).
 
 ### Compatibility
 
-This integration is compatible with CrowdStrike Falcon SIEM Connector v2.0, REST API, and CrowdStrike Event Streams API.
+This integration is compatible with CrowdStrike Falcon SIEM Connector 2.29.0, REST API, and CrowdStrike Event Streams API.
 
 ### How it works
 
@@ -92,6 +92,7 @@ You can use the Falcon SIEM Connector as an alternative to the Event Streams API
 
 The following event types are supported for CrowdStrike Event Streams (whether you use the Falcon SIEM Connector or the Event Streams API):
 
+- AutomatedLeadSummaryEvent
 - CustomerIOCEvent
 - DataProtectionDetectionSummaryEvent
 - DetectionSummaryEvent
