@@ -43,22 +43,6 @@ processors:
             tag: append_error_message_4ef54c75
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - remove:
-      tag: remove_metadata_host_aid_and_user_sid_a4bf7be9
-      field:
-        - metadata.host.aid
-        - metadata.user.UserSid_readable
-      ignore_missing: true
-  - rename:
-      tag: rename_metadata_to_crowdstrike_info_4a121644
-      field: metadata
-      target_field: crowdstrike.info
-      ignore_missing: true
-      on_failure:
-        - append:
-            tag: append_error_message_d5092d94
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       tag: convert_crowdstrike_UTCTimestamp_to_long_into__temp_utc_timestamp_a18a1c5b
       field: crowdstrike.UTCTimestamp
@@ -774,18 +758,6 @@ processors:
       ignore_empty_value: true
       ignore_failure: true
   - append:
-      tag: append_related_hosts_369b21b5
-      if: ctx.crowdstrike?.info?.host?.ComputerName != null
-      field: related.hosts
-      value: '{{{crowdstrike.info.host.ComputerName}}}'
-      allow_duplicates: false
-  - rename:
-      tag: rename_crowdstrike_info_host_ComputerName_to_host_name_a1ee7f6f
-      if: ctx.host?.name == null
-      field: crowdstrike.info.host.ComputerName
-      target_field: host.name
-      ignore_missing: true
-  - append:
       tag: append_related_hosts_452ef445
       if: ctx.host?.name != null
       field: related.hosts
@@ -821,31 +793,6 @@ processors:
       target_field: host.domain
       ignore_missing: true
       ignore_failure: true
-  - convert:
-      tag: convert_crowdstrike_info_host_aip_to_ip_into__temp_aip_21b40f31
-      if: ctx.crowdstrike?.info?.host?.aip != null && ctx.crowdstrike.info.host.aip != ""
-      field: crowdstrike.info.host.aip
-      type: ip
-      target_field: _temp.aip
-      ignore_failure: true
-  - remove:
-      tag: remove_crowdstrike_info_host_aip_0b8e5e7f
-      if: ctx._temp?.aip != null
-      field:
-        - crowdstrike.info.host.aip
-  - append:
-      tag: append_host_ip_1dd81f5c
-      if: ctx._temp?.aip != null
-      field: host.ip
-      value: '{{{_temp.aip}}}'
-      allow_duplicates: false
-  - append:
-      tag: append_related_ip_a3fbf481
-      if: ctx._temp?.aip != null
-      field: related.ip
-      value: '{{{_temp.aip}}}'
-      allow_duplicates: false
-
   # OS fields.
   - set:
       tag: set_host_os_type_c07526d4
@@ -1483,31 +1430,6 @@ processors:
       target_field: user.id
       ignore_missing: true
   - rename:
-      tag: rename_crowdstrike_info_user_UserName_to_user_name_cc930c2f
-      if: ctx.crowdstrike?.info?.user?.UserName != null && ctx.user?.name == null
-      field: crowdstrike.info.user.UserName
-      target_field: user.name
-      ignore_missing: true
-  - split:
-      tag: split_crowdstrike_info_user_User_into__temp_info_user_parts_dee4af27
-      if: ctx.crowdstrike?.info?.user?.User != null
-      field: crowdstrike.info.user.User
-      separator: \\{1,2}
-      target_field: _temp.info_user_parts
-  - set:
-      tag: set_user_domain_6f97903f
-      if: ctx._temp?.info_user_parts != null && ctx._temp.info_user_parts.size() == 2
-      field: user.domain
-      value: '{{{_temp.info_user_parts.0}}}'
-      ignore_empty_value: true
-      ignore_failure: true
-  - rename:
-      tag: rename_crowdstrike_info_user_User_to_user_name_6ec3ffdd
-      if: ctx.crowdstrike?.info?.user?.User != null && ctx.user?.name == null
-      field: crowdstrike.info.user.User
-      target_field: user.name
-      ignore_missing: true
-  - rename:
       tag: rename_crowdstrike_GID_to_user_group_id_5c9b8998
       field: crowdstrike.GID
       target_field: user.group.id
@@ -1684,13 +1606,6 @@ processors:
       if: ctx.user?.name != null
       field: related.user
       value: '{{{user.name}}}'
-      allow_duplicates: false
-      ignore_failure: true
-  - append:
-      tag: append_related_user_f49500fe
-      if: ctx.crowdstrike?.info?.user?.User != null
-      field: related.user
-      value: '{{{crowdstrike.info.user.User}}}'
       allow_duplicates: false
       ignore_failure: true
   - append:
@@ -2599,13 +2514,6 @@ processors:
       field: related.hosts
       value: '{{{crowdstrike.ClientComputerName}}}'
       allow_duplicates: false
-  - append:
-      tag: append_related_hosts_2d2dc803
-      if: ctx.crowdstrike?.info?.user?.LastLoggedOnHost != null
-      field: related.hosts
-      value: '{{{crowdstrike.info.user.LastLoggedOnHost}}}'
-      allow_duplicates: false
-
   - script:
       description: Remove long fields based on user input stored in _conf.long_fields*.
       tag: script_remove_long_fields_90516c2a
