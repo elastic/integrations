@@ -6,7 +6,7 @@
 
 Google Threat Intelligence integration offers support for two APIs:
 1. **[Threat List API](https://gtidocs.virustotal.com/reference/get-hourly-threat-list)** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
-2. **[IOC Stream API](https://gtidocs.virustotal.com/reference/get-objects-from-the-ioc-stream)** to deliver various types of **Indicators of Compromise (IOCs)** originating from multiple sources. Depending on the source of the notification, different context-specific attributes are added to enrich the IOCs.
+2. **[IOC Stream API](https://gtidocs.virustotal.com/reference/get-objects-from-the-ioc-stream)** to deliver various types of **Indicators of Compromise (IOCs)** originating from multiple sources. Depending on the source of the notification, different context-specific attributes are added to the IOCs.
 
 ## Threat List API Feeds
 
@@ -57,7 +57,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 - An API key will be used to authenticate your request.
 - **Time Selection of Initial Interval and Interval**:
   - Users need to specify the **initial interval** and **interval** in an hourly format, such as **2h**, **3h**, etc.
-**Note:** Please make sure both initial interval and interval are in hours and the initial interval is greater than 2 hours.
+**Note:** Threat-list packages are published hourly with a configurable availability delay (default `2h`). Set `initial_interval` and `interval` using hour units (for example `2h`, `3h`). The collector clamps requests to the latest available package hour.
 
 ### Enabling the integration in Elastic:
 
@@ -114,15 +114,15 @@ A **retention policy** is used to remove data older than the default retention p
 
 In this integration, all data streams have a **retention period of 30 days**.
 
-### Enrichment with Detection Rules
+### Customizing Detection Rules
 
-Detection Rules match the user's Elastic environment data with GTI data, generating an alert if a match is found. To access detection rules:
+Detection Rules match the user's data with GTI data, generating an alert if a match is found. To access detection rules:
 
 1. Navigate to **Security > Rules > Detection Rules** and click on **Add Elastic Rules**.
 2. Search for **Google Threat Intelligence** to find prebuilt Elastic detection rules.
 3. Four detection rules are available for **IP, URL, File, and Domain**. Users can install one or more rules as needed.
 
-To tailor a rule based on Elastic environment:
+To customize a rule for your Elastic environment:
 
 1. Click the three dots on the right side of any detection rule.
 2. Select **Duplicate Rule**.
@@ -154,12 +154,12 @@ The following are the names of the eight sample rules:
 - Detected IOC Transform (ID: `logs-ti_google_threat_intelligence.rule`)
 - Detected IOC from IOC stream Transform (ID: `logs-ti_google_threat_intelligence.rule_ioc_st`)
 
-These transforms are automatically started to populate `Threat Intelligence`, `Adversary Intelligence` and `IOC Stream Threat Intelligence` dashboards. The `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc` and `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc_stream` field represents logs for enriched threat intelligence data, which can be analyzed in the **Discover** section.
+These transforms are automatically started to populate `Threat Intelligence`, `Adversary Intelligence` and `IOC Stream Threat Intelligence` dashboards. The `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc` and `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc_stream` field represents logs for current threat intelligence data, which can be analyzed in the **Discover** section.
 
 ## Limitations
 
 1. If an event contains multiple matching mappings (e.g., two file hash fields within the same event match GTI data), only one alert per detection rule will be generated for that event.
-2. If an IOC from the user's Elasticsearch index is enriched with GTI information, and the GTI information is updated later, the changes are not reflected in the dashboards because Elastic detection rules only run on live data.
+2. If GTI information is ingested and processed by a transform, and the GTI source information is updated later, the changes are not reflected in the dashboards because the Elastic detection rules only run on the transformed (destination) data.
 
 ## Troubleshooting
 
@@ -385,6 +385,7 @@ An example event for `cryptominer` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### First Stage Delivery Vectors
@@ -598,6 +599,7 @@ An example event for `first_stage_delivery_vectors` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Infostealers
@@ -811,6 +813,7 @@ An example event for `infostealer` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### IOC Stream
@@ -1342,6 +1345,7 @@ An example event for `ioc_stream` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Internet of Things
@@ -1555,6 +1559,7 @@ An example event for `iot` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Linux
@@ -1768,6 +1773,7 @@ An example event for `linux` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Malicious Network Infrastructure
@@ -1983,6 +1989,7 @@ An example event for `malicious_network_infrastructure` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Malware
@@ -2198,6 +2205,7 @@ An example event for `malware` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Mobile
@@ -2411,6 +2419,7 @@ An example event for `mobile` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### OS X
@@ -2624,6 +2633,7 @@ An example event for `osx` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Phishing
@@ -2837,6 +2847,7 @@ An example event for `phishing` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Ransomware
@@ -3050,6 +3061,7 @@ An example event for `ransomware` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Threat Actor
@@ -3263,6 +3275,7 @@ An example event for `threat_actor` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Daily Top trending
@@ -3476,6 +3489,7 @@ An example event for `trending` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
 
 ### Vulnerability Weaponization
@@ -3689,4 +3703,5 @@ An example event for `vulnerability_weaponization` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 
