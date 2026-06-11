@@ -22,6 +22,7 @@ Chargeback costs are presented based on a configured rate and unit, used to conv
 
 **Monitoring cluster:**
 - Must be on Elasticsearch version **9.2.0+** due to the use of smart [ES|QL LOOKUP JOIN](https://www.elastic.co/docs/reference/query-languages/esql/esql-lookup-join) (conditional joins) in transforms and dashboard queries.
+- Kibana version **9.4.0+** is required for package **0.5.0** and later. **Kibana 9.3 is not supported** — Billing and Usage dashboards fail to render (`No embeddable factory found for type: vis`) and lack GA support for ES|QL multi-select variable controls (`MV_CONTAINS` filtering).
 - This is where the Chargeback integration should be installed.
 
 **Required integrations:**
@@ -242,6 +243,13 @@ Three alert rule templates are included and can be installed from the integratio
 For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
 
 ## Upgrade Notes
+
+### Upgrading to 0.5.0
+
+1. Upgrade the Fleet package to **0.5.0**.
+2. Upgrade Kibana to **9.4.0+** before installing 0.5.0. Kibana 9.3 cannot render the updated Billing and Usage dashboards.
+3. Transforms are reinstalled with `fleet_transform_version: 0.5.0` (pipeline logic unchanged). No lookup index recreation is required.
+4. The Billing and Usage dashboards are replaced with versions that use chained ES|QL variable controls instead of legacy options-list controls. Delete stale dashboard saved objects from **Stack Management > Saved Objects** if duplicates appear after upgrade.
 
 ### Upgrading to 0.4.0
 
