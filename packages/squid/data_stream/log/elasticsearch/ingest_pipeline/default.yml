@@ -44,9 +44,9 @@ processors:
         # Native format
         - '^%{NUMBER:_tmp.time_s:long}\.%{NUMBER:_tmp.time_ms:long}%{SPACE}%{NUMBER:_tmp.elapsed:long} %{NOTSPACE:_tmp.source_ip} %{NOTSLASH:_tmp.code}/%{NUMBER:_tmp.status:long} %{NUMBER:_tmp.destination_bytes:long} %{NOTSPACE:_tmp.method} %{NOTSPACE:_tmp.url} %{NOTSPACE:_tmp.user_name} %{NOTSLASH:_tmp.peer_status}/%{NOTSPACE:_tmp.peer_host} %{NOTSPACE:_tmp.content_type}$'
         # Extensive format with SNI field (OpenSSL builds — SNI is quoted)
-        - '^%{NUMBER:_tmp.time_s:long}\.%{NUMBER:_tmp.time_ms:long}%{SPACE}%{NUMBER:_tmp.elapsed:long} %{NOTSPACE:_tmp.source_ip} %{NUMBER:_tmp.source_port:long} %{NOTSLASH:_tmp.code}/%{NUMBER:_tmp.status:long} %{NOTSPACE:_tmp.reply_size} %{NOTSPACE:_tmp.request_size} %{NOTSPACE:_tmp.reply_header_size} %{NOTSPACE:_tmp.request_header_size} %{NOTSPACE:_tmp.reply_body_size} %{NOTSPACE:_tmp.method} %{NOTSPACE:_tmp.url} %{NOTSPACE:_tmp.http_version} %{NOTSPACE:_tmp.user_name} %{NOTSLASH:_tmp.peer_status}/%{NOTSPACE:_tmp.peer_host} %{NOTSPACE:_tmp.destination_port} %{NOTSPACE:_tmp.content_type} %{NOTSPACE:_tmp.err_code} %{NOTSPACE:_tmp.err_detail} "%{DATA:_tmp.referer}" "%{DATA:_tmp.user_agent}" "%{DATA:_tmp.host_header}" "%{DATA:_tmp.xff}" "%{DATA:_tmp.sni}" %{NOTSPACE:_tmp.server_time} %{GREEDYDATA:_tmp.note}$'
+        - '^%{NUMBER:_tmp.time_s:long}\.%{NUMBER:_tmp.time_ms:long}%{SPACE}%{NUMBER:_tmp.elapsed:long} %{NOTSPACE:_tmp.source_ip} %{NUMBER:_tmp.source_port:long} %{NOTSLASH:_tmp.code}/%{NUMBER:_tmp.status:long} %{NOTSPACE:_tmp.reply_size} %{NOTSPACE:_tmp.request_size} %{NOTSPACE:_tmp.reply_header_size} %{NOTSPACE:_tmp.request_header_size} %{NOTSPACE:_tmp.reply_body_size} %{NOTSPACE:_tmp.method} %{NOTSPACE:_tmp.url} %{NOTSPACE:_tmp.http_version} %{NOTSPACE:_tmp.user_name} %{NOTSLASH:_tmp.peer_status}/%{NOTSPACE:_tmp.peer_host} %{NOTSPACE:_tmp.destination_port} %{NOTSPACE:_tmp.content_type} %{NOTSPACE:_tmp.err_code} %{NOTSPACE:_tmp.err_detail} "%{DATA:_tmp.referer}" "%{DATA:_tmp.user_agent}" "%{DATA:_tmp.host_header}" "%{DATA:_tmp.xff}" "%{DATA:_tmp.sni}" %{GREEDYDATA:_tmp.note}$'
         # Extensive format without SNI field
-        - '^%{NUMBER:_tmp.time_s:long}\.%{NUMBER:_tmp.time_ms:long}%{SPACE}%{NUMBER:_tmp.elapsed:long} %{NOTSPACE:_tmp.source_ip} %{NUMBER:_tmp.source_port:long} %{NOTSLASH:_tmp.code}/%{NUMBER:_tmp.status:long} %{NOTSPACE:_tmp.reply_size} %{NOTSPACE:_tmp.request_size} %{NOTSPACE:_tmp.reply_header_size} %{NOTSPACE:_tmp.request_header_size} %{NOTSPACE:_tmp.reply_body_size} %{NOTSPACE:_tmp.method} %{NOTSPACE:_tmp.url} %{NOTSPACE:_tmp.http_version} %{NOTSPACE:_tmp.user_name} %{NOTSLASH:_tmp.peer_status}/%{NOTSPACE:_tmp.peer_host} %{NOTSPACE:_tmp.destination_port} %{NOTSPACE:_tmp.content_type} %{NOTSPACE:_tmp.err_code} %{NOTSPACE:_tmp.err_detail} "%{DATA:_tmp.referer}" "%{DATA:_tmp.user_agent}" "%{DATA:_tmp.host_header}" "%{DATA:_tmp.xff}" %{NOTSPACE:_tmp.server_time} %{GREEDYDATA:_tmp.note}$'
+        - '^%{NUMBER:_tmp.time_s:long}\.%{NUMBER:_tmp.time_ms:long}%{SPACE}%{NUMBER:_tmp.elapsed:long} %{NOTSPACE:_tmp.source_ip} %{NUMBER:_tmp.source_port:long} %{NOTSLASH:_tmp.code}/%{NUMBER:_tmp.status:long} %{NOTSPACE:_tmp.reply_size} %{NOTSPACE:_tmp.request_size} %{NOTSPACE:_tmp.reply_header_size} %{NOTSPACE:_tmp.request_header_size} %{NOTSPACE:_tmp.reply_body_size} %{NOTSPACE:_tmp.method} %{NOTSPACE:_tmp.url} %{NOTSPACE:_tmp.http_version} %{NOTSPACE:_tmp.user_name} %{NOTSLASH:_tmp.peer_status}/%{NOTSPACE:_tmp.peer_host} %{NOTSPACE:_tmp.destination_port} %{NOTSPACE:_tmp.content_type} %{NOTSPACE:_tmp.err_code} %{NOTSPACE:_tmp.err_detail} "%{DATA:_tmp.referer}" "%{DATA:_tmp.user_agent}" "%{DATA:_tmp.host_header}" "%{DATA:_tmp.xff}" %{GREEDYDATA:_tmp.note}$'
       pattern_definitions:
         NOTSLASH: '[^/]+'
         NOTBRACKET: '[^\[\]]+'
@@ -264,14 +264,6 @@ processors:
       tag: move_sni
       field: _tmp.sni
       target_field: tls.client.server_name
-      ignore_missing: true
-
-  # Server-side time (extensive format only)
-  - convert:
-      tag: convert_server_time
-      field: _tmp.server_time
-      target_field: squid.server_time
-      type: long
       ignore_missing: true
 
   # Squid annotations/notes (extensive format only)
