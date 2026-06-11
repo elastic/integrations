@@ -1,7 +1,7 @@
 format_version: 3.5.0
 name: aws_cloudwatch_input_otel
 title: "AWS CloudWatch OpenTelemetry Input Package"
-version: 0.5.0
+version: 0.1.0
 source:
   license: "Elastic-2.0"
 description: "Collect AWS CloudWatch metrics for selected AWS services (EC2, RDS, SQS, ELB, Lambda, Fargate) using the OpenTelemetry Collector awscloudwatchmetrics receiver."
@@ -35,9 +35,7 @@ vars:
   - name: profile
     type: text
     title: AWS Shared Credentials Profile
-    description: >
-      Optional named profile from `~/.aws/credentials` or `~/.aws/config`. Only effective when the OpenTelemetry Collector process can read a shared credentials file. For agentless deployments prefer environment-variable-based credentials or IAM Role for Service Account (IRSA); this field is typically left blank.
-
+    description: The AWS profile used to authenticate.
     required: false
     show_user: false
   - name: imds_endpoint
@@ -130,18 +128,19 @@ vars:
     show_user: false
 
 # --- Policy templates: one per AWS service ---
-# Each template hardcodes a single CloudWatch namespace and uses autodiscover
-# to enumerate its metrics — so newly published metrics from AWS are picked up
-# automatically without package changes. New services can be added by introducing
-# a new `<svc>.yml.hbs` file plus a policy_template entry below.
+# All templates render the same `input.yml.hbs`; the only thing that changes
+# between them is the per-template `namespace` var (hidden, fixed default).
+# `deployment_modes` is defined once via a YAML anchor on the first template
+# and aliased on every other template — single source of truth, no duplication.
+# Adding a new service is a manifest-only change.
 policy_templates:
   - name: aws_ec2
     type: metrics
     title: AWS EC2 Metrics (OpenTelemetry)
-    description: Collect AWS/EC2 CloudWatch metrics via autodiscover.
+    description: Collect AWS/EC2 CloudWatch metrics.
     input: otelcol
-    template_path: ec2.yml.hbs
-    deployment_modes:
+    template_path: input.yml.hbs
+    deployment_modes: &deployment_modes
       default:
         enabled: true
       agentless:
@@ -149,81 +148,94 @@ policy_templates:
         organization: observability
         division: engineering
         team: obs-infraobs-integrations
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/EC2"
+        required: true
+        show_user: false
 
   - name: lambda
     type: metrics
     title: AWS Lambda Metrics (OpenTelemetry)
-    description: Collect AWS/Lambda CloudWatch metrics via autodiscover.
+    description: Collect AWS/Lambda CloudWatch metrics.
     input: otelcol
-    template_path: lambda.yml.hbs
-    deployment_modes:
-      default:
-        enabled: true
-      agentless:
-        enabled: true
-        organization: observability
-        division: engineering
-        team: obs-infraobs-integrations
+    template_path: input.yml.hbs
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/Lambda"
+        required: true
+        show_user: false
 
   - name: rds
     type: metrics
     title: AWS RDS Metrics (OpenTelemetry)
-    description: Collect AWS/RDS CloudWatch metrics via autodiscover.
+    description: Collect AWS/RDS CloudWatch metrics.
     input: otelcol
-    template_path: rds.yml.hbs
-    deployment_modes:
-      default:
-        enabled: true
-      agentless:
-        enabled: true
-        organization: observability
-        division: engineering
-        team: obs-infraobs-integrations
+    template_path: input.yml.hbs
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/RDS"
+        required: true
+        show_user: false
 
   - name: sqs
     type: metrics
     title: AWS SQS Metrics (OpenTelemetry)
-    description: Collect AWS/SQS CloudWatch metrics via autodiscover.
+    description: Collect AWS/SQS CloudWatch metrics.
     input: otelcol
-    template_path: sqs.yml.hbs
-    deployment_modes:
-      default:
-        enabled: true
-      agentless:
-        enabled: true
-        organization: observability
-        division: engineering
-        team: obs-infraobs-integrations
+    template_path: input.yml.hbs
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/SQS"
+        required: true
+        show_user: false
 
   - name: elb
     type: metrics
     title: AWS Application ELB Metrics (OpenTelemetry)
-    description: Collect AWS/ApplicationELB CloudWatch metrics via autodiscover.
+    description: Collect AWS/ApplicationELB CloudWatch metrics.
     input: otelcol
-    template_path: elb.yml.hbs
-    deployment_modes:
-      default:
-        enabled: true
-      agentless:
-        enabled: true
-        organization: observability
-        division: engineering
-        team: obs-infraobs-integrations
+    template_path: input.yml.hbs
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/ApplicationELB"
+        required: true
+        show_user: false
 
   - name: fargate
     type: metrics
     title: AWS ECS / Fargate Metrics (OpenTelemetry)
-    description: Collect AWS/ECS CloudWatch metrics via autodiscover. For task-level Fargate metrics, also enable Container Insights on the cluster.
+    description: Collect AWS/ECS CloudWatch metrics. For task-level Fargate metrics, also enable Container Insights on the cluster.
     input: otelcol
-    template_path: fargate.yml.hbs
-    deployment_modes:
-      default:
-        enabled: true
-      agentless:
-        enabled: true
-        organization: observability
-        division: engineering
-        team: obs-infraobs-integrations
+    template_path: input.yml.hbs
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/ECS"
+        required: true
+        show_user: false
 
 owner:
   github: elastic/obs-infraobs-integrations

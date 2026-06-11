@@ -1,5 +1,5 @@
 receivers:
-  awscloudwatchmetrics:
+  awscloudwatch:
     region: {{region}}
 {{#if profile}}
     profile: {{profile}}
@@ -7,14 +7,10 @@ receivers:
 {{#if imds_endpoint}}
     imds_endpoint: {{imds_endpoint}}
 {{/if}}
-    poll_interval: {{poll_interval}}
-    maximum_number_of_metrics_in_a_call: {{maximum_number_of_metrics_in_a_call}}
     metrics:
-      autodiscover:
-        namespace: "AWS/ApplicationELB"
-        limit: {{autodiscover_limit}}
-        period: {{autodiscover_period}}
-        aws_aggregation: {{autodiscover_aggregation}}
+      discovery:
+        filters:
+          namespace: "{{namespace}}"
 
 processors:
   resourcedetection/system:
@@ -34,7 +30,7 @@ processors:
 service:
   pipelines:
     metrics:
-      receivers: [awscloudwatchmetrics]
+      receivers: [awscloudwatch]
       processors:
         - resourcedetection/system
         - resourcedetection/aws
