@@ -102,7 +102,7 @@ OpenAI's Usage API does not finalize a per-minute bucket the moment it ends — 
 - Recommended for accurate counts: `15m`. Setting the grace to 15 minutes gives each per-minute bucket time to finalize before it is ingested, so the stored token and request counts match what OpenAI eventually reports. Choose this when accurate usage and rate limit headroom matter more than freshness — for example, when reconciling against the OpenAI dashboard or driving the headroom alert.
 - How it works: buckets whose end time is younger than the grace period are skipped and re-fetched on a later poll, so only finalized counts are stored.
 - Trade-off: a longer grace period is safer against undercounting (heavy bursts take OpenAI longer to finalize) but delays when usage first appears in Elasticsearch by up to the grace period. With `15m`, these six usage data streams — and the rate limit headroom panels and alert that read from them — trail real time by roughly 15 minutes. With the default `0s` there is no added lag, but the most recent minutes can be permanently undercounted: each bucket is ingested as soon as its minute closes — before OpenAI finishes revising it — and is not re-read afterward, so later upward revisions are never reflected.
-- Where to change it: the setting lives under **Advanced options** for each of these six usage data streams.
+- Where to change it: use the **Finalization grace period** setting for each of these six usage data streams.
 
 > If usage metrics read lower than the OpenAI dashboard under high-volume bursts, increase the finalization grace period — `15m` is recommended. If you need the freshest possible dashboards and can tolerate undercounting the most recent minutes, keep the default `0s`.
 
@@ -164,7 +164,13 @@ OpenAI enforces rate limits **per project**, so there is no single org-wide thro
 
 ### Alert
 
-The **[OpenAI] Rate limit headroom low** rule fires when peak 1-minute token usage (TPM) reaches 80% or more of the configured limit for a project and model. It is grouped by `project_id::model`, evaluates over a 15-minute window every 5 minutes, and reflects sustained utilization rather than a single real-time spike.
+The **[OpenAI] Rate limit headroom low** rule fires when peak 1-minute token usage (TPM) reaches 80% or more of the configured limit for a project and model. It is grouped by `project_id::model` and re-examines the most recent 15-minute window every 5 minutes.
+
+The rule keys on the **peak** minute in that window, so even a single 1-minute spike at or above the threshold is enough to fire it — usage does not have to stay high. Because the 15-minute look-back is three times the 5-minute schedule, one breaching minute stays in view across the three consecutive runs that the `alertDelay` of 3 requires, so it satisfies the delay on its own. The net effect is that the alert fires roughly 10–15 minutes after a breaching minute rather than only on sustained pressure; the delay suppresses an alert from a breach seen on just one or two runs, not from a single high minute.
+
+> **Scope:** this rule tracks **token** utilization (TPM) only. Request-per-minute (RPM) and image-per-minute headroom appear on the dashboard panels but are **not** alerted — a project can approach its RPM or image limit without firing this rule. Use the panels to watch those dimensions.
+
+> **Dependency:** the comparison needs a current limit. If the `rate_limits` stream stops collecting (for example, an expired admin key or a projects-list API error), the limit ages out of the window, every utilization becomes null, and this rule silently stops firing rather than alerting on the gap. If you rely on the alert, also monitor the freshness of `event.dataset: openai.rate_limits`.
 
 To tune the threshold, edit the `WHERE tpm_utilization >= 0.8` line in the rule's ES|QL query.
 

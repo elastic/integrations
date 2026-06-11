@@ -55,7 +55,7 @@ program: |
               // it reads want_more, so an all-pending page would stall pagination until the next
               // interval. Emit a keep-alive sentinel (dropped at ingest) to keep the want_more chain
               // alive. This only arises when the grace spans more than one page of buckets (e.g. a
-              // grace of a couple hours at bucket_width 1m); at the 15m default it never triggers.
+              // grace of a couple hours at bucket_width 1m), so it does not trigger with the 0s default.
               "events": body.data.filter(bucket, bucket.end_time <= int(timestamp(now - duration(state.finalization_grace))))
                   .map(bucket, size(bucket.results) > 0 ? bucket.results.map(result, { "message": result.with({"start_time": bucket.start_time, "end_time": bucket.end_time }).encode_json() }) : [{}]).flatten()
                   .as(evts, size(evts) == 0 && body.has_more ? [{"message": {"skip": true}.encode_json()}] : evts)
