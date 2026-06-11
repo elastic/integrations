@@ -1,0 +1,244 @@
+format_version: 3.6.4
+name: aws_cloudwatch_input_otel
+title: "AWS CloudWatch OpenTelemetry Input Package"
+version: 0.6.0
+source:
+  license: "Elastic-2.0"
+description: "Collect AWS CloudWatch metrics for selected AWS services (EC2, RDS, SQS, ELB, Lambda, Fargate) using the OpenTelemetry Collector awscloudwatchmetrics receiver."
+type: input
+categories:
+  - aws
+  - cloud
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.5.0"
+  elastic:
+    subscription: "basic"
+provider_permissions:
+  - provider: aws
+    description: >
+      Permissions required by the awscloudwatchmetrics receiver to enumerate and
+      read CloudWatch metrics, and to resolve resource tags used as metric dimensions.
+    permissions:
+      - name: sts:GetCallerIdentity
+        description: Verify the identity of the credentials used by the collector.
+      - name: cloudwatch:GetMetricData
+        description: Read CloudWatch metric data points for the configured namespace.
+      - name: cloudwatch:ListMetrics
+        description: Enumerate the CloudWatch metrics available in the configured namespace.
+      - name: tag:GetResources
+        description: Resolve resource tags used as metric dimensions during autodiscovery.
+icons:
+  - src: /img/logo_aws_cloudwatch_otel.svg
+    title: AWS CloudWatch OpenTelemetry logo
+    size: 32x32
+    type: image/svg+xml
+
+# --- Package-level (shared) variables ---
+# Defined once here and inherited by every policy template below — credentials,
+# region, and receiver tunables are not duplicated per service.
+vars:
+  - name: region
+    type: text
+    title: AWS Region
+    description: AWS region to query CloudWatch metrics from (for example, `us-east-1`).
+    required: true
+    show_user: true
+  - name: profile
+    type: text
+    title: AWS Shared Credentials Profile
+    description: >
+      Optional named profile from `~/.aws/credentials` or `~/.aws/config`. Only effective when the OpenTelemetry Collector process can read a shared credentials file. For agentless deployments prefer environment-variable-based credentials or IAM Role for Service Account (IRSA); this field is typically left blank.
+
+    required: false
+    show_user: false
+  - name: imds_endpoint
+    type: text
+    title: IMDS Endpoint
+    description: Override the EC2 Instance Metadata Service endpoint. Leave blank to use the AWS SDK default.
+    required: false
+    show_user: false
+  # --- Inline AWS credentials (rendered into env vars on the collector process) ---
+  - name: access_key_id
+    type: password
+    title: AWS Access Key ID
+    description: Mapped to `AWS_ACCESS_KEY_ID` on the collector process when an IAM role is not available.
+    required: false
+    show_user: true
+    secret: true
+  - name: secret_access_key
+    type: password
+    title: AWS Secret Access Key
+    description: Mapped to `AWS_SECRET_ACCESS_KEY`.
+    required: false
+    show_user: true
+    secret: true
+  - name: session_token
+    type: password
+    title: AWS Session Token
+    description: Mapped to `AWS_SESSION_TOKEN` for temporary STS credentials.
+    required: false
+    show_user: false
+    secret: true
+  - name: role_arn
+    type: text
+    title: AWS Role ARN
+    description: Mapped to `AWS_ROLE_ARN`.
+    required: false
+    show_user: true
+  - name: external_id
+    type: password
+    title: AWS External ID
+    description: Mapped to `AWS_ROLE_EXTERNAL_ID`.
+    required: false
+    show_user: true
+    secret: true
+  # --- Receiver tunables ---
+  - name: poll_interval
+    type: duration
+    title: Poll Interval
+    description: How often the receiver polls CloudWatch (for example, `5m`, `1m`).
+    default: 5m
+    required: false
+    show_user: true
+  - name: autodiscover_limit
+    type: integer
+    title: Autodiscover Limit
+    description: Maximum number of metrics to enumerate per namespace. Higher values pick up more metrics but cost more API calls.
+    default: 100
+    required: false
+    show_user: true
+  - name: autodiscover_period
+    type: duration
+    title: Statistic Period
+    description: CloudWatch statistic period applied to every discovered metric.
+    default: 60s
+    required: false
+    show_user: true
+  - name: autodiscover_aggregation
+    type: select
+    title: Aggregation Statistic
+    description: CloudWatch statistic applied to every discovered metric. Use `Sum` for counters and `Average` for gauges; pick the one that matches the bulk of metrics in the namespace.
+    default: Average
+    required: false
+    show_user: true
+    options:
+      - value: Sum
+        text: Sum
+      - value: Average
+        text: Average
+      - value: Maximum
+        text: Maximum
+      - value: Minimum
+        text: Minimum
+      - value: SampleCount
+        text: SampleCount
+  - name: maximum_number_of_metrics_in_a_call
+    type: integer
+    title: Maximum Metrics Per Call
+    description: Maximum number of metrics queried in a single CloudWatch GetMetricData call.
+    default: 100
+    required: false
+    show_user: false
+
+# --- Policy templates: one per AWS service ---
+# Each template hardcodes a single CloudWatch namespace and uses autodiscover
+# to enumerate its metrics — so newly published metrics from AWS are picked up
+# automatically without package changes. New services can be added by introducing
+# a new `<svc>.yml.hbs` file plus a policy_template entry below.
+policy_templates:
+  - name: aws_ec2
+    type: metrics
+    title: AWS EC2 Metrics (OpenTelemetry)
+    description: Collect AWS/EC2 CloudWatch metrics via autodiscover.
+    input: otelcol
+    template_path: ec2.yml.hbs
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: observability
+        division: engineering
+        team: obs-infraobs-integrations
+
+  - name: lambda
+    type: metrics
+    title: AWS Lambda Metrics (OpenTelemetry)
+    description: Collect AWS/Lambda CloudWatch metrics via autodiscover.
+    input: otelcol
+    template_path: lambda.yml.hbs
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: observability
+        division: engineering
+        team: obs-infraobs-integrations
+
+  - name: rds
+    type: metrics
+    title: AWS RDS Metrics (OpenTelemetry)
+    description: Collect AWS/RDS CloudWatch metrics via autodiscover.
+    input: otelcol
+    template_path: rds.yml.hbs
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: observability
+        division: engineering
+        team: obs-infraobs-integrations
+
+  - name: sqs
+    type: metrics
+    title: AWS SQS Metrics (OpenTelemetry)
+    description: Collect AWS/SQS CloudWatch metrics via autodiscover.
+    input: otelcol
+    template_path: sqs.yml.hbs
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: observability
+        division: engineering
+        team: obs-infraobs-integrations
+
+  - name: elb
+    type: metrics
+    title: AWS Application ELB Metrics (OpenTelemetry)
+    description: Collect AWS/ApplicationELB CloudWatch metrics via autodiscover.
+    input: otelcol
+    template_path: elb.yml.hbs
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: observability
+        division: engineering
+        team: obs-infraobs-integrations
+
+  - name: fargate
+    type: metrics
+    title: AWS ECS / Fargate Metrics (OpenTelemetry)
+    description: Collect AWS/ECS CloudWatch metrics via autodiscover. For task-level Fargate metrics, also enable Container Insights on the cluster.
+    input: otelcol
+    template_path: fargate.yml.hbs
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: observability
+        division: engineering
+        team: obs-infraobs-integrations
+
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic

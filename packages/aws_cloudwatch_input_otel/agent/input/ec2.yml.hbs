@@ -1,0 +1,40 @@
+receivers:
+  awscloudwatchmetrics:
+    region: {{region}}
+{{#if profile}}
+    profile: {{profile}}
+{{/if}}
+{{#if imds_endpoint}}
+    imds_endpoint: {{imds_endpoint}}
+{{/if}}
+    poll_interval: {{poll_interval}}
+    maximum_number_of_metrics_in_a_call: {{maximum_number_of_metrics_in_a_call}}
+    metrics:
+      autodiscover:
+        namespace: "AWS/EC2"
+        limit: {{autodiscover_limit}}
+        period: {{autodiscover_period}}
+        aws_aggregation: {{autodiscover_aggregation}}
+
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+    system:
+      hostname_sources: ["os"]
+      resource_attributes:
+        host.name:
+          enabled: true
+        host.id:
+          enabled: false
+  resourcedetection/aws:
+    detectors: ["ec2", "ecs"]
+    timeout: 2s
+    override: false
+
+service:
+  pipelines:
+    metrics:
+      receivers: [awscloudwatchmetrics]
+      processors:
+        - resourcedetection/system
+        - resourcedetection/aws
