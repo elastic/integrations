@@ -24,7 +24,7 @@ The XM Cyber integration collects the following types of data:
 
 | Data stream | Description | Endpoint |
 |---|---|---|
-| `risk_score` | Organization-level security grade (A–F), numeric risk score, trend data, and per-scenario breakdowns | `/api/systemReport/riskScoreV2` |
+| `risk_score` | Organization-level security grade (A–F), numeric risk score, trend data, and per-scenario breakdowns | `/api/scenarios/v2/scenarios/riskScore` |
 
 ### Supported use cases
 
@@ -243,4 +243,4 @@ These XM Cyber REST API endpoints are used by this integration:
 |---|---|---|---|
 | `/api/auth` | POST | all | Exchange API key for Bearer access token |
 | `/api/refresh-token` | POST | all | Refresh an expired access token |
-| `/api/systemReport/riskScoreV2` | GET | `risk_score` | Organization risk score and grade |
+| `/api/scenarios/v2/scenarios/riskScore` | GET | `risk_score` | Organization risk score and grade |
