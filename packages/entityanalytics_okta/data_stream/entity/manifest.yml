@@ -14,15 +14,89 @@ streams:
         multi: false
         required: true
         show_user: true
-        description: The Okta domain. For example, dev-123456.okta.com.
+        description: The URL of your Okta domain. For example, https://dev-123456.okta.com.
+      - name: okta_token_url
+        type: text
+        title: Token URL
+        multi: false
+        required: false
+        show_user: false
+        description: The URL of your Okta token endpoint. Only required if you are using a custom token endpoint. By default, it is the same as the domain URL with /oauth2/v1/token appended. For example, https://dev-123456.okta.com/oauth2/v1/token.
       - name: okta_token
         type: password
         title: Okta API Token
         multi: false
-        required: true
+        required: false
         show_user: true
-        description: The Okta API token, used for authentication.
+        description: |
+          The API Key of your Okta service application. This is required for standard API Key based authentication only.
+          Do not use this field if you are using standard OAuth2 authentication or Okta Integration Network (OIN) app authentication.
         secret: true
+      - name: client_id
+        type: text
+        title: Client ID
+        multi: false
+        required: false
+        show_user: true
+        description: |
+          The Client ID of your Okta service application.
+          This is required for standard OAuth2 authentication and OIN app authentication.
+          Do not use this field if you are using API Key based authentication.
+      - name: client_secret
+        type: password
+        title: Client Secret
+        multi: false
+        required: false
+        show_user: true
+        description: |
+          The Client Secret of your Okta service application.
+          This is required for standard OAuth2 authentication and OIN app authentication.
+          Do not use this field if you are using API Key based authentication.
+        secret: true
+      - name: jwk_json
+        type: password
+        title: JWK JSON
+        multi: false
+        required: false
+        show_user: true
+        description: |
+          The private JSON Web Key (JWK) of your Okta service application.
+          This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
+          Only one of JWK JSON, PEM Encoded Key or JWK File may be used.
+        secret: true
+      - name: key_pem
+        type: textarea
+        title: PEM Encoded Key
+        multi: false
+        required: false
+        show_user: true
+        description: |
+          The private key of your Okta service application in PEM format.
+          This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
+          Only one of JWK JSON, PEM Encoded Key or JWK File may be used.
+      - name: jwk_file
+        type: text
+        title: JWK File
+        multi: false
+        required: false
+        show_user: true
+        description: |
+          The path to the file containing the private JSON Web Key (JWK) of your Okta service application.
+          This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
+          Only one of JWK JSON, PEM Encoded Key or JWK File may be used.
+      - name: okta_scopes
+        type: text
+        title: Okta Scopes
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - okta.users.read
+          - okta.devices.read
+        description: |
+          This is the list of 'okta.*' scopes that your Okta service application has access to.
+          This is required for standard OAuth2 authentication and OIN app authentication.
+          Do not use this field if you are using API Key based authentication.
       - name: dataset
         type: select
         title: Okta Dataset
@@ -56,6 +130,49 @@ streams:
           users' actions. Enabling this setting increases the number of requests to the
           /api/v1/users endpoint, with one request per user, which counts toward your Okta rate
           limits.
+      - name: enrich_user_factors
+        type: bool
+        title: Enrich User Factors
+        multi: false
+        required: false
+        show_user: true
+        default: false
+        description: >-
+          Enrich user entities with their Okta MFA factor data to determine whether MFA is enabled.
+          Enabling this setting increases the number of requests to the /api/v1/users endpoint,
+          with one request per user, which counts toward your Okta rate limits.
+      - name: enrich_user_perms
+        type: bool
+        title: Enrich User Permissions
+        multi: false
+        required: false
+        show_user: true
+        default: false
+        description: >-
+          Enrich user entities with the permissions assigned to their custom Okta roles. Enabling
+          this option implicitly enables role enrichment. Requires the okta.roles.read OAuth2 scope
+          and introduces one additional API call per custom role per user.
+      - name: enrich_user_devices
+        type: bool
+        title: Enrich User Devices
+        multi: false
+        required: false
+        show_user: true
+        default: false
+        description: >-
+          Enrich user entities with the list of devices enrolled for each user. Enabling this
+          setting increases the number of requests to the Okta API, with one request per user,
+          which counts toward your Okta rate limits.
+      - name: enrich_user_supervises
+        type: bool
+        title: Enrich User Supervises
+        multi: false
+        required: false
+        show_user: true
+        default: false
+        description: >-
+          Enrich user entities with the list of users they supervise (direct reports). This data
+          is derived from the managerId field and does not require additional API calls.
       - name: sync_interval
         type: text
         title: Sync Interval

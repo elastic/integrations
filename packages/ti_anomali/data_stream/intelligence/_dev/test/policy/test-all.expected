@@ -25,7 +25,64 @@ inputs:
                     - web
                     - production
                 target: environment
-          program: "state.with(\n\trequest(\n\t\t\"GET\",\n\t\tstate.url.trim_right(\"/\") + \"/api/v2/intelligence/?\" + {\n\t\t\t\"order_by\": [\"update_id\"],\n\t\t\t\"modified_ts__lt\": [(now - duration(state.delay)).format(time_layout.RFC3339)],\n\t\t\t?\"modified_ts__gt\": state.?cursor.last_update_id.orValue(null) == null ? optional.of([(now - duration(state.initial_interval)).format(time_layout.RFC3339)]) : optional.none(),\n\t\t\t\"limit\": [string(state.page_size)],\n\t\t\t?\"update_id__gt\": state.?cursor.last_update_id.optMap(id, [string(int(id))]),\n\t\t\t?\"remote_api\": state.remote_api_true ? optional.of([\"true\"]) : optional.none(), // never set remote_api=false, only true or absent\n\t\t\t?\"q\": state.?query.orValue(\"\") != \"\" ? optional.of([state.query]) : optional.none(),\n\t\t}.format_query()\n\t).with(\n\t\t{\n\t\t\t\"Header\": {\n\t\t\t\t\"Authorization\": [\"apikey \" + state.username + \":\" + state.api_key],\n\t\t\t},\n\t\t}\n\t).do_request().as(resp,\n\t\t(resp.StatusCode == 200) ?\n\t\t\tbytes(resp.Body).decode_json().as(body,\n\t\t\t\t{\n\t\t\t\t\t\"events\": body.objects.map(obj,\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"json\": obj,\n\t\t\t\t\t\t\t?\"event\": state.?preserve_original_event.orValue(false) ?\n\t\t\t\t\t\t\t\toptional.of({\"original\": obj.encode_json()})\n\t\t\t\t\t\t\t:\n\t\t\t\t\t\t\t\toptional.none(),\n\t\t\t\t\t\t}\n\t\t\t\t\t),\n\t\t\t\t\t\"want_more\": body.meta.next != null,\n\t\t\t\t\t\"cursor\": (has(state.cursor) ? state.cursor : {}).with(\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t?\"last_update_id\": (body.objects.size() > 0) ? optional.of(body.objects[body.objects.size() - 1].update_id) : optional.none(),\n\t\t\t\t\t\t}\n\t\t\t\t\t),\n\t\t\t\t}\n\t\t\t)\n\t\t:\n\t\t\t{\n\t\t\t\t\"events\": {\n\t\t\t\t\t\"error\": {\n\t\t\t\t\t\t\"code\": string(resp.StatusCode),\n\t\t\t\t\t\t\"id\": string(resp.Status),\n\t\t\t\t\t\t\"message\": \"GET:\" + \n\t\t\t\t\t\t(\n\t\t\t\t\t\t\t(size(resp.Body) != 0) ?\n\t\t\t\t\t\t\t\tstring(resp.Body)\n\t\t\t\t\t\t\t:\n\t\t\t\t\t\t\t\tstring(resp.Status) + \" (\" + string(resp.StatusCode) + \")\"\n\t\t\t\t\t\t),\n\t\t\t\t\t},\n\t\t\t\t},\n\t\t\t\t\"want_more\": false,\n\t\t\t}\n\t)\n)"
+          program: |-
+            state.with(
+              request(
+                "GET",
+                state.url.trim_right("/") + "/api/v2/intelligence/?" + {
+                  "order_by": ["update_id"],
+                  "modified_ts__lt": [(now - duration(state.delay)).format(time_layout.RFC3339)],
+                  ?"modified_ts__gt": (state.?cursor.last_update_id.orValue(null) == null) ? optional.of([(now - duration(state.initial_interval)).format(time_layout.RFC3339)]) : optional.none(),
+                  "limit": [string(state.page_size)],
+                  ?"update_id__gt": state.?cursor.last_update_id.optMap(id, [string(int(id))]),
+                  ?"remote_api": state.remote_api_true ? optional.of(["true"]) : optional.none(), // never set remote_api=false, only true or absent
+                  ?"q": (state.?query.orValue("") != "") ? optional.of([state.query]) : optional.none(),
+                }.format_query()
+              ).with(
+                {
+                  "Header": {
+                    "Authorization": ["apikey " + state.username + ":" + state.api_key],
+                  },
+                }
+              ).do_request().as(resp,
+                (resp.StatusCode == 200) ?
+                  resp.Body.decode_json().as(body,
+                    {
+                      "events": body.objects.map(obj,
+                        {
+                          "json": obj,
+                          ?"event": state.?preserve_original_event.orValue(false) ?
+                            optional.of({"original": obj.encode_json()})
+                          :
+                            optional.none(),
+                        }
+                      ),
+                      "want_more": body.meta.next != null,
+                      "cursor": (has(state.cursor) ? state.cursor : {}).with(
+                        {
+                          ?"last_update_id": (body.objects.size() > 0) ? optional.of(body.objects[body.objects.size() - 1].update_id) : optional.none(),
+                        }
+                      ),
+                    }
+                  )
+                :
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": string(resp.Status),
+                        "message": "GET " + state.url.trim_right("/") + "/api/v2/intelligence/: " + (
+                          (size(resp.Body) != 0) ?
+                            string(resp.Body)
+                          :
+                            string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                        ),
+                      },
+                    },
+                    "want_more": false,
+                  }
+              )
+            )
           publisher_pipeline.disable_host: true
           redact:
             fields:
@@ -53,6 +110,10 @@ inputs:
               sxSmbIUfc2SGJGCJD4I=
               -----END CERTIFICATE-----
           resource.timeout: 30s
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
           resource.url: https://api.threatstream.com
           state:
             api_key: ${SECRET_0}

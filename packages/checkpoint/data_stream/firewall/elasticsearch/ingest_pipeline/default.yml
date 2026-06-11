@@ -194,11 +194,12 @@ processors:
       tag: fingerprint_93b78c95
       if: ctx._id == null
       fields:
-        - '@timestamp'
         - checkpoint.loguid
         - checkpoint.time
         - checkpoint.segment_time
+        - checkpoint.lastupdatetime
         - checkpoint.sequencenum
+        - checkpoint.update_count
       target_field: "_id"
       ignore_missing: true
   - append:
@@ -399,6 +400,23 @@ processors:
       field: checkpoint.originsicname
       target_field: checkpoint.origin_sic_name
       ignore_missing: true
+  # Extract the gateway hostname from the CN of the SIC distinguished name
+  # (e.g. "CN=fwcp1,O=mgmt..xyz" -> "fwcp1") and expose it as observer.hostname.
+  # observer.name is intentionally left as-is (the origin IP) to avoid a breaking
+  # change for existing queries/dashboards.
+  - grok:
+      tag: grok_checkpoint_origin_sic_name_cn
+      field: checkpoint.origin_sic_name
+      patterns:
+        - '(?i)^CN=%{DATA:_temp_.sic_cn},O=%{GREEDYDATA}$'
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      tag: set_observer_hostname_from_sic_cn
+      field: observer.hostname
+      copy_from: _temp_.sic_cn
+      override: false
+      ignore_empty_value: true
   - set:
       tag: set_event_kind_543e5f23
       field: event.kind
@@ -550,6 +568,24 @@ processors:
       value: "{{{destination.nat.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.nat?.ip != null
+  - append:
+      tag: append_related_ip_from_checkpoint_origin
+      field: related.ip
+      value: "{{{checkpoint.origin}}}"
+      allow_duplicates: false
+      if: ctx.checkpoint?.origin != null
+  - append:
+      tag: append_related_ip_from_checkpoint_origin_ip
+      field: related.ip
+      value: "{{{checkpoint.origin_ip}}}"
+      allow_duplicates: false
+      if: ctx.checkpoint?.origin_ip != null
+  - append:
+      tag: append_related_ip_from_checkpoint_endpoint_ip
+      field: related.ip
+      value: "{{{checkpoint.endpoint_ip}}}"
+      allow_duplicates: false
+      if: ctx.checkpoint?.endpoint_ip != null
   - append:
       tag: append_related_hash_30ccfa66
       field: related.hash
@@ -844,6 +880,11 @@ processors:
       field: checkpoint.last_detection
       target_field: event.end
       ignore_missing: true
+  - convert:
+      type: float
+      tag: convert_risk_score
+      field: checkpoint.app_risk
+      if: ctx.checkpoint?.app_risk != null
   - rename:
       tag: rename_checkpoint_app_risk_to_event_risk_score_75222087
       field: checkpoint.app_risk
@@ -1066,11 +1107,25 @@ processors:
       field: checkpoint.packets
       type: long
       ignore_missing: true
+      ignore_failure: true
   - rename:
       tag: rename_checkpoint_packets_to_network_packets_c4dea38a
       field: checkpoint.packets
       target_field: network.packets
       ignore_missing: true
+      if: ctx.checkpoint?.packets instanceof Number
+  - convert:
+      tag: convert_checkpoint_packet_amount_ff3e9341
+      field: checkpoint.packet_amount
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      tag: set_network_packets_from_checkpoint_packet_amount_205f4365
+      field: network.packets
+      copy_from: checkpoint.packet_amount
+      ignore_empty_value: true
+      if: ctx.network?.packets == null && ctx.checkpoint?.packet_amount instanceof Number
   - rename:
       tag: rename_checkpoint_layer_name_to_network_name_4d820e3c
       field: checkpoint.layer_name
@@ -1108,10 +1163,20 @@ processors:
       field: checkpoint.type
       target_field: observer.type
       ignore_missing: true
-  - rename:
-      tag: rename_checkpoint_origin_to_observer_name_c3218521
+  - append:
+      tag: append_observer_ip_from_checkpoint_origin
+      field: observer.ip
+      value: "{{{checkpoint.origin}}}"
+      allow_duplicates: false
+      if: ctx.checkpoint?.origin != null
+  - set:
+      tag: set_observer_name_from_checkpoint_origin
+      field: observer.name
+      copy_from: checkpoint.origin
+      ignore_empty_value: true
+  - remove:
+      tag: remove_checkpoint_origin
       field: checkpoint.origin
-      target_field: observer.name
       ignore_missing: true
   - rename:
       tag: rename_checkpoint_mac_address_to__temp__observer_mac_dd3186af
@@ -1137,7 +1202,8 @@ processors:
       tag: append_observer_ip_8b0aa837
       value: "{{{checkpoint.origin_ip}}}"
       field: observer.ip
-      if: ctx.checkpoint?.origin_ip != null
+      allow_duplicates: false
+      if: ctx.checkpoint?.origin_ip != null && ctx.observer?.ip == null
   - append:
       tag: append_observer_ip_f1f37abb
       value: "{{{checkpoint.endpoint_ip}}}"
@@ -1349,17 +1415,17 @@ processors:
       target_field: "@timestamp"
       ignore_missing: true
   - date:
-      tag: date_checkpoint_lastupdatetime_to_event_end_869e28e8
-      field: checkpoint.lastupdatetime
-      formats: ["ISO8601", "UNIX"]
-      target_field: event.end
-      if: "ctx.checkpoint?.lastupdatetime != null"
-  - date:
       tag: date_checkpoint_last_hit_time_to_event_end_6aeafa0a
       field: checkpoint.last_hit_time
-      formats: ["ISO8601", "UNIX"]
+      formats: ["UNIX"]
       target_field: event.end
       if: "ctx.checkpoint?.last_hit_time != null"
+  - date:
+      tag: date_checkpoint_lastupdatetime_to_event_end_869e28e8
+      field: checkpoint.lastupdatetime
+      formats: ["UNIX"]
+      target_field: event.end
+      if: "ctx.checkpoint?.lastupdatetime != null"
   - date:
       tag: date_checkpoint_creation_time_to_event_start_f2bceb79
       field: checkpoint.creation_time

@@ -1,0 +1,2079 @@
+{
+    "attributes": {
+        "title": "[ActiveMQ OTel] Destinations & Message Flow",
+        "description": "Queues, topics, message flow, and destination-level errors.",
+        "panelsJSON": [
+            {
+                "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "title": "Navigation",
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "756a792e-f0f8-cddb-73d2-c3067261ca61",
+                                "order": 1,
+                                "label": "Broker Health & Capacity",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_756a792e-f0f8-cddb-73d2-c3067261ca61_dashboard"
+                            },
+                            {
+                                "id": "0f00cfd2-f106-3406-8e77-4bd310364983",
+                                "order": 2,
+                                "label": "Destinations & Message Flow",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_0f00cfd2-f106-3406-8e77-4bd310364983_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 12,
+                    "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [ActiveMQ OTel] Destinations & Message Flow\n\nQueues, topics, and message flow:\n- Total queue depth, consumers, producers\n- Queue depth, enqueue/dequeue rate by destination\n- Message wait time, inflight messages\n- DLQ depth, expired messages, blocked sends\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "e8186f45-16d4-5204-de22-68ab72877b2c",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 6,
+                    "h": 4,
+                    "i": "e8186f45-16d4-5204-de22-68ab72877b2c"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Total Queue Depth",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "23c78476-ed14-0ccb-7705-c585c34d96bd",
+                                "layerType": "data",
+                                "metricAccessor": "6aaf2f2b-fe78-63f2-4cec-ab36a4f83f77",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.message.current IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS depth_per_dest = MAX(activemq.message.current) BY dest\n| STATS total_depth = SUM(depth_per_dest)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "23c78476-ed14-0ccb-7705-c585c34d96bd": {
+                                            "query": {
+                                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.message.current IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS depth_per_dest = MAX(activemq.message.current) BY dest\n| STATS total_depth = SUM(depth_per_dest)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "total_depth",
+                                                    "columnId": "6aaf2f2b-fe78-63f2-4cec-ab36a4f83f77",
+                                                    "label": "Queue Depth",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "total_depth",
+                                                    "columnId": "6aaf2f2b-fe78-63f2-4cec-ab36a4f83f77",
+                                                    "label": "Queue Depth",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "a24dc1de-349a-229b-63ca-94836f9742de",
+                "gridData": {
+                    "x": 22,
+                    "y": 2,
+                    "w": 6,
+                    "h": 4,
+                    "i": "a24dc1de-349a-229b-63ca-94836f9742de"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Total Consumers",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "6c5c52af-8534-56e7-1e2f-bcdd62a13d50",
+                                "layerType": "data",
+                                "metricAccessor": "8268c0cb-e6d9-6281-11f8-f113db5bd493",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.consumer.count IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS consumers = SUM(activemq.consumer.count)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "6c5c52af-8534-56e7-1e2f-bcdd62a13d50": {
+                                            "query": {
+                                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.consumer.count IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS consumers = SUM(activemq.consumer.count)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "consumers",
+                                                    "columnId": "8268c0cb-e6d9-6281-11f8-f113db5bd493",
+                                                    "label": "Consumers",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "consumers",
+                                                    "columnId": "8268c0cb-e6d9-6281-11f8-f113db5bd493",
+                                                    "label": "Consumers",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "296a91a7-3ed6-05ff-7816-7ad1aa3d880a",
+                "gridData": {
+                    "x": 28,
+                    "y": 2,
+                    "w": 6,
+                    "h": 4,
+                    "i": "296a91a7-3ed6-05ff-7816-7ad1aa3d880a"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "attributes": {
+                        "title": "Total Producers",
+                        "visualizationType": "lnsMetric",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layerId": "cd292a98-d96d-edd9-8211-33dc856db926",
+                                "layerType": "data",
+                                "metricAccessor": "8da07eb7-f08b-44db-de8f-f49fcb06f65b",
+                                "showBar": false,
+                                "applyColorTo": "background"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.producer.count IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS producers = SUM(activemq.producer.count)"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "cd292a98-d96d-edd9-8211-33dc856db926": {
+                                            "query": {
+                                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.producer.count IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS producers = SUM(activemq.producer.count)"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "producers",
+                                                    "columnId": "8da07eb7-f08b-44db-de8f-f49fcb06f65b",
+                                                    "label": "Producers",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "producers",
+                                                    "columnId": "8da07eb7-f08b-44db-de8f-f49fcb06f65b",
+                                                    "label": "Producers",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "compact": true
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "bed51f6b-2cf7-8330-9115-4280d8168bf8",
+                "gridData": {
+                    "x": 0,
+                    "y": 14,
+                    "w": 48,
+                    "h": 12,
+                    "i": "bed51f6b-2cf7-8330-9115-4280d8168bf8"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Queue Depth Over Time by Destination",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "8cd86c89-8714-5bcd-e06f-a83526356832",
+                                        "accessors": [
+                                            "9728bb02-8c5e-d1aa-99b3-5191ba4110f6"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Queue Depth",
+                                "yLeftTitle": "Queue Depth",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.message.current IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS depth = AVG(activemq.message.current) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "8cd86c89-8714-5bcd-e06f-a83526356832": {
+                                            "query": {
+                                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.message.current IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS depth = AVG(activemq.message.current) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "depth",
+                                                    "columnId": "9728bb02-8c5e-d1aa-99b3-5191ba4110f6",
+                                                    "label": "Queue Depth",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                                    "label": "dest",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "depth",
+                                                    "columnId": "9728bb02-8c5e-d1aa-99b3-5191ba4110f6",
+                                                    "label": "Queue Depth",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                                    "label": "dest",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "091c4950-236b-bff8-3221-b01a9aa6af4b",
+                "gridData": {
+                    "x": 0,
+                    "y": 26,
+                    "w": 24,
+                    "h": 10,
+                    "i": "091c4950-236b-bff8-3221-b01a9aa6af4b"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Enqueue Rate by Destination",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "ce484978-422f-d85b-82df-9beb819459f0",
+                                        "accessors": [
+                                            "8c147cf9-1748-f3cb-2067-914f700a54a9"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Enqueue/sec",
+                                "yLeftTitle": "Enqueue/sec",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.message.enqueued IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS enqueue_rate = SUM(RATE(activemq.message.enqueued)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "ce484978-422f-d85b-82df-9beb819459f0": {
+                                            "query": {
+                                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.message.enqueued IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS enqueue_rate = SUM(RATE(activemq.message.enqueued)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "enqueue_rate",
+                                                    "columnId": "8c147cf9-1748-f3cb-2067-914f700a54a9",
+                                                    "label": "Enqueue/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                                    "label": "dest",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "enqueue_rate",
+                                                    "columnId": "8c147cf9-1748-f3cb-2067-914f700a54a9",
+                                                    "label": "Enqueue/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                                    "label": "dest",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "64b4eb23-52b4-4845-3e64-633453196991",
+                "gridData": {
+                    "x": 24,
+                    "y": 26,
+                    "w": 24,
+                    "h": 10,
+                    "i": "64b4eb23-52b4-4845-3e64-633453196991"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Dequeue Rate by Destination",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "b53b9a15-e44c-7e61-2ec4-ecebf0479f63",
+                                        "accessors": [
+                                            "03357bf8-cc14-7ab1-8f19-1de30bc343e7"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Dequeue/sec",
+                                "yLeftTitle": "Dequeue/sec",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.message.dequeued IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS dequeue_rate = SUM(RATE(activemq.message.dequeued)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "b53b9a15-e44c-7e61-2ec4-ecebf0479f63": {
+                                            "query": {
+                                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.message.dequeued IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS dequeue_rate = SUM(RATE(activemq.message.dequeued)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "dequeue_rate",
+                                                    "columnId": "03357bf8-cc14-7ab1-8f19-1de30bc343e7",
+                                                    "label": "Dequeue/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                                    "label": "dest",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "dequeue_rate",
+                                                    "columnId": "03357bf8-cc14-7ab1-8f19-1de30bc343e7",
+                                                    "label": "Dequeue/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                                    "label": "dest",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "cb13bf03-477b-7a80-131b-6cb953898f84",
+                "gridData": {
+                    "x": 0,
+                    "y": 36,
+                    "w": 24,
+                    "h": 10,
+                    "i": "cb13bf03-477b-7a80-131b-6cb953898f84"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Message Wait Time by Destination",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "fe7dee46-5ab2-8bd1-3ad3-20e877e7bf74",
+                                        "accessors": [
+                                            "e4ef6d2d-1590-52bc-46fd-b060eca957e5"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Wait Time (ms)",
+                                "yLeftTitle": "Wait Time (ms)",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.message.wait_time.avg IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS wait_ms = AVG(activemq.message.wait_time.avg) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "fe7dee46-5ab2-8bd1-3ad3-20e877e7bf74": {
+                                            "query": {
+                                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.message.wait_time.avg IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS wait_ms = AVG(activemq.message.wait_time.avg) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "wait_ms",
+                                                    "columnId": "e4ef6d2d-1590-52bc-46fd-b060eca957e5",
+                                                    "label": "Wait Time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                                    "label": "dest",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "wait_ms",
+                                                    "columnId": "e4ef6d2d-1590-52bc-46fd-b060eca957e5",
+                                                    "label": "Wait Time (ms)",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                                    "label": "dest",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "aacd228d-58f9-ef74-3e33-4185e3dca8d3",
+                "gridData": {
+                    "x": 24,
+                    "y": 36,
+                    "w": 24,
+                    "h": 10,
+                    "i": "aacd228d-58f9-ef74-3e33-4185e3dca8d3"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Inflight Messages (Queue + Topic)",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "ad6c62e0-5431-23bf-2d3b-5f891c2dd750",
+                                        "accessors": [
+                                            "6366301b-51c6-bc29-d346-34dfcb19c8b2"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Inflight Messages",
+                                "yLeftTitle": "Inflight Messages",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.queue.message.inflight IS NOT NULL OR activemq.topic.message.inflight IS NOT NULL\n| EVAL inflight = COALESCE(activemq.queue.message.inflight, 0) + COALESCE(activemq.topic.message.inflight, 0)\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS inflight = AVG(inflight) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "ad6c62e0-5431-23bf-2d3b-5f891c2dd750": {
+                                            "query": {
+                                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.queue.message.inflight IS NOT NULL OR activemq.topic.message.inflight IS NOT NULL\n| EVAL inflight = COALESCE(activemq.queue.message.inflight, 0) + COALESCE(activemq.topic.message.inflight, 0)\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS inflight = AVG(inflight) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "inflight",
+                                                    "columnId": "6366301b-51c6-bc29-d346-34dfcb19c8b2",
+                                                    "label": "Inflight",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                                    "label": "dest",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "inflight",
+                                                    "columnId": "6366301b-51c6-bc29-d346-34dfcb19c8b2",
+                                                    "label": "Inflight",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                                    "label": "dest",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "fb2680a9-5ed1-18dc-39e0-c902fb256578",
+                "gridData": {
+                    "x": 0,
+                    "y": 46,
+                    "w": 24,
+                    "h": 10,
+                    "i": "fb2680a9-5ed1-18dc-39e0-c902fb256578"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "DLQ Depth Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "320c837e-fa84-8666-451f-31a35e3faa54",
+                                        "accessors": [
+                                            "df2170c7-70eb-e63a-998d-aca0606a6f73"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Messages",
+                                "yLeftTitle": "Messages",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.message.current IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest == \"ActiveMQ.DLQ\"\n| STATS dlq_depth = AVG(activemq.message.current) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "320c837e-fa84-8666-451f-31a35e3faa54": {
+                                            "query": {
+                                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.message.current IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest == \"ActiveMQ.DLQ\"\n| STATS dlq_depth = AVG(activemq.message.current) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "dlq_depth",
+                                                    "columnId": "df2170c7-70eb-e63a-998d-aca0606a6f73",
+                                                    "label": "DLQ Depth",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "dlq_depth",
+                                                    "columnId": "df2170c7-70eb-e63a-998d-aca0606a6f73",
+                                                    "label": "DLQ Depth",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "257d4242-9b60-2110-f517-3a0c2a261638",
+                "gridData": {
+                    "x": 24,
+                    "y": 46,
+                    "w": 24,
+                    "h": 10,
+                    "i": "257d4242-9b60-2110-f517-3a0c2a261638"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Expired Messages by Destination",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "654d4934-4768-19e9-4bf7-b5a960f428c3",
+                                        "accessors": [
+                                            "76174d3a-761a-04d5-76ce-4deb6f1e4f1a"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Expired/sec",
+                                "yLeftTitle": "Expired/sec",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.message.expired IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS expired_rate = SUM(RATE(activemq.message.expired)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "654d4934-4768-19e9-4bf7-b5a960f428c3": {
+                                            "query": {
+                                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.message.expired IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS expired_rate = SUM(RATE(activemq.message.expired)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "expired_rate",
+                                                    "columnId": "76174d3a-761a-04d5-76ce-4deb6f1e4f1a",
+                                                    "label": "Expired/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                                    "label": "dest",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "expired_rate",
+                                                    "columnId": "76174d3a-761a-04d5-76ce-4deb6f1e4f1a",
+                                                    "label": "Expired/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                                    "label": "dest",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "3e1fb174-fc95-5b1a-a542-f2820cf3fdc3",
+                "gridData": {
+                    "x": 0,
+                    "y": 56,
+                    "w": 24,
+                    "h": 10,
+                    "i": "3e1fb174-fc95-5b1a-a542-f2820cf3fdc3"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Blocked Sends by Destination",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "1fe75635-f6fe-143d-a282-4ab1699085cd",
+                                        "accessors": [
+                                            "e6ff5b96-51e0-04fe-994b-aaa091b31f98"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "yTitle": "Blocked/sec",
+                                "yLeftTitle": "Blocked/sec",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            },
+                            "query": {
+                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.queue.blocked.sends IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS blocked_rate = SUM(RATE(activemq.queue.blocked.sends)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest\n| SORT time_bucket ASC"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "1fe75635-f6fe-143d-a282-4ab1699085cd": {
+                                            "query": {
+                                                "esql": "TS metrics-activemq.otel-*\n| WHERE activemq.queue.blocked.sends IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS blocked_rate = SUM(RATE(activemq.queue.blocked.sends)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dest\n| SORT time_bucket ASC"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "blocked_rate",
+                                                    "columnId": "e6ff5b96-51e0-04fe-994b-aaa091b31f98",
+                                                    "label": "Blocked/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                                    "label": "dest",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "blocked_rate",
+                                                    "columnId": "e6ff5b96-51e0-04fe-994b-aaa091b31f98",
+                                                    "label": "Blocked/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "50a534ba-8488-e5c1-2c4b-035675cb88cc",
+                                                    "label": "dest",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "11ba8a29-debb-4c4e-3a4f-5922ed3ee0e9",
+                "gridData": {
+                    "x": 24,
+                    "y": 56,
+                    "w": 24,
+                    "h": 12,
+                    "i": "11ba8a29-debb-4c4e-3a4f-5922ed3ee0e9"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Destinations by Queue Depth",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "5fa30590-b343-a622-9303-d388ddb5c026",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "c59c9261-d0f8-e442-0df9-48740b636b0e",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "8f5c541c-6494-b8bd-c150-ed3c8785be2f",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.message.current IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS queue_depth = MAX(activemq.message.current) BY dest\n| SORT queue_depth DESC\n| LIMIT 20"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "8f5c541c-6494-b8bd-c150-ed3c8785be2f": {
+                                            "query": {
+                                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.message.current IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS queue_depth = MAX(activemq.message.current) BY dest\n| SORT queue_depth DESC\n| LIMIT 20"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "5fa30590-b343-a622-9303-d388ddb5c026",
+                                                    "label": "Destination",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "queue_depth",
+                                                    "columnId": "c59c9261-d0f8-e442-0df9-48740b636b0e",
+                                                    "label": "Queue Depth",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "dest",
+                                                    "columnId": "5fa30590-b343-a622-9303-d388ddb5c026",
+                                                    "label": "Destination",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "queue_depth",
+                                                    "columnId": "c59c9261-d0f8-e442-0df9-48740b636b0e",
+                                                    "label": "Queue Depth",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "d077a53d-935e-c56c-b333-604583143be1",
+                "gridData": {
+                    "x": 0,
+                    "y": 66,
+                    "w": 24,
+                    "h": 12,
+                    "i": "d077a53d-935e-c56c-b333-604583143be1"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Destination Type Distribution",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "e9021515-b5a9-ddd3-27d5-c39560d19220",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "219d2c0f-ed6b-ec76-59e4-18318f96ad2f",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "13dd65ce-f1f1-a54b-3a9e-7addf81549a8",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.destination.type IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS count = COUNT_DISTINCT(dest) BY activemq.destination.type\n| SORT count DESC\n| LIMIT 10"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "13dd65ce-f1f1-a54b-3a9e-7addf81549a8": {
+                                            "query": {
+                                                "esql": "FROM metrics-activemq.otel-*\n| WHERE activemq.destination.type IS NOT NULL\n| EVAL dest = COALESCE(activemq.destination.name, messaging.destination.name)\n| WHERE dest IS NOT NULL AND NOT (dest LIKE \"ActiveMQ.Advisory*\")\n| STATS count = COUNT_DISTINCT(dest) BY activemq.destination.type\n| SORT count DESC\n| LIMIT 10"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "activemq.destination.type",
+                                                    "columnId": "e9021515-b5a9-ddd3-27d5-c39560d19220",
+                                                    "label": "Type",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "count",
+                                                    "columnId": "219d2c0f-ed6b-ec76-59e4-18318f96ad2f",
+                                                    "label": "Count",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "activemq.destination.type",
+                                                    "columnId": "e9021515-b5a9-ddd3-27d5-c39560d19220",
+                                                    "label": "Type",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "count",
+                                                    "columnId": "219d2c0f-ed6b-ec76-59e4-18318f96ad2f",
+                                                    "label": "Count",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                }
+                                            ],
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "activemq.otel"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "activemq.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": false,
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "b0d7dd2e-3f13-3c25-5510-2cca888fde0a": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "b0d7dd2e-3f13-3c25-5510-2cca888fde0a",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "resource.attributes.activemq.broker.name",
+                        "title": "Broker",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                },
+                "4ee4a17d-4dcc-071c-221a-5bd1f9cab7ab": {
+                    "grow": false,
+                    "order": 1,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "4ee4a17d-4dcc-071c-221a-5bd1f9cab7ab",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "attributes.activemq.destination.type",
+                        "title": "Destination type",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "activemq_otel-destinations",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "activemq_otel-overview",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "activemq_otel-broker-health",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_756a792e-f0f8-cddb-73d2-c3067261ca61_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "activemq_otel-destinations",
+            "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_0f00cfd2-f106-3406-8e77-4bd310364983_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_b0d7dd2e-3f13-3c25-5510-2cca888fde0a:optionsListDataView"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_4ee4a17d-4dcc-071c-221a-5bd1f9cab7ab:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
+}

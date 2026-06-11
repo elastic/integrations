@@ -1,0 +1,51 @@
+{
+  "id": "haproxy_otel-requests-queued",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when `haproxy.requests.queued > 0` sustained. Any ongoing queue depth signals backend saturation.",
+    "name": "[HAProxy OTel] Requests queued at backend",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "haproxy"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "haproxy_otel-backend"
+        },
+        {
+          "id": "haproxy_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## HAProxy requests queued at backend\n\n### What fired\n`haproxy.requests.queued > 0` over the window.\n\n### Why it matters\nQueued requests wait for a free backend server slot. Sustained queueing causes cascading latency and eventual timeouts.\n\n### Triage\n1. Identify which backend is queueing and why.\n2. Inspect per-server max-conn saturation.\n3. Look at response time for the backend.\n\n### Remediation\n- Raise per-server capacity.\n- Add servers.\n\n### Tuning\n- Fires on any sustained queue.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-haproxyreceiver.otel-*\n// Queued requests (waiting for server) \u2014 use LAST_OVER_TIME for current value\n| WHERE haproxy.requests.queued IS NOT NULL\n| STATS max_queued = MAX(LAST_OVER_TIME(haproxy.requests.queued))\n  BY haproxy.proxy_name, haproxy.service_name, haproxy.addr\n// Any sustained queue indicates capacity saturation\n| WHERE max_queued > 0\n| EVAL alert_key = CONCAT(TO_STRING(haproxy.proxy_name), \"::\", TO_STRING(haproxy.service_name), \"::\", COALESCE(TO_STRING(haproxy.addr), \"\"))\n| SORT max_queued DESC\n| LIMIT 50"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "alert_key",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

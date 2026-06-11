@@ -10,60 +10,9 @@ processors:
       ignore_failure: true
       ignore_missing: true
       if: ctx.event?.original == null
-  - grok:
-      tag: grok_audit_original
-      field: event.original
-      pattern_definitions:
-        AUDIT_TYPE: 'type=%{NOTSPACE:auditd.log.record_type}'
-        AUDIT_NODE: 'node=%{IPORHOST:auditd.log.node} '
-        AUDIT_PREFIX: '^(?:%{AUDIT_NODE})?%{AUDIT_TYPE} msg=audit\(%{NUMBER:auditd.log.epoch}:%{NUMBER:auditd.log.sequence}\):(%{DATA})?'
-        AUDIT_KEY_VALUES: '%{WORD}=%{GREEDYDATA}'
-        AVC_PREFIX: 'avc:%{SPACE}%{WORD:auditd.log.avc.action}%{SPACE}{%{SPACE}%{WORD:auditd.log.avc.request}%{SPACE}}%{SPACE}for%{SPACE}'
-        MESSAGE: "(?:'(?:%{AVC_PREFIX}|[^=]*\\s)?%{ANY:auditd.log.sub_kv}'|\"([^=]*\\s)?%{ANY:auditd.log.sub_kv}\")"
-        GS: '\x1d'
-        ENRICHED_FIELDS: '((?:%{GS})%{AUDIT_KEY_VALUES:auditd.log.sub_kv_enriched})?'
-        ANY: ".*"
-      patterns:
-        - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} old auid=%{NUMBER:auditd.log.old_auid} new auid=%{NUMBER:auditd.log.new_auid} old ses=%{NUMBER:auditd.log.old_ses} new ses=%{NUMBER:auditd.log.new_ses}'
-        - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} msg=%{MESSAGE}%{ENRICHED_FIELDS}'
-        - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv}%{GS}%{WORD:auditd.log.original_field}={ %{AUDIT_KEY_VALUES:auditd.log.sub_kv} }'
-        - '%{AUDIT_PREFIX} %{AVC_PREFIX}?%{AUDIT_KEY_VALUES:auditd.log.kv}'
-        - '%{AUDIT_PREFIX}'
-        - '%{AUDIT_TYPE} %{AUDIT_KEY_VALUES:auditd.log.kv}'
-  - kv:
-      field: auditd.log.kv
-      field_split: '(?:\s+|\x1d)(?=[^\s\x1d]+=)'
-      value_split: '(?<!\\)='
-      target_field: auditd.log
-  - kv:
-      field: auditd.log.sub_kv
-      field_split: '\s+(?=[^\s]+=)'
-      value_split: '='
-      target_field: auditd.log
-      ignore_missing: true
-  - kv:
-      field: auditd.log.sub_kv_enriched
-      field_split: '\s+(?=[^\s]+=)'
-      value_split: '='
-      target_field: auditd.log
-      ignore_missing: true
-  - date:
-      field: auditd.log.epoch
-      target_field: "@timestamp"
-      formats:
-        - UNIX
-      ignore_failure: true
-  - lowercase:
-      field: auditd.log.original_field
-      ignore_missing: true
-  - rename:
-      ignore_failure: true
-      field: auditd.log.old-auid
-      target_field: auditd.log.old_auid
-  - rename:
-      ignore_failure: true
-      field: auditd.log.old-ses
-      target_field: auditd.log.old_ses
+  - pipeline:
+      if: ctx.auditd?.log?.record_type == null
+      name: '{{ IngestPipeline "raw" }}'
   - script:
       tag: script_process_fields
       lang: painless
@@ -2212,6 +2161,21 @@ processors:
       value: "unknown"
       ignore_failure: true
   - set:
+      if: (ctx?.event?.outcome == null && ctx?.auditd?.log?.result != null && ["1", "success"].contains(ctx.auditd.log.result))
+      field: event.outcome
+      value: "success"
+      ignore_failure: true
+  - set:
+      if: (ctx?.event?.outcome == null && ctx?.auditd?.log?.result != null && ["0", "failed"].contains(ctx.auditd.log.result))
+      field: event.outcome
+      value: "failure"
+      ignore_failure: true
+  - set:
+      if: (ctx?.event?.outcome == null && ctx?.auditd?.log?.result != null && !["0", "1", "success", "failed"].contains(ctx.auditd.log.result))
+      field: event.outcome
+      value: "unknown"
+      ignore_failure: true
+  - set:
       field: event.outcome
       value: unknown
       if: ctx.auditd?.log?.avc?.action != null && ctx.event?.outcome == null
@@ -2326,6 +2290,7 @@ processors:
         - auditd.log.copy
         - auditd.log.arch
         - auditd.log.res
+        - auditd.log.result
       ignore_failure: true
       ignore_missing: true
 on_failure:
@@ -2334,4 +2299,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" failed with message "{{{ _ingest.on_failure_message }}}"

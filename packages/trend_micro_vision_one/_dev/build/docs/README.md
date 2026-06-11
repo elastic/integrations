@@ -1,15 +1,15 @@
-# Trend Micro Vision One Integration for Elastic
+# TrendAI Vision One Integration for Elastic
 
 ## Overview
-The [Trend Micro Vision One](https://www.trendmicro.com/en_gb/business/products/one-platform.html) integration allows you to monitor Alert, Audit, Detection, Endpoint activity, Network activity, and Telemetry activity. Trend Micro Vision One refers to the ability to do detection and response across email, endpoints, servers, cloud workloads, and networks using a single Trend Micro Vision One platform or the managed Trend Micro Vision One service.
+The [TrendAI Vision One](https://www.trendmicro.com/en_gb/business/products/one-platform.html) integration allows you to monitor Alert, Audit, Detection, Endpoint activity, Network activity, and Telemetry activity. TrendAI Vision One refers to the ability to do detection and response across email, endpoints, servers, cloud workloads, and networks using a single TrendAI Vision One platform or the managed TrendAI Vision One service.
 
 ### Compatibility
 
-This module has been tested against `Trend Micro Vision One API version 3.0`.
+This module has been tested against `TrendAI Vision One API version 3.0`.
 
 ### How it works
 
-This integration periodically queries the Trend Micro Vision One REST API to retrieve Alert, Audit, Detection, Endpoint activity, Network activity, and Telemetry logs.
+This integration periodically queries the TrendAI Vision One REST API to retrieve Alert, Audit, Detection, Endpoint activity, Network activity, and Telemetry logs.
 
 ## What data does this integration collect?
 
@@ -24,19 +24,19 @@ This integration collects log messages of the following types:
 
 ### Supported Use Cases
 
-Integrating Trend Micro Vision One alert, audit, detection, endpoint activity, network activity, and telemetry events with Elastic SIEM provides centralized visibility into security events and operations.
+Integrating TrendAI Vision One alert, audit, detection, endpoint activity, network activity, and telemetry events with Elastic SIEM provides centralized visibility into security events and operations.
 
 ## What do I need to use this integration?
 
-### From Trend Micro Vision One
+### From TrendAI Vision One
 
-#### Collecting data from Trend Micro Vision One API
+#### Collecting data from TrendAI Vision One API
 
-1. Log on to the Trend Micro Vision One console.
-2. On the Trend Vision One console, go to **Administration -> API Keys**.
+1. Log on to the TrendAI Vision One console.
+2. On the TrendAI Vision One console, go to **Administration -> API Keys**.
 3. Generate a new API Key. Click **Add API key**. Specify the settings of the new API key.
     - **Name**: A meaningful name that can help you identify the API key.
-    - **Role**: The user role assigned to the key. API keys can use either predefined or custom user roles. Custom roles can be created by navigating to **Administration -> User Roles -> Add Role**. The role must have appropriate API access permission to fetch relevant data. The following table outlines the access permissions to apps and features needed to fetch relevant data from Trend Vision API.
+    - **Role**: The user role assigned to the key. API keys can use either predefined or custom user roles. Custom roles can be created by navigating to **Administration -> User Roles -> Add Role**. The role must have appropriate API access permission to fetch relevant data. The following table outlines the access permissions to apps and features needed to fetch relevant data from TrendAI Vision API.
 
         | Datastream        | Section                                                          | Permissions                                                  |
         |-------------------|------------------------------------------------------------------|--------------------------------------------------------------|
@@ -70,15 +70,20 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed using the integration's ingest pipelines.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ### Onboard / configure
 
 1. In the top search bar in Kibana, search for **Integrations**.
-2. In the search bar, type **Trend Micro Vision One**.
-3. Select the **Trend Micro Vision One** integration from the search results.
-4. Select **Add Trend Micro Vision One** to add the integration.
+2. In the search bar, type **TrendAI Vision One**.
+3. Select the **TrendAI Vision One** integration from the search results.
+4. Select **Add TrendAI Vision One** to add the integration.
 5. Enable and configure only the collection methods which you will use.
 
-    * To collect the logs from Trend Micro Vision One using API, you'll need to:
+    * To collect the logs from TrendAI Vision One using API, you'll need to:
 
         - Configure **Regional Domain URL** and **API Token**.
         - Adjust the integration configuration parameters if required, including the Interval, Preserve original event etc. to enable data collection.
@@ -90,7 +95,7 @@ Elastic Agent is required to stream data from the syslog or log file receiver an
 #### Dashboards populated
 
 1. In the top search bar in Kibana, search for **Dashboards**.
-2. In the search bar, type **Trend Micro Vision One**.
+2. In the search bar, type **TrendAI Vision One**.
 3. Select a dashboard for the dataset you are collecting, and verify the dashboard information is populated.
 
 ## Troubleshooting
