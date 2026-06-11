@@ -41,12 +41,12 @@ processors:
       tag: grok_message
       field: event.original
       patterns:
+        # Native format
+        - '^%{NUMBER:_tmp.time_s:long}\.%{NUMBER:_tmp.time_ms:long}%{SPACE}%{NUMBER:_tmp.elapsed:long} %{NOTSPACE:_tmp.source_ip} %{NOTSLASH:_tmp.code}/%{NUMBER:_tmp.status:long} %{NUMBER:_tmp.destination_bytes:long} %{NOTSPACE:_tmp.method} %{NOTSPACE:_tmp.url} %{NOTSPACE:_tmp.user_name} %{NOTSLASH:_tmp.peer_status}/%{NOTSPACE:_tmp.peer_host} %{NOTSPACE:_tmp.content_type}$'
         # Extensive format with SNI field (OpenSSL builds — SNI is quoted)
         - '^%{NUMBER:_tmp.time_s:long}\.%{NUMBER:_tmp.time_ms:long}%{SPACE}%{NUMBER:_tmp.elapsed:long} %{NOTSPACE:_tmp.source_ip} %{NUMBER:_tmp.source_port:long} %{NOTSLASH:_tmp.code}/%{NUMBER:_tmp.status:long} %{NOTSPACE:_tmp.reply_size} %{NOTSPACE:_tmp.request_size} %{NOTSPACE:_tmp.reply_header_size} %{NOTSPACE:_tmp.request_header_size} %{NOTSPACE:_tmp.reply_body_size} %{NOTSPACE:_tmp.method} %{NOTSPACE:_tmp.url} %{NOTSPACE:_tmp.http_version} %{NOTSPACE:_tmp.user_name} %{NOTSLASH:_tmp.peer_status}/%{NOTSPACE:_tmp.peer_host} %{NOTSPACE:_tmp.destination_port} %{NOTSPACE:_tmp.content_type} %{NOTSPACE:_tmp.err_code} %{NOTSPACE:_tmp.err_detail} "%{DATA:_tmp.referer}" "%{DATA:_tmp.user_agent}" "%{DATA:_tmp.host_header}" "%{DATA:_tmp.xff}" "%{DATA:_tmp.sni}" %{NOTSPACE:_tmp.server_time} %{GREEDYDATA:_tmp.note}$'
         # Extensive format without SNI field
         - '^%{NUMBER:_tmp.time_s:long}\.%{NUMBER:_tmp.time_ms:long}%{SPACE}%{NUMBER:_tmp.elapsed:long} %{NOTSPACE:_tmp.source_ip} %{NUMBER:_tmp.source_port:long} %{NOTSLASH:_tmp.code}/%{NUMBER:_tmp.status:long} %{NOTSPACE:_tmp.reply_size} %{NOTSPACE:_tmp.request_size} %{NOTSPACE:_tmp.reply_header_size} %{NOTSPACE:_tmp.request_header_size} %{NOTSPACE:_tmp.reply_body_size} %{NOTSPACE:_tmp.method} %{NOTSPACE:_tmp.url} %{NOTSPACE:_tmp.http_version} %{NOTSPACE:_tmp.user_name} %{NOTSLASH:_tmp.peer_status}/%{NOTSPACE:_tmp.peer_host} %{NOTSPACE:_tmp.destination_port} %{NOTSPACE:_tmp.content_type} %{NOTSPACE:_tmp.err_code} %{NOTSPACE:_tmp.err_detail} "%{DATA:_tmp.referer}" "%{DATA:_tmp.user_agent}" "%{DATA:_tmp.host_header}" "%{DATA:_tmp.xff}" %{NOTSPACE:_tmp.server_time} %{GREEDYDATA:_tmp.note}$'
-        # Native format
-        - '^%{NUMBER:_tmp.time_s:long}\.%{NUMBER:_tmp.time_ms:long}%{SPACE}%{NUMBER:_tmp.elapsed:long} %{NOTSPACE:_tmp.source_ip} %{NOTSLASH:_tmp.code}/%{NUMBER:_tmp.status:long} %{NUMBER:_tmp.destination_bytes:long} %{NOTSPACE:_tmp.method} %{NOTSPACE:_tmp.url} %{NOTSPACE:_tmp.user_name} %{NOTSLASH:_tmp.peer_status}/%{NOTSPACE:_tmp.peer_host} %{NOTSPACE:_tmp.content_type}$'
       pattern_definitions:
         NOTSLASH: '[^/]+'
         NOTBRACKET: '[^\[\]]+'
@@ -55,21 +55,19 @@ processors:
   - script:
       tag: remove_empty_fields
       lang: painless
-      ignore_failure: true
+      if: ctx._tmp?.values() != null
       source: >-
         ctx._tmp?.values().removeIf(value -> value == "-");
 
   - script:
       tag: compute_timestamp
       lang: painless
-      ignore_failure: true
       if: ctx._tmp?.time_s instanceof Number && ctx._tmp?.time_ms instanceof Number
       source: >-
         ctx["@timestamp"] = new Date(ctx._tmp.time_s * 1000 + ctx._tmp.time_ms);
   - script:
       tag: compute_elapsed
       lang: painless
-      ignore_failure: true
       if: ctx._tmp?.elapsed instanceof Number
       source: >-
         ctx.event["duration"] = ctx._tmp.elapsed * 1000000;
