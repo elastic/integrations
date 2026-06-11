@@ -22,6 +22,19 @@ See [Akamai API get started](https://techdocs.akamai.com/siem-integration/refere
 - The GCS input currently only accepts a service account JSON key or a service account JSON file for authentication.
 - The GCS input currently only supports JSON data.
 
+### To collect data via the OpenTelemetry receiver (Technical Preview), follow the below steps:
+
+This collection mode uses the native OpenTelemetry `akamai_siem` receiver embedded in the Elastic Agent's EDOT collector instead of the CEL input. It polls the same [Akamai SIEM API](https://techdocs.akamai.com/siem-integration/reference/api) using the same EdgeGrid credentials.
+
+- Requires Elastic Stack (Kibana, Elastic Agent) version 9.5.0 or later.
+- Configure the API Host, Security Configuration IDs and the EdgeGrid credentials (Client Token, Client Secret, Access Token) under the "Collect Akamai SIEM logs via OpenTelemetry receiver" section.
+- Events are routed to the `akamai.siem` dataset, processed by the same ingest pipeline as the CEL input, and stored in `logs-akamai.siem-<namespace>`.
+- If the integration policy uses a namespace other than `default`, set the "Data Stream Namespace" option to the same value so that the `data_stream.namespace` field written into each event matches the target data stream.
+
+**Note**:
+- The receiver supports persisting its poll cursor through an OpenTelemetry storage extension (equivalent to the CEL input's registry-based cursor), but Fleet cannot yet wire storage extensions into receiver configurations, so cursor persistence is not available in Fleet-managed deployments. After an agent restart the receiver re-fetches the configured Initial Lookback window; replayed events are deduplicated by the ingest pipeline's `event.original` fingerprint within the same backing index.
+- Unlike the CEL input, events collected via the OTel receiver are not tagged with `akamai-siem`/`forwarded` tags.
+
 **Exported fields**
 
 | Field | Description | Type |

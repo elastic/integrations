@@ -1,0 +1,107 @@
+title: Akamai SIEM Logs (OpenTelemetry)
+type: logs
+elasticsearch:
+  # The receiver emits bodymap-mode documents that are routed to the existing
+  # akamai.siem dataset (see the data_stream.dataset stream var), not to an
+  # .otel-suffixed data stream. Fleet's permission generator assumes otelcol
+  # streams write to <dataset>.otel-* and would scope the agent API key to
+  # logs-akamai.siem.otel-<namespace>; dynamic_dataset/dynamic_namespace widen
+  # the grant to logs-*-* (same as OTel input packages) so writes to
+  # logs-akamai.siem-<namespace> are authorized.
+  dynamic_dataset: true
+  dynamic_namespace: true
+streams:
+  - input: otelcol
+    template_path: otelcol.yml.hbs
+    title: Akamai SIEM logs via OTel receiver
+    description: Collect Akamai SIEM logs with the OpenTelemetry akamai_siem receiver. Requires Elastic Agent and Elastic Stack version 9.5.0 or later. Events are routed to the akamai.siem dataset and processed by its ingest pipeline.
+    enabled: false
+    vars:
+      - name: endpoint
+        type: text
+        title: API Host
+        description: API Hostname in the form of http(s)://akzz-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.luna.akamaiapis.net without path
+        multi: false
+        required: true
+        show_user: true
+        default: https://akzz-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.luna.akamaiapis.net
+      - name: config_ids
+        type: text
+        title: Security Configuration IDs
+        description: Unique identifier for each security configuration. To report on more than one configuration, separate integer identifiers with semicolons or commas. ex. 12892;29182;82912
+        multi: false
+        required: true
+        show_user: true
+      - name: client_token
+        type: password
+        title: Client Token
+        description: Client token provided by "Credentials" ui
+        multi: false
+        required: true
+        show_user: true
+        secret: true
+      - name: client_secret
+        type: password
+        title: Client Secret
+        description: Client secret provided by "Credentials" ui
+        multi: false
+        required: true
+        show_user: true
+        secret: true
+      - name: access_token
+        type: password
+        title: Access Token
+        description: Access token provided by "Authorizations" ui
+        multi: false
+        required: true
+        show_user: true
+        secret: true
+      - name: poll_interval
+        type: text
+        title: Poll Interval
+        description: Time between polling cycles. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 1m
+      - name: initial_lookback
+        type: text
+        title: Initial Lookback
+        description: How far back to fetch events on the first poll. Default is the maximum allowed value of 12 hours (Akamai API limit). Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 12h
+      - name: event_limit
+        type: integer
+        title: Event Limit
+        description: Defines the approximate maximum number of security events each fetch returns. The default limit is 10000 and the maximum limit available is 600000.
+        multi: false
+        required: true
+        show_user: false
+        default: 10000
+      - name: namespace
+        type: text
+        title: Data Stream Namespace
+        description: Must match the namespace configured on the integration policy. The receiver writes this value into each event body so that data_stream.namespace filters and mappings stay consistent with the target data stream.
+        multi: false
+        required: true
+        show_user: true
+        default: default
+      - name: data_stream.dataset
+        type: text
+        title: Dataset
+        description: Dataset used by Fleet to route events. Defaults to akamai.siem so events are processed by the existing Akamai SIEM ingest pipeline and stored in logs-akamai.siem-<namespace>. Do not change unless you know what you are doing.
+        multi: false
+        required: true
+        show_user: false
+        default: akamai.siem
+      - name: enable_storage
+        type: bool
+        title: Enable Cursor Persistence (Technical Preview)
+        description: >-
+          Declares a file_storage OpenTelemetry extension in the stream so the akamai_siem receiver can persist its poll cursor across agent restarts. Requires an Elastic Agent whose akamai_siem receiver supports storage auto-binding; on agents without that support the extension is started but remains unused, and the receiver re-fetches the Initial Lookback window after a restart. The receiver configuration deliberately carries no storage reference, as Fleet renames stream-declared extensions and cannot rewrite such references. Disabled by default while this capability is under development.
+        multi: false
+        required: false
+        show_user: false
+        default: false
