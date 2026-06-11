@@ -1,0 +1,28 @@
+receivers:
+  akamai_siem:
+    endpoint: "{{endpoint}}"
+    config_ids: "{{config_ids}}"
+    authentication:
+      client_token: "{{client_token}}"
+      client_secret: "{{client_secret}}"
+      access_token: "{{access_token}}"
+    poll_interval: "{{poll_interval}}"
+    initial_lookback: "{{initial_lookback}}"
+    event_limit: {{event_limit}}
+    data_stream:
+      type: logs
+      dataset: akamai.siem
+      namespace: "{{namespace}}"
+{{#if enable_storage}}
+extensions:
+  file_storage:
+    directory: "${env:STATE_PATH:-/usr/share/elastic-agent/state}"
+    create_directory: true
+{{/if}}
+service:
+{{#if enable_storage}}
+  extensions: [file_storage]
+{{/if}}
+  pipelines:
+    logs:
+      receivers: [akamai_siem]
