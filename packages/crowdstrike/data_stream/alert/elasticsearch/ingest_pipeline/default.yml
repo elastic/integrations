@@ -50,6 +50,10 @@ processors:
       name: '{{ IngestPipeline "automated_lead" }}'
       tag: pipeline_automated_lead
       if: ctx.crowdstrike?.alert?.product == 'automated-lead' || ctx.crowdstrike?.alert?.product == 'automated-lead-context'
+  - pipeline:
+      name: '{{ IngestPipeline "correlation_detection" }}'
+      tag: pipeline_correlation_detection
+      if: ctx.crowdstrike?.alert?.product == 'ngsiem' && ctx.crowdstrike?.alert?.type == 'correlation-detection'
   - set:
       field: event.category
       tag: set_event_category_process
@@ -1894,6 +1898,18 @@ processors:
       tag: set_event_start_from_alert_start_time
       copy_from: crowdstrike.alert.start_time
       ignore_empty_value: true
+  - script:
+      lang: painless
+      tag: set_event_duration_from_start_and_end
+      if: ctx.event?.start != null && ctx.event?.end != null
+      source: |-
+        def start = ZonedDateTime.parse(ctx.event.start);
+        def end = ZonedDateTime.parse(ctx.event.end);
+        ctx.event.duration = ChronoUnit.NANOS.between(start, end);
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: threat.tactic.name
       tag: append_threat_tactic_name
