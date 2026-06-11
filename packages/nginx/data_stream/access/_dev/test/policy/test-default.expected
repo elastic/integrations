@@ -1,0 +1,39 @@
+inputs:
+    - allow_deprecated_use: true
+      data_stream:
+        dataset: null
+      meta:
+        package:
+            name: nginx
+      name: test-default-nginx
+      paths: null
+      streams:
+        - allow_deprecated_use: true
+          data_stream:
+            dataset: nginx.access
+          exclude_files:
+            - .gz$
+          ignore_older: 72h
+          paths:
+            - /var/log/nginx/access.log*
+          processors:
+            - add_locale: null
+          tags:
+            - nginx-access
+      type: logfile
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-nginx.access-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []
