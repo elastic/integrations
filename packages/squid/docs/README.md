@@ -65,14 +65,8 @@ You can configure Squid Proxy to send logs to Elastic using local log files, UDP
 #### Configure local log file (filestream)
 
 1. Open the Squid configuration file using `sudo nano /etc/squid/squid.conf` (replace with your actual configuration path).
-2. Locate or add the `access_log` directive to write to a local file. To use the native format: `access_log stdio:/var/log/squid/access.log squid`. To use the extensive format: `access_log stdio:/var/log/squid/access.log extensive`.
-3. Verify the desired logformat is defined. The native format ships with Squid; if you use the extensive format, add the following directive:
-
-   ```
-   logformat extensive %ts.%03tu %6tr %>a %>p %Ss/%03>Hs %<st %>st %<sh %>sh %<sH %rm %ru %rv %[un %Sh/%<a %<p %mt %err_code %err_detail "%{Referer}>h" "%{User-Agent}>h" "%{Host}>h" "%{X-Forwarded-For}>h" "%ssl::>sni" %note
-   ```
-
-   If your Squid was not built with OpenSSL support, drop the `"%ssl::>sni"` token. The integration handles both variants.
+2. Locate or add the `access_log` directive to write to a local file. For the native format: `access_log stdio:/var/log/squid/access.log squid`. For the extensive format: `access_log stdio:/var/log/squid/access.log extensive`.
+3. Make sure the chosen `logformat` is defined in `squid.conf`. See [Supported log formats](#supported-log-formats) for the exact format strings.
 4. Save the file and restart the Squid service: `sudo systemctl restart squid`.
 5. Check that data is being written to the file: `tail -f /var/log/squid/access.log`.
 
@@ -87,24 +81,6 @@ You can configure Squid Proxy to send logs to Elastic using local log files, UDP
 1. Open `squid.conf` and add the network target: `access_log tcp://<AGENT_IP>:9537 squid` (or `extensive` instead of `squid` for the extensive format). Replace `<AGENT_IP>` with the IP address of your Elastic Agent host (replace with your actual value).
 2. Restart the service: `sudo systemctl restart squid`.
 3. Check the connection status: `ss -ant | grep 9537`.
-
-#### Complete `squid.conf` example for the extensive format
-
-If you want to enable the extensive format from scratch, the following self-contained `squid.conf` snippet is the configuration validated against this integration. Adjust the `access_log` target to match the transport you chose above (replace `stdio:/var/log/squid/access.log` with `udp://<AGENT_IP>:9537` or `tcp://<AGENT_IP>:9537` for network export):
-
-```
-acl localnet src 0.0.0.0/0
-http_access allow localnet
-http_port 3128
-
-logformat extensive %ts.%03tu %6tr %>a %>p %Ss/%03>Hs %<st %>st %<sh %>sh %<sH %rm %ru %rv %[un %Sh/%<a %<p %mt %err_code %err_detail "%{Referer}>h" "%{User-Agent}>h" "%{Host}>h" "%{X-Forwarded-For}>h" "%ssl::>sni" %note
-access_log stdio:/var/log/squid/access.log extensive
-
-cache deny all
-coredump_dir /var/spool/squid
-```
-
-The `"%ssl::>sni"` token requires a Squid build with OpenSSL support and TLS interception (`ssl_bump`) configured; on builds without OpenSSL, drop that token from the `logformat` directive — the integration handles both variants. The `localnet` ACL is wide open here for illustration; tighten it to the subnets allowed to use your proxy in production.
 
 ### Set up steps in Kibana
 
@@ -208,6 +184,24 @@ For high-throughput environments, you can scale your deployment using these stra
 - If you're using centralized network-based collection, deploy multiple Elastic Agents behind a network load balancer to distribute the ingest load evenly across multiple CPU cores.
 
 ## Reference
+
+### Supported log formats
+
+The integration parses two Squid `logformat` definitions. Reference the chosen one by name in the `access_log` directive.
+
+`squid` (native) — ships with Squid, no `logformat` directive needed:
+
+```
+logformat squid %ts.%03tu %6tr %>a %Ss/%03>Hs %<st %rm %ru %[un %Sh/%<a %mt
+```
+
+`extensive` — adds client port, HTTP version, header/body sizes, request headers, error details, and TLS SNI (on OpenSSL builds with `ssl_bump`). Add this directive to `squid.conf`:
+
+```
+logformat extensive %ts.%03tu %6tr %>a %>p %Ss/%03>Hs %<st %>st %<sh %>sh %<sH %rm %ru %rv %[un %Sh/%<a %<p %mt %err_code %err_detail "%{Referer}>h" "%{User-Agent}>h" "%{Host}>h" "%{X-Forwarded-For}>h" "%ssl::>sni" %note
+```
+
+Drop the `"%ssl::>sni"` token on builds without OpenSSL — the integration handles both variants.
 
 ### Vendor documentation
 
