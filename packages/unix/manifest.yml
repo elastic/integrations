@@ -1,0 +1,170 @@
+format_version: "3.6.2"
+name: unix
+title: Custom Unix Logs
+description: Collect data from a Unix domain socket with Elastic Agent.
+type: input
+version: "1.0.0"
+conditions:
+  kibana:
+    version: "^9.4.0"
+categories:
+  - custom
+  - custom_logs
+policy_templates:
+  - name: unix
+    type: logs
+    title: Custom Unix Logs
+    description: Collect data from a Unix domain socket with Elastic Agent.
+    input: unix
+    template_path: unix.yml.hbs
+    vars:
+      - name: path
+        type: text
+        title: Socket Path
+        description: |
+          Path to the Unix domain socket file that will receive events.
+        required: true
+        show_user: true
+      - name: socket_type
+        type: select
+        title: Socket Type
+        description: |
+          The socket type: stream or datagram. The default is stream.
+        required: false
+        show_user: true
+        default: stream
+        multi: false
+        options:
+          - value: stream
+            text: stream
+          - value: datagram
+            text: datagram
+      - name: use_logs_stream
+        type: bool
+        title: Use the "logs" data stream
+        description: |
+          Enabling this will send all the ingested data to the "logs.ecs" data stream. This feature requires Elasticsearch 9.4.0 or later and is disabled by default. If enabled the Dataset name option is ignored. "Write to logs streams" option must be enabled in the output settings for this to work.
+        required: false
+        show_user: true
+        default: false
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: |
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        default: unix.generic
+        required: true
+        show_user: true
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+        required: false
+        show_user: true
+      - name: max_message_size
+        type: text
+        title: Max Message Size
+        description: The maximum size of the message received over the socket. The default is 20MiB.
+        required: false
+        show_user: false
+      - name: framing
+        type: select
+        title: Framing
+        description: Specify the framing used to split incoming events. The default is delimiter.
+        required: false
+        show_user: false
+        multi: false
+        options:
+          - value: delimiter
+            text: delimiter
+          - value: rfc6587
+            text: rfc6587
+      - name: line_delimiter
+        type: text
+        title: Line Delimiter
+        description: Specify the characters used to split the incoming events. The default is \n.
+        required: false
+        show_user: false
+      - name: max_connections
+        type: integer
+        title: Max Connections
+        description: The at most number of connections to accept at any given point in time.
+        required: false
+        show_user: false
+      - name: timeout
+        type: duration
+        title: Timeout
+        description: The duration of inactivity before a remote connection is closed. The default is 300s. Valid time units are ns, us, ms, s, m, h.
+        required: false
+        show_user: false
+      - name: group
+        type: text
+        title: Socket Group
+        description: Sets the group ownership for the created Unix socket. If not set, uses the primary group of the running user. Ignored on Windows.
+        required: false
+        show_user: false
+      - name: mode
+        type: text
+        title: Socket Mode
+        description: Sets the file permissions for the socket as an octal string (e.g. 0660). If not set, the system default is used.
+        required: false
+        show_user: false
+      - name: keep_null
+        type: bool
+        title: Keep Null Values
+        description: If this option is set to true, fields with null values will be published in the output document. By default, keep_null is set to false.
+        required: false
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event
+        required: false
+        multi: true
+        show_user: true
+      - name: syslog
+        type: bool
+        title: Syslog Parsing
+        description: Enable the syslog parser to automatically parse RFC3164 and RFC5424 syslog formatted data. The syslog parser can be configured under Advanced Options.
+        required: false
+        show_user: true
+      - name: syslog_options
+        type: yaml
+        title: Syslog Configuration
+        description: i.e. field, format, time zone, etc. See [Syslog](https://www.elastic.co/guide/en/beats/filebeat/current/syslog.html) for details.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          field: message
+          #format: auto
+          #timezone: Local
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: custom
+        title: Custom configurations
+        description: >
+          Here YAML configuration options can be used to be added to your configuration. Be careful using this as it might break your configuration file.
+        type: yaml
+        default: ""
+icons:
+  - src: "/img/icon.svg"
+    type: "image/svg+xml"
+owner:
+  github: elastic/elastic-agent-data-plane
+  type: elastic
