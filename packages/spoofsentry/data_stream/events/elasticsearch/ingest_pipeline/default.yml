@@ -1,0 +1,95 @@
+---
+description: Pipeline for processing SpoofSentry domain security events
+processors:
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+
+  - set:
+      field: event.kind
+      value: alert
+
+  - set:
+      field: event.dataset
+      value: spoofsentry.alert
+
+  - set:
+      field: event.provider
+      value: spoofsentry
+
+  - rename:
+      field: eventType
+      target_field: event.action
+      ignore_missing: true
+
+  - rename:
+      field: domain
+      target_field: host.domain
+      ignore_missing: true
+
+  - rename:
+      field: tenantId
+      target_field: labels.tenant_id
+      ignore_missing: true
+
+  # Map severity to ECS event.severity (numeric)
+  - script:
+      lang: painless
+      description: Map severity string to ECS numeric severity
+      source: >
+        Map severityMap = new HashMap();
+        severityMap.put('info', 1);
+        severityMap.put('low', 3);
+        severityMap.put('medium', 5);
+        severityMap.put('high', 7);
+        severityMap.put('critical', 10);
+        String sev = ctx.severity;
+        if (sev != null && severityMap.containsKey(sev.toLowerCase())) {
+          ctx.event.severity = severityMap.get(sev.toLowerCase());
+        } else {
+          ctx.event.severity = 1;
+        }
+      ignore_failure: true
+
+  # Categorize events
+  - script:
+      lang: painless
+      description: Set event.category and event.type based on event.action
+      source: >
+        String action = ctx.event?.action;
+        if (action == null) return;
+        action = action.toLowerCase();
+        if (action.contains('threat') || action.contains('spoofing') || action.contains('lookalike')) {
+          ctx.event.category = ['threat'];
+          ctx.event.type = ['indicator'];
+        } else if (action.contains('takedown')) {
+          ctx.event.category = ['threat'];
+          ctx.event.type = ['info'];
+        } else if (action.contains('dns') || action.contains('enforcement')) {
+          ctx.event.category = ['configuration'];
+          ctx.event.type = ['change'];
+        } else if (action.contains('alert')) {
+          ctx.event.category = ['threat'];
+          ctx.event.type = ['indicator'];
+        } else {
+          ctx.event.category = ['host'];
+          ctx.event.type = ['info'];
+        }
+      ignore_failure: true
+
+  # Preserve original severity as label
+  - set:
+      field: labels.severity
+      copy_from: severity
+      ignore_empty_value: true
+
+  - set:
+      field: labels.event_type
+      copy_from: event.action
+      ignore_empty_value: true
+
+  # Remove redundant top-level fields after remapping
+  - remove:
+      field:
+        - severity
+      ignore_missing: true
