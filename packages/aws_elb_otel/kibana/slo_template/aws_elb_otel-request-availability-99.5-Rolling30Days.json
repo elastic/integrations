@@ -1,0 +1,59 @@
+{
+  "attributes": {
+    "name": "[AWS ELB OTel] Request availability 99.5% rolling 30 days",
+    "description": "Tracks Application Load Balancer request availability by keeping the combined ELB-generated and target-generated 5XX error rate below 0.5% in each 1-minute interval. Scoped per load balancer and region; aggregates all target groups behind the load balancer. A rolling 30-day target of 99.5% ensures users receive successful responses at the edge.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"awscloudwatchreceiver.otel\" AND attributes.Namespace: \"AWS/ApplicationELB\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "field": "metrics.amazonaws.com/AWS/ApplicationELB/RequestCount",
+              "filter": "attributes.MetricName: \"RequestCount\" AND attributes.stat: \"Sum\""
+            },
+            {
+              "name": "B",
+              "aggregation": "sum",
+              "field": "metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count",
+              "filter": "attributes.MetricName: \"HTTPCode_Target_5XX_Count\" AND attributes.stat: \"Sum\""
+            },
+            {
+              "name": "C",
+              "aggregation": "sum",
+              "field": "metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_ELB_5XX_Count",
+              "filter": "attributes.MetricName: \"HTTPCode_ELB_5XX_Count\" AND attributes.stat: \"Sum\""
+            }
+          ],
+          "equation": "(B+C)/A",
+          "comparator": "LT",
+          "threshold": 0.005
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "aws_elb",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.cloud.region",
+      "attributes.LoadBalancer"
+    ]
+  },
+  "id": "aws_elb_otel-request-availability-99.5-Rolling30Days",
+  "type": "slo_template"
+}
