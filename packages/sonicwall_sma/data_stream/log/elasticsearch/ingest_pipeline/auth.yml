@@ -1,0 +1,28 @@
+---
+description: Pipeline for parsing SonicWall SMA authentication events
+processors:
+  - append:
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.log?.level == 'error' || ctx.log?.level == 'warning'
+  - grok:
+      field: message
+      patterns:
+        - '^::%{DATA:sonicwall_sma.log.auth.mechanism}:: %{GREEDYDATA:event.reason}$'
+      ignore_failure: true
+  - set:
+      field: event.action
+      value: saml-storage-error
+      if: ctx.message != null && ctx.message.contains('SAML Storage error')
+  - set:
+      field: event.action
+      value: authentication-error
+      if: ctx.event?.action == null
