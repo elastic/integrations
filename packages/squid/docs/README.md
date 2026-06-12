@@ -88,6 +88,24 @@ You can configure Squid Proxy to send logs to Elastic using local log files, UDP
 2. Restart the service: `sudo systemctl restart squid`.
 3. Check the connection status: `ss -ant | grep 9537`.
 
+#### Complete `squid.conf` example for the extensive format
+
+If you want to enable the extensive format from scratch, the following self-contained `squid.conf` snippet is the configuration validated against this integration. Adjust the `access_log` target to match the transport you chose above (replace `stdio:/var/log/squid/access.log` with `udp://<AGENT_IP>:9537` or `tcp://<AGENT_IP>:9537` for network export):
+
+```
+acl localnet src 0.0.0.0/0
+http_access allow localnet
+http_port 3128
+
+logformat extensive %ts.%03tu %6tr %>a %>p %Ss/%03>Hs %<st %>st %<sh %>sh %<sH %rm %ru %rv %[un %Sh/%<a %<p %mt %err_code %err_detail "%{Referer}>h" "%{User-Agent}>h" "%{Host}>h" "%{X-Forwarded-For}>h" "%ssl::>sni" %note
+access_log stdio:/var/log/squid/access.log extensive
+
+cache deny all
+coredump_dir /var/spool/squid
+```
+
+The `"%ssl::>sni"` token requires a Squid build with OpenSSL support and TLS interception (`ssl_bump`) configured; on builds without OpenSSL, drop that token from the `logformat` directive — the integration handles both variants. The `localnet` ACL is wide open here for illustration; tighten it to the subnets allowed to use your proxy in production.
+
 ### Set up steps in Kibana
 
 To set up the integration in Kibana:
