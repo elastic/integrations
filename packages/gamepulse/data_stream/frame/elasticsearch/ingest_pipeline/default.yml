@@ -1,0 +1,51 @@
+---
+description: >
+  Ingest pipeline for GamePulse frame performance metrics.
+  Sets @timestamp, normalises common fields, validates FPS ranges,
+  and derives the stutter_detected flag from frametime variance.
+processors:
+  # --- Shared enrichment (inlined) ---
+  - set:
+      field: "@timestamp"
+      value: "{{{_ingest.timestamp}}}"
+      if: "ctx['@timestamp'] == null"
+      description: "Set @timestamp to ingest time if not provided by the collector"
+
+  - lowercase:
+      field: gamepulse.game.graphics_api
+      ignore_missing: true
+      description: "Normalise graphics API string (Vulkan -> vulkan)"
+
+  - trim:
+      field: gamepulse.game.name
+      ignore_missing: true
+      description: "Strip whitespace from game name"
+
+  # --- Frame-specific validation and derivation ---
+  - script:
+      description: "Validate FPS and frame time values are non-negative"
+      lang: painless
+      source: |
+        if (ctx.gamepulse?.fps?.current != null && ctx.gamepulse.fps.current < 0) {
+          throw new Exception('gamepulse.fps.current must be >= 0, got: ' + ctx.gamepulse.fps.current);
+        }
+        if (ctx.gamepulse?.fps?.frametime_ms != null && ctx.gamepulse.fps.frametime_ms < 0) {
+          throw new Exception('gamepulse.fps.frametime_ms must be >= 0');
+        }
+
+  - script:
+      description: "Derive stutter_detected flag when frametime variance exceeds 8ms threshold"
+      lang: painless
+      source: |
+        if (ctx.gamepulse == null) ctx.gamepulse = [:];
+        if (ctx.gamepulse.fps == null) ctx.gamepulse.fps = [:];
+        def variance = ctx.gamepulse?.fps?.frametime_variance;
+        ctx.gamepulse.fps.stutter_detected = (variance != null && variance > 8.0);
+
+on_failure:
+  - set:
+      field: _ingest.pipeline_error
+      value: "{{_ingest.on_failure_message}}"
+  - set:
+      field: _ingest.failed_pipeline
+      value: "gamepulse-frame"

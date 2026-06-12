@@ -1,0 +1,26 @@
+---
+description: >
+  Ingest pipeline for GamePulse network metrics.
+  Sets @timestamp and normalises connection type.
+processors:
+  - set:
+      field: "@timestamp"
+      value: "{{{_ingest.timestamp}}}"
+      if: "ctx['@timestamp'] == null"
+
+  - lowercase:
+      field: gamepulse.network.connection_type
+      ignore_missing: true
+      description: "Normalise connection type (WiFi -> wifi, Ethernet -> ethernet)"
+
+  - trim:
+      field: gamepulse.game.name
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: _ingest.pipeline_error
+      value: "{{_ingest.on_failure_message}}"
+  - set:
+      field: _ingest.failed_pipeline
+      value: "gamepulse-network"

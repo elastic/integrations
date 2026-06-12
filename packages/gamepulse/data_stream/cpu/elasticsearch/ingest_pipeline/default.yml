@@ -1,0 +1,34 @@
+---
+description: >
+  Ingest pipeline for GamePulse CPU metrics.
+  Sets @timestamp and validates CPU utilisation ranges.
+processors:
+  - set:
+      field: "@timestamp"
+      value: "{{{_ingest.timestamp}}}"
+      if: "ctx['@timestamp'] == null"
+
+  - trim:
+      field: gamepulse.game.name
+      ignore_missing: true
+
+  - script:
+      description: "Validate CPU utilisation is 0–100%"
+      lang: painless
+      source: |
+        def total = ctx.gamepulse?.cpu?.total_utilisation_pct;
+        if (total != null && (total < 0 || total > 100)) {
+          throw new Exception('gamepulse.cpu.total_utilisation_pct must be 0-100, got: ' + total);
+        }
+        def game = ctx.gamepulse?.cpu?.game_utilisation_pct;
+        if (game != null && (game < 0 || game > 100)) {
+          throw new Exception('gamepulse.cpu.game_utilisation_pct must be 0-100, got: ' + game);
+        }
+
+on_failure:
+  - set:
+      field: _ingest.pipeline_error
+      value: "{{_ingest.on_failure_message}}"
+  - set:
+      field: _ingest.failed_pipeline
+      value: "gamepulse-cpu"

@@ -1,0 +1,372 @@
+# ECS fields used in this data stream
+- name: host.name
+  external: ecs
+  dimension: true
+- name: host.os.name
+  external: ecs
+- name: host.os.version
+  external: ecs
+- name: host.os.kernel
+  external: ecs
+- name: host.os.type
+  external: ecs
+- name: host.os.platform
+  external: ecs
+
+# Session document — captured once per gaming session
+- name: gamepulse
+  type: group
+  fields:
+    - name: session
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          dimension: true
+          description: "Unique session identifier (UUID)"
+        - name: agent_version
+          type: keyword
+          description: "Version of the GamePulse collector agent"
+        - name: opt_in_public
+          type: boolean
+          description: "True if the user has opted in to sharing this session's data publicly"
+        - name: label
+          type: keyword
+          description: "Optional user-supplied annotation for this session (e.g. 'after-driver-update')"
+        - name: label_source
+          type: keyword
+          description: "auto | manual — whether the label was auto-generated or user-supplied"
+        - name: sequence_number
+          type: integer
+          description: "Ordinal session number for this game on this calendar date (auto-labelled sessions only)"
+
+    - name: game
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: "Game title"
+        - name: source
+          type: keyword
+          description: >
+            Detection source for this target. One of: steam, lutris, heroic,
+            bottles, user_specified, auto_detected. Determines which other
+            game.* fields are populated.
+        - name: launcher
+          type: keyword
+          description: >
+            Human-readable launcher name for display (e.g. "Steam", "Lutris",
+            "Heroic — Epic"). Free-form; used by dashboards for grouping.
+            Distinct from `source` which is machine-readable and enumerated.
+        - name: steam_app_id
+          type: long
+          description: "Steam application ID (present only when source == steam)"
+        - name: version
+          type: keyword
+          description: "Game version string (if detectable)"
+        - name: launch_args
+          type: keyword
+          description: "Steam launch arguments configured for this game"
+        - name: graphics_api
+          type: keyword
+          description: "Primary graphics API in use (vulkan, opengl, dx11, dx12)"
+        - name: upscaler
+          type: group
+          fields:
+            - name: type
+              type: keyword
+              description: "Upscaling technology (fsr, dlss, xess, none)"
+            - name: quality
+              type: keyword
+              description: "Upscaler quality preset"
+
+    - name: compatibility
+      type: group
+      fields:
+        - name: proton_version
+          type: keyword
+          description: "Proton version (e.g. 9.0-3, experimental)"
+        - name: wine_version
+          type: keyword
+          description: "Wine version if used directly"
+        - name: dxvk_version
+          type: keyword
+          description: "DXVK version for DX9/DX10/DX11 translation"
+        - name: vkd3d_proton_version
+          type: keyword
+          description: "VKD3D-Proton version for DX12 translation"
+        - name: gamescope_version
+          type: keyword
+          description: "Gamescope compositor version (Steam Deck and desktop)"
+
+    - name: hardware
+      type: group
+      fields:
+        - name: cpu
+          type: group
+          fields:
+            - name: model
+              type: keyword
+              description: "CPU model name (e.g. AMD Ryzen 9 7950X3D)"
+            - name: cores
+              type: integer
+              description: "Physical core count"
+            - name: threads
+              type: integer
+              description: "Logical thread count"
+            - name: base_clock_mhz
+              type: integer
+              description: "CPU base clock speed in MHz"
+            - name: boost_clock_mhz
+              type: integer
+              description: "CPU boost/turbo clock speed in MHz"
+        - name: gpu
+          type: group
+          fields:
+            - name: model
+              type: keyword
+              description: "GPU model name (e.g. AMD Radeon RX 7900 XTX)"
+            - name: vendor
+              type: keyword
+              description: "GPU vendor (amd, nvidia, intel)"
+            - name: vram_mb
+              type: integer
+              description: "Total VRAM in megabytes"
+            - name: driver_version
+              type: keyword
+              description: "GPU driver version string"
+            - name: mesa_version
+              type: keyword
+              description: "Mesa version (Linux open-source driver stack)"
+            - name: vulkan_driver
+              type: keyword
+              description: "Vulkan driver name (radv, amdvlk, nvk, anv)"
+            - name: pcie_gen
+              type: byte
+              description: "PCIe generation (3, 4, 5)"
+            - name: pcie_width
+              type: byte
+              description: "PCIe link width (4, 8, 16)"
+        - name: ram
+          type: group
+          fields:
+            - name: total_mb
+              type: integer
+              description: "Total system RAM in megabytes"
+            - name: speed_mhz
+              type: integer
+              description: "RAM speed in MHz (effective, e.g. 6000 for DDR5-6000)"
+            - name: type
+              type: keyword
+              description: "RAM type (ddr4, ddr5, lpddr5)"
+        - name: storage
+          type: group
+          fields:
+            - name: game_drive
+              type: group
+              fields:
+                - name: type
+                  type: keyword
+                  description: "Drive type (nvme, sata_ssd, hdd, sd_card, emmc)"
+                - name: model
+                  type: keyword
+                  description: "Drive model identifier"
+                - name: firmware
+                  type: keyword
+                  description: "Drive firmware version"
+                - name: interface
+                  type: keyword
+                  description: "Drive interface (nvme, sata, uhs-i, uhs-ii)"
+                - name: nvme_spec
+                  type: keyword
+                  description: "NVMe specification version (1.3, 1.4, 2.0)"
+                - name: capacity_gb
+                  type: integer
+                  description: "Drive capacity in gigabytes"
+                - name: free_gb
+                  type: integer
+                  description: "Free space on the game partition in gigabytes"
+                - name: free_pct
+                  type: float
+                  description: "Free space percentage"
+                - name: temperature_c
+                  type: float
+                  description: "Drive temperature in Celsius at session start"
+                - name: smart_health
+                  type: keyword
+                  description: "SMART health status (passed, failed, unknown)"
+                - name: encrypted
+                  type: boolean
+                  description: "True if the game partition is encrypted"
+            - name: game_filesystem
+              type: group
+              fields:
+                - name: type
+                  type: keyword
+                  description: "Filesystem type (btrfs, ext4, f2fs, ntfs, exfat)"
+                - name: mount_options
+                  type: keyword
+                  description: "Relevant mount options (e.g. noatime,compress=zstd)"
+                - name: compression
+                  type: keyword
+                  description: "Filesystem compression algorithm (zstd, lzo, none)"
+                - name: compression_level
+                  type: byte
+                  description: "Compression level (1–19 for zstd)"
+                - name: block_size
+                  type: integer
+                  description: "Filesystem block size in bytes"
+                - name: trim_enabled
+                  type: boolean
+                  description: "True if TRIM/discard is enabled"
+            - name: io_scheduler
+              type: keyword
+              description: "Block I/O scheduler (none, mq-deadline, kyber, bfq)"
+            - name: read_ahead_kb
+              type: integer
+              description: "Read-ahead buffer size in kilobytes"
+        - name: device
+          type: group
+          fields:
+            - name: type
+              type: keyword
+              description: "Device form factor (desktop, handheld, laptop)"
+            - name: model
+              type: keyword
+              description: "Device model (e.g. Steam Deck OLED)"
+            - name: power_source
+              type: keyword
+              description: "Power source at session start (ac, battery)"
+            - name: tdp_watts
+              type: float
+              description: "Configured TDP limit in watts (relevant for handhelds)"
+        - name: monitors
+          type: group
+          description: "Connected display monitors at session start"
+          fields:
+            - name: name
+              type: keyword
+              description: "Connector name as reported by xrandr (e.g. DP-2, HDMI-1)"
+            - name: resolution_h
+              type: integer
+              description: "Horizontal resolution in pixels"
+            - name: resolution_v
+              type: integer
+              description: "Vertical resolution in pixels"
+            - name: refresh_rate_hz
+              type: float
+              description: "Active refresh rate in Hz"
+            - name: is_primary
+              type: boolean
+              description: "True if this is the primary display"
+            - name: vrr_capable
+              type: boolean
+              description: "True if the monitor reports VRR/FreeSync/G-Sync support"
+            - name: hdr_capable
+              type: boolean
+              description: "True if the monitor reports HDR capability (max bpc > 8)"
+            - name: current_vrr_enabled
+              type: boolean
+              description: "True if variable refresh rate is currently active on this monitor"
+
+    - name: summary
+      type: group
+      description: "Session summary statistics — populated when session ends"
+      fields:
+        - name: ended
+          type: boolean
+          description: "True when this is the session-end summary document"
+        - name: duration_s
+          type: integer
+          metric_type: gauge
+          unit: s
+          description: "Total session duration in seconds"
+        - name: avg_fps
+          type: float
+          metric_type: gauge
+          description: "Average FPS across the entire session"
+        - name: low_1pct_fps
+          type: integer
+          metric_type: gauge
+          description: "1% low FPS across the entire session"
+        - name: peak_gpu_temp_c
+          type: float
+          metric_type: gauge
+          description: "Peak GPU temperature during the session"
+        - name: peak_cpu_temp_c
+          type: float
+          metric_type: gauge
+          description: "Peak CPU temperature during the session"
+        - name: stutter_count
+          type: integer
+          metric_type: gauge
+          description: "Total stutter events during the session"
+        - name: bottleneck_dominant
+          type: keyword
+          description: "Most frequent bottleneck classification during the session"
+        - name: p99_frametime_ms
+          type: float
+          metric_type: gauge
+          unit: ms
+          description: "99th-percentile frame time during the session (approximated from sampled data)"
+        - name: peak_gpu_power_w
+          type: float
+          metric_type: gauge
+          description: "Peak GPU power draw during the session in watts"
+        - name: total_frames
+          type: integer
+          metric_type: gauge
+          description: "Approximate total frames rendered during the session"
+
+    - name: settings
+      type: group
+      description: "In-game graphics settings captured for this session (Tier 1 = manual; Tier 2 = auto-detect)"
+      fields:
+        - name: preset
+          type: keyword
+          description: "Graphics preset: low | medium | high | ultra | custom | unknown"
+        - name: custom_overrides
+          type: boolean
+          description: "True if preset is a named preset but individual settings were overridden"
+        - name: upscaler.tech
+          type: keyword
+          description: "Upscaler technology: dlss | fsr | xess | tsr | tsr-native | none | unknown"
+        - name: upscaler.version
+          type: keyword
+          description: "Upscaler SDK/driver version string"
+        - name: upscaler.preset
+          type: keyword
+          description: "Upscaler quality preset: quality | balanced | performance | ultra_performance | dlaa | native"
+        - name: upscaler.source_res
+          type: keyword
+          description: "Source render resolution before upscaling, e.g. 1920x1080"
+        - name: frame_gen.tech
+          type: keyword
+          description: "Frame generation technology: dlss3 | fsr3 | afmf | lossless-scaling | none"
+        - name: frame_gen.multiplier
+          type: keyword
+          description: "Frame generation multiplier: 2x | 3x | 4x"
+        - name: features_active
+          type: keyword
+          description: "Array of currently active features: ray_tracing, path_tracing, direct_storage, mesh_shaders, mega_geometry, neural_shaders, hdr, vrr"
+        - name: features_available
+          type: keyword
+          description: "Array of features the game/hardware supports even if currently inactive"
+        - name: render.resolution_output
+          type: keyword
+          description: "Output render resolution, e.g. 3440x1440"
+        - name: render.fullscreen_mode
+          type: keyword
+          description: "Display mode: fullscreen | borderless | windowed"
+        - name: render.vsync
+          type: keyword
+          description: "VSync mode: off | on | adaptive | fast"
+        - name: source
+          type: keyword
+          description: "Settings capture tier: manual | dll_scan | etw | game_config | mixed"
+        - name: confidence
+          type: keyword
+          description: "Data confidence: high | medium | low"
+        - name: notes
+          type: keyword
+          description: "User-supplied free-text notes for this session"

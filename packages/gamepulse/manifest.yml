@@ -1,0 +1,40 @@
+format_version: "3.0.0"
+name: gamepulse
+title: "GamePulse"
+version: 0.1.1
+description: >
+  Gaming telemetry for Elastic: FPS, GPU/CPU metrics, frame timing percentiles,
+  and kernel-level scheduler, I/O, and GPU fence tracing via eBPF.
+  Understand why games perform the way they do — down to scheduler migrations and
+  shader compilation stutters.
+type: integration
+categories:
+  - monitoring
+  - observability
+conditions:
+  kibana:
+    version: "^8.13.0 || ^9.0.0"
+  elastic:
+    subscription: basic
+owner:
+  github: MathewRJ
+  type: community
+icons:
+  - src: img/icon.svg
+    title: GamePulse
+    type: image/svg+xml
+
+policy_templates:
+  - name: gamepulse
+    title: GamePulse Gaming Telemetry
+    description: >
+      Collect gaming performance metrics and kernel telemetry via eBPF.
+      Covers CPU, GPU, frame timing, memory, storage, network, audio, power,
+      session lifecycle, discrete events, and scheduler/I/O/GPU kernel probes.
+    inputs:
+      - type: filestream
+        title: Collect GamePulse events
+        description: >
+          Optional: collect GamePulse event logs from disk. The gamepulse-agent
+          sends metrics directly to Elasticsearch — this input is only needed
+          if you also want file-based event capture.

@@ -1,0 +1,98 @@
+# ECS fields used in this data stream
+- name: host.name
+  external: ecs
+  dimension: true
+
+# Session context (common across all metric data streams)
+- name: gamepulse
+  type: group
+  fields:
+    - name: session
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          dimension: true
+          description: "Unique session identifier (UUID) for this gaming session"
+        - name: agent_version
+          type: keyword
+          description: "Version of the GamePulse collector agent"
+        - name: label
+          type: keyword
+          description: "Optional user-supplied annotation for this session (e.g. 'after-driver-update')"
+
+    - name: game
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: "Game title as detected by Steam"
+        - name: steam_app_id
+          type: long
+          description: "Steam application ID (present only when source == steam)"
+        - name: source
+          type: keyword
+          description: "Detection source: steam | lutris | heroic | bottles | user_specified | auto_detected"
+        - name: launcher
+          type: keyword
+          description: "Human-readable launcher name (e.g. Steam, Lutris, Heroic — Epic)"
+        - name: graphics_api
+          type: keyword
+          description: "Graphics API in use (vulkan, opengl, dx11, dx12)"
+        - name: upscaler
+          type: group
+          fields:
+            - name: type
+              type: keyword
+              description: "Upscaling technology (fsr, dlss, xess, none)"
+            - name: quality
+              type: keyword
+              description: "Upscaler quality preset (ultra, quality, balanced, performance)"
+
+    # Frame-specific metrics
+    - name: fps
+      type: group
+      fields:
+        - name: current
+          type: integer
+          metric_type: gauge
+          description: "Instantaneous frames per second at collection time"
+        - name: avg_1s
+          type: float
+          metric_type: gauge
+          description: "Average FPS over the last 1-second interval"
+        - name: low_1pct
+          type: integer
+          metric_type: gauge
+          description: "1% low FPS — the bottom percentile of frame times expressed as FPS"
+        - name: low_01pct
+          type: integer
+          metric_type: gauge
+          description: "0.1% low FPS — the extreme bottom percentile of frame times expressed as FPS"
+        - name: frametime_ms
+          type: float
+          metric_type: gauge
+          unit: ms
+          description: "Average frame time in milliseconds over the collection interval"
+        - name: frametime_variance
+          type: float
+          metric_type: gauge
+          unit: ms
+          description: "Frame time variance in milliseconds — indicator of frame pacing inconsistency"
+        - name: present_mode
+          type: keyword
+          description: "Presentation mode (vsync, mailbox, immediate, fifo)"
+        - name: stutter_count
+          type: integer
+          metric_type: gauge
+          description: "Number of stutter events (frame time spikes) detected in this collection interval"
+        - name: stutter_detected
+          type: boolean
+          description: "True when frametime_variance exceeds 8ms threshold (derived by ingest pipeline)"
+
+    - name: performance
+      type: group
+      fields:
+        - name: bottleneck
+          type: keyword
+          description: "Per-tick bottleneck classification (cpu, gpu, memory, storage, none)"
