@@ -1,0 +1,88 @@
+- name: harfang_labs
+  type: group
+  fields:
+    - name: alert
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: HarfangLab alert UUID.
+        - name: status
+          type: keyword
+          description: Alert workflow status.
+        - name: type
+          type: keyword
+          description: Detection engine type (sigma, yara, hlai, ioc, etc.).
+        - name: subtype
+          type: keyword
+          description: Alert subtype (process, file, eventlog, etc.).
+        - name: maturity
+          type: keyword
+          description: Rule maturity level.
+        - name: threat_key
+          type: long
+          description: Parent threat identifier.
+        - name: aggregation_key
+          type: keyword
+          description: Alert deduplication key.
+        - name: score
+          type: long
+          description: YARA or detection score.
+        - name: session_id
+          type: long
+          description: Windows session identifier.
+        - name: logonid
+          type: long
+          description: Windows logon identifier.
+        - name: payload_type
+          type: keyword
+          description: Payload type indicator (e.g. rtlogs).
+        - name: execution_mode
+          type: long
+          description: Execution mode indicator.
+        - name: level
+          type: keyword
+          description: Raw alert severity level string.
+        - name: matched_rules
+          type: nested
+          description: YARA rule match details.
+          fields:
+            - name: namespace
+              type: keyword
+            - name: rulename
+              type: keyword
+            - name: source
+              type: keyword
+        - name: eventlog
+          type: group
+          description: Windows event log context for eventlog subtype alerts.
+          fields:
+            - name: event_id
+              type: keyword
+            - name: source_name
+              type: keyword
+            - name: channel
+              type: keyword
+            - name: event_data
+              type: flattened
+        - name: process
+          type: group
+          fields:
+            - name: integrity_level
+              type: keyword
+              description: Process integrity level.
+            - name: size
+              type: long
+              description: Process executable size in bytes.
+            - name: issuer_name
+              type: keyword
+              description: Code signature issuer name when present.
+            - name: product_version
+              type: keyword
+              description: PE product version from compile-time metadata.
+    - name: agent
+      type: group
+      fields:
+        - name: version
+          type: keyword
+          description: HarfangLab agent version at time of detection.

@@ -1,0 +1,228 @@
+---
+description: Parse HarfangLab syslog process telemetry events.
+processors:
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-common-agent" }}'
+      tag: map_common_agent
+  - rename:
+      field: harfang_labs.pid
+      target_field: process.pid
+      ignore_missing: true
+      tag: rename_process_pid
+  - rename:
+      field: harfang_labs.ppid
+      target_field: process.parent.pid
+      ignore_missing: true
+      tag: rename_process_ppid
+  - rename:
+      field: harfang_labs.process_unique_id
+      target_field: process.entity_id
+      ignore_missing: true
+      tag: rename_process_entity_id
+  - set:
+      field: process.name
+      tag: set_process_name
+      copy_from: harfang_labs.process_name
+      override: true
+      if: ctx.harfang_labs?.process_name != null
+  - rename:
+      field: harfang_labs.image_name
+      target_field: process.executable
+      ignore_missing: true
+      tag: rename_process_executable
+  - rename:
+      field: harfang_labs.commandline
+      target_field: process.command_line
+      ignore_missing: true
+      tag: rename_process_command_line
+  - rename:
+      field: harfang_labs.parent_image
+      target_field: process.parent.executable
+      ignore_missing: true
+      tag: rename_process_parent_executable
+  - rename:
+      field: harfang_labs.parent_commandline
+      target_field: process.parent.command_line
+      ignore_missing: true
+      tag: rename_process_parent_command_line
+  - rename:
+      field: harfang_labs.parent_unique_id
+      target_field: process.parent.entity_id
+      ignore_missing: true
+      tag: rename_process_parent_entity_id
+  - rename:
+      field: harfang_labs.usersid
+      target_field: user.id
+      ignore_missing: true
+      tag: rename_user_id
+  - script:
+      lang: painless
+      tag: split_process_username
+      description: Split DOMAIN\user process username into user.domain and user.name.
+      if: ctx.harfang_labs?.username != null
+      source: |-
+        def username = ctx.harfang_labs.username;
+        if (username == null) {
+          return;
+        }
+        ctx.user = ctx.user ?: [:];
+        int idx = username.indexOf('\\');
+        if (idx > 0) {
+          ctx.user.domain = username.substring(0, idx);
+          ctx.user.name = username.substring(idx + 1);
+        } else {
+          ctx.user.name = username;
+        }
+  - rename:
+      field: harfang_labs.integrity_level
+      target_field: harfang_labs.event.process.integrity_level
+      ignore_missing: true
+      tag: rename_integrity_level
+  - rename:
+      field: harfang_labs.signed
+      target_field: process.code_signature.valid
+      ignore_missing: true
+      tag: rename_process_signed
+  - rename:
+      field: harfang_labs.hashes.md5
+      target_field: process.hash.md5
+      ignore_missing: true
+      tag: rename_process_hash_md5
+  - rename:
+      field: harfang_labs.hashes.sha1
+      target_field: process.hash.sha1
+      ignore_missing: true
+      tag: rename_process_hash_sha1
+  - rename:
+      field: harfang_labs.hashes.sha256
+      target_field: process.hash.sha256
+      ignore_missing: true
+      tag: rename_process_hash_sha256
+  - rename:
+      field: harfang_labs.current_directory
+      target_field: process.working_directory
+      ignore_missing: true
+      tag: rename_process_working_directory
+  - rename:
+      field: harfang_labs.pe_imphash
+      target_field: process.pe.imphash
+      ignore_missing: true
+      tag: rename_process_pe_imphash
+  - rename:
+      field: harfang_labs.pe_info.original_filename
+      target_field: process.pe.original_file_name
+      ignore_missing: true
+      tag: rename_process_pe_original_filename
+  - rename:
+      field: harfang_labs.pe_info.product_name
+      target_field: process.pe.product
+      ignore_missing: true
+      tag: rename_process_pe_product
+  - rename:
+      field: harfang_labs.pe_info.file_description
+      target_field: process.pe.description
+      ignore_missing: true
+      tag: rename_process_pe_description
+  - rename:
+      field: harfang_labs.pe_info.company_name
+      target_field: process.pe.company
+      ignore_missing: true
+      tag: rename_process_pe_company
+  - rename:
+      field: harfang_labs.pe_info.file_version
+      target_field: process.pe.file_version
+      ignore_missing: true
+      tag: rename_process_pe_file_version
+  - rename:
+      field: harfang_labs.signature_info.signer_info.display_name
+      target_field: process.code_signature.subject_name
+      ignore_missing: true
+      tag: rename_process_code_signature_subject
+  - set:
+      field: process.code_signature.exists
+      tag: set_process_code_signature_exists
+      value: true
+      if: ctx.harfang_labs?.signature_info?.signed_authenticode == true || ctx.harfang_labs?.signature_info?.signed_catalog == true
+  - date:
+      field: harfang_labs.create_time
+      target_field: process.start
+      formats:
+        - yyyy/MM/dd HH:mm:ss.SSSSSS
+        - ISO8601
+      tag: date_process_create_time
+      if: ctx.harfang_labs?.create_time != null
+  - rename:
+      field: harfang_labs.session
+      target_field: harfang_labs.event.process.session_id
+      ignore_missing: true
+      tag: rename_process_session
+  - rename:
+      field: harfang_labs.logonid
+      target_field: harfang_labs.event.process.logonid
+      ignore_missing: true
+      tag: rename_process_logonid
+  - rename:
+      field: harfang_labs.size
+      target_field: harfang_labs.event.process.size
+      ignore_missing: true
+      tag: rename_process_size
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: process
+  - append:
+      field: event.type
+      tag: append_event_type_start
+      value: start
+  - set:
+      field: event.outcome
+      tag: set_event_outcome
+      value: unknown
+  - append:
+      field: related.user
+      tag: append_user_name_to_related
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.hash
+      tag: append_process_hash_md5_to_related
+      value: '{{{process.hash.md5}}}'
+      allow_duplicates: false
+      if: ctx.process?.hash?.md5 != null
+  - append:
+      field: related.hash
+      tag: append_process_hash_sha1_to_related
+      value: '{{{process.hash.sha1}}}'
+      allow_duplicates: false
+      if: ctx.process?.hash?.sha1 != null
+  - append:
+      field: related.hash
+      tag: append_process_hash_sha256_to_related
+      value: '{{{process.hash.sha256}}}'
+      allow_duplicates: false
+      if: ctx.process?.hash?.sha256 != null
+  - remove:
+      field:
+        - _temp
+      ignore_missing: true
+      tag: remove_temp_fields
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

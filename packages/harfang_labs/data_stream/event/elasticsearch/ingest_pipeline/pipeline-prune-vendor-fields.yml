@@ -1,0 +1,67 @@
+---
+description: Remove raw vendor JSON fields retained after ECS mapping.
+processors:
+  - script:
+      lang: painless
+      tag: prune_harfang_labs_top_level
+      if: ctx.harfang_labs != null
+      source: |-
+        def keepTop = ['event', 'alert', 'threat', 'agent'];
+        def keys = new ArrayList(ctx.harfang_labs.keySet());
+        for (def k : keys) {
+          if (!keepTop.contains(k)) {
+            ctx.harfang_labs.remove(k);
+          }
+        }
+  - script:
+      lang: painless
+      tag: prune_harfang_labs_event
+      if: ctx.harfang_labs?.event != null
+      source: |-
+        def keepEvent = [
+          'log_type', 'process', 'network', 'file', 'driverload', 'injectedthread',
+          'eventlog', 'auditlog', 'connectionlog', 'investigation'
+        ];
+        def keys = new ArrayList(ctx.harfang_labs.event.keySet());
+        for (def k : keys) {
+          if (!keepEvent.contains(k)) {
+            ctx.harfang_labs.event.remove(k);
+          }
+        }
+  - script:
+      lang: painless
+      tag: prune_harfang_labs_agent
+      if: ctx.harfang_labs?.agent != null
+      source: |-
+        def removeAgent = [
+          'agentid', 'hostname', 'dnsdomainname', 'ostype', 'osproducttype',
+          'osversion', 'ipaddress', 'domainname', 'additional_info', 'distroid',
+          'producttype'
+        ];
+        for (def f : removeAgent) {
+          ctx.harfang_labs.agent.remove(f);
+        }
+        def keys = new ArrayList(ctx.harfang_labs.agent.keySet());
+        for (def k : keys) {
+          if (ctx.harfang_labs.agent[k] == null) {
+            ctx.harfang_labs.agent.remove(k);
+          }
+        }
+        if (ctx.harfang_labs.agent.isEmpty()) {
+          ctx.harfang_labs.remove('agent');
+        }
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
