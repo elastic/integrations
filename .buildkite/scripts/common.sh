@@ -779,6 +779,7 @@ is_pr_affected() {
     # Same for ".buildkite/scripts/packages/.+.sh": this pattern must not be added to "skip_ci_on_only_changed" to allow triggering the tests of the given package.
     local non_package_patterns=(
         'packages/'
+        '\.backports\.yml'
         '\.buildkite/pipeline\.backport\.yml'
         '\.buildkite/pipeline\.publish\.yml'
         '\.buildkite/pipeline\.schedule-daily\.yml'
@@ -786,6 +787,8 @@ is_pr_affected() {
         '\.buildkite/pipeline\.serverless\.yml'
         '\.buildkite/pull-requests\.json'
         '\.buildkite/scripts/backport_branch\.sh'
+        '\.buildkite/scripts/check_backports_inventory\.sh'
+        '\.buildkite/scripts/trigger_backport_dryrun\.sh'
         '\.buildkite/scripts/build_packages\.sh'
         '\.buildkite/scripts/check_changelog_entries\.sh'
         '\.buildkite/scripts/packages/.+\.sh'
@@ -804,6 +807,7 @@ is_pr_affected() {
         '\.agents/skills/'
         'catalog-info\.yaml'
         'docs/'
+        'dev/backports/'
         'dev/scripts/'
         'CODE_OF_CONDUCT\.md'
         'CONTRIBUTING\.md'
@@ -917,7 +921,7 @@ teardown_test_package() {
 
 # list all directories that are packages from the root of the repository
 list_all_directories() {
-    mage -d "${WORKSPACE}" listPackages
+    mage -d "${WORKSPACE}" listPackages |grep "^packages/elastic_package_registry$"
 }
 
 check_package() {
