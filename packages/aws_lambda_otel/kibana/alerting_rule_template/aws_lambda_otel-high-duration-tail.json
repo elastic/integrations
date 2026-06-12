@@ -1,0 +1,49 @@
+{
+    "id": "aws_lambda_otel-high-duration-tail",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when peak (Maximum) Lambda invocation duration exceeds a configurable threshold, indicating tail latency or cold-start regressions.",
+        "name": "[AWS Lambda OTel] High tail duration",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws",
+            "lambda",
+            "otel"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## High Tail Duration\n\n### Triage Steps\n1. Tail latency uses CloudWatch `Maximum` statistic — true percentiles are not available from this source.\n2. Check for cold starts: correlate with low `ConcurrentExecutions` or recent scale-from-zero events.\n3. Review VPC-attached functions for ENI initialization delays.\n4. Compare tail vs average duration — a large gap often points to cold starts or rare slow paths.\n5. Consider provisioned concurrency if cold starts breach user-facing SLOs.\n\n### Note\nAdjust the threshold to match your tail-latency SLO. The default targets severe outliers, not typical p99 behaviour."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/Lambda\"\n    AND attributes.MetricName == \"Duration\"\n    AND attributes.stat == \"Maximum\"\n| STATS max_duration_ms = MAX(`metrics.amazonaws.com/AWS/Lambda/Duration`)\n  BY attributes.FunctionName, resource.attributes.cloud.region\n// Tail latency threshold (ms): catches cold starts and severe outliers\n| WHERE max_duration_ms > 10000\n| EVAL function_id = CONCAT(attributes.FunctionName, \"/\", resource.attributes.cloud.region)\n| SORT max_duration_ms DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "function_id",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
