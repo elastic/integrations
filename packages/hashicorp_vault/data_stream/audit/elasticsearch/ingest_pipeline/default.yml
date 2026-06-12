@@ -5,6 +5,11 @@ processors:
       tag: set_ecs_version_f5923549
       field: ecs.version
       value: '8.17.0'
+  - set:
+      tag: set_event_ingested
+      field: event.ingested
+      copy_from: _ingest.timestamp
+      if: ctx.event?.ingested == null
   - rename:
       tag: rename_message_to_event_original_86cdcc50
       field: message
@@ -33,6 +38,563 @@ processors:
       ignore_missing: true
 
   #
+  # Handle KMIP events
+  #
+  - script:
+      tag: script_kmip_extraction
+      lang: painless
+      if: "['kmip-request', 'kmip-response'].contains(ctx.hashicorp_vault?.audit?.type)"
+      source: >
+        void handle_map(Map src, Map tgt) {
+          if (src.containsKey('type')) {
+            Map tmp = ['type':src.get('type'), 'value': src.get('value')];
+            tgt.put(src.get('tag'), tmp);
+          } else {
+            Map new_map = [:];
+            for (Map v: src.get('value')) {
+              handle_map(v, new_map);
+            }
+            tgt.put(src.get('tag'), new_map);
+          }
+        }
+        if (ctx.hashicorp_vault?.audit?.request?.data?.kmip_request != null) {
+          ctx.hashicorp_vault.audit.request.data.put('kmip_request_map', [:]);
+          handle_map(ctx.hashicorp_vault.audit.request.data.kmip_request, ctx.hashicorp_vault.audit.request.data.kmip_request_map);
+        }
+        if (ctx.hashicorp_vault?.audit?.response?.data?.kmip_response != null) {
+          ctx.hashicorp_vault.audit.response.data.put('kmip_response_map', [:]);
+          handle_map(ctx.hashicorp_vault.audit.response.data.kmip_response, ctx.hashicorp_vault.audit.response.data.kmip_response_map);
+        }
+  - rename:
+      tag: rename_kmip_request_headers_to_request_headers
+      field: hashicorp_vault.audit.request.data.kmip_request_map.RequestMessage.RequestHeader
+      target_field: hashicorp_vault.audit.request.headers
+      ignore_missing: true
+      override: true
+  - rename:
+      tag: rename_kmip_request_payload_to_request_data
+      field: hashicorp_vault.audit.request.data.kmip_request_map.RequestMessage
+      target_field: hashicorp_vault.audit.request.data
+      ignore_missing: true
+      override: true
+  - rename:
+      tag: rename_kmip_response_headers_to_response_headers
+      field: hashicorp_vault.audit.response.data.kmip_response_map.ResponseMessage.ResponseHeader
+      target_field: hashicorp_vault.audit.response.headers
+      ignore_missing: true
+      override: true
+  - rename:
+      tag: rename_kmip_response_payload_to_response_data
+      field: hashicorp_vault.audit.response.data.kmip_response_map.ResponseMessage
+      target_field: hashicorp_vault.audit.response.data
+      ignore_missing: true
+      override: true
+  # Normalize KMIP error if present
+  - lowercase:
+      tag: lowercase_kmip_error
+      field: hashicorp_vault.audit.response.data.BatchItem.ResultReason
+      ignore_missing: true
+  - script:
+      description: Normalize KMIP error reason as per https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497707
+      tag: script_normalize_kmip_error
+      lang: painless
+      if: ctx.hashicorp_vault?.audit?.response?.data?.BatchItem?.ResultReason?.value != null
+      source: if (params.containsKey(ctx.hashicorp_vault.audit.response.data.BatchItem.ResultReason.value)) {ctx.hashicorp_vault.audit.put('error', params.get(ctx.hashicorp_vault.audit.response.data.BatchItem.ResultReason.value))}
+      params:
+        "0x00000001": "Item Not Found"
+        "0x00000002": "Response Too Large"
+        "0x00000003": "Authentication Not Successful"
+        "0x00000004": "Invalid Message"
+        "0x00000005": "Operation Not Supported"
+        "0x00000006": "Missing Data"
+        "0x00000007": "Invalid Field"
+        "0x00000008": "Feature Not Supported"
+        "0x00000009": "Operation Canceled By Requester"
+        "0x0000000a": "Cryptographic Failure"
+        "0x0000000b": "(Reserved)"
+        "0x0000000c": "Permission Denied"
+        "0x0000000d": "Object Archived"
+        "0x0000000e": "(Reserved)"
+        "0x0000000f": "Application Namespace Not Supported"
+        "0x00000010": "Key Format Type Not Supported"
+        "0x00000011": "Key Compression Type Not Supported"
+        "0x00000012": "Encoding Option Error"
+        "0x00000013": "Key Value Not Present"
+        "0x00000014": "Attestation Required"
+        "0x00000015": "Attestation Failed"
+        "0x00000016": "Sensitive"
+        "0x00000017": "Not Extractable"
+        "0x00000018": "Object Already Exists"
+        "0x00000019": "Invalid Ticket"
+        "0x0000001a": "Usage Limit Exceeded"
+        "0x0000001b": "Numeric Range"
+        "0x0000001c": "Invalid Data Type"
+        "0x0000001d": "Read Only Attribute"
+        "0x0000001e": "Multi Valued Attribute"
+        "0x0000001f": "Unsupported Attribute"
+        "0x00000020": "Attribute Instance Not Found"
+        "0x00000021": "Attribute Not Found"
+        "0x00000022": "Attribute Read Only"
+        "0x00000023": "Attribute Single Valued"
+        "0x00000024": "Bad Cryptographic Parameters"
+        "0x00000025": "Bad Password"
+        "0x00000026": "Codec Error"
+        "0x00000027": "(Reserved)"
+        "0x00000028": "Illegal Object Type"
+        "0x00000029": "Incompatible Cryptographic Usage Mask"
+        "0x0000002a": "Internal Server Error"
+        "0x0000002b": "Invalid Asynchronous Correlation Value"
+        "0x0000002c": "Invalid Attribute"
+        "0x0000002d": "Invalid Attribute Value"
+        "0x0000002e": "Invalid Correlation Value"
+        "0x0000002f": "Invalid CSR"
+        "0x00000030": "Invalid Object Type"
+        "0x00000031": "(Reserved)"
+        "0x00000032": "Key Wrap Type Not Supported"
+        "0x00000033": "(Reserved)"
+        "0x00000034": "Missing Initialization Vector"
+        "0x00000035": "Non Unique Name Attribute"
+        "0x00000036": "Object Destroyed"
+        "0x00000037": "Object Not Found"
+        "0x00000039": "Not Authorised"
+        "0x0000003a": "Server Limit Exceeded"
+        "0x0000003b": "Unknown Enumeration"
+        "0x0000003c": "Unknown Message Extension"
+        "0x0000003d": "Unknown Tag"
+        "0x0000003e": "Unsupported Cryptographic Parameters"
+        "0x0000003f": "Unsupported Protocol Version"
+        "0x00000040": "Wrapping Object Archived"
+        "0x00000041": "Wrapping Object Destroyed"
+        "0x00000042": "Wrapping Object Not Found"
+        "0x00000043": "Wrong Key Lifecycle State"
+        "0x00000044": "Protection Storage Unavailable"
+        "0x00000045": "PKCS#11 Codec Error"
+        "0x00000046": "PKCS#11 Invalid Function"
+        "0x00000047": "PKCS#11 Invalid Interface"
+        "0x00000100": "General Failure"
+  - script:
+      tag: script_translate_kmip_operation
+      description: Translate operation code to human-readable operation descrption, as per https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497698
+      lang: painless
+      if: ctx.hashicorp_vault?.audit?.request?.data?.BatchItem?.Operation?.value != null
+      source: >
+        if (params.containsKey(ctx.hashicorp_vault.audit.request.data.BatchItem.Operation.value)) {
+          ctx.hashicorp_vault.audit.request.put('operation', params.get(ctx.hashicorp_vault.audit.request.data.BatchItem.Operation.value).get('action'));
+          if (ctx.event.category == null) {
+            ctx.event.put('category', []);
+          }
+          for (cat in params.get(ctx.hashicorp_vault.audit.request.data.BatchItem.Operation.value).get('categories')) {
+            ctx.event.category.add(cat);
+          }
+          if (ctx.event.type == null) {
+            ctx.event.put('type', []);
+          }
+          for (type in params.get(ctx.hashicorp_vault.audit.request.data.BatchItem.Operation.value).get('types')) {
+            ctx.event.type.add(type);
+          }
+          ctx.event.put('reference', params.get(ctx.hashicorp_vault.audit.request.data.BatchItem.Operation.value).get('ref'));
+        }
+      params:
+        "0x00000001":
+          action: "create"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497534
+          categories:
+            - api
+            - iam
+          types:
+            - create
+        "0x00000002":
+          action: "create key pair"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497535
+          categories:
+            - api
+            - iam
+          types:
+            - create
+        "0x00000003":
+          action: "register"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497565
+          categories:
+            - api
+            - iam
+          types:
+            - create
+        "0x00000004":
+          action: "re-key"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497568
+          categories:
+            - api
+            - iam
+          types:
+            - change
+        "0x00000005":
+          action: "derive key"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497540
+          categories:
+            - api
+            - iam
+          types:
+            - update
+        "0x00000006":
+          action: "certify"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497532
+          categories:
+            - api
+            - iam
+          types:
+            - update
+        "0x00000007":
+          action: "re-certify"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497567
+          categories:
+            - api
+            - iam
+          types:
+            - update
+        "0x00000008":
+          action: "locate"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497553
+          categories:
+            - api
+          types:
+            - access
+        "0x00000009":
+          action: "check"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497533
+          categories:
+            - api
+          types:
+            - access
+        "0x0000000a":
+          action: "get"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497545
+          categories:
+            - api
+          types:
+            - access
+        "0x0000000b":
+          action: "get attributes"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497546
+          categories:
+            - api
+          types:
+            - access
+        "0x0000000c":
+          action: "get attribute list"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497547
+          categories:
+            - api
+          types:
+            - access
+        "0x0000000d":
+          action: "add attribute"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497528
+          categories:
+            - api
+            - iam
+          types:
+            - change
+        "0x0000000e":
+          action: "modify attribute"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497559
+          categories:
+            - api
+            - iam
+          types:
+            - change
+        "0x0000000f":
+          action: "delete attribute"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497539
+          categories:
+            - api
+            - iam
+          types:
+            - change
+        "0x00000010":
+          action: "obtain lease"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497560
+          categories:
+            - api
+            - authentication
+          types:
+            - access
+            - start
+        "0x00000011":
+          action: "get usage allocation"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497548
+          categories:
+            - api
+          types:
+            - access
+            - info
+        "0x00000012":
+          action: "activate"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497527
+          categories:
+            - api
+            - iam
+          types:
+            - change
+        "0x00000013":
+          action: "revoke"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497566
+          categories:
+            - api
+            - iam
+          types:
+            - delete
+        "0x00000014":
+          action: "destroy"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497541
+          categories:
+            - api
+            - iam
+          types:
+            - delete
+        "0x00000015":
+          action: "archive"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497530
+          categories:
+            - api
+            - iam
+          types:
+            - delete
+        "0x00000016":
+          action: "recover"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497564
+          categories:
+            - api
+            - iam
+          types:
+            - create
+        "0x00000017":
+          action: "validate"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497577
+          categories:
+            - api
+          types:
+            - access
+            - info
+        "0x00000018":
+          action: "query"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497563
+          categories:
+            - api
+          types:
+            - access
+            - info
+        "0x00000019":
+          action: "cancel"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497531
+          categories:
+            - api
+          types:
+            - stop
+        "0x0000001a":
+          action: "poll"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497562
+          categories:
+            - api
+          types:
+            - info
+        "0x0000001b":
+          action: "notify"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497580
+          categories:
+            - api
+          types:
+            - info
+        "0x0000001c":
+          action: "put"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497581
+          categories:
+            - api
+          types:
+            - change
+        "0x0000001d":
+          action: "re-key key pair"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497569
+          categories:
+            - api
+            - iam
+          types:
+            - change
+        "0x0000001e":
+          action: "discover versions"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497579
+          categories:
+            - api
+          types:
+            - info
+        "0x0000001f":
+          action: "encrypt"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497543
+          categories:
+            - api
+          types:
+            - start
+        "0x00000020":
+          action: "decrypt"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497537
+          categories:
+            - api
+          types:
+            - start
+        "0x00000021":
+          action: "sign"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497575
+          categories:
+            - api
+          types:
+            - start
+        "0x00000022":
+          action: "signature verify"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497576
+          categories:
+            - api
+          types:
+            - start
+        "0x00000023":
+          action: "mac"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497557
+          categories:
+            - api
+          types:
+            - start
+        "0x00000024":
+          action: "mac verify"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497558
+          categories:
+            - api
+          types:
+            - start
+        "0x00000025":
+          action: "rng retrieve"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497571
+          categories:
+            - api
+          types:
+            - start
+        "0x00000026":
+          action: "rng seed"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497572
+          categories:
+            - api
+          types:
+            - start
+        "0x00000027":
+          action: "hash"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497549
+          categories:
+            - api
+          types:
+            - start
+        "0x00000028":
+          action: "create split key"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497536
+          categories:
+            - api
+            - iam
+          types:
+            - create
+        "0x00000029":
+          action: "join split key"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497552
+          categories:
+            - api
+            - iam
+          types:
+            - access
+            - info
+        "0x0000002a":
+          action: "import"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497550
+          categories:
+            - api
+          types:
+            - create
+        "0x0000002b":
+          action: "export"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497544
+          categories:
+            - api
+          types:
+            - access
+        "0x0000002c":
+          action: "log"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497554
+          categories:
+            - api
+          types:
+            - start
+        "0x0000002d":
+          action: "login"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497555
+          categories:
+            - authentication
+            - session
+          types:
+            - start
+        "0x0000002e":
+          action: "logout"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497556
+          categories:
+            - session
+          types:
+            - end
+        "0x0000002f":
+          action: "delegated login"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497538
+          categories:
+            - authentication
+            - session
+          types:
+            - start
+        "0x00000030":
+          action: "adjust attribute"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497529
+          categories:
+            - api
+          types:
+            - change
+        "0x00000031":
+          action: "set attribute"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497573
+          categories:
+            - api
+          types:
+            - change
+        "0x00000032":
+          action: "set endpoint role"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497574
+          categories:
+            - api
+          types:
+            - change
+        "0x00000033":
+          action: "pkcs#11"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497561
+          categories:
+            - api
+          types:
+            - admin
+        "0x00000034":
+          action: "interop"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497551
+          categories:
+            - api
+          types:
+            - info
+        "0x00000035":
+          action: "re-provision"
+          ref: https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497570
+          categories:
+            - api
+          types:
+            - create
+
+
+  #
   # event categorization.
   #
   - set:
@@ -43,6 +605,7 @@ processors:
       tag: append_event_category_109b4d72
       field: event.category
       value: authentication
+      if: ctx.event?.category == null || ctx.event.category.isEmpty()
   # Request operation can be: create, delete, list, read, update.
   - append:
       tag: append_event_type_c9285984
@@ -53,6 +616,12 @@ processors:
   - append:
       tag: append_event_type_ed937003
       if: ctx?.hashicorp_vault?.audit?.request?.operation == 'update'
+      field: event.type
+      value: info
+      allow_duplicates: false
+  - append:
+      tag: append_event_type_for_help_operation
+      if: ctx?.hashicorp_vault?.audit?.request?.operation == 'help'
       field: event.type
       value: info
       allow_duplicates: false
@@ -79,6 +648,7 @@ processors:
       tag: set_event_action_aa76e088
       field: event.action
       copy_from: hashicorp_vault.audit.request.operation
+      ignore_empty_value: true
 
   #
   # event.outcome
@@ -93,6 +663,12 @@ processors:
       if: ctx?.hashicorp_vault?.audit?.error != null
       field: event.outcome
       value: failure
+  - set:
+      tag: set_event_outcome_kmip_pending_or_unknown
+      description: Handle pending response as per https://docs.oasis-open.org/kmip/kmip-spec/v2.0/os/kmip-spec-v2.0-os.html#_Toc6497708
+      if: ctx.hashicorp_vault?.audit?.type == 'kmip-response' && ctx.hashicorp_vault?.audit?.response?.data?.BatchItem?.ResultStatus?.value == '0x00000002'
+      field: event.outcome
+      value: unknown
 
   - set:
       tag: set_event_id_5845187a
@@ -104,6 +680,11 @@ processors:
       field: message
       copy_from: hashicorp_vault.audit.error
       ignore_failure: true
+  - dissect:
+      tag: split_source_address_if_contains_port
+      field: hashicorp_vault.audit.request.remote_address
+      pattern: "%{hashicorp_vault.audit.request.remote_address}:%{hashicorp_vault.audit.request.remote_port}"
+      if: "ctx.hashicorp_vault?.audit?.request?.remote_address != null && ctx.hashicorp_vault.audit.request.remote_address.contains(':')"
   - convert:
       tag: convert_hashicorp_vault_audit_request_remote_address_to_source_ip_98cf868d
       field: hashicorp_vault.audit.request.remote_address
@@ -113,9 +694,13 @@ processors:
   - convert:
       tag: convert_hashicorp_vault_audit_request_remote_port_to_source_port_1efe5263
       field: hashicorp_vault.audit.request.remote_port
-      target_field: source.port
       type: long
-      ignore_missing: true
+      if: "ctx.hashicorp_vault?.audit?.request?.remote_port != null && ctx.hashicorp_vault.audit.request.remote_port instanceof String"
+  - set:
+      tag: set_source_port_from_hashicorp_remote_port
+      field: source.port
+      copy_from: hashicorp_vault.audit.request.remote_port
+      ignore_empty_value: true
 
   # OIDC auth metadata.
   - set:
