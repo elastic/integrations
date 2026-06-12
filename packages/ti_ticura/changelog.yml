@@ -1,0 +1,25 @@
+# later versions go on top
+- version: "0.3.1"
+  changes:
+    - description: "CEL input with agentless deployment support; ECS 9.3.0 with declared `ticura.*` and `additional_info.*` fields; Ticura's MITRE ATT&CK, risk score, and expiry mirrored into canonical `threat.technique.*`/`threat.software.*`/`threat.group.*`, `event.severity` (0–99 clamped), and `threat.indicator.expired`; GeoIP/ASN and hash-type fallback enrichment; `@timestamp` derived from `threat.indicator.last_seen` (fallback `first_seen`); document-level provenance via `event.module`/`event.provider`/`event.action`/`observer.vendor`; Ticura-namespaced mirror preserved alongside ECS canonical fields."
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19280
+    - description: "Lifecycle tuned for re-asserting threat-intel feeds: ILM rolls over every 24h with `warm.min_age:0s` and `delete.min_age:1d`, guaranteeing indicators removed by Ticura are deleted within ~48h. All dashboards and saved searches scope to `event.module:ti_ticura and _tier:\"data_hot\" and not threat.indicator.expired:true`, giving an always-current view independent of poll interval. CEL `redact.delete:true` strips `api_token` from persisted state; tracer filename namespace-scoped; agentless container sized for the largest Ticura feed subscriptions; `http_client_timeout` exposed as a configurable variable."
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19280
+    - description: "Three Kibana dashboards (`[Logs Ticura] Overview`, `[Logs Ticura] Triage` with 15 panels, `[Logs Ticura] Trends` with 11 panels) all sharing the same hierarchically-chained 9-control input bar (Namespace first, then Indicator Type, Risk Category, Threat Type, MITRE Technique, Country, Threat Actor, Inbound Only, Severity range slider). Nine pre-built `[Ticura]` saved searches for common analyst views. Pipeline and system tests cover all supported IOC types and negative paths (missing-uuid drop, SHA-1 fallback, IPV4PORT subtype, already-expired, provenance divergence)."
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19280
+    - description: "Five Elastic Security Indicator Match detection rules (Outbound connection to malicious IP, DNS query to malicious domain, file-hash match, URL access match, critical-severity variant) shipped `enabled:false` by default and tagged `Ticura` for bulk-enable from the Security UI. Each rule scopes to active hot-tier indicators only and includes MITRE ATT&CK references and investigation notes."
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19280
+- version: "0.2.4"
+  changes:
+    - description: Add URL handling
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19280
+- version: "0.0.1"
+  changes:
+    - description: Initial draft of the package
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/19280

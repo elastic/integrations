@@ -1,0 +1,64 @@
+rules:
+  # ── Standard feed (10 indicators, all IOC types) ─────────────────────────
+  # Used by: test-default-config.yml, test-tracer-config.yml,
+  #          test-preserve-original-config.yml
+  - path: /v1/feeds/download/full
+    methods: ["GET"]
+    query_params:
+      targetFormat: "ECSV1"
+    request_headers:
+      x-api-key: "test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/x-ndjson"
+        body: |
+          {{file "/files/ticura-feed.ndjson"}}
+  # ── Expired-indicator feed (10 normal + 1 already-expired) ───────────────
+  # Used by: test-expired-config.yml
+  # The 11th indicator has ages_out in the past → pipeline sets expired=true.
+  - path: /v1/feeds/expired/full
+    methods: ["GET"]
+    query_params:
+      targetFormat: "ECSV1"
+    request_headers:
+      x-api-key: "test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/x-ndjson"
+        body: |
+          {{file "/files/ticura-feed-expired.ndjson"}}
+  # ── Malformed-events feed (10 good + 2 malformed) ────────────────────────
+  # Used by: test-malformed-config.yml
+  # Two bad lines: one with no ticura block, one with ticura.uuid absent.
+  # Both must be silently dropped → hit_count still 10.
+  - path: /v1/feeds/malformed/full
+    methods: ["GET"]
+    query_params:
+      targetFormat: "ECSV1"
+    request_headers:
+      x-api-key: "test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/x-ndjson"
+        body: |
+          {{file "/files/ticura-feed-malformed.ndjson"}}
+  # ── Auth-error response ───────────────────────────────────────────────────
+  # Used by: test-auth-error-config.yml
+  # Returns 401 — verifies CEL input handles auth failures gracefully.
+  - path: /v1/feeds/autherror/full
+    methods: ["GET"]
+    query_params:
+      targetFormat: "ECSV1"
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"error":"Unauthorized","message":"Invalid API key"}

@@ -1,0 +1,89 @@
+{
+    "id": "692cd4f6-ae6b-5803-bb4a-8c8702d2a40f",
+    "type": "security-rule",
+    "namespaces": [
+        "default"
+    ],
+    "attributes": {
+        "author": [
+            "Ticura"
+        ],
+        "name": "[Ticura] Outbound connection to known malicious IP",
+        "tags": [
+            "Ticura",
+            "Threat Intel",
+            "Indicator Match"
+        ],
+        "description": "Fires when a host in the environment makes an outbound connection to an IP indicator currently flagged by Ticura as malicious (active in the hot tier, not expired).",
+        "rule_id": "692cd4f6-ae6b-5803-bb4a-8c8702d2a40f",
+        "type": "threat_match",
+        "language": "kuery",
+        "query": "destination.ip:* and network.direction:\"outbound\"",
+        "threat_query": "event.module:\"ti_ticura\" and threat.indicator.ip:* and _tier:\"data_hot\" and not threat.indicator.expired:true",
+        "threat_mapping": [
+            {
+                "entries": [
+                    {
+                        "field": "destination.ip",
+                        "type": "mapping",
+                        "value": "threat.indicator.ip"
+                    }
+                ]
+            }
+        ],
+        "threat_index": [
+            "logs-ti_ticura.ecs-*"
+        ],
+        "threat_filters": [],
+        "threat_indicator_path": "threat.indicator",
+        "threat_language": "kuery",
+        "index": [
+            "logs-*",
+            "filebeat-*",
+            "auditbeat-*",
+            "winlogbeat-*",
+            "packetbeat-*"
+        ],
+        "severity": "high",
+        "risk_score": 73,
+        "enabled": false,
+        "from": "now-30m",
+        "to": "now",
+        "interval": "10m",
+        "max_signals": 100,
+        "false_positives": [
+            "Legitimate traffic to a host or URL that was previously reported as malicious and has since been remediated. Validate with the source feed (Ticura) before responding."
+        ],
+        "references": [
+            "https://www.ticura.io",
+            "https://docs.elastic.co/en/integrations/ti_ticura"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1071",
+                        "name": "Application Layer Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1071/"
+                    }
+                ]
+            }
+        ],
+        "note": "**Investigation steps**\n\n1. Confirm the indicator is currently active in Ticura (use the `[Ticura] Active C2 indicators` saved search).\n2. Identify the source host process via `host.name` + `process.executable` from the matched event.\n3. Capture network traffic and isolate the host if the indicator is high-confidence.\n",
+        "actions": [],
+        "throttle": null,
+        "version": 1,
+        "exceptions_list": [],
+        "license": "Elastic License v2",
+        "meta": {
+            "from": "now-30m"
+        }
+    },
+    "references": []
+}

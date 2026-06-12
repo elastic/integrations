@@ -1,0 +1,53 @@
+format_version: 3.4.0
+name: ti_ticura
+title: "Ticura"
+version: 0.3.1
+description: "Ingest threat intelligence indicators from Ticura curated feeds."
+type: integration
+categories:
+  - security
+  - threat_intel
+conditions:
+  kibana:
+    version: "^8.19.0 || ^9.0.0"
+  elastic:
+    subscription: "basic"
+    capabilities:
+      - security
+owner:
+  github: elastic/security-service-integrations
+  type: partner
+screenshots:
+  - src: /img/homepage.png
+    title: Ticura screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/logo.svg
+    title: Ticura logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: Ticura API
+    title: ECS
+    description: Collect threat intelligence indicators from Ticura curated feeds.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: threat-intel
+        # Large Ticura feeds (full subscriptions can reach several hundred MB
+        # of NDJSON) push close to 1 GB of peak memory while parsing. Explicit
+        # hints sized for that worst case prevent OOM on the smallest
+        # agentless tier; customers with smaller feeds use only a fraction.
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+    inputs:
+      - type: cel
+        title: Collect threat intelligence data from Ticura curated feeds via CEL.
+        description: Collect threat intelligence data from Ticura curated feeds using the CEL input.
