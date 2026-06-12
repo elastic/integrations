@@ -1,0 +1,29 @@
+---
+description: Pipeline for parsing Pulse Connect Secure web request events
+processors:
+  - set:
+      field: event.action
+      value: web-request-completed
+  - append:
+      field: event.category
+      value:
+        - web
+        - network
+  - append:
+      field: event.type
+      value:
+        - access
+        - info
+  - script:
+      lang: painless
+      source: |
+        if (ctx._tmp?.web_seconds != null) {
+          ctx.event.duration = (long) Math.round(((double) ctx._tmp.web_seconds) * 1000000000L);
+        }
+
+        long sent = ctx.pulse_secure?.web_request?.bytes_sent instanceof Number ? ((Number) ctx.pulse_secure.web_request.bytes_sent).longValue() : 0L;
+        long received = ctx.pulse_secure?.web_request?.bytes_received instanceof Number ? ((Number) ctx.pulse_secure.web_request.bytes_received).longValue() : 0L;
+        if (sent > 0L || received > 0L) {
+          ctx.network = ctx.network instanceof Map ? ctx.network : new HashMap();
+          ctx.network.bytes = sent + received;
+        }

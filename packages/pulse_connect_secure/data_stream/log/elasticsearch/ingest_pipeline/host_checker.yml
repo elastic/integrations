@@ -1,0 +1,119 @@
+---
+description: Pipeline for parsing Pulse Connect Secure Host Checker events
+processors:
+  - set:
+      field: event.action
+      value: host-checker-compliance
+      if: ctx.message instanceof String && ctx.message.startsWith('Host Checker Compliance Result')
+  - set:
+      field: event.action
+      value: host-checker-policy
+      if: ctx.message instanceof String && ctx.message.startsWith('Host Checker policy ')
+  - append:
+      field: event.category
+      value:
+        - host
+  - append:
+      field: event.type
+      value:
+        - info
+  - set:
+      field: pulse_secure.host_checker.status
+      copy_from: _tmp.host_checker_result
+      if: ctx._tmp?.host_checker_result != null
+  - set:
+      field: event.outcome
+      value: success
+      if: >-
+        ctx.pulse_secure?.host_checker?.status != null
+        && ctx.pulse_secure.host_checker.status.toLowerCase().contains('pass')
+  - set:
+      field: event.outcome
+      value: failure
+      if: >-
+        ctx.pulse_secure?.host_checker?.status != null
+        && (
+          ctx.pulse_secure.host_checker.status.toLowerCase().contains('fail')
+          || ctx.pulse_secure.host_checker.status.toLowerCase().contains('partial')
+        )
+  - script:
+      lang: painless
+      source: |
+        String trimToNull(String value) {
+          if (value == null) {
+            return null;
+          }
+          value = value.trim();
+          return value.length() == 0 ? null : value;
+        }
+
+        List splitCommaSeparated(String raw) {
+          raw = trimToNull(raw);
+          if (raw == null) {
+            return null;
+          }
+          List values = new ArrayList();
+          for (String part : raw.splitOnToken(",")) {
+            String value = trimToNull(part);
+            if (value != null) {
+              values.add(value);
+            }
+          }
+          return values.isEmpty() ? null : values;
+        }
+
+        List splitReasons(String raw) {
+          raw = trimToNull(raw);
+          if (raw == null) {
+            return null;
+          }
+          List values = new ArrayList();
+          if (raw.contains(";")) {
+            for (String part : raw.splitOnToken(";")) {
+              String value = trimToNull(part);
+              if (value != null) {
+                values.add(value);
+              }
+            }
+          } else {
+            values.add(raw);
+          }
+          return values.isEmpty() ? null : values;
+        }
+
+        if (ctx._tmp?.hc_passed instanceof String || ctx._tmp?.hc_failed instanceof String || ctx._tmp?.hc_failed_reasons instanceof String) {
+          ctx.pulse_secure = ctx.pulse_secure instanceof Map ? ctx.pulse_secure : new HashMap();
+          Map hostChecker = ctx.pulse_secure.host_checker instanceof Map ? ctx.pulse_secure.host_checker : new HashMap();
+
+          List passedPolicies = splitCommaSeparated(ctx._tmp?.hc_passed instanceof String ? ctx._tmp.hc_passed : null);
+          if (passedPolicies != null) {
+            hostChecker.passed_policies = passedPolicies;
+          }
+
+          List failedPolicies = splitCommaSeparated(ctx._tmp?.hc_failed instanceof String ? ctx._tmp.hc_failed : null);
+          if (failedPolicies != null) {
+            hostChecker.failed_policies = failedPolicies;
+          }
+
+          List failedReasons = splitReasons(ctx._tmp?.hc_failed_reasons instanceof String ? ctx._tmp.hc_failed_reasons : null);
+          if (failedReasons != null) {
+            hostChecker.failed_reasons = failedReasons;
+            if (ctx.event?.reason == null) {
+              ctx.event.reason = failedReasons.get(0);
+            }
+          }
+
+          ctx.pulse_secure.host_checker = hostChecker;
+        }
+
+        String hostCheckerUser = trimToNull(ctx._tmp?.host_checker_user instanceof String ? ctx._tmp.host_checker_user : null);
+        if (hostCheckerUser != null && (ctx.user == null || ctx.user.name == null || "System".equals(ctx.user.name))) {
+          ctx.user = ctx.user instanceof Map ? ctx.user : new HashMap();
+          if (hostCheckerUser.contains("\\")) {
+            int separator = hostCheckerUser.lastIndexOf("\\");
+            ctx.user.domain = trimToNull(hostCheckerUser.substring(0, separator));
+            ctx.user.name = trimToNull(hostCheckerUser.substring(separator + 1));
+          } else {
+            ctx.user.name = hostCheckerUser;
+          }
+        }
