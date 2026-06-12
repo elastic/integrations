@@ -1,0 +1,38 @@
+{
+    "id": "aws_ec2_otel-cpu-surplus-credits-charged",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when burstable instances are charged for surplus CPU credits, indicating credit balance exhaustion and overage billing on unlimited-mode or standard T-family instances.",
+        "name": "[AWS EC2 OTel] CPU surplus credits charged",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws",
+            "ec2",
+            "otel"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/EC2\"\n    AND attributes.MetricName == \"CPUSurplusCreditsCharged\"\n    AND attributes.stat == \"Sum\"\n| EVAL ec2_instance = CONCAT(attributes.InstanceId, \" (\", resource.attributes.cloud.region, \")\")\n| STATS total_surplus_charged = SUM(`metrics.amazonaws.com/AWS/EC2/CPUSurplusCreditsCharged`) BY ec2_instance\n// Any surplus charge indicates credit exhaustion — tune threshold if noise from tiny overages\n| WHERE total_surplus_charged > 0.0\n| SORT total_surplus_charged DESC\n| LIMIT 100"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "ec2_instance",
+            "termSize": 100,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

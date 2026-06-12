@@ -1,0 +1,43 @@
+{
+    "id": "aws_ec2_otel-status-check-failed",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when the combined EC2 status check reports a failure (either system or instance sub-check). This is the highest-priority EC2 availability signal.",
+        "name": "[AWS EC2 OTel] Status check failed",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws",
+            "ec2",
+            "otel"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## EC2 Status Check Failed\n\n### Triage\n1. Confirm which sub-check failed — run the system vs instance status check alerts for the same instance.\n2. **System check failed** → underlying AWS host/hardware issue. Consider **recover** (stop/start on new hardware).\n3. **Instance check failed** → guest OS/config issue. Consider **reboot** or investigate OS logs.\n4. Check recent deployments, kernel panics, or exhausted memory on the instance.\n\n### Escalation\nStatus check failures indicate the instance is impaired or unreachable — treat as P1 if production workloads are affected."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/EC2\"\n    AND attributes.MetricName == \"StatusCheckFailed\"\n    AND attributes.stat == \"Maximum\"\n| EVAL ec2_instance = CONCAT(attributes.InstanceId, \" (\", resource.attributes.cloud.region, \")\")\n| STATS max_failed = MAX(`metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`) BY ec2_instance\n// 1 = failed, 0 = healthy — alert on any failure in the window\n| WHERE max_failed >= 1\n| SORT max_failed DESC\n| LIMIT 100"
+            },
+            "size": 0,
+            "threshold": [0],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "ec2_instance",
+            "termSize": 100,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
