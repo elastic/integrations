@@ -1,7 +1,7 @@
-format_version: "3.0.2"
+format_version: "3.6.2"
 name: nginx
 title: Nginx
-version: "3.2.0"
+version: "3.2.1"
 description: Collect logs and metrics from Nginx HTTP servers with Elastic Agent.
 type: integration
 categories:
@@ -12,6 +12,10 @@ conditions:
     version: "^8.13.0 || ^9.0.0"
   elastic:
     subscription: basic
+requires:
+  input:
+    - package: log
+      version: "2.4.4"
 screenshots:
   - src: /img/nginx-metrics-overview.png
     title: Nginx metrics overview
@@ -35,17 +39,9 @@ policy_templates:
     title: Nginx logs and metrics
     description: Collect logs and metrics from Nginx instances
     inputs:
-      - type: logfile
+      - package: log
         title: Collect logs from Nginx instances
         description: Collecting Nginx access and error logs
-        vars:
-          - name: condition
-            title: Condition
-            description: Condition to filter when to collect this input. See [Dynamic Input Configuration](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html) for details.
-            type: text
-            multi: false
-            required: false
-            show_user: false
       - type: nginx/metrics
         vars:
           - name: hosts
