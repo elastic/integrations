@@ -1,0 +1,2392 @@
+{
+  "id": "aws_elb_metrics_otel-5a9019c8-e8b0-489c-a6b7-35a976e4cd07",
+  "type": "dashboard",
+  "namespaces": [
+    "default"
+  ],
+  "updated_at": "2026-06-05T12:32:43.989Z",
+  "created_at": "2026-05-26T09:17:50.097Z",
+  "version": "Wzc3ODksMV0=",
+  "attributes": {
+    "description": "AWS ELB metrics dashboard for CloudWatch metrics collected by the OpenTelemetry Collector.",
+    "title": "[AWS OTel] ELB Metrics",
+    "pinned_panels": {
+      "panels": {
+        "ctrl-elb-load-balancer-name": {
+          "order": 0,
+          "type": "options_list_control",
+          "width": "medium",
+          "grow": true,
+          "config": {
+            "use_global_filters": true,
+            "ignore_validations": false,
+            "title": "Load balancer",
+            "field_name": "attributes.LoadBalancer",
+            "exclude": false,
+            "sort": {
+              "by": "_count",
+              "direction": "desc"
+            },
+            "exists_selected": false,
+            "run_past_timeout": false,
+            "search_technique": "wildcard",
+            "selected_options": [],
+            "single_select": false,
+            "dataViewRefName": "ctrl-elb-load-balancer-name:optionsListDataView"
+          }
+        }
+      }
+    },
+    "optionsJSON": {
+      "hidePanelTitles": false,
+      "hidePanelBorders": false,
+      "useMargins": true,
+      "autoApplyFilters": false,
+      "syncColors": false,
+      "syncCursor": true,
+      "syncTooltips": false
+    },
+    "panelsJSON": [
+      {
+        "type": "image",
+        "embeddableConfig": {
+          "hide_border": true,
+          "image_config": {
+            "src": {
+              "type": "file",
+              "file_id": "592fd90b-fffb-4af6-9676-b9855eecb84b"
+            },
+            "alt_text": "",
+            "background_color": "",
+            "object_fit": "contain"
+          }
+        },
+        "panelIndex": "6bada764-98e0-4031-aa2c-64bdd44959e9",
+        "gridData": {
+          "y": 2,
+          "x": 0,
+          "w": 2,
+          "h": 2,
+          "i": "6bada764-98e0-4031-aa2c-64bdd44959e9"
+        }
+      },
+      {
+        "type": "markdown",
+        "embeddableConfig": {
+          "description": "Monitor AWS ELB load balancers across your infrastructure in real time.\nFilter by load balancer at the top. Spot elevated 5xx, backend errors, and unhealthy hosts in the summary table then click any load balancer to drill down.\nTo get started, configure CloudWatch metric streams for your ELB load balancers with the Elastic agent.",
+          "hide_title": true,
+          "hide_border": true,
+          "content": "## AWS ELB Metrics",
+          "settings": {
+            "open_links_in_new_tab": true
+          }
+        },
+        "panelIndex": "hdr",
+        "gridData": {
+          "y": 2,
+          "x": 2,
+          "w": 46,
+          "h": 2,
+          "i": "hdr"
+        }
+      },
+      {
+        "type": "markdown",
+        "embeddableConfig": {
+          "content": "Count over time - timeseries linegraph",
+          "settings": {
+            "open_links_in_new_tab": true
+          }
+        },
+        "panelIndex": "e7aa869c-1051-40e6-943b-100d6f8b2c6a",
+        "gridData": {
+          "y": 4,
+          "x": 28,
+          "w": 20,
+          "h": 12,
+          "i": "e7aa869c-1051-40e6-943b-100d6f8b2c6a"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Load Balancers",
+          "description": "Per-LB summary table over the selected time range. Requests and processed bytes use Sum statistics; target 5xx uses HTTPCode_Target_5XX_Count; rejected connections use the Maximum statistic; latency uses Average/Maximum TargetResponseTime.",
+          "attributes": {
+            "title": "Load Balancers",
+            "description": "Per-LB summary table over the selected time range. Requests and processed bytes use Sum statistics; target 5xx uses HTTPCode_Target_5XX_Count; rejected connections use the Maximum statistic; latency uses Average/Maximum TargetResponseTime.",
+            "visualizationType": "lnsDatatable",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "tbl-layer-tbl-instances": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS c_inv = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_err = COALESCE(SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0), c_rejected_count = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), c_dur_avg = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_dur_max = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_in_tok = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_out_tok = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL)), c_region = MAX(cloud.region) BY LoadBalancer, cloud.region | EVAL c_state_sort = CASE( c_err > 0, 1, c_rejected_count > 0, 2, c_inv > 0, 3, 4), c_state = CASE( c_err > 0, \"erroring\", c_rejected_count > 0, \"rejecting-connections\", c_inv > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "LoadBalancer",
+                          "fieldName": "LoadBalancer",
+                          "meta": {
+                            "type": "string",
+                            "esType": "keyword"
+                          },
+                          "label": "Load balancer",
+                          "customLabel": true
+                        },
+                        {
+                          "columnId": "c_state_sort",
+                          "fieldName": "c_state_sort",
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "label": "State order",
+                          "customLabel": true
+                        },
+                        {
+                          "columnId": "c_state",
+                          "fieldName": "c_state",
+                          "meta": {
+                            "type": "string",
+                            "esType": "keyword"
+                          },
+                          "label": "State",
+                          "customLabel": true
+                        },
+                        {
+                          "columnId": "c_region",
+                          "fieldName": "c_region",
+                          "meta": {
+                            "type": "string",
+                            "esType": "keyword"
+                          },
+                          "label": "Region",
+                          "customLabel": true
+                        },
+                        {
+                          "columnId": "c_inv",
+                          "fieldName": "c_inv",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Requests (count)",
+                          "customLabel": true
+                        },
+                        {
+                          "columnId": "c_err",
+                          "fieldName": "c_err",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Target 5xx",
+                          "customLabel": true
+                        },
+                        {
+                          "columnId": "c_rejected_count",
+                          "fieldName": "c_rejected_count",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Peak rejected connections",
+                          "customLabel": true
+                        },
+                        {
+                          "columnId": "c_dur_avg",
+                          "fieldName": "c_dur_avg",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Avg latency (s)",
+                          "customLabel": true
+                        },
+                        {
+                          "columnId": "c_dur_max",
+                          "fieldName": "c_dur_max",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Max latency (s)",
+                          "customLabel": true
+                        },
+                        {
+                          "columnId": "c_in_tok",
+                          "fieldName": "c_in_tok",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Requests (count, dup)",
+                          "customLabel": true
+                        },
+                        {
+                          "columnId": "c_out_tok",
+                          "fieldName": "c_out_tok",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Processed bytes",
+                          "customLabel": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "442afd8d41f06895991dd9cadf338d5a60ac3da4eafbfebd6fc04f1f6a589d3f",
+                      "title": "metrics-awscloudwatchreceiver.otel-default",
+                      "timeField": "@timestamp"
+                    },
+                    {
+                      "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "title": "metrics-awscloudwatchreceiver.otel-default",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS c_inv = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_err = COALESCE(SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0), c_rejected_count = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), c_dur_avg = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_dur_max = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_in_tok = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_out_tok = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL)), c_region = MAX(cloud.region) BY LoadBalancer, cloud.region | EVAL c_state_sort = CASE( c_err > 0, 1, c_rejected_count > 0, 2, c_inv > 0, 3, 4), c_state = CASE( c_err > 0, \"erroring\", c_rejected_count > 0, \"rejecting-connections\", c_inv > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
+              },
+              "visualization": {
+                "columns": [
+                  {
+                    "columnId": "LoadBalancer",
+                    "isTransposed": false,
+                    "isMetric": false,
+                    "oneClickFilter": true,
+                    "width": 377
+                  },
+                  {
+                    "columnId": "c_state_sort",
+                    "isTransposed": false,
+                    "hidden": true,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "c_state",
+                    "isTransposed": false,
+                    "width": 165,
+                    "colorMode": "badge",
+                    "colorMapping": {
+                      "assignments": [
+                        {
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "erroring"
+                            }
+                          ],
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#ffc9c2"
+                          },
+                          "touched": true
+                        },
+                        {
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "rejecting-connections"
+                            }
+                          ],
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#FFF3C2"
+                          },
+                          "touched": true
+                        },
+                        {
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "healthy"
+                            }
+                          ],
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#AEE8D2"
+                          },
+                          "touched": true
+                        },
+                        {
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "idle"
+                            }
+                          ],
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#D3DAE6"
+                          },
+                          "touched": true
+                        }
+                      ],
+                      "specialAssignments": [
+                        {
+                          "rules": [
+                            {
+                              "type": "other"
+                            }
+                          ],
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "severity",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    }
+                  },
+                  {
+                    "columnId": "c_region",
+                    "isTransposed": false,
+                    "isMetric": false
+                  },
+                  {
+                    "columnId": "c_inv",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "c_err",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "c_rejected_count",
+                    "isTransposed": false,
+                    "hidden": true,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "c_dur_avg",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "c_dur_max",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "c_in_tok",
+                    "isTransposed": false,
+                    "hidden": true,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "c_out_tok",
+                    "isTransposed": false,
+                    "hidden": true,
+                    "isMetric": true
+                  }
+                ],
+                "layerId": "tbl-layer-tbl-instances",
+                "layerType": "data",
+                "paging": {
+                  "size": 25,
+                  "enabled": true
+                },
+                "showRowNumbers": true,
+                "headerRowHeight": "single",
+                "headerRowHeightLines": 1,
+                "rowHeight": "single",
+                "rowHeightLines": 1,
+                "fitRowToContent": false,
+                "sorting": {
+                  "columnId": "c_state",
+                  "direction": "asc"
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-awscloudwatchreceiver.otel-default",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-awscloudwatchreceiver.otel-default",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "textBasedLanguages-datasource-layer-tbl-layer-tbl-instances"
+                }
+              ],
+              "needsRefresh": false
+            }
+          },
+          "drilldowns": [
+            {
+              "label": "1. Filter dashboard by load balancer",
+              "encode_url": false,
+              "open_in_new_tab": false,
+              "trigger": "on_click_value",
+              "type": "url_drilldown",
+              "url": "{{kibanaUrl}}/app/dashboards#/view/aws_elb_metrics_otel-5a9019c8-e8b0-489c-a6b7-35a976e4cd07?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(filters:!((meta:(alias:!n,disabled:!f,index:'metrics-*',key:attributes.LoadBalancer,negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(attributes.LoadBalancer:'{{event.value}}')))),query:(language:kuery,query:''))"
+            },
+            {
+              "label": "2. View in AWS",
+              "encode_url": false,
+              "open_in_new_tab": true,
+              "trigger": "on_click_value",
+              "type": "url_drilldown",
+              "url": "https://console.aws.amazon.com/ec2/home#LoadBalancers:LoadBalancer={{event.value}}"
+            }
+          ]
+        },
+        "panelIndex": "tbl-instances",
+        "gridData": {
+          "y": 16,
+          "x": 0,
+          "w": 48,
+          "h": 16,
+          "i": "tbl-instances"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Load balancers by health",
+          "description": "Donut of load balancers grouped by overall health (healthy / degraded / unhealthy). Health derived from HealthyHostCount vs UnHealthyHostCount per LB.",
+          "attributes": {
+            "title": "Load balancers by health",
+            "description": "Donut of load balancers grouped by overall health (healthy / degraded / unhealthy). Health derived from HealthyHostCount vs UnHealthyHostCount per LB.",
+            "visualizationType": "lnsPie",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "pie-layer-chart-status-donut": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE( be_5xx > 0, \"erroring\", unhealthy > 0, \"degraded\", healthy > 0, \"healthy\", \"idle\") | STATS lbs = COUNT(*) BY lb_state"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "lb_state",
+                          "fieldName": "lb_state",
+                          "meta": {
+                            "type": "string",
+                            "esType": "keyword"
+                          },
+                          "label": "State",
+                          "customLabel": true
+                        },
+                        {
+                          "columnId": "lbs",
+                          "fieldName": "lbs",
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Load balancers",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "442afd8d41f06895991dd9cadf338d5a60ac3da4eafbfebd6fc04f1f6a589d3f",
+                      "title": "metrics-awscloudwatchreceiver.otel-default",
+                      "timeField": "@timestamp"
+                    },
+                    {
+                      "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "title": "metrics-awscloudwatchreceiver.otel-default",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE( be_5xx > 0, \"erroring\", unhealthy > 0, \"degraded\", healthy > 0, \"healthy\", \"idle\") | STATS lbs = COUNT(*) BY lb_state"
+              },
+              "visualization": {
+                "shape": "donut",
+                "layers": [
+                  {
+                    "layerId": "pie-layer-chart-status-donut",
+                    "layerType": "data",
+                    "primaryGroups": [
+                      "lb_state"
+                    ],
+                    "metrics": [
+                      "lbs"
+                    ],
+                    "numberDisplay": "percent",
+                    "percentDecimals": 1,
+                    "categoryDisplay": "default",
+                    "legendDisplay": "default",
+                    "nestedLegend": false,
+                    "legendPosition": "right",
+                    "colorMapping": {
+                      "assignments": [
+                        {
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "rejecting-connections"
+                            }
+                          ],
+                          "color": {
+                            "type": "categorical",
+                            "paletteId": "severity",
+                            "colorIndex": 2
+                          },
+                          "touched": true
+                        },
+                        {
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "erroring"
+                            }
+                          ],
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#F6726A"
+                          },
+                          "touched": true
+                        }
+                      ],
+                      "specialAssignments": [
+                        {
+                          "rules": [
+                            {
+                              "type": "other"
+                            }
+                          ],
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "severity",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    },
+                    "emptySizeRatio": 0.7
+                  }
+                ]
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-awscloudwatchreceiver.otel-default",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-awscloudwatchreceiver.otel-default",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "indexpattern-datasource-layer-pie-layer-chart-status-donut"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-status-donut",
+        "gridData": {
+          "y": 4,
+          "x": 8,
+          "w": 20,
+          "h": 12,
+          "i": "chart-status-donut"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Total distinct load balancers reporting metrics in the selected time range (`COUNT_DISTINCT(region/load-balancer)`).",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-impaired": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS lbs = COUNT_DISTINCT(CONCAT(TO_STRING(cloud.region), \"/\", TO_STRING(LoadBalancer)))",
+                        "language": "esql"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "col-kpi-lbs",
+                          "fieldName": "lbs",
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Load balancers",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "title": "metrics-awscloudwatchreceiver.otel-default",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS lbs = COUNT_DISTINCT(CONCAT(TO_STRING(cloud.region), \"/\", TO_STRING(LoadBalancer)))",
+                "language": "esql"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-impaired",
+                "layerType": "data",
+                "metricAccessor": "col-kpi-lbs",
+                "showBar": false,
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "applyColorTo": "background",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left"
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-awscloudwatchreceiver.otel-default",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-awscloudwatchreceiver.otel-default",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "needsRefresh": false
+            },
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "description": "Total distinct load balancers reporting metrics in the selected time range (`COUNT_DISTINCT(region/load-balancer)`)."
+          }
+        },
+        "panelIndex": "kpi-impaired",
+        "gridData": {
+          "y": 4,
+          "x": 0,
+          "w": 8,
+          "h": 4,
+          "i": "kpi-impaired"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Load balancers with backend 5xx responses (`SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) > 0`) in the selected time range \u2014 same `lb_state` taxonomy as the `Load balancers by health` pie.",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "description": "Load balancers with backend 5xx responses (`SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) > 0`) in the selected time range \u2014 same `lb_state` taxonomy as the `Load balancers by health` pie.",
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-pending": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS erroring = COUNT(*) WHERE lb_state == \"erroring\"",
+                        "language": "esql"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "col-kpi-erroring",
+                          "fieldName": "erroring",
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Erroring",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "title": "metrics-awscloudwatchreceiver.otel-default",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS erroring = COUNT(*) WHERE lb_state == \"erroring\"",
+                "language": "esql"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-pending",
+                "layerType": "data",
+                "metricAccessor": "col-kpi-erroring",
+                "showBar": false,
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "applyColorTo": "value",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "palette": {
+                  "name": "custom",
+                  "type": "palette",
+                  "params": {
+                    "steps": 3,
+                    "name": "custom",
+                    "reverse": false,
+                    "rangeType": "number",
+                    "rangeMin": 0,
+                    "rangeMax": null,
+                    "progression": "fixed",
+                    "stops": [
+                      {
+                        "color": "#24c292",
+                        "stop": 1
+                      },
+                      {
+                        "color": "#f6726a",
+                        "stop": 2
+                      }
+                    ],
+                    "colorStops": [
+                      {
+                        "color": "#24c292",
+                        "stop": 0
+                      },
+                      {
+                        "color": "#f6726a",
+                        "stop": 1
+                      }
+                    ],
+                    "continuity": "above",
+                    "maxSteps": 5
+                  }
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-awscloudwatchreceiver.otel-default",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-awscloudwatchreceiver.otel-default",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "textBasedLanguages-datasource-layer-layer-kpi-pending"
+                }
+              ],
+              "needsRefresh": false
+            }
+          }
+        },
+        "panelIndex": "kpi-pending",
+        "gridData": {
+          "y": 8,
+          "x": 0,
+          "w": 4,
+          "h": 4,
+          "i": "kpi-pending"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Load balancers with unhealthy hosts but no 5xx errors (`MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)) > 0`) \u2014 `lb_state == \"degraded\"` bucket of the pie.",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-stopped": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS degraded = COUNT(*) WHERE lb_state == \"degraded\"",
+                        "language": "esql"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "col-kpi-degraded",
+                          "fieldName": "degraded",
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Degraded",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "title": "metrics-awscloudwatchreceiver.otel-default",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS degraded = COUNT(*) WHERE lb_state == \"degraded\"",
+                "language": "esql"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-stopped",
+                "layerType": "data",
+                "metricAccessor": "col-kpi-degraded",
+                "showBar": false,
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "applyColorTo": "value",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "palette": {
+                  "name": "custom",
+                  "type": "palette",
+                  "params": {
+                    "steps": 3,
+                    "name": "custom",
+                    "reverse": false,
+                    "rangeType": "number",
+                    "rangeMin": 0,
+                    "rangeMax": null,
+                    "progression": "fixed",
+                    "stops": [
+                      {
+                        "color": "#24c292",
+                        "stop": 1
+                      },
+                      {
+                        "color": "#D6BF57",
+                        "stop": 2
+                      }
+                    ],
+                    "colorStops": [
+                      {
+                        "color": "#24c292",
+                        "stop": 0
+                      },
+                      {
+                        "color": "#D6BF57",
+                        "stop": 1
+                      }
+                    ],
+                    "continuity": "above",
+                    "maxSteps": 5
+                  }
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-awscloudwatchreceiver.otel-default",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-awscloudwatchreceiver.otel-default",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "needsRefresh": false
+            },
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "description": "Load balancers with unhealthy hosts but no 5xx errors (`MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)) > 0`) \u2014 `lb_state == \"degraded\"` bucket of the pie."
+          }
+        },
+        "panelIndex": "kpi-stopped",
+        "gridData": {
+          "y": 8,
+          "x": 4,
+          "w": 4,
+          "h": 4,
+          "i": "kpi-stopped"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Load balancers reporting metrics but no healthy / unhealthy hosts and no errors (`lb_state == \"idle\"` bucket of the pie). Expected for newly-provisioned or quiescent LBs.",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "description": "Load balancers reporting metrics but no healthy / unhealthy hosts and no errors (`lb_state == \"idle\"` bucket of the pie). Expected for newly-provisioned or quiescent LBs.",
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-total": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS idle = COUNT(*) WHERE lb_state == \"idle\"",
+                        "language": "esql"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "col-kpi-idle",
+                          "fieldName": "idle",
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Idle",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "title": "metrics-awscloudwatchreceiver.otel-default",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS idle = COUNT(*) WHERE lb_state == \"idle\"",
+                "language": "esql"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-total",
+                "layerType": "data",
+                "metricAccessor": "col-kpi-idle",
+                "showBar": false,
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "applyColorTo": "background",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left"
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-awscloudwatchreceiver.otel-default",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-awscloudwatchreceiver.otel-default",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "textBasedLanguages-datasource-layer-layer-kpi-total"
+                }
+              ],
+              "needsRefresh": false
+            }
+          }
+        },
+        "panelIndex": "kpi-total",
+        "gridData": {
+          "y": 12,
+          "x": 0,
+          "w": 4,
+          "h": 4,
+          "i": "kpi-total"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Load balancers with healthy hosts and no errors or degraded targets (`lb_state == \"healthy\"` bucket of the pie).",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "description": "Load balancers with healthy hosts and no errors or degraded targets (`lb_state == \"healthy\"` bucket of the pie).",
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-running": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS healthy = COUNT(*) WHERE lb_state == \"healthy\"",
+                        "language": "esql"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "col-kpi-healthy",
+                          "fieldName": "healthy",
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Healthy",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "title": "metrics-awscloudwatchreceiver.otel-default",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS healthy = COUNT(*) WHERE lb_state == \"healthy\"",
+                "language": "esql"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-running",
+                "layerType": "data",
+                "metricAccessor": "col-kpi-healthy",
+                "showBar": false,
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "applyColorTo": "background",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left"
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-awscloudwatchreceiver.otel-default",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-awscloudwatchreceiver.otel-default",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "textBasedLanguages-datasource-layer-layer-kpi-running"
+                }
+              ],
+              "needsRefresh": false
+            }
+          }
+        },
+        "panelIndex": "kpi-running",
+        "gridData": {
+          "y": 12,
+          "x": 4,
+          "w": 4,
+          "h": 4,
+          "i": "kpi-running"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Total requests (period)",
+          "description": "Sum of RequestCount over the full dashboard time range.",
+          "hide_title": true,
+          "attributes": {
+            "title": "Total requests (period)",
+            "description": "Sum of RequestCount over the full dashboard time range.",
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-net-in": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS input_tokens = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL))"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "input_tokens",
+                          "fieldName": "input_tokens",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Total requests",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS input_tokens = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL))"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-net-in",
+                "layerType": "data",
+                "metricAccessor": "input_tokens",
+                "showBar": false,
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "applyColorTo": "background",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left"
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-awscloudwatchreceiver.otel-default",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-awscloudwatchreceiver.otel-default",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "textBasedLanguages-datasource-layer-layer-kpi-net-in"
+                }
+              ],
+              "needsRefresh": false
+            }
+          }
+        },
+        "panelIndex": "kpi-net-in",
+        "gridData": {
+          "y": 24,
+          "x": 40,
+          "w": 8,
+          "h": 6,
+          "i": "kpi-net-in",
+          "sectionId": "81c23dc7-5532-43cb-b803-3d845d79b604"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Total processed bytes",
+          "description": "Sum of ApplicationELB ProcessedBytes over the full dashboard time range.",
+          "hide_title": true,
+          "attributes": {
+            "title": "Total processed bytes",
+            "description": "Sum of ApplicationELB ProcessedBytes over the full dashboard time range.",
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-net-out": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS output_tokens = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL))"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "output_tokens",
+                          "fieldName": "output_tokens",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Total processed bytes",
+                          "customLabel": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS output_tokens = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL))"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-net-out",
+                "layerType": "data",
+                "metricAccessor": "output_tokens",
+                "showBar": false,
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "applyColorTo": "background",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left"
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-awscloudwatchreceiver.otel-default",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-awscloudwatchreceiver.otel-default",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "textBasedLanguages-datasource-layer-layer-kpi-net-out"
+                }
+              ],
+              "needsRefresh": false
+            }
+          }
+        },
+        "panelIndex": "kpi-net-out",
+        "gridData": {
+          "y": 30,
+          "x": 40,
+          "w": 8,
+          "h": 6,
+          "i": "kpi-net-out",
+          "sectionId": "81c23dc7-5532-43cb-b803-3d845d79b604"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Requests (+) / Backend errors (\u2212) over time",
+          "description": "Stacked over time: positive = total RequestCount; negative = target 5xx responses.",
+          "attributes": {
+            "title": "Requests (+) / Backend errors (\u2212) over time",
+            "description": "Stacked over time: positive = total RequestCount; negative = target 5xx responses.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-net": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 AND LENGTH(TO_STRING(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL))) > 0 | STATS invocations = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), errors = -1 * COALESCE(SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "LoadBalancer",
+                          "fieldName": "LoadBalancer",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "invocations",
+                          "fieldName": "invocations",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Invocations",
+                          "customLabel": true
+                        },
+                        {
+                          "columnId": "errors",
+                          "fieldName": "errors",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Errors (4xx + 5xx)",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 AND LENGTH(TO_STRING(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL))) > 0 | STATS invocations = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), errors = -1 * COALESCE(SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-net",
+                    "accessors": [
+                      "invocations",
+                      "errors"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "LoadBalancer"
+                    ]
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-awscloudwatchreceiver.otel-default",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-awscloudwatchreceiver.otel-default",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-net"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-net",
+        "gridData": {
+          "y": 24,
+          "x": 20,
+          "w": 20,
+          "h": 12,
+          "i": "chart-net",
+          "sectionId": "81c23dc7-5532-43cb-b803-3d845d79b604"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "HTTP 4xx (+) / HTTP 5xx (\u2212) over time",
+          "description": "Stacked over time: positive = HTTPCode_Target_4XX; negative = HTTPCode_Target_5XX.",
+          "attributes": {
+            "title": "HTTP 4xx (+) / HTTP 5xx (\u2212) over time",
+            "description": "Stacked over time: positive = HTTPCode_Target_4XX; negative = HTTPCode_Target_5XX.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-disk": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS client_errors = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_4XX_Count`, NULL)), server_errors = -SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "LoadBalancer",
+                          "fieldName": "LoadBalancer",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "client_errors",
+                          "fieldName": "client_errors",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Client errors",
+                          "customLabel": true
+                        },
+                        {
+                          "columnId": "server_errors",
+                          "fieldName": "server_errors",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Server errors",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS client_errors = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_4XX_Count`, NULL)), server_errors = -SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-disk",
+                    "accessors": [
+                      "client_errors",
+                      "server_errors"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "LoadBalancer"
+                    ]
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-awscloudwatchreceiver.otel-default",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-awscloudwatchreceiver.otel-default",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-disk"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-disk",
+        "gridData": {
+          "y": 24,
+          "x": 0,
+          "w": 20,
+          "h": 12,
+          "i": "chart-disk",
+          "sectionId": "81c23dc7-5532-43cb-b803-3d845d79b604"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 LBs by requests",
+          "description": "Top 10 load balancers ranked by total RequestCount in the dashboard time range.",
+          "attributes": {
+            "title": "Top 10 LBs by requests",
+            "description": "Top 10 load balancers ranked by total RequestCount in the dashboard time range.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-top10-invocations": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS invocations = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)) BY LoadBalancer, cloud.region | SORT invocations DESC | LIMIT 10"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "LoadBalancer",
+                          "fieldName": "LoadBalancer",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "invocations",
+                          "fieldName": "invocations",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Invocations",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS invocations = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)) BY LoadBalancer, cloud.region | SORT invocations DESC | LIMIT 10"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-top10-invocations",
+                    "accessors": [
+                      "invocations"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "bar_horizontal",
+                    "xAccessor": "LoadBalancer",
+                    "showGridlines": false
+                  }
+                ],
+                "preferredSeriesType": "bar_horizontal",
+                "legend": {
+                  "isVisible": false,
+                  "position": "bottom"
+                },
+                "valueLabels": "show",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-awscloudwatchreceiver.otel-default",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-awscloudwatchreceiver.otel-default",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "indexpattern-datasource-layer-xy-layer-top10-invocations"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "top10-invocations",
+        "gridData": {
+          "y": 0,
+          "x": 0,
+          "w": 16,
+          "h": 12,
+          "i": "top10-invocations",
+          "sectionId": "81c23dc7-5532-43cb-b803-3d845d79b604"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 LBs by backend 5xx errors",
+          "description": "Top 10 load balancers ranked by total HTTPCode_Target_5XX in the dashboard time range.",
+          "attributes": {
+            "title": "Top 10 LBs by backend 5xx errors",
+            "description": "Top 10 load balancers ranked by total HTTPCode_Target_5XX in the dashboard time range.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-top10-errors": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS errors = COALESCE(SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0) BY LoadBalancer, cloud.region | SORT errors DESC | LIMIT 10"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "LoadBalancer",
+                          "fieldName": "LoadBalancer",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "errors",
+                          "fieldName": "errors",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Errors",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS errors = COALESCE(SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0) BY LoadBalancer, cloud.region | SORT errors DESC | LIMIT 10"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-top10-errors",
+                    "accessors": [
+                      "errors"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "bar_horizontal",
+                    "xAccessor": "LoadBalancer",
+                    "showGridlines": false
+                  }
+                ],
+                "preferredSeriesType": "bar_horizontal",
+                "legend": {
+                  "isVisible": false,
+                  "position": "bottom"
+                },
+                "valueLabels": "show",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-awscloudwatchreceiver.otel-default",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-awscloudwatchreceiver.otel-default",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "indexpattern-datasource-layer-xy-layer-top10-errors"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "top10-errors",
+        "gridData": {
+          "y": 0,
+          "x": 16,
+          "w": 16,
+          "h": 12,
+          "i": "top10-errors",
+          "sectionId": "81c23dc7-5532-43cb-b803-3d845d79b604"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 LBs by avg latency (s)",
+          "description": "Top 10 load balancers ranked by average backend Latency in the dashboard time range.",
+          "attributes": {
+            "title": "Top 10 LBs by avg latency (s)",
+            "description": "Top 10 load balancers ranked by average backend Latency in the dashboard time range.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-top10-duration": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS avg_duration_ms = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)) BY LoadBalancer, cloud.region | SORT avg_duration_ms DESC | LIMIT 10"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "LoadBalancer",
+                          "fieldName": "LoadBalancer",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "avg_duration_ms",
+                          "fieldName": "avg_duration_ms",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Avg latency (s)",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS avg_duration_ms = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)) BY LoadBalancer, cloud.region | SORT avg_duration_ms DESC | LIMIT 10"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-top10-duration",
+                    "accessors": [
+                      "avg_duration_ms"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "bar_horizontal",
+                    "xAccessor": "LoadBalancer",
+                    "showGridlines": false
+                  }
+                ],
+                "preferredSeriesType": "bar_horizontal",
+                "legend": {
+                  "isVisible": false,
+                  "position": "bottom"
+                },
+                "valueLabels": "show",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-awscloudwatchreceiver.otel-default",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-awscloudwatchreceiver.otel-default",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "indexpattern-datasource-layer-xy-layer-top10-duration"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "top10-duration",
+        "gridData": {
+          "y": 0,
+          "x": 32,
+          "w": 16,
+          "h": 12,
+          "i": "top10-duration",
+          "sectionId": "81c23dc7-5532-43cb-b803-3d845d79b604"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Active connections over time (avg)",
+          "description": "Average EstimatedALBActiveConnectionCount over time across all LBs. Use as the primary capacity signal \u2014 fluctuates with load.",
+          "attributes": {
+            "title": "Active connections over time (avg)",
+            "description": "Average EstimatedALBActiveConnectionCount over time across all LBs. Use as the primary capacity signal \u2014 fluctuates with load.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-elb-count": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS active_conn = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "ts",
+                          "fieldName": "ts",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "active_conn",
+                          "fieldName": "active_conn",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Avg active connections",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS active_conn = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-elb-count",
+                    "accessors": [
+                      "active_conn"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "ts",
+                    "showGridlines": false,
+                    "yConfig": [
+                      {
+                        "forAccessor": "total",
+                        "color": "#61A2FF"
+                      },
+                      {
+                        "forAccessor": "erroring",
+                        "color": "#E7664C"
+                      },
+                      {
+                        "forAccessor": "saturated",
+                        "color": "#F5A700"
+                      },
+                      {
+                        "forAccessor": "healthy",
+                        "color": "#54B399"
+                      },
+                      {
+                        "forAccessor": "idle",
+                        "color": "#98A2B3"
+                      }
+                    ]
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-awscloudwatchreceiver.otel-default",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-awscloudwatchreceiver.otel-default",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-elb-count"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-elb-count",
+        "gridData": {
+          "y": 12,
+          "x": 0,
+          "w": 16,
+          "h": 12,
+          "i": "chart-elb-count",
+          "sectionId": "81c23dc7-5532-43cb-b803-3d845d79b604"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Avg latency (s)",
+          "description": "Average backend latency over time across all LBs.",
+          "attributes": {
+            "title": "Avg latency (s)",
+            "description": "Average backend latency over time across all LBs.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-memory": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 AND LENGTH(TO_STRING(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL))) > 0 | STATS metric = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "LoadBalancer",
+                          "fieldName": "LoadBalancer",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "metric",
+                          "fieldName": "metric",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 AND LENGTH(TO_STRING(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL))) > 0 | STATS metric = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-memory",
+                    "accessors": [
+                      "metric"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "LoadBalancer"
+                    ]
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-awscloudwatchreceiver.otel-default",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-awscloudwatchreceiver.otel-default",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-memory"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-memory",
+        "gridData": {
+          "y": 12,
+          "x": 16,
+          "w": 16,
+          "h": 12,
+          "i": "chart-memory",
+          "sectionId": "81c23dc7-5532-43cb-b803-3d845d79b604"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Rejected connections (max)",
+          "description": "Maximum ApplicationELB RejectedConnectionCount over time across all load balancers. Non-zero values indicate the load balancer rejected connection attempts.",
+          "attributes": {
+            "title": "Rejected connections (max)",
+            "description": "Maximum ApplicationELB RejectedConnectionCount over time across all load balancers. Non-zero values indicate the load balancer rejected connection attempts.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-cpu": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS rejected_max = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), rejected_total = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "ts",
+                          "fieldName": "ts",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "rejected_max",
+                          "fieldName": "rejected_max",
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Max rejected connections",
+                          "customLabel": true
+                        },
+                        {
+                          "columnId": "rejected_total",
+                          "fieldName": "rejected_total",
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Spillover count",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS rejected_max = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), rejected_total = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-cpu",
+                    "accessors": [
+                      "rejected_max",
+                      "rejected_total"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "ts",
+                    "showGridlines": false
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-awscloudwatchreceiver.otel-default",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-awscloudwatchreceiver.otel-default",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-cpu"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-cpu",
+        "gridData": {
+          "y": 12,
+          "x": 32,
+          "w": 16,
+          "h": 12,
+          "i": "chart-cpu",
+          "sectionId": "81c23dc7-5532-43cb-b803-3d845d79b604"
+        }
+      }
+    ],
+    "sections": [
+      {
+        "collapsed": false,
+        "title": "ELB metrics",
+        "gridData": {
+          "y": 32,
+          "i": "81c23dc7-5532-43cb-b803-3d845d79b604"
+        }
+      }
+    ],
+    "timeFrom": "2026-05-04T00:18:06.178Z",
+    "timeTo": "2026-05-04T22:25:51.221Z",
+    "timeRestore": true,
+    "kibanaSavedObjectMeta": {
+      "searchSourceJSON": {
+        "query": {
+          "query": "",
+          "language": "kuery"
+        }
+      }
+    }
+  },
+  "references": [
+    {
+      "name": "ctrl-elb-load-balancer-name:optionsListDataView",
+      "type": "index-pattern",
+      "id": "metrics-*"
+    }
+  ],
+  "managed": false,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.3.0"
+}
