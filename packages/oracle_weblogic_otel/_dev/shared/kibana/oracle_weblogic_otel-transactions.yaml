@@ -1,0 +1,372 @@
+dashboards:
+  - id: oracle_weblogic_otel-transactions
+    name: '[Oracle WebLogic OTel] Transactions & Work Managers'
+    minimum_kibana_version: '8.18.0'
+    description: >-
+      JTA transaction health and per-application work manager analysis for
+      Oracle WebLogic Server. Tracks transaction commit/rollback/abandon
+      rates and application-level request processing.
+    time_range:
+      from: "now-1h"
+      to: "now"
+    settings:
+      sync:
+        cursor: true
+    filters:
+      - field: data_stream.dataset
+        equals: oracle_weblogic.otel
+    controls:
+      - type: options
+        label: Server
+        data_view: metrics-*
+        field: attributes.server
+      - type: options
+        label: Application
+        data_view: metrics-*
+        field: attributes.application
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: oracle_weblogic_otel-overview
+            - label: JVM & Thread Pool
+              dashboard: oracle_weblogic_otel-jvm-thread-pool
+            - label: Transactions & Work Managers
+              dashboard: oracle_weblogic_otel-transactions
+
+      # ─── Dashboard Overview Panel ────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [Oracle WebLogic OTel] Transactions & Work Managers
+
+            JTA transaction and work manager analysis for WebLogic Server:
+            - Transaction commit, rollback, and abandon rates
+            - Active in-flight transaction counts
+            - Per-application work manager request throughput
+            - Stuck threads by application and work manager
+            - Work manager pending request queue depths
+
+      # ─── KPI Row 1 ──────────────────────────────────────────────────
+      - title: Transaction Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.jta.transactions.total IS NOT NULL
+            - STATS total_rate = SUM(RATE(weblogic.jta.transactions.total))
+          primary:
+            field: total_rate
+            label: Transaction Rate
+            format:
+              type: number
+              decimals: 2
+              suffix: "/s"
+
+      - title: Committed Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.jta.transactions.committed IS NOT NULL
+            - STATS committed_rate = SUM(RATE(weblogic.jta.transactions.committed))
+          primary:
+            field: committed_rate
+            label: Committed/s
+            format:
+              type: number
+              decimals: 2
+              suffix: "/s"
+
+      - title: Rolled Back Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.jta.transactions.rolled_back IS NOT NULL
+            - STATS rollback_rate = SUM(RATE(weblogic.jta.transactions.rolled_back))
+          primary:
+            field: rollback_rate
+            label: Rolled Back/s
+            format:
+              type: number
+              decimals: 2
+              suffix: "/s"
+
+      - title: Abandoned Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.jta.transactions.abandoned IS NOT NULL
+            - STATS abandon_rate = SUM(RATE(weblogic.jta.transactions.abandoned))
+          primary:
+            field: abandon_rate
+            label: Abandoned/s
+            format:
+              type: number
+              decimals: 2
+              suffix: "/s"
+
+      # ─── KPI Row 2 ──────────────────────────────────────────────────
+      - title: Active Transactions
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.jta.transactions.active IS NOT NULL
+            - STATS active_txn = SUM(LAST_OVER_TIME(weblogic.jta.transactions.active))
+          primary:
+            field: active_txn
+            label: Active Transactions
+            format:
+              type: number
+              compact: true
+
+      - title: Commit Success Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.jta.transactions.total IS NOT NULL
+            - STATS total_rate = SUM(RATE(weblogic.jta.transactions.total)), committed_rate = SUM(RATE(weblogic.jta.transactions.committed))
+            - EVAL commit_pct = CASE(total_rate > 0, ROUND(committed_rate / total_rate * 100, 1), 100)
+          primary:
+            field: commit_pct
+            label: Commit Success %
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+
+      - title: Total Stuck Threads
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.workmanager.threads.stuck IS NOT NULL
+            - STATS stuck = SUM(LAST_OVER_TIME(weblogic.workmanager.threads.stuck))
+          primary:
+            field: stuck
+            label: Stuck Threads
+            format:
+              type: number
+              decimals: 0
+
+      - title: WM Pending Requests
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.workmanager.requests.pending IS NOT NULL
+            - STATS pending = SUM(LAST_OVER_TIME(weblogic.workmanager.requests.pending))
+          primary:
+            field: pending
+            label: WM Pending Requests
+            format:
+              type: number
+              compact: true
+
+      # ─── JTA Transactions ────────────────────────────────────────────
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## JTA Transactions'
+
+      - title: Transaction Rates Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.jta.transactions.committed IS NOT NULL
+            - STATS committed = SUM(RATE(weblogic.jta.transactions.committed)), rolled_back = SUM(RATE(weblogic.jta.transactions.rolled_back)), abandoned = SUM(RATE(weblogic.jta.transactions.abandoned)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: committed
+              label: Committed/s
+              format:
+                type: number
+                decimals: 2
+            - field: rolled_back
+              label: Rolled Back/s
+              format:
+                type: number
+                decimals: 2
+            - field: abandoned
+              label: Abandoned/s
+              format:
+                type: number
+                decimals: 2
+          color:
+            assignments:
+              - value: "Committed/s"
+                color: '#54b399'
+              - value: "Rolled Back/s"
+                color: '#d6bf57'
+              - value: "Abandoned/s"
+                color: '#cc5642'
+          legend:
+            visible: show
+            position: right
+
+      - title: Active Transactions Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.jta.transactions.active IS NOT NULL
+            - STATS active = MAX(LAST_OVER_TIME(weblogic.jta.transactions.active)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.server
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: active
+              label: Active Transactions
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.server
+          legend:
+            visible: show
+            position: right
+
+      # ─── Work Managers ───────────────────────────────────────────────
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Work Managers'
+
+      - title: Work Manager Request Rate by Application
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.workmanager.requests.completed IS NOT NULL
+            - STATS rate = SUM(RATE(weblogic.workmanager.requests.completed)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.application
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: rate
+              label: Completed/s
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: attributes.application
+          legend:
+            visible: show
+            position: right
+
+      - title: Work Manager Pending Requests by Application
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.workmanager.requests.pending IS NOT NULL
+            - STATS pending = SUM(LAST_OVER_TIME(weblogic.workmanager.requests.pending)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.application
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: pending
+              label: Pending Requests
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.application
+          legend:
+            visible: show
+            position: right
+
+      - title: Stuck Threads Over Time by Application
+        size: {w: 48, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.workmanager.threads.stuck IS NOT NULL
+            - STATS stuck = SUM(LAST_OVER_TIME(weblogic.workmanager.threads.stuck)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.application
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: stuck
+              label: Stuck Threads
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.application
+          color:
+            assignments:
+              - value: "Stuck Threads"
+                color: '#cc5642'
+          legend:
+            visible: show
+            position: right
+
+      # ─── Detail Table ────────────────────────────────────────────────
+      - title: Work Manager Detail
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE attributes.workmanager IS NOT NULL
+            - STATS stuck = MAX(LAST_OVER_TIME(weblogic.workmanager.threads.stuck)), pending = MAX(LAST_OVER_TIME(weblogic.workmanager.requests.pending)), completed_rate = SUM(RATE(weblogic.workmanager.requests.completed)) BY attributes.server, attributes.application, attributes.workmanager
+            - SORT stuck DESC, pending DESC
+            - LIMIT 50
+          breakdowns:
+            - field: attributes.server
+              label: Server
+            - field: attributes.application
+              label: Application
+            - field: attributes.workmanager
+              label: Work Manager
+          metrics:
+            - field: stuck
+              label: Stuck Threads
+            - field: pending
+              label: Pending
+            - field: completed_rate
+              label: Completed/s
+              format:
+                type: number
+                decimals: 2
