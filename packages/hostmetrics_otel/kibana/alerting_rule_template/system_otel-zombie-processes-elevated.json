@@ -1,0 +1,53 @@
+{
+  "id": "system_otel-zombie-processes-elevated",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Fires when the peak `system.processes.count` for `attributes.status` == `zombies` in the window is greater than 0. Treat sustained non-zero as a reaping or parent-process bug. Purely derivative \u201cgrowth\u201d is better addressed with 3+ consecutive positive runs; uses alert delay. For noisy dev hosts, change to `> 1` or higher in ESQL.",
+    "name": "[System Host Metrics OTel] Zombie process count sustained",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "hostmetrics",
+      "medium"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 8,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Zombies\n\n1. A zombie is a defunct child not yet reaped; find the parent (PID) on the host via `ps` / `pstree`.\n2. Fix the parent to call `wait()` or use a well-behaved process supervisor.\n3. The metric is a gauge, not a counter \u2014 \u201cgrowth\u201d is approximated by sustained elevation across rule runs, not a derivative in ESQL here.\n\n**Tune** Increase the `0` in `> 0` to ignore a single straggler."
+      },
+      "dashboards": [
+        {
+          "id": "hostmetrics_otel-overview"
+        }
+      ]
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE `attributes.status` == \"zombies\"\n| WHERE `metrics.system.processes.count` IS NOT NULL\n| STATS zombie_count = MAX(`metrics.system.processes.count`) BY `host.name`\n| WHERE zombie_count > 0\n| SORT zombie_count DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

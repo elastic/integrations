@@ -1,0 +1,68 @@
+{
+  "attributes": {
+    "name": "[System OTel] Filesystem root capacity 99.5% rolling 30 days",
+    "description": "Infrastructure SLO: for the root mountpoint (/), the fraction of used bytes to total (used+free+reserved) from system.filesystem.usage must stay below 85% in each 1-minute timeslice. Clone and change the `attributes.mountpoint` filter in the dataset filter to track your primary data volume (for example /System/Volumes/Data on macOS) if different from the OS root volume.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"hostmetricsreceiver.otel\" AND attributes.mountpoint: \"/\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "system.filesystem.usage",
+              "filter": "attributes.state: \"used\""
+            },
+            {
+              "name": "B",
+              "aggregation": "max",
+              "field": "system.filesystem.usage",
+              "filter": "attributes.state: \"free\""
+            },
+            {
+              "name": "C",
+              "aggregation": "max",
+              "field": "system.filesystem.usage",
+              "filter": "attributes.state: \"reserved\""
+            }
+          ],
+          "equation": "A / (A + B + C)",
+          "comparator": "LT",
+          "threshold": 0.85
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "system",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.host.name"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "hostmetrics_otel-overview"
+        },
+        {
+          "id": "hostmetrics_otel-filesystem"
+        }
+      ]
+    }
+  },
+  "id": "system_otel-filesystem-capacity-root-99.5-Rolling30Days",
+  "type": "slo_template"
+}

@@ -1,0 +1,622 @@
+{
+  "title": "[System Host OTel] Network",
+  "description": "Interface throughput, packet, error, and drop rates plus TCP connection states.",
+  "time_range": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "options": {
+    "use_margins": true,
+    "sync_cursor": true,
+    "sync_tooltips": false,
+    "sync_colors": false,
+    "auto_apply_filters": true
+  },
+  "query": {
+    "expression": "",
+    "language": "kql"
+  },
+  "refresh_interval": {
+    "pause": true,
+    "value": 60000
+  },
+  "access_control": {},
+  "filters": [
+    {
+      "type": "condition",
+      "condition": {
+        "field": "data_stream.dataset",
+        "operator": "is",
+        "value": "hostmetricsreceiver.otel"
+      }
+    }
+  ],
+  "pinned_panels": [
+    {
+      "type": "options_list_control",
+      "width": "medium",
+      "config": {
+        "data_view_id": "metrics-*",
+        "field_name": "resource.attributes.host.name",
+        "title": "Host"
+      }
+    }
+  ],
+  "panels": [
+    {
+      "type": "markdown",
+      "grid": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 8
+      },
+      "config": {
+        "content": "## [System Host OTel] Network\n\nInterface traffic, packet volume, and error counters plus TCP state distribution for connection churn.\n- Throughput in both directions and packet trend lines\n- Error and drop counters with receive and transmit split\n- TCP states as a share view for saturation context",
+        "hide_title": true,
+        "settings": {
+          "open_links_in_new_tab": true
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 16,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "nbps",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.network.io` IS NOT NULL\n| STATS tnb = SUM(RATE(`system.network.io`))"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "tnb",
+            "label": "Bytes /s all ifaces",
+            "format": {
+              "type": "bytes"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 24,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "nerr",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.network.errors` IS NOT NULL\n| STATS nerr2 = SUM(RATE(`system.network.errors`))"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "nerr2",
+            "label": "Errors /s",
+            "format": {
+              "type": "number",
+              "decimals": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 32,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "pks",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.network.packets` IS NOT NULL\n| STATS pks2 = SUM(RATE(`system.network.packets`))"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "pks2",
+            "label": "Packets /s",
+            "format": {
+              "type": "number",
+              "decimals": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 40,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "ndrop",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.network.dropped` IS NOT NULL\n| STATS drp = SUM(RATE(`system.network.dropped`))"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "drp",
+            "label": "Drops /s",
+            "format": {
+              "type": "number",
+              "decimals": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 8,
+        "w": 48,
+        "h": 12
+      },
+      "config": {
+        "type": "xy",
+        "title": "Interface throughput by direction",
+        "filters": [],
+        "legend": {
+          "placement": "inside",
+          "position": "top_right"
+        },
+        "axis": {
+          "x": {
+            "scale": "temporal",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          },
+          "y": {
+            "domain": {
+              "type": "fit"
+            },
+            "scale": "linear",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {},
+          "fitting": {
+            "type": "none"
+          },
+          "points": {},
+          "areas": {},
+          "bars": {}
+        },
+        "layers": [
+          {
+            "type": "area",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.network.io` IS NOT NULL\n| STATS tput = SUM(RATE(`system.network.io`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.direction\n| SORT time_bucket ASC"
+            },
+            "x": {
+              "column": "time_bucket",
+              "label": "Time"
+            },
+            "y": [
+              {
+                "column": "tput",
+                "format": {
+                  "type": "bytes"
+                },
+                "label": "Bytes per second"
+              }
+            ],
+            "breakdown_by": {
+              "column": "attributes.direction",
+              "label": "Direction"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 12
+      },
+      "config": {
+        "type": "xy",
+        "title": "Interface packets per second by direction",
+        "filters": [],
+        "legend": {
+          "placement": "inside",
+          "position": "top_right"
+        },
+        "axis": {
+          "x": {
+            "scale": "temporal",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          },
+          "y": {
+            "domain": {
+              "type": "fit"
+            },
+            "scale": "linear",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {},
+          "fitting": {
+            "type": "none"
+          },
+          "points": {},
+          "areas": {},
+          "bars": {}
+        },
+        "layers": [
+          {
+            "type": "line",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.network.packets` IS NOT NULL\n| EVAL dlab2 = CONCAT(TO_STRING(attributes.device), \":\", TO_STRING(attributes.direction))\n| STATS pcr2 = SUM(RATE(`system.network.packets`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dlab2\n| SORT time_bucket ASC"
+            },
+            "x": {
+              "column": "time_bucket",
+              "label": "Time"
+            },
+            "y": [
+              {
+                "column": "pcr2",
+                "label": "Packets /s",
+                "format": {
+                  "type": "number",
+                  "decimals": 0
+                }
+              }
+            ],
+            "breakdown_by": {
+              "column": "dlab2",
+              "label": "Device and direction"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 24,
+        "y": 20,
+        "w": 24,
+        "h": 12
+      },
+      "config": {
+        "type": "xy",
+        "title": "Network errors and drops by direction",
+        "filters": [],
+        "legend": {
+          "placement": "inside",
+          "position": "top_right"
+        },
+        "axis": {
+          "x": {
+            "scale": "temporal",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          },
+          "y": {
+            "domain": {
+              "type": "fit"
+            },
+            "scale": "linear",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {},
+          "fitting": {
+            "type": "none"
+          },
+          "points": {},
+          "areas": {},
+          "bars": {}
+        },
+        "layers": [
+          {
+            "type": "line",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.network.errors` IS NOT NULL\n| EVAL dlab3 = CONCAT(TO_STRING(attributes.device), \":err:\", TO_STRING(attributes.direction))\n| STATS er = SUM(RATE(`system.network.errors`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dlab3\n| SORT time_bucket ASC"
+            },
+            "x": {
+              "column": "time_bucket",
+              "label": "Time"
+            },
+            "y": [
+              {
+                "column": "er",
+                "label": "Errors /s",
+                "format": {
+                  "type": "number",
+                  "decimals": 2
+                }
+              }
+            ],
+            "breakdown_by": {
+              "column": "dlab3",
+              "label": "Interface and direction"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 32,
+        "w": 24,
+        "h": 10
+      },
+      "config": {
+        "type": "xy",
+        "title": "Drops with interface label",
+        "filters": [],
+        "legend": {
+          "placement": "inside",
+          "position": "top_right"
+        },
+        "axis": {
+          "x": {
+            "scale": "temporal",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          },
+          "y": {
+            "domain": {
+              "type": "fit"
+            },
+            "scale": "linear",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {},
+          "fitting": {
+            "type": "none"
+          },
+          "points": {},
+          "areas": {},
+          "bars": {}
+        },
+        "layers": [
+          {
+            "type": "line",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.network.dropped` IS NOT NULL\n| EVAL dlab4 = CONCAT(TO_STRING(attributes.device), \":\", TO_STRING(attributes.direction))\n| STATS dr2 = SUM(RATE(`system.network.dropped`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dlab4\n| SORT time_bucket ASC"
+            },
+            "x": {
+              "column": "time_bucket",
+              "label": "Time"
+            },
+            "y": [
+              {
+                "column": "dr2",
+                "label": "Drops /s",
+                "format": {
+                  "type": "number",
+                  "decimals": 2
+                }
+              }
+            ],
+            "breakdown_by": {
+              "column": "dlab4",
+              "label": "Device and direction"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 24,
+        "y": 32,
+        "w": 24,
+        "h": 10
+      },
+      "config": {
+        "type": "pie",
+        "title": "Connections by state",
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.network.connections` IS NOT NULL\n| STATS cx = MAX(LAST_OVER_TIME(`system.network.connections`)) BY attributes.state\n| SORT cx DESC\n| LIMIT 12"
+        },
+        "metrics": [
+          {
+            "column": "cx",
+            "label": "Connections",
+            "format": {
+              "type": "number"
+            }
+          }
+        ],
+        "group_by": [
+          {
+            "column": "attributes.state",
+            "label": "State",
+            "format": {
+              "type": "custom",
+              "pattern": "0"
+            },
+            "collapse_by": "sum"
+          }
+        ],
+        "legend": {
+          "size": "m",
+          "visibility": "visible"
+        },
+        "styling": {
+          "values": {},
+          "donut_hole": "m"
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 42,
+        "w": 48,
+        "h": 10
+      },
+      "config": {
+        "type": "data_table",
+        "title": "Top interfaces by total throughput",
+        "filters": [],
+        "styling": {
+          "density": {
+            "mode": "expanded"
+          }
+        },
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.network.io` IS NOT NULL\n| STATS tsum = SUM(RATE(`system.network.io`)) BY iface = attributes.device\n| SORT tsum DESC\n| LIMIT 20"
+        },
+        "metrics": [
+          {
+            "column": "tsum",
+            "label": "Bytes /s",
+            "format": {
+              "type": "bytes"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "column": "iface",
+            "label": "Device",
+            "format": {
+              "type": "custom",
+              "pattern": "0"
+            },
+            "collapse_by": "min"
+          }
+        ]
+      }
+    }
+  ]
+}

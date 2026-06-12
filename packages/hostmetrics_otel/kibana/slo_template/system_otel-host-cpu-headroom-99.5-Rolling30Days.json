@@ -1,0 +1,56 @@
+{
+  "attributes": {
+    "name": "[System OTel] Host CPU headroom 99.5% rolling 30 days",
+    "description": "Infrastructure SLO: the worst logical CPU must keep at least 20% idle capacity (minimum per-core idle ratio from OTel system.cpu.utilization where state is idle). When the minimum idle ratio across cores in a 1-minute window stays above 20%, that window counts as good\u2014protecting headroom for workload bursts. Adjust the per-timeslice threshold if your fleet has different spare-capacity needs.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"hostmetricsreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "min",
+              "field": "system.cpu.utilization",
+              "filter": "attributes.state: \"idle\""
+            }
+          ],
+          "equation": "A",
+          "comparator": "GT",
+          "threshold": 0.2
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "system",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.host.name"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "hostmetrics_otel-overview"
+        },
+        {
+          "id": "hostmetrics_otel-cpu"
+        }
+      ]
+    }
+  },
+  "id": "system_otel-host-cpu-headroom-99.5-Rolling30Days",
+  "type": "slo_template"
+}

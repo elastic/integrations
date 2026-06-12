@@ -1,0 +1,74 @@
+{
+  "attributes": {
+    "name": "[System OTel] Network health zero errors and drops 99.5% rolling 30 days",
+    "description": "Infrastructure SLO: combined increment of per-timeslice system.network.errors and system.network.dropped (max\u2212min on each monotonic counter within the 1m window) must be zero, matching the spec of zero network errors and drops. Any new error or drop events in a window make that window fail for this SLI.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"hostmetricsreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "system.network.errors",
+              "filter": ""
+            },
+            {
+              "name": "B",
+              "aggregation": "min",
+              "field": "system.network.errors",
+              "filter": ""
+            },
+            {
+              "name": "C",
+              "aggregation": "max",
+              "field": "system.network.dropped",
+              "filter": ""
+            },
+            {
+              "name": "D",
+              "aggregation": "min",
+              "field": "system.network.dropped",
+              "filter": ""
+            }
+          ],
+          "equation": "(A - B) + (C - D)",
+          "comparator": "LTE",
+          "threshold": 0
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "system",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.host.name"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "hostmetrics_otel-overview"
+        },
+        {
+          "id": "hostmetrics_otel-network"
+        }
+      ]
+    }
+  },
+  "id": "system_otel-network-zero-errors-drops-99.5-Rolling30Days",
+  "type": "slo_template"
+}

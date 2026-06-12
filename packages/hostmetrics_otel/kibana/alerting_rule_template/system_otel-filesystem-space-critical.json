@@ -1,0 +1,56 @@
+{
+  "id": "system_otel-filesystem-space-critical",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Fires when the worst mountpoint (by used bytes vs used+free) for each host exceeds 85% in the lookback. Uses `system.filesystem.usage` for `used` and `free` states. Tune 85.0 in ESQL to match your capacity policy.",
+    "name": "[System Host Metrics OTel] Filesystem space above critical threshold",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "hostmetrics",
+      "high"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Disk space\n\n1. Identify `mountpoint` in dashboard drilldown; extend volumes or clean logs/cache.\n2. If near full on a DB volume, also check `system.filesystem.inodes` rule.\n3. `reserved` state is not included; adjust formula if you must account for root reserve.\n\n**Tune** Change `85.0` to your capacity threshold (e.g. 90)."
+      },
+      "dashboards": [
+        {
+          "id": "hostmetrics_otel-overview"
+        },
+        {
+          "id": "hostmetrics_otel-filesystem"
+        }
+      ]
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE `metrics.system.filesystem.usage` IS NOT NULL\n| WHERE state IN (\"used\", \"free\")\n| STATS u = MAX(CASE(state == \"used\", `metrics.system.filesystem.usage`, null)), f = MAX(CASE(state == \"free\", `metrics.system.filesystem.usage`, null)) BY `host.name`, mountpoint\n| WHERE u IS NOT NULL AND f IS NOT NULL\n| EVAL total_b = u + f\n| WHERE total_b > 0\n| EVAL used_pct = u / to_double(total_b) * 100.0\n| WHERE used_pct > 85.0\n| SORT used_pct DESC\n| STATS worst_used_pct = MAX(used_pct) BY `host.name`\n| WHERE worst_used_pct > 85.0\n| SORT worst_used_pct DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

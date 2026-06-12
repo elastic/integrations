@@ -1,0 +1,56 @@
+{
+  "id": "system_otel-load-normalized-sustained-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Fires when the 5-minute load average, divided by the reported logical CPU count, stays above 1.0. That matches `normalized load` > 1.0. Tune the comparator in ESQL (e.g. 1.2) to reduce noise on bursty hosts.",
+    "name": "[System Host Metrics OTel] Load average sustained above CPU count",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "hostmetrics",
+      "high"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Normalised load > 1.0\n\n1. Check CPU utilisation by state; high I/O wait often correlates with load (see disk panels).\n2. Review `system.disk.pending_operations` and disk I/O on the same host.\n3. If load is high but CPU util is low, suspect I/O or uninterruptible sleep.\n\n**Tune** Edit `1.0` in `norm_load > 1.0` (e.g. 1.2) for noisier hosts."
+      },
+      "dashboards": [
+        {
+          "id": "hostmetrics_otel-overview"
+        },
+        {
+          "id": "hostmetrics_otel-cpu"
+        }
+      ]
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| STATS load5 = AVG(`metrics.system.cpu.load_average.5m`), ncpu = MAX(`metrics.system.cpu.logical.count`) BY `host.name`\n| WHERE load5 IS NOT NULL AND ncpu IS NOT NULL AND ncpu > 0\n| EVAL norm_load = load5 / to_double(ncpu)\n| WHERE norm_load > 1.0\n| SORT norm_load DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

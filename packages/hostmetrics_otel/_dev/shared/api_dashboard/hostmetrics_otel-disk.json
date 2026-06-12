@@ -1,0 +1,577 @@
+{
+  "title": "[System Host OTel] Disk I/O",
+  "description": "Disk bytes, IOPS, time-based counters, and queue depth to spot storage bottlenecks.",
+  "time_range": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "options": {
+    "use_margins": true,
+    "sync_cursor": true,
+    "sync_tooltips": false,
+    "sync_colors": false,
+    "auto_apply_filters": true
+  },
+  "query": {
+    "expression": "",
+    "language": "kql"
+  },
+  "refresh_interval": {
+    "pause": true,
+    "value": 60000
+  },
+  "access_control": {},
+  "filters": [
+    {
+      "type": "condition",
+      "condition": {
+        "field": "data_stream.dataset",
+        "operator": "is",
+        "value": "hostmetricsreceiver.otel"
+      }
+    }
+  ],
+  "pinned_panels": [
+    {
+      "type": "options_list_control",
+      "width": "medium",
+      "config": {
+        "data_view_id": "metrics-*",
+        "field_name": "resource.attributes.host.name",
+        "title": "Host"
+      }
+    }
+  ],
+  "panels": [
+    {
+      "type": "markdown",
+      "grid": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 8
+      },
+      "config": {
+        "content": "## [System Host OTel] Disk I/O\n\nBlock device throughput, operation rates, and latency-related counters from the host metrics pipeline.\n- Byte and operation throughput with read and write direction\n- Time spent in I/O and per-direction operation time as rates when present\n- Pending operation queue depth by device in a table",
+        "hide_title": true,
+        "settings": {
+          "open_links_in_new_tab": true
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 16,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "b",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.disk.io` IS NOT NULL\n| STATS bps = SUM(RATE(`system.disk.io`))"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "bps",
+            "label": "Total bytes /s",
+            "format": {
+              "type": "bytes"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 24,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "iops",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.disk.operations` IS NOT NULL\n| STATS iops = SUM(RATE(`system.disk.operations`))"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "iops",
+            "label": "Operations /s",
+            "format": {
+              "type": "number",
+              "decimals": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 32,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "pend",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.disk.pending_operations` IS NOT NULL\n| STATS pmax = MAX(LAST_OVER_TIME(`system.disk.pending_operations`))"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "pmax",
+            "label": "Max pending I/O",
+            "format": {
+              "type": "number",
+              "decimals": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 40,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "io",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.disk.io_time` IS NOT NULL\n| STATS tr = SUM(RATE(`system.disk.io_time`))"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "tr",
+            "label": "I/O time /s",
+            "format": {
+              "type": "number",
+              "decimals": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 8,
+        "w": 24,
+        "h": 12
+      },
+      "config": {
+        "type": "xy",
+        "title": "Disk bytes per second by device",
+        "filters": [],
+        "legend": {
+          "placement": "inside",
+          "position": "top_right"
+        },
+        "axis": {
+          "x": {
+            "scale": "temporal",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          },
+          "y": {
+            "domain": {
+              "type": "fit"
+            },
+            "scale": "linear",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {},
+          "fitting": {
+            "type": "none"
+          },
+          "points": {},
+          "areas": {},
+          "bars": {}
+        },
+        "layers": [
+          {
+            "type": "line",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.disk.io` IS NOT NULL\n| STATS dr = SUM(RATE(`system.disk.io`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.device\n| SORT time_bucket ASC"
+            },
+            "x": {
+              "column": "time_bucket",
+              "label": "Time"
+            },
+            "y": [
+              {
+                "column": "dr",
+                "format": {
+                  "type": "bytes"
+                },
+                "label": "Bytes per second"
+              }
+            ],
+            "breakdown_by": {
+              "column": "attributes.device",
+              "label": "Device"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 24,
+        "y": 8,
+        "w": 24,
+        "h": 12
+      },
+      "config": {
+        "type": "xy",
+        "title": "IOPS with device and direction",
+        "filters": [],
+        "legend": {
+          "placement": "inside",
+          "position": "top_right"
+        },
+        "axis": {
+          "x": {
+            "scale": "temporal",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          },
+          "y": {
+            "domain": {
+              "type": "fit"
+            },
+            "scale": "linear",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {},
+          "fitting": {
+            "type": "none"
+          },
+          "points": {},
+          "areas": {},
+          "bars": {}
+        },
+        "layers": [
+          {
+            "type": "line",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.disk.operations` IS NOT NULL\n| EVAL dlab = CONCAT(TO_STRING(attributes.device), \":\", TO_STRING(attributes.direction))\n| STATS iop2 = SUM(RATE(`system.disk.operations`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), dlab\n| SORT time_bucket ASC"
+            },
+            "x": {
+              "column": "time_bucket",
+              "label": "Time"
+            },
+            "y": [
+              {
+                "column": "iop2",
+                "label": "Ops /s",
+                "format": {
+                  "type": "number",
+                  "decimals": 0
+                }
+              }
+            ],
+            "breakdown_by": {
+              "column": "dlab",
+              "label": "Device and direction"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 10
+      },
+      "config": {
+        "type": "xy",
+        "title": "Disk I/O time per second by device",
+        "filters": [],
+        "legend": {
+          "placement": "inside",
+          "position": "top_right"
+        },
+        "axis": {
+          "x": {
+            "scale": "temporal",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          },
+          "y": {
+            "domain": {
+              "type": "fit"
+            },
+            "scale": "linear",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {},
+          "fitting": {
+            "type": "none"
+          },
+          "points": {},
+          "areas": {},
+          "bars": {}
+        },
+        "layers": [
+          {
+            "type": "area",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.disk.io_time` IS NOT NULL\n| STATS iot = SUM(RATE(`system.disk.io_time`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.device\n| SORT time_bucket ASC"
+            },
+            "x": {
+              "column": "time_bucket",
+              "label": "Time"
+            },
+            "y": [
+              {
+                "column": "iot",
+                "format": {
+                  "type": "number",
+                  "decimals": 2
+                },
+                "label": "I/O time /s"
+              }
+            ],
+            "breakdown_by": {
+              "column": "attributes.device",
+              "label": "Device"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 24,
+        "y": 20,
+        "w": 24,
+        "h": 10
+      },
+      "config": {
+        "type": "xy",
+        "title": "Operation time per second by direction",
+        "filters": [],
+        "legend": {
+          "placement": "inside",
+          "position": "top_right"
+        },
+        "axis": {
+          "x": {
+            "scale": "temporal",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          },
+          "y": {
+            "domain": {
+              "type": "fit"
+            },
+            "scale": "linear",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {},
+          "fitting": {
+            "type": "none"
+          },
+          "points": {},
+          "areas": {},
+          "bars": {}
+        },
+        "layers": [
+          {
+            "type": "line",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.disk.operation_time` IS NOT NULL\n| EVAL odir = CONCAT(TO_STRING(attributes.device), \":\", TO_STRING(attributes.direction))\n| STATS ots = SUM(RATE(`system.disk.operation_time`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), odir\n| SORT time_bucket ASC"
+            },
+            "x": {
+              "column": "time_bucket",
+              "label": "Time"
+            },
+            "y": [
+              {
+                "column": "ots",
+                "label": "Operation time /s",
+                "format": {
+                  "type": "number",
+                  "decimals": 2
+                }
+              }
+            ],
+            "breakdown_by": {
+              "column": "odir",
+              "label": "Device and direction"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 30,
+        "w": 48,
+        "h": 12
+      },
+      "config": {
+        "type": "data_table",
+        "title": "Queue depth and recent pending I/O",
+        "filters": [],
+        "styling": {
+          "density": {
+            "mode": "expanded"
+          }
+        },
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.disk.pending_operations` IS NOT NULL\n| STATS pm = MAX(LAST_OVER_TIME(`system.disk.pending_operations`)) BY dev = attributes.device\n| SORT pm DESC"
+        },
+        "metrics": [
+          {
+            "column": "pm",
+            "label": "Max pending",
+            "format": {
+              "type": "number",
+              "decimals": 0
+            }
+          }
+        ],
+        "rows": [
+          {
+            "column": "dev",
+            "label": "Device",
+            "format": {
+              "type": "custom",
+              "pattern": "0"
+            },
+            "collapse_by": "min"
+          }
+        ]
+      }
+    }
+  ]
+}

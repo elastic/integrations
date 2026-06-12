@@ -1,0 +1,56 @@
+{
+  "id": "system_otel-memory-utilization-critical",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Fires when `system.memory.utilization` for the `used` state averages above 0.9 (90%) in the lookback window. Reduces to one row per `host.name`.",
+    "name": "[System Host Metrics OTel] Memory utilisation above critical threshold",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "hostmetrics",
+      "critical"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Memory above 90% used (ratio)\n\n1. Check free+inactive in dashboards; swap pressure may follow.\n2. Look for OOM or eviction messages in system logs (not in this data stream).\n3. Correlates with `system.processes.count` and workload size.\n\n**Tune** Change `0.9` in the ESQL to your critical ratio."
+      },
+      "dashboards": [
+        {
+          "id": "hostmetrics_otel-overview"
+        },
+        {
+          "id": "hostmetrics_otel-memory"
+        }
+      ]
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-hostmetricsreceiver.otel-*\n| WHERE `metrics.system.memory.utilization` IS NOT NULL\n| WHERE `attributes.state` == \"used\"\n| STATS avg_used_ratio = AVG(`metrics.system.memory.utilization`) BY `host.name`\n| WHERE avg_used_ratio > 0.9\n| SORT avg_used_ratio DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "attributes": {
+    "name": "[System OTel] Host memory headroom 99.5% rolling 30 days",
+    "description": "Infrastructure SLO: physical memory use (OTel system.memory.utilization for state=used) must stay below 90% in each 1-minute window. Values are ratios in 0\u20131. This approximates the spec goal of headroom to avoid OOM and swap pressure; tune the 0.9 threshold to match your environment.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"hostmetricsreceiver.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "system.memory.utilization",
+              "filter": "attributes.state: \"used\""
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 0.9
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "system",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.host.name"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "hostmetrics_otel-overview"
+        },
+        {
+          "id": "hostmetrics_otel-memory"
+        }
+      ]
+    }
+  },
+  "id": "system_otel-host-memory-headroom-99.5-Rolling30Days",
+  "type": "slo_template"
+}
