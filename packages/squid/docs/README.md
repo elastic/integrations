@@ -360,11 +360,8 @@ An example event for `log` looks as following:
             "country_iso_code": "CN",
             "country_name": "China",
             "location": {
-                "coordinates": [
-                    125.32279992476106,
-                    43.879999998025596
-                ],
-                "type": "Point"
+                "lat": 43.879999998025596,
+                "lon": 125.32279992476106
             },
             "region_iso_code": "CN-22",
             "region_name": "Jilin Sheng"
