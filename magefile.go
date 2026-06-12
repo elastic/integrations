@@ -13,12 +13,14 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 	"github.com/pkg/errors"
 
+	"github.com/elastic/integrations/dev/backports/changelog"
 	"github.com/elastic/integrations/dev/citools"
 	"github.com/elastic/integrations/dev/codeowners"
 	"github.com/elastic/integrations/dev/coverage"
@@ -333,5 +335,101 @@ func IsElasticPackageDependencyLessThan(version string) error {
 	}
 
 	fmt.Println(value)
+	return nil
+}
+
+// CollectChangelogEntries collects changelog entries introduced by a backport
+// push that are not yet present on main, and writes results to $GITHUB_OUTPUT.
+//
+// Required env vars: BEFORE, AFTER, REPOSITORY.
+func CollectChangelogEntries() error {
+	before := os.Getenv("BEFORE")
+	after := os.Getenv("AFTER")
+	repository := os.Getenv("REPOSITORY")
+	if before == "" || after == "" || repository == "" {
+		return fmt.Errorf("BEFORE, AFTER, and REPOSITORY must be set")
+	}
+
+	result, err := changelog.Collect(before, after, repository)
+	if err != nil {
+		return err
+	}
+	return writeGitHubOutputs(map[string]string{
+		"has_changes":        fmt.Sprintf("%v", result.HasChanges),
+		"entries_tsv":        result.EntriesTSV,
+		"working_branch":     result.WorkingBranch,
+		"backport_pr_number": result.BackportPRNumber,
+	})
+}
+
+// CreateChangelogSyncPR applies collected changelog entries to a branch off
+// main and opens a sync PR.
+//
+// Required env vars: ENTRIES_TSV, WORKING_BRANCH, BACKPORT_PR_NUMBER,
+// BACKPORT_BRANCH, PACKAGES_DIR, REPOSITORY.
+func CreateChangelogSyncPR() error {
+	entriesTSV := os.Getenv("ENTRIES_TSV")
+	workingBranch := os.Getenv("WORKING_BRANCH")
+	backportPRNumber := os.Getenv("BACKPORT_PR_NUMBER")
+	backportBranch := os.Getenv("BACKPORT_BRANCH")
+	packagesDir := os.Getenv("PACKAGES_DIR")
+	repository := os.Getenv("REPOSITORY")
+	if entriesTSV == "" || workingBranch == "" || backportPRNumber == "" || backportBranch == "" || repository == "" {
+		return fmt.Errorf("ENTRIES_TSV, WORKING_BRANCH, BACKPORT_PR_NUMBER, BACKPORT_BRANCH, and REPOSITORY must be set")
+	}
+	if packagesDir == "" {
+		packagesDir = "packages"
+	}
+
+	result, err := changelog.CreateSyncPR(entriesTSV, workingBranch, backportPRNumber, backportBranch, packagesDir, repository)
+	if err != nil {
+		return err
+	}
+	return writeGitHubOutputs(map[string]string{
+		"not_found_packages": strings.Join(result.NotFoundPackages, ","),
+		"create_outcome":     result.Outcome,
+	})
+}
+
+// PostBackportComment posts a result comment on the originating backport PR.
+//
+// Required env vars: BACKPORT_PR_NUMBER, WORKING_BRANCH, REPOSITORY.
+// Optional env vars: NOT_FOUND_PACKAGES, CREATE_OUTCOME, RUN_ID.
+func PostBackportComment() error {
+	backportPRNumber := os.Getenv("BACKPORT_PR_NUMBER")
+	workingBranch := os.Getenv("WORKING_BRANCH")
+	repository := os.Getenv("REPOSITORY")
+	if repository == "" {
+		return fmt.Errorf("REPOSITORY must be set")
+	}
+	return changelog.PostComment(
+		backportPRNumber,
+		workingBranch,
+		os.Getenv("NOT_FOUND_PACKAGES"),
+		os.Getenv("CREATE_OUTCOME"),
+		os.Getenv("RUN_ID"),
+		repository,
+	)
+}
+
+// writeGitHubOutputs appends key=value pairs to the file named by $GITHUB_OUTPUT.
+func writeGitHubOutputs(outputs map[string]string) error {
+	outputFile := os.Getenv("GITHUB_OUTPUT")
+	if outputFile == "" {
+		for k, v := range outputs {
+			fmt.Printf("%s=%s\n", k, v)
+		}
+		return nil
+	}
+	f, err := os.OpenFile(outputFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+	if err != nil {
+		return fmt.Errorf("opening GITHUB_OUTPUT: %w", err)
+	}
+	defer f.Close()
+	for k, v := range outputs {
+		if _, err := fmt.Fprintf(f, "%s=%s\n", k, v); err != nil {
+			return err
+		}
+	}
 	return nil
 }

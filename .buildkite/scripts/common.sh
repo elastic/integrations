@@ -779,6 +779,7 @@ is_pr_affected() {
     # Same for ".buildkite/scripts/packages/.+.sh": this pattern must not be added to "skip_ci_on_only_changed" to allow triggering the tests of the given package.
     local non_package_patterns=(
         'packages/'
+        '\.agents/skills/'
         '\.buildkite/pipeline\.backport\.yml'
         '\.buildkite/pipeline\.publish\.yml'
         '\.buildkite/pipeline\.schedule-daily\.yml'
@@ -794,17 +795,18 @@ is_pr_affected() {
         '\.buildkite/scripts/run_dev_scripts_tests\.sh'
         '\.buildkite/scripts/test_check_changelog_entries\.sh'
         '\.buildkite/scripts/test_helpers\.sh'
-        '\.github/CODEOWNERS'
-        '\.github/ISSUE_TEMPLATE/'
-        '\.github/PULL_REQUEST_TEMPLATE\.md'
         '\.github/dependabot\.yml'
         '\.github/stale\.yml'
         '\.github/workflows/'
+        '\.github/CODEOWNERS'
+        '\.github/ISSUE_TEMPLATE/'
+        '\.github/PULL_REQUEST_TEMPLATE\.md'
+        '\.gitignore'
         '\.mergify\.yml'
-        '\.agents/skills/'
         'catalog-info\.yaml'
-        'docs/'
+        'dev/backports/'
         'dev/scripts/'
+        'docs/'
         'CODE_OF_CONDUCT\.md'
         'CONTRIBUTING\.md'
         'README\.md'
@@ -917,7 +919,7 @@ teardown_test_package() {
 
 # list all directories that are packages from the root of the repository
 list_all_directories() {
-    mage -d "${WORKSPACE}" listPackages
+    mage -d "${WORKSPACE}" listPackages |grep -E "^packages/elastic_package_registry$"
 }
 
 check_package() {
