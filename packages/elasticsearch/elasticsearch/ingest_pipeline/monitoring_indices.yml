@@ -42,6 +42,22 @@ processors:
   - dot_expander:
       field: "*"
       tag: dot_expander
+  - script:
+      source: |
+        if (ctx.elasticsearch?.index == null) {
+          ctx.elasticsearch = ctx.elasticsearch ?: [:];
+          ctx.elasticsearch.index = [:];
+        }
+        def mode = ctx.elasticsearch.index.mode;
+        if (mode == null || mode == '' || mode == 'null') {
+          ctx.elasticsearch.index.mode = 'standard';
+        }
+        def codec = ctx.elasticsearch.index.codec;
+        if (codec == null || codec == '' || codec == 'null') {
+          ctx.elasticsearch.index.codec = 'default';
+        }
+      ignore_failure: true
+      tag: script_normalize_index_mode_codec
   - date:
       field: elasticsearch.index.creation_date
       target_field: elasticsearch.index.creation_date
