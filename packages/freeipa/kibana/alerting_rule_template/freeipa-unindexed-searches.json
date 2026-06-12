@@ -1,0 +1,28 @@
+{
+    "id": "freeipa-unindexed-searches",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[FreeIPA] Unindexed LDAP Searches",
+        "tags": ["FreeIPA", "Directory Server"],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when unindexed LDAP searches are detected.\n// Unindexed searches cause full table scans and degrade performance\n// for all LDAP clients (SSH logins, sudo, HBAC evaluation).\n// Adjust the threshold in the final WHERE clause as needed.\nFROM logs-freeipa.directory_access-*\n| WHERE freeipa.directory.unindexed == true\n| STATS unindexed_count = COUNT(*) BY freeipa.directory.notes\n| WHERE unindexed_count >= 5"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 2
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

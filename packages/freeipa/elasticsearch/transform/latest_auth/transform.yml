@@ -1,0 +1,46 @@
+source:
+  index:
+    - "logs-freeipa.kdc-*"
+  query:
+    bool:
+      filter:
+        - terms:
+            event.action:
+              - kdc_tgt_grant
+              - kdc_tgt_failure
+
+dest:
+  index: "logs-freeipa_latest.dest_auth-1"
+  aliases:
+    - alias: "logs-freeipa_latest.auth"
+      move_on_creation: true
+
+latest:
+  unique_key:
+    - freeipa.kdc.client_principal
+    - source.ip
+  sort: "@timestamp"
+
+description: >-
+  Maintains a latest-state index of Kerberos authentication events per
+  (client_principal, source_ip) pair. Enables detection of authentication
+  from new or unusual source IPs for known principals.
+
+frequency: 30s
+
+sync:
+  time:
+    field: event.ingested
+    delay: 60s
+
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 30d
+
+_meta:
+  managed: true
+  fleet_transform_version: 0.1.0
+
+settings:
+  unattended: true

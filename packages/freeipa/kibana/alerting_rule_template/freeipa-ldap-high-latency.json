@@ -1,0 +1,28 @@
+{
+    "id": "freeipa-ldap-high-latency",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[FreeIPA] LDAP High Operation Latency",
+        "tags": ["FreeIPA", "Directory Server"],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when LDAP operations exceed a latency threshold.\n// High latency impacts authentication, sudo resolution, and HBAC evaluation.\n// Adjust the threshold (in seconds) in the final WHERE clause as needed.\nFROM logs-freeipa.directory_access-*\n| WHERE freeipa.directory.operation == \"RESULT\" AND freeipa.directory.elapsed_time IS NOT NULL\n| STATS p95_latency = PERCENTILE(freeipa.directory.elapsed_time, 95), op_count = COUNT(*)\n| WHERE op_count >= 10 AND p95_latency >= 5.0"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 2
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

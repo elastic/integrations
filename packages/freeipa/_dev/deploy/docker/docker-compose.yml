@@ -1,0 +1,14 @@
+version: '2.3'
+services:
+  freeipa:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "
+      cp /sample_logs/krb5kdc.log /var/log/krb5kdc.log &&
+      cp /sample_logs/access /var/log/access &&
+      cp /sample_logs/errors /var/log/errors &&
+      cp /sample_logs/ca_audit /var/log/ca_audit &&
+      cp /sample_logs/error_log /var/log/error_log &&
+      tail -f /dev/null"

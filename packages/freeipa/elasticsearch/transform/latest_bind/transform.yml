@@ -1,0 +1,44 @@
+source:
+  index:
+    - "logs-freeipa.directory_access-*"
+  query:
+    bool:
+      filter:
+        - term:
+            freeipa.directory.operation: BIND
+
+dest:
+  index: "logs-freeipa_latest.dest_bind-1"
+  aliases:
+    - alias: "logs-freeipa_latest.bind"
+      move_on_creation: true
+
+latest:
+  unique_key:
+    - freeipa.directory.connection_id
+    - observer.hostname
+  sort: "@timestamp"
+
+description: >-
+  Maintains a latest-state index mapping connection_id to the BIND DN and
+  user identity. Enables LOOKUP JOIN from any operation on the same
+  connection to resolve who authenticated.
+
+frequency: 30s
+
+sync:
+  time:
+    field: event.ingested
+    delay: 60s
+
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 7d
+
+_meta:
+  managed: true
+  fleet_transform_version: 0.1.0
+
+settings:
+  unattended: true
