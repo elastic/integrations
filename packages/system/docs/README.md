@@ -1700,10 +1700,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | system.process.cgroup.memory.mem.events.oom | oom threshold | long |  | counter |
 | system.process.cgroup.memory.mem.events.oom_kill | oom killer threshold | long |  | counter |
 | system.process.cgroup.memory.mem.failures | The number of times that the memory limit (mem.limit.bytes) was reached. | long |  | counter |
-| system.process.cgroup.memory.mem.high.bytes | memory high threshhold | long |  | gauge |
+| system.process.cgroup.memory.mem.high.bytes | memory high threshold | long |  | gauge |
 | system.process.cgroup.memory.mem.limit.bytes | The maximum amount of user memory in bytes (including file cache) that tasks in the cgroup are allowed to use. | long |  | gauge |
-| system.process.cgroup.memory.mem.low.bytes | memory low threshhold | long |  | gauge |
-| system.process.cgroup.memory.mem.max.bytes | memory max threshhold | long |  | gauge |
+| system.process.cgroup.memory.mem.low.bytes | memory low threshold | long |  | gauge |
+| system.process.cgroup.memory.mem.max.bytes | memory max threshold | long |  | gauge |
 | system.process.cgroup.memory.mem.usage.bytes | Total memory usage by processes in the cgroup (in bytes). | long |  | gauge |
 | system.process.cgroup.memory.mem.usage.max.bytes | The maximum memory used by processes in the cgroup (in bytes). | long |  | gauge |
 | system.process.cgroup.memory.memsw.events.fail | failed threshold | long |  | counter |
@@ -1713,10 +1713,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | system.process.cgroup.memory.memsw.events.oom | oom threshold | long |  | counter |
 | system.process.cgroup.memory.memsw.events.oom_kill | oom killer threshold | long |  | counter |
 | system.process.cgroup.memory.memsw.failures | The number of times that the memory plus swap space limit (memsw.limit.bytes) was reached. | long |  | counter |
-| system.process.cgroup.memory.memsw.high.bytes | memory high threshhold | long |  | gauge |
+| system.process.cgroup.memory.memsw.high.bytes | memory high threshold | long |  | gauge |
 | system.process.cgroup.memory.memsw.limit.bytes | The maximum amount for the sum of memory and swap usage that tasks in the cgroup are allowed to use. | long |  | gauge |
-| system.process.cgroup.memory.memsw.low.bytes | memory low threshhold | long |  | gauge |
-| system.process.cgroup.memory.memsw.max.bytes | memory max threshhold | long |  | gauge |
+| system.process.cgroup.memory.memsw.low.bytes | memory low threshold | long |  | gauge |
+| system.process.cgroup.memory.memsw.max.bytes | memory max threshold | long |  | gauge |
 | system.process.cgroup.memory.memsw.usage.bytes | The sum of current memory usage plus swap space used by processes in the cgroup (in bytes). | long |  | gauge |
 | system.process.cgroup.memory.memsw.usage.max.bytes | The maximum amount of memory and swap space used by processes in the cgroup (in bytes). | long |  | gauge |
 | system.process.cgroup.memory.path | Path to the cgroup relative to the cgroup subsystem's mountpoint. | keyword |  |  |
