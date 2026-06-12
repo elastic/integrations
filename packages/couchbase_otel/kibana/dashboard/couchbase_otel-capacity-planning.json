@@ -1,0 +1,2136 @@
+{
+  "attributes": {
+    "title": "[Couchbase] SRE Capacity planning",
+    "description": "Headroom for RAM, disk, and buckets \u2014 disk fetches, quotas, and index service memory.",
+    "panelsJSON": [
+      {
+        "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+        "gridData": {
+          "x": 0,
+          "y": 0,
+          "w": 48,
+          "h": 2,
+          "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+        },
+        "type": "links",
+        "embeddableConfig": {
+          "title": "Navigation",
+          "enhancements": {},
+          "attributes": {
+            "layout": "horizontal",
+            "links": [
+              {
+                "id": "f63bbb41-6a09-1ae9-90f5-bf785747c47e",
+                "order": 0,
+                "label": "Cluster overview",
+                "type": "dashboardLink",
+                "destinationRefName": "link_f63bbb41-6a09-1ae9-90f5-bf785747c47e_dashboard"
+              },
+              {
+                "id": "bd5ab952-c8c4-169f-9d4e-8bcadd191878",
+                "order": 1,
+                "label": "Capacity planning",
+                "type": "dashboardLink",
+                "destinationRefName": "link_bd5ab952-c8c4-169f-9d4e-8bcadd191878_dashboard"
+              },
+              {
+                "id": "a0378d5c-f5d2-b665-b3ad-4918effc6d27",
+                "order": 2,
+                "label": "Replication health",
+                "type": "dashboardLink",
+                "destinationRefName": "link_a0378d5c-f5d2-b665-b3ad-4918effc6d27_dashboard"
+              },
+              {
+                "id": "bb4255de-941f-7682-cae0-a7de0ce3cdac",
+                "order": 3,
+                "label": "Sync Gateway ops",
+                "type": "dashboardLink",
+                "destinationRefName": "link_bb4255de-941f-7682-cae0-a7de0ce3cdac_dashboard"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+        "gridData": {
+          "x": 0,
+          "y": 2,
+          "w": 16,
+          "h": 12,
+          "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+        },
+        "type": "visualization",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "hidePanelTitles": true,
+          "savedVis": {
+            "type": "markdown",
+            "id": "",
+            "title": "",
+            "description": "",
+            "params": {
+              "fontSize": 12,
+              "openLinksInNewTab": false,
+              "markdown": "## [Couchbase] SRE Capacity planning\n\nPlan scaling before errors dominate:\n- Cluster RAM and RAM-quota headroom (data + index services)\n- Free disk and data footprint growth\n- Worst bucket RAM quota and disk fetch pressure\n- Index service RAM utilisation (N1QL/GSI)\n"
+            },
+            "uiState": {},
+            "data": {
+              "aggs": [],
+              "searchSource": {
+                "query": {
+                  "query": "",
+                  "language": "kuery"
+                },
+                "filter": []
+              }
+            }
+          }
+        }
+      },
+      {
+        "panelIndex": "c7de9910-bf5e-535a-ecef-43aaab14eaf7",
+        "gridData": {
+          "x": 16,
+          "y": 2,
+          "w": 8,
+          "h": 4,
+          "i": "c7de9910-bf5e-535a-ecef-43aaab14eaf7"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "hidePanelTitles": true,
+          "attributes": {
+            "title": "",
+            "visualizationType": "lnsMetric",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layerId": "32c5e788-b3b5-df17-fafe-5d43e4d0d1fe",
+                "layerType": "data",
+                "metricAccessor": "be88d789-e8b0-de94-c733-2f01769e37e0",
+                "showBar": false,
+                "applyColorTo": "background"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.cluster-default\n| WHERE data_stream.dataset == \"couchbase.cluster\"\n| EVAL ram_pct = 100.0 * TO_DOUBLE(couchbase.cluster.ram.used.value.bytes) / TO_DOUBLE(couchbase.cluster.ram.total.bytes)\n| STATS avg_ram_pct = AVG(ram_pct)"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "32c5e788-b3b5-df17-fafe-5d43e4d0d1fe": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.cluster-default\n| WHERE data_stream.dataset == \"couchbase.cluster\"\n| EVAL ram_pct = 100.0 * TO_DOUBLE(couchbase.cluster.ram.used.value.bytes) / TO_DOUBLE(couchbase.cluster.ram.total.bytes)\n| STATS avg_ram_pct = AVG(ram_pct)"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "avg_ram_pct",
+                          "columnId": "be88d789-e8b0-de94-c733-2f01769e37e0",
+                          "label": "Cluster RAM used",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "avg_ram_pct",
+                          "columnId": "be88d789-e8b0-de94-c733-2f01769e37e0",
+                          "label": "Cluster RAM used",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "68e370f9-7e0e-971a-c51e-40c395efa3f8",
+        "gridData": {
+          "x": 24,
+          "y": 2,
+          "w": 8,
+          "h": 4,
+          "i": "68e370f9-7e0e-971a-c51e-40c395efa3f8"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "hidePanelTitles": true,
+          "attributes": {
+            "title": "",
+            "visualizationType": "lnsMetric",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layerId": "68f68b18-efe9-d843-74ca-615435b0821a",
+                "layerType": "data",
+                "metricAccessor": "bd7f6113-f9f5-1ade-3984-2da4afdb9b1a",
+                "showBar": false,
+                "applyColorTo": "background"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.cluster-default\n| WHERE data_stream.dataset == \"couchbase.cluster\"\n| EVAL q_pct = 100.0 * TO_DOUBLE(couchbase.cluster.ram.quota.used.value.bytes) / TO_DOUBLE(couchbase.cluster.ram.quota.total.value.bytes)\n| STATS ram_quota_pct = AVG(q_pct)"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "68f68b18-efe9-d843-74ca-615435b0821a": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.cluster-default\n| WHERE data_stream.dataset == \"couchbase.cluster\"\n| EVAL q_pct = 100.0 * TO_DOUBLE(couchbase.cluster.ram.quota.used.value.bytes) / TO_DOUBLE(couchbase.cluster.ram.quota.total.value.bytes)\n| STATS ram_quota_pct = AVG(q_pct)"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "ram_quota_pct",
+                          "columnId": "bd7f6113-f9f5-1ade-3984-2da4afdb9b1a",
+                          "label": "RAM quota used",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "ram_quota_pct",
+                          "columnId": "bd7f6113-f9f5-1ade-3984-2da4afdb9b1a",
+                          "label": "RAM quota used",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "49fc30a7-0465-d04c-b59a-1a55d3d69011",
+        "gridData": {
+          "x": 32,
+          "y": 2,
+          "w": 8,
+          "h": 4,
+          "i": "49fc30a7-0465-d04c-b59a-1a55d3d69011"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "hidePanelTitles": true,
+          "attributes": {
+            "title": "",
+            "visualizationType": "lnsMetric",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layerId": "13ac3de5-664b-f5ca-6427-a5899f697c5e",
+                "layerType": "data",
+                "metricAccessor": "9d0e25c6-a2a9-80ff-bf10-e8fde675f88f",
+                "showBar": false,
+                "applyColorTo": "background"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.cluster-default\n| WHERE data_stream.dataset == \"couchbase.cluster\"\n| STATS min_hdd_free = MIN(couchbase.cluster.hdd.free.bytes)"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "13ac3de5-664b-f5ca-6427-a5899f697c5e": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.cluster-default\n| WHERE data_stream.dataset == \"couchbase.cluster\"\n| STATS min_hdd_free = MIN(couchbase.cluster.hdd.free.bytes)"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "min_hdd_free",
+                          "columnId": "9d0e25c6-a2a9-80ff-bf10-e8fde675f88f",
+                          "label": "Min HDD free (range)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "min_hdd_free",
+                          "columnId": "9d0e25c6-a2a9-80ff-bf10-e8fde675f88f",
+                          "label": "Min HDD free (range)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "a5dcb000-e2cf-f640-18f4-12f634bba5f0",
+        "gridData": {
+          "x": 40,
+          "y": 2,
+          "w": 8,
+          "h": 4,
+          "i": "a5dcb000-e2cf-f640-18f4-12f634bba5f0"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "hidePanelTitles": true,
+          "attributes": {
+            "title": "",
+            "visualizationType": "lnsMetric",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layerId": "ee4384c2-0015-ef37-09ee-1f0791f30d12",
+                "layerType": "data",
+                "metricAccessor": "68991833-ce2f-7fa5-5d1e-68e9203c2829",
+                "showBar": false,
+                "applyColorTo": "background"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.bucket-default\n| WHERE data_stream.dataset == \"couchbase.bucket\"\n| STATS peak_disk_fetches = MAX(couchbase.bucket.disk.fetches)"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "ee4384c2-0015-ef37-09ee-1f0791f30d12": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.bucket-default\n| WHERE data_stream.dataset == \"couchbase.bucket\"\n| STATS peak_disk_fetches = MAX(couchbase.bucket.disk.fetches)"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "peak_disk_fetches",
+                          "columnId": "68991833-ce2f-7fa5-5d1e-68e9203c2829",
+                          "label": "Peak disk fetches",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "peak_disk_fetches",
+                          "columnId": "68991833-ce2f-7fa5-5d1e-68e9203c2829",
+                          "label": "Peak disk fetches",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "f55f2385-9722-3052-25d6-99dd09b1f2e6",
+        "gridData": {
+          "x": 16,
+          "y": 6,
+          "w": 16,
+          "h": 4,
+          "i": "f55f2385-9722-3052-25d6-99dd09b1f2e6"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "hidePanelTitles": true,
+          "attributes": {
+            "title": "",
+            "visualizationType": "lnsMetric",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layerId": "e78b95d3-be29-a2bc-caf2-e56b884189f4",
+                "layerType": "data",
+                "metricAccessor": "984df03e-8b74-7c4d-589c-247987324cdf",
+                "showBar": false,
+                "applyColorTo": "background"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.bucket-default\n| WHERE data_stream.dataset == \"couchbase.bucket\"\n| STATS peak_ram_quota_pct = MAX(couchbase.bucket.ram.quota.used.pct)"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "e78b95d3-be29-a2bc-caf2-e56b884189f4": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.bucket-default\n| WHERE data_stream.dataset == \"couchbase.bucket\"\n| STATS peak_ram_quota_pct = MAX(couchbase.bucket.ram.quota.used.pct)"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "peak_ram_quota_pct",
+                          "columnId": "984df03e-8b74-7c4d-589c-247987324cdf",
+                          "label": "Worst bucket RAM quota",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "peak_ram_quota_pct",
+                          "columnId": "984df03e-8b74-7c4d-589c-247987324cdf",
+                          "label": "Worst bucket RAM quota",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "3e8b83f9-62a2-3ce0-7df2-f35dd6718786",
+        "gridData": {
+          "x": 32,
+          "y": 6,
+          "w": 16,
+          "h": 4,
+          "i": "3e8b83f9-62a2-3ce0-7df2-f35dd6718786"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "hidePanelTitles": true,
+          "attributes": {
+            "title": "",
+            "visualizationType": "lnsMetric",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layerId": "337a3c7a-5d79-3033-636a-2cbb61c1467d",
+                "layerType": "data",
+                "metricAccessor": "4ede1833-32e7-d5f5-b59b-9cb5acd9f20b",
+                "showBar": false,
+                "applyColorTo": "background"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.query_index-default\n| WHERE data_stream.dataset == \"couchbase.query_index\"\n| STATS avg_idx_ram = AVG(couchbase.query_index.ram.pct)"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "337a3c7a-5d79-3033-636a-2cbb61c1467d": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.query_index-default\n| WHERE data_stream.dataset == \"couchbase.query_index\"\n| STATS avg_idx_ram = AVG(couchbase.query_index.ram.pct)"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "avg_idx_ram",
+                          "columnId": "4ede1833-32e7-d5f5-b59b-9cb5acd9f20b",
+                          "label": "Avg index RAM %",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "avg_idx_ram",
+                          "columnId": "4ede1833-32e7-d5f5-b59b-9cb5acd9f20b",
+                          "label": "Avg index RAM %",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "387e181d-aeaa-16f2-6bc6-98248665a481",
+        "gridData": {
+          "x": 16,
+          "y": 10,
+          "w": 24,
+          "h": 12,
+          "i": "387e181d-aeaa-16f2-6bc6-98248665a481"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "Cluster RAM \u2014 used vs total",
+            "visualizationType": "lnsXY",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "779107cd-3ca1-6a81-429b-9829b2d8cb27",
+                    "accessors": [
+                      "cd5d8281-11a4-18f1-9b82-5eba248778b3",
+                      "979b02ef-a137-e631-21f9-5860497b7e97"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "area_unstacked",
+                    "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                    "position": "top",
+                    "showGridlines": false,
+                    "colorMapping": {
+                      "assignments": [],
+                      "specialAssignments": [
+                        {
+                          "rule": {
+                            "type": "other"
+                          },
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    }
+                  }
+                ],
+                "preferredSeriesType": "area_unstacked",
+                "legend": {
+                  "isVisible": true,
+                  "position": "right"
+                },
+                "valueLabels": "hide"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.cluster-default\n| WHERE data_stream.dataset == \"couchbase.cluster\"\n| STATS used = AVG(couchbase.cluster.ram.used.value.bytes), total = AVG(couchbase.cluster.ram.total.bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "779107cd-3ca1-6a81-429b-9829b2d8cb27": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.cluster-default\n| WHERE data_stream.dataset == \"couchbase.cluster\"\n| STATS used = AVG(couchbase.cluster.ram.used.value.bytes), total = AVG(couchbase.cluster.ram.total.bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "used",
+                          "columnId": "cd5d8281-11a4-18f1-9b82-5eba248778b3",
+                          "label": "RAM used",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "total",
+                          "columnId": "979b02ef-a137-e631-21f9-5860497b7e97",
+                          "label": "RAM total",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "used",
+                          "columnId": "cd5d8281-11a4-18f1-9b82-5eba248778b3",
+                          "label": "RAM used",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "total",
+                          "columnId": "979b02ef-a137-e631-21f9-5860497b7e97",
+                          "label": "RAM total",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "4b0c4847-45ea-2456-a50a-d70cb776f55f",
+        "gridData": {
+          "x": 0,
+          "y": 22,
+          "w": 24,
+          "h": 12,
+          "i": "4b0c4847-45ea-2456-a50a-d70cb776f55f"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "Cluster HDD free space",
+            "visualizationType": "lnsXY",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "0291329a-04bf-5412-8e67-988cff3e5d22",
+                    "accessors": [
+                      "73859bac-fe0e-7991-6344-d7f7945f2fb8"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                    "position": "top",
+                    "showGridlines": false,
+                    "colorMapping": {
+                      "assignments": [],
+                      "specialAssignments": [
+                        {
+                          "rule": {
+                            "type": "other"
+                          },
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    }
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "right"
+                },
+                "valueLabels": "hide"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.cluster-default\n| WHERE data_stream.dataset == \"couchbase.cluster\"\n| STATS free = AVG(couchbase.cluster.hdd.free.bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "0291329a-04bf-5412-8e67-988cff3e5d22": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.cluster-default\n| WHERE data_stream.dataset == \"couchbase.cluster\"\n| STATS free = AVG(couchbase.cluster.hdd.free.bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "free",
+                          "columnId": "73859bac-fe0e-7991-6344-d7f7945f2fb8",
+                          "label": "HDD free",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "free",
+                          "columnId": "73859bac-fe0e-7991-6344-d7f7945f2fb8",
+                          "label": "HDD free",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "75c6c21c-b687-34a2-8120-b2c0f5803453",
+        "gridData": {
+          "x": 0,
+          "y": 34,
+          "w": 48,
+          "h": 12,
+          "i": "75c6c21c-b687-34a2-8120-b2c0f5803453"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "Data vs index memory quotas (MB)",
+            "visualizationType": "lnsXY",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "965be825-ebfd-3268-e99c-954d350ee771",
+                    "accessors": [
+                      "f9fe43df-003d-10f1-b8c1-1be97aa1b752",
+                      "89fae2be-6b3f-55a6-223b-21d42f35760a"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                    "position": "top",
+                    "showGridlines": false,
+                    "colorMapping": {
+                      "assignments": [],
+                      "specialAssignments": [
+                        {
+                          "rule": {
+                            "type": "other"
+                          },
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    }
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "right"
+                },
+                "valueLabels": "hide"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.cluster-default\n| WHERE data_stream.dataset == \"couchbase.cluster\"\n| STATS data_mb = AVG(couchbase.cluster.memory.quota.mb), index_mb = AVG(couchbase.cluster.memory.quota.index.mb) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "965be825-ebfd-3268-e99c-954d350ee771": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.cluster-default\n| WHERE data_stream.dataset == \"couchbase.cluster\"\n| STATS data_mb = AVG(couchbase.cluster.memory.quota.mb), index_mb = AVG(couchbase.cluster.memory.quota.index.mb) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "data_mb",
+                          "columnId": "f9fe43df-003d-10f1-b8c1-1be97aa1b752",
+                          "label": "Data service quota (MB)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "index_mb",
+                          "columnId": "89fae2be-6b3f-55a6-223b-21d42f35760a",
+                          "label": "Index service quota (MB)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "data_mb",
+                          "columnId": "f9fe43df-003d-10f1-b8c1-1be97aa1b752",
+                          "label": "Data service quota (MB)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "index_mb",
+                          "columnId": "89fae2be-6b3f-55a6-223b-21d42f35760a",
+                          "label": "Index service quota (MB)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "00c2f379-d104-1405-3135-8e2a200de57a",
+        "gridData": {
+          "x": 0,
+          "y": 46,
+          "w": 48,
+          "h": 12,
+          "i": "00c2f379-d104-1405-3135-8e2a200de57a"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "Bucket RAM quota utilisation by bucket",
+            "visualizationType": "lnsXY",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "a1f8535a-4eb8-866b-ceab-a74e8e198d44",
+                    "accessors": [
+                      "9f49af55-3429-fe94-8e30-ca4adfda9f79"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                    "position": "top",
+                    "showGridlines": false,
+                    "splitAccessor": "e9c127ea-351f-8712-5246-44bbed87d323",
+                    "colorMapping": {
+                      "assignments": [],
+                      "specialAssignments": [
+                        {
+                          "rule": {
+                            "type": "other"
+                          },
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    }
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "right"
+                },
+                "valueLabels": "hide"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.bucket-default\n| WHERE data_stream.dataset == \"couchbase.bucket\"\n| STATS ram_quota_pct = MAX(couchbase.bucket.ram.quota.used.pct) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchbase.bucket.name\n| SORT time_bucket ASC"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "a1f8535a-4eb8-866b-ceab-a74e8e198d44": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.bucket-default\n| WHERE data_stream.dataset == \"couchbase.bucket\"\n| STATS ram_quota_pct = MAX(couchbase.bucket.ram.quota.used.pct) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchbase.bucket.name\n| SORT time_bucket ASC"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "ram_quota_pct",
+                          "columnId": "9f49af55-3429-fe94-8e30-ca4adfda9f79",
+                          "label": "RAM quota used %",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "fieldName": "couchbase.bucket.name",
+                          "columnId": "e9c127ea-351f-8712-5246-44bbed87d323",
+                          "label": "couchbase.bucket.name",
+                          "customLabel": false
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "ram_quota_pct",
+                          "columnId": "9f49af55-3429-fe94-8e30-ca4adfda9f79",
+                          "label": "RAM quota used %",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "fieldName": "couchbase.bucket.name",
+                          "columnId": "e9c127ea-351f-8712-5246-44bbed87d323",
+                          "label": "couchbase.bucket.name",
+                          "customLabel": false
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "0050c80b-5bf7-037b-ce26-c2beb0a02774",
+        "gridData": {
+          "x": 24,
+          "y": 22,
+          "w": 24,
+          "h": 12,
+          "i": "0050c80b-5bf7-037b-ce26-c2beb0a02774"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "Disk fetches by bucket",
+            "visualizationType": "lnsXY",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "51c90f6e-5dec-f9ec-a2bb-fb70ef47f0f7",
+                    "accessors": [
+                      "d3d663ec-32c6-291e-46df-16432ea536c8"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                    "position": "top",
+                    "showGridlines": false,
+                    "splitAccessor": "e9c127ea-351f-8712-5246-44bbed87d323",
+                    "colorMapping": {
+                      "assignments": [],
+                      "specialAssignments": [
+                        {
+                          "rule": {
+                            "type": "other"
+                          },
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    }
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "right"
+                },
+                "valueLabels": "hide"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.bucket-default\n| WHERE data_stream.dataset == \"couchbase.bucket\"\n| STATS fetches = MAX(couchbase.bucket.disk.fetches) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchbase.bucket.name\n| SORT time_bucket ASC"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "51c90f6e-5dec-f9ec-a2bb-fb70ef47f0f7": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.bucket-default\n| WHERE data_stream.dataset == \"couchbase.bucket\"\n| STATS fetches = MAX(couchbase.bucket.disk.fetches) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchbase.bucket.name\n| SORT time_bucket ASC"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "fetches",
+                          "columnId": "d3d663ec-32c6-291e-46df-16432ea536c8",
+                          "label": "Disk fetches",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "fieldName": "couchbase.bucket.name",
+                          "columnId": "e9c127ea-351f-8712-5246-44bbed87d323",
+                          "label": "couchbase.bucket.name",
+                          "customLabel": false
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "fetches",
+                          "columnId": "d3d663ec-32c6-291e-46df-16432ea536c8",
+                          "label": "Disk fetches",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "fieldName": "couchbase.bucket.name",
+                          "columnId": "e9c127ea-351f-8712-5246-44bbed87d323",
+                          "label": "couchbase.bucket.name",
+                          "customLabel": false
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "bf4eb103-0c89-394b-6334-b2e04f4880dc",
+        "gridData": {
+          "x": 0,
+          "y": 58,
+          "w": 24,
+          "h": 12,
+          "i": "bf4eb103-0c89-394b-6334-b2e04f4880dc"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "Index service RAM pressure",
+            "visualizationType": "lnsGauge",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layerId": "900f1d72-4465-3568-9217-e61b55301c8b",
+                "layerType": "data",
+                "metricAccessor": "c5329240-ed39-9cf8-1bc1-e8ffc2a49640",
+                "minAccessor": "68f54732-33a0-68b2-a756-ec537734e2fc",
+                "maxAccessor": "773bab24-82a4-3b54-3972-8798a069c515",
+                "goalAccessor": "1d13e940-bec3-a9ed-042b-fb5d2386e359",
+                "shape": "arc",
+                "ticksPosition": "auto",
+                "labelMajorMode": "auto",
+                "colorMode": "palette",
+                "palette": {
+                  "name": "custom",
+                  "type": "palette",
+                  "params": {
+                    "steps": 3,
+                    "name": "custom",
+                    "reverse": false,
+                    "rangeType": "percent",
+                    "rangeMin": 0.0,
+                    "rangeMax": null,
+                    "progression": "fixed",
+                    "stops": [
+                      {
+                        "color": "#54b399",
+                        "stop": 70.0
+                      },
+                      {
+                        "color": "#d6bf57",
+                        "stop": 85.0
+                      },
+                      {
+                        "color": "#cc5642",
+                        "stop": 100.0
+                      }
+                    ],
+                    "colorStops": [
+                      {
+                        "color": "#54b399",
+                        "stop": 0.0
+                      },
+                      {
+                        "color": "#d6bf57",
+                        "stop": 70.0
+                      },
+                      {
+                        "color": "#cc5642",
+                        "stop": 85.0
+                      }
+                    ],
+                    "continuity": "above",
+                    "maxSteps": 3
+                  }
+                }
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.query_index-default\n| WHERE data_stream.dataset == \"couchbase.query_index\"\n| STATS idx_ram = AVG(couchbase.query_index.ram.pct)\n| EVAL min_b = 0.0\n| EVAL max_b = 100.0\n| EVAL goal_b = 75.0"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "900f1d72-4465-3568-9217-e61b55301c8b": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.query_index-default\n| WHERE data_stream.dataset == \"couchbase.query_index\"\n| STATS idx_ram = AVG(couchbase.query_index.ram.pct)\n| EVAL min_b = 0.0\n| EVAL max_b = 100.0\n| EVAL goal_b = 75.0"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "idx_ram",
+                          "columnId": "c5329240-ed39-9cf8-1bc1-e8ffc2a49640",
+                          "label": "Index RAM %",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "min_b",
+                          "columnId": "68f54732-33a0-68b2-a756-ec537734e2fc",
+                          "label": "min_b",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "max_b",
+                          "columnId": "773bab24-82a4-3b54-3972-8798a069c515",
+                          "label": "max_b",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "goal_b",
+                          "columnId": "1d13e940-bec3-a9ed-042b-fb5d2386e359",
+                          "label": "goal_b",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "idx_ram",
+                          "columnId": "c5329240-ed39-9cf8-1bc1-e8ffc2a49640",
+                          "label": "Index RAM %",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "min_b",
+                          "columnId": "68f54732-33a0-68b2-a756-ec537734e2fc",
+                          "label": "min_b",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "max_b",
+                          "columnId": "773bab24-82a4-3b54-3972-8798a069c515",
+                          "label": "max_b",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "fieldName": "goal_b",
+                          "columnId": "1d13e940-bec3-a9ed-042b-fb5d2386e359",
+                          "label": "goal_b",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "1316826a-e93b-d67a-70f4-5f39dc79aba3",
+        "gridData": {
+          "x": 0,
+          "y": 70,
+          "w": 48,
+          "h": 16,
+          "i": "1316826a-e93b-d67a-70f4-5f39dc79aba3"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "Buckets \u2014 capacity risk summary",
+            "visualizationType": "lnsDatatable",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "columns": [
+                  {
+                    "columnId": "574a8207-4592-abf0-f240-f31fb25ebbac",
+                    "isTransposed": false,
+                    "isMetric": false
+                  },
+                  {
+                    "columnId": "1e365086-aca6-83f1-0123-1401a97b65eb",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "7e15882e-9628-fb4f-52dc-b5ca8819c377",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "0205e292-bc0e-e379-3d2f-9f5b27533fd2",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "b0b99a31-a5ea-6506-f08a-b434ae335631",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "60783ce8-7e6f-0368-ebfa-7b93658b8e85",
+                    "isTransposed": false,
+                    "isMetric": true
+                  }
+                ],
+                "layerId": "6f22c7dc-8427-9790-8bc5-f02f46680e47",
+                "layerType": "data"
+              },
+              "query": {
+                "esql": "TS metrics-couchbase.bucket-default\n| WHERE data_stream.dataset == \"couchbase.bucket\"\n| STATS peak_ram_pct = MAX(AVG_OVER_TIME(couchbase.bucket.ram.quota.used.pct)), peak_fetches = MAX(AVG_OVER_TIME(couchbase.bucket.disk.fetches)), peak_items = MAX(LAST_OVER_TIME(couchbase.bucket.item.count)), peak_disk = MAX(AVG_OVER_TIME(couchbase.bucket.disk.used.bytes)), peak_ops = MAX(AVG_OVER_TIME(couchbase.bucket.operations_per_sec)) BY b = couchbase.bucket.name\n| SORT peak_ram_pct DESC\n| LIMIT 50"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "6f22c7dc-8427-9790-8bc5-f02f46680e47": {
+                      "query": {
+                        "esql": "TS metrics-couchbase.bucket-default\n| WHERE data_stream.dataset == \"couchbase.bucket\"\n| STATS peak_ram_pct = MAX(AVG_OVER_TIME(couchbase.bucket.ram.quota.used.pct)), peak_fetches = MAX(AVG_OVER_TIME(couchbase.bucket.disk.fetches)), peak_items = MAX(LAST_OVER_TIME(couchbase.bucket.item.count)), peak_disk = MAX(AVG_OVER_TIME(couchbase.bucket.disk.used.bytes)), peak_ops = MAX(AVG_OVER_TIME(couchbase.bucket.operations_per_sec)) BY b = couchbase.bucket.name\n| SORT peak_ram_pct DESC\n| LIMIT 50"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "b",
+                          "columnId": "574a8207-4592-abf0-f240-f31fb25ebbac",
+                          "label": "Bucket",
+                          "customLabel": true
+                        },
+                        {
+                          "fieldName": "peak_ram_pct",
+                          "columnId": "1e365086-aca6-83f1-0123-1401a97b65eb",
+                          "label": "Peak RAM quota %",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "peak_fetches",
+                          "columnId": "7e15882e-9628-fb4f-52dc-b5ca8819c377",
+                          "label": "Peak disk fetches",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "peak_items",
+                          "columnId": "0205e292-bc0e-e379-3d2f-9f5b27533fd2",
+                          "label": "Peak items",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "peak_disk",
+                          "columnId": "b0b99a31-a5ea-6506-f08a-b434ae335631",
+                          "label": "Peak disk used",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "peak_ops",
+                          "columnId": "60783ce8-7e6f-0368-ebfa-7b93658b8e85",
+                          "label": "Peak ops/sec",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "b",
+                          "columnId": "574a8207-4592-abf0-f240-f31fb25ebbac",
+                          "label": "Bucket",
+                          "customLabel": true
+                        },
+                        {
+                          "fieldName": "peak_ram_pct",
+                          "columnId": "1e365086-aca6-83f1-0123-1401a97b65eb",
+                          "label": "Peak RAM quota %",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "peak_fetches",
+                          "columnId": "7e15882e-9628-fb4f-52dc-b5ca8819c377",
+                          "label": "Peak disk fetches",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "peak_items",
+                          "columnId": "0205e292-bc0e-e379-3d2f-9f5b27533fd2",
+                          "label": "Peak items",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "peak_disk",
+                          "columnId": "b0b99a31-a5ea-6506-f08a-b434ae335631",
+                          "label": "Peak disk used",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "peak_ops",
+                          "columnId": "60783ce8-7e6f-0368-ebfa-7b93658b8e85",
+                          "label": "Peak ops/sec",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      }
+    ],
+    "optionsJSON": {
+      "useMargins": true,
+      "syncColors": false,
+      "syncCursor": true,
+      "syncTooltips": false,
+      "hidePanelTitles": false
+    },
+    "kibanaSavedObjectMeta": {
+      "searchSourceJSON": {
+        "filter": [],
+        "query": {
+          "query": "",
+          "language": "kuery"
+        }
+      }
+    },
+    "timeRestore": false,
+    "version": 1,
+    "controlGroupInput": {
+      "chainingSystem": "HIERARCHICAL",
+      "controlStyle": "oneLine",
+      "ignoreParentSettingsJSON": {
+        "ignoreFilters": false,
+        "ignoreQuery": false,
+        "ignoreTimerange": false,
+        "ignoreValidations": false
+      },
+      "panelsJSON": {},
+      "showApplySelections": false
+    }
+  },
+  "coreMigrationVersion": "8.8.0",
+  "created_at": "2023-10-01T00:00:00Z",
+  "created_by": "admin",
+  "id": "couchbase_otel-capacity-planning",
+  "managed": false,
+  "references": [
+    {
+      "type": "dashboard",
+      "id": "couchbase_otel-cluster-overview",
+      "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_f63bbb41-6a09-1ae9-90f5-bf785747c47e_dashboard"
+    },
+    {
+      "type": "dashboard",
+      "id": "couchbase_otel-capacity-planning",
+      "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_bd5ab952-c8c4-169f-9d4e-8bcadd191878_dashboard"
+    },
+    {
+      "type": "dashboard",
+      "id": "couchbase_otel-replication-health",
+      "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_a0378d5c-f5d2-b665-b3ad-4918effc6d27_dashboard"
+    },
+    {
+      "type": "dashboard",
+      "id": "couchbase_otel-sync-gateway",
+      "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_bb4255de-941f-7682-cae0-a7de0ce3cdac_dashboard"
+    }
+  ],
+  "type": "dashboard",
+  "typeMigrationVersion": "10.2.0",
+  "updated_at": "2023-10-01T00:00:00Z",
+  "updated_by": "admin",
+  "version": "1"
+}

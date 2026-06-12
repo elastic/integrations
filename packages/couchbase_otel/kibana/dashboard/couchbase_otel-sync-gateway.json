@@ -1,0 +1,2617 @@
+{
+  "attributes": {
+    "title": "[Couchbase] SRE Sync Gateway operations",
+    "description": "Sync Gateway process health, DCP lag gauge, document throughput, channel cache, and security counters.",
+    "panelsJSON": [
+      {
+        "panelIndex": "91144e9b-fac7-b44d-0b1d-8339201b83cb",
+        "gridData": {
+          "x": 0,
+          "y": 0,
+          "w": 48,
+          "h": 2,
+          "i": "91144e9b-fac7-b44d-0b1d-8339201b83cb"
+        },
+        "type": "links",
+        "embeddableConfig": {
+          "title": "Navigation",
+          "enhancements": {},
+          "attributes": {
+            "layout": "horizontal",
+            "links": [
+              {
+                "id": "f63bbb41-6a09-1ae9-90f5-bf785747c47e",
+                "order": 0,
+                "label": "Cluster overview",
+                "type": "dashboardLink",
+                "destinationRefName": "link_f63bbb41-6a09-1ae9-90f5-bf785747c47e_dashboard"
+              },
+              {
+                "id": "bd5ab952-c8c4-169f-9d4e-8bcadd191878",
+                "order": 1,
+                "label": "Capacity planning",
+                "type": "dashboardLink",
+                "destinationRefName": "link_bd5ab952-c8c4-169f-9d4e-8bcadd191878_dashboard"
+              },
+              {
+                "id": "a0378d5c-f5d2-b665-b3ad-4918effc6d27",
+                "order": 2,
+                "label": "Replication health",
+                "type": "dashboardLink",
+                "destinationRefName": "link_a0378d5c-f5d2-b665-b3ad-4918effc6d27_dashboard"
+              },
+              {
+                "id": "bb4255de-941f-7682-cae0-a7de0ce3cdac",
+                "order": 3,
+                "label": "Sync Gateway ops",
+                "type": "dashboardLink",
+                "destinationRefName": "link_bb4255de-941f-7682-cae0-a7de0ce3cdac_dashboard"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+        "gridData": {
+          "x": 0,
+          "y": 2,
+          "w": 16,
+          "h": 12,
+          "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+        },
+        "type": "visualization",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "hidePanelTitles": true,
+          "savedVis": {
+            "type": "markdown",
+            "id": "",
+            "title": "",
+            "description": "",
+            "params": {
+              "fontSize": 12,
+              "openLinksInNewTab": false,
+              "markdown": "## [Couchbase] SRE Sync Gateway operations\n\nMobile/edge data plane signals:\n- Process CPU and Go heap footprint\n- DCP processing time (change feed pressure)\n- Document read/write rates from REST/BLIP\n- Channel cache effectiveness\n- Security and shared-bucket import failures\n"
+            },
+            "uiState": {},
+            "data": {
+              "aggs": [],
+              "searchSource": {
+                "query": {
+                  "query": "",
+                  "language": "kuery"
+                },
+                "filter": []
+              }
+            }
+          }
+        }
+      },
+      {
+        "panelIndex": "c7de9910-bf5e-535a-ecef-43aaab14eaf7",
+        "gridData": {
+          "x": 16,
+          "y": 2,
+          "w": 8,
+          "h": 4,
+          "i": "c7de9910-bf5e-535a-ecef-43aaab14eaf7"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "hidePanelTitles": true,
+          "attributes": {
+            "title": "",
+            "visualizationType": "lnsMetric",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layerId": "cbb7edd9-dc19-f5b6-5428-645865ff234d",
+                "layerType": "data",
+                "metricAccessor": "2eb53cae-8e8d-6d63-dea3-c99b51539513",
+                "showBar": false,
+                "applyColorTo": "background"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.resource-default\n| WHERE data_stream.dataset == \"couchbase.resource\"\n| STATS cpu = AVG(couchbase.resource.process.cpu.pct)"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "cbb7edd9-dc19-f5b6-5428-645865ff234d": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.resource-default\n| WHERE data_stream.dataset == \"couchbase.resource\"\n| STATS cpu = AVG(couchbase.resource.process.cpu.pct)"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "cpu",
+                          "columnId": "2eb53cae-8e8d-6d63-dea3-c99b51539513",
+                          "label": "Avg SG process CPU",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "cpu",
+                          "columnId": "2eb53cae-8e8d-6d63-dea3-c99b51539513",
+                          "label": "Avg SG process CPU",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "68e370f9-7e0e-971a-c51e-40c395efa3f8",
+        "gridData": {
+          "x": 24,
+          "y": 2,
+          "w": 8,
+          "h": 4,
+          "i": "68e370f9-7e0e-971a-c51e-40c395efa3f8"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "hidePanelTitles": true,
+          "attributes": {
+            "title": "",
+            "visualizationType": "lnsMetric",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layerId": "1ae7b10b-dde3-a916-45a8-7d54143a5608",
+                "layerType": "data",
+                "metricAccessor": "3e3df196-3cd6-76fb-a959-3b61ba3373e4",
+                "showBar": false,
+                "applyColorTo": "background"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.resource-default\n| WHERE data_stream.dataset == \"couchbase.resource\"\n| STATS rss = AVG(couchbase.resource.process.memory.resident)"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "1ae7b10b-dde3-a916-45a8-7d54143a5608": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.resource-default\n| WHERE data_stream.dataset == \"couchbase.resource\"\n| STATS rss = AVG(couchbase.resource.process.memory.resident)"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "rss",
+                          "columnId": "3e3df196-3cd6-76fb-a959-3b61ba3373e4",
+                          "label": "Avg resident memory",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "rss",
+                          "columnId": "3e3df196-3cd6-76fb-a959-3b61ba3373e4",
+                          "label": "Avg resident memory",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "49fc30a7-0465-d04c-b59a-1a55d3d69011",
+        "gridData": {
+          "x": 32,
+          "y": 2,
+          "w": 8,
+          "h": 4,
+          "i": "49fc30a7-0465-d04c-b59a-1a55d3d69011"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "hidePanelTitles": true,
+          "attributes": {
+            "title": "",
+            "visualizationType": "lnsMetric",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layerId": "b8166a83-cb84-9280-2a0c-b6457a550946",
+                "layerType": "data",
+                "metricAccessor": "5d548b16-9dbb-1dce-f90a-125e5cb50cf0",
+                "showBar": false,
+                "applyColorTo": "background"
+              },
+              "query": {
+                "esql": "TS metrics-couchbase.resource-default\n| WHERE data_stream.dataset == \"couchbase.resource\"\n| STATS err_delta = SUM(INCREASE(couchbase.resource.error.count))"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "b8166a83-cb84-9280-2a0c-b6457a550946": {
+                      "query": {
+                        "esql": "TS metrics-couchbase.resource-default\n| WHERE data_stream.dataset == \"couchbase.resource\"\n| STATS err_delta = SUM(INCREASE(couchbase.resource.error.count))"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "err_delta",
+                          "columnId": "5d548b16-9dbb-1dce-f90a-125e5cb50cf0",
+                          "label": "Error log lines (\u03a3 \u0394)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "err_delta",
+                          "columnId": "5d548b16-9dbb-1dce-f90a-125e5cb50cf0",
+                          "label": "Error log lines (\u03a3 \u0394)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "a5dcb000-e2cf-f640-18f4-12f634bba5f0",
+        "gridData": {
+          "x": 40,
+          "y": 2,
+          "w": 8,
+          "h": 4,
+          "i": "a5dcb000-e2cf-f640-18f4-12f634bba5f0"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "hidePanelTitles": true,
+          "attributes": {
+            "title": "",
+            "visualizationType": "lnsMetric",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layerId": "2a8d606c-f40b-32b8-128b-744ded089afb",
+                "layerType": "data",
+                "metricAccessor": "12bf95ee-b140-fdd7-da0d-bc876b4fffba",
+                "showBar": false,
+                "applyColorTo": "background"
+              },
+              "query": {
+                "esql": "TS metrics-couchbase.resource-default\n| WHERE data_stream.dataset == \"couchbase.resource\"\n| STATS warn_delta = SUM(INCREASE(couchbase.resource.warn.count))"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "2a8d606c-f40b-32b8-128b-744ded089afb": {
+                      "query": {
+                        "esql": "TS metrics-couchbase.resource-default\n| WHERE data_stream.dataset == \"couchbase.resource\"\n| STATS warn_delta = SUM(INCREASE(couchbase.resource.warn.count))"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "warn_delta",
+                          "columnId": "12bf95ee-b140-fdd7-da0d-bc876b4fffba",
+                          "label": "Warnings (\u03a3 \u0394)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "warn_delta",
+                          "columnId": "12bf95ee-b140-fdd7-da0d-bc876b4fffba",
+                          "label": "Warnings (\u03a3 \u0394)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "f55f2385-9722-3052-25d6-99dd09b1f2e6",
+        "gridData": {
+          "x": 16,
+          "y": 6,
+          "w": 16,
+          "h": 4,
+          "i": "f55f2385-9722-3052-25d6-99dd09b1f2e6"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "hidePanelTitles": true,
+          "attributes": {
+            "title": "",
+            "visualizationType": "lnsMetric",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layerId": "89f07170-8960-6158-60fe-0b510d4dc571",
+                "layerType": "data",
+                "metricAccessor": "15b14198-0519-430b-0bba-9502f7d93868",
+                "showBar": false,
+                "applyColorTo": "background"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.database_stats-default\n| WHERE data_stream.dataset == \"couchbase.database_stats\"\n| STATS dcp = AVG(couchbase.database_stats.dcp.received.time)"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "89f07170-8960-6158-60fe-0b510d4dc571": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.database_stats-default\n| WHERE data_stream.dataset == \"couchbase.database_stats\"\n| STATS dcp = AVG(couchbase.database_stats.dcp.received.time)"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "dcp",
+                          "columnId": "15b14198-0519-430b-0bba-9502f7d93868",
+                          "label": "Avg DCP recv time",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "duration",
+                              "params": {
+                                "decimals": 3
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "dcp",
+                          "columnId": "15b14198-0519-430b-0bba-9502f7d93868",
+                          "label": "Avg DCP recv time",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "duration",
+                              "params": {
+                                "decimals": 3
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "3e8b83f9-62a2-3ce0-7df2-f35dd6718786",
+        "gridData": {
+          "x": 32,
+          "y": 6,
+          "w": 16,
+          "h": 4,
+          "i": "3e8b83f9-62a2-3ce0-7df2-f35dd6718786"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "hidePanelTitles": true,
+          "attributes": {
+            "title": "",
+            "visualizationType": "lnsMetric",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layerId": "a1172c18-2f35-1aa7-1c71-7b38086bde39",
+                "layerType": "data",
+                "metricAccessor": "f13d2f9c-6812-99ab-c872-67e0fa853eeb",
+                "showBar": false,
+                "applyColorTo": "background"
+              },
+              "query": {
+                "esql": "TS metrics-couchbase.miscellaneous-default\n| WHERE data_stream.dataset == \"couchbase.miscellaneous\"\n| STATS failed_auth = SUM(INCREASE(couchbase.miscellaneous.security.authentications.failed.count))"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "a1172c18-2f35-1aa7-1c71-7b38086bde39": {
+                      "query": {
+                        "esql": "TS metrics-couchbase.miscellaneous-default\n| WHERE data_stream.dataset == \"couchbase.miscellaneous\"\n| STATS failed_auth = SUM(INCREASE(couchbase.miscellaneous.security.authentications.failed.count))"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "failed_auth",
+                          "columnId": "f13d2f9c-6812-99ab-c872-67e0fa853eeb",
+                          "label": "Failed auth (\u03a3 \u0394)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "failed_auth",
+                          "columnId": "f13d2f9c-6812-99ab-c872-67e0fa853eeb",
+                          "label": "Failed auth (\u03a3 \u0394)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "bd98df98-22ea-93ea-29a8-f245aa7c67da",
+        "gridData": {
+          "x": 0,
+          "y": 14,
+          "w": 48,
+          "h": 12,
+          "i": "bd98df98-22ea-93ea-29a8-f245aa7c67da"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "Sync Gateway process CPU and heap",
+            "visualizationType": "lnsXY",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "8539ab85-05eb-24cd-5e9a-326f94861407",
+                    "accessors": [
+                      "3d05970f-8dde-339b-4a2e-509e8b0f8bd2",
+                      "195fb96c-9676-75b8-b469-e80829fdc202"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                    "position": "top",
+                    "showGridlines": false,
+                    "colorMapping": {
+                      "assignments": [],
+                      "specialAssignments": [
+                        {
+                          "rule": {
+                            "type": "other"
+                          },
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    }
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "right"
+                },
+                "valueLabels": "hide"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.resource-default\n| WHERE data_stream.dataset == \"couchbase.resource\"\n| STATS cpu = AVG(couchbase.resource.process.cpu.pct), heap = AVG(couchbase.resource.go_memstats.heap.in_use) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "8539ab85-05eb-24cd-5e9a-326f94861407": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.resource-default\n| WHERE data_stream.dataset == \"couchbase.resource\"\n| STATS cpu = AVG(couchbase.resource.process.cpu.pct), heap = AVG(couchbase.resource.go_memstats.heap.in_use) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "cpu",
+                          "columnId": "3d05970f-8dde-339b-4a2e-509e8b0f8bd2",
+                          "label": "CPU %",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "heap",
+                          "columnId": "195fb96c-9676-75b8-b469-e80829fdc202",
+                          "label": "Heap in use",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "cpu",
+                          "columnId": "3d05970f-8dde-339b-4a2e-509e8b0f8bd2",
+                          "label": "CPU %",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "heap",
+                          "columnId": "195fb96c-9676-75b8-b469-e80829fdc202",
+                          "label": "Heap in use",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "f776d5a5-db38-ee3a-09a2-2ccf86eddae5",
+        "gridData": {
+          "x": 0,
+          "y": 26,
+          "w": 24,
+          "h": 12,
+          "i": "f776d5a5-db38-ee3a-09a2-2ccf86eddae5"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "Admin REST network I/O",
+            "visualizationType": "lnsXY",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "4b12db4c-c017-38fa-d687-3660bbcbcebb",
+                    "accessors": [
+                      "ac08d7c7-8555-2508-35fa-43b0fdeb06df",
+                      "be383191-0ec3-e829-7d1a-a494bac49413"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "area_unstacked",
+                    "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                    "position": "top",
+                    "showGridlines": false,
+                    "colorMapping": {
+                      "assignments": [],
+                      "specialAssignments": [
+                        {
+                          "rule": {
+                            "type": "other"
+                          },
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    }
+                  }
+                ],
+                "preferredSeriesType": "area_unstacked",
+                "legend": {
+                  "isVisible": true,
+                  "position": "right"
+                },
+                "valueLabels": "hide"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.resource-default\n| WHERE data_stream.dataset == \"couchbase.resource\"\n| STATS in_b = AVG(couchbase.resource.admin_net.bytes.received), out_b = AVG(couchbase.resource.admin_net.bytes.sent) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "4b12db4c-c017-38fa-d687-3660bbcbcebb": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.resource-default\n| WHERE data_stream.dataset == \"couchbase.resource\"\n| STATS in_b = AVG(couchbase.resource.admin_net.bytes.received), out_b = AVG(couchbase.resource.admin_net.bytes.sent) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "in_b",
+                          "columnId": "ac08d7c7-8555-2508-35fa-43b0fdeb06df",
+                          "label": "Bytes in",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "out_b",
+                          "columnId": "be383191-0ec3-e829-7d1a-a494bac49413",
+                          "label": "Bytes out",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "in_b",
+                          "columnId": "ac08d7c7-8555-2508-35fa-43b0fdeb06df",
+                          "label": "Bytes in",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "out_b",
+                          "columnId": "be383191-0ec3-e829-7d1a-a494bac49413",
+                          "label": "Bytes out",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "a1f8946a-414a-5032-d64f-cd9f579552f6",
+        "gridData": {
+          "x": 24,
+          "y": 26,
+          "w": 24,
+          "h": 12,
+          "i": "a1f8946a-414a-5032-d64f-cd9f579552f6"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "DCP received time by database",
+            "visualizationType": "lnsXY",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "a4849f0b-db8c-19e6-19a9-04e88684006d",
+                    "accessors": [
+                      "545de7e6-ac1d-a00f-534a-d69b9e66a547"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                    "position": "top",
+                    "showGridlines": false,
+                    "splitAccessor": "9372c7fb-034b-0079-8c1b-d8d22fac041c",
+                    "colorMapping": {
+                      "assignments": [],
+                      "specialAssignments": [
+                        {
+                          "rule": {
+                            "type": "other"
+                          },
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    }
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "right"
+                },
+                "valueLabels": "hide"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.database_stats-default\n| WHERE data_stream.dataset == \"couchbase.database_stats\"\n| STATS dcp_t = AVG(couchbase.database_stats.dcp.received.time) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchbase.database_stats.database.name\n| SORT time_bucket ASC"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "a4849f0b-db8c-19e6-19a9-04e88684006d": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.database_stats-default\n| WHERE data_stream.dataset == \"couchbase.database_stats\"\n| STATS dcp_t = AVG(couchbase.database_stats.dcp.received.time) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchbase.database_stats.database.name\n| SORT time_bucket ASC"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "dcp_t",
+                          "columnId": "545de7e6-ac1d-a00f-534a-d69b9e66a547",
+                          "label": "DCP time",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "duration",
+                              "params": {
+                                "decimals": 3
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "fieldName": "couchbase.database_stats.database.name",
+                          "columnId": "9372c7fb-034b-0079-8c1b-d8d22fac041c",
+                          "label": "couchbase.database_stats.database.name",
+                          "customLabel": false
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "dcp_t",
+                          "columnId": "545de7e6-ac1d-a00f-534a-d69b9e66a547",
+                          "label": "DCP time",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "duration",
+                              "params": {
+                                "decimals": 3
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "fieldName": "couchbase.database_stats.database.name",
+                          "columnId": "9372c7fb-034b-0079-8c1b-d8d22fac041c",
+                          "label": "couchbase.database_stats.database.name",
+                          "customLabel": false
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "e7165266-e129-c22f-eeaf-6dac8cc7264b",
+        "gridData": {
+          "x": 0,
+          "y": 38,
+          "w": 24,
+          "h": 12,
+          "i": "e7165266-e129-c22f-eeaf-6dac8cc7264b"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "Document write rate (Sync Gateway)",
+            "visualizationType": "lnsXY",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "81af2f2e-3cff-5f51-40aa-878e840b7076",
+                    "accessors": [
+                      "26cac77b-b196-33d7-a1ac-871e907c740e"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                    "position": "top",
+                    "showGridlines": false,
+                    "splitAccessor": "9372c7fb-034b-0079-8c1b-d8d22fac041c",
+                    "colorMapping": {
+                      "assignments": [],
+                      "specialAssignments": [
+                        {
+                          "rule": {
+                            "type": "other"
+                          },
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    }
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "right"
+                },
+                "valueLabels": "hide"
+              },
+              "query": {
+                "esql": "TS metrics-couchbase.database_stats-default\n| WHERE data_stream.dataset == \"couchbase.database_stats\"\n| STATS wr = SUM(RATE(couchbase.database_stats.document.writes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchbase.database_stats.database.name\n| SORT time_bucket ASC"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "81af2f2e-3cff-5f51-40aa-878e840b7076": {
+                      "query": {
+                        "esql": "TS metrics-couchbase.database_stats-default\n| WHERE data_stream.dataset == \"couchbase.database_stats\"\n| STATS wr = SUM(RATE(couchbase.database_stats.document.writes)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchbase.database_stats.database.name\n| SORT time_bucket ASC"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "wr",
+                          "columnId": "26cac77b-b196-33d7-a1ac-871e907c740e",
+                          "label": "Writes/sec",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "fieldName": "couchbase.database_stats.database.name",
+                          "columnId": "9372c7fb-034b-0079-8c1b-d8d22fac041c",
+                          "label": "couchbase.database_stats.database.name",
+                          "customLabel": false
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "wr",
+                          "columnId": "26cac77b-b196-33d7-a1ac-871e907c740e",
+                          "label": "Writes/sec",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "fieldName": "couchbase.database_stats.database.name",
+                          "columnId": "9372c7fb-034b-0079-8c1b-d8d22fac041c",
+                          "label": "couchbase.database_stats.database.name",
+                          "customLabel": false
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "7cb5228c-4598-6e0c-001c-49279aa41243",
+        "gridData": {
+          "x": 24,
+          "y": 38,
+          "w": 24,
+          "h": 12,
+          "i": "7cb5228c-4598-6e0c-001c-49279aa41243"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "Document REST read rate",
+            "visualizationType": "lnsXY",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "c9ce42ff-544b-991f-8ee7-99122efbbf1b",
+                    "accessors": [
+                      "4c49fff2-2205-a965-f1be-7ffa627c9fb1"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                    "position": "top",
+                    "showGridlines": false,
+                    "splitAccessor": "9372c7fb-034b-0079-8c1b-d8d22fac041c",
+                    "colorMapping": {
+                      "assignments": [],
+                      "specialAssignments": [
+                        {
+                          "rule": {
+                            "type": "other"
+                          },
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    }
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "right"
+                },
+                "valueLabels": "hide"
+              },
+              "query": {
+                "esql": "TS metrics-couchbase.database_stats-default\n| WHERE data_stream.dataset == \"couchbase.database_stats\"\n| STATS rr = SUM(RATE(couchbase.database_stats.document.reads.rest)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchbase.database_stats.database.name\n| SORT time_bucket ASC"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "c9ce42ff-544b-991f-8ee7-99122efbbf1b": {
+                      "query": {
+                        "esql": "TS metrics-couchbase.database_stats-default\n| WHERE data_stream.dataset == \"couchbase.database_stats\"\n| STATS rr = SUM(RATE(couchbase.database_stats.document.reads.rest)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchbase.database_stats.database.name\n| SORT time_bucket ASC"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "rr",
+                          "columnId": "4c49fff2-2205-a965-f1be-7ffa627c9fb1",
+                          "label": "REST reads/sec",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "fieldName": "couchbase.database_stats.database.name",
+                          "columnId": "9372c7fb-034b-0079-8c1b-d8d22fac041c",
+                          "label": "couchbase.database_stats.database.name",
+                          "customLabel": false
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "rr",
+                          "columnId": "4c49fff2-2205-a965-f1be-7ffa627c9fb1",
+                          "label": "REST reads/sec",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "fieldName": "couchbase.database_stats.database.name",
+                          "columnId": "9372c7fb-034b-0079-8c1b-d8d22fac041c",
+                          "label": "couchbase.database_stats.database.name",
+                          "customLabel": false
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "9e4c94ba-67a6-fa81-3e3e-09bcd7302363",
+        "gridData": {
+          "x": 0,
+          "y": 50,
+          "w": 48,
+          "h": 12,
+          "i": "9e4c94ba-67a6-fa81-3e3e-09bcd7302363"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "Document BLIP read rate",
+            "visualizationType": "lnsXY",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "0778f5ab-134e-d253-5c51-29453b10b986",
+                    "accessors": [
+                      "c56f213f-f7ed-1ab0-3445-fbd87cb350db"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                    "position": "top",
+                    "showGridlines": false,
+                    "splitAccessor": "9372c7fb-034b-0079-8c1b-d8d22fac041c",
+                    "colorMapping": {
+                      "assignments": [],
+                      "specialAssignments": [
+                        {
+                          "rule": {
+                            "type": "other"
+                          },
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    }
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "right"
+                },
+                "valueLabels": "hide"
+              },
+              "query": {
+                "esql": "TS metrics-couchbase.database_stats-default\n| WHERE data_stream.dataset == \"couchbase.database_stats\"\n| STATS br = SUM(RATE(couchbase.database_stats.document.reads.blip)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchbase.database_stats.database.name\n| SORT time_bucket ASC"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "0778f5ab-134e-d253-5c51-29453b10b986": {
+                      "query": {
+                        "esql": "TS metrics-couchbase.database_stats-default\n| WHERE data_stream.dataset == \"couchbase.database_stats\"\n| STATS br = SUM(RATE(couchbase.database_stats.document.reads.blip)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchbase.database_stats.database.name\n| SORT time_bucket ASC"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "br",
+                          "columnId": "c56f213f-f7ed-1ab0-3445-fbd87cb350db",
+                          "label": "BLIP reads/sec",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "fieldName": "couchbase.database_stats.database.name",
+                          "columnId": "9372c7fb-034b-0079-8c1b-d8d22fac041c",
+                          "label": "couchbase.database_stats.database.name",
+                          "customLabel": false
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "br",
+                          "columnId": "c56f213f-f7ed-1ab0-3445-fbd87cb350db",
+                          "label": "BLIP reads/sec",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "fieldName": "couchbase.database_stats.database.name",
+                          "columnId": "9372c7fb-034b-0079-8c1b-d8d22fac041c",
+                          "label": "couchbase.database_stats.database.name",
+                          "customLabel": false
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "2b8122c6-d790-31e9-78e0-3643c8cee78e",
+        "gridData": {
+          "x": 0,
+          "y": 62,
+          "w": 24,
+          "h": 12,
+          "i": "2b8122c6-d790-31e9-78e0-3643c8cee78e"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "Channel cache hit ratio",
+            "visualizationType": "lnsXY",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "fc5c87cc-e643-e0d1-cb85-128b6e0f5e0c",
+                    "accessors": [
+                      "070e03df-e77d-4e97-ff37-f17959dc2172"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                    "position": "top",
+                    "showGridlines": false,
+                    "splitAccessor": "3ecc2df0-0575-809a-5ffb-807d0ad62ac4",
+                    "colorMapping": {
+                      "assignments": [],
+                      "specialAssignments": [
+                        {
+                          "rule": {
+                            "type": "other"
+                          },
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    }
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "right"
+                },
+                "valueLabels": "hide"
+              },
+              "query": {
+                "esql": "FROM metrics-couchbase.cache-default\n| WHERE data_stream.dataset == \"couchbase.cache\"\n| EVAL hit_ratio = 100.0 * TO_DOUBLE(couchbase.cache.channel.hits) / (TO_DOUBLE(couchbase.cache.channel.hits) + TO_DOUBLE(couchbase.cache.channel.misses) + 1.0)\n| STATS hr = AVG(hit_ratio) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchbase.cache.database.name\n| SORT time_bucket ASC"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "fc5c87cc-e643-e0d1-cb85-128b6e0f5e0c": {
+                      "query": {
+                        "esql": "FROM metrics-couchbase.cache-default\n| WHERE data_stream.dataset == \"couchbase.cache\"\n| EVAL hit_ratio = 100.0 * TO_DOUBLE(couchbase.cache.channel.hits) / (TO_DOUBLE(couchbase.cache.channel.hits) + TO_DOUBLE(couchbase.cache.channel.misses) + 1.0)\n| STATS hr = AVG(hit_ratio) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchbase.cache.database.name\n| SORT time_bucket ASC"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "hr",
+                          "columnId": "070e03df-e77d-4e97-ff37-f17959dc2172",
+                          "label": "Hit ratio",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "fieldName": "couchbase.cache.database.name",
+                          "columnId": "3ecc2df0-0575-809a-5ffb-807d0ad62ac4",
+                          "label": "couchbase.cache.database.name",
+                          "customLabel": false
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "hr",
+                          "columnId": "070e03df-e77d-4e97-ff37-f17959dc2172",
+                          "label": "Hit ratio",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "fieldName": "couchbase.cache.database.name",
+                          "columnId": "3ecc2df0-0575-809a-5ffb-807d0ad62ac4",
+                          "label": "couchbase.cache.database.name",
+                          "customLabel": false
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "57bfac98-5b32-02c6-e7b7-4d39e712b72d",
+        "gridData": {
+          "x": 24,
+          "y": 62,
+          "w": 24,
+          "h": 12,
+          "i": "57bfac98-5b32-02c6-e7b7-4d39e712b72d"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "Security events (counter deltas)",
+            "visualizationType": "lnsXY",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "03974263-02ed-b9c2-f9da-eee8871a61a3",
+                    "accessors": [
+                      "cf110c64-f1fe-30ba-a3c3-471513c94ea2",
+                      "d918f5bf-1222-aabb-a1c5-81c8f6773fc7",
+                      "3a441514-d17f-83c2-fcb9-ccdd96d863e8"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                    "position": "top",
+                    "showGridlines": false,
+                    "colorMapping": {
+                      "assignments": [],
+                      "specialAssignments": [
+                        {
+                          "rule": {
+                            "type": "other"
+                          },
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    }
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "right"
+                },
+                "valueLabels": "hide"
+              },
+              "query": {
+                "esql": "TS metrics-couchbase.miscellaneous-default\n| WHERE data_stream.dataset == \"couchbase.miscellaneous\"\n| STATS auth_fail = SUM(INCREASE(couchbase.miscellaneous.security.authentications.failed.count)), access_err = SUM(INCREASE(couchbase.miscellaneous.security.access.errors.count)), doc_rej = SUM(INCREASE(couchbase.miscellaneous.security.documents.rejected.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "03974263-02ed-b9c2-f9da-eee8871a61a3": {
+                      "query": {
+                        "esql": "TS metrics-couchbase.miscellaneous-default\n| WHERE data_stream.dataset == \"couchbase.miscellaneous\"\n| STATS auth_fail = SUM(INCREASE(couchbase.miscellaneous.security.authentications.failed.count)), access_err = SUM(INCREASE(couchbase.miscellaneous.security.access.errors.count)), doc_rej = SUM(INCREASE(couchbase.miscellaneous.security.documents.rejected.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "auth_fail",
+                          "columnId": "cf110c64-f1fe-30ba-a3c3-471513c94ea2",
+                          "label": "Auth failures",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "access_err",
+                          "columnId": "d918f5bf-1222-aabb-a1c5-81c8f6773fc7",
+                          "label": "Access errors",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "doc_rej",
+                          "columnId": "3a441514-d17f-83c2-fcb9-ccdd96d863e8",
+                          "label": "Rejected docs",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "auth_fail",
+                          "columnId": "cf110c64-f1fe-30ba-a3c3-471513c94ea2",
+                          "label": "Auth failures",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "access_err",
+                          "columnId": "d918f5bf-1222-aabb-a1c5-81c8f6773fc7",
+                          "label": "Access errors",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "doc_rej",
+                          "columnId": "3a441514-d17f-83c2-fcb9-ccdd96d863e8",
+                          "label": "Rejected docs",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "b25b967c-5f77-d296-92db-01d2ee47d20c",
+        "gridData": {
+          "x": 0,
+          "y": 74,
+          "w": 48,
+          "h": 12,
+          "i": "b25b967c-5f77-d296-92db-01d2ee47d20c"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "Shared bucket import errors over time",
+            "visualizationType": "lnsXY",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "3c142ffd-255e-f987-6b18-6c8780b370a5",
+                    "accessors": [
+                      "85030f01-0a24-1623-de70-cde26765a57e"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "area_unstacked",
+                    "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                    "position": "top",
+                    "showGridlines": false,
+                    "splitAccessor": "14ee5529-51bf-468c-6fce-b0b0d932a810",
+                    "colorMapping": {
+                      "assignments": [],
+                      "specialAssignments": [
+                        {
+                          "rule": {
+                            "type": "other"
+                          },
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    }
+                  }
+                ],
+                "preferredSeriesType": "area_unstacked",
+                "legend": {
+                  "isVisible": true,
+                  "position": "right"
+                },
+                "valueLabels": "hide"
+              },
+              "query": {
+                "esql": "TS metrics-couchbase.miscellaneous-default\n| WHERE data_stream.dataset == \"couchbase.miscellaneous\"\n| STATS imp_err = SUM(INCREASE(couchbase.miscellaneous.shared_bucket.import.documents.errors.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchbase.miscellaneous.database.name\n| SORT time_bucket ASC"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "3c142ffd-255e-f987-6b18-6c8780b370a5": {
+                      "query": {
+                        "esql": "TS metrics-couchbase.miscellaneous-default\n| WHERE data_stream.dataset == \"couchbase.miscellaneous\"\n| STATS imp_err = SUM(INCREASE(couchbase.miscellaneous.shared_bucket.import.documents.errors.count)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), couchbase.miscellaneous.database.name\n| SORT time_bucket ASC"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "imp_err",
+                          "columnId": "85030f01-0a24-1623-de70-cde26765a57e",
+                          "label": "Import errors (\u0394)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "fieldName": "couchbase.miscellaneous.database.name",
+                          "columnId": "14ee5529-51bf-468c-6fce-b0b0d932a810",
+                          "label": "couchbase.miscellaneous.database.name",
+                          "customLabel": false
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "imp_err",
+                          "columnId": "85030f01-0a24-1623-de70-cde26765a57e",
+                          "label": "Import errors (\u0394)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "time_bucket",
+                          "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                          "label": "time_bucket",
+                          "customLabel": false,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "fieldName": "couchbase.miscellaneous.database.name",
+                          "columnId": "14ee5529-51bf-468c-6fce-b0b0d932a810",
+                          "label": "couchbase.miscellaneous.database.name",
+                          "customLabel": false
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      },
+      {
+        "panelIndex": "8fd2d0da-619b-69b2-fbba-9e0c9491888e",
+        "gridData": {
+          "x": 0,
+          "y": 86,
+          "w": 48,
+          "h": 16,
+          "i": "8fd2d0da-619b-69b2-fbba-9e0c9491888e"
+        },
+        "type": "lens",
+        "embeddableConfig": {
+          "enhancements": {
+            "dynamicActions": {
+              "events": []
+            }
+          },
+          "attributes": {
+            "title": "Sync Gateway security \u2014 latest snapshot by database",
+            "visualizationType": "lnsDatatable",
+            "type": "lens",
+            "references": [],
+            "state": {
+              "visualization": {
+                "columns": [
+                  {
+                    "columnId": "b51eddee-db80-2bc0-d503-9df860ccf59f",
+                    "isTransposed": false,
+                    "isMetric": false
+                  },
+                  {
+                    "columnId": "82c054f7-6d94-8dfe-32dc-c82f6bfa0f80",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "a87cd7ae-4333-afe5-8a8d-d801fbc6ad0a",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "df5a9f16-7bd2-a8a8-9b3d-4f5112ff4f3a",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "51d5fd3a-3db8-8a83-f393-63b25946750d",
+                    "isTransposed": false,
+                    "isMetric": true
+                  }
+                ],
+                "layerId": "ef3d1fcc-ee4f-e9a5-43db-ec45f101a120",
+                "layerType": "data"
+              },
+              "query": {
+                "esql": "TS metrics-couchbase.miscellaneous-default\n| WHERE data_stream.dataset == \"couchbase.miscellaneous\"\n| STATS access_err = MAX(LAST_OVER_TIME(couchbase.miscellaneous.security.access.errors.count)), doc_rej = MAX(LAST_OVER_TIME(couchbase.miscellaneous.security.documents.rejected.count)), delta_sent = MAX(LAST_OVER_TIME(couchbase.miscellaneous.delta_sync.sent)), gsi_ch = MAX(LAST_OVER_TIME(couchbase.miscellaneous.gsi_views.channels.count)) BY db = couchbase.miscellaneous.database.name\n| SORT access_err DESC\n| LIMIT 50"
+              },
+              "filters": [],
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "ef3d1fcc-ee4f-e9a5-43db-ec45f101a120": {
+                      "query": {
+                        "esql": "TS metrics-couchbase.miscellaneous-default\n| WHERE data_stream.dataset == \"couchbase.miscellaneous\"\n| STATS access_err = MAX(LAST_OVER_TIME(couchbase.miscellaneous.security.access.errors.count)), doc_rej = MAX(LAST_OVER_TIME(couchbase.miscellaneous.security.documents.rejected.count)), delta_sent = MAX(LAST_OVER_TIME(couchbase.miscellaneous.delta_sync.sent)), gsi_ch = MAX(LAST_OVER_TIME(couchbase.miscellaneous.gsi_views.channels.count)) BY db = couchbase.miscellaneous.database.name\n| SORT access_err DESC\n| LIMIT 50"
+                      },
+                      "columns": [
+                        {
+                          "fieldName": "db",
+                          "columnId": "b51eddee-db80-2bc0-d503-9df860ccf59f",
+                          "label": "Database",
+                          "customLabel": true
+                        },
+                        {
+                          "fieldName": "access_err",
+                          "columnId": "82c054f7-6d94-8dfe-32dc-c82f6bfa0f80",
+                          "label": "Access errors (max)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "doc_rej",
+                          "columnId": "a87cd7ae-4333-afe5-8a8d-d801fbc6ad0a",
+                          "label": "Rejected docs (max)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "delta_sent",
+                          "columnId": "df5a9f16-7bd2-a8a8-9b3d-4f5112ff4f3a",
+                          "label": "Delta sync sent (max)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "gsi_ch",
+                          "columnId": "51d5fd3a-3db8-8a83-f393-63b25946750d",
+                          "label": "GSI channel views (max)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "allColumns": [
+                        {
+                          "fieldName": "db",
+                          "columnId": "b51eddee-db80-2bc0-d503-9df860ccf59f",
+                          "label": "Database",
+                          "customLabel": true
+                        },
+                        {
+                          "fieldName": "access_err",
+                          "columnId": "82c054f7-6d94-8dfe-32dc-c82f6bfa0f80",
+                          "label": "Access errors (max)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "doc_rej",
+                          "columnId": "a87cd7ae-4333-afe5-8a8d-d801fbc6ad0a",
+                          "label": "Rejected docs (max)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "delta_sent",
+                          "columnId": "df5a9f16-7bd2-a8a8-9b3d-4f5112ff4f3a",
+                          "label": "Delta sync sent (max)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "fieldName": "gsi_ch",
+                          "columnId": "51d5fd3a-3db8-8a83-f393-63b25946750d",
+                          "label": "GSI channel views (max)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "internalReferences": [],
+              "adHocDataViews": {}
+            }
+          },
+          "syncTooltips": false,
+          "syncColors": false,
+          "syncCursor": true,
+          "query": {
+            "query": "",
+            "language": "kuery"
+          }
+        }
+      }
+    ],
+    "optionsJSON": {
+      "useMargins": true,
+      "syncColors": false,
+      "syncCursor": true,
+      "syncTooltips": false,
+      "hidePanelTitles": false
+    },
+    "kibanaSavedObjectMeta": {
+      "searchSourceJSON": {
+        "filter": [],
+        "query": {
+          "query": "",
+          "language": "kuery"
+        }
+      }
+    },
+    "timeRestore": false,
+    "version": 1,
+    "controlGroupInput": {
+      "chainingSystem": "HIERARCHICAL",
+      "controlStyle": "oneLine",
+      "ignoreParentSettingsJSON": {
+        "ignoreFilters": false,
+        "ignoreQuery": false,
+        "ignoreTimerange": false,
+        "ignoreValidations": false
+      },
+      "panelsJSON": {},
+      "showApplySelections": false
+    }
+  },
+  "coreMigrationVersion": "8.8.0",
+  "created_at": "2023-10-01T00:00:00Z",
+  "created_by": "admin",
+  "id": "couchbase_otel-sync-gateway",
+  "managed": false,
+  "references": [
+    {
+      "type": "dashboard",
+      "id": "couchbase_otel-cluster-overview",
+      "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_f63bbb41-6a09-1ae9-90f5-bf785747c47e_dashboard"
+    },
+    {
+      "type": "dashboard",
+      "id": "couchbase_otel-capacity-planning",
+      "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_bd5ab952-c8c4-169f-9d4e-8bcadd191878_dashboard"
+    },
+    {
+      "type": "dashboard",
+      "id": "couchbase_otel-replication-health",
+      "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_a0378d5c-f5d2-b665-b3ad-4918effc6d27_dashboard"
+    },
+    {
+      "type": "dashboard",
+      "id": "couchbase_otel-sync-gateway",
+      "name": "91144e9b-fac7-b44d-0b1d-8339201b83cb:link_bb4255de-941f-7682-cae0-a7de0ce3cdac_dashboard"
+    }
+  ],
+  "type": "dashboard",
+  "typeMigrationVersion": "10.2.0",
+  "updated_at": "2023-10-01T00:00:00Z",
+  "updated_by": "admin",
+  "version": "1"
+}

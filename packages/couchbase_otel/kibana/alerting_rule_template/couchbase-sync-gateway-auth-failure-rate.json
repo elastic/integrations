@@ -1,0 +1,39 @@
+{
+  "id": "couchbase-sync-gateway-auth-failure-rate",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Couchbase] Sync Gateway authentication failure rate",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "couchbase",
+      "sync-gateway",
+      "security"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-couchbase.miscellaneous-default\n| STATS fail_rate = SUM(RATE(couchbase.miscellaneous.security.authentications.failed.count))\n  BY couchbase.miscellaneous.database.name\n| WHERE fail_rate > 0.05\n| SORT fail_rate DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "couchbase.miscellaneous.database.name",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "id": "couchbase-cbl-push-conflict-rate",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Couchbase] CBL push conflict rate high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "couchbase",
+      "sync-gateway",
+      "replication"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-couchbase.cbl_replication-default\n| STATS conflict_rate = SUM(RATE(couchbase.cbl_replication.push.conflict.write.count))\n  BY couchbase.cbl_replication.database.name\n| WHERE conflict_rate > 0.01\n| SORT conflict_rate DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "couchbase.cbl_replication.database.name",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

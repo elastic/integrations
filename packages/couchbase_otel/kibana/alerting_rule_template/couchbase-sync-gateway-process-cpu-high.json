@@ -1,0 +1,37 @@
+{
+  "id": "couchbase-sync-gateway-process-cpu-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Couchbase] Sync Gateway process CPU high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "couchbase",
+      "sync-gateway",
+      "saturation"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-couchbase.resource-default\n| STATS avg_sg_cpu_pct = AVG(couchbase.resource.process.cpu.pct)\n| WHERE avg_sg_cpu_pct > 85.0"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "all",
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}
