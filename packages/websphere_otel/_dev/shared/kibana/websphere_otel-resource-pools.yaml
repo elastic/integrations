@@ -1,0 +1,360 @@
+dashboards:
+  - id: websphere_otel-resource-pools
+    name: '[WebSphere OTel] Resource Pools'
+    minimum_kibana_version: '8.18.0'
+    description: >-
+      Thread pool and connection pool health for WebSphere Application Server.
+      Monitors utilisation, hung threads, waiting threads, faults, and pool sizing.
+    time_range:
+      from: "now-1h"
+      to: "now"
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+    filters:
+      - field: data_stream.dataset
+        equals: websphere.otel
+    controls:
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: host.name
+
+    panels:
+      # ─── Navigation ─────────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: websphere_otel-overview
+            - label: Servlet Performance
+              dashboard: websphere_otel-servlet-performance
+            - label: Resource Pools
+              dashboard: websphere_otel-resource-pools
+            - label: JVM Health
+              dashboard: websphere_otel-jvm
+
+      # ─── Overview + Gauges ─────────────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [WebSphere OTel] Resource Pools
+
+            Thread pool and connection pool health monitoring:
+            - WebContainer thread pool utilisation and hung threads
+            - Connection pool utilisation by data source
+            - Threads waiting for connections
+            - Connection timeout faults
+            - Pool sizing and capacity
+
+      - title: WebContainer Utilisation
+        size: {w: 16, h: 12}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_threadpool_active_threads IS NOT NULL
+            - WHERE attributes.pool == "WebContainer"
+            - STATS active = MAX(LAST_OVER_TIME(metrics.was_threadpool_active_threads)), pool_size = MAX(LAST_OVER_TIME(metrics.was_threadpool_size))
+            - EVAL utilization = CASE(pool_size > 0, active / pool_size, 0), min_val = 0, max_val = 1, goal_val = 0.7
+          metric:
+            field: utilization
+            label: WebContainer
+            format:
+              type: percent
+              decimals: 1
+          minimum:
+            field: min_val
+          maximum:
+            field: max_val
+          goal:
+            field: goal_val
+          color:
+            range_min: 0
+            range_max: 1
+            thresholds:
+              - up_to: 0.7
+                color: '#54b399'
+              - up_to: 0.85
+                color: '#d6bf57'
+              - up_to: 1
+                color: '#cc5642'
+          appearance:
+            shape: arc
+            ticks_position: bands
+
+      - title: Max Connection Pool Utilisation
+        size: {w: 16, h: 12}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_connectionpool_utilization IS NOT NULL
+            - STATS utilization = MAX(LAST_OVER_TIME(metrics.was_connectionpool_utilization))
+            - EVAL min_val = 0, max_val = 100, goal_val = 70
+          metric:
+            field: utilization
+            label: Max Pool Util %
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+          minimum:
+            field: min_val
+          maximum:
+            field: max_val
+          goal:
+            field: goal_val
+          color:
+            range_min: 0
+            range_max: 100
+            thresholds:
+              - up_to: 70
+                color: '#54b399'
+              - up_to: 85
+                color: '#d6bf57'
+              - up_to: 100
+                color: '#cc5642'
+          appearance:
+            shape: arc
+            ticks_position: bands
+
+      # ─── Thread Pools ──────────────────────────────────────────────────
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Thread Pools'
+
+      - title: Active Threads by Pool
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_threadpool_active_threads IS NOT NULL
+            - STATS active = MAX(LAST_OVER_TIME(metrics.was_threadpool_active_threads)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.pool
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: active
+              label: Active Threads
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.pool
+          legend:
+            visible: show
+            position: right
+
+      - title: Hung Threads Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_threadpool_concurrentHung_threads IS NOT NULL
+            - STATS hung = MAX(LAST_OVER_TIME(metrics.was_threadpool_concurrentHung_threads)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.pool
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: hung
+              label: Hung Threads
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.pool
+          legend:
+            visible: show
+            position: right
+
+      - title: Thread Pool Capacity
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_threadpool_active_threads IS NOT NULL
+            - STATS active = MAX(LAST_OVER_TIME(metrics.was_threadpool_active_threads)), pool_size = MAX(LAST_OVER_TIME(metrics.was_threadpool_size)), hung = MAX(LAST_OVER_TIME(metrics.was_threadpool_concurrentHung_threads)) BY attributes.pool
+            - EVAL utilization = CASE(pool_size > 0, active / pool_size, 0)
+            - SORT utilization DESC
+          breakdowns:
+            - field: attributes.pool
+              label: Pool Name
+          metrics:
+            - field: active
+              label: Active
+              format:
+                type: number
+                decimals: 0
+            - field: pool_size
+              label: Pool Size
+              format:
+                type: number
+                decimals: 0
+            - field: utilization
+              label: Utilisation
+              format:
+                type: percent
+                decimals: 1
+            - field: hung
+              label: Hung
+              format:
+                type: number
+                decimals: 0
+
+      # ─── Connection Pools ──────────────────────────────────────────────
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Connection Pools'
+
+      - title: Connection Pool Utilisation Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_connectionpool_utilization IS NOT NULL
+            - STATS utilization = MAX(LAST_OVER_TIME(metrics.was_connectionpool_utilization)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.jndiname
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: utilization
+              label: Utilisation %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+          breakdown:
+            field: attributes.jndiname
+          legend:
+            visible: show
+            position: right
+
+      - title: Waiting Threads Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_connectionpool_waiting_threads IS NOT NULL
+            - STATS waiting = MAX(LAST_OVER_TIME(metrics.was_connectionpool_waiting_threads)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.jndiname
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: waiting
+              label: Waiting Threads
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.jndiname
+          legend:
+            visible: show
+            position: right
+
+      - title: Connection Pool Faults Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_connectionpool_fault_total IS NOT NULL
+            - STATS faults = SUM(RATE(metrics.was_connectionpool_fault_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.jndiname
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: faults
+              label: Faults/s
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: attributes.jndiname
+          legend:
+            visible: show
+            position: right
+
+      - title: JDBC Operations Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_connectionpool_jdbcOperations_total IS NOT NULL
+            - STATS jdbc_ops = SUM(RATE(metrics.was_connectionpool_jdbcOperations_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.jndiname
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: jdbc_ops
+              label: JDBC Ops/s
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: attributes.jndiname
+          legend:
+            visible: show
+            position: right
+
+      - title: Connection Pool Detail
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_connectionpool_size IS NOT NULL
+            - STATS pool_size = MAX(LAST_OVER_TIME(metrics.was_connectionpool_size)), free = MAX(LAST_OVER_TIME(metrics.was_connectionpool_free_connections)), managed = MAX(LAST_OVER_TIME(metrics.was_connectionpool_managed_connections)), utilization = MAX(LAST_OVER_TIME(metrics.was_connectionpool_utilization)), waiting = MAX(LAST_OVER_TIME(metrics.was_connectionpool_waiting_threads)) BY attributes.jndiname
+            - SORT utilization DESC
+          breakdowns:
+            - field: attributes.jndiname
+              label: JNDI Name
+          metrics:
+            - field: pool_size
+              label: Pool Size
+              format:
+                type: number
+                decimals: 0
+            - field: free
+              label: Free
+              format:
+                type: number
+                decimals: 0
+            - field: managed
+              label: Managed
+              format:
+                type: number
+                decimals: 0
+            - field: utilization
+              label: Utilisation %
+              format:
+                type: number
+                decimals: 1
+                suffix: "%"
+            - field: waiting
+              label: Waiting
+              format:
+                type: number
+                decimals: 0
