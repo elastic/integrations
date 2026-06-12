@@ -1,0 +1,49 @@
+# Azure Application Gateway OpenTelemetry Assets
+
+Azure Application Gateway is a managed Layer 7 load balancer and reverse proxy that terminates TLS, routes HTTP/HTTPS traffic to backend pools, and optionally evaluates each request against a Web Application Firewall (WAF) policy.
+
+These assets provide dashboards for Azure Application Gateway resource logs (Access, Firewall, and Performance) ingested via the OpenTelemetry `azureencodingextension`, covering traffic, latency, error rates, backend health, and WAF activity.
+
+## Compatibility
+
+The Azure Application Gateway OpenTelemetry assets have been tested with the OpenTelemetry `azureencodingextension`.
+
+The assets target Azure Application Gateway resource logs from both v1 and v2 SKUs. Performance log panels and backend host count signals apply to v1 SKU only; v2 SKU is supported through Access and Firewall logs.
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+## Setup
+
+### Prerequisites
+
+You must enable Azure Diagnostic Settings on each Application Gateway resource and route the following log categories to the destination consumed by your EDOT Cloud Forwarder:
+
+- `ApplicationGatewayAccessLog`
+- `ApplicationGatewayFirewallLog` (when a WAF policy is attached)
+- `ApplicationGatewayPerformanceLog` (v1 SKU only)
+
+The Firewall log is only produced when a WAF policy is attached to the gateway, a listener, or a path location. The Performance log is only produced by v1 SKU gateways; v2 SKU resources will not emit it.
+
+Ensure the gateway's managed identity (or the credentials configured on the diagnostic destination) has permission to write to the storage account, Event Hub, or Log Analytics workspace that your forwarder reads from.
+
+### Configuration
+
+Add your own setup details as per the EDOT Cloud Forwarder (ECF) used.
+
+## Reference
+
+### Logs
+
+Refer to the [Azure encoding extension](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/extension/encoding/azureencodingextension/README.md) documentation for details on the resource log data produced by this encoding extension.
+
+Each Application Gateway resource log record is translated into an OTel log document and written to `logs-azure.application_gateway.otel-default`. Records are discriminated by `attributes.azure.category`, which takes one of `ApplicationGatewayAccessLog`, `ApplicationGatewayFirewallLog`, or `ApplicationGatewayPerformanceLog`. The `attributes.azure.service.request.id` field joins an Access log entry to one or more Firewall log entries for the same request.
+
+## Dashboards
+
+| Dashboard | Description |
+|-----------|-------------|
+| **[Azure Application Gateway OTel] Overview** | Traffic, latency, and error overview for Azure Application Gateway access logs. |
+| **[Azure Application Gateway OTel] Backend Health** | Backend pool latency, status, and AGW-vs-backend latency split for Azure Application Gateway. |
+| **[Azure Application Gateway OTel] WAF** | Web Application Firewall activity for Azure Application Gateway: rule matches, actions, offending clients. |
