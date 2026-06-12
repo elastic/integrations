@@ -278,6 +278,7 @@ Preserves a raw copy of the original event, added to the field `event.original`.
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 | threat.enrichments.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.enrichments.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 
