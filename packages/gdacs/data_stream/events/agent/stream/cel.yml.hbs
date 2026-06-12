@@ -1,0 +1,152 @@
+config_version: 2
+interval: {{interval}}
+resource.url: {{url}}
+resource.timeout: 120s
+
+state:
+  event_types: '{{event_types}}'
+  alert_levels: '{{alert_levels}}'
+  page_size: {{page_size}}
+  lookback_hours: {{lookback_hours}}
+{{#if country}}
+  country: '{{country}}'
+{{/if}}
+
+program: |
+  request(
+    "GET",
+    state.url.trim_right("/") + "/events/geteventlist/SEARCH?" + {
+      "eventlist": [state.event_types],
+      "alertlevel": [state.alert_levels],
+      "pageSize": [string(state.page_size)],
+      "pageNumber": [string(state.?cursor.page_number.orValue(1))],
+      "fromDate": [state.?cursor.from_date.orValue(
+        (now - duration(string(state.lookback_hours) + "h")).format("01/02/2006")
+      )],
+      "toDate": [state.?cursor.to_date.orValue(now.format("01/02/2006"))],
+  {{#if country}}
+      "country": [state.country],
+  {{/if}}
+    }.format_query()
+  ).do_request().as(resp, resp.StatusCode == 204 ?
+    state.with({
+      "events": [],
+      "want_more": false,
+      "cursor": {
+        "last_poll_date": now.format("01/02/2006"),
+      },
+    })
+  : resp.StatusCode != 200 ?
+    state.with({
+      "events": {
+        "error": {
+          "code": string(resp.StatusCode),
+          "id": string(resp.Status),
+          "message": "GET search: " + (
+            size(resp.Body) != 0 ?
+              string(resp.Body)
+            :
+              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+          ),
+        },
+      },
+      "want_more": false,
+    })
+  :
+    resp.Body.decode_json().as(body,
+      (has(body.features) && size(body.features) > 0) ?
+        state.with({
+          "events": body.features.map(f,
+            (has(f.properties.url) && has(f.properties.url.geometry) && f.properties.url.geometry != "") ?
+              request(
+                "GET",
+                f.properties.url.geometry
+              ).do_request().as(polyResp, polyResp.StatusCode == 200 ?
+                polyResp.Body.decode_json().as(polyBody,
+                  has(polyBody.features) && size(polyBody.features) > 0 ?
+                    (f.properties.?eventtype.orValue("") == "TC" ?
+                      // Keep the parent TC event and emit child geometry docs for wind bands, cone, and track lines.
+                      ([{"message": f.encode_json()}] +
+                        polyBody.features.filter(pf,
+                          has(pf.properties) && has(pf.properties.Class) &&
+                          has(pf.geometry) && has(pf.geometry.type) &&
+                          (
+                            pf.geometry.type == "Polygon" || pf.geometry.type == "MultiPolygon" ||
+                            pf.geometry.type == "LineString" || pf.geometry.type == "MultiLineString"
+                          ) &&
+                          (
+                            pf.properties.Class.matches("^Poly_(Green|Orange|Red|Cones)$") ||
+                            pf.properties.Class.matches("^Line_Line_[0-9]+$")
+                          )
+                        ).map(pf, {"message": f.with({
+                          "polygon_geometry": pf.geometry,
+                          "polygon_class": pf.properties.Class,
+                          "polygon_label": pf.properties.?polygonlabel.orValue(""),
+                          "geometry_doc": true,
+                          "geometry_id": pf.properties.Class + "-" + pf.properties.?polygonlabel.orValue(""),
+                          "geometry_role": pf.properties.Class.matches("^Line_Line_[0-9]+$") ? "track" : (
+                            pf.properties.Class == "Poly_Cones" ? "cone" : "wind"
+                          ),
+                        }).encode_json()})
+                      )
+                    :
+                      // Non-TC events keep the legacy single affected-area polygon behavior.
+                      polyBody.features.filter(pf,
+                        has(pf.properties) && has(pf.properties.Class) &&
+                        pf.properties.Class != "Point_Centroid" &&
+                        has(pf.geometry) && has(pf.geometry.type) &&
+                        (pf.geometry.type == "Polygon" || pf.geometry.type == "MultiPolygon")
+                      ).as(polys, size(polys) > 0 ?
+                        [{"message": f.with({
+                          "polygon_geometry": polys[0].geometry,
+                          "polygon_class": polys[0].properties.Class,
+                          "polygon_label": polys[0].properties.?polygonlabel.orValue(""),
+                        }).encode_json()}]
+                      :
+                        [{"message": f.encode_json()}]
+                      )
+                    )
+                  :
+                    [{"message": f.encode_json()}]
+                )
+              :
+                [{"message": f.encode_json()}]
+              )
+            :
+              [{"message": f.encode_json()}]
+          ).flatten(),
+          "cursor": {
+            "page_number": int(state.?cursor.page_number.orValue(1)) + 1,
+            "from_date": state.?cursor.from_date.orValue(
+              (now - duration(string(state.lookback_hours) + "h")).format("01/02/2006")
+            ),
+            "to_date": state.?cursor.to_date.orValue(now.format("01/02/2006")),
+          },
+          "want_more": size(body.features) >= state.page_size,
+        })
+      :
+        state.with({
+          "events": [],
+          "want_more": false,
+          "cursor": {
+            "last_poll_date": now.format("01/02/2006"),
+          },
+        })
+    )
+  )
+
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
