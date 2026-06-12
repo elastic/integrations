@@ -157,10 +157,10 @@ processors:
   - script:
       lang: painless
       tag: script-default-deleted_at
-      if: ctx.abusech?.url?.deleted_at == null && ctx._conf?.ioc_expiration_duration != null && (ctx._conf.ioc_expiration_duration instanceof String) && ctx._conf.ioc_expiration_duration != ''
-      description: Indicator expiration is computed as first_seen + ioc_expiration_duration (default 90d). This script adds a default `abusech.url.deleted_at` field to allow indicator expiration at the transform.
+      if: ctx.abusech?.url?.deleted_at == null
+      description: Indicator expiration is computed as last_seen (or first_seen) + ioc_expiration_duration (default 90d). Falls back to 90d when the setting is absent, e.g. during upgrade from 3.x.
       source: >
-        def dur = ctx._conf.ioc_expiration_duration;
+        def dur = (ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration instanceof String && ctx._conf.ioc_expiration_duration != '') ? ctx._conf.ioc_expiration_duration : '90d';
         ZonedDateTime _tmp_deleted_at;
         ZonedDateTime _tmp_updated_at;
         if (ctx.threat.indicator.last_seen != null) {
@@ -195,6 +195,7 @@ processors:
       formats:
         - ISO8601
         - UNIX
+      if: ctx.abusech?.url?.deleted_at != null
   - rename:
       field: _conf.ioc_expiration_duration
       tag: rename_conf_ioc_expiration_duration
