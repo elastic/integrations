@@ -19,6 +19,29 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
+  - script:
+      description: >-
+        Materialize a {@code ctx.json} object from the audit event payload regardless
+        of how the agent shipped it: when the httpjson input emits each split audit
+        event as root-level fields (newer Filebeat behaviour) rather than as a
+        stringified JSON body in {@code message}, copy those root fields into
+        {@code ctx.json} so the downstream rename processors work uniformly.
+      lang: painless
+      ignore_failure: true
+      source: |
+        if (!(ctx.json instanceof Map) || ((Map) ctx.json).isEmpty()) {
+          Map synth = new HashMap();
+          for (String key : new String[] {'timestamp', 'principal', 'type', 'data'}) {
+            def v = ctx.get(key);
+            if (v != null) {
+              synth.put(key, v);
+              ctx.remove(key);
+            }
+          }
+          if (!synth.isEmpty()) {
+            ctx.put('json', synth);
+          }
+        }
   - fingerprint:
       fields:
         - json.timestamp

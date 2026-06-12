@@ -13,6 +13,53 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
+  - script:
+      description: >-
+        Materialize a {@code ctx.json} object from the exchange payload regardless of
+        how it arrived: when the agent's httpjson input ships each split exchange as
+        root-level fields (newer Filebeat behaviour) rather than as a stringified JSON
+        body in {@code message}, copy those root fields into {@code ctx.json} so the
+        downstream rename processors work uniformly.
+
+        Then normalize the Spring Boot 3.0+/4.x `/actuator/httpexchanges` shape to the
+        legacy `/actuator/httptrace` shape used by Spring Boot 2.x:
+          - principal: {name: "x"}      -> principal: "x"
+          - session:   {id:   "x"}      -> session:   "x"
+          - timeTaken: "PT0.025S" (ISO) -> timeTaken: 25 (milliseconds, long)
+      lang: painless
+      ignore_failure: true
+      source: |
+        if (!(ctx.json instanceof Map) || ((Map) ctx.json).isEmpty()) {
+          Map synth = new HashMap();
+          for (String key : new String[] {'timestamp', 'timeTaken', 'principal', 'session', 'request', 'response'}) {
+            def v = ctx.get(key);
+            if (v != null) {
+              synth.put(key, v);
+              ctx.remove(key);
+            }
+          }
+          if (!synth.isEmpty()) {
+            ctx.put('json', synth);
+          }
+        }
+        if (ctx.json instanceof Map) {
+          def p = ((Map) ctx.json).get('principal');
+          if (p instanceof Map && ((Map) p).containsKey('name')) {
+            ((Map) ctx.json).put('principal', ((Map) p).get('name'));
+          }
+          def s = ((Map) ctx.json).get('session');
+          if (s instanceof Map && ((Map) s).containsKey('id')) {
+            ((Map) ctx.json).put('session', ((Map) s).get('id'));
+          }
+          def t = ((Map) ctx.json).get('timeTaken');
+          if (t instanceof String) {
+            try {
+              ((Map) ctx.json).put('timeTaken', java.time.Duration.parse((String) t).toMillis());
+            } catch (Exception e) {
+              // leave value as-is; downstream rename will skip on failure
+            }
+          }
+        }
   - fingerprint:
       fields:
         - json.timestamp
