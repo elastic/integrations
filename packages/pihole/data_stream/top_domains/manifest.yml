@@ -1,0 +1,68 @@
+title: "Top Domains"
+type: metrics
+streams:
+  - input: cel
+    title: Collect Pi-hole top domains statistics
+    description: Collect statistics showing which domains are queried most frequently
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Collection Interval
+        description: How often to collect top domains statistics (default 1h)
+        default: 1h
+        required: false
+        show_user: true
+      - name: enable_request_tracer
+        type: bool
+        title: Enable Request Tracer
+        description: Enable request tracing for debugging
+        default: false
+        required: false
+        show_user: false
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        description: Optional HTTP proxy for connecting to Pi-hole
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: Custom SSL/TLS settings for HTTPS connections
+        required: false
+        show_user: false
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Request timeout duration (default 30s)
+        default: 30s
+        required: false
+        show_user: false
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        description: Preserve the original event data for debugging
+        default: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        default:
+          - pihole-top_domains
+        required: false
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Custom processors for data processing
+        required: false
+        show_user: false
+elasticsearch:
+  source_mode: synthetic
+  index_mode: time_series
+  index_template:
+    mappings:
+      subobjects: false
