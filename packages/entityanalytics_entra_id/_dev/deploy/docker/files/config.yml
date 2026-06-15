@@ -17,6 +17,36 @@ rules:
       - status_code: 200
         body: |-
           {"@odata.deltaLink":"http://localhost:8080/v1.0/groups/delta?$skiptoken=1","value":[{"id":"e7089e3a-2c83-4f08-8280-7530ed39b6ca","name":"Group 5202","members@delta":[{"id":"aa534e49-edfd-4541-8256-8bbf34f122b4","type":"#microsoft.graph.user"},{"id":"feb6a386-612a-4ed1-9b13-2adc73074a19","type":"#microsoft.graph.user"}]},{"id":"526588ce-2828-4cb1-9c9b-e57026e94b82","name":"Group 16739","members@delta":[{"id":"aa534e49-edfd-4541-8256-8bbf34f122b4","type":"#microsoft.graph.user"}]}]}
+  - path: /v1.0/reports/authenticationMethods/userRegistrationDetails
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        body: |-
+          {"@odata.nextLink":"http://localhost:8080/v1.0/reports/authenticationMethods/userRegistrationDetails?$skiptoken=1","value":[{"id":"aa534e49-edfd-4541-8256-8bbf34f122b4","userPrincipalName":"First21480.Last11836@example.com","userDisplayName":"First21480 Last11836","isMfaCapable":true,"isMfaRegistered":true,"isPasswordlessCapable":false,"isSsprCapable":false,"isSsprEnabled":false,"isSsprRegistered":false,"isSystemPreferredAuthenticationMethodEnabled":false,"methodsRegistered":["microsoftAuthenticatorPush","softwareOneTimePasscode"],"systemPreferredAuthenticationMethods":[],"userPreferredMethodForSecondaryAuthentication":"push","userType":"member"},{"id":"feb6a386-612a-4ed1-9b13-2adc73074a19","userPrincipalName":"First45375.Last58638@example.com","userDisplayName":"First45375 Last58638","isMfaCapable":false,"isMfaRegistered":false,"isPasswordlessCapable":false,"isSsprCapable":false,"isSsprEnabled":false,"isSsprRegistered":false,"isSystemPreferredAuthenticationMethodEnabled":false,"methodsRegistered":[],"systemPreferredAuthenticationMethods":[],"userPreferredMethodForSecondaryAuthentication":"","userType":"member"}]}
+  - path: /v1.0/users/delta
+    query:
+      $select: userPrincipalName,mail,displayName,givenName,surname,jobTitle,officeLocation,mobilePhone,businessPhones,accountEnabled,department,signInActivity
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        body: |-
+          {"@odata.deltaLink":"http://localhost:8080/v1.0/users/delta?$skiptoken=1","value":[{"id":"aa534e49-edfd-4541-8256-8bbf34f122b4","userPrincipalName":"First21480.Last11836@example.com","mail":"First21480_Last11836@example.com","displayName":"First21480 Last11836","givenName":"First21480","surname":"Last11836","jobTitle":"Manager","officeLocation":"608 St N, Somewhere, ABC, XYZ","mobilePhone":"231-482-2649","businessPhones":["55-692-8856","552-265-6614"],"accountEnabled":true,"signInActivity":{"lastSignInDateTime":"2024-03-01T09:00:00Z","lastNonInteractiveSignInDateTime":"2024-02-28T22:00:00Z"}},{"id":"feb6a386-612a-4ed1-9b13-2adc73074a19","userPrincipalName":"First45375.Last58638@example.com","mail":"First45375_Last58638@example.com","displayName":"First45375 Last58638","givenName":"First45375","surname":"Last58638","jobTitle":"Tech Writer","officeLocation":"682 St N, Somewhere, ABC, XYZ","mobilePhone":"385-169-3671","businessPhones":null,"accountEnabled":false}]}
+  - path: /v1.0/users/delta
+    query:
+      $expand: directReports
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        body: |-
+          {"@odata.deltaLink":"http://localhost:8080/v1.0/users/delta?$skiptoken=1","value":[{"id":"aa534e49-edfd-4541-8256-8bbf34f122b4","userPrincipalName":"First21480.Last11836@example.com","mail":"First21480_Last11836@example.com","displayName":"First21480 Last11836","givenName":"First21480","surname":"Last11836","jobTitle":"Manager","officeLocation":"608 St N, Somewhere, ABC, XYZ","mobilePhone":"231-482-2649","businessPhones":["55-692-8856","552-265-6614"],"accountEnabled":true,"directReports":[{"id":"ee556677-8899-aabb-ccdd-eeff00112233","displayName":"Report One","userPrincipalName":"report.one@example.com","mail":"report.one@example.com"},{"id":"ff667788-99aa-bbcc-ddee-ff0011223344","displayName":"Report Two","userPrincipalName":"report.two@example.com","mail":"report.two@example.com"}]}]}
+  - path: /v1.0/users/delta
+    query:
+      $expand: appRoleAssignments
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        body: |-
+          {"@odata.deltaLink":"http://localhost:8080/v1.0/users/delta?$skiptoken=1","value":[{"id":"aa534e49-edfd-4541-8256-8bbf34f122b4","userPrincipalName":"First21480.Last11836@example.com","mail":"First21480_Last11836@example.com","displayName":"First21480 Last11836","givenName":"First21480","surname":"Last11836","jobTitle":"Manager","officeLocation":"608 St N, Somewhere, ABC, XYZ","mobilePhone":"231-482-2649","businessPhones":["55-692-8856","552-265-6614"],"accountEnabled":true,"appRoleAssignments":[{"id":"aabb1122-3344-5566-7788-99aabbccddee","appRoleId":"df021288-bdef-4463-88db-98f22de89867","appRoleDisplayName":"User.Read.All","principalDisplayName":"First21480 Last11836","principalId":"aa534e49-edfd-4541-8256-8bbf34f122b4","resourceDisplayName":"Microsoft Graph","resourceId":"7f6a6c97-1234-5678-abcd-ef1234567890","createdDateTime":"2023-01-10T12:00:00Z"}]}]}
   - path: /v1.0/devices/delta
     methods: ["GET"]
     responses:
