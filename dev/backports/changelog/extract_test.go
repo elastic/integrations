@@ -52,6 +52,24 @@ func TestExtractFromDiff(t *testing.T) {
 			wantContains: "Breaking change",
 		},
 		{
+			title: "single version with multiple change entries",
+			diff: `--- a/changelog.yml
++++ b/changelog.yml
+@@ -1,3 +1,13 @@
++- version: "2.1.0"
++  changes:
++    - description: First enhancement
++      type: enhancement
++      link: https://github.com/elastic/integrations/pull/300
++    - description: Second bugfix
++      type: bugfix
++      link: https://github.com/elastic/integrations/pull/301
+ - version: "2.0.0"
+   changes:`,
+			wantVersion:  "2.1.0",
+			wantContains: "Second bugfix",
+		},
+		{
 			title: "unquoted version line",
 			diff: `+- version: 3.1.0
 +  changes:
