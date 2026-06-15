@@ -10,7 +10,7 @@ The package is **content only**. It provides a curated metrics dashboard, but it
 |-----------|----------------|
 | **AWS Lambda** | Monitors function health, invocations, errors, throttles, async events dropped, duration, and concurrent executions. |
 
-The dashboard reads metric-stream style OpenTelemetry documents from `metrics-awscloudwatchreceiver.otel-default` and isolates CloudWatch statistics with `attributes.stat` before aggregating values.
+The dashboard reads metric-stream style OpenTelemetry documents from `metrics-awscloudwatchreceiver.otel-default` and isolates CloudWatch statistics with `stat` before aggregating values.
 
 ## Data requirements
 
