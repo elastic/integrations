@@ -54,7 +54,10 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           BACKPORT_BRANCH: ${{ github.ref_name }}
           PACKAGES_DIR: ${{ github.workspace }}/packages
-        run: mage -d "$GITHUB_WORKSPACE" syncBackportChangelog
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mage -d "$GITHUB_WORKSPACE" syncBackportChangelog
 
       - name: Comment on backport PR
         if: always() && steps.guard.outputs.proceed == 'true'

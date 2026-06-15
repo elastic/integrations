@@ -26,9 +26,6 @@ type SyncResult struct {
 // CreateSyncPR applies the changelog entries from entriesTSV onto main,
 // commits them to workingBranch, and opens a GitHub PR.
 func CreateSyncPR(entriesTSV, workingBranch, backportPRNumber, backportBranch, packagesDir, repository string) (*SyncResult, error) {
-	if err := gitConfig(); err != nil {
-		return nil, fmt.Errorf("configuring git: %w", err)
-	}
 	if err := gitExec("checkout", "-b", workingBranch, "origin/main"); err != nil {
 		return nil, fmt.Errorf("creating working branch: %w", err)
 	}
@@ -131,13 +128,6 @@ func buildCommitMessage(entries []tsvEntry, prNumber string) string {
 
 func buildPRTitle(entries []tsvEntry, prNumber string) string {
 	return buildCommitMessage(entries, prNumber)
-}
-
-func gitConfig() error {
-	if err := gitExec("config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"); err != nil {
-		return err
-	}
-	return gitExec("config", "user.name", "github-actions[bot]")
 }
 
 func gitExec(args ...string) error {
