@@ -46,6 +46,12 @@ processors:
       value: "{{_ingest.timestamp}}"
       ignore_failure: true
 
+  - set:
+      field: message
+      copy_from: event.original
+      if: "ctx.message == null || ctx.message == ''"
+      ignore_failure: true
+
   - remove:
       tag: remove_timestamp
       field: timestamp

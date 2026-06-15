@@ -1,0 +1,108 @@
+---
+description: Pipeline for processing group logs.
+processors:
+  - date:
+      field: axonius.identity.first_seen
+      tag: date_first_seen
+      target_field: axonius.identity.first_seen
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.axonius?.identity?.first_seen != null && ctx.axonius.identity.first_seen != ''
+      on_failure:
+        - remove:
+            field: axonius.identity.first_seen
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.identity.user_count_link
+      tag: foreach_user_count_link_bracketWeight
+      if: ctx.axonius?.identity?.user_count_link instanceof List
+      processor:
+        convert:
+          field: _ingest._value.bracketWeight
+          tag: convert_user_count_link_bracketWeight_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.bracketWeight
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.identity.user_count_link
+      tag: foreach_user_count_link_leftBracket
+      if: ctx.axonius?.identity?.user_count_link instanceof List
+      processor:
+        convert:
+          field: _ingest._value.leftBracket
+          tag: convert_user_count_link_leftBracket_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.leftBracket
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.identity.user_count_link
+      tag: foreach_user_count_link_not
+      if: ctx.axonius?.identity?.user_count_link instanceof List
+      processor:
+        convert:
+          field: _ingest._value.not
+          tag: convert_user_count_link_not_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.not
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.identity.user_count_link
+      tag: foreach_user_count_link_rightBracket
+      if: ctx.axonius?.identity?.user_count_link instanceof List
+      processor:
+        convert:
+          field: _ingest._value.rightBracket
+          tag: convert_user_count_link_rightBracket_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.rightBracket
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.identity.user_count_link
+      tag: foreach_user_count_link_value
+      if: ctx.axonius?.identity?.user_count_link instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_user_count_link_value_into_related_user
+          value: '{{{_ingest._value.value}}}'
+          allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

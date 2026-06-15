@@ -169,6 +169,7 @@ updateBackportBranchContents() {
   local COVERAGE_SCRIPTS_FOLDER="dev/coverage"
   local CODEOWNERS_SCRIPTS_FOLDER="dev/codeowners"
   local PACKAGENAMES_SCRIPTS_FOLDER="dev/packagenames"
+  local DEV_SCRIPTS_FOLDER="dev/scripts"
 
   if git ls-tree -d --name-only main:${MAGEFILE_SCRIPTS_FOLDER} > /dev/null 2>&1 ; then
     echo "--- Copying magefile scripts from $SOURCE_BRANCH..."
@@ -191,6 +192,14 @@ updateBackportBranchContents() {
     echo "Copying $PACKAGENAMES_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${PACKAGENAMES_SCRIPTS_FOLDER}"
     git add "${PACKAGENAMES_SCRIPTS_FOLDER}"
+
+    if git ls-tree -d --name-only "${SOURCE_BRANCH}:${DEV_SCRIPTS_FOLDER}" > /dev/null 2>&1; then
+      echo "Copying $DEV_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
+      git checkout "$SOURCE_BRANCH" -- "${DEV_SCRIPTS_FOLDER}"
+      git add "${DEV_SCRIPTS_FOLDER}"
+    else
+      echo "Skipping $DEV_SCRIPTS_FOLDER (not found on $SOURCE_BRANCH)"
+    fi
 
     echo "Copying magefile.go from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "magefile.go"
@@ -284,7 +293,7 @@ fi
 echo "--- Check if the base commit exists."
 if [ ! -z "$BASE_COMMIT" ]; then
   if ! commitExists "$BASE_COMMIT" "$SOURCE_BRANCH"; then
-    buildkite-agent annotate "The entered commit hasn't found in the **${SOURCE_BRANCH}** branch" --style "error"
+    buildkite-agent annotate "The entered commit was not found in the **${SOURCE_BRANCH}** branch" --style "error"
     exit 1
   fi
 fi
@@ -306,7 +315,7 @@ fi
 
 echo "---Check that this changeset is the one creating the version $PACKAGE_NAME"
 if ! git show -p "${BASE_COMMIT}" "${PACKAGE_PATH}/manifest.yml" | grep -E "^\+version: \"{0,1}${PACKAGE_VERSION}" ; then
-  buildkite-agent annotate "This changeset does not creates the version ${PACKAGE_VERSION}" --style "error"
+  buildkite-agent annotate "This changeset does not create the version ${PACKAGE_VERSION}" --style "error"
   exit 1
 fi
 
