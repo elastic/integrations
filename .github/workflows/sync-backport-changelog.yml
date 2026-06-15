@@ -21,6 +21,7 @@ jobs:
         env:
           BEFORE: ${{ github.event.before }}
         run: |
+          # Branch-creation pushes carry a zero before-SHA — there is no previous commit to diff against.
           if [[ "$BEFORE" == "0000000000000000000000000000000000000000" ]]; then
             echo "proceed=false" >> "$GITHUB_OUTPUT"
             echo "Skipping: branch-creation push"
