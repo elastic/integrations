@@ -20,7 +20,6 @@ fi
 add_bin_path
 with_yq
 with_mage
-with_github_cli
 
 from="$(get_from_changeset)"
 to="$(get_to_changeset)"
@@ -42,11 +41,6 @@ cleanup() {
     local exit_code=$?
     [[ -n "${OLD_INVENTORY}" ]] && rm -f "${OLD_INVENTORY}"
     [[ -n "${PIPELINE_FILE}" ]] && rm -f "${PIPELINE_FILE}"
-    if [[ "${exit_code}" -ne 0 ]] && [[ "${BUILDKITE_PULL_REQUEST:-false}" != "false" ]]; then
-        retry 5 gh pr comment "${BUILDKITE_PULL_REQUEST}" \
-            --repo "elastic/integrations" \
-            --body "The backport dry-run trigger step failed. Please check the [Buildkite output](${BUILDKITE_BUILD_URL}) and retry the pipeline via a \`/test\` comment." || true
-    fi
     exit "${exit_code}"
 }
 trap cleanup EXIT
@@ -117,7 +111,6 @@ while IFS= read -r branch; do
         PACKAGE_NAME: "${pkg}"
         PACKAGE_VERSION: "${base_version}"
         BASE_COMMIT: "${base_commit}"
-        UPSTREAM_PR_NUMBER: "${BUILDKITE_PULL_REQUEST}"
 EOF
 
     entries_found=$(( entries_found + 1 ))
