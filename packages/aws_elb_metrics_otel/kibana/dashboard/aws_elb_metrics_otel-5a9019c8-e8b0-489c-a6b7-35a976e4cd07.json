@@ -125,7 +125,7 @@
                     "tbl-layer-tbl-instances": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS c_inv = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_err = COALESCE(SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0), c_rejected_count = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), c_dur_avg = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_dur_max = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_in_tok = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_out_tok = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL)), c_region = MAX(cloud.region) BY LoadBalancer, cloud.region | EVAL c_state_sort = CASE( c_err > 0, 1, c_rejected_count > 0, 2, c_inv > 0, 3, 4), c_state = CASE( c_err > 0, \"erroring\", c_rejected_count > 0, \"rejecting-connections\", c_inv > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat IN (\"Average\", \"Maximum\", \"Sum\") | STATS c_inv = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_err = COALESCE(SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0), c_rejected_count = MAX(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), c_dur_avg = AVG(CASE(Stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_dur_max = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_in_tok = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_out_tok = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL)), c_region = MAX(cloud.region) BY LoadBalancer, cloud.region | EVAL c_state_sort = CASE( c_err > 0, 1, c_rejected_count > 0, 2, c_inv > 0, 3, 4), c_state = CASE( c_err > 0, \"erroring\", c_rejected_count > 0, \"rejecting-connections\", c_inv > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
                       },
                       "columns": [
                         {
@@ -274,7 +274,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS c_inv = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_err = COALESCE(SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0), c_rejected_count = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), c_dur_avg = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_dur_max = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_in_tok = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_out_tok = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL)), c_region = MAX(cloud.region) BY LoadBalancer, cloud.region | EVAL c_state_sort = CASE( c_err > 0, 1, c_rejected_count > 0, 2, c_inv > 0, 3, 4), c_state = CASE( c_err > 0, \"erroring\", c_rejected_count > 0, \"rejecting-connections\", c_inv > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat IN (\"Average\", \"Maximum\", \"Sum\") | STATS c_inv = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_err = COALESCE(SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0), c_rejected_count = MAX(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), c_dur_avg = AVG(CASE(Stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_dur_max = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_in_tok = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_out_tok = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL)), c_region = MAX(cloud.region) BY LoadBalancer, cloud.region | EVAL c_state_sort = CASE( c_err > 0, 1, c_rejected_count > 0, 2, c_inv > 0, 3, 4), c_state = CASE( c_err > 0, \"erroring\", c_rejected_count > 0, \"rejecting-connections\", c_inv > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
               },
               "visualization": {
                 "columns": [
@@ -502,7 +502,7 @@
                     "pie-layer-chart-status-donut": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE( be_5xx > 0, \"erroring\", unhealthy > 0, \"degraded\", healthy > 0, \"healthy\", \"idle\") | STATS lbs = COUNT(*) BY lb_state"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat IN (\"Maximum\", \"Sum\") | STATS healthy = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE( be_5xx > 0, \"erroring\", unhealthy > 0, \"degraded\", healthy > 0, \"healthy\", \"idle\") | STATS lbs = COUNT(*) BY lb_state"
                       },
                       "columns": [
                         {
@@ -546,7 +546,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE( be_5xx > 0, \"erroring\", unhealthy > 0, \"degraded\", healthy > 0, \"healthy\", \"idle\") | STATS lbs = COUNT(*) BY lb_state"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat IN (\"Maximum\", \"Sum\") | STATS healthy = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE( be_5xx > 0, \"erroring\", unhealthy > 0, \"degraded\", healthy > 0, \"healthy\", \"idle\") | STATS lbs = COUNT(*) BY lb_state"
               },
               "visualization": {
                 "shape": "donut",
@@ -668,7 +668,7 @@
                     "layer-kpi-impaired": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS lbs = COUNT_DISTINCT(CONCAT(TO_STRING(cloud.region), \"/\", TO_STRING(LoadBalancer)))",
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS lbs = COUNT_DISTINCT(CONCAT(TO_STRING(cloud.region), \"/\", TO_STRING(LoadBalancer)))",
                         "language": "esql"
                       },
                       "columns": [
@@ -698,7 +698,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS lbs = COUNT_DISTINCT(CONCAT(TO_STRING(cloud.region), \"/\", TO_STRING(LoadBalancer)))",
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS lbs = COUNT_DISTINCT(CONCAT(TO_STRING(cloud.region), \"/\", TO_STRING(LoadBalancer)))",
                 "language": "esql"
               },
               "visualization": {
@@ -763,7 +763,7 @@
                     "layer-kpi-pending": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS erroring = COUNT(*) WHERE lb_state == \"erroring\"",
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat IN (\"Maximum\", \"Sum\") | STATS healthy_n = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS erroring = COUNT(*) WHERE lb_state == \"erroring\"",
                         "language": "esql"
                       },
                       "columns": [
@@ -793,7 +793,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS erroring = COUNT(*) WHERE lb_state == \"erroring\"",
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat IN (\"Maximum\", \"Sum\") | STATS healthy_n = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS erroring = COUNT(*) WHERE lb_state == \"erroring\"",
                 "language": "esql"
               },
               "visualization": {
@@ -894,7 +894,7 @@
                     "layer-kpi-stopped": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS degraded = COUNT(*) WHERE lb_state == \"degraded\"",
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat IN (\"Maximum\", \"Sum\") | STATS healthy_n = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS degraded = COUNT(*) WHERE lb_state == \"degraded\"",
                         "language": "esql"
                       },
                       "columns": [
@@ -924,7 +924,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS degraded = COUNT(*) WHERE lb_state == \"degraded\"",
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat IN (\"Maximum\", \"Sum\") | STATS healthy_n = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS degraded = COUNT(*) WHERE lb_state == \"degraded\"",
                 "language": "esql"
               },
               "visualization": {
@@ -1024,7 +1024,7 @@
                     "layer-kpi-total": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS idle = COUNT(*) WHERE lb_state == \"idle\"",
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat IN (\"Maximum\", \"Sum\") | STATS healthy_n = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS idle = COUNT(*) WHERE lb_state == \"idle\"",
                         "language": "esql"
                       },
                       "columns": [
@@ -1054,7 +1054,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS idle = COUNT(*) WHERE lb_state == \"idle\"",
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat IN (\"Maximum\", \"Sum\") | STATS healthy_n = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS idle = COUNT(*) WHERE lb_state == \"idle\"",
                 "language": "esql"
               },
               "visualization": {
@@ -1123,7 +1123,7 @@
                     "layer-kpi-running": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS healthy = COUNT(*) WHERE lb_state == \"healthy\"",
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat IN (\"Maximum\", \"Sum\") | STATS healthy_n = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS healthy = COUNT(*) WHERE lb_state == \"healthy\"",
                         "language": "esql"
                       },
                       "columns": [
@@ -1153,7 +1153,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS healthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS healthy = COUNT(*) WHERE lb_state == \"healthy\"",
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat IN (\"Maximum\", \"Sum\") | STATS healthy_n = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(Stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), be_5xx = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0, \"degraded\", healthy_n > 0, \"healthy\", \"idle\") | STATS healthy = COUNT(*) WHERE lb_state == \"healthy\"",
                 "language": "esql"
               },
               "visualization": {
@@ -1222,7 +1222,7 @@
                     "layer-kpi-net-in": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS input_tokens = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL))"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat == \"Sum\" | STATS input_tokens = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL))"
                       },
                       "columns": [
                         {
@@ -1244,7 +1244,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS input_tokens = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL))"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat == \"Sum\" | STATS input_tokens = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL))"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-in",
@@ -1313,7 +1313,7 @@
                     "layer-kpi-net-out": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS output_tokens = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL))"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat == \"Sum\" | STATS output_tokens = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL))"
                       },
                       "columns": [
                         {
@@ -1343,7 +1343,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS output_tokens = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL))"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat == \"Sum\" | STATS output_tokens = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL))"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-out",
@@ -1411,7 +1411,7 @@
                     "xy-layer-chart-net": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 AND LENGTH(TO_STRING(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL))) > 0 | STATS invocations = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), errors = -1 * COALESCE(SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 AND LENGTH(TO_STRING(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL))) > 0 | WHERE Stat == \"Sum\" | STATS invocations = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), errors = -1 * COALESCE(SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -1459,7 +1459,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 AND LENGTH(TO_STRING(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL))) > 0 | STATS invocations = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), errors = -1 * COALESCE(SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 AND LENGTH(TO_STRING(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL))) > 0 | WHERE Stat == \"Sum\" | STATS invocations = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), errors = -1 * COALESCE(SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -1543,7 +1543,7 @@
                     "xy-layer-chart-disk": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS client_errors = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_4XX_Count`, NULL)), server_errors = -SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat == \"Sum\" | STATS client_errors = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_4XX_Count`, NULL)), server_errors = -SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -1591,7 +1591,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS client_errors = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_4XX_Count`, NULL)), server_errors = -SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat == \"Sum\" | STATS client_errors = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_4XX_Count`, NULL)), server_errors = -SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -1675,7 +1675,7 @@
                     "xy-layer-top10-invocations": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS invocations = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)) BY LoadBalancer, cloud.region | SORT invocations DESC | LIMIT 10"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat == \"Sum\" | STATS invocations = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)) BY LoadBalancer, cloud.region | SORT invocations DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -1704,7 +1704,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS invocations = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)) BY LoadBalancer, cloud.region | SORT invocations DESC | LIMIT 10"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat == \"Sum\" | STATS invocations = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)) BY LoadBalancer, cloud.region | SORT invocations DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -1784,7 +1784,7 @@
                     "xy-layer-top10-errors": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS errors = COALESCE(SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0) BY LoadBalancer, cloud.region | SORT errors DESC | LIMIT 10"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat == \"Sum\" | STATS errors = COALESCE(SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0) BY LoadBalancer, cloud.region | SORT errors DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -1813,7 +1813,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS errors = COALESCE(SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0) BY LoadBalancer, cloud.region | SORT errors DESC | LIMIT 10"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat == \"Sum\" | STATS errors = COALESCE(SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0) BY LoadBalancer, cloud.region | SORT errors DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -1893,7 +1893,7 @@
                     "xy-layer-top10-duration": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS avg_duration_ms = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)) BY LoadBalancer, cloud.region | SORT avg_duration_ms DESC | LIMIT 10"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat == \"Average\" | STATS avg_duration_ms = AVG(CASE(Stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)) BY LoadBalancer, cloud.region | SORT avg_duration_ms DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -1922,7 +1922,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS avg_duration_ms = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)) BY LoadBalancer, cloud.region | SORT avg_duration_ms DESC | LIMIT 10"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat == \"Average\" | STATS avg_duration_ms = AVG(CASE(Stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)) BY LoadBalancer, cloud.region | SORT avg_duration_ms DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -1988,10 +1988,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Active connections over time (avg)",
-          "description": "Average EstimatedALBActiveConnectionCount over time across all LBs. Use as the primary capacity signal \u2014 fluctuates with load.",
+          "description": "Total ApplicationELB ActiveConnectionCount over time across all LBs. Use as the primary capacity signal \u2014 fluctuates with load.",
           "attributes": {
             "title": "Active connections over time (avg)",
-            "description": "Average EstimatedALBActiveConnectionCount over time across all LBs. Use as the primary capacity signal \u2014 fluctuates with load.",
+            "description": "Total ApplicationELB ActiveConnectionCount over time across all LBs. Use as the primary capacity signal \u2014 fluctuates with load.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2002,7 +2002,7 @@
                     "xy-layer-chart-elb-count": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS active_conn = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat == \"Sum\" | STATS active_conn = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
                       },
                       "columns": [
                         {
@@ -2032,7 +2032,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS active_conn = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat == \"Sum\" | STATS active_conn = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
               },
               "visualization": {
                 "layers": [
@@ -2134,7 +2134,7 @@
                     "xy-layer-chart-memory": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 AND LENGTH(TO_STRING(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL))) > 0 | STATS metric = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 AND LENGTH(TO_STRING(CASE(Stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL))) > 0 | WHERE Stat == \"Average\" | STATS metric = AVG(CASE(Stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -2169,7 +2169,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 AND LENGTH(TO_STRING(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL))) > 0 | STATS metric = AVG(CASE(attributes.stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 AND LENGTH(TO_STRING(CASE(Stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL))) > 0 | WHERE Stat == \"Average\" | STATS metric = AVG(CASE(Stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -2238,10 +2238,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Rejected connections (max)",
-          "description": "Maximum ApplicationELB RejectedConnectionCount over time across all load balancers. Non-zero values indicate the load balancer rejected connection attempts.",
+          "description": "Peak/total ApplicationELB RejectedConnectionCount over time across all load balancers. Non-zero values indicate the load balancer rejected connection attempts.",
           "attributes": {
             "title": "Rejected connections (max)",
-            "description": "Maximum ApplicationELB RejectedConnectionCount over time across all load balancers. Non-zero values indicate the load balancer rejected connection attempts.",
+            "description": "Peak/total ApplicationELB RejectedConnectionCount over time across all load balancers. Non-zero values indicate the load balancer rejected connection attempts.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2252,7 +2252,7 @@
                     "xy-layer-chart-cpu": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS rejected_max = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), rejected_total = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
+                        "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat == \"Sum\" | STATS rejected_max = MAX(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), rejected_total = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
                       },
                       "columns": [
                         {
@@ -2293,7 +2293,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | EVAL LoadBalancer = attributes.LoadBalancer | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | STATS rejected_max = MAX(CASE(attributes.stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), rejected_total = SUM(CASE(attributes.stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
+                "esql": "FROM \"metrics-awscloudwatchreceiver.otel-default\" | WHERE LENGTH(TO_STRING(LoadBalancer)) > 0 | WHERE Stat == \"Sum\" | STATS rejected_max = MAX(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), rejected_total = SUM(CASE(Stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
               },
               "visualization": {
                 "layers": [
