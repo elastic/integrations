@@ -156,3 +156,168 @@ rules:
             "has_more": true
           }
           `}}
+
+  # --- Rate limits: projects list (page 2, requested with ?after=proj_test_a) ---
+  - path: /v1/organization/projects
+    methods: ['GET']
+    query_params:
+      limit: 1
+      after: "proj_test_a"
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "object": "list",
+            "data": [
+              {
+                "id": "proj_test_b",
+                "object": "organization.project",
+                "name": "Test Project B",
+                "status": "active"
+              }
+            ],
+            "first_id": "proj_test_b",
+            "last_id": "proj_test_b",
+            "has_more": false
+          }
+          `}}
+
+  # --- Rate limits: projects list (page 1) ---
+  - path: /v1/organization/projects
+    methods: ['GET']
+    query_params:
+      limit: 1
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "object": "list",
+            "data": [
+              {
+                "id": "proj_test_a",
+                "object": "organization.project",
+                "name": "Test Project A",
+                "status": "active"
+              }
+            ],
+            "first_id": "proj_test_a",
+            "last_id": "proj_test_a",
+            "has_more": true
+          }
+          `}}
+
+  # --- Rate limits for proj_test_a (page 2, requested with ?after=rl_a1) ---
+  - path: /v1/organization/projects/proj_test_a/rate_limits
+    methods: ['GET']
+    query_params:
+      limit: 1
+      after: "rl_a1"
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "object": "list",
+            "data": [
+              {
+                "id": "rl_a2",
+                "object": "project.rate_limit",
+                "model": "text-embedding-3-small",
+                "max_requests_per_1_minute": 3000,
+                "max_tokens_per_1_minute": 1000000
+              }
+            ],
+            "first_id": "rl_a2",
+            "last_id": "rl_a2",
+            "has_more": false
+          }
+          `}}
+
+  # --- Rate limits for proj_test_a (page 1) ---
+  - path: /v1/organization/projects/proj_test_a/rate_limits
+    methods: ['GET']
+    query_params:
+      limit: 1
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "object": "list",
+            "data": [
+              {
+                "id": "rl_a1",
+                "object": "project.rate_limit",
+                "model": "gpt-4o-mini-2024-07-18",
+                "max_requests_per_1_minute": 500,
+                "max_tokens_per_1_minute": 200000,
+                "max_images_per_1_minute": 50000,
+                "max_requests_per_1_day": 10000,
+                "max_tokens_per_1_day": 9000000,
+                "batch_1_day_max_input_tokens": 2000000
+              }
+            ],
+            "first_id": "rl_a1",
+            "last_id": "rl_a1",
+            "has_more": true
+          }
+          `}}
+
+  # --- Rate limits for proj_test_b (single page) ---
+  - path: /v1/organization/projects/proj_test_b/rate_limits
+    methods: ['GET']
+    query_params:
+      limit: 1
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "object": "list",
+            "data": [
+              {
+                "id": "rl_b1",
+                "object": "project.rate_limit",
+                "model": "whisper-1",
+                "max_requests_per_1_minute": 500,
+                "max_tokens_per_1_minute": 2147483647,
+                "max_audio_megabytes_per_1_minute": 100
+              }
+            ],
+            "first_id": "rl_b1",
+            "last_id": "rl_b1",
+            "has_more": false
+          }
+          `}}

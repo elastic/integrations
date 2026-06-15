@@ -1,0 +1,59 @@
+{{#if access_key_id}}
+access_key_id: {{access_key_id}}
+{{/if}}
+{{#if secret_access_key}}
+secret_access_key: {{secret_access_key}}
+{{/if}}
+{{#if session_token}}
+session_token: {{session_token}}
+{{/if}}
+{{#if credential_profile_name}}
+credential_profile_name: {{credential_profile_name}}
+{{/if}}
+{{#if shared_credential_file}}
+shared_credential_file: {{shared_credential_file}}
+{{/if}}
+{{#if role_arn}}
+role_arn: {{role_arn}}
+{{/if}}
+
+
+receivers:
+  awscloudwatch:
+    region: {{region}}
+{{#if profile}}
+    profile: {{profile}}
+{{/if}}
+{{#if imds_endpoint}}
+    imds_endpoint: {{imds_endpoint}}
+{{/if}}
+    metrics:
+      discovery:
+        filters:
+          namespace: "{{namespace}}"
+        limit: {{autodiscover_limit}}
+        stats:
+          - "{{autodiscover_aggregation}}"
+
+processors:
+  resourcedetection/system:
+    detectors: ["system"]
+    system:
+      hostname_sources: ["os"]
+      resource_attributes:
+        host.name:
+          enabled: true
+        host.id:
+          enabled: false
+  resourcedetection/aws:
+    detectors: ["ec2", "ecs"]
+    timeout: 2s
+    override: false
+
+service:
+  pipelines:
+    metrics:
+      receivers: [awscloudwatch]
+      processors:
+        - resourcedetection/system
+        - resourcedetection/aws

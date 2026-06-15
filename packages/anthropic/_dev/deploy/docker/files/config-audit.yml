@@ -1,0 +1,237 @@
+rules:
+  # Round 2 — forward tail resume after persisted bookmark.
+  - path: /v1/compliance/activities
+    methods: ["GET"]
+    query_params:
+      limit: "2"
+      before_id: activity_01MOCKnewest01
+    request_headers:
+      x-api-key:
+        - "test-api-key-12345"
+      anthropic-version:
+        - "2023-06-01"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "id": "activity_01MOCKround2new",
+                "created_at": "2026-05-22T11:05:00Z",
+                "organization_id": "org_01EXAMPLEabcdef123456789",
+                "organization_uuid": "91011112-1314-4151-6171-8191a1b1c1d1",
+                "type": "org_user_invite_sent",
+                "actor": {
+                  "type": "user_actor",
+                  "email_address": "admin@example.org",
+                  "user_id": "user_01EXAMPLEadmin01",
+                  "ip_address": "198.51.100.42",
+                  "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+                },
+                "invite_id": "invite_01EXAMPLEinvite01",
+                "invited_email": "new.user@example.com",
+                "invited_role": "member"
+              }
+            ],
+            "first_id": "activity_01MOCKround2new",
+            "last_id": "activity_01MOCKround2new",
+            "has_more": false
+          }
+          ` }}
+  # Steady state — no new events after round 2 bookmark advances.
+  - path: /v1/compliance/activities
+    methods: ["GET"]
+    query_params:
+      limit: "2"
+      before_id: activity_01MOCKround2new
+    request_headers:
+      x-api-key:
+        - "test-api-key-12345"
+      anthropic-version:
+        - "2023-06-01"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"data":[],"has_more":false}
+  # Round 1, page 3 — terminal backfill page.
+  - path: /v1/compliance/activities
+    methods: ["GET"]
+    query_params:
+      limit: "2"
+      created_at.gte: "{created_at_gte:.*}"
+      created_at.lt: "{created_at_lt:.*}"
+      after_id: activity_01MOCKpage02b
+    request_headers:
+      x-api-key:
+        - "test-api-key-12345"
+      anthropic-version:
+        - "2023-06-01"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "id": "activity_01MOCKpage03a",
+                "created_at": "2026-05-22T09:00:00Z",
+                "organization_id": "org_01EXAMPLEabcdef123456789",
+                "organization_uuid": "91011112-1314-4151-6171-8191a1b1c1d1",
+                "type": "claude_chat_created",
+                "actor": {
+                  "type": "user_actor",
+                  "email_address": "alice.johnson@example.com",
+                  "user_id": "user_01EXAMPLEalice01",
+                  "ip_address": "198.51.100.10",
+                  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                },
+                "claude_chat_id": "claude_chat_01EXAMPLEconv01",
+                "claude_project_id": "claude_proj_01EXAMPLEproj01"
+              }
+            ],
+            "first_id": "activity_01MOCKpage03a",
+            "last_id": "activity_01MOCKpage03a",
+            "has_more": false
+          }
+          ` }}
+  # Round 1, page 2 — backfill pagination.
+  - path: /v1/compliance/activities
+    methods: ["GET"]
+    query_params:
+      limit: "2"
+      created_at.gte: "{created_at_gte:.*}"
+      created_at.lt: "{created_at_lt:.*}"
+      after_id: activity_01MOCKpage01b
+    request_headers:
+      x-api-key:
+        - "test-api-key-12345"
+      anthropic-version:
+        - "2023-06-01"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "id": "activity_01MOCKpage02a",
+                "created_at": "2026-05-22T10:00:00Z",
+                "organization_id": "org_01EXAMPLEabcdef123456789",
+                "organization_uuid": "91011112-1314-4151-6171-8191a1b1c1d1",
+                "type": "admin_api_key_created",
+                "actor": {
+                  "type": "user_actor",
+                  "email_address": "admin@example.org",
+                  "user_id": "user_01EXAMPLEadmin01",
+                  "ip_address": "198.51.100.42",
+                  "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+                },
+                "admin_api_key_id": "admin_key_01EXAMPLEkey01",
+                "scopes": ["read:compliance_activities", "read:compliance_org_data"]
+              },
+              {
+                "id": "activity_01MOCKpage02b",
+                "created_at": "2026-05-22T09:30:00Z",
+                "organization_id": "org_01EXAMPLEabcdef123456789",
+                "organization_uuid": "91011112-1314-4151-6171-8191a1b1c1d1",
+                "type": "rbac_role_assigned",
+                "actor": {
+                  "type": "user_actor",
+                  "email_address": "admin@example.org",
+                  "user_id": "user_01EXAMPLEadmin01",
+                  "ip_address": "198.51.100.42",
+                  "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+                },
+                "principal_id": "user_01EXAMPLEalice01",
+                "principal_type": "user",
+                "role_id": "role_01EXAMPLEcompliance01"
+              }
+            ],
+            "first_id": "activity_01MOCKpage02a",
+            "last_id": "activity_01MOCKpage02b",
+            "has_more": true
+          }
+          ` }}
+  # Round 1, page 1 — initial backfill catchall (dynamic created_at window).
+  - path: /v1/compliance/activities
+    methods: ["GET"]
+    query_params:
+      limit: "2"
+      created_at.gte: "{created_at_gte:.*}"
+      created_at.lt: "{created_at_lt:.*}"
+    request_headers:
+      x-api-key:
+        - "test-api-key-12345"
+      anthropic-version:
+        - "2023-06-01"
+      Accept:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "id": "activity_01MOCKnewest01",
+                "created_at": "2026-05-22T11:00:00Z",
+                "organization_id": null,
+                "organization_uuid": null,
+                "type": "compliance_api_accessed",
+                "actor": {
+                  "type": "api_actor",
+                  "api_key_id": "sk-ant-api01-EXAMPLEKEYredacted01",
+                  "ip_address": "203.0.113.50",
+                  "user_agent": "python-requests/2.32.0"
+                },
+                "api_key_id": "sk-ant-api01-EXAMPLEKEYredacted01",
+                "request_id": "req_01EXAMPLErequest01",
+                "request_method": "GET",
+                "request_body": null,
+                "status_code": 200,
+                "url": "https://api.anthropic.com/v1/compliance/activities?limit=2"
+              },
+              {
+                "id": "activity_01MOCKpage01b",
+                "created_at": "2026-05-22T10:30:00Z",
+                "organization_id": "org_01EXAMPLEabcdef123456789",
+                "organization_uuid": "91011112-1314-4151-6171-8191a1b1c1d1",
+                "type": "sso_login_succeeded",
+                "actor": {
+                  "type": "user_actor",
+                  "email_address": "bob.smith@example.com",
+                  "user_id": "user_01EXAMPLEbob01",
+                  "ip_address": "192.0.2.34",
+                  "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
+                }
+              }
+            ],
+            "first_id": "activity_01MOCKnewest01",
+            "last_id": "activity_01MOCKpage01b",
+            "has_more": true
+          }
+          ` }}
