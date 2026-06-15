@@ -53,7 +53,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "correlation_detection" }}'
       tag: pipeline_correlation_detection
-      if: ctx.crowdstrike?.alert?.product == 'ngsiem' && ctx.crowdstrike?.alert?.type == 'correlation-detection'
+      if: ctx.crowdstrike?.alert?.product == 'ngsiem' && ctx.crowdstrike.alert.type == 'correlation-detection'
   - set:
       field: event.category
       tag: set_event_category_process
@@ -1901,7 +1901,7 @@ processors:
   - script:
       lang: painless
       tag: set_event_duration_from_start_and_end
-      if: ctx.event?.start != null && ctx.event?.end != null
+      if: ctx.event?.start != null && ctx.event.end != null
       source: |-
         def start = ZonedDateTime.parse(ctx.event.start);
         def end = ZonedDateTime.parse(ctx.event.end);
