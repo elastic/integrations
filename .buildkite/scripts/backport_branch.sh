@@ -5,9 +5,16 @@ source .buildkite/scripts/common.sh
 set -euo pipefail
 
 cleanup_gh() {
+    local exit_code=$?
     pushd "$WORKSPACE" > /dev/null
     git config remote.origin.url "https://github.com/elastic/integrations.git"
     popd > /dev/null
+    if [[ "${exit_code}" -ne 0 ]] && [[ "${DRY_RUN:-false}" == "true" ]] && [[ -n "${UPSTREAM_PR_NUMBER:-}" ]]; then
+        retry 5 gh pr comment "${UPSTREAM_PR_NUMBER}" \
+            --repo "elastic/integrations" \
+            --body "The backport dry-run failed for \`${BACKPORT_BRANCH_NAME}\`. Please check the [Buildkite output](${BUILDKITE_BUILD_URL}) and retry the pipeline via a \`/test\` comment." || true
+    fi
+    exit "${exit_code}"
 }
 
 trap cleanup_gh EXIT
@@ -276,6 +283,7 @@ add_bin_path
 
 with_yq
 with_mage
+with_github_cli
 
 echo "--- Resolve package path from PACKAGE_NAME"
 PACKAGE_PATH="$(get_package_path "${PACKAGE_NAME}" || true)"
