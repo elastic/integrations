@@ -1,7 +1,7 @@
 format_version: 3.5.0
 name: aws_cloudwatch_input_otel
 title: "AWS CloudWatch OpenTelemetry Input Package"
-version: 0.1.0
+version: 0.2.0
 source:
   license: "Elastic-2.0"
 description: "Collect AWS CloudWatch metrics for selected AWS services (EC2, RDS, SQS, ELB, Lambda, Fargate) using the OpenTelemetry Collector awscloudwatchmetrics receiver."
@@ -134,9 +134,9 @@ vars:
 # and aliased on every other template — single source of truth, no duplication.
 # Adding a new service is a manifest-only change.
 policy_templates:
-  - name: aws_ec2
+  - name: aws.ec2
     type: metrics
-    title: AWS EC2 Metrics (OpenTelemetry)
+    title: AWS EC2 OpenTelemetry Metrics
     description: Collect AWS/EC2 CloudWatch metrics.
     input: otelcol
     template_path: input.yml.hbs
@@ -145,6 +145,8 @@ policy_templates:
         enabled: true
       agentless:
         enabled: true
+        is_default: true
+        release: beta
         organization: observability
         division: engineering
         team: obs-infraobs-integrations
@@ -157,9 +159,9 @@ policy_templates:
         required: true
         show_user: false
 
-  - name: lambda
+  - name: aws.lambda
     type: metrics
-    title: AWS Lambda Metrics (OpenTelemetry)
+    title: AWS Lambda OpenTelemetry Metrics
     description: Collect AWS/Lambda CloudWatch metrics.
     input: otelcol
     template_path: input.yml.hbs
@@ -173,9 +175,9 @@ policy_templates:
         required: true
         show_user: false
 
-  - name: rds
+  - name: aws.rds
     type: metrics
-    title: AWS RDS Metrics (OpenTelemetry)
+    title: AWS RDS OpenTelemetry Metrics
     description: Collect AWS/RDS CloudWatch metrics.
     input: otelcol
     template_path: input.yml.hbs
@@ -189,9 +191,9 @@ policy_templates:
         required: true
         show_user: false
 
-  - name: sqs
+  - name: aws.sqs
     type: metrics
-    title: AWS SQS Metrics (OpenTelemetry)
+    title: AWS SQS OpenTelemetry Metrics
     description: Collect AWS/SQS CloudWatch metrics.
     input: otelcol
     template_path: input.yml.hbs
@@ -205,9 +207,9 @@ policy_templates:
         required: true
         show_user: false
 
-  - name: elb
+  - name: aws.elb
     type: metrics
-    title: AWS Application ELB Metrics (OpenTelemetry)
+    title: AWS Application ELB OpenTelemetry Metrics
     description: Collect AWS/ApplicationELB CloudWatch metrics.
     input: otelcol
     template_path: input.yml.hbs
@@ -221,10 +223,10 @@ policy_templates:
         required: true
         show_user: false
 
-  - name: fargate
+  - name: aws.ecs
     type: metrics
-    title: AWS ECS / Fargate Metrics (OpenTelemetry)
-    description: Collect AWS/ECS CloudWatch metrics. For task-level Fargate metrics, also enable Container Insights on the cluster.
+    title: AWS ECS OpenTelemetry Metrics
+    description: Collect AWS/ECS CloudWatch metrics.
     input: otelcol
     template_path: input.yml.hbs
     deployment_modes: *deployment_modes
