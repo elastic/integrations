@@ -232,6 +232,42 @@ processors:
       override: false
       ignore_empty_value: true
 
+  # ----- Populate ECS related.* correlation fields -----
+  # related.* arrays let analysts, Discover searches, and Indicator Match rules
+  # pivot on an IP/hash/host without knowing which specific threat.indicator.*
+  # field holds it. Each append is guarded to the matching indicator type and
+  # de-duplicated.
+  - append:
+      field: related.ip
+      tag: append_threat_indicator_ip_to_related_ip
+      value: "{{{threat.indicator.ip}}}"
+      if: ctx.threat?.indicator?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_threat_indicator_sha256_to_related_hash
+      value: "{{{threat.indicator.file.hash.sha256}}}"
+      if: ctx.threat?.indicator?.file?.hash?.sha256 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_threat_indicator_sha1_to_related_hash
+      value: "{{{threat.indicator.file.hash.sha1}}}"
+      if: ctx.threat?.indicator?.file?.hash?.sha1 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_threat_indicator_md5_to_related_hash
+      value: "{{{threat.indicator.file.hash.md5}}}"
+      if: ctx.threat?.indicator?.file?.hash?.md5 != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_threat_indicator_domain_to_related_hosts
+      value: "{{{threat.indicator.url.domain}}}"
+      if: ctx.threat?.indicator?.url?.domain != null
+      allow_duplicates: false
+
   # ----- IP indicator: GeoIP + ASN enrichment -----
   # Uses the GeoLite2 databases bundled with Elasticsearch (no external calls).
   # Both processors are conditional on threat.indicator.ip so domain/URL/hash
