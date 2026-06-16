@@ -21,7 +21,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/EC2\"\n    AND attributes.MetricName == \"CPUUtilization\"\n    AND attributes.stat == \"Maximum\"\n| EVAL ec2_instance = CONCAT(attributes.InstanceId, \" (\", resource.attributes.cloud.region, \")\")\n| STATS peak_cpu_pct = MAX(`metrics.amazonaws.com/AWS/EC2/CPUUtilization`) BY ec2_instance\n// Peak threshold (%): tune per workload — Maximum stat detects spikes within each period\n| WHERE peak_cpu_pct > 95.0\n| SORT peak_cpu_pct DESC\n| LIMIT 100"
+                "esql": "FROM metrics-aws.ec2.otel-*\n| WHERE attributes.Namespace == \"AWS/EC2\"\n    AND attributes.MetricName == \"CPUUtilization\"\n    AND attributes.stat == \"Maximum\"\n| EVAL ec2_instance = CONCAT(attributes.InstanceId, \" (\", resource.attributes.cloud.region, \")\")\n| STATS peak_cpu_pct = MAX(`metrics.amazonaws.com/AWS/EC2/CPUUtilization`) BY ec2_instance\n// Peak threshold (%): tune per workload — Maximum stat detects spikes within each period\n| WHERE peak_cpu_pct > 95.0\n| SORT peak_cpu_pct DESC\n| LIMIT 100"
             },
             "size": 0,
             "threshold": [0],

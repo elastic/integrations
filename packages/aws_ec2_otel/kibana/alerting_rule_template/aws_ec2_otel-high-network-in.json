@@ -21,7 +21,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/EC2\"\n    AND attributes.MetricName == \"NetworkIn\"\n    AND attributes.stat == \"Sum\"\n| EVAL ec2_instance = CONCAT(attributes.InstanceId, \" (\", resource.attributes.cloud.region, \")\")\n| STATS total_bytes_in = SUM(`metrics.amazonaws.com/AWS/EC2/NetworkIn`) BY ec2_instance\n// Bytes threshold: tune per instance size and baseline — Sum stat is bytes per CloudWatch period\n| WHERE total_bytes_in > 1073741824\n| SORT total_bytes_in DESC\n| LIMIT 100"
+                "esql": "FROM metrics-aws.ec2.otel-*\n| WHERE attributes.Namespace == \"AWS/EC2\"\n    AND attributes.MetricName == \"NetworkIn\"\n    AND attributes.stat == \"Sum\"\n| EVAL ec2_instance = CONCAT(attributes.InstanceId, \" (\", resource.attributes.cloud.region, \")\")\n| STATS total_bytes_in = SUM(`metrics.amazonaws.com/AWS/EC2/NetworkIn`) BY ec2_instance\n// Bytes threshold: tune per instance size and baseline — Sum stat is bytes per CloudWatch period\n| WHERE total_bytes_in > 1073741824\n| SORT total_bytes_in DESC\n| LIMIT 100"
             },
             "size": 0,
             "threshold": [0],
