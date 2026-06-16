@@ -1,0 +1,103 @@
+interval: {{interval}}
+request.method: "GET"
+request.url: {{url}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+request.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+
+run_as_cel: true
+
+cel.state:
+  url: {{url}}
+  username: {{username}}
+  password: {{password}}
+  page_size: {{page_size}}
+  initial_interval: {{initial_interval}}
+  want_more: false
+
+cel.redact:
+  fields:
+    - username
+    - password
+
+cel.program: |-
+  state.with({
+    "added_after": state.?want_more.orValue(false) ?
+      state.added_after
+    :
+      state.?cursor.timestamp.orValue(
+        (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+      ),
+  }).as(state, state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "/?" + {
+        "match[type]": ["indicator"],
+        "limit": [string(int(state.page_size))],
+        "added_after": [state.added_after],
+      }.format_query()
+    ).with({
+      "Header": {
+        "Accept": ["application/taxii+json;version=2.1"],
+        "Content-Type": ["application/taxii+json;version=2.1"],
+        "Authorization": ["Basic " + (state.username + ":" + state.password).base64()],
+      },
+    }).do_request().as(resp, (resp.StatusCode == 200 || resp.StatusCode == 206) ?
+      resp.Body.decode_json().as(body,
+        body.?objects.orValue([]).as(objects, {
+          "events": (size(objects) > 0) ?
+            objects.map(e, {"message": dyn(e.encode_json())})
+          :
+            [{"retry": dyn(true)}],
+          "added_after": resp.Header[?"X-Taxii-Date-Added-Last"][0].orValue(state.added_after),
+          "want_more": body.?more.orValue(false) && size(objects) > 0,
+          "cursor": {
+            "timestamp": resp.Header[?"X-Taxii-Date-Added-Last"][0].orValue(state.added_after),
+          },
+        })
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET " + state.url.trim_right("/") + ": " + (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  ))
+
+tags:
+  - run_as_cel
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}
