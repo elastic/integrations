@@ -3,14 +3,15 @@
 
 # EfficientIP Integration for Elastic
 
-The EfficientIP integration collects and parses data from [EfficientIP](https://efficientip.com/) DDI (DNS, DHCP and IPAM) solutions, enabling centralized monitoring and analysis of network infrastructure events within Elastic.
+The EfficientIP integration collects and parses data from [EfficientIP](https://efficientip.com/) DDI (DNS, DHCP, and IPAM) solutions, enabling centralized monitoring and analysis of network infrastructure events within Elastic.
 
 ## Overview
 
-The EfficientIP integration for Elastic enables collection of event logs from DNS, DHCP. This integration enables the
+The EfficientIP integration for Elastic enables collection of event logs from DNS, DHCP and IPAM. This integration enables the
 following use cases:
 - DNS query monitoring and threat detection
 - DHCP lease management and IP address tracking
+- IPAM auditing and infrastructure compliance
 - Network anomaly identification and security investigations
 
 ### Compatibility
@@ -23,6 +24,7 @@ This integration collects the following data types from EfficientIP DDI solution
 
 - **DNS Events**: Query logs, response codes, and DNS transactions
 - **DHCP Events**: Lease assignments, renewals, releases, and IP address allocations
+- **IPAM Events**: Address space changes, subnet modifications, and infrastructure audits
 
 All events are forwarded via syslog and processed through Elastic ingest pipelines for analysis and visualization within the Elastic Stack.
 
