@@ -29,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-aws.elb.otel-*\n| WHERE attributes.Namespace == \"AWS/ApplicationELB\"\n    AND attributes.MetricName == \"TargetResponseTime\"\n    AND attributes.stat == \"Maximum\"\n| STATS max_response_time = MAX(`metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`)\n    BY attributes.LoadBalancer, attributes.TargetGroup, resource.attributes.cloud.region\n// Tail latency threshold in seconds — tune to approximate p99 SLO (default 5.0s)\n| WHERE max_response_time > 5.0\n| SORT max_response_time DESC"
+                "esql": "FROM metrics-aws.elb.otel-*\n| WHERE attributes.Namespace == \"AWS/ApplicationELB\"\n    AND attributes.MetricName == \"TargetResponseTime\"\n    AND attributes.stat == \"Maximum\"\n| STATS max_response_time = MAX(`metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`)\n    BY LoadBalancer, TargetGroup, resource.attributes.cloud.region\n// Tail latency threshold in seconds — tune to approximate p99 SLO (default 5.0s)\n| WHERE max_response_time > 5.0\n| SORT max_response_time DESC"
             },
             "size": 0,
             "threshold": [
@@ -40,7 +40,7 @@
             "timeWindowSize": 15,
             "timeWindowUnit": "m",
             "groupBy": "row",
-            "termField": "attributes.TargetGroup",
+            "termField": "TargetGroup",
             "termSize": 50,
             "excludeHitsFromPreviousRun": true
         }
