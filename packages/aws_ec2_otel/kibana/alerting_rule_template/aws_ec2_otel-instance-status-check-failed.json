@@ -26,7 +26,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-aws.ec2.otel-*\n| WHERE attributes.Namespace == \"AWS/EC2\"\n    AND attributes.MetricName == \"StatusCheckFailed_Instance\"\n    AND attributes.stat == \"Maximum\"\n| EVAL ec2_instance = CONCAT(attributes.InstanceId, \" (\", resource.attributes.cloud.region, \")\")\n| STATS max_failed = MAX(`metrics.amazonaws.com/AWS/EC2/StatusCheckFailed_Instance`) BY ec2_instance\n// 1 = failed — Maximum stat catches any failure within the period\n| WHERE max_failed >= 1\n| SORT max_failed DESC\n| LIMIT 100"
+                "esql": "FROM metrics-aws.ec2.otel-*\n| WHERE attributes.Namespace == \"AWS/EC2\"\n    AND attributes.MetricName == \"StatusCheckFailed_Instance\"\n    AND attributes.stat == \"Maximum\"\n| EVAL ec2_instance = CONCAT(InstanceId, \" (\", resource.attributes.cloud.region, \")\")\n| STATS max_failed = MAX(`metrics.amazonaws.com/AWS/EC2/StatusCheckFailed_Instance`) BY ec2_instance\n// 1 = failed — Maximum stat catches any failure within the period\n| WHERE max_failed >= 1\n| SORT max_failed DESC\n| LIMIT 100"
             },
             "size": 0,
             "threshold": [0],

@@ -25,7 +25,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-aws.ec2.otel-*\n| WHERE attributes.Namespace == \"AWS/EC2\"\n    AND attributes.MetricName == \"CPUUtilization\"\n    AND attributes.stat == \"Average\"\n| EVAL ec2_instance = CONCAT(attributes.InstanceId, \" (\", resource.attributes.cloud.region, \")\")\n| STATS avg_cpu_pct = AVG(`metrics.amazonaws.com/AWS/EC2/CPUUtilization`) BY ec2_instance\n// Alert threshold (%): tune per workload — 90 is a common saturation starting point\n| WHERE avg_cpu_pct > 90.0\n| SORT avg_cpu_pct DESC\n| LIMIT 100"
+                "esql": "FROM metrics-aws.ec2.otel-*\n| WHERE attributes.Namespace == \"AWS/EC2\"\n    AND attributes.MetricName == \"CPUUtilization\"\n    AND attributes.stat == \"Average\"\n| EVAL ec2_instance = CONCAT(InstanceId, \" (\", resource.attributes.cloud.region, \")\")\n| STATS avg_cpu_pct = AVG(`metrics.amazonaws.com/AWS/EC2/CPUUtilization`) BY ec2_instance\n// Alert threshold (%): tune per workload — 90 is a common saturation starting point\n| WHERE avg_cpu_pct > 90.0\n| SORT avg_cpu_pct DESC\n| LIMIT 100"
             },
             "size": 0,
             "threshold": [0],

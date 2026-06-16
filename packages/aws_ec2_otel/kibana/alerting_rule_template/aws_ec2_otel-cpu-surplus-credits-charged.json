@@ -21,7 +21,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-aws.ec2.otel-*\n| WHERE attributes.Namespace == \"AWS/EC2\"\n    AND attributes.MetricName == \"CPUSurplusCreditsCharged\"\n    AND attributes.stat == \"Sum\"\n| EVAL ec2_instance = CONCAT(attributes.InstanceId, \" (\", resource.attributes.cloud.region, \")\")\n| STATS total_surplus_charged = SUM(`metrics.amazonaws.com/AWS/EC2/CPUSurplusCreditsCharged`) BY ec2_instance\n// Any surplus charge indicates credit exhaustion — tune threshold if noise from tiny overages\n| WHERE total_surplus_charged > 0.0\n| SORT total_surplus_charged DESC\n| LIMIT 100"
+                "esql": "FROM metrics-aws.ec2.otel-*\n| WHERE attributes.Namespace == \"AWS/EC2\"\n    AND attributes.MetricName == \"CPUSurplusCreditsCharged\"\n    AND attributes.stat == \"Sum\"\n| EVAL ec2_instance = CONCAT(InstanceId, \" (\", resource.attributes.cloud.region, \")\")\n| STATS total_surplus_charged = SUM(`metrics.amazonaws.com/AWS/EC2/CPUSurplusCreditsCharged`) BY ec2_instance\n// Any surplus charge indicates credit exhaustion — tune threshold if noise from tiny overages\n| WHERE total_surplus_charged > 0.0\n| SORT total_surplus_charged DESC\n| LIMIT 100"
             },
             "size": 0,
             "threshold": [0],
