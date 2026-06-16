@@ -36,6 +36,198 @@ rules:
           }
           `}}
   # Page 2 — fetched via nextLink cursor=page2 (more specific match, must precede page 1)
+  - path: /api/audit-trail/auditRecords
+    methods: ['GET']
+    query_params:
+      cursor: 'page2'
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "_id": "643e75920104eb0010544582",
+                "details": "Sentinel-02 failed to perform domain scan",
+                "eventSubType": "SENSOR_SCAN_FAILED",
+                "eventType": "ACTIVE_DIRECTORY",
+                "objectName": "Corporate.xm",
+                "objectType": "DOMAIN",
+                "tenant": "acme",
+                "terminalId": {
+                  "hostname": "acme",
+                  "ip": "acme"
+                },
+                "timestamp": "2023-04-18T10:48:50.768Z",
+                "userId": {
+                  "name": "Automated"
+                }
+              }
+            ],
+            "paging": {
+              "page": 1,
+              "pageSize": 100,
+              "total": 3,
+              "totalPages": 2,
+              "nextLink": null
+            },
+            "metadata": {}
+          }
+          `}}
+  # Page 1 — initial full fetch (no cursor; only pageSize+sort)
+  - path: /api/audit-trail/auditRecords
+    methods: ['GET']
+    query_params:
+      pageSize: '100'
+      sort: '-timestamp'
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "_id": "643bd2b60104eb001054259c",
+                "details": "CorporateDC failed to perform domain scan",
+                "eventSubType": "SENSOR_SCAN_FAILED",
+                "eventType": "ACTIVE_DIRECTORY",
+                "objectName": "Corporate.xm",
+                "objectType": "DOMAIN",
+                "tenant": "acme",
+                "terminalId": {
+                  "hostname": "acme",
+                  "ip": "acme"
+                },
+                "timestamp": "2023-04-16T10:49:26.855Z",
+                "userId": {
+                  "name": "Automated"
+                }
+              },
+              {
+                "_id": "63b47e72ee320700106d4381",
+                "details": "john.doe@example.com Logged in via user",
+                "eventSubType": "XM_LOGIN",
+                "eventType": "ACCESS",
+                "objectName": "User",
+                "objectType": "USER",
+                "tenant": "acme",
+                "terminalId": {
+                  "hostname": "acme.clients.xmcyber.com",
+                  "ip": "192.0.2.0"
+                },
+                "timestamp": "2023-01-03T19:13:54.358Z",
+                "userId": {
+                  "email": "john.doe@example.com",
+                  "name": "John Doe"
+                }
+              }
+            ],
+            "paging": {
+              "page": 0,
+              "pageSize": 100,
+              "total": 3,
+              "totalPages": 2,
+              "nextLink": "/api/audit-trail/auditRecords?cursor=page2"
+            },
+            "metadata": {}
+          }
+          `}}
+
+  - path: /api/v2/vrm/public/vulnerabilities
+    methods: ['GET']
+    query_params:
+      pageSize: '2'
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": [
+              {
+                "cve": "CVE-2009-0316",
+                "status": "Active",
+                "description": "Untrusted search path vulnerability in src/if_python.c in the Python interface in Vim before 7.2.045 allows local users to execute arbitrary code via a Trojan horse Python file in the current working directory, related to a vulnerability in the PySys_SetArgv function (CVE-2008-5983), as demonstrated by an erroneous search path for plugin/bike.vim in bicyclerepair.",
+                "severity": 20,
+                "severityLevel": "Medium",
+                "cvss2": 6.9,
+                "cvss2Vector": "AV:L/AC:M/Au:N/C:C/I:C/A:C",
+                "cvss30": null,
+                "cvss3Vector": null,
+                "cvss31": null,
+                "cvss31Vector": null,
+                "cvss4": null,
+                "cvss4Vector": null,
+                "epssPercentile": 0.41737,
+                "epssProbability": 0.00199,
+                "epssScore": 0.00199,
+                "inCisaKev": false,
+                "inExploitDb": false,
+                "exploitKitExist": false,
+                "isExploitedInTheWild": false,
+                "hasAttackTechnique": false,
+                "techniqueId": null,
+                "deviceFoundOn": 2,
+                "products": 2,
+                "criticalAssetsFoundOn": 2,
+                "criticalAssetsAtRisk": 0,
+                "chokePointFoundOn": 0,
+                "firstDetected": "2026-04-29T00:00:00.000Z",
+                "publishedDate": "2009-01-28T00:00:00.000Z"
+              },
+              {
+                "cve": "CVE-2016-0185",
+                "status": "Active",
+                "description": "Media Center in Microsoft Windows Vista SP2, Windows 7 SP1, and Windows 8.1 allows remote attackers to execute arbitrary code via a crafted Media Center link (aka .mcl) file, aka 'Windows Media Center Remote Code Execution Vulnerability.'",
+                "severity": 30,
+                "severityLevel": "High",
+                "cvss2": 9.3,
+                "cvss2Vector": "AV:N/AC:M/Au:N/C:C/I:C/A:C",
+                "cvss30": null,
+                "cvss3Vector": null,
+                "cvss31": 7.8,
+                "cvss31Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
+                "cvss4": null,
+                "cvss4Vector": null,
+                "epssPercentile": 0.99132,
+                "epssProbability": 0.80235,
+                "epssScore": 0.80235,
+                "inCisaKev": true,
+                "inExploitDb": true,
+                "exploitKitExist": true,
+                "isExploitedInTheWild": true,
+                "hasAttackTechnique": false,
+                "techniqueId": null,
+                "deviceFoundOn": 17,
+                "products": 1,
+                "criticalAssetsFoundOn": 17,
+                "criticalAssetsAtRisk": 33,
+                "chokePointFoundOn": 4,
+                "firstDetected": "2025-04-03T00:00:00.000Z",
+                "publishedDate": "2016-05-11T00:00:00.000Z"
+              }
+            ],
+            "meta": {
+              "next": null
+            }
+          }
+          `}}
+
+  # Page 2 — fetched via nextLink cursor=page2 (more specific match, must precede page 1)
   - path: /api/entityInventory/entities
     methods: ['GET']
     query_params:

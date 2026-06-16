@@ -1,4 +1,3 @@
-config_version: 2
 interval: {{interval}}
 max_executions: 200
 resource.tracer:
@@ -19,7 +18,6 @@ state:
   url: {{url}}
   api_key: {{api_key}}
   page_size: {{page_size}}
-  entity_type_ids: '{{entity_type_ids}}'
 redact:
   fields:
     - api_key
@@ -30,8 +28,7 @@ program: |
     state.with(
       (
         (
-          state.?cursor.access_token.orValue("") == "" || state.?cursor.refresh_token.orValue("") == "" ||
-          state.?cursor.need_reauth.orValue(false)
+          !has(state.?cursor.access_token) || !has(state.?cursor.refresh_token) || state.?cursor.need_reauth.orValue(false)
         ) ?
           post_request(base + "/api/auth", "application/json", "{}").with(
             {
@@ -45,34 +42,34 @@ program: |
               authResp.Body.decode_json().as(ao,
                 {
                   "ok": true,
-                  "access": string(ao.accessToken),
-                  "refresh": string(ao.refreshToken),
+                  "access": ao.accessToken,
+                  "refresh": ao.refreshToken,
                 }
               )
             :
               {
                 "ok": false,
                 "err_code": string(authResp.StatusCode),
-                "err_status": string(authResp.Status),
-                "err_body": (size(authResp.Body) != 0) ? string(authResp.Body) : string(authResp.Status),
+                "err_status": authResp.Status,
+                "err_body": (size(authResp.Body) != 0) ? string(authResp.Body) : authResp.Status,
               }
           )
         :
           {
             "ok": true,
-            "access": string(state.?cursor.access_token.orValue("")),
-            "refresh": string(state.?cursor.refresh_token.orValue("")),
+            ?"access": state.?cursor.access_token,
+            ?"refresh": state.?cursor.refresh_token,
           }
       ).as(tok,
         tok.ok ?
           request(
             "GET",
-            (has(state.?next_page.link) && string(state.next_page.link) != "") ?
+            (state.?next_page.?link.orValue("") != "") ?
               (
-                string(state.next_page.link).startsWith("http") ?
-                  string(state.next_page.link)
+                state.next_page.link.startsWith("http") ?
+                  state.next_page.link
                 :
-                  base + string(state.next_page.link)
+                  base + state.next_page.link
               )
             :
               base + "/api/entityInventory/entities?" + {
@@ -87,24 +84,21 @@ program: |
             }
           ).do_request().as(resp,
             (resp.StatusCode == 200) ?
-              resp.Body.decode_json().as(body, {
-                "events": body.?data.orValue([]).map(e, {"message": e.encode_json()}),
-                "cursor": {
-                  "access_token": tok.access,
-                  "refresh_token": tok.refresh,
-                  "need_reauth": false,
-                },
-                "next_page": {
-                  ?"link": (
-                    body.?paging != null && has(body.paging.nextLink) && body.paging.nextLink != null &&
-                    string(body.paging.nextLink) != ""
-                  ) ? optional.of(string(body.paging.nextLink)) : optional.none(),
-                },
-                "want_more": (
-                  body.?paging != null && has(body.paging.nextLink) && body.paging.nextLink != null &&
-                  string(body.paging.nextLink) != ""
-                ),
-              })
+              resp.Body.decode_json().as(body,
+                {
+                  "events": body.?data.orValue([]).map(e, {"message": e.encode_json()}),
+                  "cursor": {
+                    "access_token": tok.access,
+                    "refresh_token": tok.refresh,
+                    "need_reauth": false,
+                  },
+                  "next_page": {
+                    ?"link": body.?paging.?nextLink.orValue(null) != null ?
+                      optional.of(body.paging.nextLink) : optional.none(),
+                  },
+                  "want_more": body.?paging.?nextLink.orValue(null) != null,
+                }
+              )
             : (resp.StatusCode == 401 || resp.StatusCode == 419) ?
               post_request(
                 base + "/api/refresh-token",
@@ -115,36 +109,33 @@ program: |
                   "Header": {"Content-Type": ["application/json"]},
                 }
               ).do_request().as(refResp,
-                (refResp.StatusCode == 200) ?
-                  refResp.Body.decode_json().as(ro,
-                    {
-                      "events": [{"message": "Refresh token successful"}],
-                      "cursor": {
-                        "access_token": string(ro.accessToken),
-                        "refresh_token": string(ro.refreshToken),
-                        "need_reauth": false,
-                      },
-                      "want_more": true,
-                    }
-                  )
-                :
+                refResp.Body.decode_json().as(ro,
                   {
-                    "events": [{"message": "Refresh token expired, forcing re-auth"}],
-                    "cursor": {
-                      "access_token": "",
-                      "refresh_token": "",
-                      "need_reauth": true,
-                    },
+                    "events": [{"message": "retry"}],
+                    "cursor": (refResp.StatusCode == 200) ?
+                      {
+                        "access_token": ro.accessToken,
+                        "refresh_token": ro.refreshToken,
+                        "need_reauth": false,
+                      }
+                    :
+                      {
+                        "access_token": "",
+                        "refresh_token": "",
+                        "need_reauth": true,
+                      },
                     "want_more": true,
                   }
+                )
               )
             : (resp.StatusCode == 429) ?
               {
                 "events": {
                   "error": {
                     "code": string(resp.StatusCode),
-                    "id": string(resp.Status),
-                    "message": "GET " + base + "/api/entityInventory/entities: rate limited",
+                    "id": resp.Status,
+                    "message": "GET " + base +
+                      "/api/entityInventory/entities: rate limited",
                   },
                 },
                 "want_more": false,
@@ -154,8 +145,11 @@ program: |
                 "events": {
                   "error": {
                     "code": string(resp.StatusCode),
-                    "id": string(resp.Status),
-                    "message": "GET " + base + "/api/entityInventory/entities: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+                    "id": resp.Status,
+                    "message": "GET " + base +
+                      "/api/entityInventory/entities: " + (
+                        (size(resp.Body) != 0) ? string(resp.Body) : (resp.Status)
+                      ),
                   },
                 },
                 "want_more": false,
@@ -167,7 +161,8 @@ program: |
               "error": {
                 "code": tok.err_code,
                 "id": tok.err_status,
-                "message": "POST " + base + "/api/auth: " + tok.err_body,
+                "message": "POST " + base +
+                  "/api/auth: " + tok.err_body,
               },
             },
             "want_more": false,
