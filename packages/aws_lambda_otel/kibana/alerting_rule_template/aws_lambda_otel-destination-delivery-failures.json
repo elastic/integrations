@@ -30,7 +30,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE attributes.Namespace == \"AWS/Lambda\"\n    AND attributes.MetricName == \"DestinationDeliveryFailures\"\n    AND attributes.stat == \"Sum\"\n| STATS total_delivery_failures = SUM(`metrics.amazonaws.com/AWS/Lambda/DestinationDeliveryFailures`)\n  BY attributes.FunctionName, resource.attributes.cloud.region\n// Any destination delivery failure is critical\n| WHERE total_delivery_failures > 0\n| EVAL function_id = CONCAT(attributes.FunctionName, \"/\", resource.attributes.cloud.region)\n| SORT total_delivery_failures DESC\n| LIMIT 10"
+                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE attributes.Namespace == \"AWS/Lambda\"\n    AND attributes.MetricName == \"DestinationDeliveryFailures\"\n    AND attributes.stat == \"Sum\"\n| STATS total_delivery_failures = SUM(`metrics.amazonaws.com/AWS/Lambda/DestinationDeliveryFailures`)\n  BY FunctionName, resource.attributes.cloud.region\n// Any destination delivery failure is critical\n| WHERE total_delivery_failures > 0\n| EVAL function_id = CONCAT(FunctionName, \"/\", resource.attributes.cloud.region)\n| SORT total_delivery_failures DESC\n| LIMIT 10"
             },
             "size": 0,
             "threshold": [
