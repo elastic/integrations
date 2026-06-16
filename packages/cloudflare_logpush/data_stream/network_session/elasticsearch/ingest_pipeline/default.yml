@@ -2,28 +2,42 @@
 description: Pipeline for parsing Cloudflare Zero Trust Network Session logs.
 processors:
   - set:
+      tag: set_ecs_version_b777da29
       field: ecs.version
-      value: 8.11.0
+      value: '9.3.0'
   - rename:
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
+      if: ctx.event?.original != null
   - set:
+      tag: set_event_category_ed69613e
       field: event.category
       value: [network, session]
   - set:
+      tag: set_event_type_8fd37e4e
       field: event.type
       value: [connection]
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
-## AWS S3 input does _id Based Deduplication and generates "_id" by default.
-## When "Data Deduplication" is not enabled, this field must be removed.
-## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
+  ## AWS S3 input does _id Based Deduplication and generates "_id" by default.
+  ## When "Data Deduplication" is not enabled, this field must be removed.
+  ## https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-aws-s3#_document_id_generation
   - remove:
       field: _id
       tag: remove_id_based_deduplication
@@ -32,67 +46,76 @@ processors:
         must be removed.
       if: ctx._conf?.enable_deduplication == false && ctx.input?.type == 'aws-s3'
       ignore_missing: true
-# ECS fields
+  # ECS fields
+  - convert:
+      tag: convert_json_SessionStartTime_15b1559d
+      field: json.SessionStartTime
+      type: long
+      if: ctx.json?.SessionStartTime != null && ctx.json.SessionStartTime != ''
+      ignore_failure: true
+  - convert:
+      tag: convert_json_SessionEndTime_5c99a0b6
+      field: json.SessionEndTime
+      type: long
+      if: ctx.json?.SessionEndTime != null && ctx.json.SessionEndTime != ''
+      ignore_failure: true
   - script:
       lang: painless
       tag: painless_session_start_time_to_milli
-      if: ctx.json?.SessionStartTime != null
       source: |
-        try {
-          long t;
-          if (ctx.json.SessionStartTime instanceof String) {
-            t = Long.parseLong(ctx.json.SessionStartTime);
-          } else if (ctx.json.SessionStartTime instanceof Number) {
-            t = (long)(ctx.json.SessionStartTime);
-          } else {
-            return;
+        def convertToMillis(long timestamp) {
+          if (timestamp > (long)(1e18)) {
+            return timestamp/(long)(1e6)
+          } else if (timestamp < (long)(1e10))  {
+            return timestamp*(long)(1e3)
           }
-          if (t > (long)(1e18)) {
-            ctx.json.SessionStartTime = t/(long)(1e6)
-          } else if (t < (long)(1e10))  {
-            ctx.json.SessionStartTime = t*(long)(1e3)
-          }
+          return timestamp
         }
-        catch (Exception e) {}
+        if (ctx.json?.SessionStartTime != null && ctx.json.SessionStartTime instanceof Number) {
+          ctx.json.SessionStartTime = convertToMillis(ctx.json.SessionStartTime);
+        }
+        if (ctx.json?.SessionEndTime != null && ctx.json.SessionEndTime instanceof Number) {
+          ctx.json.SessionEndTime = convertToMillis(ctx.json.SessionEndTime);
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_687a5d42
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_SessionStartTime_4818ec3f
       field: json.SessionStartTime
       if: ctx.json?.SessionStartTime != null && ctx.json.SessionStartTime != ''
+      target_field: cloudflare_logpush.network_session.session.start
       formats:
         - UNIX_MS
         - ISO8601
         - yyyy-MM-dd'T'HH:mm:ssZ
       timezone: UTC
       on_failure:
-      - append:
-          field: error.message
-          value: "{{{_ingest.on_failure_message}}}"
+        - append:
+            tag: append_error_message_3b048279
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      field: json.SessionStartTime
+      tag: set_event_start_6e95ec84
+      field: event.start
+      copy_from: cloudflare_logpush.network_session.session.start
+      ignore_empty_value: true
+  - set:
+      tag: set_@timestamp
+      field: '@timestamp'
+      copy_from: cloudflare_logpush.network_session.session.start
+      ignore_empty_value: true
+  - set:
+      tag: set_cloudflare_logpush_network_session_timestamp_7ec4f502
+      field: cloudflare_logpush.network_session.timestamp
       copy_from: "@timestamp"
-  - script:
-      lang: painless
-      tag: painless_session_end_time_to_milli
-      if: ctx.json?.SessionEndTime != null
-      source: |
-        try {
-          long t;
-          if (ctx.json.SessionEndTime instanceof String) {
-            t = Long.parseLong(ctx.json.SessionEndTime);
-          } else if (ctx.json.SessionEndTime instanceof Number) {
-            t = (long)(ctx.json.SessionEndTime);
-          } else {
-            return;
-          }
-          if (t > (long)(1e18)) {
-            ctx.json.SessionEndTime = t/(long)(1e6)
-          } else if (t < (long)(1e10))  {
-            ctx.json.SessionEndTime = t*(long)(1e3)
-          }
-        }
-        catch (Exception e) {}
+      ignore_empty_value: true
   - date:
+      tag: date_json_SessionEndTime_to_json_SessionEndTime_d82a46a9
       field: json.SessionEndTime
-      target_field: json.SessionEndTime
+      target_field: cloudflare_logpush.network_session.session.end
       if: ctx.json?.SessionEndTime != null && ctx.json.SessionEndTime != ''
       formats:
         - UNIX_MS
@@ -100,61 +123,91 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ssZ
       timezone: UTC
       on_failure:
-      - append:
-          field: error.message
-          value: "{{{_ingest.on_failure_message}}}"
+        - append:
+            tag: append_error_message_91e96f26
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      field: cloudflare_logpush.network_session.timestamp
-      copy_from: "@timestamp"
+      tag: set_event_end_d2325484
+      field: event.end
+      copy_from: cloudflare_logpush.network_session.session.end
+      ignore_empty_value: true
   - rename:
+      tag: rename_json_BytesReceived_to_cloudflare_logpush_network_session_destination_bytes_088c6ffa
       field: json.BytesReceived
       target_field: cloudflare_logpush.network_session.destination.bytes
       ignore_missing: true
   - set:
+      tag: set_destination_bytes_e38f3e4c
       field: destination.bytes
       copy_from: cloudflare_logpush.network_session.destination.bytes
       ignore_empty_value: true
   - rename:
+      tag: rename_json_BytesSent_to_cloudflare_logpush_network_session_source_bytes_e3654c9a
       field: json.BytesSent
       target_field: cloudflare_logpush.network_session.source.bytes
       ignore_missing: true
   - set:
+      tag: set_source_bytes_1d92f200
       field: source.bytes
       copy_from: cloudflare_logpush.network_session.source.bytes
       ignore_empty_value: true
   - rename:
+      tag: rename_json_DetectedProtocol_to_cloudflare_logpush_network_session_detected_protocol_1c65f314
       field: json.DetectedProtocol
       target_field: cloudflare_logpush.network_session.detected_protocol
       ignore_missing: true
   - rename:
+      tag: rename_json_DeviceID_to_cloudflare_logpush_network_session_host_id_26f4a4bd
       field: json.DeviceID
       target_field: cloudflare_logpush.network_session.host.id
       ignore_missing: true
   - set:
+      tag: set_host_id_8ded5f2c
       field: host.id
       copy_from: cloudflare_logpush.network_session.host.id
       ignore_empty_value: true
+  - set:
+      tag: set_device_id_from_host_id
+      field: device.id
+      copy_from: cloudflare_logpush.network_session.host.id
+      ignore_empty_value: true
   - rename:
+      tag: rename_json_DeviceName_to_cloudflare_logpush_network_session_host_name_145bb719
       field: json.DeviceName
       target_field: cloudflare_logpush.network_session.host.name
       ignore_missing: true
   - set:
+      tag: set_host_name_840dd844
       field: host.name
       copy_from: cloudflare_logpush.network_session.host.name
       ignore_empty_value: true
-  - rename:
+  - convert:
       field: json.OriginIP
+      tag: convert_originip_to_ip
       target_field: cloudflare_logpush.network_session.destination.ip
+      type: ip
       ignore_missing: true
+      if: ctx.json?.OriginIP != null && ctx.json.OriginIP != ''
+      on_failure:
+        - append:
+            tag: append_error_message_394f4054
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_destination_ip_94459dee
       field: destination.ip
       copy_from: cloudflare_logpush.network_session.destination.ip
       ignore_empty_value: true
-# Geo enrichment (destination IP)
+  # Geo enrichment (destination IP)
   - geoip:
+      tag: geoip_destination_ip_to_destination_geo_394bcdb5
       field: destination.ip
       target_field: destination.geo
+      ignore_missing: true
+      if: ctx.destination?.ip != null
   - geoip:
+      tag: geoip_destination_ip_to_destination_as_8a007787
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
       target_field: destination.as
@@ -162,75 +215,97 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      if: ctx.destination?.ip != null
   - rename:
+      tag: rename_destination_as_asn_to_destination_as_number_3b459fcd
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
   - rename:
+      tag: rename_destination_as_organization_name_to_destination_as_organization_name_814bd459
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_json_OriginPort_to_cloudflare_logpush_network_session_destination_port_c7f218d3
       field: json.OriginPort
       target_field: cloudflare_logpush.network_session.destination.port
       ignore_missing: true
   - set:
+      tag: set_destination_port_5f15990a
       field: destination.port
       copy_from: cloudflare_logpush.network_session.destination.port
       ignore_empty_value: true
   - rename:
+      tag: rename_json_OriginTLSCertificateIssuer_to_cloudflare_logpush_network_session_tls_server_certificate_issuer_94eda834
       field: json.OriginTLSCertificateIssuer
       target_field: cloudflare_logpush.network_session.tls.server.certificate.issuer
       ignore_missing: true
   - set:
+      tag: set_tls_server_issuer_84dfe341
       field: tls.server.issuer
       copy_from: cloudflare_logpush.network_session.tls.server.certificate.issuer
       ignore_empty_value: true
   - rename:
+      tag: rename_json_Protocol_to_cloudflare_logpush_network_session_transport_932973e8
       field: json.Protocol
       target_field: cloudflare_logpush.network_session.transport
       ignore_missing: true
   - set:
+      tag: set_network_transport_3f402e30
       field: network.transport
       copy_from: cloudflare_logpush.network_session.transport
       ignore_empty_value: true
   - rename:
+      tag: rename_json_SessionID_to_cloudflare_logpush_network_session_session_id_d026538b
       field: json.SessionID
       target_field: cloudflare_logpush.network_session.session.id
       ignore_missing: true
   - set:
+      tag: set_event_id_9ca1813e
       field: event.id
       copy_from: cloudflare_logpush.network_session.session.id
       ignore_empty_value: true
-  - rename:
-      field: json.SessionStartTime
-      target_field: cloudflare_logpush.network_session.session.start
-      ignore_missing: true
-  - set:
-      field: event.start
-      copy_from: cloudflare_logpush.network_session.session.start
-      ignore_empty_value: true
-  - rename:
-      field: json.SessionEndTime
-      target_field: cloudflare_logpush.network_session.session.end
-      ignore_missing: true
-  - set:
-      field: event.end
-      copy_from: cloudflare_logpush.network_session.session.end
-      ignore_empty_value: true
-  - rename:
+  - script:
+      tag: script_efba3c4b
+      lang: painless
+      description: Calculates event.duration from event.start and event.end
+      if: ctx.event?.start != null && ctx.event?.end != null && ctx.event?.duration == null
+      source: |
+        ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
+        ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);
+        ctx.event.duration = ChronoUnit.NANOS.between(start, end);
+      on_failure:
+        - append:
+            tag: append_error_message_733370ed
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.SourceIP
+      tag: convert_sourceip_to_ip
       target_field: cloudflare_logpush.network_session.source.ip
+      type: ip
       ignore_missing: true
+      if: ctx.json?.SourceIP != null && ctx.json.SourceIP != ''
+      on_failure:
+        - append:
+            tag: append_error_message_1ee8a1ac
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_source_ip_60b5c944
       field: source.ip
       copy_from: cloudflare_logpush.network_session.source.ip
       ignore_empty_value: true
-# Geo enrichment (source IP)
+  # Geo enrichment (source IP)
   - geoip:
+      tag: geoip_source_ip_to_source_geo_0494c6b1
       field: source.ip
       target_field: source.geo
+      ignore_missing: true
+      if: ctx.source?.ip != null
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -238,166 +313,300 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
+      if: ctx.source?.ip != null
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_json_SourcePort_to_cloudflare_logpush_network_session_source_port_3cd518f3
       field: json.SourcePort
       target_field: cloudflare_logpush.network_session.source.port
       ignore_missing: true
   - set:
+      tag: set_source_port_14399d1c
       field: source.port
       copy_from: cloudflare_logpush.network_session.source.port
       ignore_empty_value: true
   - rename:
+      tag: rename_json_UserID_to_cloudflare_logpush_network_session_user_id_48a9a5b3
       field: json.UserID
       target_field: cloudflare_logpush.network_session.user.id
       ignore_missing: true
   - set:
+      tag: set_user_id_d4461d6c
       field: user.id
       copy_from: cloudflare_logpush.network_session.user.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_Email_to_cloudflare_logpush_network_session_user_email_1f12a13c
       field: json.Email
       target_field: cloudflare_logpush.network_session.user.email
       ignore_missing: true
   - set:
+      tag: set_user_email_a8fe96ba
       field: user.email
       copy_from: cloudflare_logpush.network_session.user.email
       ignore_empty_value: true
   - rename:
+      tag: rename_json_VirtualNetworkID_to_cloudflare_logpush_network_session_vlan_id_0d1d80e9
       field: json.VirtualNetworkID
       target_field: cloudflare_logpush.network_session.vlan.id
       ignore_missing: true
   - set:
+      tag: set_network_vlan_id_ee700abc
       field: network.vlan.id
       copy_from: cloudflare_logpush.network_session.vlan.id
       ignore_empty_value: true
-# Custom fields
+  # Custom fields
   - rename:
+      tag: rename_json_AccountID_to_cloudflare_logpush_network_session_account_id_10bbb2fa
       field: json.AccountID
       target_field: cloudflare_logpush.network_session.account_id
       ignore_missing: true
   - rename:
+      tag: rename_json_ClientTCPHandshakeDurationMs_to_cloudflare_logpush_network_session_tcp_client_handshake_time_ms_c9b170b8
       field: json.ClientTCPHandshakeDurationMs
       target_field: cloudflare_logpush.network_session.tcp.client.handshake_time_ms
       ignore_missing: true
   - rename:
+      tag: rename_json_ConnectionCloseReason_to_cloudflare_logpush_network_session_tcp_connection_close_reason_75e8a337
       field: json.ConnectionCloseReason
       target_field: cloudflare_logpush.network_session.tcp.connection.close_reason
       ignore_missing: true
   - rename:
+      tag: rename_json_ConnectionReuse_to_cloudflare_logpush_network_session_tcp_connection_reuse_7a99cc64
       field: json.ConnectionReuse
       target_field: cloudflare_logpush.network_session.tcp.connection.reuse
       ignore_missing: true
   - rename:
+      tag: rename_json_DestinationTunnelID_to_cloudflare_logpush_network_session_destination_tunnel_id_34922a94
       field: json.DestinationTunnelID
       target_field: cloudflare_logpush.network_session.destination.tunnel_id
       ignore_missing: true
   - rename:
+      tag: rename_json_EgressColoName_to_cloudflare_logpush_network_session_egress_colo_name_469fcc54
       field: json.EgressColoName
       target_field: cloudflare_logpush.network_session.egress.colo_name
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.EgressIP
+      tag: convert_egressip_to_ip
       target_field: cloudflare_logpush.network_session.egress.ip
+      type: ip
       ignore_missing: true
+      if: ctx.json?.EgressIP != null && ctx.json.EgressIP != ''
+      on_failure:
+        - append:
+            tag: append_error_message_0b129a2c
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_EgressPort_to_cloudflare_logpush_network_session_egress_port_7422959f
       field: json.EgressPort
       target_field: cloudflare_logpush.network_session.egress.port
       ignore_missing: true
   - rename:
+      tag: rename_json_EgressRuleID_to_cloudflare_logpush_network_session_egress_rule_id_88aeb3b5
       field: json.EgressRuleID
       target_field: cloudflare_logpush.network_session.egress.rule.id
       ignore_missing: true
   - rename:
+      tag: rename_json_EgressRuleName_to_cloudflare_logpush_network_session_egress_rule_name_930f5f11
       field: json.EgressRuleName
       target_field: cloudflare_logpush.network_session.egress.rule.name
       ignore_missing: true
   - rename:
+      tag: rename_json_IngressColoName_to_cloudflare_logpush_network_session_ingress_colo_name_c5ed9816
       field: json.IngressColoName
       target_field: cloudflare_logpush.network_session.ingress.colo_name
       ignore_missing: true
   - rename:
+      tag: rename_json_Offramp_to_cloudflare_logpush_network_session_offramp_7546864d
       field: json.Offramp
       target_field: cloudflare_logpush.network_session.offramp
       ignore_missing: true
   - rename:
+      tag: rename_json_RuleEvaluationDurationMs_to_cloudflare_logpush_network_session_rule_evaluation_time_ms_f41b18e8
       field: json.RuleEvaluationDurationMs
       target_field: cloudflare_logpush.network_session.rule_evaluation.time_ms
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.SourceInternalIP
+      tag: convert_sourceinternalip_to_ip
       target_field: cloudflare_logpush.network_session.source.internal_ip
+      type: ip
       ignore_missing: true
+      if: ctx.json?.SourceInternalIP != null && ctx.json.SourceInternalIP != ''
+      on_failure:
+        - append:
+            tag: append_error_message_3a73acf7
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_ClientTLSCipher_to_cloudflare_logpush_network_session_tls_client_cipher_4f9c2371
       field: json.ClientTLSCipher
       target_field: cloudflare_logpush.network_session.tls.client.cipher
       ignore_missing: true
+  - set:
+      tag: set_tls_cipher_from_tls_client_cipher
+      field: tls.cipher
+      copy_from: cloudflare_logpush.network_session.tls.client.cipher
+      ignore_empty_value: true
   - rename:
+      tag: rename_json_ClientTLSHandshakeDurationMs_to_cloudflare_logpush_network_session_tls_client_handshake_time_ms_e9250db4
       field: json.ClientTLSHandshakeDurationMs
       target_field: cloudflare_logpush.network_session.tls.client.handshake_time_ms
       ignore_missing: true
   - rename:
+      tag: rename_json_ClientTLSVersion_to_cloudflare_logpush_network_session_tls_client_version_ed81718d
       field: json.ClientTLSVersion
       target_field: cloudflare_logpush.network_session.tls.client.version
       ignore_missing: true
+  - grok:
+      tag: grok_tls_client_version_to_tls_version_protocol_and_tls_version
+      field: cloudflare_logpush.network_session.tls.client.version
+      patterns:
+        - '%{DATA:tls.version_protocol}v%{GREEDYDATA:tls.version}'
+        - '%{DATA:tls.version_protocol} %{GREEDYDATA:tls.version}'
+      ignore_missing: true
+      if: >-
+        ctx.cloudflare_logpush?.network_session?.tls?.client?.version != null &&
+        ctx.cloudflare_logpush.network_session.tls.client.version != 'none' &&
+        ctx.cloudflare_logpush.network_session.tls.client.version != 'unknown'
+      on_failure:
+        - append:
+            tag: append_error_message_80dbe90c
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - lowercase:
+      tag: lowercase_tls_version_protocol_b840a1f9
+      field: tls.version_protocol
+      ignore_missing: true
   - rename:
+      tag: rename_json_OriginTLSCertificateValidationResult_to_cloudflare_logpush_network_session_tls_server_certificate_validation_result_8626f7e1
       field: json.OriginTLSCertificateValidationResult
       target_field: cloudflare_logpush.network_session.tls.server.certificate.validation_result
       ignore_missing: true
   - rename:
+      tag: rename_json_OriginTLSCipher_to_cloudflare_logpush_network_session_tls_server_cipher_4039a3d8
       field: json.OriginTLSCipher
       target_field: cloudflare_logpush.network_session.tls.server.cipher
       ignore_missing: true
   - rename:
+      tag: rename_json_OriginTLSHandshakeDurationMs_to_cloudflare_logpush_network_session_tls_server_handshake_time_ms_ac775769
       field: json.OriginTLSHandshakeDurationMs
       target_field: cloudflare_logpush.network_session.tls.server.handshake_time_ms
       ignore_missing: true
   - rename:
+      tag: rename_json_OriginTLSVersion_to_cloudflare_logpush_network_session_tls_server_version_6509c1f8
       field: json.OriginTLSVersion
       target_field: cloudflare_logpush.network_session.tls.server.version
       ignore_missing: true
-# Create related fields
+  - convert:
+      tag: convert_json_InitialOriginIP_to_cloudflare_logpush_network_session_initial_origin_ip_45718b53
+      field: json.InitialOriginIP
+      target_field: cloudflare_logpush.network_session.initial_origin_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.InitialOriginIP != null && ctx.json.InitialOriginIP != ''
+      on_failure:
+        - append:
+            tag: append_error_message_34d648d9
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_json_RegistrationID_to_cloudflare_logpush_network_session_registration_id_5daa239a
+      field: json.RegistrationID
+      target_field: cloudflare_logpush.network_session.registration_id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_ResolvedFQDN_to_cloudflare_logpush_network_session_resolved_fqdn_f2d2e5e4
+      field: json.ResolvedFQDN
+      target_field: cloudflare_logpush.network_session.resolved_fqdn
+      ignore_missing: true
+  - rename:
+      tag: rename_json_SNI_to_cloudflare_logpush_network_session_sni_ed6abd1d
+      field: json.SNI
+      target_field: cloudflare_logpush.network_session.sni
+      ignore_missing: true
+  - set:
+      tag: set_tls_client_server_name_c3f65e85
+      field: tls.client.server_name
+      copy_from: cloudflare_logpush.network_session.sni
+      ignore_empty_value: true
+  # Create related fields
   - append:
+      tag: append_related_ip_8121c591
       field: related.ip
-      value: "{{{source.ip}}}"
-      if: ctx.source?.ip != null
+      value: '{{{cloudflare_logpush.network_session.source.ip}}}'
+      if: ctx.cloudflare_logpush?.network_session?.source?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_c1a6356b
       field: related.ip
-      value: "{{{destination.ip}}}"
-      if: ctx.destination?.ip != null
+      value: '{{{cloudflare_logpush.network_session.destination.ip}}}'
+      if: ctx.cloudflare_logpush?.network_session?.destination?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_e5930da7
       field: related.ip
       value: "{{{cloudflare_logpush.network_session.egress.ip}}}"
       if: ctx.cloudflare_logpush?.network_session?.egress?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_source_internal_ip_into_related_ip
+      field: related.ip
+      value: "{{{cloudflare_logpush.network_session.source.internal_ip}}}"
+      if: ctx.cloudflare_logpush?.network_session?.source?.internal_ip != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_hosts_d1851e05
       field: related.hosts
-      value: "{{{host.id}}}"
-      if: ctx.host?.id != null
+      value: '{{{cloudflare_logpush.network_session.host.id}}}'
+      if: ctx.cloudflare_logpush?.network_session?.host?.id != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_452ef445
       field: related.hosts
-      value: "{{{host.name}}}"
-      if: ctx.host?.name != null
+      value: '{{{cloudflare_logpush.network_session.host.name}}}'
+      if: ctx.cloudflare_logpush?.network_session?.host?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_7f407fef
       field: related.user
-      value: "{{{user.id}}}"
-      if: ctx.user?.id != null
+      value: '{{{cloudflare_logpush.network_session.user.id}}}'
+      if: ctx.cloudflare_logpush?.network_session?.user?.id != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_34fcf415
       field: related.user
-      value: "{{{user.email}}}"
-      if: ctx.user?.email != null
+      value: '{{{cloudflare_logpush.network_session.user.email}}}'
+      if: ctx.cloudflare_logpush?.network_session?.user?.email != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_c98bd3f4
+      field: related.ip
+      value: '{{{cloudflare_logpush.network_session.initial_origin_ip}}}'
+      if: ctx.cloudflare_logpush?.network_session?.initial_origin_ip != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_hosts_857bdfa8
+      field: related.hosts
+      value: '{{{cloudflare_logpush.network_session.resolved_fqdn}}}'
+      if: ctx.cloudflare_logpush?.network_session?.resolved_fqdn != null
+      allow_duplicates: false
+  - append:
+      tag: append_related_hosts_09a22ef4
+      field: related.hosts
+      value: '{{{cloudflare_logpush.network_session.sni}}}'
+      if: ctx.cloudflare_logpush?.network_session?.sni != null
       allow_duplicates: false
   - remove:
       tag: remove_json_conf
@@ -406,6 +615,7 @@ processors:
         - _conf
       ignore_missing: true
   - remove:
+      tag: remove_e2e9c790
       field:
         - cloudflare_logpush.network_session.timestamp
         - cloudflare_logpush.network_session.destination.bytes
@@ -415,6 +625,7 @@ processors:
         - cloudflare_logpush.network_session.host.id
         - cloudflare_logpush.network_session.host.name
         - cloudflare_logpush.network_session.tls.server.certificate.issuer
+        - cloudflare_logpush.network_session.sni
         - cloudflare_logpush.network_session.transport
         - cloudflare_logpush.network_session.session.id
         - cloudflare_logpush.network_session.session.start
@@ -424,35 +635,57 @@ processors:
         - cloudflare_logpush.network_session.user.id
         - cloudflare_logpush.network_session.user.email
         - cloudflare_logpush.network_session.vlan.id
+        - cloudflare_logpush.network_session.tls.client.cipher
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-      ignore_failure: true
       ignore_missing: true
   - script:
-      description: Drops null/empty values recursively.
+      tag: script_to_drop_null_values
       lang: painless
-      source: |
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || v == 'N/A' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
-        dropEmptyFields(ctx);
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_tags_9fe66b2c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_pipeline_error_message
       field: error.message
-      value: |-
-        Processor "{{{ _ingest.on_failure_processor_type }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_pipeline_error_to_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_preserve_original_event_tag
       field: tags
       value: preserve_original_event
       allow_duplicates: false

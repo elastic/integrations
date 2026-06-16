@@ -10,7 +10,7 @@ For a demo, refer to the following video (click to view).
 
 ### Compatibility
 
-This integration is compatible with CrowdStrike Falcon SIEM Connector v2.0, REST API, and CrowdStrike Event Streams API.
+This integration is compatible with CrowdStrike Falcon SIEM Connector 2.29.0, REST API, and CrowdStrike Event Streams API.
 
 ### How it works
 
@@ -92,6 +92,7 @@ You can use the Falcon SIEM Connector as an alternative to the Event Streams API
 
 The following event types are supported for CrowdStrike Event Streams (whether you use the Falcon SIEM Connector or the Event Streams API):
 
+- AutomatedLeadSummaryEvent
 - CustomerIOCEvent
 - DataProtectionDetectionSummaryEvent
 - DetectionSummaryEvent
@@ -834,6 +835,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.device.external_ip |  | ip |
 | crowdstrike.alert.device.first_seen |  | date |
 | crowdstrike.alert.device.groups |  | keyword |
+| crowdstrike.alert.device.host_hidden_status |  | keyword |
 | crowdstrike.alert.device.hostinfo.active_directory_dn_display |  | keyword |
 | crowdstrike.alert.device.hostinfo.domain |  | keyword |
 | crowdstrike.alert.device.hostname |  | keyword |
@@ -863,6 +865,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.documents_accessed.timestamp |  | date |
 | crowdstrike.alert.email_sent |  | boolean |
 | crowdstrike.alert.end_time |  | date |
+| crowdstrike.alert.event_correlation_id |  | keyword |
 | crowdstrike.alert.event_id |  | keyword |
 | crowdstrike.alert.executables_written.filename |  | keyword |
 | crowdstrike.alert.executables_written.filepath |  | keyword |
@@ -922,8 +925,11 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.ioc_type |  | keyword |
 | crowdstrike.alert.ioc_value |  | keyword |
 | crowdstrike.alert.ioc_values |  | keyword |
+| crowdstrike.alert.is_closed |  | boolean |
 | crowdstrike.alert.is_synthetic_quarantine_disposition |  | boolean |
 | crowdstrike.alert.ldap_search_query_attack |  | long |
+| crowdstrike.alert.lead_id |  | keyword |
+| crowdstrike.alert.lead_type |  | keyword |
 | crowdstrike.alert.local_prevalence |  | keyword |
 | crowdstrike.alert.local_process_id |  | keyword |
 | crowdstrike.alert.location_country_code |  | keyword |
@@ -999,6 +1005,8 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.platform |  | keyword |
 | crowdstrike.alert.poly_id |  | keyword |
 | crowdstrike.alert.prevented |  | boolean |
+| crowdstrike.alert.prevention_policy_id |  | keyword |
+| crowdstrike.alert.prevention_policy_name |  | keyword |
 | crowdstrike.alert.process_end_time |  | date |
 | crowdstrike.alert.process_id |  | keyword |
 | crowdstrike.alert.process_start_time |  | date |
@@ -1017,6 +1025,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.rule_instance_version |  | keyword |
 | crowdstrike.alert.scan_id |  | keyword |
 | crowdstrike.alert.scenario |  | keyword |
+| crowdstrike.alert.score |  | long |
 | crowdstrike.alert.seconds_to_resolved |  | long |
 | crowdstrike.alert.seconds_to_triaged |  | long |
 | crowdstrike.alert.severity |  | long |
@@ -1024,6 +1033,9 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.sha1 |  | keyword |
 | crowdstrike.alert.sha256 |  | keyword |
 | crowdstrike.alert.show_in_ui |  | boolean |
+| crowdstrike.alert.signal_end_timestamp |  | date |
+| crowdstrike.alert.signal_start_timestamp |  | date |
+| crowdstrike.alert.signal_updated_timestamp |  | date |
 | crowdstrike.alert.source.account_azure_id |  | keyword |
 | crowdstrike.alert.source.account_domain |  | keyword |
 | crowdstrike.alert.source.account_name |  | keyword |
@@ -1040,6 +1052,8 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.source.endpoint_sensor_id |  | keyword |
 | crowdstrike.alert.source.ip_isp_classification |  | long |
 | crowdstrike.alert.source.ip_isp_domain |  | keyword |
+| crowdstrike.alert.source_hosts |  | keyword |
+| crowdstrike.alert.source_ips |  | keyword |
 | crowdstrike.alert.source_products |  | keyword |
 | crowdstrike.alert.source_vendors |  | keyword |
 | crowdstrike.alert.start_time |  | date |
@@ -1059,6 +1073,18 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.technique |  | keyword |
 | crowdstrike.alert.technique_id |  | keyword |
 | crowdstrike.alert.template_instance_id |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.description |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.display_name |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.host_id |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.hostname |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.indicator_id |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.indicator_type |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.pattern_disposition |  | long |
+| crowdstrike.alert.threatgraph_indicators.pattern_id |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.process_id |  | keyword |
+| crowdstrike.alert.threatgraph_indicators.severity |  | long |
+| crowdstrike.alert.threatgraph_indicators.signal_association_timestamp |  | date |
+| crowdstrike.alert.threatgraph_indicators.template_instance_id |  | keyword |
 | crowdstrike.alert.timestamp |  | date |
 | crowdstrike.alert.tree_id |  | keyword |
 | crowdstrike.alert.tree_root |  | keyword |
@@ -1067,6 +1093,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.updated_timestamp |  | date |
 | crowdstrike.alert.user_id |  | keyword |
 | crowdstrike.alert.user_name |  | keyword |
+| crowdstrike.alert.user_names |  | keyword |
 | crowdstrike.alert.user_principal |  | keyword |
 | crowdstrike.alert.worker_node_name |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
@@ -1307,6 +1334,8 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.LMHostIDs | Array of host IDs seen to have experienced lateral movement because of the incident. | keyword |
 | crowdstrike.event.LateralMovement | Lateral movement field for incident. | long |
 | crowdstrike.event.LdapSearchQueryAttack | Detected LDAP tool attack. | keyword |
+| crowdstrike.event.LeadId | The ID given to the automated lead. | keyword |
+| crowdstrike.event.LeadType | The type of automated lead. | keyword |
 | crowdstrike.event.LoadedObjects | Provides one or more JSON objects describing the loaded objects related to the detection. | nested |
 | crowdstrike.event.LocalIP | IP address of the host associated with the detection. | keyword |
 | crowdstrike.event.LocalIPv6 |  | ip |
@@ -1428,11 +1457,15 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.ScheduledSearchId | Unique identifier of the associated scheduled search. | keyword |
 | crowdstrike.event.ScheduledSearchUserId | User ID of the user that created the the associated scheduled search. | keyword |
 | crowdstrike.event.ScheduledSearchUserUUID | UUID of the user that created the the associated scheduled search. | keyword |
+| crowdstrike.event.Score | The confidence score of the automated lead. Values range from 0 to 100. | long |
 | crowdstrike.event.SensorId | Unique ID associated with the Falcon sensor. | keyword |
 | crowdstrike.event.ServiceName | Description of which related service was involved in the event. | keyword |
 | crowdstrike.event.SessionId | Session ID of the remote response session. | keyword |
 | crowdstrike.event.Severity | The integer severity level using Crowdstrike scaling. | integer |
 | crowdstrike.event.SeverityName | The severity level of the detection, as a string (High/Medium/Informational). | keyword |
+| crowdstrike.event.SignalEndTimestamp | Timestamp of when the last indicator was added to the lead. | date |
+| crowdstrike.event.SignalStartTimestamp | Timestamp of when the first indicator was added to the lead. | date |
+| crowdstrike.event.SignalUpdatedTimestamp | The last time the lead was updated with new information or when it was closed. | date |
 | crowdstrike.event.SourceAccountUpn | Source user UPN. | keyword |
 | crowdstrike.event.SourceEndpointAccountObjectGuid | Source endpoint object GUID | keyword |
 | crowdstrike.event.SourceEndpointAccountObjectSid | Source endpoint object SID. | keyword |
@@ -1457,6 +1490,17 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.TargetEndpointHostName | Target endpoint hostname. | keyword |
 | crowdstrike.event.TargetEndpointSensorId | Target endpoint agent ID. | keyword |
 | crowdstrike.event.TargetServiceAccessIdentifier | Target SPN. | keyword |
+| crowdstrike.event.ThreatgraphIndicators.Description |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.DisplayName |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.HostId |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.Hostname |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.IndicatorId |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.PatternDisposition |  | long |
+| crowdstrike.event.ThreatgraphIndicators.PatternId |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.ProcessId |  | keyword |
+| crowdstrike.event.ThreatgraphIndicators.Severity |  | long |
+| crowdstrike.event.ThreatgraphIndicators.SignalAssociationTimestamp |  | date |
+| crowdstrike.event.ThreatgraphIndicators.TemplateInstanceId |  | keyword |
 | crowdstrike.event.Timestamp | Firewall rule triggered timestamp. | date |
 | crowdstrike.event.Trampolines | Provides one or more JSON objects describing the relevant functions and processes performing inline API hooks. | nested |
 | crowdstrike.event.TreeID | CrowdStrike tree id. | keyword |
@@ -1471,7 +1515,7 @@ An example event for `falcon` looks as following:
 | crowdstrike.event.VerifiedBootState | Provides the device’s current boot state. | keyword |
 | crowdstrike.event.XdrType | Type of detection: xdr or xdr-scheduled-search. | keyword |
 | crowdstrike.metadata.customerIDString | Customer identifier | keyword |
-| crowdstrike.metadata.eventType | DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, or UserActivityAuditEvent | keyword |
+| crowdstrike.metadata.eventType | DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, UserActivityAuditEvent, or AutomatedLeadSummaryEvent | keyword |
 | crowdstrike.metadata.offset | Offset number that tracks the location of the event in stream. This is used to identify unique detection events. | integer |
 | crowdstrike.metadata.version | Schema version | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
@@ -1813,6 +1857,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.AccountObjectGuid |  | match_only_text |
 | crowdstrike.AccountObjectSid |  | match_only_text |
 | crowdstrike.AccountType |  | keyword |
+| crowdstrike.ActiveCpuCount |  | long |
 | crowdstrike.ActiveDirectoryAuthenticationMethod |  | keyword |
 | crowdstrike.ActivityId |  | keyword |
 | crowdstrike.AddressFamily |  | keyword |
@@ -1848,20 +1893,30 @@ An example event for `fdr` looks as following:
 | crowdstrike.AuthenticationUuid |  | keyword |
 | crowdstrike.AuthenticationUuidAsString |  | keyword |
 | crowdstrike.AuthenticodeHashData |  | keyword |
+| crowdstrike.AuthenticodeHashDataSHA1 |  | keyword |
 | crowdstrike.AuthenticodeHashDataSHA256 |  | keyword |
+| crowdstrike.AuthenticodeSignatureFlags |  | keyword |
+| crowdstrike.AvailableDiskSpace |  | keyword |
+| crowdstrike.AverageCpuUsage |  | keyword |
+| crowdstrike.AverageUsedRam |  | keyword |
+| crowdstrike.BaseFileName |  | keyword |
 | crowdstrike.BaseReachableTime |  | keyword |
 | crowdstrike.BatchDataNumber |  | keyword |
 | crowdstrike.BatchDataTotal |  | keyword |
 | crowdstrike.BatchTimestamp |  | date |
+| crowdstrike.BillingType |  | keyword |
 | crowdstrike.BinaryExecutableWrittenCount |  | long |
 | crowdstrike.BiosChanged |  | match_only_text |
 | crowdstrike.BiosManufacturer |  | keyword |
 | crowdstrike.BiosReleaseDate |  | date |
 | crowdstrike.BiosVersion |  | keyword |
 | crowdstrike.BluetoothClassOfDeviceValue |  | match_only_text |
+| crowdstrike.BluetoothDeviceAddress |  | keyword |
+| crowdstrike.BluetoothDeviceAddressType |  | keyword |
 | crowdstrike.BluetoothDeviceAppearanceValue |  | match_only_text |
 | crowdstrike.BluetoothDeviceModelNumber |  | match_only_text |
 | crowdstrike.BluetoothDeviceName |  | match_only_text |
+| crowdstrike.BluetoothDeviceType |  | keyword |
 | crowdstrike.BluetoothServiceName_1 |  | match_only_text |
 | crowdstrike.BluetoothServiceName_3 |  | match_only_text |
 | crowdstrike.BluetoothServiceName_4 |  | match_only_text |
@@ -1915,6 +1970,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.ClientComputerName |  | keyword |
 | crowdstrike.ClientId |  | match_only_text |
 | crowdstrike.ClientProcessStartKey |  | keyword |
+| crowdstrike.CloudErrorCode |  | keyword |
 | crowdstrike.CloudIndicator |  | boolean |
 | crowdstrike.CommandCount |  | match_only_text |
 | crowdstrike.CommandCountMax |  | match_only_text |
@@ -1931,7 +1987,11 @@ An example event for `fdr` looks as following:
 | crowdstrike.ConfigIDPlatform |  | keyword |
 | crowdstrike.ConfigStateData |  | text |
 | crowdstrike.ConfigStateHash |  | keyword |
+| crowdstrike.ConfigurationDescriptorAttributes |  | keyword |
+| crowdstrike.ConfigurationDescriptorMaxPowerDraw |  | keyword |
 | crowdstrike.ConfigurationDescriptorName |  | match_only_text |
+| crowdstrike.ConfigurationDescriptorNumInterfaces |  | keyword |
+| crowdstrike.ConfigurationDescriptorValue |  | keyword |
 | crowdstrike.ConfigurationVersion |  | keyword |
 | crowdstrike.ConnectTime |  | date |
 | crowdstrike.ConnectType |  | keyword |
@@ -1967,6 +2027,11 @@ An example event for `fdr` looks as following:
 | crowdstrike.DataDomains |  | keyword |
 | crowdstrike.DcNumAttachments |  | match_only_text |
 | crowdstrike.DcNumBlockingPolicies |  | match_only_text |
+| crowdstrike.DcPolicyAction |  | keyword |
+| crowdstrike.DcPolicyFlags |  | keyword |
+| crowdstrike.DcPolicyGroupId |  | keyword |
+| crowdstrike.DcPolicyId |  | keyword |
+| crowdstrike.DcPolicyMassStorageBlockPermissions |  | keyword |
 | crowdstrike.Description |  | keyword |
 | crowdstrike.DesiredAccess |  | keyword |
 | crowdstrike.Destination |  | nested |
@@ -1975,11 +2040,28 @@ An example event for `fdr` looks as following:
 | crowdstrike.DetectId |  | keyword |
 | crowdstrike.DetectName |  | keyword |
 | crowdstrike.DetectionType |  | keyword |
+| crowdstrike.DeviceActiveConfigurationNumber |  | keyword |
+| crowdstrike.DeviceConnectionStatus |  | keyword |
+| crowdstrike.DeviceDescriptorSetHash |  | keyword |
+| crowdstrike.DeviceDescriptorUniqueIdentifier |  | keyword |
 | crowdstrike.DeviceId |  | keyword |
+| crowdstrike.DeviceInstanceId |  | keyword |
+| crowdstrike.DeviceManufacturer |  | keyword |
 | crowdstrike.DeviceMountCounter |  | long |
+| crowdstrike.DeviceProduct |  | keyword |
+| crowdstrike.DeviceProductId |  | keyword |
 | crowdstrike.DevicePropertyClassGuid |  | match_only_text |
 | crowdstrike.DevicePropertyClassName |  | match_only_text |
+| crowdstrike.DevicePropertyDeviceDescription |  | keyword |
 | crowdstrike.DevicePropertyLocationInformation |  | match_only_text |
+| crowdstrike.DevicePropertyManufacturer |  | keyword |
+| crowdstrike.DeviceProtocol |  | keyword |
+| crowdstrike.DeviceTimeStamp |  | keyword |
+| crowdstrike.DeviceUsbClass |  | keyword |
+| crowdstrike.DeviceUsbSubclass |  | keyword |
+| crowdstrike.DeviceUsbVersion |  | keyword |
+| crowdstrike.DeviceVendorId |  | keyword |
+| crowdstrike.DeviceVersion |  | keyword |
 | crowdstrike.DirectionType |  | keyword |
 | crowdstrike.DirectoryCreatedCount |  | long |
 | crowdstrike.DirectoryEnumeratedCount |  | long |
@@ -2015,13 +2097,21 @@ An example event for `fdr` looks as following:
 | crowdstrike.EgressSessionId |  | keyword |
 | crowdstrike.EnabledPrivilegesBitmask |  | keyword |
 | crowdstrike.EndTime |  | date |
+| crowdstrike.EndpointDescriptorAddress |  | keyword |
+| crowdstrike.EndpointDescriptorAttributes |  | keyword |
+| crowdstrike.EndpointDescriptorInterval |  | keyword |
+| crowdstrike.EndpointDescriptorMaxPacketSize |  | keyword |
 | crowdstrike.Entitlements |  | keyword |
 | crowdstrike.EnvironmentVariableName |  | keyword |
 | crowdstrike.EnvironmentVariableValue |  | keyword |
 | crowdstrike.EnvironmentVariablesString |  | match_only_text |
 | crowdstrike.ErrorCode |  | keyword |
 | crowdstrike.ErrorStatus |  | keyword |
+| crowdstrike.ErrorText |  | keyword |
 | crowdstrike.EtwProviderType |  | keyword |
+| crowdstrike.EtwProviders |  | keyword |
+| crowdstrike.EtwProvidersEnabled |  | keyword |
+| crowdstrike.EtwProvidersError |  | keyword |
 | crowdstrike.EtwRawProcessId |  | long |
 | crowdstrike.EtwRawRpcClientProcessId |  | keyword |
 | crowdstrike.EtwRawThreadId |  | long |
@@ -2038,6 +2128,10 @@ An example event for `fdr` looks as following:
 | crowdstrike.ExeAndServiceCount |  | long |
 | crowdstrike.ExecutableBytes |  | match_only_text |
 | crowdstrike.ExecutableDeletedCount |  | long |
+| crowdstrike.ExecutionShell |  | keyword |
+| crowdstrike.ExtendedAttributeModificationType |  | keyword |
+| crowdstrike.ExtendedAttributeName |  | keyword |
+| crowdstrike.ExtendedAttributeStatus |  | keyword |
 | crowdstrike.ExtendedAttributeValue |  | match_only_text |
 | crowdstrike.ExtendedAttributeValueReadable |  | match_only_text |
 | crowdstrike.ExtendedKeyUsages |  | keyword |
@@ -2088,6 +2182,8 @@ An example event for `fdr` looks as following:
 | crowdstrike.FirewallRuleId |  | keyword |
 | crowdstrike.FirmwareAnalysisEclConsumerInterfaceVersion |  | keyword |
 | crowdstrike.FirmwareAnalysisEclControlInterfaceVersion |  | keyword |
+| crowdstrike.FirmwareSize |  | keyword |
+| crowdstrike.FirmwareType |  | keyword |
 | crowdstrike.FirstCommand |  | match_only_text |
 | crowdstrike.FirstDiscoveredDate |  | date |
 | crowdstrike.FirstIP4Record |  | keyword |
@@ -2112,7 +2208,13 @@ An example event for `fdr` looks as following:
 | crowdstrike.GrandparentImageFileName |  | keyword |
 | crowdstrike.GrandparentImageFilePath |  | keyword |
 | crowdstrike.GrandparentProcessId |  | keyword |
+| crowdstrike.GrandparentProcessPatternIdList |  | keyword |
+| crowdstrike.GrandparentSHA256HashData |  | keyword |
+| crowdstrike.GreatGrandParentBaseFileName |  | keyword |
 | crowdstrike.GroupRid |  | keyword |
+| crowdstrike.HIDDescriptorCountryCode |  | long |
+| crowdstrike.HIDDescriptorNumDescriptors |  | keyword |
+| crowdstrike.HIDDescriptorVersion |  | keyword |
 | crowdstrike.HandleCreateAuthenticationId |  | keyword |
 | crowdstrike.HandleCreated |  | keyword |
 | crowdstrike.HandleOperationType |  | keyword |
@@ -2120,9 +2222,13 @@ An example event for `fdr` looks as following:
 | crowdstrike.HostGroups |  | keyword |
 | crowdstrike.HostHiddenStatus |  | keyword |
 | crowdstrike.HostProcessType |  | keyword |
+| crowdstrike.HttpHost |  | keyword |
 | crowdstrike.HttpInternalSource |  | match_only_text |
 | crowdstrike.HttpMethod |  | match_only_text |
+| crowdstrike.HttpPath |  | keyword |
 | crowdstrike.HttpRequestHeader |  | match_only_text |
+| crowdstrike.HttpStatus |  | keyword |
+| crowdstrike.HttpStatusText |  | keyword |
 | crowdstrike.HttpUrl |  | match_only_text |
 | crowdstrike.IOCType |  | keyword |
 | crowdstrike.IOCValue |  | keyword |
@@ -2132,6 +2238,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.IP4Records |  | keyword |
 | crowdstrike.IcmpCode |  | keyword |
 | crowdstrike.IcmpType |  | keyword |
+| crowdstrike.Id |  | keyword |
 | crowdstrike.IfType |  | keyword |
 | crowdstrike.ImageBaseName |  | keyword |
 | crowdstrike.ImageCheckSum |  | keyword |
@@ -2164,6 +2271,10 @@ An example event for `fdr` looks as following:
 | crowdstrike.IntegrityLevel |  | keyword |
 | crowdstrike.InterfaceAlias |  | keyword |
 | crowdstrike.InterfaceDescription |  | keyword |
+| crowdstrike.InterfaceDescriptorAlternateSetting |  | keyword |
+| crowdstrike.InterfaceDescriptorName |  | keyword |
+| crowdstrike.InterfaceDescriptorNumEndpoints |  | keyword |
+| crowdstrike.InterfaceDescriptorNumber |  | keyword |
 | crowdstrike.InterfaceFlags |  | keyword |
 | crowdstrike.InterfaceGuid |  | keyword |
 | crowdstrike.InterfaceIdentifier |  | keyword |
@@ -2182,6 +2293,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.IsOnRemovableDisk |  | keyword |
 | crowdstrike.IsProcessInitializing |  | keyword |
 | crowdstrike.IsTransactedFile |  | keyword |
+| crowdstrike.IsTrustedOnLocalMachine |  | keyword |
 | crowdstrike.IsUnique |  | keyword |
 | crowdstrike.KernelTime |  | long |
 | crowdstrike.KeyObject |  | match_only_text |
@@ -2194,8 +2306,11 @@ An example event for `fdr` looks as following:
 | crowdstrike.LaunchItemType |  | match_only_text |
 | crowdstrike.LaunchItemUrl |  | match_only_text |
 | crowdstrike.LdapSearchFilterSample |  | match_only_text |
+| crowdstrike.LeadId |  | keyword |
+| crowdstrike.LeadType |  | keyword |
 | crowdstrike.LfoUploadFlags |  | keyword |
 | crowdstrike.LightningLatencyState |  | keyword |
+| crowdstrike.LightningResponseStatus |  | keyword |
 | crowdstrike.Line |  | keyword |
 | crowdstrike.LinkLocalAddressBehavior |  | keyword |
 | crowdstrike.LinkLocalAddressTimeout |  | keyword |
@@ -2221,6 +2336,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.MD5HashData |  | keyword |
 | crowdstrike.MD5String |  | keyword |
 | crowdstrike.MLModelVersion |  | keyword |
+| crowdstrike.MSOfficeSubType |  | keyword |
 | crowdstrike.MachOSubType |  | keyword |
 | crowdstrike.MajorFunction |  | keyword |
 | crowdstrike.MajorVersion |  | keyword |
@@ -2229,15 +2345,19 @@ An example event for `fdr` looks as following:
 | crowdstrike.MappedFromUserMode |  | keyword |
 | crowdstrike.MatchedClassification.ID |  | keyword |
 | crowdstrike.MatchedClassification.Name |  | keyword |
+| crowdstrike.MaxCpuUsage |  | keyword |
 | crowdstrike.MaxReassemblySize |  | keyword |
 | crowdstrike.MaxRouterAdvertisementInterval |  | keyword |
 | crowdstrike.MaxThreadCount |  | long |
+| crowdstrike.MaxUsedRam |  | keyword |
+| crowdstrike.MeasurementType |  | keyword |
 | crowdstrike.MediaConnectState |  | keyword |
 | crowdstrike.MediaType |  | keyword |
 | crowdstrike.MemoryAvailable |  | match_only_text |
 | crowdstrike.MemoryTotal |  | keyword |
 | crowdstrike.Metric |  | keyword |
 | crowdstrike.MicrocodeSignature |  | keyword |
+| crowdstrike.MillisecondsToReadFirmware |  | keyword |
 | crowdstrike.MinRouterAdvertisementInterval |  | keyword |
 | crowdstrike.MinorFunction |  | keyword |
 | crowdstrike.MinorVersion |  | keyword |
@@ -2253,7 +2373,12 @@ An example event for `fdr` looks as following:
 | crowdstrike.ModuleLoadTelemetryClassification |  | keyword |
 | crowdstrike.ModuleSize |  | keyword |
 | crowdstrike.MountedVolumeAction |  | keyword |
+| crowdstrike.MsiProductCode |  | keyword |
+| crowdstrike.MsiTransactionEndTimeStamp |  | keyword |
+| crowdstrike.MsiTransactionStartTimeStamp |  | keyword |
+| crowdstrike.MsiTransactionType |  | keyword |
 | crowdstrike.NDRoot |  | keyword |
+| crowdstrike.Name |  | keyword |
 | crowdstrike.NegateInterface |  | keyword |
 | crowdstrike.NegateLocalAddress |  | keyword |
 | crowdstrike.NegateRemoteAddress |  | keyword |
@@ -2284,8 +2409,19 @@ An example event for `fdr` looks as following:
 | crowdstrike.NewFileAttributesLinux |  | keyword |
 | crowdstrike.NewFileIdentifier |  | keyword |
 | crowdstrike.NewUnixPermissions |  | keyword |
+| crowdstrike.NewUserID |  | keyword |
+| crowdstrike.NewUsername |  | keyword |
 | crowdstrike.NlMtu |  | keyword |
 | crowdstrike.Nonce |  | unsigned_long |
+| crowdstrike.NumberOfDiskDrives |  | keyword |
+| crowdstrike.NumberOfMeasurements |  | keyword |
+| crowdstrike.ODAccountType |  | keyword |
+| crowdstrike.ODAttributeName |  | keyword |
+| crowdstrike.ODDatabasePath |  | keyword |
+| crowdstrike.ODErrorCode |  | keyword |
+| crowdstrike.ODNodeName |  | keyword |
+| crowdstrike.ODRecordName |  | keyword |
+| crowdstrike.ODRecordType |  | keyword |
 | crowdstrike.OSVersionFileData |  | match_only_text |
 | crowdstrike.OSVersionFileName |  | keyword |
 | crowdstrike.OU |  | keyword |
@@ -2328,6 +2464,8 @@ An example event for `fdr` looks as following:
 | crowdstrike.OriginalEventTimeStamp |  | keyword |
 | crowdstrike.OriginalFilename |  | keyword |
 | crowdstrike.OriginalParentAuthenticationId |  | keyword |
+| crowdstrike.OriginalScriptContent |  | keyword |
+| crowdstrike.OriginalUserID |  | keyword |
 | crowdstrike.OriginalUserName |  | keyword |
 | crowdstrike.OriginalUserSid |  | keyword |
 | crowdstrike.OutBroadcastOctets |  | keyword |
@@ -2348,9 +2486,12 @@ An example event for `fdr` looks as following:
 | crowdstrike.ParentAuthenticationId |  | keyword |
 | crowdstrike.ParentCommandLine |  | keyword |
 | crowdstrike.ParentCommandLine.text | Multi-field of `crowdstrike.ParentCommandLine`. | match_only_text |
+| crowdstrike.ParentHubInstanceId |  | keyword |
+| crowdstrike.ParentHubPort |  | long |
 | crowdstrike.ParentImageFileName |  | keyword |
 | crowdstrike.ParentImageFilePath |  | keyword |
 | crowdstrike.ParentProcessPatternIdList |  | keyword |
+| crowdstrike.ParentSHA256HashData |  | keyword |
 | crowdstrike.PasswordLastSet |  | keyword |
 | crowdstrike.PathMtuDiscoveryTimeout |  | keyword |
 | crowdstrike.PatternDispositionDescription |  | keyword |
@@ -2432,9 +2573,21 @@ An example event for `fdr` looks as following:
 | crowdstrike.ProcessStartKey |  | keyword |
 | crowdstrike.ProcessSxsFlags |  | keyword |
 | crowdstrike.ProcessorPackageCount |  | long |
+| crowdstrike.ProductLanguage |  | keyword |
+| crowdstrike.ProductManufacturer |  | keyword |
+| crowdstrike.ProductName |  | keyword |
 | crowdstrike.ProductType |  | keyword |
+| crowdstrike.ProductVersion |  | keyword |
+| crowdstrike.ProfileDisplayName |  | keyword |
+| crowdstrike.ProfileIdentifier |  | keyword |
+| crowdstrike.ProfileModificationType |  | keyword |
+| crowdstrike.ProfileScope |  | keyword |
+| crowdstrike.ProfileSource |  | keyword |
+| crowdstrike.ProfileUUID |  | keyword |
 | crowdstrike.ProtectVirtualMemoryCount |  | long |
 | crowdstrike.ProvisionState |  | keyword |
+| crowdstrike.PtCompatibilityFlags |  | keyword |
+| crowdstrike.PtStatusFlags |  | keyword |
 | crowdstrike.PublicKeys |  | keyword |
 | crowdstrike.PupAdwareConfidence |  | keyword |
 | crowdstrike.PupAdwareDecisionValue |  | keyword |
@@ -2486,7 +2639,9 @@ An example event for `fdr` looks as following:
 | crowdstrike.ResourceIdType |  | keyword |
 | crowdstrike.RespondingDnsServer |  | keyword |
 | crowdstrike.ResponseAction |  | keyword |
+| crowdstrike.ResponsiblePid |  | keyword |
 | crowdstrike.RetransmitTime |  | keyword |
+| crowdstrike.RootExclusionProcessId |  | keyword |
 | crowdstrike.RootPath |  | keyword |
 | crowdstrike.RouteAge |  | keyword |
 | crowdstrike.RouteMetric |  | keyword |
@@ -2508,6 +2663,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.SamAccountName |  | match_only_text |
 | crowdstrike.ScopeLevel |  | keyword |
 | crowdstrike.ScopeZone |  | keyword |
+| crowdstrike.Score |  | long |
 | crowdstrike.ScreenshotType |  | keyword |
 | crowdstrike.ScreenshotsTakenCount |  | long |
 | crowdstrike.ScriptContent |  | match_only_text |
@@ -2516,6 +2672,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.ScriptContentScanId |  | match_only_text |
 | crowdstrike.ScriptControlErrorCode |  | keyword |
 | crowdstrike.ScriptEngineInvocationCount |  | long |
+| crowdstrike.ScriptInterpreter |  | keyword |
 | crowdstrike.ScriptingLanguageId |  | keyword |
 | crowdstrike.SecurityInformationLinux |  | keyword |
 | crowdstrike.SensorGroupingTags |  | keyword |
@@ -2546,6 +2703,9 @@ An example event for `fdr` looks as following:
 | crowdstrike.ShareSecurity |  | keyword |
 | crowdstrike.ShareSecuritySddl |  | keyword |
 | crowdstrike.SignInfoFlags |  | keyword |
+| crowdstrike.SignalEndTimestamp |  | date |
+| crowdstrike.SignalStartTimestamp |  | date |
+| crowdstrike.SignalUpdatedTimestamp |  | date |
 | crowdstrike.SignatureErrorState |  | keyword |
 | crowdstrike.SignatureState |  | keyword |
 | crowdstrike.SiteName |  | keyword |
@@ -2633,9 +2793,22 @@ An example event for `fdr` looks as following:
 | crowdstrike.ThreadStartAddress |  | keyword |
 | crowdstrike.ThreadStartBytes |  | match_only_text |
 | crowdstrike.ThreadStartContext |  | keyword |
+| crowdstrike.ThreatgraphIndicators.Description |  | keyword |
+| crowdstrike.ThreatgraphIndicators.DisplayName |  | keyword |
+| crowdstrike.ThreatgraphIndicators.HostId |  | keyword |
+| crowdstrike.ThreatgraphIndicators.Hostname |  | keyword |
+| crowdstrike.ThreatgraphIndicators.IndicatorId |  | keyword |
+| crowdstrike.ThreatgraphIndicators.PatternDisposition |  | long |
+| crowdstrike.ThreatgraphIndicators.PatternId |  | keyword |
+| crowdstrike.ThreatgraphIndicators.ProcessId |  | keyword |
+| crowdstrike.ThreatgraphIndicators.Severity |  | long |
+| crowdstrike.ThreatgraphIndicators.SignalAssociationTimestamp |  | date |
+| crowdstrike.ThreatgraphIndicators.TemplateInstanceId |  | keyword |
 | crowdstrike.Timeout |  | long |
+| crowdstrike.TlsVersion |  | keyword |
 | crowdstrike.TokenType |  | keyword |
 | crowdstrike.TotalCount |  | long |
+| crowdstrike.TotalDiskSpace |  | keyword |
 | crowdstrike.TransmitLinkSpeed |  | keyword |
 | crowdstrike.TreeId |  | keyword |
 | crowdstrike.TunnelType |  | keyword |
@@ -2646,6 +2819,7 @@ An example event for `fdr` looks as following:
 | crowdstrike.UnsignedModuleLoadCount |  | long |
 | crowdstrike.UpdateFlag |  | keyword |
 | crowdstrike.UploadId |  | keyword |
+| crowdstrike.UsedDiskSpace |  | keyword |
 | crowdstrike.User |  | keyword |
 | crowdstrike.UserDepartment |  | keyword |
 | crowdstrike.UserFlags |  | keyword |
@@ -2719,6 +2893,12 @@ An example event for `fdr` looks as following:
 | crowdstrike.WmiProviderName |  | keyword |
 | crowdstrike.WmiProviderType |  | keyword |
 | crowdstrike.WmiQuery |  | keyword |
+| crowdstrike.XumdInjectionFailureCount |  | long |
+| crowdstrike.XumdInjectionSuccessCount |  | long |
+| crowdstrike.XumdProcessErrorStatusString |  | keyword |
+| crowdstrike.XumdStatusReason |  | keyword |
+| crowdstrike.XumdStatusVersion |  | keyword |
+| crowdstrike.XumdSuccessStatusString |  | keyword |
 | crowdstrike.__mv_LocalAddressIP4 |  | keyword |
 | crowdstrike.__mv_aip |  | keyword |
 | crowdstrike.__mv_discoverer_aid |  | keyword |
