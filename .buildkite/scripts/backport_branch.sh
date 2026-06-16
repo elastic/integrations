@@ -171,6 +171,7 @@ updateBackportBranchContents() {
   local PACKAGENAMES_SCRIPTS_FOLDER="dev/packagenames"
   local BACKPORTS_SCRIPTS_FOLDER="dev/backports"
   local DEV_SCRIPTS_FOLDER="dev/scripts"
+  local BACKPORTS_FOLDER="dev/backports"
 
   if git ls-tree -d --name-only main:${MAGEFILE_SCRIPTS_FOLDER} > /dev/null 2>&1 ; then
     echo "--- Copying magefile scripts from $SOURCE_BRANCH..."
@@ -201,6 +202,10 @@ updateBackportBranchContents() {
     echo "Copying $DEV_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${DEV_SCRIPTS_FOLDER}"
     git add "${DEV_SCRIPTS_FOLDER}"
+
+    echo "Copying $BACKPORTS_FOLDER from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- "${BACKPORTS_FOLDER}"
+    git add "${BACKPORTS_FOLDER}"
 
     echo "Copying magefile.go from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "magefile.go"
