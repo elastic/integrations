@@ -45,9 +45,9 @@ The PingDirectory integration collects the following types of data:
 
 ### Agent-based deployment
 
-For more details, refer to the Elastic Agent installation instructions. -> For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
 ### Configure
 

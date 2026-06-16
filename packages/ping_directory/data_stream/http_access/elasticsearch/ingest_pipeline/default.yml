@@ -31,7 +31,6 @@ processors:
             field: error.message
             tag: append_error_message_for_parse_http_access
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-
   - script:
       lang: painless
       tag: parse_headers
@@ -95,14 +94,6 @@ processors:
       field: event.category
       tag: append_web_into_event_category
       value: web
-  - set:
-      field: observer.vendor
-      tag: set_observer_vendor
-      value: PingIdentity
-  - set:
-      field: observer.product
-      tag: set_observer_product
-      value: PingDirectory
   - convert:
       field: client.ip
       tag: convert_from_to_ip
@@ -114,36 +105,39 @@ processors:
             field: error.message
             tag: append_error_message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: http.request.bytes
-      tag: convert_requestContentLength_to_long
-      type: long
+  - geoip:
+      field: client.ip
+      tag: enrich_client_geo
+      target_field: client.geo
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_message_for_convert_requestContentLength_to_long
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: http.response.bytes
-      tag: convert_responseContentLength_to_long
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_message_for_convert_responseContentLength_to_long
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: http.response.status_code
-      tag: convert_statusCode_to_long
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_message_for_convert_statusCode_to_long
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.outcome
+      value: success
+      tag: set_event_outcome_to_success
+      if: >
+        ctx.http?.response?.status_code != null &&
+        [200L, 201L, 202L].contains(ctx.http.response.status_code)
+  - set:
+      field: event.outcome
+      value: failure
+      tag: set_event_outcome_to_failure
+      if: >
+        ctx.http?.response?.status_code != null &&
+        ctx.http.response.status_code >= 400 &&
+        ctx.http.response.status_code < 600
+  - set:
+      field: event.outcome
+      value: unknown
+      tag: set_event_outcome_to_unknown
+      if: >
+        ctx.http?.response?.status_code != null &&
+        ![200L, 201L, 202L].contains(ctx.http.response.status_code) &&
+        (ctx.http.response.status_code < 400 || ctx.http.response.status_code >= 600)
+  - set:
+      field: event.action
+      tag: set_event_action_from_http_request_method
+      copy_from: http.request.method
+      ignore_empty_value: true
   - set:
       field: trace.id
       tag: set_trace_id_from_http_access_correlation_id
@@ -155,22 +149,21 @@ processors:
       if: ctx.client?.ip != null
       value: '{{{client.ip}}}'
       allow_duplicates: false
-  - convert:
-      field: ping_directory.http_access.etime
-      tag: convert_etime_to_float
-      if: ctx.ping_directory?.http_access?.etime != ''
-      type: float
-      ignore_missing: true
+  - script:
+      tag: set_event_duration_from_http_access_etime
+      if: ctx.ping_directory?.http_access?.etime != null
+      lang: painless
+      source: >
+        if (ctx.event == null) {
+          ctx.event = [:];
+        }
+        ctx.event.duration =
+          (long)(ctx.ping_directory.http_access.etime * 1000000);
       on_failure:
         - append:
+            tag: append_error_message_for_set_event_duration_from_http_access_etime
             field: error.message
-            tag: append_error_message_for_convert_etime_to_float
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: event.duration
-      tag: set_event_duration_from_http_access_etime
-      copy_from: ping_directory.http_access.etime
-      ignore_empty_value: true
   - script:
       tag: extract_http_headers
       lang: painless
@@ -185,40 +178,10 @@ processors:
             if (idx > 0) {
               String key = h.substring(0, idx).trim();
               String val = h.substring(idx + 1).trim();
-
-              if (key.equals("Accept")) {
-                reqMap.put("accept", val);
-              } else if (key.equals("Connection")) {
-                reqMap.put("connection", val);
-              } else if (key.equals("User-Agent")) {
-                reqMap.put("user_agent", val);
-              } else if (key.equals("Referer")) {
-                reqMap.put("referer", val);
-              } else if (key.equals("Sec-Fetch-Site")) {
-                reqMap.put("sec_fetch_site", val);
-              } else if (key.equals("Sec-Fetch-Dest")) {
-                reqMap.put("sec_fetch_dest", val);
-              } else if (key.equals("Host")) {
-                reqMap.put("host", val);
-              } else if (key.equals("Accept-Encoding")) {
-                reqMap.put("accept_encoding", val);
-              } else if (key.equals("Sec-Fetch-Mode")) {
-                reqMap.put("sec_fetch_mode", val);
-              } else if (key.equals("sec-ch-ua")) {
-                reqMap.put("sec_ch_ua", val);
-              } else if (key.equals("sec-ch-ua-mobile")) {
-                reqMap.put("sec_ch_ua_mobile", val);
-              } else if (key.equals("Cache-Control")) {
-                reqMap.put("cache_control", val);
-              } else if (key.equals("Upgrade-Insecure-Requests")) {
-                reqMap.put("upgrade_insecure_requests", val);
-              } else if (key.equals("sec-ch-ua-platform")) {
-                reqMap.put("sec_ch_ua_platform", val);
-              } else if (key.equals("Sec-Fetch-User")) {
-                reqMap.put("sec_fetch_user", val);
-              } else if (key.equals("Accept-Language")) {
-                reqMap.put("accept_language", val);
-              }
+              String normalizedKey = key.toLowerCase()
+                .replace('-', '_')
+                .replace(' ', '_');
+              reqMap.put(normalizedKey, val);
             }
           }
         }
@@ -229,18 +192,10 @@ processors:
             if (idx > 0) {
               String key = h.substring(0, idx).trim();
               String val = h.substring(idx + 1).trim();
-
-              if (key.equals("X-Frame-Options")) {
-                respMap.put("x_frame_options", val);
-              } else if (key.equals("Correlation-Id")) {
-                respMap.put("correlation_id", val);
-              } else if (key.equals("Date")) {
-                respMap.put("date", val);
-              } else if (key.equals("Request-Id")) {
-                respMap.put("request_id", val);
-              } else if (key.equals("Connection")) {
-                respMap.put("connection", val);
-              }
+              String normalizedKey = key.toLowerCase()
+                .replace('-', '_')
+                .replace(' ', '_');
+              respMap.put(normalizedKey, val);
             }
           }
         }
@@ -255,47 +210,55 @@ processors:
 
         ctx.ping_directory.http_access.remove('request_header_list');
         ctx.ping_directory.http_access.remove('response_header_list');
+  - uri_parts:
+      field: url.full
+      target_field: url
+      tag: parsing_url_full_using_uri_parts
+      ignore_missing: true
+      ignore_failure: true
   - set:
       field: url.domain
       tag: set_url_domain_from_http_access_request_header_host
       copy_from: ping_directory.http_access.request_header.host
+      ignore_empty_value: true
+      override : false
+  - set:
+      field: network.protocol
+      tag: set_network_protocol_from_url_scheme
+      copy_from: url.scheme
       ignore_empty_value: true
   - set:
       field: http.request.referrer
       tag: set_http_request_referrer_from_http_access_request_header_referer
       copy_from: ping_directory.http_access.request_header.referer
       ignore_empty_value: true
-  - set:
-      field: user_agent.original
-      tag: set_user_agent_original_from_http_access_request_header_user_agent
-      copy_from: ping_directory.http_access.request_header.user_agent
-      ignore_empty_value: true
+  - user_agent:
+      tag: user_agent_on_user_agent_original
+      field: ping_directory.http_access.request_header.user_agent
+      ignore_missing: true
   - set:
       field: http.request.id
       tag: set_http_request_id_from_http_access_request_id
       copy_from: ping_directory.http_access.request_id
       ignore_empty_value: true
-  - append:
+  - set:
       field: trace.id
-      tag: append_ping_directory_http_access_response_header_correlation_id_into_trace_id
+      tag: set_trace_id_from_ping_directory.http_access.response_header.correlation_id
       if: ctx.ping_directory?.http_access?.response_header?.correlation_id != null
-      value: '{{{ping_directory.http_access.response_header.correlation_id}}}'
-      allow_duplicates: false
-  - convert:
-      field: ping_directory.http_access.thread_id
-      tag: convert_threadID_to_long
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_error_message_for_convert_threadID_to_long
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      copy_from: ping_directory.http_access.response_header.correlation_id
+      ignore_empty_value: true
+      override : false
   - set:
       field: event.timezone
       tag: set_event_timezone_from_http_access_timezone
       copy_from: ping_directory.http_access.timezone
       ignore_empty_value: true
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_from_tz_offset
+      copy_from: _conf.tz_offset
+      ignore_empty_value: true
+      override: true
   - date:
       field: ping_directory.http_access.timestamp
       tag: date_timestamp
@@ -321,12 +284,11 @@ processors:
             field: error.message
             tag: append_error_message_for_date_timestamp_with_timezone
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-
   - remove:
       field:
+        - _conf.tz_offset
         - ping_directory.http_access.correlation_id
         - ping_directory.http_access.etime
-        - ping_directory.http_access.request_content_type
         - ping_directory.http_access.request_header.host
         - ping_directory.http_access.request_header.referer
         - ping_directory.http_access.request_header.user_agent

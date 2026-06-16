@@ -45,9 +45,9 @@ The PingDirectory integration collects the following types of data:
 
 ### Agent-based deployment
 
-For more details, refer to the Elastic Agent installation instructions. -> For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
-Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent is required to stream data from the log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
 ### Configure
 
@@ -108,6 +108,8 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only). | keyword |
 | log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 | ping_directory.http_access.authorization_type | The authorization type used in the request (e.g. Bearer, Basic). | keyword |
 | ping_directory.http_access.correlation_id | Correlation ID used to trace a request across systems. | keyword |
 | ping_directory.http_access.etime | Elapsed time in milliseconds for the request to be processed. | double |
@@ -150,9 +152,9 @@ An example event for `http_access` looks as following:
 {
     "@timestamp": "2026-05-25T18:55:19.182+05:30",
     "agent": {
-        "ephemeral_id": "0835ec98-1168-49e7-b2b1-b99efe9486a8",
-        "id": "c8e0b281-b91a-4d6c-a855-fed620437f14",
-        "name": "elastic-agent-66006",
+        "ephemeral_id": "5443eb24-78cf-49a0-80b5-28b4db42c7cc",
+        "id": "600008dc-45f7-41d9-a7fb-8687301ea760",
+        "name": "elastic-agent-64173",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -162,27 +164,29 @@ An example event for `http_access` looks as following:
     },
     "data_stream": {
         "dataset": "ping_directory.http_access",
-        "namespace": "43277",
+        "namespace": "23176",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "c8e0b281-b91a-4d6c-a855-fed620437f14",
+        "id": "600008dc-45f7-41d9-a7fb-8687301ea760",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
+        "action": "GET",
         "agent_id_status": "verified",
         "category": [
             "web"
         ],
         "dataset": "ping_directory.http_access",
-        "duration": 124.825,
-        "ingested": "2026-06-09T07:17:22Z",
+        "duration": 124825000,
+        "ingested": "2026-06-10T11:08:00Z",
         "kind": "event",
         "original": "[25/May/2026:18:55:19.182 +0530] RESULT instanceName=\"pingdirectory-elastic-test\" threadID=164 requestID=8 correlationID=\"7c0f360b-77f0-4951-9101-74d4f8358795\" from=\"172.20.240.130:55188\" method=\"GET\" url=\"https://10.50.15.29:2443/scim/v2\" requestHeader=\"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\" requestHeader=\"Connection: keep-alive\" requestHeader=\"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\" requestHeader=\"Sec-Fetch-Site: none\" requestHeader=\"Sec-Fetch-Dest: document\" requestHeader=\"Host: 10.50.15.29:2443\" requestHeader=\"Accept-Encoding: gzip, deflate, br, zstd\" requestHeader=\"Sec-Fetch-Mode: navigate\" requestHeader=\"sec-ch-ua: 'Chromium';v='148', 'Google Chrome';v='148', 'Not/A)Brand';v='99'\" requestHeader=\"sec-ch-ua-mobile: ?0\" requestHeader=\"Upgrade-Insecure-Requests: 1\" requestHeader=\"sec-ch-ua-platform: 'Windows'\" requestHeader=\"Sec-Fetch-User: ?1\" requestHeader=\"Accept-Language: en-GB,en-US;q=0.9,en;q=0.8\" statusCode=401 etime=124.825 responseContentLength=118 responseHeader=\"X-Frame-Options: SAMEORIGIN\" responseHeader=\"Correlation-Id: 7c0f360b-77f0-4951-9101-74d4f8358795\" responseHeader=\"Date: Mon, 25 May 2026 13:25:19 GMT\" responseContentType=\"application/scim+json\"",
+        "outcome": "failure",
         "timezone": "+0530",
         "type": [
             "access"
@@ -205,10 +209,13 @@ An example event for `http_access` looks as following:
     "log": {
         "file": {
             "device_id": "64768",
-            "inode": "1371959",
+            "inode": "1372304",
             "path": "/tmp/service_logs/test-http-access.log"
         },
         "offset": 720
+    },
+    "network": {
+        "protocol": "https"
     },
     "observer": {
         "name": "pingdirectory-elastic-test",
@@ -253,11 +260,24 @@ An example event for `http_access` looks as following:
         "id": "7c0f360b-77f0-4951-9101-74d4f8358795"
     },
     "url": {
-        "domain": "10.50.15.29:2443",
-        "full": "https://10.50.15.29:2443/scim/v2"
+        "domain": "10.50.15.29",
+        "original": "https://10.50.15.29:2443/scim/v2",
+        "path": "/scim/v2",
+        "port": 2443,
+        "scheme": "https"
     },
     "user_agent": {
-        "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+        "device": {
+            "name": "Other"
+        },
+        "name": "Chrome",
+        "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+        "os": {
+            "full": "Windows 10",
+            "name": "Windows",
+            "version": "10"
+        },
+        "version": "148.0.0.0"
     }
 }
 ```
