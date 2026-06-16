@@ -76,33 +76,41 @@ program: |
           }
         ]
       }.encode_json()
-    ).with(
+    ).as(req, req.with(
       {
-        "Header": {
+        "Header": req.Header.with({
           "Authorization": ["Bearer " + string(state.api_token)],
-        }
+        }),
       }
-    ).do_request().as(resp, (resp.StatusCode == 200) ?
+    )).do_request().as(resp, (resp.StatusCode == 200) ?
       resp.Body.decode_json().as(body,
-        {
-          "events": body.ot_activity_events.map(e,
-            {
-              "message": e.encode_json(),
-            }
-          ),
-          "offset": (size(body.ot_activity_events) > 0) ? (int(state.offset) + int(state.batch_size)) : 0,
-          "want_more": size(body.ot_activity_events) > 0,
-          "cursor": {
-            ?"last_timestamp": (has(body.ot_activity_events) && size(body.ot_activity_events) > 0) ?
-              optional.of(body.ot_activity_events[size(body.ot_activity_events) - 1].detection_time)
-            :
-              state.?cursor.last_timestamp,
-          },
-          "start_time": state.start_time,
-          "initial_interval": state.initial_interval,
-          "batch_size": state.batch_size,
-          "api_token": state.api_token,
-        }
+        (has(body.ot_activity_events) && body.ot_activity_events != null && size(body.ot_activity_events) > 0) ?
+          {
+            "events": body.ot_activity_events.map(e,
+              {
+                "message": e.encode_json(),
+              }
+            ),
+            "offset": int(state.offset) + int(state.batch_size),
+            "want_more": true,
+            "cursor": {
+              "last_timestamp": body.ot_activity_events[size(body.ot_activity_events) - 1].detection_time,
+            },
+            "start_time": state.start_time,
+            "initial_interval": state.initial_interval,
+            "batch_size": state.batch_size,
+            "api_token": state.api_token,
+          }
+        :
+          {
+            "events": [],
+            "offset": 0,
+            "want_more": false,
+            "start_time": state.start_time,
+            "initial_interval": state.initial_interval,
+            "batch_size": state.batch_size,
+            "api_token": state.api_token,
+          }
       )
     :
       {

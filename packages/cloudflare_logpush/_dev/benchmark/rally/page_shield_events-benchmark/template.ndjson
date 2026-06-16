@@ -1,0 +1,40 @@
+{{- $timestamp := generate "timestamp" -}}
+{{- $action := generate "action" -}}
+{{- $csp_directive := generate "csp_directive" -}}
+{{- $host := generate "host" -}}
+{{- $policy_id := generate "policy_id" -}}
+{{- $resource_type := generate "resource_type" -}}
+{{- $url_contains_cdn_cgi_path := generate "url_contains_cdn_cgi_path" -}}
+{{- $url_host := generate "url_host" -}}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+    "agent": {
+        "ephemeral_id": "cdaaaabb-be7e-432f-816b-bda019fd7c15",
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.19.7"
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.page_shield_events",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "elastic_agent": {
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "snapshot": false,
+        "version": "8.19.7"
+    },
+    "message": "{\"Action\":\"{{ $action }}\",\"CSPDirective\":\"{{ $csp_directive }}\",\"Host\":\"{{ $host }}\",\"PageURL\":\"http://example.com/?query=42\",\"PolicyID\":\"{{ $policy_id }}\",\"ResourceType\":\"{{ $resource_type }}\",\"Timestamp\":\"{{ $timestamp.Format "2006-01-02T15:04:05Z07:00" }}\",\"URL\":\"https://example.com/?query=hog\",\"URLContainsCDNCGIPath\":{{ $url_contains_cdn_cgi_path }},\"URLHost\":\"{{ $url_host }}\"}",
+    "event": {
+        "dataset": "cloudflare_logpush.page_shield_events"
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cloudflare_logpush-page_shield_events"
+    ]
+}

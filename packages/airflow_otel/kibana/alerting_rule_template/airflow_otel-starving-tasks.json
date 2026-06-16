@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when more than 5 tasks are starving due to pool slot limits (`airflow.scheduler.tasks.starving > 5`). Starvation means eligible tasks cannot run because their pool has no free slots.",
     "name": "[Airflow OTel] Tasks starving due to pool limits",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -21,13 +22,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "airflow_otel-tasks"
+        },
+        {
+          "id": "airflow_otel-scheduler-capacity"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Airflow tasks starving due to pool limits\n\n### What fired\n`airflow.scheduler.tasks.starving` peaked above 5 during the evaluation window.\n\n### Why it matters\nStarving tasks have satisfied all DAG dependencies and are ready to run, but their assigned pool has no open slots. Sustained starvation causes SLA misses on tasks that never actually executed.\n\n### Triage\n1. Tasks dashboard: find which pools are saturated.\n2. Review pool configuration (size, priority_weight distribution).\n3. Look for long-running tasks that dominate a pool.\n\n### Remediation\n- Increase pool size or re-assign tasks across pools.\n- Add priority weighting so high-SLA tasks are dispatched first.\n- Split critical workloads into dedicated pools.\n\n### Tuning\n- Threshold of 5 is reasonable for mid-sized deployments. Raise or lower to match DAG inventory.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.scheduler.tasks.starving IS NOT NULL\n// Gauge: tasks that cannot run due to pool slot limits\n| STATS max_starving = MAX(airflow.scheduler.tasks.starving)\n// Adjust threshold (5) based on acceptable starvation\n| WHERE max_starving > 5"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

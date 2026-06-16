@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when DAG runs are scheduled more than 5 minutes after their `data_interval_end` (`airflow.dagrun.schedule_delay > 300s`). Schedule delay is the freshness SLI for Airflow.",
     "name": "[Airflow OTel] DAG run schedule delay high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -21,13 +22,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "airflow_otel-overview"
+        },
+        {
+          "id": "airflow_otel-scheduler-capacity"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Airflow DAG run schedule delay high\n\n### What fired\n`airflow.dagrun.schedule_delay` peaked above 300 seconds (5 minutes) during the evaluation window.\n\n### Why it matters\nSchedule delay is the time between a DAG run's data interval end and when the scheduler actually starts the run. High delay directly translates to stale data for downstream consumers. It is the primary freshness indicator for scheduled workloads.\n\n### Triage\n1. Overview dashboard: confirm affected DAGs and trend.\n2. Check scheduler loop duration (`airflow.scheduler.scheduler_loop_duration`) and executor slot availability.\n3. Look at DAG processor queue \u2014 if parsing is slow, scheduling is slow too.\n4. Correlate with metadata DB latency.\n\n### Remediation\n- Scale scheduler and executor capacity.\n- Reduce DAG parsing cost (see DAG-processor runbooks).\n- Split DAGs across multiple schedulers if running in HA mode.\n\n### Tuning\n- 300s is a common default. Tighten for SLA-critical tiers; relax for batch/nightly workloads.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.dagrun.schedule_delay IS NOT NULL\n// Timer values are in SECONDS (OTel statsd receiver convention)\n// Threshold 300 = 5 minutes delay; adjust for your SLA\n| STATS max_delay_sec = MAX(airflow.dagrun.schedule_delay)\n| WHERE max_delay_sec > 300"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

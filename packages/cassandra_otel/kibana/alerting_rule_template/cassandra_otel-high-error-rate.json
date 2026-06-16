@@ -1,39 +1,52 @@
 {
-    "id": "cassandra_otel-high-error-rate",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Cassandra OTel] High error rate by node",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "cassandra"
-        ],
-        "schedule": {
-            "interval": "5m"
-        },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "TS metrics-cassandra.otel-default\n// Combine request count and error count per node via FORK\n| FORK (\n    WHERE cassandra.client.request.count IS NOT NULL\n    | STATS requests = SUM(INCREASE(cassandra.client.request.count)) BY server.address\n    | EVAL errors = 0.0\n  )\n  (\n    WHERE cassandra.client.request.error.count IS NOT NULL\n    | STATS errors = SUM(INCREASE(cassandra.client.request.error.count)) BY server.address\n    | EVAL requests = 0.0\n  )\n| STATS total_requests = SUM(requests), total_errors = SUM(errors) BY server.address\n// Minimum sample size to avoid noisy low-traffic nodes\n| WHERE total_requests > 10\n| EVAL error_rate_pct = ROUND(total_errors / total_requests * 100.0, 2)\n// Threshold: 5% error rate; tune for your tolerance\n| WHERE error_rate_pct > 5.0\n| SORT error_rate_pct DESC"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "server.address",
-            "termSize": 20,
-            "excludeHitsFromPreviousRun": true
+  "id": "cassandra_otel-high-error-rate",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the per-node client error rate exceeds 5% (`error.count / request.count > 0.05`). Errors include timeouts, unavailable exceptions, and operation failures.",
+    "name": "[Cassandra OTel] High error rate by node",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cassandra"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cassandra_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Cassandra high error rate by node\n\n### What fired\nOn at least one node the computed error rate (`cassandra.client.request.error.count` / `cassandra.client.request.count`) exceeded 5% over the evaluation window.\n\n### Why it matters\nCassandra tracks Timeouts, Unavailable, and Failure exceptions per operation. Elevated error rate means client applications are receiving explicit failures and retry pressure is rising, which amplifies load and usually correlates with node instability, partition hotspots, or downed replicas.\n\n### Triage\n1. Overview dashboard: identify which node(s) show the highest error rate.\n2. Check `cassandra.storage.total_hints.in_progress.count` \u2014 hints are the canonical signal of replica unreachability.\n3. Inspect read/write p99 latencies on the affected node.\n4. Correlate with recent deploys, schema changes, or hardware events.\n\n### Remediation\n- Restore unavailable replicas (check gossip state, network, disks).\n- Rebalance hot partitions via schema / data modelling changes.\n- Temporarily reduce client consistency levels to keep reads available if a replica is permanently lost.\n\n### Tuning\n- 5% with a minimum of 10 requests is a generic default. Tighten to 1-2% for SLA-critical tiers; use a higher minimum sample size for sparsely-used clusters.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-cassandra.otel-default\n// Combine request count and error count per node via FORK\n| FORK (\n    WHERE cassandra.client.request.count IS NOT NULL\n    | STATS requests = SUM(INCREASE(cassandra.client.request.count)) BY server.address\n    | EVAL errors = 0.0\n  )\n  (\n    WHERE cassandra.client.request.error.count IS NOT NULL\n    | STATS errors = SUM(INCREASE(cassandra.client.request.error.count)) BY server.address\n    | EVAL requests = 0.0\n  )\n| STATS total_requests = SUM(requests), total_errors = SUM(errors) BY server.address\n// Minimum sample size to avoid noisy low-traffic nodes\n| WHERE total_requests > 10\n| EVAL error_rate_pct = ROUND(total_errors / total_requests * 100.0, 2)\n// Threshold: 5% error rate; tune for your tolerance\n| WHERE error_rate_pct > 5.0\n| SORT error_rate_pct DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "server.address",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

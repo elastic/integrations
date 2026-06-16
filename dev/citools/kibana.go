@@ -12,7 +12,7 @@ import (
 )
 
 func KibanaConstraintPackage(path string) (*semver.Constraints, error) {
-	manifest, err := readPackageManifest(path)
+	manifest, err := ReadPackageManifest(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read package manifest: %w", err)
 	}
