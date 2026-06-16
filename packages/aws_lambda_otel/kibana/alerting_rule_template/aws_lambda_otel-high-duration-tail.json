@@ -3,7 +3,7 @@
     "type": "alerting_rule_template",
     "managed": true,
     "attributes": {
-        "description": "Alerts when peak (Maximum) Lambda invocation duration exceeds a configurable threshold, indicating tail latency or cold-start regressions.",
+        "description": "Alerts when peak (Maximum) Lambda invocation duration exceeds a configurable threshold, indicating slow handler execution or downstream latency.",
         "name": "[AWS Lambda OTel] High tail duration",
         "ruleTypeId": ".es-query",
         "tags": [
@@ -24,13 +24,13 @@
         },
         "artifacts": {
             "investigation_guide": {
-                "blob": "## High Tail Duration\n\n### Triage Steps\n1. Tail latency uses CloudWatch `Maximum` statistic — true percentiles are not available from this source.\n2. Check for cold starts: correlate with low `ConcurrentExecutions` or recent scale-from-zero events.\n3. Review VPC-attached functions for ENI initialization delays.\n4. Compare tail vs average duration — a large gap often points to cold starts or rare slow paths.\n5. Consider provisioned concurrency if cold starts breach user-facing SLOs.\n\n### Note\nAdjust the threshold to match your tail-latency SLO. The default targets severe outliers, not typical p99 behaviour."
+                "blob": "## High Tail Duration\n\n### Triage Steps\n1. Tail latency uses CloudWatch `Maximum` statistic — true percentiles are not available from this source.\n2. Check function logs for slow handler paths, retries, timeouts, or expensive operations.\n3. Review downstream dependencies such as APIs, databases, and SDK calls for latency spikes.\n4. Compare tail vs average duration — a large gap often points to rare slow paths or severe outliers.\n5. Profile memory allocation and CPU-sensitive work; under-provisioned memory can increase execution duration.\n\n### Note\nAdjust the threshold to match your tail-latency SLO. The default targets severe outliers, not typical p99 behaviour."
             }
         },
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE attributes.Namespace == \"AWS/Lambda\"\n    AND attributes.MetricName == \"Duration\"\n    AND attributes.stat == \"Maximum\"\n| STATS max_duration_ms = MAX(`metrics.amazonaws.com/AWS/Lambda/Duration`)\n  BY FunctionName, resource.attributes.cloud.region\n// Tail latency threshold (ms): catches cold starts and severe outliers\n| WHERE max_duration_ms > 10000\n| EVAL function_id = CONCAT(FunctionName, \"/\", resource.attributes.cloud.region)\n| SORT max_duration_ms DESC\n| LIMIT 10"
+                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE attributes.Namespace == \"AWS/Lambda\"\n    AND attributes.MetricName == \"Duration\"\n    AND attributes.stat == \"Maximum\"\n| STATS max_duration_ms = MAX(`metrics.amazonaws.com/AWS/Lambda/Duration`)\n  BY FunctionName, resource.attributes.cloud.region\n// Tail latency threshold (ms): catches severe execution-duration outliers\n| WHERE max_duration_ms > 10000\n| EVAL function_id = CONCAT(FunctionName, \"/\", resource.attributes.cloud.region)\n| SORT max_duration_ms DESC\n| LIMIT 10"
             },
             "size": 0,
             "threshold": [
