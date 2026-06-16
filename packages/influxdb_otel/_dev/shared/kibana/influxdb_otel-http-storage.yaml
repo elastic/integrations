@@ -1,0 +1,359 @@
+# [InfluxDB OTel] HTTP & Storage — API traffic, write path, compaction
+dashboards:
+- id: influxdb_otel-http-storage
+  name: '[InfluxDB OTel] HTTP & Storage'
+  description: >-
+    HTTP API traffic, write/query throughput, storage health (WAL, cache,
+    compaction), and writer metrics.
+  settings:
+    margins: true
+    titles: true
+    sync:
+      cursor: true
+      tooltips: false
+      colors: false
+  filters:
+  - field: data_stream.dataset
+    equals: influxdb.otel
+  controls:
+  - type: options
+    label: Host
+    data_view: metrics-*
+    field: host.name
+  panels:
+  - title: Navigation
+    size: {w: 48, h: 2}
+    links:
+      layout: horizontal
+      items:
+      - label: Overview
+        dashboard: influxdb_otel-overview
+      - label: HTTP & Storage
+        dashboard: influxdb_otel-http-storage
+      - label: Query & Tasks
+        dashboard: influxdb_otel-query-tasks
+
+  - hide_title: true
+    size: {w: 16, h: 12}
+    markdown:
+      content: |
+        ## [InfluxDB OTel] HTTP & Storage
+
+        This dashboard focuses on the write path and storage:
+        - HTTP API requests by endpoint and status
+        - Write and query throughput (bytes, counts)
+        - WAL, cache, and TSM disk usage
+        - Compaction queue and duration
+        - Storage writer (points written, dropped, errors)
+
+  - title: Write Requests
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+      - WHERE http_write_request_count IS NOT NULL
+      - STATS requests = MAX(http_write_request_count)
+      primary:
+        field: requests
+        label: Write Reqs
+        format:
+          type: number
+          compact: true
+
+  - title: Query Requests
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+      - WHERE http_query_request_count IS NOT NULL
+      - STATS requests = MAX(http_query_request_count)
+      primary:
+        field: requests
+        label: Query Reqs
+        format:
+          type: number
+          compact: true
+
+  - title: WAL Size
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+      - WHERE storage_wal_size IS NOT NULL
+      - STATS wal_bytes = MAX(storage_wal_size)
+      primary:
+        field: wal_bytes
+        label: WAL
+        format:
+          type: bytes
+
+  - title: Cache Dropped
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+      - WHERE storage_cache_writes_dropped IS NOT NULL
+      - STATS total_dropped = MAX(storage_cache_writes_dropped)
+      primary:
+        field: total_dropped
+        label: Cache Dropped
+        format:
+          type: number
+          decimals: 0
+
+  - title: Compactions Queued
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+      - WHERE storage_compactions_queued IS NOT NULL
+      - STATS queued = MAX(storage_compactions_queued)
+      primary:
+        field: queued
+        label: Queued
+        format:
+          type: number
+          decimals: 0
+
+  - title: Write Errors
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+      - WHERE storage_shard_write_err_count IS NOT NULL
+      - STATS total_errs = MAX(storage_shard_write_err_count)
+      primary:
+        field: total_errs
+        label: Write Errors
+        format:
+          type: number
+          decimals: 0
+
+  - title: Write Throughput by Endpoint
+    size: {w: 48, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - FROM metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+      - WHERE http_write_request_count IS NOT NULL
+      - STATS requests = MAX(http_write_request_count) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), endpoint
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: requests
+        label: Requests
+        format:
+          type: number
+          decimals: 0
+      breakdown:
+        field: endpoint
+      legend:
+        visible: show
+        position: right
+
+  - title: Write Bytes Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - FROM metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+      - WHERE http_write_request_bytes IS NOT NULL
+      - STATS bytes = MAX(http_write_request_bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: bytes
+        label: Bytes
+        format:
+          type: bytes
+      legend:
+        visible: show
+        position: right
+
+  - title: Query Bytes Over Time
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - FROM metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+      - WHERE http_query_response_bytes IS NOT NULL
+      - STATS bytes = MAX(http_query_response_bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: bytes
+        label: Response Bytes
+        format:
+          type: bytes
+      legend:
+        visible: show
+        position: right
+
+  - title: Storage Disk by Component
+    size: {w: 24, h: 12}
+    esql:
+      type: area
+      mode: stacked
+      query:
+      - FROM metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+      - WHERE storage_wal_size IS NOT NULL OR storage_tsm_files_disk_bytes IS NOT NULL OR storage_cache_disk_bytes IS NOT NULL
+      - STATS wal = MAX(storage_wal_size), tsm = MAX(storage_tsm_files_disk_bytes), cache_disk =
+        MAX(storage_cache_disk_bytes) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: wal
+        label: WAL
+        format:
+          type: bytes
+      - field: tsm
+        label: TSM
+        format:
+          type: bytes
+      - field: cache_disk
+        label: Cache (disk)
+        format:
+          type: bytes
+      appearance:
+        y_left_axis:
+          title: Bytes
+      legend:
+        visible: show
+        position: right
+
+  - title: Compaction Queue by Level
+    size: {w: 24, h: 12}
+    esql:
+      type: line
+      query:
+      - FROM metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+      - WHERE storage_compactions_queued IS NOT NULL
+      - STATS queued = MAX(storage_compactions_queued) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), level
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: queued
+        label: Queued
+        format:
+          type: number
+      breakdown:
+        field: level
+      legend:
+        visible: show
+        position: right
+
+  - title: Shard Write Points vs Dropped
+    size: {w: 48, h: 12}
+    esql:
+      type: line
+      query:
+      - FROM metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+      - WHERE storage_shard_write_sum IS NOT NULL OR storage_shard_write_dropped_sum IS NOT NULL
+      - STATS written = MAX(storage_shard_write_sum), dropped = MAX(storage_shard_write_dropped_sum) BY time_bucket = BUCKET(@timestamp, 20,
+        ?_tstart, ?_tend)
+      - SORT time_bucket ASC
+      dimension:
+        field: time_bucket
+        data_type: date
+      metrics:
+      - field: written
+        label: Written
+        format:
+          type: number
+      - field: dropped
+        label: Dropped
+        format:
+          type: number
+      appearance:
+        y_left_axis:
+          title: Points
+      legend:
+        visible: show
+        position: right
+
+  - title: Write Status by Endpoint
+    size: {w: 24, h: 12}
+    esql:
+      type: pie
+      query:
+      - FROM metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+      - WHERE http_write_request_count IS NOT NULL
+      - STATS total = MAX(http_write_request_count) BY status
+      - SORT total DESC
+      - LIMIT 8
+      metrics:
+      - field: total
+      breakdowns:
+      - field: status
+        label: Status
+      appearance:
+        donut: medium
+      legend:
+        visible: show
+
+  - title: WAL Write Errors
+    hide_title: true
+    size: {w: 8, h: 4}
+    esql:
+      type: metric
+      query:
+      - FROM metrics-influxdb.otel-*
+      - WHERE data_stream.dataset == "influxdb.otel"
+      - WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend
+      - WHERE storage_wal_writes_err IS NOT NULL
+      - STATS total_errs = MAX(storage_wal_writes_err)
+      primary:
+        field: total_errs
+        label: WAL Errors
+        format:
+          type: number
+          decimals: 0

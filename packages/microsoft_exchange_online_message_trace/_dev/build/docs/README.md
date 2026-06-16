@@ -4,6 +4,11 @@ This integration is for Microsoft Exchange Online Message Trace logs. It include
 
 - `log` dataset: supports Microsoft Exchange Online Message Trace logs.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Migration from the Legacy Message Trace API to the Graph API
 
 Microsoft has announced the deprecation on March 18th, 2026 of the legacy Message Trace API support in the Reporting Webservice.
@@ -21,6 +26,19 @@ To collect message trace logs from Microsoft's Graph API, you need to:
 - Add the `ExchangeMessageTrace.Read.All` permission of type `Application` and grant admin consent for it.
 - Create a client secret and record it.
 - Create a service principal for Microsoft's internal Message Trace app in the tenant.
+
+  The Graph-based Message Trace API is backed by a Microsoft first-party application with App ID `8bd644d1-64a1-4d4b-ae52-2e0cbf64e373`. This is a Microsoft-owned application, separate from your own app registration. Every tenant must provision a service principal for it before the API will accept authenticated requests. Without this step, the API returns a 401 error referencing this App ID.
+
+  Run the following PowerShell commands once in your tenant to provision it:
+
+  ```powershell
+  Connect-MgGraph -Scopes "Application.ReadWrite.All"
+  Import-Module Microsoft.Graph.Applications
+  $params = @{ appId = "8bd644d1-64a1-4d4b-ae52-2e0cbf64e373" }
+  New-MgServicePrincipal -BodyParameter $params
+  ```
+
+  Provisioning may take several hours to propagate. During that time, 401 errors will continue.
 
 For more details, refer to Microsoft's [Graph-based message trace API onboarding guide](https://learn.microsoft.com/en-us/exchange/monitoring/trace-an-email-message/graph-api-message-trace).
 

@@ -1,0 +1,108 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a privilege escalation attempt via rogue named pipe impersonation. An adversary may abuse this technique by masquerading as a known named pipe and manipulating a privileged process to connect to it.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.provider",
+                "event.code",
+                "host.id",
+                "user.id",
+                "process.executable",
+                "process.command_line",
+                "process.pid",
+                "process.entity_id",
+                "file.name",
+                "file.path",
+                "winlog.event_data.PipeName"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Privilege Escalation via Rogue Named Pipe Impersonation",
+        "note": "## Triage and analysis\n\n### Investigating Privilege Escalation via Rogue Named Pipe Impersonation\n\n#### Possible investigation steps\n\n- What rogue pipe path did the alert preserve?\n  - Why: the rule references PrintSpoofer and EfsPotato-style abuse, where a controlled pipe can be hidden inside a path that makes a privileged service connect to what appears to be its normal RPC pipe.\n  - Focus: alert-local `file.name`, `file.path`, or `winlog.event_data.PipeName`, with `event.provider` and `event.code`.\n  - Implication: escalate when the path embeds `\\pipe\\` after another path segment or mimics a service/RPC pipe tail; benign starts only when exact namespace, creator path, command line, account, and client evidence fit one repeated local IPC workflow on this `host.id`.\n- Which process and account created the suspicious pipe?\n  - Focus: same-host creator `process.executable`, `process.command_line`, `user.name`, and `user.domain`.\n  - Implication: escalate when a service, web worker, script host, or user-writable binary creates the pipe under a low-privileged service identity or account that should not host IPC servers; service-mimic pipe plus suspicious creator is enough while collecting client and impact evidence.\n  - Hint: pivot by `process.entity_id`; if absent, pair `process.pid` with `host.id` in a tight window. !{investigate{\"description\":\"\",\"label\":\"Events for the pipe creator process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n- Do surrounding events corroborate the creator or show a privileged client?\n  - Focus: same-host Sysmon or Windows records for the same `file.name` or `winlog.event_data.PipeName`, reading `event.code`; pipe-connected events, when ingested, corroborate.\n  - Hint: same pipe events on the host. !{investigate{\"description\":\"\",\"label\":\"Events for the same pipe on this host\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"file.name\",\"queryType\":\"phrase\",\"value\":\"{{file.name}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.PipeName\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.PipeName}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when surrounding records show the same creator maintaining the pipe or, if pipe-connected events exist, a SYSTEM, administrator, service-host, or service/RPC client touching it. Missing pipe-connect telemetry is unresolved, not benign.\n  - Range: alert window plus +/-5 minutes; expand only if the creator lived longer.\n- Was the pipe followed by elevated execution or token/session abuse?\n  - Focus: same-host process starts after pipe creation: `process.executable`, `process.command_line`, `user.name`, and `winlog.event_data.ElevatedToken` when Windows Security has token context.\n  - Hint: process starts on the host around pipe creation. !{investigate{\"description\":\"\",\"label\":\"Process starts on the host near the pipe creation\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: elevated shell, script, service-control, SYSTEM, administrator, or elevated-token activity confirms impact; absence lowers impact only after the pipe path, creator, and client evidence fit one recognized workflow. Missing process-start or token telemetry is unresolved, not benign.\n- Does the same rogue-pipe pattern show wider tooling or repeated attempts?\n  - Focus: broaden only after suspicious or unresolved local evidence, using the suspicious `file.name` or `winlog.event_data.PipeName` pattern, creator `process.executable`, `host.id`, and `user.id`.\n  - Hint: same pipe name or creator executable across recent events. !{investigate{\"description\":\"\",\"label\":\"Events for the same pipe or creator executable\",\"providers\":[[{\"excluded\":false,\"field\":\"file.name\",\"queryType\":\"phrase\",\"value\":\"{{file.name}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"winlog.event_data.PipeName\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.PipeName}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"process.executable\",\"queryType\":\"phrase\",\"value\":\"{{process.executable}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: expand scope when the same embedded-pipe pattern, service/RPC-like tail, or creator executable appears across unrelated hosts or users; no recurrence limits scope but does not close the alert.\n- Escalate when pipe shape plus creator, client, or follow-on evidence supports impersonation; close only when available evidence aligns to one recognized IPC product or authorized test with no contradictory privileged-client or elevated-execution evidence; preserve evidence and escalate when telemetry is missing, mixed, or incomplete.\n\n### False positive analysis\n\n- Recognized local IPC products, security tools, or in-house services can trigger when they use nested pipe namespaces with `\\pipe\\`. Confirm the exact namespace, creator path and command line, account, client process, and host cohort align to the same product, with no elevated follow-on outside that workflow.\n- Authorized exploit validation can trigger this rule. Confirm test host, test account, time window, pipe namespace, and launched command match the test plan; privileged-client or elevated-execution evidence beyond the plan is suspicious.\n- Build exceptions from the minimum confirmed workflow: exact pipe namespace or stable prefix, creator `process.executable` plus command-line pattern, expected `user.id`, and constrained `host.id` or host group. Avoid broad exceptions on `process.name`, service-like pipe tails, or generic `\\pipe\\`.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and record the pipe namespace, creator process, account, client process, host scope, and absence of unexpected elevated follow-on activity.\n- If suspicious but unconfirmed, preserve the alert record, relevant Timeline events, `file.name` or `winlog.event_data.PipeName`, creator `process.entity_id` or `process.pid`, process command lines, Windows Security records, and any spawned process identifiers before containment.\n- Apply reversible containment before destructive action: isolate or restrict the affected host only when pipe, creator, client, or follow-on evidence indicates active abuse, and weigh critical host roles before isolation.\n- If confirmed malicious, contain the host and involved account, then terminate or suspend malicious processes only after preserving identifiers and command lines. Reset credentials only when Windows Security or process evidence shows account misuse or exposed privileged sessions.\n- Eradicate only the exploit tools, scripts, service changes, or payloads identified during the investigation, then address the entry vector that let the creator process run with impersonation-capable privileges.\n- Post-incident, restrict the privileged service or service account that the investigation showed was coerced or exposed to unnecessary impersonation-capable privileges.",
+        "query": "file where host.os.type == \"windows\" and\n  event.provider == \"Microsoft-Windows-Sysmon\" and\n  \n  /* Named Pipe Creation */\n  event.code == \"17\" and\n  \n  /* Sysmon truncates the \"Pipe\" keyword in normal named pipe creation events */\n  file.name : \"\\\\*\\\\Pipe\\\\*\"\n",
+        "references": [
+            "https://itm4n.github.io/printspoofer-abusing-impersonate-privileges/",
+            "https://github.com/zcgonvh/EfsPotato",
+            "https://twitter.com/SBousseaden/status/1429530155291193354"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "76ddb638-abf7-42d5-be22-4a70b0bf7241",
+        "setup": "## Setup\n\nThis rule requires Sysmon telemetry to be enabled and ingested.\n\nSetup instructions: https://ela.st/sysmon-event-pipe-setup\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1134",
+                        "name": "Access Token Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1134/",
+                        "subtechnique": [
+                            {
+                                "id": "T1134.001",
+                                "name": "Token Impersonation/Theft",
+                                "reference": "https://attack.mitre.org/techniques/T1134/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 212
+    },
+    "id": "76ddb638-abf7-42d5-be22-4a70b0bf7241_212",
+    "type": "security-rule"
+}

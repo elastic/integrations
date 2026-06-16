@@ -24,10 +24,11 @@ processors:
       if: ctx.event?.original == null
       tag: rename_message_to_event_original
   - remove:
-      ignore_missing: true
       field: message
+      tag: remove_message
+      ignore_missing: true
       if: ctx.event?.original != null
-      tag: remove_message_if_event_original_present
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       ignore_failure: true
       field: event.original
@@ -132,11 +133,11 @@ processors:
       ignore_missing: true
       field: file.path
       pattern_definitions:
-        FILENAME: "[^/]+$"
-        WINFILENAME: "[^\\\\]+$"
+        FILENAME: '[^/]+'
+        WINFILENAME: '[^\\]+'
       patterns:
-      - "^([A-Z]|\\\\).*\\\\%{WINFILENAME:file.name}"
-      - ".+/%{FILENAME:file.name}"
+      - '^(?:[A-Za-z]:\\|\\)(?:.*\\)?%{WINFILENAME:file.name}$'
+      - '^/(?:.*/)?%{FILENAME:file.name}$'
       tag: extract_file_name_from_path
   - rename:
       ignore_missing: true
