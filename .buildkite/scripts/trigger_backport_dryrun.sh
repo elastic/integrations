@@ -111,6 +111,7 @@ while IFS= read -r branch; do
         PACKAGE_NAME: "${pkg}"
         PACKAGE_VERSION: "${base_version}"
         BASE_COMMIT: "${base_commit}"
+        BACKPORT_BRANCH_NAME: "${branch}"
 EOF
 
     entries_found=$(( entries_found + 1 ))

@@ -18,6 +18,7 @@ BASE_COMMIT="$(buildkite-agent meta-data get BASE_COMMIT --default "${BASE_COMMI
 PACKAGE_NAME="$(buildkite-agent meta-data get PACKAGE_NAME --default "${PACKAGE_NAME:-""}")"
 PACKAGE_VERSION="$(buildkite-agent meta-data get PACKAGE_VERSION --default "${PACKAGE_VERSION:-""}")"
 REMOVE_OTHER_PACKAGES="$(buildkite-agent meta-data get REMOVE_OTHER_PACKAGES --default "${REMOVE_OTHER_PACKAGES:-"false"}")"
+BACKPORT_BRANCH_NAME="$(buildkite-agent meta-data get BACKPORT_BRANCH_NAME --default "${BACKPORT_BRANCH_NAME:-""}")"
 
 if [[ -z "$PACKAGE_NAME" ]] || [[ -z "$PACKAGE_VERSION" ]]; then
   buildkite-agent annotate "The variables **PACKAGE_NAME** or **PACKAGE_VERSION** aren't defined, please try again" --style "warning"
@@ -45,7 +46,13 @@ SOURCE_BRANCH="main"
 # git checkout -b test_main
 # SOURCE_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 # echo "--- SOURCE_BRANCH: ${SOURCE_BRANCH}"
-BACKPORT_BRANCH_NAME="backport-${PACKAGE_NAME}-${TRIMMED_PACKAGE_VERSION}"
+
+# If the backport branch name is not set, use the expected one.
+EXPECTED_BACKPORT_BRANCH_NAME="backport-${PACKAGE_NAME}-${TRIMMED_PACKAGE_VERSION}"
+if [[ "${BACKPORT_BRANCH_NAME}" == "" ]]; then
+  BACKPORT_BRANCH_NAME="${EXPECTED_BACKPORT_BRANCH_NAME}"
+fi
+
 PACKAGES_FOLDER_PATH="packages"
 MSG=""
 
@@ -304,11 +311,19 @@ if [ ! -z "$BASE_COMMIT" ]; then
   fi
 fi
 
+
 echo "---Check if the backport-branch exists"
 if branchExist "$BACKPORT_BRANCH_NAME"; then
   MSG="The backport branch: **$BACKPORT_BRANCH_NAME** is already created. Not updating contents of the branch."
   buildkite-agent annotate "$MSG" --style "warning"
   exit 0
+fi
+
+# Currently, backport branches must follow the expected format.
+if [[ "${BACKPORT_BRANCH_NAME}" != "${EXPECTED_BACKPORT_BRANCH_NAME}" ]]; then
+  MSG="The backport branch name **${BACKPORT_BRANCH_NAME}** does not match the expected name **${EXPECTED_BACKPORT_BRANCH_NAME}**"
+  buildkite-agent annotate "$MSG" --style "error"
+  exit 1
 fi
 
 # backport branch does not exist, running checks and create branch
