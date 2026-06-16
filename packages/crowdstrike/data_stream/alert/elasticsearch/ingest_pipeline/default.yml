@@ -1905,9 +1905,13 @@ processors:
       source: |-
         def start = ZonedDateTime.parse(ctx.event.start);
         def end = ZonedDateTime.parse(ctx.event.end);
-        ctx.event.duration = ChronoUnit.NANOS.between(start, end);
+        def duration = ChronoUnit.NANOS.between(start, end);
+        if (duration >= 0) {
+          ctx.event.duration = duration;
+        }
       on_failure:
         - append:
+            tag: append_error_message_08a132e3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
