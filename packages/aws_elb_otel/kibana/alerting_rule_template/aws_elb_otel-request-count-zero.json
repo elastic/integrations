@@ -29,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/ApplicationELB\"\n    AND attributes.MetricName == \"RequestCount\"\n    AND attributes.stat == \"Sum\"\n| STATS requests = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`)\n    BY attributes.LoadBalancer, resource.attributes.cloud.region\n// Zero requests in the window — deploy only on always-on production ALBs\n| WHERE requests == 0\n| SORT attributes.LoadBalancer ASC"
+                "esql": "FROM metrics-aws.elb.otel-*\n| WHERE attributes.Namespace == \"AWS/ApplicationELB\"\n    AND attributes.MetricName == \"RequestCount\"\n    AND attributes.stat == \"Sum\"\n| STATS requests = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`)\n    BY attributes.LoadBalancer, resource.attributes.cloud.region\n// Zero requests in the window — deploy only on always-on production ALBs\n| WHERE requests == 0\n| SORT attributes.LoadBalancer ASC"
             },
             "size": 0,
             "threshold": [
