@@ -29,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n// Dead-letter queues: tune the LIKE pattern to match your naming convention\n| WHERE attributes.Namespace == \"AWS/SQS\"\n    AND attributes.MetricName == \"ApproximateNumberOfMessagesVisible\"\n    AND attributes.stat == \"Maximum\"\n    AND attributes.QueueName LIKE \"*-dlq\"\n| STATS dlq_depth = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)\n    BY attributes.QueueName, resource.attributes.cloud.region\n// Any message in a DLQ indicates processing failure — tune threshold if needed\n| WHERE dlq_depth > 0"
+                "esql": "FROM metrics-aws.sqs.otel-*\n// Dead-letter queues: tune the LIKE pattern to match your naming convention\n| WHERE attributes.Namespace == \"AWS/SQS\"\n    AND attributes.MetricName == \"ApproximateNumberOfMessagesVisible\"\n    AND attributes.stat == \"Maximum\"\n    AND attributes.QueueName LIKE \"*-dlq\"\n| STATS dlq_depth = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)\n    BY attributes.QueueName, resource.attributes.cloud.region\n// Any message in a DLQ indicates processing failure — tune threshold if needed\n| WHERE dlq_depth > 0"
             },
             "size": 0,
             "threshold": [

@@ -29,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/SQS\"\n    AND attributes.MetricName == \"ApproximateNumberOfMessagesNotVisible\"\n    AND attributes.stat == \"Maximum\"\n    AND attributes.QueueName NOT LIKE \"*-dlq\"\n| STATS in_flight = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`)\n    BY attributes.QueueName, resource.attributes.cloud.region\n// Standard queues cap at ~120k in-flight; tune threshold (100000 = ~83% of limit)\n| WHERE in_flight > 100000"
+                "esql": "FROM metrics-aws.sqs.otel-*\n| WHERE attributes.Namespace == \"AWS/SQS\"\n    AND attributes.MetricName == \"ApproximateNumberOfMessagesNotVisible\"\n    AND attributes.stat == \"Maximum\"\n    AND attributes.QueueName NOT LIKE \"*-dlq\"\n| STATS in_flight = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`)\n    BY attributes.QueueName, resource.attributes.cloud.region\n// Standard queues cap at ~120k in-flight; tune threshold (100000 = ~83% of limit)\n| WHERE in_flight > 100000"
             },
             "size": 0,
             "threshold": [
