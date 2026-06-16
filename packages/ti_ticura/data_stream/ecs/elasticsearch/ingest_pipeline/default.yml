@@ -2,9 +2,10 @@
 description: Pipeline for processing Ticura threat intelligence feed
 processors:
 
-  # Preserve the raw NDJSON line in event.original ONLY when the user enabled
-  # the preserve_original_event integration toggle. Avoids the older
-  # set-then-conditionally-remove pattern.
+  # Preserve the raw NDJSON line in event.original when the user enabled the
+  # preserve_original_event toggle (signalled by the preserve_original_event tag
+  # set on the CEL input). Set before the json step while the tag is still in
+  # ctx.tags.
   - set:
       field: event.original
       copy_from: message
@@ -17,6 +18,17 @@ processors:
       add_to_root: true
       add_to_root_conflict_strategy: merge
       ignore_failure: true
+
+  # The json step above (add_to_root) merges the feed line's own `tags` array,
+  # which replaces ctx.tags and drops the `preserve_original_event` tag. Fleet's
+  # final pipeline removes event.original unless that tag is present at the end
+  # of ingest, so re-add it whenever event.original was set — otherwise the raw
+  # copy is silently stripped after the pipeline runs.
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.event?.original != null
 
   - remove:
       field: message

@@ -147,24 +147,6 @@ Strategic time-series view of how the feed is evolving:
 
 ---
 
-## Detection Rules
-
-The integration ships five **Elastic Security Indicator Match detection rules** that correlate Ticura indicators against your environment's events. All rules are installed **disabled by default** to avoid unexpected alert volume on first install.
-
-| Rule | Severity | Joins on |
-|------|----------|----------|
-| `[Ticura] Outbound connection to known malicious IP` | High | `destination.ip` × `threat.indicator.ip` |
-| `[Ticura] DNS query to known malicious domain` | High | `dns.question.name` × `threat.indicator.url.domain` |
-| `[Ticura] File hash matches known malicious indicator` | Critical | `file.hash.{sha256, sha1, md5}` × `threat.indicator.file.hash.*` |
-| `[Ticura] URL access matches known malicious URL` | High | `url.full` × `threat.indicator.url.full` |
-| `[Ticura] Critical-severity Ticura indicator observed` | Critical | Same as above, filtered to `event.severity >= 80` |
-
-All rules scope to `event.module:ti_ticura and _tier:"data_hot" and not threat.indicator.expired:true`, so they only match against fresh, currently-active indicators.
-
-**To enable them:** open **Security → Rules → Detection rules**, filter by tag `Ticura`, select all, and choose **Bulk actions → Enable**. You can also enable rules individually based on which match scenarios are relevant to your environment.
-
----
-
 ## Saved Searches (for SOC analysts)
 
 The integration ships nine pre-built saved searches under **Discover**. They are filterable, exportable, and ready to be embedded into custom dashboards or used as the source for Indicator Match detection rules.
@@ -381,4 +363,4 @@ When `preserve_original_event: true` is enabled in the integration settings, the
 
 - Indicator relevance and confidence can change over time.
 - The volume of ingested indicators depends on your feed configuration.
-- This integration ships five pre-built Elastic Security Indicator Match detection rules (installed **disabled by default** — see [Detection Rules](#detection-rules)), in addition to ECS-mapped indicators ready for use by any custom Indicator Match rules you build.
+- Indicators are mapped to ECS `threat.indicator.*` and are ready for use by Elastic Security's prebuilt threat-intel Indicator Match rules, or any custom Indicator Match rules you build.

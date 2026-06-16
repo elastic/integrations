@@ -8,11 +8,11 @@ data_stream:
     http_client_timeout: 5m
     preserve_original_event: true
 wait_for_data_timeout: 90s
-# Exercises the preserve_original_event=true path end-to-end against the real
-# (mock) feed, whose lines carry their own top-level `event` object. This is a
-# regression guard: the json add_to_root "replace" step will delete a
-# pre-written event.original, so we assert event.original actually survives to
-# _source — not just that the doc count is right.
+# Exercises the preserve_original_event=true path end-to-end: the CEL input adds
+# the `preserve_original_event` tag inside each event, and the ingest pipeline
+# copies the raw line into event.original. Asserting event.original is present
+# guards the full agent -> pipeline path (the pipeline test only covers the
+# pipeline in isolation, with the tag injected directly).
 assert:
   hit_count: 10
   fields_present:
