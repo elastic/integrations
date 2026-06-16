@@ -13,11 +13,11 @@ steps:
   - label: "Check that it runs from UI"
     key: "check-ui"
     command:
-      - "buildkite-agent annotate \"The $BUILDKITE_PIPELINE_SLUG is used only for running from UI or a trigger step!\" --style 'warning'"
+      - "buildkite-agent annotate \"The $BUILDKITE_PIPELINE_SLUG pipeline can only be triggered from the UI by members of the 'ecosystem' team, or via a trigger step from the 'integrations' pipeline.\" --style 'warning'"
       - "exit 1"
     if: |
       !(
-        build.source == 'ui' ||
+        (build.source == 'ui' && build.env('BUILDKITE_BUILD_CREATOR_TEAMS') =~ /(^|:)ecosystem(:|$)/) ||
         (build.source == 'trigger_job' && build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == 'integrations')
       )
 
