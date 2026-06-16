@@ -49,6 +49,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
                 - **DNS**: 9011
                 - **Endpoint DLP**: 9023
                 - **Firewall**: 9012
+                - **SaaS Security Activity**: 9026
                 - **SaaS Security**: 9024
                 - **Tunnel**: 9013
                 - **Web**: 9014
@@ -72,6 +73,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
               - **DNS**: 9556
               - **Endpoint DLP**: 9561
               - **Firewall**: 9557
+              - **SaaS Security Activity**: 9565
               - **SaaS Security**: 9563
               - **Tunnel**: 9558
               - **Web**: 9559
@@ -165,6 +167,25 @@ Zscaler Firewall Log response format (v2):
 Sample Response:
 ```json
 {"version":"v2","sourcetype":"zscalernss-fw","event":{"datetime":"Mon Oct 16 22:55:48 2023","cltdomain":"www.example.com","cdip":"2a02:cf40::","outbytes":"10000","cdport":"22","destcountry":"USA","devicemodel":"20L8S7WC08","sdip":"67.43.156.0","duration":"600","sdport":"443","tz":"GMT","action":"Blocked","devicehostname":"THINKPADSMITH","recordid":"123456","deviceosversion":"Version 10.14.2 (Build 18C54)","devicename":"admin","nwsvc":"HTTP","deviceostype":"iOS","ipsrulelabel":"Default IPS Rule","nwapp":"Skype","rdr_rulename":"FWD_Rule_1","proto":"TCP","rulelabel":"rule1","dnatrulelabel":"DNAT_Rule_1","srcipcountry":"United States","rule":"Default_Firewall_Filtering_Rule","ssip":"1.128.0.0","inbytes":"10000","ssport":"22","csip":"0.0.0.0","aggregate":"Yes","csport":"25","bypass_time":"Mon Oct 16 22:55:48 2023","user":"jdoe%40safemarch.com","datacentercountry":"US","bypassed_session":"1","day":"Mon","datacentercity":"Sa","department":"sales","datacenter":"CA Client Node DC","deviceappversion":"2.0.0.120","day_of_month":"16","avgduration":"600","dept":"Sales","eedone":"Yes","deviceowner":"jsmith","external_deviceid":"1234","durationms":"600","forward_gateway_name":"FWD_1","epochtime":"1578128400","ipcat":"Finance","flow_type":"Direct","location":"Headquarters","hour":"22","login":"jdo%40safemarch.com","ips_custom_signature":"0","month":"Oct","locationname":"Headquarters","dnat":"Yes","minute":"55","odevicename":"2175092224","month_of_year":"10","ofwd_gw_name":"8794487099","ocsip":"9960223283","oipcat":"5300295980","odeviceowner":"10831489","odnatlabel":"7956407282","odevicehostname":"2168890624","orulelabel":"624054738","oipsrulelabel":"6200694987","second":"48","ordr_rulename":"3399565100","stateful":"Yes","ozpa_app_seg_name":"7648246731","threatcat":"Botnet Callback","numsessions":"5","tsip":"89.160.20.128","threat_name":"Linux.Backdoor.Tsunami","year":"2023","threatname":"Linux.Backdoor","zpa_app_seg_name":"ZPA_test_app_segment","tuntype":"L2 tunnel","ztunnelversion":"ZTUNNEL_1_0"}}
+```
+
+### SaaS Security Activity Log
+
+- Default port (NSS Feed): _9026_
+- Default port (Cloud NSS Feed): _9565_
+
+See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/nss-feed-output-format-saas-security-activity-logs)
+
+To collect SaaS Security Activity logs, configure the NSS feed in the ZIA Admin Console using the **Feed Output Format** below. The format uses snake_case nested JSON keys that the integration parses without additional field renaming, and includes a `version` token so the pipeline can validate the template at ingest time.
+
+Zscaler SaaS Security Activity Log response format (v1):
+```
+\{"version":"v1","sourcetype":"zscalernss-saas_security_activity","time":"%s{time}","tz":"%s{tz}","event_time":"%s{eventtime}","activity":\{"type":"%s{act_type_name}","count":"%d{act_cnt}"\},"is_admin":"%s{is_admin_act}","application":\{"name":"%s{appname}"\},"tenant":"%s{tenant}","user_name":"%s{username}","external_owner":"%s{extownername}","object":\{"type":"%s{objtypename1}","subtype":"%s{objtypename2}","names":"%s{objnames1}","subnames":"%s{objnames2}"\},"src_ip":"%s{src_ip}"\}
+```
+
+Sample Response:
+```json
+{"version":"v1","sourcetype":"zscalernss-saas_security_activity","time":"Tue Jan 14 16:22:01 2026","tz":"GMT","event_time":"Tue Jan 14 16:22:01 2026","activity":{"type":"Share","count":"3"},"is_admin":"0","application":{"name":"SALESFORCE"},"tenant":"example-corp.my.salesforce.com","user_name":"bob.smith@example.com","external_owner":"partner@guest.example.net","object":{"type":"Record","subtype":"Account","names":"[Acme-Corp-Account, Acme-Corp-Opportunity]","subnames":"None"},"src_ip":"81.2.69.144"}
 ```
 
 ### SaaS Security Log
@@ -353,7 +374,19 @@ This is the `firewall` dataset.
 
 {{fields "firewall"}}
 
+### saas_security_activity
+
+This is the `saas_security_activity` dataset.
+
+#### Example
+
+{{event "saas_security_activity"}}
+
+{{fields "saas_security_activity"}}
+
 ### saas_security
+
+This is the `saas_security` dataset.
 
 #### Example
 
