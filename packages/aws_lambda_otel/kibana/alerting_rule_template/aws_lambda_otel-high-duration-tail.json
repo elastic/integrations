@@ -30,7 +30,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/Lambda\"\n    AND attributes.MetricName == \"Duration\"\n    AND attributes.stat == \"Maximum\"\n| STATS max_duration_ms = MAX(`metrics.amazonaws.com/AWS/Lambda/Duration`)\n  BY attributes.FunctionName, resource.attributes.cloud.region\n// Tail latency threshold (ms): catches cold starts and severe outliers\n| WHERE max_duration_ms > 10000\n| EVAL function_id = CONCAT(attributes.FunctionName, \"/\", resource.attributes.cloud.region)\n| SORT max_duration_ms DESC\n| LIMIT 10"
+                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE attributes.Namespace == \"AWS/Lambda\"\n    AND attributes.MetricName == \"Duration\"\n    AND attributes.stat == \"Maximum\"\n| STATS max_duration_ms = MAX(`metrics.amazonaws.com/AWS/Lambda/Duration`)\n  BY attributes.FunctionName, resource.attributes.cloud.region\n// Tail latency threshold (ms): catches cold starts and severe outliers\n| WHERE max_duration_ms > 10000\n| EVAL function_id = CONCAT(attributes.FunctionName, \"/\", resource.attributes.cloud.region)\n| SORT max_duration_ms DESC\n| LIMIT 10"
             },
             "size": 0,
             "threshold": [

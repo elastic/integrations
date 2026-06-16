@@ -30,7 +30,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/Lambda\"\n    AND attributes.MetricName == \"Throttles\"\n    AND attributes.stat == \"Sum\"\n| STATS total_throttles = SUM(`metrics.amazonaws.com/AWS/Lambda/Throttles`)\n  BY attributes.FunctionName, resource.attributes.cloud.region\n// Any throttling indicates concurrency exhaustion — target is zero\n| WHERE total_throttles > 0\n| EVAL function_id = CONCAT(attributes.FunctionName, \"/\", resource.attributes.cloud.region)\n| SORT total_throttles DESC\n| LIMIT 10"
+                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE attributes.Namespace == \"AWS/Lambda\"\n    AND attributes.MetricName == \"Throttles\"\n    AND attributes.stat == \"Sum\"\n| STATS total_throttles = SUM(`metrics.amazonaws.com/AWS/Lambda/Throttles`)\n  BY attributes.FunctionName, resource.attributes.cloud.region\n// Any throttling indicates concurrency exhaustion — target is zero\n| WHERE total_throttles > 0\n| EVAL function_id = CONCAT(attributes.FunctionName, \"/\", resource.attributes.cloud.region)\n| SORT total_throttles DESC\n| LIMIT 10"
             },
             "size": 0,
             "threshold": [
