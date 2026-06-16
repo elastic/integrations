@@ -29,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-aws.sqs.otel-*\n| WHERE attributes.Namespace == \"AWS/SQS\"\n    AND attributes.MetricName == \"ApproximateNumberOfMessagesVisible\"\n    AND attributes.stat == \"Maximum\"\n    AND attributes.QueueName NOT LIKE \"*-dlq\"\n| STATS backlog = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)\n    BY attributes.QueueName, resource.attributes.cloud.region, time_bucket = BUCKET(@timestamp, 5, ?_tstart, ?_tend)\n| STATS\n    start_backlog = MIN(backlog),\n    end_backlog = MAX(backlog)\n    BY attributes.QueueName, resource.attributes.cloud.region\n| EVAL backlog_growth = end_backlog - start_backlog\n// Tune: minimum backlog before growth matters (e.g. 100 messages)\n| WHERE end_backlog > 100\n// Tune: growth threshold — messages accumulated over the window\n    AND backlog_growth > 50"
+                "esql": "FROM metrics-aws.sqs.otel-*\n| WHERE attributes.Namespace == \"AWS/SQS\"\n    AND attributes.MetricName == \"ApproximateNumberOfMessagesVisible\"\n    AND attributes.stat == \"Maximum\"\n    AND QueueName NOT LIKE \"*-dlq\"\n| STATS backlog = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)\n    BY QueueName, resource.attributes.cloud.region, time_bucket = BUCKET(@timestamp, 5, ?_tstart, ?_tend)\n| STATS\n    start_backlog = MIN(backlog),\n    end_backlog = MAX(backlog)\n    BY QueueName, resource.attributes.cloud.region\n| EVAL backlog_growth = end_backlog - start_backlog\n// Tune: minimum backlog before growth matters (e.g. 100 messages)\n| WHERE end_backlog > 100\n// Tune: growth threshold — messages accumulated over the window\n    AND backlog_growth > 50"
             },
             "size": 0,
             "threshold": [
@@ -40,7 +40,7 @@
             "timeWindowSize": 15,
             "timeWindowUnit": "m",
             "groupBy": "row",
-            "termField": "attributes.QueueName",
+            "termField": "QueueName",
             "termSize": 100,
             "excludeHitsFromPreviousRun": true
         }
