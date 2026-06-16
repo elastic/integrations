@@ -29,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-aws.rds.otel-*\n| WHERE attributes.Namespace == \"AWS/RDS\"\n    AND attributes.MetricName == \"CPUUtilization\"\n    AND attributes.stat == \"Average\"\n| STATS avg_cpu_utilization = AVG(`metrics.amazonaws.com/AWS/RDS/CPUUtilization`)\n    BY attributes.DBInstanceIdentifier, resource.attributes.cloud.region\n// Percent CPU — adjust threshold (default: 80%)\n| WHERE avg_cpu_utilization > 80.0\n| SORT avg_cpu_utilization DESC"
+                "esql": "FROM metrics-aws.rds.otel-*\n| WHERE attributes.Namespace == \"AWS/RDS\"\n    AND attributes.MetricName == \"CPUUtilization\"\n    AND attributes.stat == \"Average\"\n| STATS avg_cpu_utilization = AVG(`metrics.amazonaws.com/AWS/RDS/CPUUtilization`)\n    BY DBInstanceIdentifier, resource.attributes.cloud.region\n// Percent CPU — adjust threshold (default: 80%)\n| WHERE avg_cpu_utilization > 80.0\n| SORT avg_cpu_utilization DESC"
             },
             "size": 0,
             "threshold": [
@@ -40,7 +40,7 @@
             "timeWindowSize": 15,
             "timeWindowUnit": "m",
             "groupBy": "row",
-            "termField": "attributes.DBInstanceIdentifier",
+            "termField": "DBInstanceIdentifier",
             "termSize": 50,
             "excludeHitsFromPreviousRun": true
         }

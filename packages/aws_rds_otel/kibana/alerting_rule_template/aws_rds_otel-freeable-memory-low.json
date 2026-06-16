@@ -29,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-aws.rds.otel-*\n| WHERE attributes.Namespace == \"AWS/RDS\"\n    AND attributes.MetricName == \"FreeableMemory\"\n    AND attributes.stat == \"Average\"\n| STATS min_freeable_memory = MIN(`metrics.amazonaws.com/AWS/RDS/FreeableMemory`)\n    BY attributes.DBInstanceIdentifier, resource.attributes.cloud.region\n// Absolute byte floor — adjust per instance class (default: 256 MB)\n| WHERE min_freeable_memory < 268435456\n| SORT min_freeable_memory ASC"
+                "esql": "FROM metrics-aws.rds.otel-*\n| WHERE attributes.Namespace == \"AWS/RDS\"\n    AND attributes.MetricName == \"FreeableMemory\"\n    AND attributes.stat == \"Average\"\n| STATS min_freeable_memory = MIN(`metrics.amazonaws.com/AWS/RDS/FreeableMemory`)\n    BY DBInstanceIdentifier, resource.attributes.cloud.region\n// Absolute byte floor — adjust per instance class (default: 256 MB)\n| WHERE min_freeable_memory < 268435456\n| SORT min_freeable_memory ASC"
             },
             "size": 0,
             "threshold": [
@@ -40,7 +40,7 @@
             "timeWindowSize": 15,
             "timeWindowUnit": "m",
             "groupBy": "row",
-            "termField": "attributes.DBInstanceIdentifier",
+            "termField": "DBInstanceIdentifier",
             "termSize": 50,
             "excludeHitsFromPreviousRun": true
         }
