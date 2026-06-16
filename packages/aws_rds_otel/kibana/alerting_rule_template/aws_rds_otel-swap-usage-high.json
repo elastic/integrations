@@ -29,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/RDS\"\n    AND attributes.MetricName == \"SwapUsage\"\n    AND attributes.stat == \"Average\"\n| STATS max_swap_usage = MAX(`metrics.amazonaws.com/AWS/RDS/SwapUsage`)\n    BY attributes.DBInstanceIdentifier, resource.attributes.cloud.region\n// Absolute bytes in swap — healthy instances stay near zero (default: 100 MB)\n| WHERE max_swap_usage > 104857600\n| SORT max_swap_usage DESC"
+                "esql": "FROM metrics-aws.rds.otel-*\n| WHERE attributes.Namespace == \"AWS/RDS\"\n    AND attributes.MetricName == \"SwapUsage\"\n    AND attributes.stat == \"Average\"\n| STATS max_swap_usage = MAX(`metrics.amazonaws.com/AWS/RDS/SwapUsage`)\n    BY attributes.DBInstanceIdentifier, resource.attributes.cloud.region\n// Absolute bytes in swap — healthy instances stay near zero (default: 100 MB)\n| WHERE max_swap_usage > 104857600\n| SORT max_swap_usage DESC"
             },
             "size": 0,
             "threshold": [

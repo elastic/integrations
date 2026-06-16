@@ -29,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/RDS\"\n    AND attributes.MetricName == \"ReadLatency\"\n    AND attributes.stat == \"Maximum\"\n| STATS max_read_latency = MAX(`metrics.amazonaws.com/AWS/RDS/ReadLatency`)\n    BY attributes.DBInstanceIdentifier, resource.attributes.cloud.region\n// Seconds per I/O — adjust sensitivity (default: 50 ms)\n| WHERE max_read_latency > 0.05\n| SORT max_read_latency DESC"
+                "esql": "FROM metrics-aws.rds.otel-*\n| WHERE attributes.Namespace == \"AWS/RDS\"\n    AND attributes.MetricName == \"ReadLatency\"\n    AND attributes.stat == \"Maximum\"\n| STATS max_read_latency = MAX(`metrics.amazonaws.com/AWS/RDS/ReadLatency`)\n    BY attributes.DBInstanceIdentifier, resource.attributes.cloud.region\n// Seconds per I/O — adjust sensitivity (default: 50 ms)\n| WHERE max_read_latency > 0.05\n| SORT max_read_latency DESC"
             },
             "size": 0,
             "threshold": [

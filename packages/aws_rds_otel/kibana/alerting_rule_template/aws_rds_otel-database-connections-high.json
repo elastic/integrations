@@ -29,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/RDS\"\n    AND attributes.MetricName == \"DatabaseConnections\"\n    AND attributes.stat == \"Maximum\"\n| STATS max_connections = MAX(`metrics.amazonaws.com/AWS/RDS/DatabaseConnections`)\n    BY attributes.DBInstanceIdentifier, resource.attributes.cloud.region\n// Peak connection count — set relative to max_connections and baseline (default: 100)\n| WHERE max_connections > 100\n| SORT max_connections DESC"
+                "esql": "FROM metrics-aws.rds.otel-*\n| WHERE attributes.Namespace == \"AWS/RDS\"\n    AND attributes.MetricName == \"DatabaseConnections\"\n    AND attributes.stat == \"Maximum\"\n| STATS max_connections = MAX(`metrics.amazonaws.com/AWS/RDS/DatabaseConnections`)\n    BY attributes.DBInstanceIdentifier, resource.attributes.cloud.region\n// Peak connection count — set relative to max_connections and baseline (default: 100)\n| WHERE max_connections > 100\n| SORT max_connections DESC"
             },
             "size": 0,
             "threshold": [

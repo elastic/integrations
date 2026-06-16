@@ -29,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/RDS\"\n    AND attributes.MetricName == \"DiskQueueDepth\"\n    AND attributes.stat == \"Average\"\n| STATS avg_disk_queue_depth = AVG(`metrics.amazonaws.com/AWS/RDS/DiskQueueDepth`)\n    BY attributes.DBInstanceIdentifier, resource.attributes.cloud.region\n// Queued I/O count — adjust based on workload (default: 5)\n| WHERE avg_disk_queue_depth > 5.0\n| SORT avg_disk_queue_depth DESC"
+                "esql": "FROM metrics-aws.rds.otel-*\n| WHERE attributes.Namespace == \"AWS/RDS\"\n    AND attributes.MetricName == \"DiskQueueDepth\"\n    AND attributes.stat == \"Average\"\n| STATS avg_disk_queue_depth = AVG(`metrics.amazonaws.com/AWS/RDS/DiskQueueDepth`)\n    BY attributes.DBInstanceIdentifier, resource.attributes.cloud.region\n// Queued I/O count — adjust based on workload (default: 5)\n| WHERE avg_disk_queue_depth > 5.0\n| SORT avg_disk_queue_depth DESC"
             },
             "size": 0,
             "threshold": [

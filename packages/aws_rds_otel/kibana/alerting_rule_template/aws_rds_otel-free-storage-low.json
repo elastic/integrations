@@ -29,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-awscloudwatchreceiver.otel-*\n| WHERE attributes.Namespace == \"AWS/RDS\"\n    AND attributes.MetricName == \"FreeStorageSpace\"\n    AND attributes.stat == \"Average\"\n| STATS min_free_storage = MIN(`metrics.amazonaws.com/AWS/RDS/FreeStorageSpace`)\n    BY attributes.DBInstanceIdentifier, resource.attributes.cloud.region\n// Absolute byte floor — adjust to your volume sizes (default: 10 GB)\n| WHERE min_free_storage < 10737418240\n| SORT min_free_storage ASC"
+                "esql": "FROM metrics-aws.rds.otel-*\n| WHERE attributes.Namespace == \"AWS/RDS\"\n    AND attributes.MetricName == \"FreeStorageSpace\"\n    AND attributes.stat == \"Average\"\n| STATS min_free_storage = MIN(`metrics.amazonaws.com/AWS/RDS/FreeStorageSpace`)\n    BY attributes.DBInstanceIdentifier, resource.attributes.cloud.region\n// Absolute byte floor — adjust to your volume sizes (default: 10 GB)\n| WHERE min_free_storage < 10737418240\n| SORT min_free_storage ASC"
             },
             "size": 0,
             "threshold": [
