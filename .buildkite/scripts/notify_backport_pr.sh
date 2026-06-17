@@ -9,7 +9,12 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
-if [[ -z "${PR_NUMBER:-}" ]]; then
+BACKPORT_BRANCH_NAME="$(buildkite-agent meta-data get BACKPORT_BRANCH_NAME --default "${BACKPORT_BRANCH_NAME:-""}")"
+PACKAGE_NAME="$(buildkite-agent meta-data get PACKAGE_NAME --default "${PACKAGE_NAME:-""}")"
+PACKAGE_VERSION="$(buildkite-agent meta-data get PACKAGE_VERSION --default "${PACKAGE_VERSION:-""}")"
+PR_NUMBER="$(buildkite-agent meta-data get PR_NUMBER --default "${PR_NUMBER:-""}")"
+
+if [[ -z "${PR_NUMBER}" ]]; then
     echo "PR_NUMBER not set, skipping PR notification"
     exit 0
 fi

@@ -106,7 +106,7 @@ while IFS= read -r branch; do
   - label: ":git: Backport dry-run: ${branch}"
     trigger: "integrations-backport"
     build:
-      env:
+      meta_data:
         DRY_RUN: "true"
         PACKAGE_NAME: "${pkg}"
         PACKAGE_VERSION: "${base_version}"
