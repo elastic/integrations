@@ -247,33 +247,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - script:
-      description: Remove Sysdig placeholder and empty values from content fields before type conversion.
-      tag: script_sanitize_content_fields
-      lang: painless
-      if: ctx.sysdig?.event?.content?.fields instanceof Map
-      source: |
-        void handleMap(Map map) {
-          map.values().removeIf(v -> {
-            if (v instanceof Map) {
-                handleMap(v);
-            } else if (v instanceof List) {
-                handleList(v);
-            }
-            return v == '<NA>' || v == '{}' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
-          });
-        }
-        void handleList(List list) {
-          list.removeIf(v -> {
-            if (v instanceof Map) {
-                handleMap(v);
-            } else if (v instanceof List) {
-                handleList(v);
-            }
-            return v == '<NA>' || v == '{}' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
-          });
-        }
-        handleMap(ctx.sysdig.event.content.fields);
   - convert:
       field: sysdig.event.content.fields.aws.accountId
       tag: convert_content_fields_aws_accountId_to_string
