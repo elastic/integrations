@@ -5,6 +5,7 @@ name: "integrations-backport"
 env:
   SETUP_GVM_VERSION: "v0.6.0"
   YQ_VERSION: 'v4.35.2'
+  GH_CLI_VERSION: "2.29.0"
   # Agent images used in pipeline steps
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
 
@@ -70,3 +71,21 @@ steps:
     depends_on:
       - step: "input-variables"
         allow_failure: false
+
+  - label: ":github: Notify PR"
+    key: "notify-pr"
+    command: |
+      outcome=$$(buildkite-agent step get "outcome" --step "create-backport-branch")
+      if [[ "$${outcome}" == "passed" ]]; then
+        NOTIFY_STATUS=success .buildkite/scripts/notify_backport_pr.sh
+      else
+        NOTIFY_STATUS=failure .buildkite/scripts/notify_backport_pr.sh
+      fi
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+    plugins:
+      - elastic/vault-github-token#v0.1.0:
+    depends_on:
+      - step: "create-backport-branch"
+        allow_failure: true
+    if: "build.env('PR_NUMBER') != ''"
