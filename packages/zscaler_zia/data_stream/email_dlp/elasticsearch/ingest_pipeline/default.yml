@@ -153,6 +153,32 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: script_dlp_dictionaries
+      description: >-
+        Combine the parallel vendor DLP arrays (dict_names, dict_counts) into a
+        nested zscaler_zia.email_dlp.dlp.dictionaries[] array of {name, count}
+      if: ctx.zscaler_zia?.email_dlp?.dlp instanceof Map
+      source: |
+        def dlp = ctx.zscaler_zia.email_dlp.dlp;
+        def names = dlp.dict_names instanceof List ? dlp.dict_names : null;
+        def counts = dlp.dict_counts instanceof List ? dlp.dict_counts : null;
+        if (names == null) return;
+        def out = new ArrayList();
+        for (int i = 0; i < names.size(); i++) {
+          def name = names.get(i);
+          if (!(name instanceof String) || name == '' || name == 'None') continue;
+          def item = new HashMap();
+          item.put('name', name);
+          if (counts != null && i < counts.size()) item.put('count', counts.get(i));
+          out.add(item);
+        }
+        if (out.size() > 0) ctx.zscaler_zia.email_dlp.dlp.dictionaries = out;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: zscaler_zia.email_dlp.email.attachments.sizes
       tag: foreach_email_attachments_sizes_to_long
