@@ -142,7 +142,6 @@ rules:
             "metadata": {}
           }
           `}}
-
   - path: /api/v2/vrm/public/vulnerabilities
     methods: ['GET']
     query_params:
@@ -226,8 +225,7 @@ rules:
             }
           }
           `}}
-
-  # Page 2 — fetched via nextLink cursor=page2 (more specific match, must precede page 1)
+  # Page 2 — fetched via nextLink cursor=page2
   - path: /api/entityInventory/entities
     methods: ['GET']
     query_params:
@@ -300,11 +298,12 @@ rules:
             "metadata": {}
           }
           `}}
-  # Page 1 — initial full fetch (no cursor; only pageSize+sort)
+  # Page 1 — initial full fetch (cursor absent so it does not match Page 2 requests)
   - path: /api/entityInventory/entities
     methods: ['GET']
     query_params:
       pageSize: '2'
+      cursor: null
     request_headers:
       Authorization: "Bearer mock-access-token-abc123"
     responses:

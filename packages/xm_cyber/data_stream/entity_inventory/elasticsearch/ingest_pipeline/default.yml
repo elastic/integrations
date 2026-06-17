@@ -10,15 +10,11 @@ processors:
       tag: terminate_data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
 
-  # drop CEL informational refresh-token messages
+  # drop CEL informational refresh-token marker events
   - drop:
-      description: Drops CEL informational token-refresh success messages from the ingest stream.
-      tag: drop_cel_refresh_token_success
-      if: ctx.message instanceof String && ctx.message == 'Refresh token successful'
-  - drop:
-      description: Drops CEL informational expired-refresh messages from the ingest stream.
-      tag: drop_cel_refresh_token_force_reauth
-      if: ctx.message instanceof String && ctx.message == 'Refresh token expired, forcing re-auth'
+      description: Drops the CEL token-refresh retry marker event so it does not become a phantom pipeline_error document.
+      tag: drop_cel_refresh_token_retry
+      if: ctx.message instanceof String && ctx.message == 'retry'
 
   # remove agentless metadata
   - remove:
@@ -2117,6 +2113,11 @@ processors:
       field: tags
       value: preserve_original_event
       allow_duplicates: false
+      if: ctx.error?.message != null
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
       if: ctx.error?.message != null
 
 on_failure:
