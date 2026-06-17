@@ -29,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE attributes.Namespace == \"AWS/Lambda\"\n    AND attributes.MetricName == \"IteratorAge\"\n    AND attributes.stat == \"Maximum\"\n| STATS max_iterator_age_ms = MAX(`metrics.amazonaws.com/AWS/Lambda/IteratorAge`)\n  BY FunctionName, cloud.region\n// Backlog age threshold (ms): stream consumer falling behind\n| WHERE max_iterator_age_ms > 60000\n| EVAL function_id = CONCAT(FunctionName, \"/\", cloud.region)\n| SORT max_iterator_age_ms DESC\n| LIMIT 10"
+                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE Namespace == \"AWS/Lambda\"\n    AND MetricName == \"IteratorAge\"\n    AND stat == \"Maximum\"\n| STATS max_iterator_age_ms = MAX(`metrics.amazonaws.com/AWS/Lambda/IteratorAge`)\n  BY FunctionName, cloud.region\n// Backlog age threshold (ms): stream consumer falling behind\n| WHERE max_iterator_age_ms > 60000\n| EVAL function_id = CONCAT(FunctionName, \"/\", cloud.region)\n| SORT max_iterator_age_ms DESC\n| LIMIT 10"
             },
             "size": 0,
             "threshold": [
