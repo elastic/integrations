@@ -29,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-aws.elb.otel-*\n| WHERE attributes.Namespace == \"AWS/ApplicationELB\"\n    AND attributes.MetricName == \"RejectedConnectionCount\"\n    AND attributes.stat == \"Sum\"\n| STATS rejected = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`)\n    BY LoadBalancer, resource.attributes.cloud.region\n// Any rejected connection is notable — threshold intentionally 0\n| WHERE rejected > 0\n| SORT rejected DESC"
+                "esql": "FROM metrics-aws.elb.otel-*\n| WHERE Namespace == \"AWS/ApplicationELB\"\n    AND MetricName == \"RejectedConnectionCount\"\n    AND stat == \"Sum\"\n| STATS rejected = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`)\n    BY LoadBalancer, cloud.region\n// Any rejected connection is notable — threshold intentionally 0\n| WHERE rejected > 0\n| SORT rejected DESC"
             },
             "size": 0,
             "threshold": [

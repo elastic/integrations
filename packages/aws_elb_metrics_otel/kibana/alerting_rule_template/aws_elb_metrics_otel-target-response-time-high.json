@@ -29,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-aws.elb.otel-*\n| WHERE attributes.Namespace == \"AWS/ApplicationELB\"\n    AND attributes.MetricName == \"TargetResponseTime\"\n    AND attributes.stat == \"Average\"\n| STATS avg_response_time = AVG(`metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`)\n    BY LoadBalancer, TargetGroup, resource.attributes.cloud.region\n// Alert threshold in seconds — tune to match your latency SLO (default 2.0s)\n| WHERE avg_response_time > 2.0\n| SORT avg_response_time DESC"
+                "esql": "FROM metrics-aws.elb.otel-*\n| WHERE Namespace == \"AWS/ApplicationELB\"\n    AND MetricName == \"TargetResponseTime\"\n    AND stat == \"Average\"\n| STATS avg_response_time = AVG(`metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`)\n    BY LoadBalancer, TargetGroup, cloud.region\n// Alert threshold in seconds — tune to match your latency SLO (default 2.0s)\n| WHERE avg_response_time > 2.0\n| SORT avg_response_time DESC"
             },
             "size": 0,
             "threshold": [

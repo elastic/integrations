@@ -29,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-aws.elb.otel-*\n| WHERE attributes.Namespace == \"AWS/ApplicationELB\"\n    AND attributes.MetricName == \"UnHealthyHostCount\"\n    AND attributes.stat == \"Average\"\n| STATS unhealthy_hosts = MAX(`metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`)\n    BY LoadBalancer, TargetGroup, resource.attributes.cloud.region\n// Any unhealthy target in the window — threshold is intentionally 0\n| WHERE unhealthy_hosts > 0\n| SORT unhealthy_hosts DESC"
+                "esql": "FROM metrics-aws.elb.otel-*\n| WHERE Namespace == \"AWS/ApplicationELB\"\n    AND MetricName == \"UnHealthyHostCount\"\n    AND stat == \"Average\"\n| STATS unhealthy_hosts = MAX(`metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`)\n    BY LoadBalancer, TargetGroup, cloud.region\n// Any unhealthy target in the window — threshold is intentionally 0\n| WHERE unhealthy_hosts > 0\n| SORT unhealthy_hosts DESC"
             },
             "size": 0,
             "threshold": [
