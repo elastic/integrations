@@ -64,74 +64,21 @@ vars:
     title: AWS Session Token
     description: Mapped to `AWS_SESSION_TOKEN` for temporary STS credentials.
     required: false
-    show_user: false
+    show_user: true
     secret: true
   - name: role_arn
     type: text
     title: AWS Role ARN
     description: Mapped to `AWS_ROLE_ARN`.
     required: false
-    show_user: true
+    show_user: false
   - name: external_id
     type: password
     title: AWS External ID
     description: Mapped to `AWS_ROLE_EXTERNAL_ID`.
     required: false
-    show_user: true
-    secret: true
-  # --- Receiver tunables ---
-  - name: poll_interval
-    type: duration
-    title: Poll Interval
-    description: How often the receiver polls CloudWatch (for example, `5m`, `1m`).
-    default: 5m
-    required: false
-    show_user: true
-  - name: autodiscover_limit
-    type: integer
-    title: Autodiscover Limit
-    description: Maximum number of metrics to enumerate per namespace. Higher values pick up more metrics but cost more API calls.
-    default: 100
-    required: false
-    show_user: true
-  - name: autodiscover_period
-    type: duration
-    title: Statistic Period
-    description: CloudWatch statistic period applied to every discovered metric.
-    default: 60s
-    required: false
-    show_user: true
-  - name: autodiscover_aggregation
-    type: select
-    title: Aggregation Statistic
-    description: CloudWatch statistic applied to every discovered metric. Use `Sum` for counters and `Average` for gauges; pick the one that matches the bulk of metrics in the namespace.
-    default: Average
-    required: false
-    show_user: true
-    options:
-      - value: Sum
-        text: Sum
-      - value: Average
-        text: Average
-      - value: Maximum
-        text: Maximum
-      - value: Minimum
-        text: Minimum
-      - value: SampleCount
-        text: SampleCount
-  - name: maximum_number_of_metrics_in_a_call
-    type: integer
-    title: Maximum Metrics Per Call
-    description: Maximum number of metrics queried in a single CloudWatch GetMetricData call.
-    default: 100
-    required: false
     show_user: false
-
-# --- Policy templates: one per AWS service ---
-# All templates render the same `input.yml.hbs`; the only thing that changes
-# between them is the per-template `namespace` var (hidden, fixed default).
-# `deployment_modes` is defined once via a YAML anchor on the first template
-# and aliased on every other template — single source of truth, no duplication.
+    secret: true
 # Adding a new service is a manifest-only change.
 policy_templates:
   - name: aws.ec2
@@ -158,6 +105,44 @@ policy_templates:
         default: "AWS/EC2"
         required: true
         show_user: false
+      - name: autodiscover_limit
+        type: integer
+        title: Autodiscover Limit
+        description: Maximum number of metrics to enumerate for this namespace. Higher values pick up more metrics but cost more API calls.
+        default: 100
+        required: false
+        show_user: false
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        description: How often the receiver polls CloudWatch. EC2 basic monitoring publishes at 5-minute resolution.
+        default: 5m
+        required: false
+        show_user: false
+      - name: period
+        type: duration
+        title: Period
+        description: CloudWatch aggregation window. Must match the metric resolution (5m for EC2 basic monitoring, 1m for detailed monitoring).
+        default: 5m
+        required: false
+        show_user: true
+      - name: delay
+        type: duration
+        title: Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 15m
+        required: false
+        show_user: false
+      - name: autodiscover_aggregation
+        type: text
+        multi: true
+        title: Aggregation Statistics
+        description: CloudWatch statistics applied to every discovered metric for this namespace.
+        default:
+          - Average
+          - Sum
+        required: false
+        show_user: false
 
   - name: aws.lambda
     type: metrics
@@ -173,6 +158,45 @@ policy_templates:
         description: CloudWatch namespace this template scrapes. Fixed per service.
         default: "AWS/Lambda"
         required: true
+        show_user: false
+      - name: autodiscover_limit
+        type: integer
+        title: Autodiscover Limit
+        description: Maximum number of metrics to enumerate for this namespace. Higher values pick up more metrics but cost more API calls.
+        default: 100
+        required: false
+        show_user: false
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        description: How often the receiver polls CloudWatch.
+        default: 5m
+        required: false
+        show_user: false
+      - name: period
+        type: duration
+        title: Period
+        description: CloudWatch aggregation window. Must match the metric resolution.
+        default: 5m
+        required: false
+        show_user: true
+      - name: delay
+        type: duration
+        title: Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 10m
+        required: false
+        show_user: false
+      - name: autodiscover_aggregation
+        type: text
+        multi: true
+        title: Aggregation Statistics
+        description: CloudWatch statistics applied to every discovered metric for this namespace.
+        default:
+          - Maximum
+          - Average
+          - Sum
+        required: false
         show_user: false
 
   - name: aws.rds
@@ -190,6 +214,43 @@ policy_templates:
         default: "AWS/RDS"
         required: true
         show_user: false
+      - name: autodiscover_limit
+        type: integer
+        title: Autodiscover Limit
+        description: Maximum number of metrics to enumerate for this namespace. Higher values pick up more metrics but cost more API calls.
+        default: 100
+        required: false
+        show_user: false
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        description: How often the receiver polls CloudWatch.
+        default: 1m
+        required: false
+        show_user: false
+      - name: period
+        type: duration
+        title: Period
+        description: CloudWatch aggregation window. Must match the metric resolution.
+        default: 1m
+        required: false
+        show_user: true
+      - name: delay
+        type: duration
+        title: Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 10m
+        required: false
+        show_user: false
+      - name: autodiscover_aggregation
+        type: text
+        multi: true
+        title: Aggregation Statistics
+        description: CloudWatch statistics applied to every discovered metric for this namespace.
+        default:
+          - Average
+        required: false
+        show_user: false
 
   - name: aws.sqs
     type: metrics
@@ -205,6 +266,45 @@ policy_templates:
         description: CloudWatch namespace this template scrapes. Fixed per service.
         default: "AWS/SQS"
         required: true
+        show_user: false
+      - name: autodiscover_limit
+        type: integer
+        title: Autodiscover Limit
+        description: Maximum number of metrics to enumerate for this namespace. Higher values pick up more metrics but cost more API calls.
+        default: 100
+        required: false
+        show_user: false
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        description: How often the receiver polls CloudWatch.
+        default: 5m
+        required: false
+        show_user: false
+      - name: period
+        type: duration
+        title: Period
+        description: CloudWatch aggregation window. Must match the metric resolution.
+        default: 5m
+        required: false
+        show_user: true
+      - name: delay
+        type: duration
+        title: Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 10m
+        required: false
+        show_user: false
+      - name: autodiscover_aggregation
+        type: text
+        multi: true
+        title: Aggregation Statistics
+        description: CloudWatch statistics applied to every discovered metric for this namespace.
+        default:
+          - Maximum
+          - Average
+          - Sum
+        required: false
         show_user: false
 
   - name: aws.elb
@@ -222,6 +322,45 @@ policy_templates:
         default: "AWS/ApplicationELB"
         required: true
         show_user: false
+      - name: autodiscover_limit
+        type: integer
+        title: Autodiscover Limit
+        description: Maximum number of metrics to enumerate for this namespace. Higher values pick up more metrics but cost more API calls.
+        default: 100
+        required: false
+        show_user: false
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        description: How often the receiver polls CloudWatch.
+        default: 1m
+        required: false
+        show_user: false
+      - name: period
+        type: duration
+        title: Period
+        description: CloudWatch aggregation window. Must match the metric resolution.
+        default: 1m
+        required: false
+        show_user: true
+      - name: delay
+        type: duration
+        title: Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 5m
+        required: false
+        show_user: false
+      - name: autodiscover_aggregation
+        type: text
+        multi: true
+        title: Aggregation Statistics
+        description: CloudWatch statistics applied to every discovered metric for this namespace.
+        default:
+          - Maximum
+          - Average
+          - Sum
+        required: false
+        show_user: false
 
   - name: aws.ecs
     type: metrics
@@ -237,6 +376,43 @@ policy_templates:
         description: CloudWatch namespace this template scrapes. Fixed per service.
         default: "AWS/ECS"
         required: true
+        show_user: false
+      - name: autodiscover_limit
+        type: integer
+        title: Autodiscover Limit
+        description: Maximum number of metrics to enumerate for this namespace. Higher values pick up more metrics but cost more API calls.
+        default: 100
+        required: false
+        show_user: false
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        description: How often the receiver polls CloudWatch.
+        default: 5m
+        required: false
+        show_user: false
+      - name: period
+        type: duration
+        title: Period
+        description: CloudWatch aggregation window. Must match the metric resolution.
+        default: 5m
+        required: false
+        show_user: true
+      - name: delay
+        type: duration
+        title: Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 10m
+        required: false
+        show_user: false
+      - name: autodiscover_aggregation
+        type: text
+        multi: true
+        title: Aggregation Statistics
+        description: CloudWatch statistics applied to every discovered metric for this namespace.
+        default:
+          - Average
+        required: false
         show_user: false
 
 owner:
