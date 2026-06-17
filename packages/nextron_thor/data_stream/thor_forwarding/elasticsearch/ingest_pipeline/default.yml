@@ -5,6 +5,9 @@ processors:
       field: ecs.version
       value: 9.2.0
       tag: set_ecs_version
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
   - append:
       field: event.category
       value: file
@@ -30,16 +33,37 @@ processors:
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
-      ignore_failure: true
       field: event.original
       target_field: thor
       tag: parse_event_original_json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            tag: append_error_message_parse_event_original_json
   - rename:
-      field: thor.file
-      target_field: file.name
-      if: ctx.thor?.file != null && ctx.thor?.file instanceof String
+      field: thor.scanid
+      target_field: thor.scan_id
+      tag: rename_thor_scanid_to_thor_scan_id
       ignore_missing: true
-      tag: rename_thor_file_to_file_name
+  - fingerprint:
+      ignore_missing: true
+      target_field: _id
+      fields:
+        - event.original
+        - log_line
+      method: SHA-256
+      tag: fingerprint_event_original_and_log_line
+  - remove:
+      field: log_line
+      tag: remove_log_line
+      ignore_missing: true
+  - rename:
+      ignore_missing: true
+      field: thor.file
+      target_field: file.path
+      if: ctx.thor?.file != null && ctx.thor.file instanceof String
+      tag: rename_thor_file_to_file_path_if_string
   - date:
       formats:
       - ISO8601
@@ -129,6 +153,7 @@ processors:
       field: thor.file.path
       target_field: file.path
       tag: rename_thor_file_path_to_file_path
+      if: ctx.file?.path == null
   - grok:
       ignore_missing: true
       field: file.path
@@ -139,6 +164,11 @@ processors:
       - '^(?:[A-Za-z]:\\|\\)(?:.*\\)?%{WINFILENAME:file.name}$'
       - '^/(?:.*/)?%{FILENAME:file.name}$'
       tag: extract_file_name_from_path
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            tag: append_error_message_extract_file_name_from_path
   - rename:
       ignore_missing: true
       field: thor.file.sha1
@@ -164,11 +194,6 @@ processors:
       field: thor.nextrun
       target_field: thor.next_run
       tag: rename_thor_nextrun_to_thor_next_run
-  - rename:
-      ignore_missing: true
-      field: thor.scanid
-      target_field: thor.scan_id
-      tag: rename_thor_scanid_to_thor_scan_id
   - rename:
       ignore_missing: true
       field: thor.firstbytes
@@ -392,6 +417,16 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: script_normalize_thor_start_multivalue
+      lang: painless
+      if: ctx.thor?.start != null && ctx.thor.start instanceof String && ctx.thor.start.indexOf(',') > 0
+      source: |-
+        ctx.thor.start = ctx.thor.start.splitOnToken(',')[0].trim();
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       formats:
       - ISO8601
@@ -520,16 +555,6 @@ processors:
       value: "{{{thor.unit_owner}}}"
       ignore_empty_values: true
       tag: append_related_user_unit_owner
-  - fingerprint:
-      ignore_missing: true
-      target_field: _id
-      fields:
-      - thor
-      - message
-      - "@timestamp"
-      - file
-      method: SHA-256
-      tag: fingerprint_event
   - pipeline:
       name: global@custom
       ignore_missing_pipeline: true

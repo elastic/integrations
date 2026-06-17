@@ -55,34 +55,25 @@ program: |
                             new_items.map(s,
                               get_request(state.url + "/v1/scan/log?scan=" + s.id + "&log=thor.json").with(auth_header).do_request().as(lr,
                                 (lr.StatusCode == 200) ?
-                                  string(lr.Body).split("\n").filter(line, line != "").map(line, {"message": line.decode_json().with({?"campaign_id": s.?campaign_id}).encode_json()})
+                                  string(lr.Body).split("\n").filter(line, line != "").transformList(i, line, {"message": line.decode_json().with({?"campaign_id": s.?campaign_id}).encode_json(), "log_line": string(i + 1)})
                                 :
                                   []
                               )
                             ).flatten().as(events,
-                              page.filter(s,
-                                (has(s.last_launcher_update) ? int(s.last_launcher_update) : int(s.creation_date)) >= latest_scan_ts &&
-                                s.id != latest_scan_id
-                              ).size().as(new_count_all,
-                                (body.total > batch_size).as(more_pages,
-                                  (
-                                    (events.size() > 0) ?
-                                      (has(page[page.size() - 1].last_launcher_update) ? int(page[page.size() - 1].last_launcher_update) : int(page[page.size() - 1].creation_date))
-                                    :
-                                      latest_scan_ts
-                                  ).as(new_latest_scan_ts,
-                                    ((events.size() > 0) ? page[page.size() - 1].id : latest_scan_id).as(new_latest_scan_id,
-                                      {
-                                        "events": events,
-                                        "cursor": {
-                                          "latest_scan_ts": new_latest_scan_ts,
-                                          "latest_scan_id": new_latest_scan_id,
-                                        },
-                                        "want_more": more_pages,
-                                        "total_scans": body.total,
-                                      }
-                                    )
-                                  )
+                              (
+                                has(page[page.size() - 1].last_launcher_update) ?
+                                  int(page[page.size() - 1].last_launcher_update) :
+                                  int(page[page.size() - 1].creation_date)
+                              ).as(new_latest_scan_ts,
+                                page[page.size() - 1].id.as(new_latest_scan_id,
+                                  {
+                                    "events": events,
+                                    "cursor": {
+                                      "latest_scan_ts": new_latest_scan_ts,
+                                      "latest_scan_id": new_latest_scan_id,
+                                    },
+                                    "want_more": page.size() >= batch_size,
+                                  }
                                 )
                               )
                             )

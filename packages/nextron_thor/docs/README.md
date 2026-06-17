@@ -214,6 +214,7 @@ To completely set up the Nextron Thor APT Scanner integration:
 | thor.parent | Path to the parent process executable. | keyword |  |
 | thor.path | Path to a file, scheduled task, or other system object. | keyword |  |
 | thor.pid | Process ID (PID) of a running process. | long |  |
+| thor.port |  | keyword |  |
 | thor.ppid | Parent process ID (PPID) of a running process. | long |  |
 | thor.process_name | Name of a running process executable. | keyword |  |
 | thor.reason | Reason for a detection or alert (e.g., "Password is too short", "Port explicitly specified"). | keyword |  |
@@ -229,6 +230,8 @@ To completely set up the Nextron Thor APT Scanner integration:
 | thor.reasons.signature.rulename | Name of a signature rule (e.g., YARA rule name). | keyword |  |
 | thor.reasons.signature.tags | Tags associated with a signature rule (e.g., MITRE ATT&CK techniques, threat categories). | keyword |  |
 | thor.reasons.sigtype | Signature type classification (e.g., internal, custom). | keyword |  |
+| thor.rule |  | keyword |  |
+| thor.rule_name |  | keyword |  |
 | thor.run_as_group | Group under which a systemd service runs. | keyword |  |
 | thor.run_as_user | User account under which a systemd service runs. | keyword |  |
 | thor.runlevel | Run level or privilege level for a scheduled task (e.g., LeastPrivilege). | keyword |  |
@@ -239,6 +242,7 @@ To completely set up the Nextron Thor APT Scanner integration:
 | thor.session | Session identifier for a process (e.g., Console, Services) | keyword |  |
 | thor.sha1 | SHA1 hash of a file. | keyword |  |
 | thor.shell | Login shell path for a user account (Linux/Unix systems). | keyword |  |
+| thor.signature |  | keyword |  |
 | thor.start | Start time or start condition for a scheduled task. | date |  |
 | thor.start_type | Startup type of a Windows service (e.g., AUTO_START, MANUAL, DISABLED). | keyword |  |
 | thor.unit | Name of a systemd unit (Linux systems). | keyword |  |
@@ -257,31 +261,32 @@ An example event for `thor_forwarding` looks as following:
 {
     "@timestamp": "2025-11-10T17:52:49.000Z",
     "agent": {
-        "ephemeral_id": "d19073f3-c079-49cd-acc9-bee532a04c98",
-        "id": "94d55e09-8bee-4d3c-9a56-7122f344472e",
-        "name": "elastic-agent-56458",
+        "ephemeral_id": "d61b7b77-8d8d-4ef8-9b52-d8a8d6d0cf7e",
+        "id": "dbf9ff1e-dde8-48a9-807f-6d3e79a7ed39",
+        "name": "elastic-agent-35188",
         "type": "filebeat",
-        "version": "9.4.1"
+        "version": "9.2.0"
     },
     "data_stream": {
         "dataset": "nextron_thor_apt_scanner.thor_forwarding",
-        "namespace": "90783",
+        "namespace": "56874",
         "type": "logs"
     },
     "ecs": {
         "version": "9.2.0"
     },
     "elastic_agent": {
-        "id": "94d55e09-8bee-4d3c-9a56-7122f344472e",
+        "id": "dbf9ff1e-dde8-48a9-807f-6d3e79a7ed39",
         "snapshot": false,
-        "version": "9.4.1"
+        "version": "9.2.0"
     },
     "event": {
+        "agent_id_status": "verified",
         "category": [
             "file"
         ],
         "dataset": "nextron_thor_apt_scanner.thor_forwarding",
-        "ingested": "2026-05-28T09:45:16Z",
+        "ingested": "2026-06-19T06:10:58Z",
         "kind": "event",
         "module": "AtJobs",
         "type": [
