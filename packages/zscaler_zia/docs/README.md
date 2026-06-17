@@ -885,22 +885,22 @@ An example event for `email_dlp` looks as following:
 {
     "@timestamp": "2024-03-15T11:30:00.000Z",
     "agent": {
-        "ephemeral_id": "1873eb4c-d1fc-42ea-a213-ee2ff68f8d1d",
-        "id": "cba8eefd-d5d8-4ae5-b04d-3429de69d6c0",
-        "name": "elastic-agent-41257",
+        "ephemeral_id": "e7d12b26-3a54-43fc-83ce-ffc91bed3e5e",
+        "id": "53b4bc00-80fd-409c-8a37-5c9e82e97734",
+        "name": "elastic-agent-73915",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.email_dlp",
-        "namespace": "72934",
+        "namespace": "54352",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "cba8eefd-d5d8-4ae5-b04d-3429de69d6c0",
+        "id": "53b4bc00-80fd-409c-8a37-5c9e82e97734",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -953,8 +953,9 @@ An example event for `email_dlp` looks as following:
             "intrusion_detection"
         ],
         "dataset": "zscaler_zia.email_dlp",
-        "ingested": "2026-05-13T05:48:58Z",
+        "ingested": "2026-06-17T07:26:15Z",
         "kind": "event",
+        "original": "{\"actions\":\"Block\",\"application\":{\"name\":\"Exchange\"},\"company\":{\"name\":\"Example Corp\"},\"datacenter\":{\"city\":\"Sydney\",\"country\":\"AU\",\"name\":\"Sydney DC\"},\"department\":\"Human Resources\",\"dlp\":{\"dict_counts\":\"4|2|3\",\"dict_names\":\"Social Security Number (US)|Bank Account Numbers|Credit Cards\",\"engine_names\":\"HIPAA|PCI|GLBA\",\"identifier\":\"6644778888776655443\",\"scan_time\":\"4521\"},\"email\":{\"attachments\":{\"doc_subtypes\":\"None|None\",\"doc_types\":\"Legal|Tax Forms\",\"file_names\":\"contract.pdf|w2-2023.pdf\",\"file_types\":\"pdf|pdf\",\"md5s\":\"5d41402abc4b2a76b9719d911017c592|aab3238922bcc25a6f606eb525ffdc56\",\"sizes\":\"189440|76800\"},\"mail_sent_epoch\":\"1710502200\",\"mail_sent_time\":\"Fri Mar 15 11:30:00 2024\",\"message_id\":\"\\u003cHR2024031500001@mail.example.com\\u003e\",\"other_recipient_domains\":\"None\",\"other_recipients\":\"None\",\"subject\":\"Onboarding documents — confidential\",\"triggered_recipient_domains\":\"example.com\",\"triggered_recipients\":\"new.employee@example.com\",\"zs_rcv_time\":\"Fri Mar 15 11:30:02 2024\",\"zs_sent_time\":\"Fri Mar 15 11:30:07 2024\"},\"external_user_name\":\"None\",\"feed_time\":\"Fri Mar 15 11:30:07 2024\",\"log_type\":\"DLP Incident\",\"owner\":\"hr.lead@example.com\",\"record_id\":\"6644778899001122334\",\"rule\":{\"labels\":\"PII_Block_Rule\"},\"sender\":\"hr.lead@example.com\",\"severity\":\"High Severity\",\"sourcetype\":\"zscalernss-emaildlp\",\"tenant\":\"example-corp\",\"time\":\"Fri Mar 15 11:30:00 2024\",\"tz\":\"GMT\",\"user_name\":\"hr.lead@example.com\",\"version\":\"v1\"}",
         "provider": "Zscaler",
         "severity": 73,
         "timezone": "GMT",
@@ -999,6 +1000,7 @@ An example event for `email_dlp` looks as following:
         ]
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "zscaler_zia-email_dlp"
     ],

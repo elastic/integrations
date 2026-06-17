@@ -5,17 +5,6 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: '8.11.0'
-  - remove:
-      field:
-        - organization
-        - division
-        - team
-      ignore_missing: true
-      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
-      description: >-
-        Removes the fields added by Agentless as metadata,
-        as they can collide with ECS fields.
 
   # parse the event JSON
   - rename:
@@ -56,14 +45,14 @@ processors:
       tag: check_template_version
       lang: painless
       params:
-        pkg_version: 3.18.0
+        pkg_version: 4.1.0
         data_stream: email_dlp
         expect:
           version: v1
       if: ctx.zscaler_zia?.email_dlp != null && ctx._conf?.strict_fields == true
       source: |-
         if (ctx.zscaler_zia.email_dlp.version != params.expect.version) {
-          ctx.error = ctx.error == null ? [:] : ctx.error;
+          ctx.error = ctx.error ?: [:];
           ctx.error.message = ctx.error.message == null ? [] : ctx.error.message;
           ctx.error.message.add('template version mismatch: ' + (ctx.zscaler_zia.email_dlp.version == null ? 'null' : ctx.zscaler_zia.email_dlp.version.toString()) + ' is not expected version (see ' + params.data_stream + ' https://epr.elastic.co/package/zscaler_zia/' + params.pkg_version + '/docs/README.md)');
         }
@@ -606,13 +595,8 @@ processors:
         - zscaler_zia.email_dlp.sender
         - zscaler_zia.email_dlp.application.name
         - zscaler_zia.email_dlp.owner
-      tag: remove_duplicate_vendor_fields_mapped_to_ecs
-      ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-  - remove:
-      field:
         - _conf
-      tag: remove_unused
+      tag: remove_unused_and_duplicate_vendor_fields_mapped_to_ecs
       ignore_missing: true
   - script:
       tag: script_to_drop_null_values
