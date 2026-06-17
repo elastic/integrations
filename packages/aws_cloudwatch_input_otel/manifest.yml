@@ -1,0 +1,286 @@
+format_version: 3.5.0
+name: aws_cloudwatch_input_otel
+title: "AWS CloudWatch OpenTelemetry Input Package"
+version: 0.2.1
+source:
+  license: "Elastic-2.0"
+description: "Collect AWS CloudWatch metrics for selected AWS services (EC2, RDS, SQS, ELB, Lambda, Fargate) using the OpenTelemetry Collector awscloudwatchmetrics receiver."
+type: input
+categories:
+  - aws
+  - cloud
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.5.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/logo_aws_cloudwatch_otel.svg
+    title: AWS CloudWatch OpenTelemetry logo
+    size: 32x32
+    type: image/svg+xml
+
+# --- Package-level (shared) variables ---
+# Defined once here and inherited by every policy template below — credentials,
+# region, and receiver tunables are not duplicated per service.
+vars:
+  - name: region
+    type: text
+    title: AWS Region
+    description: AWS region to query CloudWatch metrics from (for example, `us-east-1`).
+    required: true
+    show_user: true
+  - name: profile
+    type: text
+    title: AWS Shared Credentials Profile
+    description: The AWS profile used to authenticate.
+    required: false
+    show_user: false
+  - name: imds_endpoint
+    type: text
+    title: IMDS Endpoint
+    description: Override the EC2 Instance Metadata Service endpoint. Leave blank to use the AWS SDK default.
+    required: false
+    show_user: false
+  # --- Inline AWS credentials (rendered into env vars on the collector process) ---
+  - name: access_key_id
+    type: password
+    title: AWS Access Key ID
+    description: Mapped to `AWS_ACCESS_KEY_ID` on the collector process when an IAM role is not available.
+    required: false
+    show_user: true
+    secret: true
+  - name: secret_access_key
+    type: password
+    title: AWS Secret Access Key
+    description: Mapped to `AWS_SECRET_ACCESS_KEY`.
+    required: false
+    show_user: true
+    secret: true
+  - name: session_token
+    type: password
+    title: AWS Session Token
+    description: Mapped to `AWS_SESSION_TOKEN` for temporary STS credentials.
+    required: false
+    show_user: false
+    secret: true
+  - name: role_arn
+    type: text
+    title: AWS Role ARN
+    description: Mapped to `AWS_ROLE_ARN`.
+    required: false
+    show_user: true
+  - name: external_id
+    type: password
+    title: AWS External ID
+    description: Mapped to `AWS_ROLE_EXTERNAL_ID`.
+    required: false
+    show_user: true
+    secret: true
+  # --- Receiver tunables ---
+  - name: poll_interval
+    type: duration
+    title: Poll Interval
+    description: How often the receiver polls CloudWatch (for example, `5m`, `1m`).
+    default: 5m
+    required: false
+    show_user: true
+  - name: autodiscover_limit
+    type: integer
+    title: Autodiscover Limit
+    description: Maximum number of metrics to enumerate per namespace. Higher values pick up more metrics but cost more API calls.
+    default: 100
+    required: false
+    show_user: true
+  - name: autodiscover_period
+    type: duration
+    title: Statistic Period
+    description: CloudWatch statistic period applied to every discovered metric.
+    default: 60s
+    required: false
+    show_user: true
+  - name: autodiscover_aggregation
+    type: select
+    title: Aggregation Statistic
+    description: CloudWatch statistic applied to every discovered metric. Use `Sum` for counters and `Average` for gauges; pick the one that matches the bulk of metrics in the namespace.
+    default: Average
+    required: false
+    show_user: true
+    options:
+      - value: Sum
+        text: Sum
+      - value: Average
+        text: Average
+      - value: Maximum
+        text: Maximum
+      - value: Minimum
+        text: Minimum
+      - value: SampleCount
+        text: SampleCount
+  - name: maximum_number_of_metrics_in_a_call
+    type: integer
+    title: Maximum Metrics Per Call
+    description: Maximum number of metrics queried in a single CloudWatch GetMetricData call.
+    default: 100
+    required: false
+    show_user: false
+
+# --- Policy templates: one per AWS service ---
+# All templates render the same `input.yml.hbs`; the only thing that changes
+# between them is the per-template `namespace` var (hidden, fixed default).
+# `deployment_modes` is defined once via a YAML anchor on the first template
+# and aliased on every other template — single source of truth, no duplication.
+# Adding a new service is a manifest-only change.
+policy_templates:
+  - name: aws.ec2
+    type: metrics
+    title: AWS EC2 OpenTelemetry Metrics
+    description: Collect AWS/EC2 CloudWatch metrics.
+    input: otelcol
+    template_path: input.yml.hbs
+    deployment_modes: &deployment_modes
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        is_default: true
+        release: beta
+        organization: observability
+        division: engineering
+        team: obs-infraobs-integrations
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/EC2"
+        required: true
+        show_user: false
+      - name: delay
+        type: duration
+        title: Statistic Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 15m
+        required: false
+        show_user: true
+
+  - name: aws.lambda
+    type: metrics
+    title: AWS Lambda OpenTelemetry Metrics
+    description: Collect AWS/Lambda CloudWatch metrics.
+    input: otelcol
+    template_path: input.yml.hbs
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/Lambda"
+        required: true
+        show_user: false
+      - name: delay
+        type: duration
+        title: Statistic Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 10m
+        required: false
+        show_user: true
+
+  - name: aws.rds
+    type: metrics
+    title: AWS RDS OpenTelemetry Metrics
+    description: Collect AWS/RDS CloudWatch metrics.
+    input: otelcol
+    template_path: input.yml.hbs
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/RDS"
+        required: true
+        show_user: false
+      - name: delay
+        type: duration
+        title: Statistic Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 10m
+        required: false
+        show_user: true
+
+  - name: aws.sqs
+    type: metrics
+    title: AWS SQS OpenTelemetry Metrics
+    description: Collect AWS/SQS CloudWatch metrics.
+    input: otelcol
+    template_path: input.yml.hbs
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/SQS"
+        required: true
+        show_user: false
+      - name: delay
+        type: duration
+        title: Statistic Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 10m
+        required: false
+        show_user: true
+
+  - name: aws.elb
+    type: metrics
+    title: AWS Application ELB OpenTelemetry Metrics
+    description: Collect AWS/ApplicationELB CloudWatch metrics.
+    input: otelcol
+    template_path: input.yml.hbs
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/ApplicationELB"
+        required: true
+        show_user: false
+      - name: delay
+        type: duration
+        title: Statistic Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 5m
+        required: false
+        show_user: true
+
+  - name: aws.ecs
+    type: metrics
+    title: AWS ECS OpenTelemetry Metrics
+    description: Collect AWS/ECS CloudWatch metrics.
+    input: otelcol
+    template_path: input.yml.hbs
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/ECS"
+        required: true
+        show_user: false
+      - name: delay
+        type: duration
+        title: Statistic Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 10m
+        required: false
+        show_user: true
+
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic
