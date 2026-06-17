@@ -8,8 +8,7 @@
         "ruleTypeId": ".es-query",
         "tags": [
             "observability",
-            "aws",
-            "lambda",
+            "aws_lambda",
             "otel"
         ],
         "schedule": {
@@ -30,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE attributes.Namespace == \"AWS/Lambda\"\n    AND attributes.MetricName == \"ConcurrentExecutions\"\n    AND attributes.stat == \"Maximum\"\n| STATS peak_concurrency = MAX(`metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions`)\n  BY FunctionName, resource.attributes.cloud.region\n// Concurrency threshold: set near your account/function limit (default regional limit is 1000)\n| WHERE peak_concurrency > 800\n| EVAL function_id = CONCAT(FunctionName, \"/\", resource.attributes.cloud.region)\n| SORT peak_concurrency DESC\n| LIMIT 10"
+                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE attributes.Namespace == \"AWS/Lambda\"\n    AND attributes.MetricName == \"ConcurrentExecutions\"\n    AND attributes.stat == \"Maximum\"\n| STATS peak_concurrency = MAX(`metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions`)\n  BY FunctionName, cloud.region\n// Concurrency threshold: set near your account/function limit (default regional limit is 1000)\n| WHERE peak_concurrency > 800\n| EVAL function_id = CONCAT(FunctionName, \"/\", cloud.region)\n| SORT peak_concurrency DESC\n| LIMIT 10"
             },
             "size": 0,
             "threshold": [

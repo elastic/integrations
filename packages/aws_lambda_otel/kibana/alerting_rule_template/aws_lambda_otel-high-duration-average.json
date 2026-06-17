@@ -8,8 +8,7 @@
         "ruleTypeId": ".es-query",
         "tags": [
             "observability",
-            "aws",
-            "lambda",
+            "aws_lambda",
             "otel"
         ],
         "schedule": {
@@ -30,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE attributes.Namespace == \"AWS/Lambda\"\n    AND attributes.MetricName == \"Duration\"\n    AND attributes.stat == \"Average\"\n| STATS avg_duration_ms = AVG(`metrics.amazonaws.com/AWS/Lambda/Duration`)\n  BY FunctionName, resource.attributes.cloud.region\n// Latency threshold (ms): set per-function SLO\n| WHERE avg_duration_ms > 3000\n| EVAL function_id = CONCAT(FunctionName, \"/\", resource.attributes.cloud.region)\n| SORT avg_duration_ms DESC\n| LIMIT 10"
+                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE attributes.Namespace == \"AWS/Lambda\"\n    AND attributes.MetricName == \"Duration\"\n    AND attributes.stat == \"Average\"\n| STATS avg_duration_ms = AVG(`metrics.amazonaws.com/AWS/Lambda/Duration`)\n  BY FunctionName, cloud.region\n// Latency threshold (ms): set per-function SLO\n| WHERE avg_duration_ms > 3000\n| EVAL function_id = CONCAT(FunctionName, \"/\", cloud.region)\n| SORT avg_duration_ms DESC\n| LIMIT 10"
             },
             "size": 0,
             "threshold": [

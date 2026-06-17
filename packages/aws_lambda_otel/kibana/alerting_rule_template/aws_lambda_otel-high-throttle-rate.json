@@ -8,8 +8,7 @@
         "ruleTypeId": ".es-query",
         "tags": [
             "observability",
-            "aws",
-            "lambda",
+            "aws_lambda",
             "otel"
         ],
         "schedule": {
@@ -30,7 +29,7 @@
         "params": {
             "searchType": "esqlQuery",
             "esqlQuery": {
-                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE attributes.Namespace == \"AWS/Lambda\"\n    AND attributes.stat == \"Sum\"\n    AND attributes.MetricName IN (\"Throttles\", \"Invocations\")\n| STATS\n    total_throttles = SUM(`metrics.amazonaws.com/AWS/Lambda/Throttles`),\n    total_invocations = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`)\n  BY FunctionName, resource.attributes.cloud.region\n| EVAL denominator = total_invocations + total_throttles\n// Minimum traffic to avoid noisy alerts on idle functions\n| WHERE denominator > 10\n| EVAL throttle_rate_pct = ROUND(total_throttles / denominator * 100.0, 2)\n// Alert threshold (%): lower toward 0 for strict no-throttle policies\n| WHERE throttle_rate_pct > 0.5\n| EVAL function_id = CONCAT(FunctionName, \"/\", resource.attributes.cloud.region)\n| SORT throttle_rate_pct DESC\n| LIMIT 10"
+                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE attributes.Namespace == \"AWS/Lambda\"\n    AND attributes.stat == \"Sum\"\n    AND attributes.MetricName IN (\"Throttles\", \"Invocations\")\n| STATS\n    total_throttles = SUM(`metrics.amazonaws.com/AWS/Lambda/Throttles`),\n    total_invocations = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`)\n  BY FunctionName, cloud.region\n| EVAL denominator = total_invocations + total_throttles\n// Minimum traffic to avoid noisy alerts on idle functions\n| WHERE denominator > 10\n| EVAL throttle_rate_pct = ROUND(total_throttles / denominator * 100.0, 2)\n// Alert threshold (%): lower toward 0 for strict no-throttle policies\n| WHERE throttle_rate_pct > 0.5\n| EVAL function_id = CONCAT(FunctionName, \"/\", cloud.region)\n| SORT throttle_rate_pct DESC\n| LIMIT 10"
             },
             "size": 0,
             "threshold": [
