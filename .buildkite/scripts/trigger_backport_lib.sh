@@ -14,7 +14,7 @@
 resolve_pr_number() {
     local commit="$1"
     local pr_number
-    pr_number=$(gh api "repos/elastic/integrations/commits/${commit}/pulls" --jq '.[0].number' 2>/dev/null || true)
+    pr_number=$(gh api "repos/elastic/integrations/commits/${commit}/pulls" --jq '.[0].number // empty' 2>/dev/null || true)
     if [[ -n "${pr_number}" ]]; then
         echo "Associated PR: #${pr_number}" >&2
     else
@@ -62,17 +62,6 @@ generate_trigger_pipeline() {
     while IFS= read -r branch; do
         local entry=".backports[] | select(.branch == \"${branch}\")"
 
-        local active_exit=0
-        mage CheckBackportBranchActive "${branch}" || active_exit=$?
-        if [[ "${active_exit}" -eq 2 ]]; then
-            echo "ERROR: failed to check active status for branch '${branch}'" >&2
-            return 1
-        fi
-        if [[ "${active_exit}" -ne 0 ]]; then
-            echo "  Skipping inactive entry: ${branch}"
-            continue
-        fi
-
         # Only trigger for entries that are new (absent from the old inventory).
         # If the entry already existed, the branch is already created; nothing to provision.
         # This also covers re-activating a previously archived entry (archived:true → false):
@@ -81,6 +70,17 @@ generate_trigger_pipeline() {
         old_branch="$(yq "${entry} | .branch" "${old_inventory}")"
         if [[ -n "${old_branch}" ]]; then
             echo "  Skipping existing entry: ${branch} (already present)"
+            continue
+        fi
+
+        local active_exit=0
+        mage CheckBackportBranchActive "${branch}" || active_exit=$?
+        if [[ "${active_exit}" -eq 2 ]]; then
+            echo "ERROR: failed to check active status for branch '${branch}'" >&2
+            return 1
+        fi
+        if [[ "${active_exit}" -ne 0 ]]; then
+            echo "  Skipping inactive entry: ${branch}"
             continue
         fi
 
