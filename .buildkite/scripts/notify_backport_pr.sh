@@ -22,26 +22,22 @@ fi
 add_bin_path
 with_github_cli
 
-REPO="elastic/integrations"
-BRANCH="${BACKPORT_BRANCH_NAME}"
-PKG="${PACKAGE_NAME}"
-VERSION="${PACKAGE_VERSION}"
-
 BODY_FILE="$(mktemp)"
 trap 'rm -f "${BODY_FILE}"' EXIT
 
 if [[ "${NOTIFY_STATUS}" == "success" ]]; then
     cat > "${BODY_FILE}" <<EOF
-:white_check_mark: Backport branch \`${BRANCH}\` created successfully for package \`${PKG}\` \`${VERSION}\`.
+:white_check_mark: Backport branch \`${BACKPORT_BRANCH_NAME}\` created successfully for package \`${PACKAGE_NAME}\` \`${PACKAGE_VERSION}\`.
 
 [Buildkite build](${BUILDKITE_BUILD_URL})
 EOF
 else
     cat > "${BODY_FILE}" <<EOF
-:x: Failed to create backport branch \`${BRANCH}\` for package \`${PKG}\` \`${VERSION}\`.
+:x: Failed to create backport branch \`${BACKPORT_BRANCH_NAME}\` for package \`${PACKAGE_NAME}\` \`${PACKAGE_VERSION}\`.
 
 Check the [Buildkite build](${BUILDKITE_BUILD_URL}) for details.
 EOF
 fi
 
-retry 3 gh pr comment "${PR_NUMBER}" --repo "${REPO}" --body-file "${BODY_FILE}"
+RUN_ID="backport-${BACKPORT_BRANCH_NAME}-${BUILDKITE_BUILD_NUMBER:-0}-${BUILDKITE_RETRY_COUNT:-0}"
+retry 3 create_new_gh_pr_comment "elastic" "integrations" "${PR_NUMBER}" "${RUN_ID}" "${BODY_FILE}"

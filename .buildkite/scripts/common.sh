@@ -1245,6 +1245,36 @@ delete_and_create_gh_pr_comment() {
         --body "${contents}"
 }
 
+# Posts a new comment on every pipeline run/retry while staying idempotent
+# within a single attempt. Pass a unique id per attempt (e.g. build-number +
+# retry-count) — if a comment with that id already exists the call is a no-op,
+# so transient gh failures can be retried safely without double-posting.
+create_new_gh_pr_comment() {
+    local owner="$1"
+    local repo="$2"
+    local pr_number="$3"
+    local id="$4"
+    local comment_file="$5"
+    local metadata="<!--COMMENT_GENERATED_WITH_ID_${id}-->"
+
+    local comment_id
+    comment_id=$(get_comment_with_pattern "${owner}" "${repo}" "${pr_number}" "${metadata}")
+    if [[ -n "${comment_id}" ]]; then
+        echo "Comment already posted for id=${id}, skipping"
+        return
+    fi
+
+    local contents
+    contents="$(cat "${comment_file}")"
+    printf -v contents '%s\n%s' "${contents}" "${metadata}"
+
+    echo "Creating new comment"
+    gh pr comment \
+        "${pr_number}" \
+        --repo "${owner}/${repo}" \
+        --body "${contents}"
+}
+
 # FIXME: In a Pull Request that there are more than 100 comments,
 # if the comment is older than those 100 comments, it won't be found due to pagination
 get_comment_with_pattern() {

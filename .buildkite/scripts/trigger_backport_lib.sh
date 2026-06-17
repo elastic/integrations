@@ -1,5 +1,5 @@
 #!/bin/bash
-# Shared library for trigger_backport_dryrun.sh and trigger_backport_create.sh.
+# Shared library for trigger_backport.sh.
 # Source this file — do not execute directly.
 #
 # Provides resolve_pr_number(), backports_yml_changed(), load_old_backports_inventory(),
@@ -27,6 +27,14 @@ load_old_backports_inventory() {
     local git_ref="$1"
     local output_file="$2"
     git show "${git_ref}:.backports.yml" > "${output_file}" 2>/dev/null
+}
+
+validate_backport_branch_name() {
+    local branch="$1"
+    if [[ ! "${branch}" =~ ^backport-[a-zA-Z0-9_]+-[0-9]+\.([0-9]+|x)$ ]]; then
+        echo "ERROR: invalid branch name '${branch}' — expected format: backport-<package>-<major>.<minor|x>" >&2
+        return 1
+    fi
 }
 
 backports_yml_changed() {
@@ -60,6 +68,10 @@ generate_trigger_pipeline() {
     fi
 
     while IFS= read -r branch; do
+        if ! validate_backport_branch_name "${branch}"; then
+            return 1
+        fi
+
         local entry=".backports[] | select(.branch == \"${branch}\")"
 
         # Only trigger for entries that are new (absent from the old inventory).
