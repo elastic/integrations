@@ -10,12 +10,12 @@ The package is **content only**. It provides a curated metrics dashboard, but it
 |-----------|----------------|
 | **AWS EC2** | Monitors instance health, status checks, CPU utilization, network throughput, disk read/write activity, and EBS write activity. |
 
-The dashboard reads metric-stream style OpenTelemetry documents from `metrics-awscloudwatchreceiver.otel-default` and isolates CloudWatch statistics with `stat` before aggregating values.
+The dashboard reads metric-stream style OpenTelemetry documents from `metrics-aws.ec2.otel-*` and isolates CloudWatch statistics with `stat` before aggregating values.
 
 ## Data requirements
 
 - CloudWatch metrics collected by the OpenTelemetry Collector AWS CloudWatch receiver.
-- Documents indexed into the `metrics-awscloudwatchreceiver.otel-default` data stream.
+- Documents indexed into the `metrics-aws.ec2.otel-*` data stream.
 - The relevant AWS dimensions for this service, such as resource name, region, and service-specific identifiers.
 
 ## Compatibility
