@@ -2,9 +2,38 @@
 # Shared library for trigger_backport_dryrun.sh and trigger_backport_create.sh.
 # Source this file — do not execute directly.
 #
-# Provides generate_trigger_pipeline(), which iterates over a new .backports.yml,
+# Provides resolve_pr_number(), backports_yml_changed(), load_old_backports_inventory(),
+# and generate_trigger_pipeline().
+# resolve_pr_number() looks up the PR that introduced a given commit via the GitHub API.
+# backports_yml_changed() checks whether .backports.yml was modified between two git refs.
+# load_old_backports_inventory() extracts .backports.yml at a given git ref into a file.
+# generate_trigger_pipeline() iterates over a new .backports.yml,
 # finds entries absent from the old inventory, and writes Buildkite trigger steps
 # to a pipeline file. The caller decides whether to upload the result.
+
+resolve_pr_number() {
+    local commit="$1"
+    local pr_number
+    pr_number=$(gh api "repos/elastic/integrations/commits/${commit}/pulls" --jq '.[0].number' 2>/dev/null || true)
+    if [[ -n "${pr_number}" ]]; then
+        echo "Associated PR: #${pr_number}" >&2
+    else
+        echo "Could not resolve PR number for commit ${commit}, PR comments will be skipped" >&2
+    fi
+    echo "${pr_number}"
+}
+
+load_old_backports_inventory() {
+    local git_ref="$1"
+    local output_file="$2"
+    git show "${git_ref}:.backports.yml" > "${output_file}" 2>/dev/null
+}
+
+backports_yml_changed() {
+    local from="$1"
+    local to="$2"
+    git diff --name-only "${from}" "${to}" | grep -E '^\.backports\.yml$' > /dev/null
+}
 
 generate_trigger_pipeline() {
     local old_inventory="$1"  # path to the pre-change inventory

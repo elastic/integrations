@@ -24,7 +24,7 @@ main() {
     with_mage
     with_github_cli
 
-    if ! git diff --name-only HEAD^ HEAD | grep -qE '^\.backports\.yml$'; then
+    if ! backports_yml_changed "HEAD^" "HEAD"; then
         echo ".backports.yml not changed, skipping backport create trigger"
         exit 0
     fi
@@ -42,17 +42,12 @@ main() {
     }
     trap cleanup EXIT
 
-    PR_NUMBER=$(gh api "repos/elastic/integrations/commits/${BUILDKITE_COMMIT}/pulls" --jq '.[0].number' 2>/dev/null || true)
-    if [[ -n "${PR_NUMBER}" ]]; then
-        echo "Associated PR: #${PR_NUMBER}"
-    else
-        echo "Could not resolve PR number for commit ${BUILDKITE_COMMIT}, PR comments will be skipped"
-    fi
+    PR_NUMBER=$(resolve_pr_number "${BUILDKITE_COMMIT}")
 
     OLD_INVENTORY="$(mktemp)"
     NEW_INVENTORY=".backports.yml"
 
-    if ! git show "HEAD^:.backports.yml" > "${OLD_INVENTORY}" 2>/dev/null; then
+    if ! load_old_backports_inventory "HEAD^" "${OLD_INVENTORY}"; then
         echo ".backports.yml is new on main — skipping create for initial entries"
         echo "To create branches for these entries, trigger the integrations-backport pipeline manually."
         exit 0

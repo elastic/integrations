@@ -27,7 +27,7 @@ main() {
     to="$(get_to_changeset)"
     commit_merge="$(git merge-base "${from}" "${to}")"
 
-    if ! git diff --name-only "${commit_merge}" "${to}" | grep -qE '^\.backports\.yml$'; then
+    if ! backports_yml_changed "${commit_merge}" "${to}"; then
         echo ".backports.yml not changed, skipping backport dry-run trigger"
         exit 0
     fi
@@ -49,7 +49,7 @@ main() {
     OLD_INVENTORY="$(mktemp)"
     NEW_INVENTORY=".backports.yml"
 
-    if ! git show "origin/${BASE_BRANCH}:.backports.yml" > "${OLD_INVENTORY}" 2>/dev/null; then
+    if ! load_old_backports_inventory "origin/${BASE_BRANCH}" "${OLD_INVENTORY}"; then
         echo ".backports.yml is new on ${BASE_BRANCH} — skipping dry-runs for initial entries"
         echo "To validate new entries, add them in a follow-up PR after this one merges."
         exit 0
