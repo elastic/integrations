@@ -75,7 +75,31 @@
                 "query": {
                     "language": "kuery",
                     "query": ""
-                }
+                },
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "ess_billing.billing"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "ess_billing.billing"
+                            }
+                        }
+                    }
+                ]
             }
         },
         "optionsJSON": {
@@ -108,7 +132,7 @@
                         {
                             "destination": "https://cloud.elastic.co",
                             "id": "c10197c7-0ff6-49ce-81a7-7e140c18d430",
-                            "label": "☁️ Elastic Cloud",
+                            "label": "\u2601\ufe0f Elastic Cloud",
                             "order": 2,
                             "type": "externalLink"
                         }
@@ -281,7 +305,7 @@
                                             ],
                                             "index": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "query": {
-                                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp \u003e= ?_tend - 7 days\n| STATS\n  total_ECUs_period = SUM(ess.billing.total_ecu),\n  count_days_period = COUNT_DISTINCT(DATE_TRUNC(1 day, @timestamp))\n| EVAL recent_run_rate = total_ECUs_period / count_days_period\n| KEEP recent_run_rate"
+                                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  total_ECUs_period = SUM(ess.billing.total_ecu),\n  count_days_period = COUNT_DISTINCT(DATE_TRUNC(1 day, @timestamp))\n| EVAL recent_run_rate = total_ECUs_period / count_days_period\n| KEEP recent_run_rate"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -291,7 +315,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp \u003e= ?_tend - 7 days\n| STATS\n  total_ECUs_period = SUM(ess.billing.total_ecu),\n  count_days_period = COUNT_DISTINCT(DATE_TRUNC(1 day, @timestamp))\n| EVAL recent_run_rate = total_ECUs_period / count_days_period\n| KEEP recent_run_rate"
+                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  total_ECUs_period = SUM(ess.billing.total_ecu),\n  count_days_period = COUNT_DISTINCT(DATE_TRUNC(1 day, @timestamp))\n| EVAL recent_run_rate = total_ECUs_period / count_days_period\n| KEEP recent_run_rate"
                             },
                             "visualization": {
                                 "icon": "temperature",
@@ -313,7 +337,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp \u003e= ?_tend - 7 days\n| STATS\n  total_ECUs_period = SUM(ess.billing.total_ecu),\n  count_days_period = COUNT_DISTINCT(DATE_TRUNC(1 day, @timestamp))\n| EVAL recent_run_rate = total_ECUs_period / count_days_period\n| KEEP recent_run_rate"
+                        "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  total_ECUs_period = SUM(ess.billing.total_ecu),\n  count_days_period = COUNT_DISTINCT(DATE_TRUNC(1 day, @timestamp))\n| EVAL recent_run_rate = total_ECUs_period / count_days_period\n| KEEP recent_run_rate"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -384,7 +408,7 @@
                                             ],
                                             "index": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "query": {
-                                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp \u003e= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id)"
+                                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -394,7 +418,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp \u003e= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id)"
+                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id)"
                             },
                             "visualization": {
                                 "icon": "globe",
@@ -416,7 +440,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp \u003e= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id)"
+                        "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id)"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -510,7 +534,7 @@
                                             ],
                                             "index": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "query": {
-                                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp \u003e= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  ml_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*ml*\""
+                                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  ml_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*ml*\""
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -520,7 +544,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp \u003e= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  ml_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*ml*\""
+                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  ml_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*ml*\""
                             },
                             "visualization": {
                                 "color": "#EE72A6",
@@ -545,7 +569,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp \u003e= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  ml_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*ml*\""
+                        "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  ml_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*ml*\""
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -650,7 +674,7 @@
                                             ],
                                             "index": "526a9afe6163dadf5ade822595b5568e52d3b7d4ff831b30e1b2031e42b6677e",
                                             "query": {
-                                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp \u003e= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  frozen_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*frozen*\""
+                                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  frozen_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*frozen*\""
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -660,7 +684,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp \u003e= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  frozen_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*frozen*\""
+                                "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  frozen_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*frozen*\""
                             },
                             "visualization": {
                                 "color": "#16C5C0",
@@ -685,7 +709,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp \u003e= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  frozen_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*frozen*\""
+                        "esql": "FROM metrics-ess_billing.billing-*\n| WHERE @timestamp >= ?_tend - 7 days\n| STATS\n  dep_count = COUNT_DISTINCT(ess.billing.deployment_id),\n  frozen_enabled = COUNT_DISTINCT(ess.billing.deployment_id) WHERE ess.billing.sku LIKE \"*frozen*\""
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -1054,7 +1078,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "# 💵 Costs overview",
+                            "markdown": "# \ud83d\udcb5 Costs overview",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -2423,7 +2447,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "# 📈 Traffic",
+                            "markdown": "# \ud83d\udcc8 Traffic",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -3365,7 +3389,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "# 🔎 Deployment drilldown",
+                            "markdown": "# \ud83d\udd0e Deployment drilldown",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -3993,6 +4017,11 @@
     "created_at": "2026-03-12T21:40:54.021Z",
     "id": "ess_billing-billingdashboard",
     "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "metrics-*",
             "name": "controlGroup_148407b7-0d24-4a6d-8d7b-cda1deb607b0:optionsListDataView",
