@@ -780,6 +780,7 @@ is_pr_affected() {
     local non_package_patterns=(
         'packages/'
         '\.agents/skills/'
+        '\.backports\.yml'
         '\.buildkite/pipeline\.backport\.yml'
         '\.buildkite/pipeline\.publish\.yml'
         '\.buildkite/pipeline\.schedule-daily\.yml'
@@ -787,6 +788,8 @@ is_pr_affected() {
         '\.buildkite/pipeline\.serverless\.yml'
         '\.buildkite/pull-requests\.json'
         '\.buildkite/scripts/backport_branch\.sh'
+        '\.buildkite/scripts/check_backports_inventory\.sh'
+        '\.buildkite/scripts/trigger_backport_dryrun\.sh'
         '\.buildkite/scripts/build_packages\.sh'
         '\.buildkite/scripts/check_changelog_entries\.sh'
         '\.buildkite/scripts/packages/.+\.sh'
