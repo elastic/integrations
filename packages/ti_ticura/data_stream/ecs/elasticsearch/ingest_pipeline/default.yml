@@ -115,14 +115,9 @@ processors:
       ignore_failure: true
 
   # ----- Document-level provenance -----
-  # Mark every event as a Ticura threat-intel document for cross-source
-  # filtering, Elastic Security UI grouping, and SOAR routing.
-  # NOTE: event.dataset is set automatically by Fleet from the data stream
-  # definition; we deliberately don't set it again here to avoid redundancy.
-  - set:
-      field: event.module
-      value: ti_ticura
-      override: false
+  # Document provenance. event.module and event.dataset are declared as
+  # constant_keyword fields in base-fields.yml (stored once in the mapping, not
+  # stamped on every document); event.provider and observer.* are set here.
   - set:
       field: event.provider
       value: Ticura
