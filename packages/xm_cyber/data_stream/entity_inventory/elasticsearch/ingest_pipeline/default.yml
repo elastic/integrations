@@ -50,9 +50,9 @@ processors:
   # Normalise vendor field names to snake_case recursively under xm_cyber.entity_inventory.*
   # ----- event.kind / event.category / event.type -----
   - set:
-      tag: set_event_kind_state
+      tag: set_event_kind_asset
       field: event.kind
-      value: state
+      value: asset
   - fingerprint:
       tag: fingerprint_with_id
       fields:
@@ -1924,6 +1924,29 @@ processors:
       field: user.full_name
       copy_from: xm_cyber.entity_inventory.distinguished_name
       ignore_empty_value: true
+
+  # ----- entity.* mappings (ECS entity extension) -----
+  # Device-shaped entities: last_activity is the device's last connection time.
+  - set:
+      tag: set_host_entity_lifecycle_last_activity_from_last_connection_time
+      field: host.entity.lifecycle.last_activity
+      copy_from: xm_cyber.entity_inventory.last_connection_time
+      ignore_empty_value: true
+      if: ctx.xm_cyber?.entity_inventory?.last_connection_time != null && ctx.xm_cyber.entity_inventory.last_connection_time != 'Unknown' && ctx.xm_cyber?.entity_inventory?.entity_type != null && ctx.xm_cyber.entity_inventory.entity_type.toLowerCase().contains('agent')
+  # User-shaped entities: last_activity is the principal's last activity date.
+  - set:
+      tag: set_user_entity_lifecycle_last_activity_from_last_activity_date
+      field: user.entity.lifecycle.last_activity
+      copy_from: xm_cyber.entity_inventory.last_activity_date
+      ignore_empty_value: true
+      if: ctx.xm_cyber?.entity_inventory?.last_activity_date != null && ctx.xm_cyber.entity_inventory.last_activity_date != 'Unknown' && ctx.xm_cyber?.entity_inventory?.entity_type != null && ctx.xm_cyber.entity_inventory.entity_type.toLowerCase().contains('user')
+  # MFA flag is a user-only attribute.
+  - set:
+      tag: set_user_entity_attributes_mfa_enabled_from_is_mfaenabled
+      field: user.entity.attributes.mfa_enabled
+      copy_from: xm_cyber.entity_inventory.is_mfaenabled
+      ignore_empty_value: true
+      if: ctx.xm_cyber?.entity_inventory?.entity_type != null && ctx.xm_cyber.entity_inventory.entity_type.toLowerCase().contains('user')
 
   # ----- service.* mappings -----
   - set:
