@@ -13,6 +13,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 )
 
 func writeTemp(t *testing.T, content string) string {
@@ -627,6 +628,162 @@ func TestCheckActiveFileNotFound(t *testing.T) {
 	_, err := CheckActive("/no/such/file.yml", "some-branch", time.Now())
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "reading inventory")
+}
+
+func readInventory(t *testing.T, path string) inventory {
+	t.Helper()
+	data, err := os.ReadFile(path)
+	require.NoError(t, err)
+	var inv inventory
+	require.NoError(t, yaml.Unmarshal(data, &inv))
+	return inv
+}
+
+func TestAddEntry(t *testing.T) {
+	const twoEntries = `backports:
+  - package: aws
+    branch: backport-aws-3.0
+    base_version: "3.0.0"
+    base_commit: "def5678901"
+    maintained_until: null
+    archived: false
+  - package: aws
+    branch: backport-aws-1.19
+    base_version: "1.19.5"
+    base_commit: "abc1234567"
+    maintained_until: null
+    archived: false
+`
+
+	t.Run("inserts between versions of the same package", func(t *testing.T) {
+		path := writeTemp(t, twoEntries)
+		branch, err := AddEntry(path, "aws", "2.1.0", "aabbccddee")
+		require.NoError(t, err)
+		assert.Equal(t, "backport-aws-2.1", branch)
+
+		inv := readInventory(t, path)
+		require.Len(t, inv.Backports, 3)
+		assert.Equal(t, "backport-aws-3.0", inv.Backports[0].Branch)
+		assert.Equal(t, "backport-aws-2.1", inv.Backports[1].Branch)
+		assert.Equal(t, "backport-aws-1.19", inv.Backports[2].Branch)
+	})
+
+	t.Run("inserts between packages alphabetically", func(t *testing.T) {
+		inv := `backports:
+  - package: aws
+    branch: backport-aws-1.0
+    base_version: "1.0.0"
+    base_commit: "aabbccddee"
+    maintained_until: null
+    archived: false
+  - package: gcp
+    branch: backport-gcp-1.0
+    base_version: "1.0.0"
+    base_commit: "ffeeddccbb"
+    maintained_until: null
+    archived: false
+`
+		path := writeTemp(t, inv)
+		branch, err := AddEntry(path, "elastic_agent", "2.3.0", "112233aabb")
+		require.NoError(t, err)
+		assert.Equal(t, "backport-elastic_agent-2.3", branch)
+
+		result := readInventory(t, path)
+		require.Len(t, result.Backports, 3)
+		assert.Equal(t, "backport-aws-1.0", result.Backports[0].Branch)
+		assert.Equal(t, "backport-elastic_agent-2.3", result.Backports[1].Branch)
+		assert.Equal(t, "backport-gcp-1.0", result.Backports[2].Branch)
+	})
+
+	t.Run("appends when new entry is last", func(t *testing.T) {
+		path := writeTemp(t, twoEntries)
+		branch, err := AddEntry(path, "zz_pkg", "1.0.0", "aabbccddee")
+		require.NoError(t, err)
+		assert.Equal(t, "backport-zz_pkg-1.0", branch)
+
+		inv := readInventory(t, path)
+		require.Len(t, inv.Backports, 3)
+		assert.Equal(t, "backport-zz_pkg-1.0", inv.Backports[2].Branch)
+	})
+
+	t.Run("prepends when new entry is first", func(t *testing.T) {
+		path := writeTemp(t, twoEntries)
+		branch, err := AddEntry(path, "aaa_pkg", "1.0.0", "aabbccddee")
+		require.NoError(t, err)
+		assert.Equal(t, "backport-aaa_pkg-1.0", branch)
+
+		inv := readInventory(t, path)
+		require.Len(t, inv.Backports, 3)
+		assert.Equal(t, "backport-aaa_pkg-1.0", inv.Backports[0].Branch)
+		assert.Equal(t, "backport-aws-3.0", inv.Backports[1].Branch)
+	})
+
+	t.Run("derives branch from major.minor only", func(t *testing.T) {
+		path := writeTemp(t, twoEntries)
+		branch, err := AddEntry(path, "aws", "2.5.3", "aabbccddee")
+		require.NoError(t, err)
+		assert.Equal(t, "backport-aws-2.5", branch)
+	})
+
+	t.Run("new entry has correct fields", func(t *testing.T) {
+		path := writeTemp(t, twoEntries)
+		_, err := AddEntry(path, "aws", "2.1.0", "aabbccddee")
+		require.NoError(t, err)
+
+		inv := readInventory(t, path)
+		require.Len(t, inv.Backports, 3)
+		e := inv.Backports[1]
+		assert.Equal(t, "aws", e.Package)
+		assert.Equal(t, "backport-aws-2.1", e.Branch)
+		assert.Equal(t, "2.1.0", e.BaseVersion)
+		assert.Equal(t, "aabbccddee", e.BaseCommit)
+		assert.Nil(t, e.MaintainedUntil)
+		require.NotNil(t, e.Archived)
+		assert.False(t, *e.Archived)
+	})
+
+	t.Run("existing entries keep double-quoted style", func(t *testing.T) {
+		path := writeTemp(t, twoEntries)
+		_, err := AddEntry(path, "aws", "2.1.0", "aabbccddee")
+		require.NoError(t, err)
+
+		out, _ := os.ReadFile(path)
+		content := string(out)
+		assert.Contains(t, content, `base_version: "1.19.5"`)
+		assert.Contains(t, content, `base_version: "3.0.0"`)
+	})
+
+	t.Run("header comment is preserved", func(t *testing.T) {
+		inv := `# Backport inventory header
+#
+backports:
+  - package: aws
+    branch: backport-aws-1.0
+    base_version: "1.0.0"
+    base_commit: "aabbccddee"
+    maintained_until: null
+    archived: false
+`
+		path := writeTemp(t, inv)
+		_, err := AddEntry(path, "aws", "2.0.0", "ffeeddccbb")
+		require.NoError(t, err)
+
+		out, _ := os.ReadFile(path)
+		assert.Contains(t, string(out), "# Backport inventory header")
+	})
+
+	t.Run("invalid base_version returns error", func(t *testing.T) {
+		path := writeTemp(t, twoEntries)
+		_, err := AddEntry(path, "aws", "not-a-version", "aabbccddee")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "invalid base_version")
+	})
+
+	t.Run("file not found returns error", func(t *testing.T) {
+		_, err := AddEntry("/no/such/file.yml", "aws", "1.0.0", "aabbccddee")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "reading inventory")
+	})
 }
 
 func ptr(s string) *string { return &s }

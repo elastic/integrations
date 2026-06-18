@@ -324,6 +324,24 @@ func IsVersionLessThanLogsDBGA(version string) error {
 	return nil
 }
 
+// AddBackportEntry adds a new entry to .backports.yml for the given package and
+// base version. The branch name is derived as backport-<package>-<major>.<minor>,
+// archived is set to false, and maintained_until to null. The base commit is
+// resolved via dev/scripts/get_release_commit.sh. The entry is inserted in
+// sorted order (by package name ascending, then by version descending — newest first).
+func AddBackportEntry(packageName, baseVersion string) error {
+	baseCommit, err := sh.Output("bash", "dev/scripts/get_release_commit.sh", "-p", packageName, "-v", baseVersion)
+	if err != nil {
+		return fmt.Errorf("resolving base commit for %s@%s: %w", packageName, baseVersion, err)
+	}
+	branch, err := backports.AddEntry(".backports.yml", packageName, baseVersion, strings.TrimSpace(baseCommit))
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Added: branch=%s base_commit=%s\n", branch, strings.TrimSpace(baseCommit))
+	return nil
+}
+
 // CheckBackportBranchActive reports whether a backport branch is active per .backports.yml.
 // Prints "<branch>: active" or "<branch>: inactive (<reason>)".
 // Pass -json for JSON output: mage CheckBackportBranchActive <branch> -json

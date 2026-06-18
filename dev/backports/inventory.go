@@ -5,6 +5,7 @@
 package backports
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -109,6 +110,129 @@ func (e entry) activeResult(now time.Time) ActiveResult {
 		}
 	}
 	return result
+}
+
+// AddEntry inserts a new backport entry into the inventory at path.
+// The branch name is derived as backport-<packageName>-<major>.<minor>.
+// archived is set to false and maintained_until to null.
+// The entry is placed in sorted order: package name ascending, then version descending (newest first).
+// Returns the derived branch name.
+func AddEntry(path, packageName, baseVersion, baseCommit string) (string, error) {
+	v, err := semver.StrictNewVersion(baseVersion)
+	if err != nil {
+		return "", fmt.Errorf("invalid base_version %q: %w", baseVersion, err)
+	}
+	branch := fmt.Sprintf("backport-%s-%d.%d", packageName, v.Major(), v.Minor())
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return "", fmt.Errorf("reading inventory: %w", err)
+	}
+
+	var doc yaml.Node
+	if err := yaml.Unmarshal(data, &doc); err != nil {
+		return "", fmt.Errorf("parsing inventory: %w", err)
+	}
+
+	seq, err := backportsSequenceNode(&doc)
+	if err != nil {
+		return "", err
+	}
+
+	pos := entryInsertPos(seq, packageName, v)
+	newNode := newEntryNode(packageName, branch, baseVersion, baseCommit)
+
+	updated := make([]*yaml.Node, len(seq.Content)+1)
+	copy(updated, seq.Content[:pos])
+	updated[pos] = newNode
+	copy(updated[pos+1:], seq.Content[pos:])
+	seq.Content = updated
+
+	var buf bytes.Buffer
+	enc := yaml.NewEncoder(&buf)
+	enc.SetIndent(2)
+	if err := enc.Encode(&doc); err != nil {
+		return "", fmt.Errorf("marshaling inventory: %w", err)
+	}
+	if err := os.WriteFile(path, buf.Bytes(), 0o644); err != nil {
+		return "", fmt.Errorf("writing inventory: %w", err)
+	}
+	return branch, nil
+}
+
+// backportsSequenceNode navigates from the document root to the sequence node
+// under the "backports" key.
+func backportsSequenceNode(doc *yaml.Node) (*yaml.Node, error) {
+	if doc.Kind != yaml.DocumentNode || len(doc.Content) == 0 {
+		return nil, fmt.Errorf("unexpected document structure")
+	}
+	root := doc.Content[0]
+	if root.Kind != yaml.MappingNode {
+		return nil, fmt.Errorf("expected mapping at document root")
+	}
+	for i := 0; i+1 < len(root.Content); i += 2 {
+		if root.Content[i].Value == "backports" {
+			seq := root.Content[i+1]
+			if seq.Kind != yaml.SequenceNode {
+				return nil, fmt.Errorf("'backports' is not a sequence")
+			}
+			return seq, nil
+		}
+	}
+	return nil, fmt.Errorf("'backports' key not found in inventory")
+}
+
+// entryInsertPos returns the index at which a new entry with the given package
+// and version should be inserted to keep the sequence sorted (package ascending,
+// then version descending within the same package — newest first).
+func entryInsertPos(seq *yaml.Node, newPkg string, newVer *semver.Version) int {
+	for i, node := range seq.Content {
+		pkg := mappingFieldValue(node, "package")
+		if pkg > newPkg {
+			return i
+		}
+		if pkg == newPkg {
+			ver, err := semver.StrictNewVersion(mappingFieldValue(node, "base_version"))
+			if err == nil && ver.LessThan(newVer) {
+				return i
+			}
+		}
+	}
+	return len(seq.Content)
+}
+
+// mappingFieldValue returns the scalar value for the given key in a YAML mapping node.
+func mappingFieldValue(node *yaml.Node, key string) string {
+	for i := 0; i+1 < len(node.Content); i += 2 {
+		if node.Content[i].Value == key {
+			return node.Content[i+1].Value
+		}
+	}
+	return ""
+}
+
+// newEntryNode builds a YAML mapping node for a new backport entry.
+// base_version and base_commit are double-quoted to match the existing file style.
+func newEntryNode(pkg, branch, baseVersion, baseCommit string) *yaml.Node {
+	scalar := func(value, tag string, style yaml.Style) *yaml.Node {
+		return &yaml.Node{Kind: yaml.ScalarNode, Tag: tag, Value: value, Style: style}
+	}
+	key := func(k string) *yaml.Node { return scalar(k, "!!str", 0) }
+	str := func(v string) *yaml.Node { return scalar(v, "!!str", 0) }
+	quoted := func(v string) *yaml.Node { return scalar(v, "!!str", yaml.DoubleQuotedStyle) }
+
+	return &yaml.Node{
+		Kind: yaml.MappingNode,
+		Tag:  "!!map",
+		Content: []*yaml.Node{
+			key("package"), str(pkg),
+			key("branch"), str(branch),
+			key("base_version"), quoted(baseVersion),
+			key("base_commit"), quoted(baseCommit),
+			key("maintained_until"), scalar("null", "!!null", 0),
+			key("archived"), scalar("false", "!!bool", 0),
+		},
+	}
 }
 
 // ValidateInventory reads the .backports.yml inventory at path and returns a
