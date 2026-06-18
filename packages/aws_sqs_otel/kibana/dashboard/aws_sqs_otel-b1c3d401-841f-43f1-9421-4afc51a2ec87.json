@@ -108,7 +108,7 @@
                     "xy-layer-chart-sqs-count": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\") | STATS q_sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), q_oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), q_depth = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | EVAL state = CASE( q_oldest > 300, \"stale\", q_depth > 1000, \"backlogged\", q_sent > 0, \"healthy\", \"idle\") | STATS total = COUNT(*), healthy = COUNT(*) WHERE state == \"healthy\", stale = COUNT(*) WHERE state == \"stale\", backlogged = COUNT(*) WHERE state == \"backlogged\", idle = COUNT(*) WHERE state == \"idle\" BY timestamp | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\") | STATS q_sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), q_oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), q_depth = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | EVAL state = CASE( q_oldest > 300, \"stale\", q_depth > 1000, \"backlogged\", q_sent > 0, \"healthy\", \"idle\") | STATS total = COUNT(*), healthy = COUNT(*) WHERE state == \"healthy\", stale = COUNT(*) WHERE state == \"stale\", backlogged = COUNT(*) WHERE state == \"backlogged\", idle = COUNT(*) WHERE state == \"idle\" BY timestamp | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -194,7 +194,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\") | STATS q_sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), q_oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), q_depth = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | EVAL state = CASE( q_oldest > 300, \"stale\", q_depth > 1000, \"backlogged\", q_sent > 0, \"healthy\", \"idle\") | STATS total = COUNT(*), healthy = COUNT(*) WHERE state == \"healthy\", stale = COUNT(*) WHERE state == \"stale\", backlogged = COUNT(*) WHERE state == \"backlogged\", idle = COUNT(*) WHERE state == \"idle\" BY timestamp | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\") | STATS q_sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), q_oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), q_depth = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | EVAL state = CASE( q_oldest > 300, \"stale\", q_depth > 1000, \"backlogged\", q_sent > 0, \"healthy\", \"idle\") | STATS total = COUNT(*), healthy = COUNT(*) WHERE state == \"healthy\", stale = COUNT(*) WHERE state == \"stale\", backlogged = COUNT(*) WHERE state == \"backlogged\", idle = COUNT(*) WHERE state == \"idle\" BY timestamp | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -301,7 +301,7 @@
                     "tbl-layer-tbl-instances": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\") | STATS c_sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), c_recv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesReceived`, NULL)), c_del = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`, NULL)), c_empty = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfEmptyReceives`, NULL)), c_depth = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)), c_inflight = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`, NULL)), c_oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), c_region = MAX(cloud.region) BY QueueName, cloud.region | EVAL c_state_sort = CASE( c_oldest > 300, 1, c_depth > 1000, 2, c_sent > 0, 3, 4), c_state = CASE( c_oldest > 300, \"stale\", c_depth > 1000, \"backlogged\", c_sent > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\") | STATS c_sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), c_recv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesReceived`, NULL)), c_del = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`, NULL)), c_empty = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfEmptyReceives`, NULL)), c_depth = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)), c_inflight = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`, NULL)), c_oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), c_region = MAX(cloud.region) BY QueueName, cloud.region | EVAL c_state_sort = CASE( c_oldest > 300, 1, c_depth > 1000, 2, c_sent > 0, 3, 4), c_state = CASE( c_oldest > 300, \"stale\", c_depth > 1000, \"backlogged\", c_sent > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
                       },
                       "columns": [
                         {
@@ -442,7 +442,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\") | STATS c_sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), c_recv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesReceived`, NULL)), c_del = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`, NULL)), c_empty = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfEmptyReceives`, NULL)), c_depth = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)), c_inflight = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`, NULL)), c_oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), c_region = MAX(cloud.region) BY QueueName, cloud.region | EVAL c_state_sort = CASE( c_oldest > 300, 1, c_depth > 1000, 2, c_sent > 0, 3, 4), c_state = CASE( c_oldest > 300, \"stale\", c_depth > 1000, \"backlogged\", c_sent > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\") | STATS c_sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), c_recv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesReceived`, NULL)), c_del = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`, NULL)), c_empty = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfEmptyReceives`, NULL)), c_depth = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)), c_inflight = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`, NULL)), c_oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), c_region = MAX(cloud.region) BY QueueName, cloud.region | EVAL c_state_sort = CASE( c_oldest > 300, 1, c_depth > 1000, 2, c_sent > 0, 3, 4), c_state = CASE( c_oldest > 300, \"stale\", c_depth > 1000, \"backlogged\", c_sent > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
               },
               "visualization": {
                 "columns": [
@@ -671,7 +671,7 @@
                     "pie-layer-chart-status-donut": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\") | STATS q_sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), q_oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), q_depth = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | EVAL sqs_state = CASE( q_oldest > 300, \"stale\", q_depth > 1000, \"backlogged\", q_sent > 0, \"healthy\", \"idle\") | STATS queues = COUNT(*) BY sqs_state"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\", \"Average\") | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS sent_cur = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), oldest_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), depth_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | EVAL state = CASE(oldest_cur > 300, \"stale\", depth_cur > 1000, \"backlogged\", sent_cur > 0, \"healthy\", \"idle\") | STATS queues = COUNT(*) BY state"
                       },
                       "columns": [
                         {
@@ -710,7 +710,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\") | STATS q_sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), q_oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), q_depth = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | EVAL sqs_state = CASE( q_oldest > 300, \"stale\", q_depth > 1000, \"backlogged\", q_sent > 0, \"healthy\", \"idle\") | STATS queues = COUNT(*) BY sqs_state"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\", \"Average\") | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS sent_cur = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), oldest_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), depth_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | EVAL state = CASE(oldest_cur > 300, \"stale\", depth_cur > 1000, \"backlogged\", sent_cur > 0, \"healthy\", \"idle\") | STATS queues = COUNT(*) BY state"
               },
               "visualization": {
                 "shape": "donut",
@@ -861,7 +861,7 @@
                     "layer-kpi-total": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | STATS total = COUNT_DISTINCT(CONCAT(TO_STRING(cloud.region), \"/\", TO_STRING(QueueName))) | KEEP total"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\", \"Average\") | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS sent_cur = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), oldest_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), depth_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | EVAL state = CASE(oldest_cur > 300, \"stale\", depth_cur > 1000, \"backlogged\", sent_cur > 0, \"healthy\", \"idle\") | STATS total = COUNT(*) | KEEP total"
                       },
                       "columns": [
                         {
@@ -890,7 +890,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | STATS total = COUNT_DISTINCT(CONCAT(TO_STRING(cloud.region), \"/\", TO_STRING(QueueName))) | KEEP total"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\", \"Average\") | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS sent_cur = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), oldest_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), depth_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | EVAL state = CASE(oldest_cur > 300, \"stale\", depth_cur > 1000, \"backlogged\", sent_cur > 0, \"healthy\", \"idle\") | STATS total = COUNT(*) | KEEP total"
               },
               "visualization": {
                 "layerId": "layer-kpi-total",
@@ -953,7 +953,7 @@
                     "layer-kpi-impaired": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Maximum\" | STATS oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)) BY QueueName, cloud.region | STATS stale = COUNT(*) WHERE oldest > 300 | KEEP stale"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\", \"Average\") | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS sent_cur = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), oldest_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), depth_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | EVAL state = CASE(oldest_cur > 300, \"stale\", depth_cur > 1000, \"backlogged\", sent_cur > 0, \"healthy\", \"idle\") | STATS stale = COUNT(*) WHERE state == \"stale\" | KEEP stale"
                       },
                       "columns": [
                         {
@@ -987,7 +987,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Maximum\" | STATS oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)) BY QueueName, cloud.region | STATS stale = COUNT(*) WHERE oldest > 300 | KEEP stale"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\", \"Average\") | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS sent_cur = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), oldest_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), depth_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | EVAL state = CASE(oldest_cur > 300, \"stale\", depth_cur > 1000, \"backlogged\", sent_cur > 0, \"healthy\", \"idle\") | STATS stale = COUNT(*) WHERE state == \"stale\" | KEEP stale"
               },
               "visualization": {
                 "layerId": "layer-kpi-impaired",
@@ -1088,7 +1088,7 @@
                     "layer-kpi-pending": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Maximum\" | STATS depth = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | STATS backlogged = COUNT(*) WHERE depth > 1000 | KEEP backlogged"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\", \"Average\") | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS sent_cur = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), oldest_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), depth_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | EVAL state = CASE(oldest_cur > 300, \"stale\", depth_cur > 1000, \"backlogged\", sent_cur > 0, \"healthy\", \"idle\") | STATS backlogged = COUNT(*) WHERE state == \"backlogged\" | KEEP backlogged"
                       },
                       "columns": [
                         {
@@ -1122,7 +1122,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Maximum\" | STATS depth = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | STATS backlogged = COUNT(*) WHERE depth > 1000 | KEEP backlogged"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\", \"Average\") | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS sent_cur = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), oldest_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), depth_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | EVAL state = CASE(oldest_cur > 300, \"stale\", depth_cur > 1000, \"backlogged\", sent_cur > 0, \"healthy\", \"idle\") | STATS backlogged = COUNT(*) WHERE state == \"backlogged\" | KEEP backlogged"
               },
               "visualization": {
                 "layerId": "layer-kpi-pending",
@@ -1224,7 +1224,7 @@
                     "layer-kpi-stopped": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Sum\" | STATS sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)) BY QueueName, cloud.region | STATS idle = COUNT(*) WHERE sent == 0 OR sent IS NULL | KEEP idle"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\", \"Average\") | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS sent_cur = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), oldest_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), depth_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | EVAL state = CASE(oldest_cur > 300, \"stale\", depth_cur > 1000, \"backlogged\", sent_cur > 0, \"healthy\", \"idle\") | STATS idle = COUNT(*) WHERE state == \"idle\" | KEEP idle"
                       },
                       "columns": [
                         {
@@ -1258,7 +1258,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Sum\" | STATS sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)) BY QueueName, cloud.region | STATS idle = COUNT(*) WHERE sent == 0 OR sent IS NULL | KEEP idle"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\", \"Average\") | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS sent_cur = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), oldest_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), depth_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | EVAL state = CASE(oldest_cur > 300, \"stale\", depth_cur > 1000, \"backlogged\", sent_cur > 0, \"healthy\", \"idle\") | STATS idle = COUNT(*) WHERE state == \"idle\" | KEEP idle"
               },
               "visualization": {
                 "layerId": "layer-kpi-stopped",
@@ -1324,7 +1324,7 @@
                     "layer-kpi-running": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\") | STATS sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), depth = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | STATS healthy = COUNT(*) WHERE sent > 0 AND (oldest IS NULL OR oldest <= 300) AND (depth IS NULL OR depth <= 1000) | KEEP healthy"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\", \"Average\") | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS sent_cur = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), oldest_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), depth_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | EVAL state = CASE(oldest_cur > 300, \"stale\", depth_cur > 1000, \"backlogged\", sent_cur > 0, \"healthy\", \"idle\") | STATS healthy = COUNT(*) WHERE state == \"healthy\" | KEEP healthy"
                       },
                       "columns": [
                         {
@@ -1358,7 +1358,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\") | STATS sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), depth = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | STATS healthy = COUNT(*) WHERE sent > 0 AND (oldest IS NULL OR oldest <= 300) AND (depth IS NULL OR depth <= 1000) | KEEP healthy"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat IN (\"Maximum\", \"Sum\", \"Average\") | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS sent_cur = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), oldest_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), depth_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | EVAL state = CASE(oldest_cur > 300, \"stale\", depth_cur > 1000, \"backlogged\", sent_cur > 0, \"healthy\", \"idle\") | STATS healthy = COUNT(*) WHERE state == \"healthy\" | KEEP healthy"
               },
               "visualization": {
                 "layerId": "layer-kpi-running",
@@ -1744,7 +1744,7 @@
                     "xy-layer-chart-disk": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Maximum\" | STATS visible = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)), not_visible = -1 * COALESCE(MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`, NULL)), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE visible IS NOT NULL | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Average\" | STATS visible = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)), not_visible = -1 * COALESCE(MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`, NULL)), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE visible IS NOT NULL | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -1792,7 +1792,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Maximum\" | STATS visible = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)), not_visible = -1 * COALESCE(MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`, NULL)), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE visible IS NOT NULL | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Average\" | STATS visible = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)), not_visible = -1 * COALESCE(MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`, NULL)), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE visible IS NOT NULL | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -1876,7 +1876,7 @@
                     "xy-layer-top10-invocations": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Sum\" | STATS sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)) BY QueueName, cloud.region | SORT sent DESC | LIMIT 10"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent` IS NOT NULL | STATS sent = SUM(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`) BY QueueName, cloud.region | SORT sent DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -1905,7 +1905,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Sum\" | STATS sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)) BY QueueName, cloud.region | SORT sent DESC | LIMIT 10"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent` IS NOT NULL | STATS sent = SUM(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`) BY QueueName, cloud.region | SORT sent DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -1985,7 +1985,7 @@
                     "xy-layer-top10-errors": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Maximum\" | STATS oldest_sec = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)) BY QueueName, cloud.region | WHERE oldest_sec IS NOT NULL | SORT oldest_sec DESC | LIMIT 10"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Maximum\" AND `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage` IS NOT NULL | STATS oldest_sec = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`) BY QueueName, cloud.region | SORT oldest_sec DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -2014,7 +2014,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Maximum\" | STATS oldest_sec = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)) BY QueueName, cloud.region | WHERE oldest_sec IS NOT NULL | SORT oldest_sec DESC | LIMIT 10"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Maximum\" AND `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage` IS NOT NULL | STATS oldest_sec = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`) BY QueueName, cloud.region | SORT oldest_sec DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -2094,7 +2094,7 @@
                     "xy-layer-top10-duration": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Maximum\" | STATS depth = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | WHERE depth IS NOT NULL | SORT depth DESC | LIMIT 10"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible` IS NOT NULL | STATS depth = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`) BY QueueName, cloud.region | SORT depth DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -2123,7 +2123,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Maximum\" | STATS depth = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY QueueName, cloud.region | WHERE depth IS NOT NULL | SORT depth DESC | LIMIT 10"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible` IS NOT NULL | STATS depth = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`) BY QueueName, cloud.region | SORT depth DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -2323,7 +2323,7 @@
                     "xy-layer-chart-cpu": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Maximum\" | STATS metric = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Average\" | STATS metric = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -2360,7 +2360,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Maximum\" | STATS metric = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE LENGTH(TO_STRING(QueueName)) > 0 | WHERE stat == \"Average\" | STATS metric = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [

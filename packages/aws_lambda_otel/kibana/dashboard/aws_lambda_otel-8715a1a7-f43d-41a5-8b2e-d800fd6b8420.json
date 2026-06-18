@@ -109,7 +109,7 @@
                     "layer-kpi-total": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE @timestamp >= TO_DATETIME(2 * TO_LONG(TO_DATETIME(?_tstart)) - TO_LONG(TO_DATETIME(?_tend))) AND @timestamp <= TO_DATETIME(?_tend) | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | STATS total = COUNT_DISTINCT(CONCAT(TO_STRING(cloud.region), \"/\", TO_STRING(FunctionName))) WHERE @timestamp >= ?_tstart| KEEP total"
+                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | STATS total = COUNT_DISTINCT(CONCAT(TO_STRING(cloud.region), \"/\", TO_STRING(FunctionName))) | KEEP total"
                       },
                       "columns": [
                         {
@@ -138,7 +138,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE @timestamp >= TO_DATETIME(2 * TO_LONG(TO_DATETIME(?_tstart)) - TO_LONG(TO_DATETIME(?_tend))) AND @timestamp <= TO_DATETIME(?_tend) | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | STATS total = COUNT_DISTINCT(CONCAT(TO_STRING(cloud.region), \"/\", TO_STRING(FunctionName))) WHERE @timestamp >= ?_tstart| KEEP total"
+                "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | STATS total = COUNT_DISTINCT(CONCAT(TO_STRING(cloud.region), \"/\", TO_STRING(FunctionName))) | KEEP total"
               },
               "visualization": {
                 "layerId": "layer-kpi-total",
@@ -1581,7 +1581,7 @@
                     "xy-layer-chart-net": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 AND LENGTH(TO_STRING(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Invocations`, NULL))) > 0 | WHERE stat == \"Sum\" | STATS invocations = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Invocations`, NULL)), errors = -SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Errors`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Invocations`, NULL)), errors = -SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Errors`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -1629,7 +1629,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 AND LENGTH(TO_STRING(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Invocations`, NULL))) > 0 | WHERE stat == \"Sum\" | STATS invocations = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Invocations`, NULL)), errors = -SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Errors`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Invocations`, NULL)), errors = -SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Errors`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -1845,7 +1845,7 @@
                     "xy-layer-top10-invocations": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | WHERE stat == \"Sum\" | STATS invocations = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Invocations`, NULL)) BY FunctionName, cloud.region | SORT invocations DESC | LIMIT 10"
+                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL | STATS invocations = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`) BY FunctionName, cloud.region | SORT invocations DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -1874,7 +1874,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | WHERE stat == \"Sum\" | STATS invocations = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Invocations`, NULL)) BY FunctionName, cloud.region | SORT invocations DESC | LIMIT 10"
+                "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL | STATS invocations = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`) BY FunctionName, cloud.region | SORT invocations DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -1954,7 +1954,7 @@
                     "xy-layer-top10-errors": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | WHERE stat == \"Sum\" | STATS errors = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Errors`, NULL)) BY FunctionName, cloud.region | SORT errors DESC | LIMIT 10"
+                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL | STATS errors = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`) BY FunctionName, cloud.region | SORT errors DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -1983,7 +1983,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | WHERE stat == \"Sum\" | STATS errors = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Errors`, NULL)) BY FunctionName, cloud.region | SORT errors DESC | LIMIT 10"
+                "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL | STATS errors = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`) BY FunctionName, cloud.region | SORT errors DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -2063,7 +2063,7 @@
                     "xy-layer-top10-duration": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | WHERE stat == \"Average\" | STATS avg_duration_ms = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/Lambda/Duration`, NULL)) BY FunctionName, cloud.region | SORT avg_duration_ms DESC | LIMIT 10"
+                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/Lambda/Duration` IS NOT NULL | STATS avg_duration_ms = AVG(`metrics.amazonaws.com/AWS/Lambda/Duration`) BY FunctionName, cloud.region | SORT avg_duration_ms DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -2092,7 +2092,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | WHERE stat == \"Average\" | STATS avg_duration_ms = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/Lambda/Duration`, NULL)) BY FunctionName, cloud.region | SORT avg_duration_ms DESC | LIMIT 10"
+                "esql": "FROM metrics-aws.lambda.otel-* | WHERE LENGTH(TO_STRING(FunctionName)) > 0 | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/Lambda/Duration` IS NOT NULL | STATS avg_duration_ms = AVG(`metrics.amazonaws.com/AWS/Lambda/Duration`) BY FunctionName, cloud.region | SORT avg_duration_ms DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
