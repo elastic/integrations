@@ -1464,7 +1464,7 @@
                     "layer-kpi-net-in": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS requests_total = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL))"
+                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS requests_total = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`)"
                       },
                       "columns": [
                         {
@@ -1486,7 +1486,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS requests_total = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL))"
+                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS requests_total = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`)"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-in",
@@ -1555,7 +1555,7 @@
                     "layer-kpi-net-out": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS processed_bytes_total = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL))"
+                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS processed_bytes_total = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`)"
                       },
                       "columns": [
                         {
@@ -1585,7 +1585,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS processed_bytes_total = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL))"
+                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS processed_bytes_total = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`)"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-out",
@@ -1653,7 +1653,7 @@
                     "xy-layer-chart-net": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL) IS NOT NULL | WHERE stat == \"Sum\" | STATS invocations = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), errors = -1 * COALESCE(SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS invocations = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`), errors = -1 * COALESCE(SUM(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -1701,7 +1701,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL) IS NOT NULL | WHERE stat == \"Sum\" | STATS invocations = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), errors = -1 * COALESCE(SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS invocations = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`), errors = -1 * COALESCE(SUM(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -1785,7 +1785,7 @@
                     "xy-layer-chart-disk": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS client_errors = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_4XX_Count`, NULL)), server_errors = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS client_errors = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_4XX_Count`), server_errors = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -1833,7 +1833,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS client_errors = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_4XX_Count`, NULL)), server_errors = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS client_errors = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_4XX_Count`), server_errors = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -2254,7 +2254,7 @@
                     "xy-layer-chart-elb-count": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS active_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
+                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS active_conn = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
                       },
                       "columns": [
                         {
@@ -2284,7 +2284,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS active_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
+                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS active_conn = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
               },
               "visualization": {
                 "layers": [
@@ -2386,7 +2386,7 @@
                     "xy-layer-chart-memory": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL) IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -2421,7 +2421,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL) IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -2504,7 +2504,7 @@
                     "xy-layer-chart-cpu": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
+                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS rejected = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
                       },
                       "columns": [
                         {
@@ -2534,7 +2534,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
+                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS rejected = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`) BY ts = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT ts ASC"
               },
               "visualization": {
                 "layers": [

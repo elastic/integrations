@@ -1431,7 +1431,7 @@
                     "layer-kpi-net-in": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS messages_sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL))"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS messages_sent = SUM(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`)"
                       },
                       "columns": [
                         {
@@ -1453,7 +1453,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS messages_sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL))"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS messages_sent = SUM(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`)"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-in",
@@ -1522,7 +1522,7 @@
                     "layer-kpi-net-out": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS messages_deleted = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`, NULL))"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS messages_deleted = SUM(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`)"
                       },
                       "columns": [
                         {
@@ -1544,7 +1544,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS messages_deleted = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`, NULL))"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS messages_deleted = SUM(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`)"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-out",
@@ -1612,7 +1612,7 @@
                     "xy-layer-chart-net": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), deleted = -1 * COALESCE(SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`, NULL)), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE sent IS NOT NULL | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS sent = SUM(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`), deleted = -1 * COALESCE(SUM(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE sent IS NOT NULL | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -1660,7 +1660,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), deleted = -1 * COALESCE(SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`, NULL)), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE sent IS NOT NULL | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS sent = SUM(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`), deleted = -1 * COALESCE(SUM(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE sent IS NOT NULL | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -1744,7 +1744,7 @@
                     "xy-layer-chart-disk": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS visible = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)), not_visible = -1 * COALESCE(MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`, NULL)), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE visible IS NOT NULL | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS visible = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`), not_visible = -1 * COALESCE(MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE visible IS NOT NULL | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -1792,7 +1792,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS visible = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)), not_visible = -1 * COALESCE(MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`, NULL)), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE visible IS NOT NULL | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS visible = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`), not_visible = -1 * COALESCE(MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`), 0) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE visible IS NOT NULL | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -2203,7 +2203,7 @@
                     "xy-layer-chart-memory": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Maximum\" | STATS metric = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Maximum\" | STATS metric = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -2260,7 +2260,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Maximum\" | STATS metric = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Maximum\" | STATS metric = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -2362,7 +2362,7 @@
                     "xy-layer-chart-cpu": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS metric = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS metric = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -2419,7 +2419,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS metric = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS metric = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [

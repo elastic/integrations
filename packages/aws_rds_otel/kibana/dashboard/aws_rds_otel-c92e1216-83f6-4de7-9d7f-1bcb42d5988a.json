@@ -1441,7 +1441,7 @@
                     "xy-layer-chart-disk": {
                       "index": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
                       "query": {
-                        "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/ReadIOPS` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/WriteIOPS` IS NOT NULL) | STATS col_dr = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/ReadIOPS`, NULL)), col_dw = -AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/WriteIOPS`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/ReadIOPS` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/WriteIOPS` IS NOT NULL) | STATS col_dr = AVG(`metrics.amazonaws.com/AWS/RDS/ReadIOPS`), col_dw = -AVG(`metrics.amazonaws.com/AWS/RDS/WriteIOPS`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -1489,7 +1489,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/ReadIOPS` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/WriteIOPS` IS NOT NULL) | STATS col_dr = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/ReadIOPS`, NULL)), col_dw = -AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/WriteIOPS`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/ReadIOPS` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/WriteIOPS` IS NOT NULL) | STATS col_dr = AVG(`metrics.amazonaws.com/AWS/RDS/ReadIOPS`), col_dw = -AVG(`metrics.amazonaws.com/AWS/RDS/WriteIOPS`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -1573,7 +1573,7 @@
                     "xy-layer-chart-net": {
                       "index": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
                       "query": {
-                        "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput` IS NOT NULL) | STATS col_ni = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput`, NULL)) / 1048576.0, col_no = -AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput`, NULL)) / 1048576.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput` IS NOT NULL) | STATS col_ni = AVG(`metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput`) / 1048576.0, col_no = -AVG(`metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput`) / 1048576.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -1621,7 +1621,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput` IS NOT NULL) | STATS col_ni = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput`, NULL)) / 1048576.0, col_no = -AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput`, NULL)) / 1048576.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput` IS NOT NULL) | STATS col_ni = AVG(`metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput`) / 1048576.0, col_no = -AVG(`metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput`) / 1048576.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -2244,7 +2244,7 @@
                     "xy-layer-chart-memory": {
                       "index": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
                       "query": {
-                        "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" AND CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/FreeableMemory`, NULL) IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/FreeableMemory`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" AND `metrics.amazonaws.com/AWS/RDS/FreeableMemory` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/RDS/FreeableMemory`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -2289,7 +2289,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" AND CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/FreeableMemory`, NULL) IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/FreeableMemory`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" AND `metrics.amazonaws.com/AWS/RDS/FreeableMemory` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/RDS/FreeableMemory`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -2372,7 +2372,7 @@
                     "xy-layer-chart-cpu": {
                       "index": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
                       "query": {
-                        "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" AND CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/CPUUtilization`, NULL) IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/CPUUtilization`, NULL)) / 100.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" AND `metrics.amazonaws.com/AWS/RDS/CPUUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/RDS/CPUUtilization`) / 100.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -2437,7 +2437,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" AND CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/CPUUtilization`, NULL) IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/CPUUtilization`, NULL)) / 100.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" AND `metrics.amazonaws.com/AWS/RDS/CPUUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/RDS/CPUUtilization`) / 100.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
