@@ -1,0 +1,48 @@
+# Keeps a deduplicated "latest" view of Ticura indicators for Elastic Security's
+# Indicator Match rules and the Threat Intelligence UI, which read from the
+# logs-ti_ticura_latest.ecs index this transform maintains. The ingest pipeline
+# already sets _id to ticura.uuid, so re-ingesting the full feed overwrites each
+# indicator in place within a single backing index. This transform additionally
+# collapses the duplicates that still accumulate across ILM rollovers (where _id
+# uniqueness no longer holds) into one newest doc per indicator, and drops aged-out
+# entries via the retention_policy on ticura.ages_out.
+source:
+  index:
+    - "logs-ti_ticura.ecs-*"
+# Bump the version suffix on dest.index only for a breaking mapping change, and bump
+# _meta.fleet_transform_version for any change to this config to take effect (the old
+# destination index is not removed automatically).
+dest:
+  index: "logs-ti_ticura_latest.ecs-1"
+  aliases:
+    - alias: "logs-ti_ticura_latest.ecs"
+      move_on_creation: true
+latest:
+  unique_key:
+    - event.dataset
+    - ticura.uuid
+  sort: "@timestamp"
+description: Latest Ticura threat intelligence indicators (deduplicated by ticura.uuid; expired entries removed via ticura.ages_out).
+frequency: 60s
+sync:
+  time:
+    # MUST be an ingest-time field, not @timestamp. @timestamp is derived from the
+    # indicator's last_seen/first_seen (its observation time, often weeks or months
+    # old), so the continuous transform would never see freshly-ingested docs as
+    # "new". event.ingested is stamped at ingest and increases monotonically.
+    field: event.ingested
+    delay: 120s
+retention_policy:
+  time:
+    # ticura.ages_out is the source-provided scheduled expiry; once it passes, the
+    # indicator is dropped from the latest index so analysts/rules never match it.
+    # max_age is the grace after expiry (ES requires > 60s); the transform runs at
+    # `frequency`, so expired indicators leave the latest view within a few minutes.
+    field: ticura.ages_out
+    max_age: 5m
+_meta:
+  managed: true
+  # Bump to delete, reinstall, and restart the transform during package upgrade.
+  fleet_transform_version: 0.2.0
+settings:
+  num_failure_retries: -1

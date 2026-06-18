@@ -4,14 +4,14 @@ fields:
 dynamic_fields:
   "ticura.feed_ingest_timestamp": "^.*$"
   "event.ingested": "^.*$"
-  # GeoIP-derived values depend on the GeoLite2 database bundled with the
-  # elastic-package version running the test, so match them by presence rather
-  # than exact value to keep the test portable across stack/tooling versions.
-  "threat.indicator.geo.city_name": "^.*$"
-  "threat.indicator.geo.continent_name": "^.*$"
-  "threat.indicator.geo.country_iso_code": "^.*$"
-  "threat.indicator.geo.country_name": "^.*$"
-  "threat.indicator.geo.region_iso_code": "^.*$"
-  "threat.indicator.geo.region_name": "^.*$"
-  "threat.indicator.geo.location.lat": "^.*$"
-  "threat.indicator.geo.location.lon": "^.*$"
+  # GeoIP/ASN enrichment is produced by Elasticsearch's geoip processors and
+  # depends entirely on which GeoLite2 databases are loaded. elastic-package's
+  # bundled SAMPLE databases (used in CI) resolve the TEST-NET documentation IPs
+  # in these fixtures and add geo + as; a real stack with the geoip downloader
+  # enabled does NOT resolve reserved doc ranges (so the fields are absent), and
+  # real public IPs resolve to yet different values. Strip the whole geo and as
+  # objects from the comparison so the test passes on CI and on any real stack
+  # regardless of database contents. dynamic_fields deletes the keyed subtree
+  # from both expected and actual before diffing, so an absent field is fine.
+  "threat.indicator.geo": "^.*$"
+  "threat.indicator.as": "^.*$"

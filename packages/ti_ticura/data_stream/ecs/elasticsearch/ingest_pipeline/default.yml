@@ -98,22 +98,6 @@ processors:
       if: ctx.threat?.indicator?.last_seen == null && ctx.threat?.indicator?.first_seen != null
       ignore_failure: true
 
-  # ----- Expired-indicator flag -----
-  # ticura.ages_out is the indicator's scheduled expiry; documents past that
-  # point are stale even if still in the hot index. Setting the canonical
-  # ECS flag lets detection rules and dashboards filter on threat.indicator.expired.
-  - script:
-      lang: painless
-      if: ctx.ticura?.ages_out != null
-      tag: set_threat_indicator_expired
-      source: |
-        long agesMs = ZonedDateTime.parse(ctx.ticura.ages_out).toInstant().toEpochMilli();
-        long nowMs  = new Date().getTime();
-        if (ctx.threat == null) ctx.threat = [:];
-        if (ctx.threat.indicator == null) ctx.threat.indicator = [:];
-        ctx.threat.indicator.expired = agesMs < nowMs;
-      ignore_failure: true
-
   # ----- Document-level provenance -----
   # Document provenance. event.module and event.dataset are declared as
   # constant_keyword fields in base-fields.yml (stored once in the mapping, not

@@ -67,25 +67,23 @@ Each ingested event represents a single indicator of compromise (IOC) and includ
 
 ### Indicator Removal and Lifecycle
 
-The integration is designed so that indicators Ticura no longer publishes are **automatically removed** from your Elasticsearch indices — you do not need to manage this manually.
+The integration keeps a **deduplicated, automatically-expiring view** of current indicators, so anything Ticura stops publishing disappears without manual cleanup.
 
-The cleanup uses three independent layers:
+1. **Latest-IOC transform** — a continuous transform deduplicates the raw feed by `ticura.uuid` into the `logs-ti_ticura_latest.ecs` index, keeping a single document per indicator (the most recent by `@timestamp`). Because the full feed is re-downloaded on every poll, this collapses the per-poll copies into one current document — the same pattern used by Elastic's other threat-intel integrations.
+2. **Per-indicator expiry** — the transform's retention policy drops an indicator from the latest index once its source-provided `ticura.ages_out` timestamp passes, so expired indicators leave the active view automatically.
+3. **Raw-stream ILM** — the raw `logs-ti_ticura.ecs-*` data stream rolls over every 24 hours and is deleted 1 day after rollover for storage hygiene. The latest index — queried by dashboards, saved searches, and Elastic Security's Indicator Match rules — is the source of truth for "currently active" indicators.
 
-1. **Pipeline-set expiry flag** — when Ticura sets `ages_out` on an indicator and that timestamp passes, the ingest pipeline sets `threat.indicator.expired: true`. The bundled dashboard excludes anything where this flag is true, so source-expired indicators disappear at the next poll regardless of poll interval.
-2. **ILM tier filter** — the bundled dashboard also restricts to `_tier: "data_hot"`, so the previous backing index (still queryable but now in warm tier) is hidden as soon as a new rollover happens. This catches indicators Ticura silently removed from the feed (without flipping `ages_out`).
-3. **ILM deletion** — backing indices are rolled over every 24 hours and physically deleted 1 day after rollover. An indicator dropped by Ticura is therefore guaranteed to be gone from storage within approximately 48 hours.
+Raw-stream documents are tagged `labels.is_ioc_transform_source: "true"` and the transform's deduplicated output `"false"`; dashboards and saved searches filter on `labels.is_ioc_transform_source: "false"` to show only the current, non-expired set. Each indicator is stored with its `ticura.uuid` as the document `_id`, so re-ingests overwrite in place instead of duplicating.
 
-All indicators are retrieved into data streams named `logs-ti_ticura.ecs-{namespace}` and processed via the integration's ingest pipeline. Each indicator is stored with its `ticura.uuid` as the document `_id`, so re-ingests of the same indicator overwrite in place instead of duplicating.
+**Important — keep the download interval below 24 hours** so every indicator still in the feed is re-ingested before the raw backing index rolls over.
 
-**Important — keep the download interval below 24 hours** so every indicator still in the feed is re-ingested before the backing index rolls over and the previous copy ages out.
-
-If you need to retain dropped indicators for longer (for example, for forensic queries against retired IOCs), increase `delete.min_age` in the ILM policy `logs-ti_ticura.ecs-default_policy`.
+If you need to retain raw indicator history longer (for example, for forensic queries against retired IOCs), increase `delete.min_age` in the ILM policy `logs-ti_ticura.ecs-default_policy`.
 
 ---
 
 ## Dashboards
 
-Three dashboards are bundled, all scoped to `event.module: ti_ticura`, `_tier: "data_hot"`, and `not threat.indicator.expired: true`. The default time range on each is set wide (≥ 30 days) because `@timestamp` reflects per-indicator observation time (`threat.indicator.last_seen` → `first_seen`), which can be days or weeks old for still-active IOCs. The "currently active" semantics is enforced by the scope filters, not by the time range.
+Three dashboards are bundled, all scoped to `event.module: ti_ticura` and `labels.is_ioc_transform_source: "false"` — the transform's deduplicated, non-expired latest set. The default time range on each is set wide (≥ 30 days) because `@timestamp` reflects per-indicator observation time (`threat.indicator.last_seen` → `first_seen`), which can be days or weeks old for still-active IOCs. The "currently active" semantics is enforced by the scope filters, not by the time range.
 
 ### Overview
 
@@ -180,7 +178,6 @@ The integration maps indicators to the Elastic Common Schema using the `threat.i
 | `threat.indicator.modified_at` | Time when the indicator was last updated by Ticura (`@timestamp` is derived from `last_seen`/`first_seen`, not from this field) |
 | `threat.indicator.confidence` | Confidence level assigned to the indicator |
 | `threat.indicator.provider` | Indicator provider (`Ticura`) |
-| `threat.indicator.expired` | True when the indicator has passed `ticura.ages_out` |
 
 ### Indicator Values
 
@@ -231,7 +228,7 @@ The integration maps indicators to the Elastic Common Schema using the `threat.i
 | Enrichment | Source | ECS Field(s) Populated |
 |------------|--------|------------------------|
 | Event time | `threat.indicator.last_seen`, falling back to `threat.indicator.first_seen` | `@timestamp` (so Discover shows real per-indicator temporal distribution; `modified_at` is deliberately not used because Ticura assigns it batch-uniformly per scoring run) |
-| Expiry flag | `ticura.ages_out` versus ingest time | `threat.indicator.expired` (boolean — true when the IOC is past its scheduled expiry) |
+| Expiry | `ticura.ages_out` | The latest-IOC transform's retention policy removes indicators from `logs-ti_ticura_latest.ecs` once `ages_out` passes |
 | GeoIP | `threat.indicator.ip` | `threat.indicator.geo.{country_name, city_name, location, ...}` |
 | ASN | `threat.indicator.ip` | `threat.indicator.as.number`, `threat.indicator.as.organization.name` |
 | Hash type | `ticura.sub_type` (`HASHSHA256` / `HASHMD5` / `HASHSHA1`) | `threat.indicator.file.hash.{sha256, md5, sha1}` (defensive fallback when the source omits the typed field) |
@@ -290,7 +287,7 @@ These are preserved alongside the ECS-mapped fields for per-field provenance (se
 | `ticura.risk` / `risk_category` | long / keyword | Numeric 0–100 risk and its categorical label (low / medium / high / critical). |
 | `ticura.confidence` / `confidence_category` | long / keyword | Numeric 0–100 confidence and label. |
 | `ticura.is_inbound` | boolean | True for threats originating outside, targeting the protected environment. |
-| `ticura.ages_out` | date | Scheduled expiry timestamp. Used by the pipeline to set `threat.indicator.expired`. |
+| `ticura.ages_out` | date | Scheduled expiry timestamp. Drives the transform retention policy that removes expired indicators from the latest index. |
 | `ticura.feed_ingest_timestamp` | date | Pipeline-set; when this document was processed. Updated on every re-ingest. |
 | `ticura.countries` / `industries` / `actors` | keyword | Ticura-supplied attribution lists. |
 | `ticura.cve` | keyword | Associated CVE identifiers. |

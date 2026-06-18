@@ -8,11 +8,13 @@ data_stream:
     http_client_timeout: 5m
     preserve_original_event: false
 wait_for_data_timeout: 90s
-# Feed delivers 11 indicators (10 normal + 1 already-expired).
-# The pipeline sets threat.indicator.expired:true for the indicator whose
-# ticura.ages_out is in the past. All 11 are indexed — expiry is a flag,
-# not a drop condition.
+# Feed delivers 11 indicators (10 active + 1 already-expired). All 11 are indexed
+# into the raw data stream (expiry is not a drop condition at ingest). Expiry is
+# handled downstream by the latest_ecs transform's retention_policy on
+# ticura.ages_out, which removes expired indicators from the deduplicated
+# logs-ti_ticura_latest.ecs index. Asserting ticura.ages_out confirms the
+# source-provided expiry timestamp the retention relies on is present.
 assert:
   hit_count: 11
   fields_present:
-    - threat.indicator.expired
+    - ticura.ages_out
