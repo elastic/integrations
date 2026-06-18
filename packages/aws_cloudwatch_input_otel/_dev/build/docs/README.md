@@ -6,8 +6,6 @@ The AWS CloudWatch OpenTelemetry Input Package for Elastic enables collection of
 ### How it works
 This package configures the AWS region, credentials, and a CloudWatch namespace once per supported AWS service (EC2, RDS, SQS, ELB, Lambda, Fargate). The configuration is applied to the `awscloudwatchmetrics` receiver in the EDOT collector, which polls CloudWatch via the AWS API and forwards metrics to the Elastic Agent. The Elastic Agent enriches the data and ships it to Elasticsearch for indexing and analysis. The receiver runs in autodiscover mode so newly published metrics from AWS are picked up automatically without package changes.
 
-> **Status: blocked on EDOT.** The `awscloudwatchmetrics` receiver is not yet bundled in the EDOT Collector embedded in Elastic Agent (verified against EDOT 9.4.x). The package compiles and lints, but cannot run end-to-end via Elastic Agent until the receiver is included in EDOT. Track [elastic/opentelemetry](https://github.com/elastic/opentelemetry) for inclusion.
-
 ## Supported services
 Each service is exposed as a separate policy template. Add the integration once per service you want to monitor.
 
