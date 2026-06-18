@@ -1,0 +1,121 @@
+---
+description: Pipeline for processing certificate logs.
+processors:
+  - date:
+      field: axonius.identity.begins_on
+      tag: date_begins_on
+      target_field: axonius.identity.begins_on
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.axonius?.identity?.begins_on != null && ctx.axonius.identity.begins_on != ''
+      on_failure:
+        - remove:
+            field: axonius.identity.begins_on
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      tag: set_event_start_from_identity_begins_on
+      copy_from: axonius.identity.begins_on
+      ignore_empty_value: true
+  - convert:
+      field: axonius.identity.bit_size
+      tag: convert_bit_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.identity.bit_size
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: axonius.identity.expires_on
+      tag: date_expires_on
+      target_field: axonius.identity.expires_on
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.axonius?.identity?.expires_on != null && ctx.axonius.identity.expires_on != ''
+      on_failure:
+        - remove:
+            field: axonius.identity.expires_on
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.end
+      tag: set_event_end_from_identity_expires_on
+      copy_from: axonius.identity.expires_on
+      ignore_empty_value: true
+  - append:
+      field: file.x509.issuer.common_name
+      tag: append_axonius_identity_issuer_common_name_into_file_x509_issuer_common_name
+      value: '{{{axonius.identity.issuer.common_name}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.issuer?.common_name != null
+  - append:
+      field: file.x509.issuer.country
+      tag: append_axonius_identity_issuer_country_name_into_file_x509_issuer_country
+      value: '{{{axonius.identity.issuer.country_name}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.issuer?.country_name != null
+  - append:
+      field: file.x509.issuer.organization
+      tag: append_axonius_identity_issuer_organization_into_file_x509_issuer_organization
+      value: '{{{axonius.identity.issuer.organization}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.issuer?.organization != null
+  - set:
+      field: file.x509.serial_number
+      tag: set_file_x509_serial_number_from_identity_serial_number
+      copy_from: axonius.identity.serial_number
+      ignore_empty_value: true
+  - append:
+      field: file.x509.subject.common_name
+      tag: append_axonius_identity_subject_common_name_into_file_x509_subject_common_name
+      value: '{{{axonius.identity.subject.common_name}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.subject?.common_name != null
+  - append:
+      field: file.x509.subject.country
+      tag: append_axonius_identity_subject_country_name_into_file_x509_subject_country
+      value: '{{{axonius.identity.subject.country_name}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.subject?.country_name != null
+  - append:
+      field: file.x509.subject.locality
+      tag: append_axonius_identity_subject_locality_into_file_x509_subject_locality
+      value: '{{{axonius.identity.subject.locality}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.subject?.locality != null
+  - append:
+      field: file.x509.subject.organization
+      tag: append_axonius_identity_subject_organization_into_file_x509_subject_organization
+      value: '{{{axonius.identity.subject.organization}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.subject?.organization != null
+  - append:
+      field: file.x509.subject.state_or_province
+      tag: append_axonius_identity_subject_state_into_file_x509_subject_state_or_province
+      value: '{{{axonius.identity.subject.state}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.identity?.subject?.state != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
