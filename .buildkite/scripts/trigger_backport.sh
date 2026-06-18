@@ -44,10 +44,18 @@ main() {
         new_entry_msg="skipping create for initial entries"
         new_entry_hint="To create branches for these entries, trigger the integrations-backport pipeline manually."
         with_github_cli
-        pr_number="$(resolve_pr_number "${BUILDKITE_COMMIT}")"
+        pr_number=""
+        pr_number="$(retry 3 resolve_pr_number "${BUILDKITE_COMMIT}")" || {
+            echo "Warning: could not resolve PR number after retries, PR comments will be skipped" >&2
+        }
     fi
 
-    if ! backports_yml_changed "${diff_from}" "${diff_to}"; then
+    backports_yml_changed_exit=0
+    backports_yml_changed "${diff_from}" "${diff_to}" || backports_yml_changed_exit=$?
+    if [[ "${backports_yml_changed_exit}" -eq 2 ]]; then
+        exit 1
+    fi
+    if [[ "${backports_yml_changed_exit}" -ne 0 ]]; then
         echo ".backports.yml not changed, skipping backport ${label} trigger"
         exit 0
     fi

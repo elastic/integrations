@@ -14,11 +14,15 @@
 resolve_pr_number() {
     local commit="$1"
     local pr_number
-    pr_number=$(gh api "repos/elastic/integrations/commits/${commit}/pulls" --jq '.[0].number // empty' 2>/dev/null || true)
+    if ! pr_number="$(gh api "repos/elastic/integrations/commits/${commit}/pulls" \
+            --jq '.[0].number // empty')"; then
+        echo "Failed to call GitHub API for commit ${commit}" >&2
+        return 1
+    fi
     if [[ -n "${pr_number}" ]]; then
         echo "Associated PR: #${pr_number}" >&2
     else
-        echo "Could not resolve PR number for commit ${commit}, PR comments will be skipped" >&2
+        echo "No PR found for commit ${commit}" >&2
     fi
     echo "${pr_number}"
 }
@@ -26,7 +30,10 @@ resolve_pr_number() {
 load_old_backports_inventory() {
     local git_ref="$1"
     local output_file="$2"
-    git show "${git_ref}:.backports.yml" > "${output_file}" 2>/dev/null
+    if ! git show "${git_ref}:.backports.yml" > "${output_file}" 2>/dev/null; then
+        echo "Note: .backports.yml not found at ref '${git_ref}'" >&2
+        return 1
+    fi
 }
 
 validate_backport_branch_name() {
@@ -40,7 +47,12 @@ validate_backport_branch_name() {
 backports_yml_changed() {
     local from="$1"
     local to="$2"
-    git diff --name-only "${from}" "${to}" | grep -E '^\.backports\.yml$' > /dev/null
+    local changed_files
+    if ! changed_files="$(git diff --name-only "${from}" "${to}")"; then
+        echo "ERROR: git diff failed for refs '${from}' '${to}'" >&2
+        return 2
+    fi
+    grep -qE '^\.backports\.yml$' <<< "${changed_files}"
 }
 
 generate_trigger_pipeline() {
