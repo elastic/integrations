@@ -387,9 +387,12 @@ An example event for `vulnerability` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
+| host.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use) | date |
 | input.type | Type of filebeat input. | keyword |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
+| user.entity.attributes.mfa_enabled | Indicates whether multi-factor authentication is enabled for this entity. | boolean |
+| user.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). | date |
 | xm_cyber.entity_inventory.access_key_creation_date | Access key creation date (e.g. 2024-10-01T10:06:58.000Z). | date |
 | xm_cyber.entity_inventory.account_id | AWS account identifier associated with the entity. | keyword |
 | xm_cyber.entity_inventory.account_name | AWS account name associated with the entity. | keyword |
@@ -757,9 +760,9 @@ An example event for `entity_inventory` looks as following:
 {
     "@timestamp": "2026-05-05T21:05:15.079Z",
     "agent": {
-        "ephemeral_id": "61dc20c0-4991-4703-9287-a1eee64c0cc9",
-        "id": "19d1bf78-6b20-444a-9e72-f94527f60d87",
-        "name": "elastic-agent-71739",
+        "ephemeral_id": "6c1ebfc4-c22b-499c-b0d4-5e5f1e426c06",
+        "id": "1845b4e9-3751-4e02-b895-a3f1bcf9a334",
+        "name": "elastic-agent-15257",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -775,14 +778,14 @@ An example event for `entity_inventory` looks as following:
     },
     "data_stream": {
         "dataset": "xm_cyber.entity_inventory",
-        "namespace": "57357",
+        "namespace": "59138",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "19d1bf78-6b20-444a-9e72-f94527f60d87",
+        "id": "1845b4e9-3751-4e02-b895-a3f1bcf9a334",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -790,8 +793,8 @@ An example event for `entity_inventory` looks as following:
         "agent_id_status": "verified",
         "dataset": "xm_cyber.entity_inventory",
         "id": "awsSsmParameter-arn:aws:ssm:us-east-1:702947630755:parameter/CodeBuild/accessKeys",
-        "ingested": "2026-06-16T09:24:27Z",
-        "kind": "state",
+        "ingested": "2026-06-18T10:55:25Z",
+        "kind": "asset",
         "original": "{\"accountId\":\"702947630755\",\"accountName\":\"xm-test3\",\"arn\":\"arn:aws:ssm:us-east-1:702947630755:parameter/CodeBuild/accessKeys\",\"category\":\"Cloud\",\"customProperties\":{\"domainWorkgroup\":{\"data\":\"AWS/702947630755\",\"type\":\"domain\"},\"ouComputer\":\"AWS/702947630755/us-east-1/SSM/ParameterMetadata\",\"ouUser\":\"AWS/702947630755/SSM/ParameterMetadata\",\"subnetInfo\":\"AWS_702947630755_us-east-1\"},\"disabled\":false,\"displayName\":\"/CodeBuild/accessKeys\",\"entityDetails\":{\"id\":\"awsSsmParameter-arn:aws:ssm:us-east-1:702947630755:parameter/CodeBuild/accessKeys\",\"isAsset\":null,\"name\":\"/CodeBuild/accessKeys\",\"subType\":\"awsSsmParameter\",\"subTypeDisplayName\":\"AWS SSM Parameter\"},\"entityType\":\"AwsSsmParameterEntity\",\"id\":\"awsSsmParameter-arn:aws:ssm:us-east-1:702947630755:parameter/CodeBuild/accessKeys\",\"name\":\"/CodeBuild/accessKeys\",\"notIncludedInAttacks\":false,\"organizationId\":\"o-wvjziar78j\",\"region\":\"us-east-1\",\"ruleDisplayName\":\"702947630755 / /CodeBuild/accessKeys\",\"ssmParameterDataType\":\"text\",\"ssmParameterKeyId\":\"alias/aws/ssm\",\"ssmParameterLastModifiedDate\":\"2020-07-19T09:53:58.629Z\",\"ssmParameterLastModifiedUser\":\"arn:aws:sts::702947630755:assumed-role/AWSReservedSSO_AdministratorAccess_4b70f7a69b186776/zur@xmcyber.com\",\"ssmParameterName\":\"/CodeBuild/accessKeys\",\"ssmParameterTier\":\"Standard\",\"ssmParameterType\":\"SecureString\",\"ssmParameterVersion\":1,\"status\":\"active\",\"type\":\"awsSsmParameter\",\"typeDisplayName\":\"AWS SSM Parameter\",\"useType\":\"Storage\",\"xmProviderAccount\":\"xm-test3\",\"xmUpdateTime\":\"2026-05-05T21:05:15.079Z\"}"
     },
     "input": {
