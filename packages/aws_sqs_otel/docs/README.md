@@ -20,4 +20,48 @@ The dashboard reads metric-stream style OpenTelemetry documents from `metrics-aw
 
 ## Compatibility
 
-Requires Kibana `^9.4.0`.
+Requires Kibana `^9.5.0`.
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+**The following alert rule templates are available:**
+
+<details>
+<summary>View the alert rule templates</summary>
+
+| Name | Description |
+|---|---|
+| [AWS SQS OTel] Backlog growth | Alerts when a queue's visible message backlog is growing over the evaluation window, indicating producers are outpacing consumers. |
+| [AWS SQS OTel] DLQ has messages | Alerts when any dead-letter queue has one or more visible messages. Any message in a DLQ represents a processing failure and warrants immediate investigation. |
+| [AWS SQS OTel] In-flight saturation | Alerts when in-flight messages approach the standard-queue limit (~120,000), indicating stuck consumers or processing bottlenecks. |
+| [AWS SQS OTel] Oldest message age high | Alerts when the oldest unprocessed message on a queue exceeds a configurable age threshold. This is the headline SQS processing-lag signal. |
+
+</details>
+
+
+
+## SLO Templates
+SLO templates provide pre-defined configurations for creating SLOs in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/solutions/observability/incident-management/service-level-objectives-slos).
+
+SLO templates require Elastic Stack version 9.4.0 or later.
+
+**The following SLO templates are available:**
+
+<details>
+<summary>View the SLO templates</summary>
+
+| Name | Description |
+|---|---|
+| [AWS SQS OTel] DLQ empty 99.5% rolling 30 days | Tracks dead-letter queue correctness: 99.5% of 1-minute intervals must show zero visible messages on DLQ queues (QueueName matching \*dlq\*). Any message in a DLQ represents a processing failure and dropped work — the primary SQS error signal. Adjust the QueueName pattern if your DLQ naming convention differs. |
+| [AWS SQS OTel] Oldest message age 99.5% rolling 30 days | Tracks processing freshness per queue: 99.5% of 1-minute intervals must show maximum oldest-message age below 300 seconds on non-DLQ queues. ApproximateAgeOfOldestMessage is the headline SQS timeliness signal — sustained elevation means consumers are falling behind. Threshold is workload-dependent and should be tuned per queue SLA. |
+
+</details>
+
+

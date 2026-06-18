@@ -20,4 +20,25 @@ The dashboard reads metric-stream style OpenTelemetry documents from `metrics-aw
 
 ## Compatibility
 
-Requires Kibana `^9.4.0`.
+Requires Kibana `^9.5.0`.
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+**The following alert rule templates are available:**
+
+<details>
+<summary>View the alert rule templates</summary>
+
+| Name | Description |
+|---|---|
+| [AWS ECS OTel] CPU utilization high | Alerts when average CPU utilization of reserved task CPU exceeds a threshold. Sustained high CPU throttles workloads and raises application latency. |
+| [AWS ECS OTel] Memory utilization high | Alerts when average memory utilization of reserved task memory exceeds a threshold. Sustained high memory risks OOM kills and task churn. |
+
+</details>
+
+
