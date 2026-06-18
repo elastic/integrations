@@ -342,7 +342,7 @@ fi
 
 echo "--- Creating the branch: $BACKPORT_BRANCH_NAME from the commit: $BASE_COMMIT"
 createLocalBackportBranch "$BACKPORT_BRANCH_NAME" "$BASE_COMMIT"
-MSG="The backport branch: **$BACKPORT_BRANCH_NAME** has been created"
+MSG="The backport branch: **$BACKPORT_BRANCH_NAME** has been created."
 
 echo "+++ Adding CI files into the branch ${BACKPORT_BRANCH_NAME}"
 updateBackportBranchContents
