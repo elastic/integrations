@@ -1770,11 +1770,11 @@
       {
         "type": "vis",
         "embeddableConfig": {
-          "title": "HTTP 4xx and 5xx errors over time",
-          "description": "Client 4xx and target 5xx errors per load balancer, stacked by dashboard time bucket.",
+          "title": "HTTP responses over time",
+          "description": "Target HTTP response codes over time, stacked: 2xx (success, green), 4xx (client errors, yellow), 5xx (server errors, red), summed across load balancers. Filter the dashboard by a load balancer to drill into one.",
           "attributes": {
-            "title": "HTTP 4xx and 5xx errors over time",
-            "description": "Client 4xx and target 5xx errors per load balancer, stacked by dashboard time bucket.",
+            "title": "HTTP responses over time",
+            "description": "Target HTTP response codes over time, stacked: 2xx (success, green), 4xx (client errors, yellow), 5xx (server errors, red), summed across load balancers. Filter the dashboard by a load balancer to drill into one.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1785,7 +1785,7 @@
                     "xy-layer-chart-disk": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS client_errors = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_4XX_Count`), server_errors = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS success = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_2XX_Count`), client_errors = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_4XX_Count`), server_errors = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -1797,10 +1797,13 @@
                           }
                         },
                         {
-                          "columnId": "LoadBalancer",
-                          "fieldName": "LoadBalancer",
+                          "columnId": "success",
+                          "fieldName": "success",
+                          "label": "2xx",
+                          "customLabel": true,
                           "meta": {
-                            "type": "string"
+                            "type": "number",
+                            "esType": "double"
                           }
                         },
                         {
@@ -1811,7 +1814,7 @@
                             "esType": "double"
                           },
                           "inMetricDimension": true,
-                          "label": "Client errors",
+                          "label": "4xx",
                           "customLabel": true
                         },
                         {
@@ -1822,7 +1825,7 @@
                             "esType": "double"
                           },
                           "inMetricDimension": true,
-                          "label": "Server errors",
+                          "label": "5xx",
                           "customLabel": true
                         }
                       ],
@@ -1833,13 +1836,14 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS client_errors = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_4XX_Count`), server_errors = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS success = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_2XX_Count`), client_errors = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_4XX_Count`), server_errors = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
                   {
                     "layerId": "xy-layer-chart-disk",
                     "accessors": [
+                      "success",
                       "client_errors",
                       "server_errors"
                     ],
@@ -1847,10 +1851,12 @@
                     "seriesType": "area_stacked",
                     "xAccessor": "timestamp",
                     "showGridlines": false,
-                    "splitAccessors": [
-                      "LoadBalancer"
-                    ],
+                    "splitAccessors": [],
                     "yConfig": [
+                      {
+                        "forAccessor": "success",
+                        "color": "#54B399"
+                      },
                       {
                         "forAccessor": "client_errors",
                         "color": "#D6BF57"
