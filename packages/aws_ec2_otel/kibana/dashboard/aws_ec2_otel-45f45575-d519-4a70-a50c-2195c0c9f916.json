@@ -182,7 +182,7 @@
         "gridData": {
           "y": 0,
           "x": 0,
-          "w": 8,
+          "w": 4,
           "h": 6,
           "i": "kpi-total",
           "sectionId": "636a82af-094b-46fc-a228-3759a9a926f8"
@@ -649,8 +649,8 @@
         },
         "panelIndex": "kpi-impaired",
         "gridData": {
-          "y": 6,
-          "x": 0,
+          "y": 0,
+          "x": 4,
           "w": 4,
           "h": 6,
           "i": "kpi-impaired",
@@ -748,7 +748,7 @@
         "panelIndex": "kpi-running",
         "gridData": {
           "y": 6,
-          "x": 4,
+          "x": 0,
           "w": 4,
           "h": 6,
           "i": "kpi-running",
@@ -773,7 +773,7 @@
                     "tbl-layer-tbl-instances": {
                       "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
                       "query": {
-                        "esql": "FROM metrics-aws.ec2.otel-* | WHERE LENGTH(TO_STRING(InstanceId)) > 0 | WHERE (stat == \"Maximum\" AND (`metrics.amazonaws.com/AWS/EC2/StatusCheckFailed` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL)) OR (stat == \"Average\" AND (`metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskWriteOps` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskReadBytes` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/NetworkOut` IS NOT NULL)) | STATS c_failed_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)), c_region = MAX(cloud.region), c_cpu = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/CPUUtilization`, NULL)) / 100.0, c_disk_write_ops = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskWriteOps`, NULL)), c_dr = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskReadBytes`, NULL)), c_dw = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes`, NULL)), c_ni = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkIn`, NULL)), c_no = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL)) BY InstanceId, cloud.region | EVAL c_cpu = COALESCE(c_cpu, 0.0), c_disk_write_ops = COALESCE(c_disk_write_ops, 0.0), c_dr = COALESCE(c_dr, 0.0), c_dw = COALESCE(c_dw, 0.0), c_ni = COALESCE(c_ni, 0.0), c_no = COALESCE(c_no, 0.0)\n| EVAL c_state_sort = CASE(c_failed_max > 0, 1, c_failed_max == 0, 3, 2), c_state = CASE(c_failed_max > 0, \"impaired\", c_failed_max == 0, \"healthy\", \"no data\") | SORT c_state_sort ASC"
+                        "esql": "FROM metrics-aws.ec2.otel-* | WHERE LENGTH(TO_STRING(InstanceId)) > 0 | WHERE (stat == \"Maximum\" AND (`metrics.amazonaws.com/AWS/EC2/StatusCheckFailed` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL)) OR (stat == \"Average\" AND (`metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskWriteOps` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskReadBytes` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/NetworkOut` IS NOT NULL)) | STATS c_failed_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)), c_region = MAX(cloud.region), c_cpu = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/CPUUtilization`, NULL)) / 100.0, c_disk_write_ops = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskWriteOps`, NULL)), c_dr = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskReadBytes`, NULL)), c_dw = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes`, NULL)), c_ni = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkIn`, NULL)), c_no = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL)), last_seen = MAX(@timestamp) BY InstanceId, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | EVAL c_cpu = COALESCE(c_cpu, 0.0), c_disk_write_ops = COALESCE(c_disk_write_ops, 0.0), c_dr = COALESCE(c_dr, 0.0), c_dw = COALESCE(c_dw, 0.0), c_ni = COALESCE(c_ni, 0.0), c_no = COALESCE(c_no, 0.0)\n| EVAL c_state_sort = CASE(c_failed_max > 0, 1, c_failed_max == 0, 2, 3), c_state = CASE(c_failed_max > 0, \"impaired\", c_failed_max == 0, \"healthy\", \"no data\") | SORT c_state_sort ASC"
                       },
                       "columns": [
                         {
@@ -931,7 +931,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ec2.otel-* | WHERE LENGTH(TO_STRING(InstanceId)) > 0 | WHERE (stat == \"Maximum\" AND (`metrics.amazonaws.com/AWS/EC2/StatusCheckFailed` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL)) OR (stat == \"Average\" AND (`metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskWriteOps` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskReadBytes` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/NetworkOut` IS NOT NULL)) | STATS c_failed_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)), c_region = MAX(cloud.region), c_cpu = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/CPUUtilization`, NULL)) / 100.0, c_disk_write_ops = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskWriteOps`, NULL)), c_dr = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskReadBytes`, NULL)), c_dw = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes`, NULL)), c_ni = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkIn`, NULL)), c_no = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL)) BY InstanceId, cloud.region | EVAL c_cpu = COALESCE(c_cpu, 0.0), c_disk_write_ops = COALESCE(c_disk_write_ops, 0.0), c_dr = COALESCE(c_dr, 0.0), c_dw = COALESCE(c_dw, 0.0), c_ni = COALESCE(c_ni, 0.0), c_no = COALESCE(c_no, 0.0)\n| EVAL c_state_sort = CASE(c_failed_max > 0, 1, c_failed_max == 0, 3, 2), c_state = CASE(c_failed_max > 0, \"impaired\", c_failed_max == 0, \"healthy\", \"no data\") | SORT c_state_sort ASC"
+                "esql": "FROM metrics-aws.ec2.otel-* | WHERE LENGTH(TO_STRING(InstanceId)) > 0 | WHERE (stat == \"Maximum\" AND (`metrics.amazonaws.com/AWS/EC2/StatusCheckFailed` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL)) OR (stat == \"Average\" AND (`metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskWriteOps` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskReadBytes` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/NetworkOut` IS NOT NULL)) | STATS c_failed_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)), c_region = MAX(cloud.region), c_cpu = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/CPUUtilization`, NULL)) / 100.0, c_disk_write_ops = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskWriteOps`, NULL)), c_dr = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskReadBytes`, NULL)), c_dw = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes`, NULL)), c_ni = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkIn`, NULL)), c_no = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL)), last_seen = MAX(@timestamp) BY InstanceId, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | EVAL c_cpu = COALESCE(c_cpu, 0.0), c_disk_write_ops = COALESCE(c_disk_write_ops, 0.0), c_dr = COALESCE(c_dr, 0.0), c_dw = COALESCE(c_dw, 0.0), c_ni = COALESCE(c_ni, 0.0), c_no = COALESCE(c_no, 0.0)\n| EVAL c_state_sort = CASE(c_failed_max > 0, 1, c_failed_max == 0, 2, 3), c_state = CASE(c_failed_max > 0, \"impaired\", c_failed_max == 0, \"healthy\", \"no data\") | SORT c_state_sort ASC"
               },
               "visualization": {
                 "columns": [
@@ -1063,8 +1063,8 @@
                 "rowHeightLines": 1,
                 "fitRowToContent": false,
                 "sorting": {
-                  "columnId": "c_state",
-                  "direction": "desc"
+                  "columnId": "c_state_sort",
+                  "direction": "asc"
                 }
               },
               "adHocDataViews": {
@@ -2287,6 +2287,103 @@
           "h": 12,
           "i": "chart-cpu",
           "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Distinct running EC2 instances currently reporting metrics but with no StatusCheckFailed signal (grey / no data) within the recency window.",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "description": "Distinct running EC2 instances currently reporting metrics but with no StatusCheckFailed signal (grey / no data) within the recency window.",
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-nodata": {
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "FROM metrics-aws.ec2.otel-* | WHERE LENGTH(TO_STRING(InstanceId)) > 0 | WHERE (stat == \"Maximum\" AND (`metrics.amazonaws.com/AWS/EC2/StatusCheckFailed` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL)) OR (stat == \"Average\" AND (`metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskWriteOps` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskReadBytes` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/NetworkOut` IS NOT NULL)) | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS failed_recent = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)) BY InstanceId, cloud.region | STATS no_data = COUNT(*) WHERE failed_recent IS NULL | KEEP no_data"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "col-kpi-nodata",
+                          "fieldName": "no_data",
+                          "label": "No data",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "title": "metrics-aws.ec2.otel-*",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM metrics-aws.ec2.otel-* | WHERE LENGTH(TO_STRING(InstanceId)) > 0 | WHERE (stat == \"Maximum\" AND (`metrics.amazonaws.com/AWS/EC2/StatusCheckFailed` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL)) OR (stat == \"Average\" AND (`metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskWriteOps` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskReadBytes` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/NetworkOut` IS NOT NULL)) | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS failed_recent = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)) BY InstanceId, cloud.region | STATS no_data = COUNT(*) WHERE failed_recent IS NULL | KEEP no_data"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-nodata",
+                "layerType": "data",
+                "metricAccessor": "col-kpi-nodata",
+                "showBar": false,
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "applyColorTo": "background",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left"
+              },
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "textBasedLanguages-datasource-layer-layer-kpi-nodata"
+                }
+              ],
+              "needsRefresh": false
+            }
+          }
+        },
+        "panelIndex": "kpi-nodata",
+        "gridData": {
+          "x": 4,
+          "y": 6,
+          "w": 4,
+          "h": 6,
+          "i": "kpi-nodata"
         }
       }
     ],
