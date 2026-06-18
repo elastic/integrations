@@ -59,37 +59,37 @@
                     "layout": "horizontal",
                     "links": [
                         {
-                            "destinationRefName": "link_2a32c1a4-a9e8-497c-a0e2-814de66bf1b5_dashboard",
+                            "destinationRefName": "link_1e3ff145-06a4-4e59-854f-ff2f39628055_dashboard",
                             "label": "Overview",
                             "options": {},
                             "type": "dashboardLink"
                         },
                         {
-                            "destinationRefName": "link_e0b8bc76-1f19-4954-8ca8-b4efaf00b847_dashboard",
+                            "destinationRefName": "link_f6993d94-47ac-4e0f-8d02-dcf54f7324c1_dashboard",
                             "label": "Clusters",
                             "options": {},
                             "type": "dashboardLink"
                         },
                         {
-                            "destinationRefName": "link_92cc52e3-c389-4d36-bb02-6c414c13e69e_dashboard",
+                            "destinationRefName": "link_1c421e35-9935-49af-8e37-5f6071f2b00f_dashboard",
                             "label": "Nodes",
                             "options": {},
                             "type": "dashboardLink"
                         },
                         {
-                            "destinationRefName": "link_83031f55-4a2f-4799-979e-482acf38266f_dashboard",
+                            "destinationRefName": "link_d834b852-779e-414f-83d7-0ce113cd080a_dashboard",
                             "label": "Namespaces",
                             "options": {},
                             "type": "dashboardLink"
                         },
                         {
-                            "destinationRefName": "link_71766b7c-7710-4efc-8356-f90cbde9d1eb_dashboard",
+                            "destinationRefName": "link_603244df-834f-4c79-8a62-ad5e3f805822_dashboard",
                             "label": "Workload resources",
                             "options": {},
                             "type": "dashboardLink"
                         },
                         {
-                            "destinationRefName": "link_a14c8a42-ee85-417e-a61f-b3611d93817c_dashboard",
+                            "destinationRefName": "link_86e9a898-e3f0-409c-b761-a5a741d9574b_dashboard",
                             "label": "Pods",
                             "options": {},
                             "type": "dashboardLink"
@@ -2588,7 +2588,7 @@
                                             ],
                                             "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "query": {
-                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.replicaset.name IS NOT NULL\n  AND k8s.replicaset.available IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp) BY k8s.replicaset.name\n| WHERE @timestamp == latest_ts\n| STATS\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    available = MAX(k8s.replicaset.available),\n    desired   = MAX(k8s.replicaset.desired)\n  BY k8s.namespace.name, k8s.replicaset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired \u003e 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_available = COALESCE(desired, 0) - COALESCE(available, 0)\n| SORT not_available DESC, availability ASC, k8s.replicaset.name ASC\n| LIMIT 100"
+                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.replicaset.name IS NOT NULL\n  AND k8s.replicaset.available IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp) BY k8s.replicaset.name\n| WHERE @timestamp == latest_ts\n| STATS\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    available = MAX(k8s.replicaset.available),\n    desired   = MAX(k8s.replicaset.desired)\n  BY k8s.namespace.name, k8s.replicaset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired \u003e 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_available = COALESCE(desired, 0) - COALESCE(available, 0)\n| SORT not_available DESC, availability ASC, k8s.replicaset.name ASC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2598,7 +2598,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.replicaset.name IS NOT NULL\n  AND k8s.replicaset.available IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp) BY k8s.replicaset.name\n| WHERE @timestamp == latest_ts\n| STATS\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    available = MAX(k8s.replicaset.available),\n    desired   = MAX(k8s.replicaset.desired)\n  BY k8s.namespace.name, k8s.replicaset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired \u003e 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_available = COALESCE(desired, 0) - COALESCE(available, 0)\n| SORT not_available DESC, availability ASC, k8s.replicaset.name ASC\n| LIMIT 100"
+                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.replicaset.name IS NOT NULL\n  AND k8s.replicaset.available IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp) BY k8s.replicaset.name\n| WHERE @timestamp == latest_ts\n| STATS\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    available = MAX(k8s.replicaset.available),\n    desired   = MAX(k8s.replicaset.desired)\n  BY k8s.namespace.name, k8s.replicaset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired \u003e 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_available = COALESCE(desired, 0) - COALESCE(available, 0)\n| SORT not_available DESC, availability ASC, k8s.replicaset.name ASC"
                             },
                             "visualization": {
                                 "columns": [
@@ -2739,43 +2739,43 @@
                 "title": "Other workload resources"
             }
         ],
-        "timeFrom": "2026-06-01T06:17:51.162Z",
+        "timeFrom": "now-24h/h",
         "timeRestore": true,
-        "timeTo": "2026-06-01T06:34:34.462Z",
+        "timeTo": "now",
         "title": "[Kubernetes OTel] Workloads"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-06-04T10:11:58.136Z",
+    "created_at": "2026-06-17T05:39:44.087Z",
     "id": "kubernetes_otel-0b70c6de-4d53-47c4-9844-5f964ba04a6f",
     "references": [
         {
             "id": "kubernetes_otel-7b1ac87f-60ea-477f-b506-8a248026afbb",
-            "name": "v2-workloads-alt-nav:link_2a32c1a4-a9e8-497c-a0e2-814de66bf1b5_dashboard",
+            "name": "v2-workloads-alt-nav:link_1e3ff145-06a4-4e59-854f-ff2f39628055_dashboard",
             "type": "dashboard"
         },
         {
             "id": "kubernetes_otel-fe68e0e9-0506-4ad7-96be-070cf7592a7e",
-            "name": "v2-workloads-alt-nav:link_e0b8bc76-1f19-4954-8ca8-b4efaf00b847_dashboard",
+            "name": "v2-workloads-alt-nav:link_f6993d94-47ac-4e0f-8d02-dcf54f7324c1_dashboard",
             "type": "dashboard"
         },
         {
             "id": "kubernetes_otel-0c88decf-de83-47a4-a5df-0a79dc8daff5",
-            "name": "v2-workloads-alt-nav:link_92cc52e3-c389-4d36-bb02-6c414c13e69e_dashboard",
+            "name": "v2-workloads-alt-nav:link_1c421e35-9935-49af-8e37-5f6071f2b00f_dashboard",
             "type": "dashboard"
         },
         {
             "id": "kubernetes_otel-c0765efe-f172-42c4-a2ea-f4552b6f42dc",
-            "name": "v2-workloads-alt-nav:link_83031f55-4a2f-4799-979e-482acf38266f_dashboard",
+            "name": "v2-workloads-alt-nav:link_d834b852-779e-414f-83d7-0ce113cd080a_dashboard",
             "type": "dashboard"
         },
         {
             "id": "kubernetes_otel-0b70c6de-4d53-47c4-9844-5f964ba04a6f",
-            "name": "v2-workloads-alt-nav:link_71766b7c-7710-4efc-8356-f90cbde9d1eb_dashboard",
+            "name": "v2-workloads-alt-nav:link_603244df-834f-4c79-8a62-ad5e3f805822_dashboard",
             "type": "dashboard"
         },
         {
             "id": "kubernetes_otel-aa37d8f8-56ca-4452-96ad-456b5154e23d",
-            "name": "v2-workloads-alt-nav:link_a14c8a42-ee85-417e-a61f-b3611d93817c_dashboard",
+            "name": "v2-workloads-alt-nav:link_86e9a898-e3f0-409c-b761-a5a741d9574b_dashboard",
             "type": "dashboard"
         },
         {
