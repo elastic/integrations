@@ -8,18 +8,21 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 	"github.com/pkg/errors"
 
+	"github.com/elastic/integrations/dev/backports"
 	"github.com/elastic/integrations/dev/backports/changelog"
 	"github.com/elastic/integrations/dev/citools"
 	"github.com/elastic/integrations/dev/codeowners"
@@ -220,6 +223,11 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 	return testsreporter.Check(ctx, testResultsFolder, options)
 }
 
+// ValidateBackportsInventory validates the schema of .backports.yml at the repo root.
+func ValidateBackportsInventory() error {
+	return backports.ValidateInventory(".backports.yml", "packages")
+}
+
 // ListPackages lists all packages found under the packages directory.
 func ListPackages() error {
 	const packagesDir = "packages"
@@ -313,6 +321,38 @@ func IsVersionLessThanLogsDBGA(version string) error {
 		return nil
 	}
 	fmt.Println("false")
+	return nil
+}
+
+// CheckBackportBranchActive reports whether a backport branch is active per .backports.yml.
+// Prints "<branch>: active" or "<branch>: inactive (<reason>)".
+// Pass -json for JSON output: mage CheckBackportBranchActive <branch> -json
+// Exit codes: 0 = active, 1 = inactive, 2 = error (branch not found, parse error, etc.).
+func CheckBackportBranchActive(branch string, asJSON *bool) error {
+	result, err := backports.CheckActive(".backports.yml", branch, time.Now().UTC())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(2)
+	}
+
+	if asJSON != nil && *asJSON {
+		data, _ := json.Marshal(result)
+		fmt.Println(string(data))
+	} else {
+		if result.Active {
+			fmt.Printf("%s: active\n", branch)
+		} else {
+			reason := "archived"
+			if !result.Archived && result.MaintainedUntil != nil {
+				reason = fmt.Sprintf("maintained_until=%s is past", *result.MaintainedUntil)
+			}
+			fmt.Printf("%s: inactive (%s)\n", branch, reason)
+		}
+	}
+
+	if !result.Active {
+		os.Exit(1)
+	}
 	return nil
 }
 
