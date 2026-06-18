@@ -334,11 +334,12 @@ func AddBackportEntry(packageName, baseVersion string) error {
 	if err != nil {
 		return fmt.Errorf("resolving base commit for %s@%s: %w", packageName, baseVersion, err)
 	}
-	branch, err := backports.AddEntry(".backports.yml", packageName, baseVersion, strings.TrimSpace(baseCommit))
+	commit := strings.TrimSpace(baseCommit)
+	branch, err := backports.AddEntry(".backports.yml", packageName, baseVersion, commit, "packages")
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Added: branch=%s base_commit=%s\n", branch, strings.TrimSpace(baseCommit))
+	fmt.Printf("Added: branch=%s base_commit=%s\n", branch, commit)
 	return nil
 }
 

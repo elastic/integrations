@@ -128,13 +128,25 @@ func (e entry) activeResult(now time.Time) ActiveResult {
 // The branch name is derived as backport-<packageName>-<major>.<minor>.
 // archived is set to false and maintained_until to null.
 // The entry is placed in sorted order: package name ascending, then version descending (newest first).
+// packagesDir is the path to the packages/ directory used to verify that packageName names a real
+// package. Pass an empty string to skip this check.
 // Returns the derived branch name.
-func AddEntry(path, packageName, baseVersion, baseCommit string) (string, error) {
+func AddEntry(path, packageName, baseVersion, baseCommit, packagesDir string) (string, error) {
 	v, err := semver.StrictNewVersion(baseVersion)
 	if err != nil {
 		return "", fmt.Errorf("invalid base_version %q: %w", baseVersion, err)
 	}
 	branch := fmt.Sprintf("backport-%s-%d.%d", packageName, v.Major(), v.Minor())
+
+	knownPackages, err := buildKnownPackages(packagesDir)
+	if err != nil {
+		return "", fmt.Errorf("loading packages from %s: %w", packagesDir, err)
+	}
+	if knownPackages != nil {
+		if _, ok := knownPackages[packageName]; !ok {
+			return "", fmt.Errorf("unknown package %q: not found under %s", packageName, packagesDir)
+		}
+	}
 
 	data, err := os.ReadFile(path)
 	if err != nil {

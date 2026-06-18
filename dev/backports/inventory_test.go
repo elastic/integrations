@@ -694,7 +694,7 @@ func TestAddEntry(t *testing.T) {
 
 	t.Run("inserts between versions of the same package", func(t *testing.T) {
 		path := writeTemp(t, twoEntries)
-		branch, err := AddEntry(path, "aws", "2.1.0", "aabbccddee")
+		branch, err := AddEntry(path, "aws", "2.1.0", "aabbccddee", "")
 		require.NoError(t, err)
 		assert.Equal(t, "backport-aws-2.1", branch)
 
@@ -721,7 +721,7 @@ func TestAddEntry(t *testing.T) {
     archived: false
 `
 		path := writeTemp(t, inv)
-		branch, err := AddEntry(path, "elastic_agent", "2.3.0", "112233aabb")
+		branch, err := AddEntry(path, "elastic_agent", "2.3.0", "112233aabb", "")
 		require.NoError(t, err)
 		assert.Equal(t, "backport-elastic_agent-2.3", branch)
 
@@ -734,7 +734,7 @@ func TestAddEntry(t *testing.T) {
 
 	t.Run("appends when new entry is last", func(t *testing.T) {
 		path := writeTemp(t, twoEntries)
-		branch, err := AddEntry(path, "zz_pkg", "1.0.0", "aabbccddee")
+		branch, err := AddEntry(path, "zz_pkg", "1.0.0", "aabbccddee", "")
 		require.NoError(t, err)
 		assert.Equal(t, "backport-zz_pkg-1.0", branch)
 
@@ -745,7 +745,7 @@ func TestAddEntry(t *testing.T) {
 
 	t.Run("prepends when new entry is first", func(t *testing.T) {
 		path := writeTemp(t, twoEntries)
-		branch, err := AddEntry(path, "aaa_pkg", "1.0.0", "aabbccddee")
+		branch, err := AddEntry(path, "aaa_pkg", "1.0.0", "aabbccddee", "")
 		require.NoError(t, err)
 		assert.Equal(t, "backport-aaa_pkg-1.0", branch)
 
@@ -757,14 +757,14 @@ func TestAddEntry(t *testing.T) {
 
 	t.Run("derives branch from major.minor only", func(t *testing.T) {
 		path := writeTemp(t, twoEntries)
-		branch, err := AddEntry(path, "aws", "2.5.3", "aabbccddee")
+		branch, err := AddEntry(path, "aws", "2.5.3", "aabbccddee", "")
 		require.NoError(t, err)
 		assert.Equal(t, "backport-aws-2.5", branch)
 	})
 
 	t.Run("new entry has correct fields", func(t *testing.T) {
 		path := writeTemp(t, twoEntries)
-		_, err := AddEntry(path, "aws", "2.1.0", "aabbccddee")
+		_, err := AddEntry(path, "aws", "2.1.0", "aabbccddee", "")
 		require.NoError(t, err)
 
 		inv := readInventory(t, path)
@@ -781,7 +781,7 @@ func TestAddEntry(t *testing.T) {
 
 	t.Run("existing entries keep double-quoted style", func(t *testing.T) {
 		path := writeTemp(t, twoEntries)
-		_, err := AddEntry(path, "aws", "2.1.0", "aabbccddee")
+		_, err := AddEntry(path, "aws", "2.1.0", "aabbccddee", "")
 		require.NoError(t, err)
 
 		out, _ := os.ReadFile(path)
@@ -802,7 +802,7 @@ backports:
     archived: false
 `
 		path := writeTemp(t, inv)
-		_, err := AddEntry(path, "aws", "2.0.0", "ffeeddccbb")
+		_, err := AddEntry(path, "aws", "2.0.0", "ffeeddccbb", "")
 		require.NoError(t, err)
 
 		out, _ := os.ReadFile(path)
@@ -811,13 +811,13 @@ backports:
 
 	t.Run("invalid base_version returns error", func(t *testing.T) {
 		path := writeTemp(t, twoEntries)
-		_, err := AddEntry(path, "aws", "not-a-version", "aabbccddee")
+		_, err := AddEntry(path, "aws", "not-a-version", "aabbccddee", "")
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "invalid base_version")
 	})
 
 	t.Run("file not found returns error", func(t *testing.T) {
-		_, err := AddEntry("/no/such/file.yml", "aws", "1.0.0", "aabbccddee")
+		_, err := AddEntry("/no/such/file.yml", "aws", "1.0.0", "aabbccddee", "")
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "reading inventory")
 	})

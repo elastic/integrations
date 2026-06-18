@@ -15,15 +15,20 @@ pass=0
 fail=0
 
 # ---------------------------------------------------------------------------
-# Mock: mage — set MOCK_MAGE_EXIT to control CheckBackportBranchActive result.
-#   0 = active (default)
-#   1 = inactive
-#   2 = error
+# Mock: mage — per-target exit code control.
+#   MOCK_MAGE_VALIDATE_EXIT controls ValidateBackportsInventory (default 0 = pass)
+#   MOCK_MAGE_CHECK_EXIT    controls CheckBackportBranchActive  (default 0 = active,
+#                                                                        1 = inactive,
+#                                                                        2 = error)
 # ---------------------------------------------------------------------------
 mage() {
-    return "${MOCK_MAGE_EXIT:-0}"
+    case "$1" in
+        ValidateBackportsInventory) return "${MOCK_MAGE_VALIDATE_EXIT:-0}" ;;
+        CheckBackportBranchActive)  return "${MOCK_MAGE_CHECK_EXIT:-0}" ;;
+    esac
 }
-MOCK_MAGE_EXIT=0
+MOCK_MAGE_VALIDATE_EXIT=0
+MOCK_MAGE_CHECK_EXIT=0
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -135,9 +140,9 @@ write_inventory "${NEW}" \
     "backport-aws-1.19" "aws" "1.19.5" "abc123" "false" \
     "backport-aws-2.0"  "aws" "2.0.0"  "def456" "true"
 
-MOCK_MAGE_EXIT=1
+MOCK_MAGE_CHECK_EXIT=1
 run_generate "${OLD}" "${NEW}" "true" "" "${OUT}"
-MOCK_MAGE_EXIT=0
+MOCK_MAGE_CHECK_EXIT=0
 
 assert_equals "inactive entry: no steps generated" "" "$(cat "${OUT}")"
 
@@ -152,13 +157,32 @@ write_inventory "${NEW}" \
     "backport-aws-1.19" "aws" "1.19.5" "abc123" "false" \
     "backport-aws-2.0"  "aws" "2.0.0"  "def456" "false"
 
-MOCK_MAGE_EXIT=2
+MOCK_MAGE_CHECK_EXIT=2
 err_exit=0
 : > "${OUT}"
 generate_trigger_pipeline "${OLD}" "${NEW}" "true" "" "${OUT}" || err_exit=$?
-MOCK_MAGE_EXIT=0
+MOCK_MAGE_CHECK_EXIT=0
 
 assert_exit_code "mage error: non-zero exit returned" "1" "${err_exit}"
+
+# ---------------------------------------------------------------------------
+# Test: ValidateBackportsInventory failure causes function to return non-zero
+# ---------------------------------------------------------------------------
+echo "--- validate inventory failure returns non-zero"
+
+write_inventory "${OLD}" \
+    "backport-aws-1.19" "aws" "1.19.5" "abc123" "false"
+write_inventory "${NEW}" \
+    "backport-aws-1.19" "aws" "1.19.5" "abc123" "false" \
+    "backport-aws-2.0"  "aws" "2.0.0"  "def456" "false"
+
+MOCK_MAGE_VALIDATE_EXIT=1
+val_exit=0
+: > "${OUT}"
+generate_trigger_pipeline "${OLD}" "${NEW}" "true" "" "${OUT}" || val_exit=$?
+MOCK_MAGE_VALIDATE_EXIT=0
+
+assert_exit_code "validate failure: non-zero exit returned" "1" "${val_exit}"
 
 # ---------------------------------------------------------------------------
 # Test: multiple new entries all appear in pipeline
