@@ -14,6 +14,9 @@ PACKAGE_NAME="$(buildkite-agent meta-data get PACKAGE_NAME --default "${PACKAGE_
 PACKAGE_VERSION="$(buildkite-agent meta-data get PACKAGE_VERSION --default "${PACKAGE_VERSION:-""}")"
 PR_NUMBER="$(buildkite-agent meta-data get PR_NUMBER --default "${PR_NUMBER:-""}")"
 
+# Validate required env vars not available via meta-data.
+: "${NOTIFY_STATUS:?NOTIFY_STATUS must be set to 'success' or 'failure'}"
+
 if [[ -z "${PR_NUMBER}" ]]; then
     echo "PR_NUMBER not set, skipping PR notification"
     exit 0

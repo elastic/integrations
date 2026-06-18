@@ -7,9 +7,9 @@
 # resolve_pr_number() looks up the PR that introduced a given commit via the GitHub API.
 # backports_yml_changed() checks whether .backports.yml was modified between two git refs.
 # load_old_backports_inventory() extracts .backports.yml at a given git ref into a file.
-# generate_trigger_pipeline() iterates over a new .backports.yml,
-# finds entries absent from the old inventory, and writes Buildkite trigger steps
-# to a pipeline file. The caller decides whether to upload the result.
+# generate_trigger_pipeline() validates the new inventory via mage ValidateBackportsInventory,
+# iterates over a new .backports.yml, finds entries absent from the old inventory, and writes
+# Buildkite trigger steps to a pipeline file. The caller decides whether to upload the result.
 
 resolve_pr_number() {
     local commit="$1"
@@ -36,23 +36,15 @@ load_old_backports_inventory() {
     fi
 }
 
-validate_backport_branch_name() {
-    local branch="$1"
-    if [[ ! "${branch}" =~ ^backport-[a-zA-Z0-9_]+-[0-9]+\.([0-9]+|x)$ ]]; then
-        echo "ERROR: invalid branch name '${branch}' — expected format: backport-<package>-<major>.<minor|x>" >&2
-        return 1
-    fi
-}
-
 backports_yml_changed() {
     local from="$1"
     local to="$2"
-    local changed_files
-    if ! changed_files="$(git diff --name-only "${from}" "${to}")"; then
+    local changed
+    if ! changed="$(git diff --name-only "${from}" "${to}" -- .backports.yml)"; then
         echo "ERROR: git diff failed for refs '${from}' '${to}'" >&2
         return 2
     fi
-    grep -qE '^\.backports\.yml$' <<< "${changed_files}"
+    [[ -n "${changed}" ]]
 }
 
 generate_trigger_pipeline() {
@@ -72,6 +64,11 @@ generate_trigger_pipeline() {
         return 1
     fi
 
+    if ! mage ValidateBackportsInventory; then
+        echo "ERROR: new inventory failed schema validation" >&2
+        return 1
+    fi
+
     local label_prefix
     if [[ "${dry_run}" == "true" ]]; then
         label_prefix="Backport dry-run"
@@ -80,10 +77,6 @@ generate_trigger_pipeline() {
     fi
 
     while IFS= read -r branch; do
-        if ! validate_backport_branch_name "${branch}"; then
-            return 1
-        fi
-
         local entry=".backports[] | select(.branch == \"${branch}\")"
 
         # Only trigger for entries that are new (absent from the old inventory).

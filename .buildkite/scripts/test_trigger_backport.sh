@@ -193,24 +193,6 @@ generate_trigger_pipeline "${OLD}" "${NEW}" "true" "" "${OUT}" || inv_exit=$?
 assert_exit_code "invalid old inventory: non-zero exit" "1" "${inv_exit}"
 
 # ---------------------------------------------------------------------------
-# Test: validate_backport_branch_name
-# ---------------------------------------------------------------------------
-echo "--- validate_backport_branch_name"
-
-# Valid names
-assert_exit_code "valid: numeric minor"       "0" "$(validate_backport_branch_name "backport-aws-1.19"      2>/dev/null; echo $?)"
-assert_exit_code "valid: x minor"             "0" "$(validate_backport_branch_name "backport-aws-6.x"       2>/dev/null; echo $?)"
-assert_exit_code "valid: underscore in pkg"   "0" "$(validate_backport_branch_name "backport-my_pkg-2.0"    2>/dev/null; echo $?)"
-assert_exit_code "valid: single-digit minor"  "0" "$(validate_backport_branch_name "backport-gcp-1.5"       2>/dev/null; echo $?)"
-
-# Invalid names
-assert_exit_code "invalid: hyphen in pkg"     "1" "$(validate_backport_branch_name "backport-my-pkg-2.0"    2>/dev/null; echo $?)"
-assert_exit_code "invalid: missing minor"     "1" "$(validate_backport_branch_name "backport-aws-1"         2>/dev/null; echo $?)"
-assert_exit_code "invalid: mixed minor"       "1" "$(validate_backport_branch_name "backport-aws-6.1x"      2>/dev/null; echo $?)"
-assert_exit_code "invalid: wrong prefix"      "1" "$(validate_backport_branch_name "not-backport-1.0"       2>/dev/null; echo $?)"
-assert_exit_code "invalid: double-quote"      "1" "$(validate_backport_branch_name 'backport-foo"bar-1.0'   2>/dev/null; echo $?)"
-
-# ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 echo ""

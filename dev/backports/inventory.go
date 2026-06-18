@@ -48,14 +48,26 @@ var duplicatePackageVersionExceptions = map[string]struct{}{
 
 // branchRE matches a valid backport branch name:
 //
-//	backport-<package>-<version>
+//	backport-<package>-<major>.<minor|x>
 //
 // where <package> is one or more letters, digits, or underscores, and
-// <version> starts with a digit followed by digits, dots, and an optional
-// trailing 'x' wildcard (e.g. "6.x" or "6.14.x").
+// <version> is exactly <digits>.<digits> or <digits>.x (e.g. "3.17" or "6.x").
 // Whitespace, quotes, colons, semicolons, and all other special characters
 // are not permitted.
-var branchRE = regexp.MustCompile(`^backport-[a-zA-Z0-9_]+-[0-9][0-9.]*x?$`)
+var branchRE = regexp.MustCompile(`^backport-[a-zA-Z0-9_]+-[0-9]+\.([0-9]+|x)$`)
+
+// legacyBranchNames lists branch names that predate the current naming convention
+// and are intentionally exempt from the branchRE format check.
+// Each entry must include a comment explaining why the exception exists.
+var legacyBranchNames = map[string]struct{}{
+	// backport-aws-7.15.0 used a three-component version before the
+	// backport-<package>-<major>.<minor> convention was established.
+	"backport-aws-7.15.0": {},
+	// backport-security_detection_engine-8.9.10 was a one-off exception to
+	// publish a missing package version; it used a patch-level version rather
+	// than the standard major.minor format.
+	"backport-security_detection_engine-8.9.10": {},
+}
 
 // ActiveResult is the result of a CheckActive call.
 type ActiveResult struct {
@@ -286,9 +298,9 @@ func validateEntryFields(i int, e entry, knownPackages map[string]struct{}, pack
 
 	if e.Branch == "" {
 		errs = append(errs, fmt.Errorf("%s: missing required field 'branch'", id))
-	} else if !branchRE.MatchString(e.Branch) {
-		errs = append(errs, fmt.Errorf("%s: invalid branch %q: must match backport-<package>-<version> "+
-			"(letters/digits/underscores in package name, version starts with a digit; "+
+	} else if _, isLegacy := legacyBranchNames[e.Branch]; !isLegacy && !branchRE.MatchString(e.Branch) {
+		errs = append(errs, fmt.Errorf("%s: invalid branch %q: must match backport-<package>-<major>.<minor|x> "+
+			"(letters/digits/underscores in package name; "+
 			"no whitespace, quotes, colons, semicolons or other special characters)", id, e.Branch))
 	}
 

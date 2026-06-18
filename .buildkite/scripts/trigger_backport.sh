@@ -86,18 +86,14 @@ main() {
 
     generate_trigger_pipeline "${OLD_INVENTORY}" "${NEW_INVENTORY}" "${dry_run}" "${pr_number}" "${PIPELINE_FILE}"
 
-    rm -f "${OLD_INVENTORY}"
-
     if [[ ! -s "${PIPELINE_FILE}" ]]; then
         echo "No new non-archived entries found, skipping ${label} trigger"
-        rm -f "${PIPELINE_FILE}"
         exit 0
     fi
 
     echo "--- Uploading ${label} trigger(s)"
     cat "${PIPELINE_FILE}"
     buildkite-agent pipeline upload "${PIPELINE_FILE}"
-    rm -f "${PIPELINE_FILE}"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

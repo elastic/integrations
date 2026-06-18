@@ -221,11 +221,48 @@ func TestValidateInventory(t *testing.T) {
 `,
 		},
 		{
-			title: "valid branch with x wildcard and minor",
+			title: "invalid branch — three-component version (major.minor.x)",
 			contents: `backports:
   - package: aws
     branch: backport-aws-6.14.x
     base_version: "6.14.0"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{"invalid branch"},
+		},
+		{
+			title: "invalid branch — three-component version (major.minor.patch)",
+			contents: `backports:
+  - package: aws
+    branch: backport-aws-1.2.3
+    base_version: "1.2.3"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{"invalid branch"},
+		},
+		{
+			title: "legacy branch backport-aws-7.15.0 passes despite three-component version",
+			contents: `backports:
+  - package: aws
+    branch: backport-aws-7.15.0
+    base_version: "7.15.0"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+`,
+		},
+		{
+			title: "legacy branch backport-security_detection_engine-8.9.10 passes despite three-component version",
+			contents: `backports:
+  - package: security_detection_engine
+    branch: backport-security_detection_engine-8.9.10
+    base_version: "8.9.10"
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
