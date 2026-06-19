@@ -560,7 +560,7 @@
                                             "columns": [
                                                 {
                                                     "columnId": "k8s.namespace.name",
-                                                    "fieldName": "@timestamp",
+                                                    "fieldName": "timestamp",
                                                     "meta": {
                                                         "esType": "date",
                                                         "type": "date"
@@ -610,7 +610,7 @@
                                             ],
                                             "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                                             "query": {
-                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.pod.cpu.usage IS NOT NULL\n| STATS pod_cpu = AVG(k8s.pod.cpu.usage)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| STATS cpu_usage = SUM(pod_cpu)\n  BY k8s.cluster.name, k8s.namespace.name, @timestamp\n| SORT @timestamp ASC, cpu_usage DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY @timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, @timestamp, cpu_usage"
+                                                "esql": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.pod.cpu.usage IS NOT NULL\n| STATS pod_cpu = AVG(k8s.pod.cpu.usage)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| STATS cpu_usage = SUM(pod_cpu)\n  BY k8s.cluster.name, k8s.namespace.name, timestamp\n| SORT timestamp ASC, cpu_usage DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, timestamp, cpu_usage"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -620,7 +620,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.pod.cpu.usage IS NOT NULL\n| STATS pod_cpu = AVG(k8s.pod.cpu.usage)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| STATS cpu_usage = SUM(pod_cpu)\n  BY k8s.cluster.name, k8s.namespace.name, @timestamp\n| SORT @timestamp ASC, cpu_usage DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY @timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, @timestamp, cpu_usage"
+                                "esql": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.pod.cpu.usage IS NOT NULL\n| STATS pod_cpu = AVG(k8s.pod.cpu.usage)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| STATS cpu_usage = SUM(pod_cpu)\n  BY k8s.cluster.name, k8s.namespace.name, timestamp\n| SORT timestamp ASC, cpu_usage DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, timestamp, cpu_usage"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -738,7 +738,7 @@
                                         "2910daaf-6daa-46ab-8bfa-227a4984b43c": {
                                             "columns": [
                                                 {
-                                                    "columnId": "@timestamp",
+                                                    "columnId": "timestamp",
                                                     "fieldName": "k8s.namespace.name",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -768,7 +768,7 @@
                                                 },
                                                 {
                                                     "columnId": "d95dada6-dd8e-4b98-a775-d3be096b230a",
-                                                    "fieldName": "@timestamp",
+                                                    "fieldName": "timestamp",
                                                     "label": "",
                                                     "meta": {
                                                         "esType": "date",
@@ -782,7 +782,7 @@
                                                             },
                                                             "indexPattern": "metrics-*",
                                                             "params": {},
-                                                            "sourceField": "@timestamp"
+                                                            "sourceField": "timestamp"
                                                         },
                                                         "type": "date"
                                                     },
@@ -801,7 +801,7 @@
                                             ],
                                             "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                                             "query": {
-                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.pod.memory.working_set IS NOT NULL\n| STATS pod_mem_ws = AVG(k8s.pod.memory.working_set)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| STATS mem_ws = SUM(pod_mem_ws)\n  BY k8s.cluster.name, k8s.namespace.name, @timestamp\n| SORT @timestamp ASC, mem_ws DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY @timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, @timestamp, mem_ws"
+                                                "esql": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.pod.memory.working_set IS NOT NULL\n| STATS pod_mem_ws = AVG(k8s.pod.memory.working_set)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| STATS mem_ws = SUM(pod_mem_ws)\n  BY k8s.cluster.name, k8s.namespace.name, timestamp\n| SORT timestamp ASC, mem_ws DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, timestamp, mem_ws"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -811,7 +811,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.pod.memory.working_set IS NOT NULL\n| STATS pod_mem_ws = AVG(k8s.pod.memory.working_set)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| STATS mem_ws = SUM(pod_mem_ws)\n  BY k8s.cluster.name, k8s.namespace.name, @timestamp\n| SORT @timestamp ASC, mem_ws DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY @timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, @timestamp, mem_ws"
+                                "esql": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.pod.memory.working_set IS NOT NULL\n| STATS pod_mem_ws = AVG(k8s.pod.memory.working_set)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| STATS mem_ws = SUM(pod_mem_ws)\n  BY k8s.cluster.name, k8s.namespace.name, timestamp\n| SORT timestamp ASC, mem_ws DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, timestamp, mem_ws"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -929,7 +929,7 @@
                                         "90e98e6c-6156-4db8-9fc1-53005cd13b97": {
                                             "columns": [
                                                 {
-                                                    "columnId": "@timestamp",
+                                                    "columnId": "timestamp",
                                                     "fieldName": "k8s.namespace.name",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -951,7 +951,7 @@
                                                 },
                                                 {
                                                     "columnId": "99db7c5f-0e89-4c47-9edf-671ee668ce07",
-                                                    "fieldName": "@timestamp",
+                                                    "fieldName": "timestamp",
                                                     "label": "",
                                                     "meta": {
                                                         "esType": "date",
@@ -965,7 +965,7 @@
                                                             },
                                                             "indexPattern": "metrics-*",
                                                             "params": {},
-                                                            "sourceField": "@timestamp"
+                                                            "sourceField": "timestamp"
                                                         },
                                                         "type": "date"
                                                     },
@@ -984,7 +984,7 @@
                                             ],
                                             "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                                             "query": {
-                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n  AND k8s.container.name != \"\"\n  AND k8s.container.restarts IS NOT NULL\n| STATS container_restarts = MAX(k8s.container.restarts)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, k8s.container.name,\n    @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| STATS restarts = SUM(container_restarts)\n  BY k8s.cluster.name, k8s.namespace.name, @timestamp\n| SORT @timestamp ASC, restarts DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY @timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, @timestamp, restarts"
+                                                "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n  AND k8s.container.name != \"\"\n  AND k8s.container.restarts IS NOT NULL\n| STATS container_restarts = MAX(k8s.container.restarts)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, k8s.container.name,\n    timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| STATS restarts = SUM(container_restarts)\n  BY k8s.cluster.name, k8s.namespace.name, timestamp\n| SORT timestamp ASC, restarts DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, timestamp, restarts"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -994,7 +994,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n  AND k8s.container.name != \"\"\n  AND k8s.container.restarts IS NOT NULL\n| STATS container_restarts = MAX(k8s.container.restarts)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, k8s.container.name,\n    @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| STATS restarts = SUM(container_restarts)\n  BY k8s.cluster.name, k8s.namespace.name, @timestamp\n| SORT @timestamp ASC, restarts DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY @timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, @timestamp, restarts"
+                                "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n  AND k8s.container.name != \"\"\n  AND k8s.container.restarts IS NOT NULL\n| STATS container_restarts = MAX(k8s.container.restarts)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, k8s.container.name,\n    timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| STATS restarts = SUM(container_restarts)\n  BY k8s.cluster.name, k8s.namespace.name, timestamp\n| SORT timestamp ASC, restarts DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, timestamp, restarts"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1112,7 +1112,7 @@
                                         "3a1a7f7c-9b4f-435a-b3c2-5709e343b36b": {
                                             "columns": [
                                                 {
-                                                    "columnId": "@timestamp",
+                                                    "columnId": "timestamp",
                                                     "fieldName": "k8s.namespace.name",
                                                     "meta": {
                                                         "esType": "keyword",
@@ -1134,7 +1134,7 @@
                                                 },
                                                 {
                                                     "columnId": "f4cac003-45ba-4062-a074-0d38c3b1431a",
-                                                    "fieldName": "@timestamp",
+                                                    "fieldName": "timestamp",
                                                     "label": "",
                                                     "meta": {
                                                         "esType": "date",
@@ -1148,7 +1148,7 @@
                                                             },
                                                             "indexPattern": "metrics-*",
                                                             "params": {},
-                                                            "sourceField": "@timestamp"
+                                                            "sourceField": "timestamp"
                                                         },
                                                         "type": "date"
                                                     },
@@ -1167,7 +1167,7 @@
                                             ],
                                             "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                                             "query": {
-                                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n  AND k8s.container.name != \"\"\n  AND container.memory.major_page_faults IS NOT NULL\n| STATS container_faults = MAX(container.memory.major_page_faults) - MIN(container.memory.major_page_faults)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, k8s.container.name,\n    @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| STATS oom_events = SUM(container_faults)\n  BY k8s.cluster.name, k8s.namespace.name, @timestamp\n| SORT @timestamp ASC, oom_events DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY @timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, @timestamp, oom_events"
+                                                "esql": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n  AND k8s.container.name != \"\"\n  AND container.memory.major_page_faults IS NOT NULL\n| STATS container_faults = MAX(container.memory.major_page_faults) - MIN(container.memory.major_page_faults)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, k8s.container.name,\n    timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| STATS oom_events = SUM(container_faults)\n  BY k8s.cluster.name, k8s.namespace.name, timestamp\n| SORT timestamp ASC, oom_events DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, timestamp, oom_events"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1177,7 +1177,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n  AND k8s.container.name != \"\"\n  AND container.memory.major_page_faults IS NOT NULL\n| STATS container_faults = MAX(container.memory.major_page_faults) - MIN(container.memory.major_page_faults)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, k8s.container.name,\n    @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| STATS oom_events = SUM(container_faults)\n  BY k8s.cluster.name, k8s.namespace.name, @timestamp\n| SORT @timestamp ASC, oom_events DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY @timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, @timestamp, oom_events"
+                                "esql": "TS metrics-kubeletstatsreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n  AND k8s.container.name != \"\"\n  AND container.memory.major_page_faults IS NOT NULL\n| STATS container_faults = MAX(container.memory.major_page_faults) - MIN(container.memory.major_page_faults)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, k8s.container.name,\n    timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| STATS oom_events = SUM(container_faults)\n  BY k8s.cluster.name, k8s.namespace.name, timestamp\n| SORT timestamp ASC, oom_events DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, timestamp, oom_events"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1350,7 +1350,7 @@
                                             ],
                                             "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                                             "query": {
-                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.name IS NOT NULL\n  AND k8s.pod.name != \"\"\n  AND k8s.pod.phase IS NOT NULL\n| EVAL pod_key = CONCAT(k8s.cluster.name, \":\", k8s.namespace.name, \":\", k8s.pod.name)\n| STATS\n    total_pods = COUNT_DISTINCT(pod_key),\n    running_pods = COUNT_DISTINCT(pod_key) WHERE k8s.pod.phase == 2\n  BY k8s.cluster.name, k8s.namespace.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL non_running_pods = total_pods - running_pods\n| SORT @timestamp ASC, non_running_pods DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY @timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, @timestamp, non_running_pods"
+                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.pod.phase IS NOT NULL\n| STATS phase = MAX(k8s.pod.phase)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid,\n    @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| STATS\n    total_pods = COUNT(*),\n    running_pods = COUNT(*) WHERE phase == 2\n  BY k8s.cluster.name, k8s.namespace.name, @timestamp\n| EVAL non_running_pods = total_pods - running_pods\n| SORT @timestamp ASC, non_running_pods DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY @timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, @timestamp, non_running_pods"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1360,7 +1360,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.name IS NOT NULL\n  AND k8s.pod.name != \"\"\n  AND k8s.pod.phase IS NOT NULL\n| EVAL pod_key = CONCAT(k8s.cluster.name, \":\", k8s.namespace.name, \":\", k8s.pod.name)\n| STATS\n    total_pods = COUNT_DISTINCT(pod_key),\n    running_pods = COUNT_DISTINCT(pod_key) WHERE k8s.pod.phase == 2\n  BY k8s.cluster.name, k8s.namespace.name, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| EVAL non_running_pods = total_pods - running_pods\n| SORT @timestamp ASC, non_running_pods DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY @timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, @timestamp, non_running_pods"
+                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.pod.phase IS NOT NULL\n| STATS phase = MAX(k8s.pod.phase)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid,\n    @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| STATS\n    total_pods = COUNT(*),\n    running_pods = COUNT(*) WHERE phase == 2\n  BY k8s.cluster.name, k8s.namespace.name, @timestamp\n| EVAL non_running_pods = total_pods - running_pods\n| SORT @timestamp ASC, non_running_pods DESC, k8s.namespace.name ASC, k8s.cluster.name ASC\n| LIMIT 10 BY @timestamp\n| KEEP k8s.namespace.name, k8s.cluster.name, @timestamp, non_running_pods"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
