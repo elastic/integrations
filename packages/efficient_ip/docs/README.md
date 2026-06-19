@@ -7,12 +7,10 @@ The EfficientIP integration collects and parses data from [EfficientIP](https://
 
 ## Overview
 
-The EfficientIP integration for Elastic enables collection of event logs from DNS, DHCP and IPAM. This integration enables the
+The EfficientIP integration for Elastic enables collection of event logs from DNS and DHCP. This integration enables the
 following use cases:
 - DNS query monitoring and threat detection
 - DHCP lease management and IP address tracking
-- IPAM auditing and infrastructure compliance
-- Network anomaly identification and security investigations
 
 ### Compatibility
 
@@ -24,14 +22,13 @@ This integration collects the following data types from EfficientIP DDI solution
 
 - **DNS Events**: Query logs, response codes, and DNS transactions
 - **DHCP Events**: Lease assignments, renewals, releases, and IP address allocations
-- **IPAM Events**: Address space changes, subnet modifications, and infrastructure audits
 
 All events are forwarded via syslog and processed through Elastic ingest pipelines for analysis and visualization within the Elastic Stack.
 
 
 ## What do I need to use this integration?
 
-Minimum requierment Elastic stack 9.0.x and EfficientIP version 8.4.7e
+Minimum requirement Elastic stack 9.1.x and EfficientIP version 8.4.7e
 
 
 ## Deployment methods
@@ -79,3 +76,8 @@ To collect logs via UDP, select **Collect logs via UDP** and configure the follo
 - Read Timeout - How long to wait for incoming packets before checking for shutdown
 </details>
 
+### Future updates
+
+Working on future updates:
+- IPAM auditing and infrastructure compliance
+- Network anomaly identification and security investigations
