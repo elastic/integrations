@@ -1,6 +1,6 @@
 # Keeps a deduplicated "latest" view of Ticura indicators for Elastic Security's
 # Indicator Match rules and the Threat Intelligence UI, which read from the
-# logs-ti_ticura_latest.ecs index this transform maintains. The ingest pipeline
+# logs-ti_ticura_latest.indicator index this transform maintains. The ingest pipeline
 # already sets _id to ticura.uuid, so re-ingesting the full feed overwrites each
 # indicator in place within a single backing index. This transform additionally
 # collapses the duplicates that still accumulate across ILM rollovers (where _id
@@ -8,14 +8,14 @@
 # entries via the retention_policy on ticura.ages_out.
 source:
   index:
-    - "logs-ti_ticura.ecs-*"
+    - "logs-ti_ticura.indicator-*"
 # Bump the version suffix on dest.index only for a breaking mapping change, and bump
 # _meta.fleet_transform_version for any change to this config to take effect (the old
 # destination index is not removed automatically).
 dest:
-  index: "logs-ti_ticura_latest.ecs-1"
+  index: "logs-ti_ticura_latest.indicator-1"
   aliases:
-    - alias: "logs-ti_ticura_latest.ecs"
+    - alias: "logs-ti_ticura_latest.indicator"
       move_on_creation: true
 latest:
   unique_key:

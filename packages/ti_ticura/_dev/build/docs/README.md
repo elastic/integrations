@@ -42,7 +42,7 @@ Elastic Agent must be installed. If you have none, check the [Elastic Agent inst
 1. Open Kibana and navigate to **Integrations**.
 2. Search for **Ticura**.
 3. Select **Add Ticura**.
-4. Enter your feed name into **Advanced Options** → **Namespace** — this becomes part of the data-stream name (`logs-ti_ticura.ecs-{namespace}`), so each Ticura feed you configure ends up in its own queryable index. Use lowercase ASCII; the value also appears in the CEL request-tracer filename, the dashboard's `Namespace` control, and any saved searches.
+4. Enter your feed name into **Advanced Options** → **Namespace** — this becomes part of the data-stream name (`logs-ti_ticura.indicator-{namespace}`), so each Ticura feed you configure ends up in its own queryable index. Use lowercase ASCII; the value also appears in the CEL request-tracer filename, the dashboard's `Namespace` control, and any saved searches.
 5. Enter your API key into **Ticura API key**.
 6. Select your **Download Interval** and your **Agent**, then click **Save and continue** to enable the integration.
 
@@ -69,15 +69,15 @@ Each ingested event represents a single indicator of compromise (IOC) and includ
 
 The integration keeps a **deduplicated, automatically-expiring view** of current indicators, so anything Ticura stops publishing disappears without manual cleanup.
 
-1. **Latest-IOC transform** — a continuous transform deduplicates the raw feed by `ticura.uuid` into the `logs-ti_ticura_latest.ecs` index, keeping a single document per indicator (the most recent by `@timestamp`). Because the full feed is re-downloaded on every poll, this collapses the per-poll copies into one current document — the same pattern used by Elastic's other threat-intel integrations.
+1. **Latest-IOC transform** — a continuous transform deduplicates the raw feed by `ticura.uuid` into the `logs-ti_ticura_latest.indicator` index, keeping a single document per indicator (the most recent by `@timestamp`). Because the full feed is re-downloaded on every poll, this collapses the per-poll copies into one current document — the same pattern used by Elastic's other threat-intel integrations.
 2. **Per-indicator expiry** — the transform's retention policy drops an indicator from the latest index once its source-provided `ticura.ages_out` timestamp passes, so expired indicators leave the active view automatically.
-3. **Raw-stream ILM** — the raw `logs-ti_ticura.ecs-*` data stream rolls over every 24 hours and is deleted 1 day after rollover for storage hygiene. The latest index — queried by dashboards, saved searches, and Elastic Security's Indicator Match rules — is the source of truth for "currently active" indicators.
+3. **Raw-stream ILM** — the raw `logs-ti_ticura.indicator-*` data stream rolls over every 24 hours and is deleted 1 day after rollover for storage hygiene. The latest index — queried by dashboards, saved searches, and Elastic Security's Indicator Match rules — is the source of truth for "currently active" indicators.
 
 Raw-stream documents are tagged `labels.is_ioc_transform_source: "true"` and the transform's deduplicated output `"false"`; dashboards and saved searches filter on `labels.is_ioc_transform_source: "false"` to show only the current, non-expired set. Each indicator is stored with its `ticura.uuid` as the document `_id`, so re-ingests overwrite in place instead of duplicating.
 
 **Important — keep the download interval below 24 hours** so every indicator still in the feed is re-ingested before the raw backing index rolls over.
 
-If you need to retain raw indicator history longer (for example, for forensic queries against retired IOCs), increase `delete.min_age` in the ILM policy `logs-ti_ticura.ecs-default_policy`.
+If you need to retain raw indicator history longer (for example, for forensic queries against retired IOCs), increase `delete.min_age` in the ILM policy `logs-ti_ticura.indicator-default_policy`.
 
 ---
 
@@ -214,7 +214,7 @@ The integration maps indicators to the Elastic Common Schema using the `threat.i
 | `event.kind` | `enrichment` |
 | `event.category` | `["threat"]` |
 | `event.type` | `["indicator"]` |
-| `event.dataset` | `ti_ticura.ecs` |
+| `event.dataset` | `ti_ticura.indicator` |
 | `event.module` | `ti_ticura` |
 | `event.provider` | `Ticura` |
 | `observer.vendor` | `Ticura` |
@@ -228,7 +228,7 @@ The integration maps indicators to the Elastic Common Schema using the `threat.i
 | Enrichment | Source | ECS Field(s) Populated |
 |------------|--------|------------------------|
 | Event time | `threat.indicator.last_seen`, falling back to `threat.indicator.first_seen` | `@timestamp` (so Discover shows real per-indicator temporal distribution; `modified_at` is deliberately not used because Ticura assigns it batch-uniformly per scoring run) |
-| Expiry | `ticura.ages_out` | The latest-IOC transform's retention policy removes indicators from `logs-ti_ticura_latest.ecs` once `ages_out` passes |
+| Expiry | `ticura.ages_out` | The latest-IOC transform's retention policy removes indicators from `logs-ti_ticura_latest.indicator` once `ages_out` passes |
 | GeoIP | `threat.indicator.ip` | `threat.indicator.geo.{country_name, city_name, location, ...}` |
 | ASN | `threat.indicator.ip` | `threat.indicator.as.number`, `threat.indicator.as.organization.name` |
 | Hash type | `ticura.sub_type` (`HASHSHA256` / `HASHMD5` / `HASHSHA1`) | `threat.indicator.file.hash.{sha256, md5, sha1}` (defensive fallback when the source omits the typed field) |
@@ -312,7 +312,7 @@ The `merged.{countries, industries, actors}` fields are deduplicated, sorted uni
 
 ### ILM Policy Tuning
 
-The integration ships a single ILM policy `logs-ti_ticura.ecs-default_policy` with the following defaults:
+The integration ships a single ILM policy `logs-ti_ticura.indicator-default_policy` with the following defaults:
 
 ```
 hot:    rollover at max_age: 24h
@@ -332,7 +332,7 @@ Edit the policy via Kibana's **Stack Management → Index Lifecycle Policies**. 
 
 ### Field Provenance
 
-Every document carries `event.dataset: ti_ticura.ecs`, `event.module: ti_ticura`, and `observer.vendor: Ticura` for whole-event provenance.
+Every document carries `event.dataset: ti_ticura.indicator`, `event.module: ti_ticura`, and `observer.vendor: Ticura` for whole-event provenance.
 
 For ECS-canonical fields that the integration may populate by mapping from Ticura-specific fields (for example, `threat.technique.*`, `event.severity`), the original Ticura-namespaced field (`ticura.technique.*`, `ticura.risk`, …) is **always preserved alongside**. The mapping uses `override: false`, so a value Ticura supplied directly in the ECS namespace is **never** overwritten.
 
