@@ -2163,7 +2163,7 @@
                     "xy-layer-top10-duration": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime` IS NOT NULL | STATS avg_latency_s = AVG(`metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`) BY LoadBalancer, cloud.region | SORT avg_latency_s DESC | LIMIT 10"
+                        "esql": "TS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime` IS NOT NULL | STATS avg_latency_s = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`)) BY LoadBalancer, cloud.region | SORT avg_latency_s DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -2192,7 +2192,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime` IS NOT NULL | STATS avg_latency_s = AVG(`metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`) BY LoadBalancer, cloud.region | SORT avg_latency_s DESC | LIMIT 10"
+                "esql": "TS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime` IS NOT NULL | STATS avg_latency_s = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`)) BY LoadBalancer, cloud.region | SORT avg_latency_s DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [

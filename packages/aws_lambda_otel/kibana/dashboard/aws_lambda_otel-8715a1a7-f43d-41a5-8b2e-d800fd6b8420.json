@@ -2074,7 +2074,7 @@
                     "xy-layer-top10-duration": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/Lambda/Duration` IS NOT NULL | STATS avg_duration_ms = AVG(`metrics.amazonaws.com/AWS/Lambda/Duration`) BY FunctionName, cloud.region | SORT avg_duration_ms DESC | LIMIT 10"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/Lambda/Duration` IS NOT NULL | STATS avg_duration_ms = AVG(avg_over_time(`metrics.amazonaws.com/AWS/Lambda/Duration`)) BY FunctionName, cloud.region | SORT avg_duration_ms DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -2103,7 +2103,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/Lambda/Duration` IS NOT NULL | STATS avg_duration_ms = AVG(`metrics.amazonaws.com/AWS/Lambda/Duration`) BY FunctionName, cloud.region | SORT avg_duration_ms DESC | LIMIT 10"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/Lambda/Duration` IS NOT NULL | STATS avg_duration_ms = AVG(avg_over_time(`metrics.amazonaws.com/AWS/Lambda/Duration`)) BY FunctionName, cloud.region | SORT avg_duration_ms DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
