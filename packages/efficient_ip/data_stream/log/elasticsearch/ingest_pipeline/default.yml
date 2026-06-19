@@ -79,6 +79,22 @@ processors:
       field: efficient_ip.log.type
       value: 'AUDIT'
       if: ctx.efficient_ip?.log?.service_name == 'httpd'
+  - set:
+      field: event.kind
+      value: event
+      if: ctx.event?.kind == null
+  - append:
+      field: event.category
+      value: network
+      if: ctx.efficient_ip?.log?.type == 'DHCP' || ctx.efficient_ip?.log?.type == 'DNS'
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: protocol
+      if: ctx.efficient_ip?.log?.type == 'DHCP' || ctx.efficient_ip?.log?.type == 'DNS'
+      allow_duplicates: false
+      ignore_failure: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_dhcp" }}'
       if: ctx.efficient_ip?.log?.type == 'DHCP'
