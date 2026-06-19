@@ -69,11 +69,9 @@ generate_trigger_pipeline() {
         return 1
     fi
 
-    local label_prefix
+    local label_prefix="Backport create"
     if [[ "${dry_run}" == "true" ]]; then
         label_prefix="Backport dry-run"
-    else
-        label_prefix="Backport create"
     fi
 
     while IFS= read -r branch; do
@@ -114,6 +112,7 @@ generate_trigger_pipeline() {
 
         cat >> "${pipeline_file}" <<EOF
   - label: ":git: ${label_prefix}: ${branch}"
+    key: "trigger-backport-${pkg}"
     trigger: "integrations-backport"
     build:
       meta_data:
