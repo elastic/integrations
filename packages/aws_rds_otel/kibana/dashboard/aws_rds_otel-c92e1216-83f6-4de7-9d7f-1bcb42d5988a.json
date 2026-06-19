@@ -94,10 +94,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Database count over time",
-          "description": "Number of RDS instances reporting metrics over time, broken down by health (total / saturated / low_storage / idle / healthy). An instance is classified by the worst signal it reported in that bucket: CPU > 80% is saturated, else FreeStorageSpace < 5 GiB is low_storage, else zero or missing DatabaseConnections is idle, else healthy.",
+          "description": "Count of RDS databases over time, classified per time bucket by health — saturated (CPU > 80%), low-storage (free storage < 5 GiB), idle (no connections), or healthy. A rising saturated series indicates spreading CPU pressure.",
           "attributes": {
             "title": "Database count over time",
-            "description": "Number of RDS instances reporting metrics over time, broken down by health (total / saturated / low_storage / idle / healthy). An instance is classified by the worst signal it reported in that bucket: CPU > 80% is saturated, else FreeStorageSpace < 5 GiB is low_storage, else zero or missing DatabaseConnections is idle, else healthy.",
+            "description": "Count of RDS databases over time, classified per time bucket by health — saturated (CPU > 80%), low-storage (free storage < 5 GiB), idle (no connections), or healthy. A rising saturated series indicates spreading CPU pressure.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -282,10 +282,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Databases",
-          "description": "Per-database metrics aggregated over the selected time range. State column is badge-colored (saturated / low-storage / idle / healthy). Units are formatted per column: CPU as percent, free memory/storage as bytes, connections as max count, Read/Write IOPS as average operations per second, and Read/Write latency as average milliseconds. Click a DB instance cell for the action menu: filter the dashboard, open Performance Insights, or open the RDS console.",
+          "description": "All RDS databases, ranked worst-first by state. Click a database to drill into its metrics. State reflects the latest values within a 5-minute freshness window. Avg CPU, read/write latency, and IOPS are averaged over the selected time range; free memory, free storage, and connections are current (last) values.",
           "attributes": {
             "title": "Databases",
-            "description": "Per-database metrics aggregated over the selected time range. State column is badge-colored (saturated / low-storage / idle / healthy). Units are formatted per column: CPU as percent, free memory/storage as bytes, connections as max count, Read/Write IOPS as average operations per second, and Read/Write latency as average milliseconds. Click a DB instance cell for the action menu: filter the dashboard, open Performance Insights, or open the RDS console.",
+            "description": "All RDS databases, ranked worst-first by state. Click a database to drill into its metrics. State reflects the latest values within a 5-minute freshness window. Avg CPU, read/write latency, and IOPS are averaged over the selected time range; free memory, free storage, and connections are current (last) values.",
             "visualizationType": "lnsDatatable",
             "version": 2,
             "references": [],
@@ -678,10 +678,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Databases by status",
-          "description": "Share of databases by health state (saturated / low-storage / idle / healthy) over the selected time range.",
+          "description": "Share of RDS databases by latest state — saturated (CPU > 80%), low-storage (free storage < 5 GiB), idle (no connections), or healthy. Uses the most recent value per database within a 5-minute freshness window.",
           "attributes": {
             "title": "Databases by status",
-            "description": "Share of databases by health state (saturated / low-storage / idle / healthy) over the selected time range.",
+            "description": "Share of RDS databases by latest state — saturated (CPU > 80%), low-storage (free storage < 5 GiB), idle (no connections), or healthy. Uses the most recent value per database within a 5-minute freshness window.",
             "visualizationType": "lnsPie",
             "version": 2,
             "references": [],
@@ -867,11 +867,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Distinct RDS DB instance identifiers seen in `metrics-aws.rds.otel-*` over the selected time range.",
+          "description": "Total number of RDS databases — distinct DB instance identifiers reporting metrics in the latest collected data for the selected time range.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Distinct RDS DB instance identifiers seen in `metrics-aws.rds.otel-*` over the selected time range.",
+            "description": "Total number of RDS databases — distinct DB instance identifiers reporting metrics in the latest collected data for the selected time range.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -965,11 +965,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Databases whose max `CPUUtilization.max` exceeded 80% in the selected time range.",
+          "description": "Number of saturated RDS databases — those whose latest CPU utilization exceeds 80%, within a 5-minute freshness window. Indicates CPU-bound databases that may slow queries.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Databases whose max `CPUUtilization.max` exceeded 80% in the selected time range.",
+            "description": "Number of saturated RDS databases — those whose latest CPU utilization exceeds 80%, within a 5-minute freshness window. Indicates CPU-bound databases that may slow queries.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1098,11 +1098,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Databases reporting zero active connections in the selected time range.",
+          "description": "Number of idle RDS databases — reporting zero active connections within a 5-minute freshness window. May indicate unused instances.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Databases reporting zero active connections in the selected time range.",
+            "description": "Number of idle RDS databases — reporting zero active connections within a 5-minute freshness window. May indicate unused instances.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1196,11 +1196,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Databases whose lowest observed Average `FreeStorageSpace` dropped below 5 GiB. Aurora instances have null FreeStorageSpace and are excluded.",
+          "description": "Number of low-storage RDS databases — those whose free storage dropped below 5 GiB, within a 5-minute freshness window. At risk of running out of disk. (Aurora instances are excluded — their storage auto-scales.)",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Databases whose lowest observed Average `FreeStorageSpace` dropped below 5 GiB. Aurora instances have null FreeStorageSpace and are excluded.",
+            "description": "Number of low-storage RDS databases — those whose free storage dropped below 5 GiB, within a 5-minute freshness window. At risk of running out of disk. (Aurora instances are excluded — their storage auto-scales.)",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1329,11 +1329,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Databases with at least one active connection and max CPU at most 80%.",
+          "description": "Number of healthy RDS databases — with active connections and CPU at or below 80%, within a 5-minute freshness window.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Databases with at least one active connection and max CPU at most 80%.",
+            "description": "Number of healthy RDS databases — with active connections and CPU at or below 80%, within a 5-minute freshness window.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1427,10 +1427,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Read IOPS (+) / Write IOPS (−)",
-          "description": "Average max read/write IOPS per database over time. Write series negated for visual contrast.",
+          "description": "Read (+) and write (−, mirrored) IOPS per database over time, averaged per bucket. Top 10 databases by read IOPS per bucket. Sustained high values indicate I/O-bound workloads.",
           "attributes": {
             "title": "Read IOPS (+) / Write IOPS (−)",
-            "description": "Average max read/write IOPS per database over time. Write series negated for visual contrast.",
+            "description": "Read (+) and write (−, mirrored) IOPS per database over time, averaged per bucket. Top 10 databases by read IOPS per bucket. Sustained high values indicate I/O-bound workloads.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1559,10 +1559,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Network rx (+) / tx (−) MiB/s",
-          "description": "Average network receive/transmit throughput per database, MiB/s. Tx series negated for visual contrast.",
+          "description": "Network receive (+) and transmit (−, mirrored) throughput per database over time, in MiB/s (averaged per bucket). Top 10 databases by receive throughput per bucket.",
           "attributes": {
             "title": "Network rx (+) / tx (−) MiB/s",
-            "description": "Average network receive/transmit throughput per database, MiB/s. Tx series negated for visual contrast.",
+            "description": "Network receive (+) and transmit (−, mirrored) throughput per database over time, in MiB/s (averaged per bucket). Top 10 databases by receive throughput per bucket.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1691,11 +1691,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Highest `DatabaseConnections` Maximum datapoint across all databases over the selected time range.",
+          "description": "Highest concurrent connections observed on any single database — peak over the selected time range. Approaching an instance's connection limit can reject new clients.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Highest `DatabaseConnections` Maximum datapoint across all databases over the selected time range.",
+            "description": "Highest concurrent connections observed on any single database — peak over the selected time range. Approaching an instance's connection limit can reject new clients.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1789,11 +1789,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Sum across all (non-Aurora) databases of each database's lowest observed Average `FreeStorageSpace`, formatted as bytes.",
+          "description": "Total free storage across all non-Aurora databases — the sum of each database's lowest observed free storage (bytes) over the selected time range. Falling values indicate cluster-wide disk pressure.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Sum across all (non-Aurora) databases of each database's lowest observed Average `FreeStorageSpace`, formatted as bytes.",
+            "description": "Total free storage across all non-Aurora databases — the sum of each database's lowest observed free storage (bytes) over the selected time range. Falling values indicate cluster-wide disk pressure.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1895,10 +1895,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Top 10 databases by max CPU utilization",
-          "description": "Top 10 RDS databases ranked by maximum CPU utilization seen over the dashboard time range.",
+          "description": "Top 10 RDS databases by peak CPU utilization (%) over the selected time range. Reference line at 80% marks the high-CPU threshold; bars crossing it indicate CPU-bound databases.",
           "attributes": {
             "title": "Top 10 databases by max CPU utilization",
-            "description": "Top 10 RDS databases ranked by maximum CPU utilization seen over the dashboard time range.",
+            "description": "Top 10 RDS databases by peak CPU utilization (%) over the selected time range. Reference line at 80% marks the high-CPU threshold; bars crossing it indicate CPU-bound databases.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2012,10 +2012,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Top 10 databases by max connections",
-          "description": "Top 10 RDS databases ranked by maximum concurrent connections seen over the dashboard time range.",
+          "description": "Top 10 RDS databases by peak concurrent connections over the selected time range. Approaching the instance connection limit can reject new clients.",
           "attributes": {
             "title": "Top 10 databases by max connections",
-            "description": "Top 10 RDS databases ranked by maximum concurrent connections seen over the dashboard time range.",
+            "description": "Top 10 RDS databases by peak concurrent connections over the selected time range. Approaching the instance connection limit can reject new clients.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2121,10 +2121,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Top 10 databases by max read IOPS",
-          "description": "Top 10 RDS databases ranked by maximum read IOPS observed over the dashboard time range.",
+          "description": "Top 10 RDS databases by peak read IOPS over the selected time range. High values flag read-heavy databases that may saturate storage throughput.",
           "attributes": {
             "title": "Top 10 databases by max read IOPS",
-            "description": "Top 10 RDS databases ranked by maximum read IOPS observed over the dashboard time range.",
+            "description": "Top 10 RDS databases by peak read IOPS over the selected time range. High values flag read-heavy databases that may saturate storage throughput.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2230,10 +2230,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Freeable memory",
-          "description": "Average FreeableMemory per database over time (CloudWatch Average statistic).",
+          "description": "Average freeable memory per database over time (bytes, averaged per bucket). Top 10 databases by freeable memory per bucket. Low or falling values indicate memory pressure.",
           "attributes": {
             "title": "Freeable memory",
-            "description": "Average FreeableMemory per database over time (CloudWatch Average statistic).",
+            "description": "Average freeable memory per database over time (bytes, averaged per bucket). Top 10 databases by freeable memory per bucket. Low or falling values indicate memory pressure.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2358,10 +2358,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "CPU utilization",
-          "description": "Average max CPU utilization (CloudWatch `CPUUtilization.max`) per database over time.",
+          "description": "Average CPU utilization (%) per database over time (averaged per bucket). Reference line at 80% marks the high-CPU threshold. Top 10 databases by CPU per bucket.",
           "attributes": {
             "title": "CPU utilization",
-            "description": "Average max CPU utilization (CloudWatch `CPUUtilization.max`) per database over time.",
+            "description": "Average CPU utilization (%) per database over time (averaged per bucket). Reference line at 80% marks the high-CPU threshold. Top 10 databases by CPU per bucket.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],

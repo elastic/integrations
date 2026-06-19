@@ -94,11 +94,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Distinct ECS service names seen over the dashboard time range.",
+          "description": "Total number of ECS services — distinct ServiceName values in the latest collected data for the selected time range.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Distinct ECS service names seen over the dashboard time range.",
+            "description": "Total number of ECS services — distinct ServiceName values in the latest collected data for the selected time range.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -193,10 +193,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Services by state",
-          "description": "Distribution of ECS services across saturated / hot / healthy / idle states over the dashboard time range.",
+          "description": "Share of ECS services by latest state — saturated (CPU or memory > 80%), hot (> 50%), idle (CPU < 5%), or healthy. Uses the most recent value per service within a 5-minute freshness window. A growing saturated slice indicates services under resource pressure.",
           "attributes": {
             "title": "Services by state",
-            "description": "Distribution of ECS services across saturated / hot / healthy / idle states over the dashboard time range.",
+            "description": "Share of ECS services by latest state — saturated (CPU or memory > 80%), hot (> 50%), idle (CPU < 5%), or healthy. Uses the most recent value per service within a 5-minute freshness window. A growing saturated slice indicates services under resource pressure.",
             "visualizationType": "lnsPie",
             "version": 2,
             "references": [],
@@ -395,10 +395,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Service count over time (by state)",
-          "description": "Number of ECS services in each state over time.",
+          "description": "Count of ECS services over time, classified per time bucket as saturated, hot, healthy, or idle by peak CPU/memory utilization. Distinct services are counted per bucket. A rising saturated series indicates spreading resource pressure.",
           "attributes": {
             "title": "Service count over time (by state)",
-            "description": "Number of ECS services in each state over time.",
+            "description": "Count of ECS services over time, classified per time bucket as saturated, hot, healthy, or idle by peak CPU/memory utilization. Distinct services are counted per bucket. A rising saturated series indicates spreading resource pressure.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -600,7 +600,7 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Services with max CPU > 80% OR max memory > 80%.",
+          "description": "Number of saturated ECS services — services whose latest CPU or memory utilization exceeds 80%, within a 5-minute freshness window. A non-zero count indicates services under heavy resource pressure that may throttle or be killed.",
           "hide_title": true,
           "attributes": {
             "title": "",
@@ -710,7 +710,7 @@
             },
             "visualizationType": "lnsMetric",
             "version": 2,
-            "description": "Services with max CPU > 80% OR max memory > 80%."
+            "description": "Number of saturated ECS services — services whose latest CPU or memory utilization exceeds 80%, within a 5-minute freshness window. A non-zero count indicates services under heavy resource pressure that may throttle or be killed."
           }
         },
         "panelIndex": "kpi-impaired",
@@ -727,11 +727,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Services with max CPU > 50% OR max memory > 50% (and not saturated).",
+          "description": "Number of hot ECS services — services whose latest CPU or memory utilization is above 50% but not yet saturated (≤ 80%), within a 5-minute freshness window. An early warning of rising resource usage.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Services with max CPU > 50% OR max memory > 50% (and not saturated).",
+            "description": "Number of hot ECS services — services whose latest CPU or memory utilization is above 50% but not yet saturated (≤ 80%), within a 5-minute freshness window. An early warning of rising resource usage.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -861,7 +861,7 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Services with max CPU < 5% over the dashboard time range.",
+          "description": "Number of idle ECS services — services whose latest CPU utilization is under 5%, within a 5-minute freshness window. May indicate over-provisioned or unused services.",
           "hide_title": true,
           "attributes": {
             "title": "",
@@ -936,7 +936,7 @@
             },
             "visualizationType": "lnsMetric",
             "version": 2,
-            "description": "Services with max CPU < 5% over the dashboard time range."
+            "description": "Number of idle ECS services — services whose latest CPU utilization is under 5%, within a 5-minute freshness window. May indicate over-provisioned or unused services."
           }
         },
         "panelIndex": "kpi-stopped",
@@ -953,11 +953,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Services that are neither saturated, hot, nor idle.",
+          "description": "Number of healthy ECS services — services with normal CPU and memory utilization (not saturated, hot, or idle), within a 5-minute freshness window.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Services that are neither saturated, hot, nor idle.",
+            "description": "Number of healthy ECS services — services with normal CPU and memory utilization (not saturated, hot, or idle), within a 5-minute freshness window.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1052,10 +1052,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "ECS services",
-          "description": "Per-service rollups over the selected time range. CPU and memory are CloudWatch Average/Maximum utilization stats; new connections and processed bytes are Sum totals; active connections is averaged from the Average stat. Click the Service cell to filter the entire dashboard. State badge color: red=saturated, amber=hot, green=healthy, grey=idle/no data.",
+          "description": "All ECS services, ranked worst-first by state. Click a service to drill into its metrics. State reflects the latest CPU/memory utilization within a 5-minute freshness window. Avg and Max CPU/memory are the average and peak utilization (%) over the selected time range; connection and processed-bytes columns are summed or averaged over the range.",
           "attributes": {
             "title": "ECS services",
-            "description": "Per-service rollups over the selected time range. CPU and memory are CloudWatch Average/Maximum utilization stats; new connections and processed bytes are Sum totals; active connections is averaged from the Average stat. Click the Service cell to filter the entire dashboard. State badge color: red=saturated, amber=hot, green=healthy, grey=idle/no data.",
+            "description": "All ECS services, ranked worst-first by state. Click a service to drill into its metrics. State reflects the latest CPU/memory utilization within a 5-minute freshness window. Avg and Max CPU/memory are the average and peak utilization (%) over the selected time range; connection and processed-bytes columns are summed or averaged over the range.",
             "visualizationType": "lnsDatatable",
             "version": 2,
             "references": [],
@@ -1514,11 +1514,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Sum of NewConnectionCount across all Service Connect-enabled services over the dashboard time range.",
+          "description": "Total new Service Connect connections across all ECS services, summed over the selected time range. Grows as the range widens.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Sum of NewConnectionCount across all Service Connect-enabled services over the dashboard time range.",
+            "description": "Total new Service Connect connections across all ECS services, summed over the selected time range. Grows as the range widens.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1606,11 +1606,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Average ActiveConnectionCount across Service Connect-enabled services over the selected time range.",
+          "description": "Average concurrent Service Connect connections across ECS services, averaged over the selected time range.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Average ActiveConnectionCount across Service Connect-enabled services over the selected time range.",
+            "description": "Average concurrent Service Connect connections across ECS services, averaged over the selected time range.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1698,10 +1698,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Service Connect bytes processed",
-          "description": "Total ECS Service Connect ProcessedBytes per service, over time.",
+          "description": "Service Connect bytes processed per service over time — ProcessedBytes summed per time bucket (bytes). Limited to the top 10 services by processed bytes per bucket.",
           "attributes": {
             "title": "Service Connect bytes processed",
-            "description": "Total ECS Service Connect ProcessedBytes per service, over time.",
+            "description": "Service Connect bytes processed per service over time — ProcessedBytes summed per time bucket (bytes). Limited to the top 10 services by processed bytes per bucket.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1826,10 +1826,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "New connections (+) / avg active connections (−)",
-          "description": "NewConnectionCount Sum (top) and ActiveConnectionCount Average (bottom, mirrored) per service over time.",
+          "description": "New Service Connect connections (+, summed per bucket) and average active connections (−, mirrored) per service over time. Top 10 services by new connections per bucket.",
           "attributes": {
             "title": "New connections (+) / avg active connections (−)",
-            "description": "NewConnectionCount Sum (top) and ActiveConnectionCount Average (bottom, mirrored) per service over time.",
+            "description": "New Service Connect connections (+, summed per bucket) and average active connections (−, mirrored) per service over time. Top 10 services by new connections per bucket.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1964,10 +1964,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Top 10 services by max CPU utilization",
-          "description": "Top 10 ECS services ranked by maximum CPUUtilization seen over the dashboard time range.",
+          "description": "Top 10 ECS services by peak CPU utilization (%) over the selected time range (maximum per service). Reference line at 80% marks the high-CPU threshold; bars crossing it indicate services under sustained CPU pressure.",
           "attributes": {
             "title": "Top 10 services by max CPU utilization",
-            "description": "Top 10 ECS services ranked by maximum CPUUtilization seen over the dashboard time range.",
+            "description": "Top 10 ECS services by peak CPU utilization (%) over the selected time range (maximum per service). Reference line at 80% marks the high-CPU threshold; bars crossing it indicate services under sustained CPU pressure.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2081,10 +2081,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Top 10 services by max memory utilization",
-          "description": "Top 10 ECS services ranked by maximum MemoryUtilization seen over the dashboard time range.",
+          "description": "Top 10 ECS services by peak memory utilization (%) over the selected time range. Bars approaching 100% risk out-of-memory task kills.",
           "attributes": {
             "title": "Top 10 services by max memory utilization",
-            "description": "Top 10 ECS services ranked by maximum MemoryUtilization seen over the dashboard time range.",
+            "description": "Top 10 ECS services by peak memory utilization (%) over the selected time range. Bars approaching 100% risk out-of-memory task kills.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2198,10 +2198,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Top 10 services by new connections",
-          "description": "Top 10 ECS services ranked by total ECS Service Connect NewConnectionCount (sum) over the dashboard time range.",
+          "description": "Top 10 ECS services by total new Service Connect connections, summed over the selected time range.",
           "attributes": {
             "title": "Top 10 services by new connections",
-            "description": "Top 10 ECS services ranked by total ECS Service Connect NewConnectionCount (sum) over the dashboard time range.",
+            "description": "Top 10 ECS services by total new Service Connect connections, summed over the selected time range.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2307,10 +2307,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Memory utilization",
-          "description": "Average MemoryUtilization per service, over time.",
+          "description": "Average memory utilization (%) per service over time (averaged per time bucket). Reference line at 80% marks the high-memory threshold. Top 10 services by memory per bucket; sustained values above the line risk OOM task kills.",
           "attributes": {
             "title": "Memory utilization",
-            "description": "Average MemoryUtilization per service, over time.",
+            "description": "Average memory utilization (%) per service over time (averaged per time bucket). Reference line at 80% marks the high-memory threshold. Top 10 services by memory per bucket; sustained values above the line risk OOM task kills.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2474,10 +2474,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "CPU utilization",
-          "description": "Average CPUUtilization per service, over time.",
+          "description": "Average CPU utilization (%) per service over time (averaged per time bucket). Reference line at 80% marks the high-CPU threshold. Top 10 services by CPU per bucket.",
           "attributes": {
             "title": "CPU utilization",
-            "description": "Average CPUUtilization per service, over time.",
+            "description": "Average CPU utilization (%) per service over time (averaged per time bucket). Reference line at 80% marks the high-CPU threshold. Top 10 services by CPU per bucket.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],

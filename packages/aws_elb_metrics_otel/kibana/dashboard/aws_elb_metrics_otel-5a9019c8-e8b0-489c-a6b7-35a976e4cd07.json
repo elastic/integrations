@@ -94,10 +94,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Load balancer count over time",
-          "description": "Distinct load balancers observed in each dashboard time bucket, classified by target 5xx errors and target health.",
+          "description": "Count of load balancers over time, classified per time bucket by health — erroring (target 5xx > 0), degraded (unhealthy hosts or rejected connections), healthy, or idle. Distinct load balancers are counted per bucket. A rising erroring series indicates spreading backend failures.",
           "attributes": {
             "title": "Load balancer count over time",
-            "description": "Distinct load balancers observed in each dashboard time bucket, classified by target 5xx errors and target health.",
+            "description": "Count of load balancers over time, classified per time bucket by health — erroring (target 5xx > 0), degraded (unhealthy hosts or rejected connections), healthy, or idle. Distinct load balancers are counted per bucket. A rising erroring series indicates spreading backend failures.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -303,10 +303,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Load Balancers",
-          "description": "Per-LB summary table over the selected time range. Requests and processed bytes use Sum statistics; target 5xx uses HTTPCode_Target_5XX_Count; rejected connections use the Maximum statistic; latency uses Average/Maximum TargetResponseTime.",
+          "description": "All load balancers, ranked worst-first by health. Click a load balancer to drill into its metrics. State reflects the latest health within a 5-minute freshness window. Total requests and target 5xx are summed over the selected time range; latency columns are the average and peak backend response time (seconds) over the range.",
           "attributes": {
             "title": "Load Balancers",
-            "description": "Per-LB summary table over the selected time range. Requests and processed bytes use Sum statistics; target 5xx uses HTTPCode_Target_5XX_Count; rejected connections use the Maximum statistic; latency uses Average/Maximum TargetResponseTime.",
+            "description": "All load balancers, ranked worst-first by health. Click a load balancer to drill into its metrics. State reflects the latest health within a 5-minute freshness window. Total requests and target 5xx are summed over the selected time range; latency columns are the average and peak backend response time (seconds) over the range.",
             "visualizationType": "lnsDatatable",
             "version": 2,
             "references": [],
@@ -686,10 +686,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Load balancers by health",
-          "description": "Donut of load balancers grouped by overall health (healthy / degraded / unhealthy). Health derived from HealthyHostCount vs UnHealthyHostCount per LB.",
+          "description": "Share of load balancers by latest health — erroring (target 5xx > 0), degraded (unhealthy hosts or rejected connections), healthy, or idle. Uses the most recent value per load balancer within a 5-minute freshness window. A growing erroring slice indicates active backend failures.",
           "attributes": {
             "title": "Load balancers by health",
-            "description": "Donut of load balancers grouped by overall health (healthy / degraded / unhealthy). Health derived from HealthyHostCount vs UnHealthyHostCount per LB.",
+            "description": "Share of load balancers by latest health — erroring (target 5xx > 0), degraded (unhealthy hosts or rejected connections), healthy, or idle. Uses the most recent value per load balancer within a 5-minute freshness window. A growing erroring slice indicates active backend failures.",
             "visualizationType": "lnsPie",
             "version": 2,
             "references": [],
@@ -893,7 +893,7 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Total distinct load balancers reporting metrics in the selected time range (`COUNT_DISTINCT(region/load-balancer)`).",
+          "description": "Total number of load balancers — distinct load balancers reporting metrics in the latest collected data for the selected time range.",
           "hide_title": true,
           "attributes": {
             "title": "",
@@ -969,7 +969,7 @@
             },
             "visualizationType": "lnsMetric",
             "version": 2,
-            "description": "Total distinct load balancers reporting metrics in the selected time range (`COUNT_DISTINCT(region/load-balancer)`)."
+            "description": "Total number of load balancers — distinct load balancers reporting metrics in the latest collected data for the selected time range."
           }
         },
         "panelIndex": "kpi-impaired",
@@ -986,11 +986,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Load balancers with backend 5xx responses (`SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) > 0`) in the selected time range — same `lb_state` taxonomy as the `Load balancers by health` pie.",
+          "description": "Number of erroring load balancers — those whose latest data shows backend (target) 5xx responses, within a 5-minute freshness window. A non-zero count indicates active backend failures.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Load balancers with backend 5xx responses (`SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)) > 0`) in the selected time range — same `lb_state` taxonomy as the `Load balancers by health` pie.",
+            "description": "Number of erroring load balancers — those whose latest data shows backend (target) 5xx responses, within a 5-minute freshness window. A non-zero count indicates active backend failures.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1121,7 +1121,7 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Load balancers with unhealthy hosts but no 5xx errors (`MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)) > 0`) — `lb_state == \"degraded\"` bucket of the pie.",
+          "description": "Number of degraded load balancers — those with unhealthy hosts or rejected connections but no 5xx errors, within a 5-minute freshness window. Indicates reduced backend capacity.",
           "hide_title": true,
           "attributes": {
             "title": "",
@@ -1232,7 +1232,7 @@
             },
             "visualizationType": "lnsMetric",
             "version": 2,
-            "description": "Load balancers with unhealthy hosts but no 5xx errors (`MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)) > 0`) — `lb_state == \"degraded\"` bucket of the pie."
+            "description": "Number of degraded load balancers — those with unhealthy hosts or rejected connections but no 5xx errors, within a 5-minute freshness window. Indicates reduced backend capacity."
           }
         },
         "panelIndex": "kpi-stopped",
@@ -1249,11 +1249,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Load balancers reporting metrics but no healthy / unhealthy hosts and no errors (`lb_state == \"idle\"` bucket of the pie). Expected for newly-provisioned or quiescent LBs.",
+          "description": "Number of idle load balancers — reporting metrics but serving no traffic, with no healthy/unhealthy hosts or errors, within a 5-minute freshness window.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Load balancers reporting metrics but no healthy / unhealthy hosts and no errors (`lb_state == \"idle\"` bucket of the pie). Expected for newly-provisioned or quiescent LBs.",
+            "description": "Number of idle load balancers — reporting metrics but serving no traffic, with no healthy/unhealthy hosts or errors, within a 5-minute freshness window.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1349,11 +1349,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Load balancers with healthy hosts and no errors or degraded targets (`lb_state == \"healthy\"` bucket of the pie).",
+          "description": "Number of healthy load balancers — those with healthy hosts and no errors or degraded targets, within a 5-minute freshness window.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Load balancers with healthy hosts and no errors or degraded targets (`lb_state == \"healthy\"` bucket of the pie).",
+            "description": "Number of healthy load balancers — those with healthy hosts and no errors or degraded targets, within a 5-minute freshness window.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1449,11 +1449,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Total requests (period)",
-          "description": "Sum of RequestCount over the full dashboard time range.",
+          "description": "Total requests across all load balancers, summed over the selected time range. Grows as the range widens.",
           "hide_title": true,
           "attributes": {
             "title": "Total requests (period)",
-            "description": "Sum of RequestCount over the full dashboard time range.",
+            "description": "Total requests across all load balancers, summed over the selected time range. Grows as the range widens.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1540,11 +1540,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Total processed bytes",
-          "description": "Sum of ApplicationELB ProcessedBytes over the full dashboard time range.",
+          "description": "Total bytes processed across all load balancers, summed over the selected time range (bytes). Grows as the range widens.",
           "hide_title": true,
           "attributes": {
             "title": "Total processed bytes",
-            "description": "Sum of ApplicationELB ProcessedBytes over the full dashboard time range.",
+            "description": "Total bytes processed across all load balancers, summed over the selected time range (bytes). Grows as the range widens.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1639,10 +1639,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Requests (+) / target 5xx (−) over time",
-          "description": "Stacked over time: positive = total RequestCount; negative = target 5xx responses.",
+          "description": "Request count (+) and backend (target) 5xx responses (−, mirrored) per load balancer over time, summed per bucket. Top 10 load balancers by requests per bucket. A growing negative band indicates rising backend errors.",
           "attributes": {
             "title": "Requests (+) / target 5xx (−) over time",
-            "description": "Stacked over time: positive = total RequestCount; negative = target 5xx responses.",
+            "description": "Request count (+) and backend (target) 5xx responses (−, mirrored) per load balancer over time, summed per bucket. Top 10 load balancers by requests per bucket. A growing negative band indicates rising backend errors.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1771,10 +1771,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "HTTP responses over time",
-          "description": "Target HTTP response codes over time, stacked: 2xx (success, green), 4xx (client errors, yellow), 5xx (server errors, red), summed across load balancers. Filter the dashboard by a load balancer to drill into one.",
+          "description": "Target HTTP responses over time, stacked and summed per bucket: 2xx (success, green), 4xx (client errors, yellow), 5xx (server errors, red). A rising 5xx band indicates backend failures; rising 4xx indicates client or request problems.",
           "attributes": {
             "title": "HTTP responses over time",
-            "description": "Target HTTP response codes over time, stacked: 2xx (success, green), 4xx (client errors, yellow), 5xx (server errors, red), summed across load balancers. Filter the dashboard by a load balancer to drill into one.",
+            "description": "Target HTTP responses over time, stacked and summed per bucket: 2xx (success, green), 4xx (client errors, yellow), 5xx (server errors, red). A rising 5xx band indicates backend failures; rising 4xx indicates client or request problems.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1920,10 +1920,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Top 10 LBs by requests",
-          "description": "Top 10 load balancers ranked by total RequestCount in the dashboard time range.",
+          "description": "Top 10 load balancers by total request count, summed over the selected time range.",
           "attributes": {
             "title": "Top 10 LBs by requests",
-            "description": "Top 10 load balancers ranked by total RequestCount in the dashboard time range.",
+            "description": "Top 10 load balancers by total request count, summed over the selected time range.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2029,10 +2029,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Top 10 LBs by backend 5xx errors",
-          "description": "Top 10 load balancers ranked by total HTTPCode_Target_5XX in the dashboard time range.",
+          "description": "Top 10 load balancers by total backend (target) 5xx responses, summed over the selected time range. High values flag failing backends.",
           "attributes": {
             "title": "Top 10 LBs by backend 5xx errors",
-            "description": "Top 10 load balancers ranked by total HTTPCode_Target_5XX in the dashboard time range.",
+            "description": "Top 10 load balancers by total backend (target) 5xx responses, summed over the selected time range. High values flag failing backends.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2138,10 +2138,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Top 10 LBs by avg latency (s)",
-          "description": "Top 10 load balancers ranked by average backend Latency in the dashboard time range.",
+          "description": "Top 10 load balancers by average backend response time (seconds) over the selected time range. High values indicate slow backends.",
           "attributes": {
             "title": "Top 10 LBs by avg latency (s)",
-            "description": "Top 10 load balancers ranked by average backend Latency in the dashboard time range.",
+            "description": "Top 10 load balancers by average backend response time (seconds) over the selected time range. High values indicate slow backends.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2247,10 +2247,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Active connections over time (sum)",
-          "description": "Total ApplicationELB ActiveConnectionCount over time across all LBs. Use as the primary capacity signal — fluctuates with load.",
+          "description": "Total active connections across all load balancers over time, summed per bucket. A primary traffic/capacity indicator; sustained growth signals rising load.",
           "attributes": {
             "title": "Active connections over time (sum)",
-            "description": "Total ApplicationELB ActiveConnectionCount over time across all LBs. Use as the primary capacity signal — fluctuates with load.",
+            "description": "Total active connections across all load balancers over time, summed per bucket. A primary traffic/capacity indicator; sustained growth signals rising load.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2379,10 +2379,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Avg latency (s)",
-          "description": "Average backend latency over time across all LBs.",
+          "description": "Average backend response time (seconds) per load balancer over time (averaged per bucket). Top 10 load balancers by latency per bucket; sustained high values indicate slow backends.",
           "attributes": {
             "title": "Avg latency (s)",
-            "description": "Average backend latency over time across all LBs.",
+            "description": "Average backend response time (seconds) per load balancer over time (averaged per bucket). Top 10 load balancers by latency per bucket; sustained high values indicate slow backends.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2497,10 +2497,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Rejected connections over time",
-          "description": "Max/total ApplicationELB RejectedConnectionCount over time across all load balancers. Non-zero values indicate the load balancer rejected connection attempts.",
+          "description": "Rejected connections across all load balancers over time, summed per bucket. Any non-zero value means the load balancer hit a connection limit and dropped requests.",
           "attributes": {
             "title": "Rejected connections over time",
-            "description": "Max/total ApplicationELB RejectedConnectionCount over time across all load balancers. Non-zero values indicate the load balancer rejected connection attempts.",
+            "description": "Rejected connections across all load balancers over time, summed per bucket. Any non-zero value means the load balancer hit a connection limit and dropped requests.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],

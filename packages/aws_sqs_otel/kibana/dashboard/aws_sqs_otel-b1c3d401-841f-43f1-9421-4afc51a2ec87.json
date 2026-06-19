@@ -94,10 +94,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Queue count over time",
-          "description": "Number of SQS queues over time, broken down by state (total / stale / backlogged / healthy / idle).",
+          "description": "Count of SQS queues over time, classified per time bucket by state — stale (oldest message > 5 min), backlogged (> 1000 visible), healthy, or idle. A rising stale or backlogged series indicates consumers falling behind.",
           "attributes": {
             "title": "Queue count over time",
-            "description": "Number of SQS queues over time, broken down by state (total / stale / backlogged / healthy / idle).",
+            "description": "Count of SQS queues over time, classified per time bucket by state — stale (oldest message > 5 min), backlogged (> 1000 visible), healthy, or idle. A rising stale or backlogged series indicates consumers falling behind.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -287,10 +287,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Queues",
-          "description": "Per-queue metrics aggregated over the selected time range. State column is badge-colored (stale / backlogged / healthy / idle). Click a Queue name cell for the action menu: filter the dashboard by that queue, or open the SQS console (each opens a new tab).",
+          "description": "All SQS queues, ranked worst-first by state. Click a queue to drill into its metrics. State reflects the latest values within a 5-minute freshness window. Sent, received, deleted, and empty-receives are totals summed over the selected time range; depth, in-flight, and oldest-message-age are peak (max) values over the range.",
           "attributes": {
             "title": "Queues",
-            "description": "Per-queue metrics aggregated over the selected time range. State column is badge-colored (stale / backlogged / healthy / idle). Click a Queue name cell for the action menu: filter the dashboard by that queue, or open the SQS console (each opens a new tab).",
+            "description": "All SQS queues, ranked worst-first by state. Click a queue to drill into its metrics. State reflects the latest values within a 5-minute freshness window. Sent, received, deleted, and empty-receives are totals summed over the selected time range; depth, in-flight, and oldest-message-age are peak (max) values over the range.",
             "visualizationType": "lnsDatatable",
             "version": 2,
             "references": [],
@@ -657,10 +657,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Queues by status",
-          "description": "Share of queues by health state (stale / backlogged / healthy / idle) over the selected time range.",
+          "description": "Share of SQS queues by latest state — stale (oldest message > 5 min), backlogged (> 1000 visible), healthy, or idle. Uses the most recent value per queue within a 5-minute freshness window.",
           "attributes": {
             "title": "Queues by status",
-            "description": "Share of queues by health state (stale / backlogged / healthy / idle) over the selected time range.",
+            "description": "Share of SQS queues by latest state — stale (oldest message > 5 min), backlogged (> 1000 visible), healthy, or idle. Uses the most recent value per queue within a 5-minute freshness window.",
             "visualizationType": "lnsPie",
             "version": 2,
             "references": [],
@@ -846,11 +846,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Total queues",
-          "description": "Distinct SQS queues reporting metrics in the dashboard time range.",
+          "description": "Total number of SQS queues — distinct queues reporting metrics in the latest collected data for the selected time range.",
           "hide_title": true,
           "attributes": {
             "title": "Total queues",
-            "description": "Distinct SQS queues reporting metrics in the dashboard time range.",
+            "description": "Total number of SQS queues — distinct queues reporting metrics in the latest collected data for the selected time range.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1055,10 +1055,10 @@
             },
             "visualizationType": "lnsMetric",
             "version": 2,
-            "description": "Number of SQS queues whose oldest message age maxed above 5 minutes — indicates consumers falling behind or DLQ-bound traffic."
+            "description": "Number of SQS queues whose oldest message exceeded 5 minutes, within a 5-minute freshness window. Indicates consumers not keeping up or stuck."
           },
           "title": "Queues with stale messages (>5 min)",
-          "description": "Number of SQS queues whose oldest message age maxed above 5 minutes — indicates consumers falling behind or DLQ-bound traffic.",
+          "description": "Number of SQS queues whose oldest message exceeded 5 minutes, within a 5-minute freshness window. Indicates consumers not keeping up or stuck.",
           "hide_title": true,
           "drilldowns": []
         },
@@ -1077,7 +1077,7 @@
         "embeddableConfig": {
           "attributes": {
             "title": "Backlogged queues (>1000 visible)",
-            "description": "Number of SQS queues whose visible message count maxed above 1000 — indicates queue depth growing faster than consumption.",
+            "description": "Number of SQS queues with more than 1000 visible messages, within a 5-minute freshness window. Indicates queue depth building up faster than it drains.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1197,7 +1197,7 @@
             }
           },
           "title": "Backlogged queues (>1000 visible)",
-          "description": "Number of SQS queues whose visible message count maxed above 1000 — indicates queue depth growing faster than consumption.",
+          "description": "Number of SQS queues with more than 1000 visible messages, within a 5-minute freshness window. Indicates queue depth building up faster than it drains.",
           "hide_title": true,
           "drilldowns": []
         },
@@ -1291,10 +1291,10 @@
             },
             "visualizationType": "lnsMetric",
             "version": 2,
-            "description": "Number of SQS queues that received no messages during the dashboard time range."
+            "description": "Number of SQS queues that received no messages over the selected time range. May indicate unused queues."
           },
           "title": "Idle queues",
-          "description": "Number of SQS queues that received no messages during the dashboard time range.",
+          "description": "Number of SQS queues that received no messages over the selected time range. May indicate unused queues.",
           "hide_title": true,
           "drilldowns": []
         },
@@ -1313,7 +1313,7 @@
         "embeddableConfig": {
           "attributes": {
             "title": "Healthy queues",
-            "description": "Queues that are actively producing messages, with oldest message age <=5 min and queue depth <=1000.",
+            "description": "Number of SQS queues actively producing messages with oldest-message age ≤ 5 min and depth below the backlog threshold, within a 5-minute freshness window.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1398,7 +1398,7 @@
             }
           },
           "title": "Healthy queues",
-          "description": "Queues that are actively producing messages, with oldest message age <=5 min and queue depth <=1000.",
+          "description": "Number of SQS queues actively producing messages with oldest-message age ≤ 5 min and depth below the backlog threshold, within a 5-minute freshness window.",
           "hide_title": true,
           "drilldowns": []
         },
@@ -1416,11 +1416,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Total messages sent",
-          "description": "Total number of messages enqueued across all SQS queues during the dashboard time range.",
+          "description": "Total messages enqueued across all SQS queues, summed over the selected time range. Grows as the range widens.",
           "hide_title": true,
           "attributes": {
             "title": "Total messages sent",
-            "description": "Total number of messages enqueued across all SQS queues during the dashboard time range.",
+            "description": "Total messages enqueued across all SQS queues, summed over the selected time range. Grows as the range widens.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1507,11 +1507,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Total messages deleted",
-          "description": "Total number of messages successfully processed (deleted) across all SQS queues during the dashboard time range.",
+          "description": "Total messages successfully processed (deleted) across all SQS queues, summed over the selected time range. Compare with sent to gauge whether consumers keep up.",
           "hide_title": true,
           "attributes": {
             "title": "Total messages deleted",
-            "description": "Total number of messages successfully processed (deleted) across all SQS queues during the dashboard time range.",
+            "description": "Total messages successfully processed (deleted) across all SQS queues, summed over the selected time range. Compare with sent to gauge whether consumers keep up.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1598,10 +1598,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Sent (+) / Deleted (−) over time",
-          "description": "Producer rate (Sent, positive) vs consumer rate (Deleted, negative) over time. Widening gap signals backlog growth.",
+          "description": "Messages sent (+, producer) and deleted (−, consumer; mirrored) per queue over time, summed per bucket. Top 10 queues by messages sent per bucket. A widening gap (more sent than deleted) indicates a growing backlog.",
           "attributes": {
             "title": "Sent (+) / Deleted (−) over time",
-            "description": "Producer rate (Sent, positive) vs consumer rate (Deleted, negative) over time. Widening gap signals backlog growth.",
+            "description": "Messages sent (+, producer) and deleted (−, consumer; mirrored) per queue over time, summed per bucket. Top 10 queues by messages sent per bucket. A widening gap (more sent than deleted) indicates a growing backlog.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1730,10 +1730,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Visible (+) / Not visible (−) over time",
-          "description": "Queue depth (ready, positive) vs in-flight messages currently being processed (not_visible, negative) over time.",
+          "description": "Visible/ready messages (+) and in-flight/not-visible messages (−, mirrored) per queue over time, peak per bucket. Top 10 queues by visible depth per bucket. Rising visible messages indicate consumers falling behind.",
           "attributes": {
             "title": "Visible (+) / Not visible (−) over time",
-            "description": "Queue depth (ready, positive) vs in-flight messages currently being processed (not_visible, negative) over time.",
+            "description": "Visible/ready messages (+) and in-flight/not-visible messages (−, mirrored) per queue over time, peak per bucket. Top 10 queues by visible depth per bucket. Rising visible messages indicate consumers falling behind.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1862,10 +1862,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Top 10 queues by messages sent",
-          "description": "Top 10 SQS queues ranked by total messages sent over the dashboard time range.",
+          "description": "Top 10 SQS queues by total messages sent, summed over the selected time range.",
           "attributes": {
             "title": "Top 10 queues by messages sent",
-            "description": "Top 10 SQS queues ranked by total messages sent over the dashboard time range.",
+            "description": "Top 10 SQS queues by total messages sent, summed over the selected time range.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1971,10 +1971,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Top 10 queues by oldest message age (s)",
-          "description": "Top 10 SQS queues ranked by max oldest-message age over the dashboard time range.",
+          "description": "Top 10 SQS queues by peak oldest-message age (seconds) over the selected time range. High values indicate messages waiting too long.",
           "attributes": {
             "title": "Top 10 queues by oldest message age (s)",
-            "description": "Top 10 SQS queues ranked by max oldest-message age over the dashboard time range.",
+            "description": "Top 10 SQS queues by peak oldest-message age (seconds) over the selected time range. High values indicate messages waiting too long.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2080,10 +2080,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Top 10 queues by depth (visible messages)",
-          "description": "Top 10 SQS queues ranked by max visible-message depth over the dashboard time range.",
+          "description": "Top 10 SQS queues by peak visible-message depth over the selected time range. High values indicate a backlog.",
           "attributes": {
             "title": "Top 10 queues by depth (visible messages)",
-            "description": "Top 10 SQS queues ranked by max visible-message depth over the dashboard time range.",
+            "description": "Top 10 SQS queues by peak visible-message depth over the selected time range. High values indicate a backlog.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2189,10 +2189,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Oldest message age (s)",
-          "description": "Maximum age of the oldest message currently in each queue, over time. Spikes indicate consumer lag.",
+          "description": "Peak age of the oldest message per queue over time (seconds, max per bucket). Reference line at 300s marks the staleness threshold. Top 10 queues by oldest-message age per bucket; spikes indicate consumers stalled or too slow.",
           "attributes": {
             "title": "Oldest message age (s)",
-            "description": "Maximum age of the oldest message currently in each queue, over time. Spikes indicate consumer lag.",
+            "description": "Peak age of the oldest message per queue over time (seconds, max per bucket). Reference line at 300s marks the staleness threshold. Top 10 queues by oldest-message age per bucket; spikes indicate consumers stalled or too slow.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2348,10 +2348,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Queue depth (visible messages)",
-          "description": "Maximum number of visible (ready-to-be-consumed) messages per queue, over time.",
+          "description": "Peak visible (ready-to-consume) messages per queue over time (max per bucket). Reference line at 1000 marks the backlog threshold. Top 10 queues by depth per bucket; sustained growth indicates consumers falling behind producers.",
           "attributes": {
             "title": "Queue depth (visible messages)",
-            "description": "Maximum number of visible (ready-to-be-consumed) messages per queue, over time.",
+            "description": "Peak visible (ready-to-consume) messages per queue over time (max per bucket). Reference line at 1000 marks the backlog threshold. Top 10 queues by depth per bucket; sustained growth indicates consumers falling behind producers.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],

@@ -94,11 +94,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Distinct EC2 InstanceId values seen in `metrics-aws.ec2.otel-*` over the selected time range.",
+          "description": "Total number of EC2 instances — distinct InstanceId values in the latest collected data for the selected time range.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Distinct EC2 InstanceId values seen in `metrics-aws.ec2.otel-*` over the selected time range.",
+            "description": "Total number of EC2 instances — distinct InstanceId values in the latest collected data for the selected time range.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -192,10 +192,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Instances by status",
-          "description": "Share of instances with explicit healthy/impaired status checks, plus no-data instances where the status metric is missing.",
+          "description": "Share of EC2 instances by latest status-check result — impaired (StatusCheckFailed > 0), healthy (= 0), or no data (metric missing). Uses the most recent value per instance within a 5-minute freshness window. A growing impaired slice indicates spreading status-check failures.",
           "attributes": {
             "title": "Instances by status (checks)",
-            "description": "Share of instances with explicit healthy/impaired status checks, plus no-data instances where the status metric is missing.",
+            "description": "Share of EC2 instances by latest status-check result — impaired (StatusCheckFailed > 0), healthy (= 0), or no data (metric missing). Uses the most recent value per instance within a 5-minute freshness window. A growing impaired slice indicates spreading status-check failures.",
             "visualizationType": "lnsPie",
             "version": 2,
             "references": [],
@@ -364,10 +364,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "EC2 instance count over time",
-          "description": "Distinct EC2 instances observed in each dashboard time bucket, classified as healthy, impaired, or no data based on status-check telemetry.",
+          "description": "Count of EC2 instances over time, classified per time bucket as impaired (StatusCheckFailed > 0), healthy (= 0), or no data (metric missing). Distinct instances are counted per bucket, so totals track how many instances reported in each interval. A rising impaired series indicates spreading failures.",
           "attributes": {
             "title": "EC2 instance count over time",
-            "description": "Distinct EC2 instances observed in each dashboard time bucket, classified as healthy, impaired, or no data based on status-check telemetry.",
+            "description": "Count of EC2 instances over time, classified per time bucket as impaired (StatusCheckFailed > 0), healthy (= 0), or no data (metric missing). Distinct instances are counted per bucket, so totals track how many instances reported in each interval. A rising impaired series indicates spreading failures.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -536,7 +536,7 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Distinct InstanceId with at least one failed status check (`StatusCheckFailed.max > 0`).",
+          "description": "Number of impaired EC2 instances — distinct instances whose latest StatusCheckFailed is greater than 0, within a 5-minute freshness window. A non-zero count indicates instances failing EC2 status checks and likely unreachable.",
           "hide_title": true,
           "attributes": {
             "title": "",
@@ -644,7 +644,8 @@
               "needsRefresh": false
             },
             "visualizationType": "lnsMetric",
-            "version": 2
+            "version": 2,
+            "description": "Number of impaired EC2 instances — distinct instances whose latest StatusCheckFailed is greater than 0, within a 5-minute freshness window. A non-zero count indicates instances failing EC2 status checks and likely unreachable."
           }
         },
         "panelIndex": "kpi-impaired",
@@ -661,11 +662,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Distinct running EC2 instances that never reported a failed status check across the selected time range (MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)) == 0). Strict complement of the impaired KPI.",
+          "description": "Number of healthy EC2 instances — distinct instances whose latest StatusCheckFailed is 0, within a 5-minute freshness window.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Distinct running EC2 instances that never reported a failed status check across the selected time range (MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)) == 0). Strict complement of the impaired KPI.",
+            "description": "Number of healthy EC2 instances — distinct instances whose latest StatusCheckFailed is 0, within a 5-minute freshness window.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -759,10 +760,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "EC2 instances",
-          "description": "Per-instance roll-up sorted impaired-first. The State column is badge-coloured and shows no data when StatusCheckFailed is missing.",
+          "description": "All EC2 instances, ranked impaired first (worst first). Click an instance to drill into its metrics. State reflects the latest StatusCheckFailed within a 5-minute freshness window (impaired > 0, healthy = 0, otherwise no data). Max CPU is the peak utilization (%) over the selected time range; disk-write-ops and network/disk byte columns are averaged per CloudWatch period over the range.",
           "attributes": {
             "title": "EC2 instances",
-            "description": "Per-instance roll-up sorted impaired-first. The State column is badge-coloured and shows no data when StatusCheckFailed is missing.",
+            "description": "All EC2 instances, ranked impaired first (worst first). Click an instance to drill into its metrics. State reflects the latest StatusCheckFailed within a 5-minute freshness window (impaired > 0, healthy = 0, otherwise no data). Max CPU is the peak utilization (%) over the selected time range; disk-write-ops and network/disk byte columns are averaged per CloudWatch period over the range.",
             "visualizationType": "lnsDatatable",
             "version": 2,
             "references": [],
@@ -1153,11 +1154,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Total Network In summed across instances; formatted as bytes.",
+          "description": "Total inbound network traffic (bytes) across all EC2 instances, summed over the selected time range. Grows as the range widens.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Total Network In summed across instances; formatted as bytes.",
+            "description": "Total inbound network traffic (bytes) across all EC2 instances, summed over the selected time range. Grows as the range widens.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1252,11 +1253,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Total Network Out summed across instances; formatted as bytes.",
+          "description": "Total outbound network traffic (bytes) across all EC2 instances, summed over the selected time range. Grows as the range widens.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Total Network Out summed across instances; formatted as bytes.",
+            "description": "Total outbound network traffic (bytes) across all EC2 instances, summed over the selected time range. Grows as the range widens.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -1351,10 +1352,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Network in (+) / out (−)",
-          "description": "Average EC2 NetworkIn and NetworkOut bytes per CloudWatch sample period. Out series negated.",
+          "description": "Inbound (+) and outbound (−) network traffic per instance over time, in bytes per CloudWatch period (averaged per time bucket). Outbound is negated for mirrored comparison. Limited to the top 10 instances by inbound traffic per bucket.",
           "attributes": {
             "title": "Network in (+) / out (−)",
-            "description": "Average EC2 NetworkIn and NetworkOut bytes per CloudWatch sample period. Out series negated.",
+            "description": "Inbound (+) and outbound (−) network traffic per instance over time, in bytes per CloudWatch period (averaged per time bucket). Outbound is negated for mirrored comparison. Limited to the top 10 instances by inbound traffic per bucket.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1499,10 +1500,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Disk read (+) / write (−)",
-          "description": "Average EC2 disk read and write byte volume per CloudWatch sample period. Write series negated.",
+          "description": "Disk read (+) and write (−) volume per instance over time, in bytes per CloudWatch period (averaged per time bucket). Write is negated. Top 10 instances by read volume per bucket. Sustained high values indicate I/O-heavy workloads.",
           "attributes": {
             "title": "Disk read (+) / write (−)",
-            "description": "Average EC2 disk read and write byte volume per CloudWatch sample period. Write series negated.",
+            "description": "Disk read (+) and write (−) volume per instance over time, in bytes per CloudWatch period (averaged per time bucket). Write is negated. Top 10 instances by read volume per bucket. Sustained high values indicate I/O-heavy workloads.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1647,10 +1648,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Top 10 instances by max CPU utilization",
-          "description": "Top 10 EC2 instances ranked by max CPU utilization across the dashboard time range. **High-CPU threshold: 80%** — any bar at or above that value is over the limit.",
+          "description": "Top 10 EC2 instances by peak CPU utilization (%) over the selected time range (maximum per instance). Reference line at 80% marks the high-CPU threshold; bars crossing it indicate sustained CPU pressure that can throttle workloads.",
           "attributes": {
             "title": "Top 10 instances by max CPU utilization",
-            "description": "Top 10 EC2 instances ranked by max CPU utilization across the dashboard time range. **High-CPU threshold: 80%** — any bar at or above that value is over the limit.",
+            "description": "Top 10 EC2 instances by peak CPU utilization (%) over the selected time range (maximum per instance). Reference line at 80% marks the high-CPU threshold; bars crossing it indicate sustained CPU pressure that can throttle workloads.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1765,10 +1766,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Top 10 instances by avg network in / period",
-          "description": "Top 10 EC2 instances ranked by average NetworkIn bytes per CloudWatch metric period over the selected time range.",
+          "description": "Top 10 EC2 instances by average inbound network traffic (bytes per CloudWatch period) over the selected time range. Highlights the busiest receivers.",
           "attributes": {
             "title": "Top 10 instances by avg network in / period",
-            "description": "Top 10 EC2 instances ranked by average NetworkIn bytes per CloudWatch metric period over the selected time range.",
+            "description": "Top 10 EC2 instances by average inbound network traffic (bytes per CloudWatch period) over the selected time range. Highlights the busiest receivers.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1882,10 +1883,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Top 10 instances by total disk writes",
-          "description": "Top 10 EC2 instances ranked by cumulative DiskWriteBytes over the dashboard time range.",
+          "description": "Top 10 EC2 instances by total disk write volume (bytes), summed over the selected time range. High values flag write-heavy instances that may saturate EBS throughput.",
           "attributes": {
             "title": "Top 10 instances by total disk writes",
-            "description": "Top 10 EC2 instances ranked by cumulative DiskWriteBytes over the dashboard time range.",
+            "description": "Top 10 EC2 instances by total disk write volume (bytes), summed over the selected time range. High values flag write-heavy instances that may saturate EBS throughput.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1999,10 +2000,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Disk write operations by instance",
-          "description": "Average EC2 DiskWriteOps per instance over time. Higher values indicate instances writing more frequently to attached storage.",
+          "description": "Disk write operations per instance over time — average DiskWriteOps per CloudWatch period (averaged per time bucket). Top 10 instances by write ops per bucket. Rising values indicate increasing write activity to attached storage.",
           "attributes": {
             "title": "Disk write operations by instance",
-            "description": "Average EC2 DiskWriteOps per instance over time. Higher values indicate instances writing more frequently to attached storage.",
+            "description": "Disk write operations per instance over time — average DiskWriteOps per CloudWatch period (averaged per time bucket). Top 10 instances by write ops per bucket. Rising values indicate increasing write activity to attached storage.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2120,10 +2121,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Max CPU utilization over time",
-          "description": "Per-instance max CPU utilization over time. Dashed red line at 80% marks the high-CPU threshold.",
+          "description": "Peak CPU utilization (%) per instance over time — the maximum within each time bucket. Reference line at 80% marks the high-CPU threshold. Top 10 instances by peak CPU per bucket; sustained values above the line indicate CPU saturation.",
           "attributes": {
             "title": "Max CPU utilization over time",
-            "description": "Per-instance max CPU utilization over time. Dashed red line at 80% marks the high-CPU threshold.",
+            "description": "Peak CPU utilization (%) per instance over time — the maximum within each time bucket. Reference line at 80% marks the high-CPU threshold. Top 10 instances by peak CPU per bucket; sustained values above the line indicate CPU saturation.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -2293,11 +2294,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Distinct running EC2 instances currently reporting metrics but with no StatusCheckFailed signal (grey / no data) within the recency window.",
+          "description": "Number of EC2 instances reporting metrics but with no StatusCheckFailed signal in the latest 5-minute window (shown as “no data”). A high count can indicate instances not emitting status-check metrics rather than truly healthy ones.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Distinct running EC2 instances currently reporting metrics but with no StatusCheckFailed signal (grey / no data) within the recency window.",
+            "description": "Number of EC2 instances reporting metrics but with no StatusCheckFailed signal in the latest 5-minute window (shown as “no data”). A high count can indicate instances not emitting status-check metrics rather than truly healthy ones.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
