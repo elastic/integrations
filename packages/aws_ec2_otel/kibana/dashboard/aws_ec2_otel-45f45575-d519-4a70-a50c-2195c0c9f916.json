@@ -424,7 +424,7 @@
                     "xy-layer-chart-ec2-count": {
                       "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
                       "query": {
-                        "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | STATS failed_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | EVAL state = CASE(failed_max > 0, \"impaired\", failed_max == 0, \"healthy\", \"no data\") | STATS total = COUNT(*), healthy = COUNT(*) WHERE state == \"healthy\", impaired = COUNT(*) WHERE state == \"impaired\", no_data = COUNT(*) WHERE state == \"no data\" BY timestamp | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | STATS failed_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | EVAL state = CASE(failed_max > 0, \"impaired\", failed_max == 0, \"healthy\", \"no data\") | STATS total = COUNT(*), impaired = COUNT(*) WHERE state == \"impaired\", healthy = COUNT(*) WHERE state == \"healthy\", no_data = COUNT(*) WHERE state == \"no data\" BY timestamp | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -447,9 +447,9 @@
                           "customLabel": true
                         },
                         {
-                          "columnId": "healthy",
-                          "fieldName": "healthy",
-                          "label": "Healthy",
+                          "columnId": "impaired",
+                          "fieldName": "impaired",
+                          "label": "Impaired",
                           "meta": {
                             "type": "number",
                             "esType": "long"
@@ -458,9 +458,9 @@
                           "customLabel": true
                         },
                         {
-                          "columnId": "impaired",
-                          "fieldName": "impaired",
-                          "label": "Impaired",
+                          "columnId": "healthy",
+                          "fieldName": "healthy",
+                          "label": "Healthy",
                           "meta": {
                             "type": "number",
                             "esType": "long"
@@ -494,7 +494,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | STATS failed_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | EVAL state = CASE(failed_max > 0, \"impaired\", failed_max == 0, \"healthy\", \"no data\") | STATS total = COUNT(*), healthy = COUNT(*) WHERE state == \"healthy\", impaired = COUNT(*) WHERE state == \"impaired\", no_data = COUNT(*) WHERE state == \"no data\" BY timestamp | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | STATS failed_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | EVAL state = CASE(failed_max > 0, \"impaired\", failed_max == 0, \"healthy\", \"no data\") | STATS total = COUNT(*), impaired = COUNT(*) WHERE state == \"impaired\", healthy = COUNT(*) WHERE state == \"healthy\", no_data = COUNT(*) WHERE state == \"no data\" BY timestamp | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [

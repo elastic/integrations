@@ -441,7 +441,7 @@
                     "xy-layer-chart-lambda-count": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), f_err = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)), f_thr = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | EVAL state = CASE(f_err > 0, \"erroring\", f_thr > 0, \"throttled\", f_inv > 0, \"healthy\", \"idle\") | STATS total = COUNT(*), healthy = COUNT(*) WHERE state == \"healthy\", erroring = COUNT(*) WHERE state == \"erroring\", throttled = COUNT(*) WHERE state == \"throttled\", idle = COUNT(*) WHERE state == \"idle\" BY timestamp | SORT timestamp ASC"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), f_err = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)), f_thr = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | EVAL state = CASE(f_err > 0, \"erroring\", f_thr > 0, \"throttled\", f_inv > 0, \"healthy\", \"idle\") | STATS total = COUNT(*), erroring = COUNT(*) WHERE state == \"erroring\", throttled = COUNT(*) WHERE state == \"throttled\", healthy = COUNT(*) WHERE state == \"healthy\", idle = COUNT(*) WHERE state == \"idle\" BY timestamp | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -464,17 +464,6 @@
                           "customLabel": true
                         },
                         {
-                          "columnId": "healthy",
-                          "fieldName": "healthy",
-                          "label": "Healthy",
-                          "meta": {
-                            "type": "number",
-                            "esType": "long"
-                          },
-                          "inMetricDimension": true,
-                          "customLabel": true
-                        },
-                        {
                           "columnId": "erroring",
                           "fieldName": "erroring",
                           "label": "Erroring",
@@ -489,6 +478,17 @@
                           "columnId": "throttled",
                           "fieldName": "throttled",
                           "label": "Throttled",
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true,
+                          "customLabel": true
+                        },
+                        {
+                          "columnId": "healthy",
+                          "fieldName": "healthy",
+                          "label": "Healthy",
                           "meta": {
                             "type": "number",
                             "esType": "long"
@@ -522,7 +522,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), f_err = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)), f_thr = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | EVAL state = CASE(f_err > 0, \"erroring\", f_thr > 0, \"throttled\", f_inv > 0, \"healthy\", \"idle\") | STATS total = COUNT(*), healthy = COUNT(*) WHERE state == \"healthy\", erroring = COUNT(*) WHERE state == \"erroring\", throttled = COUNT(*) WHERE state == \"throttled\", idle = COUNT(*) WHERE state == \"idle\" BY timestamp | SORT timestamp ASC"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), f_err = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)), f_thr = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | EVAL state = CASE(f_err > 0, \"erroring\", f_thr > 0, \"throttled\", f_inv > 0, \"healthy\", \"idle\") | STATS total = COUNT(*), erroring = COUNT(*) WHERE state == \"erroring\", throttled = COUNT(*) WHERE state == \"throttled\", healthy = COUNT(*) WHERE state == \"healthy\", idle = COUNT(*) WHERE state == \"idle\" BY timestamp | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
