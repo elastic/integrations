@@ -1168,7 +1168,7 @@
                     "layer-kpi-net-in": {
                       "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
                       "query": {
-                        "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL | WHERE stat == \"Sum\" | STATS net_in = SUM(`metrics.amazonaws.com/AWS/EC2/NetworkIn`)"
+                        "esql": "TS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL | WHERE stat == \"Sum\" | STATS net_in = SUM(sum_over_time(`metrics.amazonaws.com/AWS/EC2/NetworkIn`))"
                       },
                       "columns": [
                         {
@@ -1198,7 +1198,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL | WHERE stat == \"Sum\" | STATS net_in = SUM(`metrics.amazonaws.com/AWS/EC2/NetworkIn`)"
+                "esql": "TS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL | WHERE stat == \"Sum\" | STATS net_in = SUM(sum_over_time(`metrics.amazonaws.com/AWS/EC2/NetworkIn`))"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-in",
@@ -1661,7 +1661,7 @@
                     "xy-layer-top10-cpu": {
                       "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
                       "query": {
-                        "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL | STATS peak_cpu = MAX(`metrics.amazonaws.com/AWS/EC2/CPUUtilization`) / 100.0 BY InstanceId, cloud.region | SORT peak_cpu DESC | LIMIT 10"
+                        "esql": "TS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL | STATS peak_cpu = MAX(max_over_time(`metrics.amazonaws.com/AWS/EC2/CPUUtilization`)) / 100.0 BY InstanceId, cloud.region | SORT peak_cpu DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -1698,7 +1698,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL | STATS peak_cpu = MAX(`metrics.amazonaws.com/AWS/EC2/CPUUtilization`) / 100.0 BY InstanceId, cloud.region | SORT peak_cpu DESC | LIMIT 10"
+                "esql": "TS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL | STATS peak_cpu = MAX(max_over_time(`metrics.amazonaws.com/AWS/EC2/CPUUtilization`)) / 100.0 BY InstanceId, cloud.region | SORT peak_cpu DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -2013,7 +2013,7 @@
                     "xy-layer-chart-memory": {
                       "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
                       "query": {
-                        "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/DiskWriteOps` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/EC2/DiskWriteOps`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC"
+                        "esql": "TS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/DiskWriteOps` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/DiskWriteOps`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -2050,7 +2050,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/DiskWriteOps` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/EC2/DiskWriteOps`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC"
+                "esql": "TS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/DiskWriteOps` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/DiskWriteOps`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -2134,7 +2134,7 @@
                     "xy-layer-chart-cpu": {
                       "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
                       "query": {
-                        "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = MAX(`metrics.amazonaws.com/AWS/EC2/CPUUtilization`) / 100.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC"
+                        "esql": "TS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/EC2/CPUUtilization`)) / 100.0 BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -2199,7 +2199,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = MAX(`metrics.amazonaws.com/AWS/EC2/CPUUtilization`) / 100.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC"
+                "esql": "TS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/CPUUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/EC2/CPUUtilization`)) / 100.0 BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [

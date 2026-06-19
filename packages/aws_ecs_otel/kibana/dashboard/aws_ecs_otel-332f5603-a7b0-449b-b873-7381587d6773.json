@@ -1529,7 +1529,7 @@
                     "layer-kpi-net-in": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/NewConnectionCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS new_conn = SUM(`metrics.amazonaws.com/AWS/ECS/NewConnectionCount`) | KEEP new_conn"
+                        "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/NewConnectionCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS new_conn = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ECS/NewConnectionCount`)) | KEEP new_conn"
                       },
                       "columns": [
                         {
@@ -1551,7 +1551,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/NewConnectionCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS new_conn = SUM(`metrics.amazonaws.com/AWS/ECS/NewConnectionCount`) | KEEP new_conn"
+                "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/NewConnectionCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS new_conn = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ECS/NewConnectionCount`)) | KEEP new_conn"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-in",
@@ -1621,7 +1621,7 @@
                     "layer-kpi-net-out": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount` IS NOT NULL | WHERE stat == \"Average\" | STATS active_conn_avg = AVG(`metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`) | KEEP active_conn_avg"
+                        "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount` IS NOT NULL | WHERE stat == \"Average\" | STATS active_conn_avg = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`)) | KEEP active_conn_avg"
                       },
                       "columns": [
                         {
@@ -1643,7 +1643,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount` IS NOT NULL | WHERE stat == \"Average\" | STATS active_conn_avg = AVG(`metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`) | KEEP active_conn_avg"
+                "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount` IS NOT NULL | WHERE stat == \"Average\" | STATS active_conn_avg = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`)) | KEEP active_conn_avg"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-out",
@@ -1712,7 +1712,7 @@
                     "xy-layer-chart-net": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ProcessedBytes` IS NOT NULL | WHERE stat == \"Sum\" | STATS col_bytes = SUM(`metrics.amazonaws.com/AWS/ECS/ProcessedBytes`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC"
+                        "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ProcessedBytes` IS NOT NULL | WHERE stat == \"Sum\" | STATS col_bytes = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ECS/ProcessedBytes`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -1757,7 +1757,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ProcessedBytes` IS NOT NULL | WHERE stat == \"Sum\" | STATS col_bytes = SUM(`metrics.amazonaws.com/AWS/ECS/ProcessedBytes`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC"
+                "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ProcessedBytes` IS NOT NULL | WHERE stat == \"Sum\" | STATS col_bytes = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ECS/ProcessedBytes`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -1978,7 +1978,7 @@
                     "xy-layer-top10-cpu": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | STATS peak_cpu = MAX(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_cpu DESC | LIMIT 10"
+                        "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | STATS peak_cpu = MAX(max_over_time(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`)) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_cpu DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -2015,7 +2015,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | STATS peak_cpu = MAX(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_cpu DESC | LIMIT 10"
+                "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | STATS peak_cpu = MAX(max_over_time(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`)) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_cpu DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -2095,7 +2095,7 @@
                     "xy-layer-top10-netin": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL | STATS peak_mem = MAX(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_mem DESC | LIMIT 10"
+                        "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL | STATS peak_mem = MAX(max_over_time(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`)) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_mem DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -2132,7 +2132,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL | STATS peak_mem = MAX(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_mem DESC | LIMIT 10"
+                "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL | STATS peak_mem = MAX(max_over_time(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`)) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_mem DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -2212,7 +2212,7 @@
                     "xy-layer-top10-ebswrite": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/ECS/NewConnectionCount` IS NOT NULL | STATS total_new_conn = SUM(`metrics.amazonaws.com/AWS/ECS/NewConnectionCount`) BY ServiceName, ClusterName, cloud.region | SORT total_new_conn DESC | LIMIT 10"
+                        "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/ECS/NewConnectionCount` IS NOT NULL | STATS total_new_conn = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ECS/NewConnectionCount`)) BY ServiceName, ClusterName, cloud.region | SORT total_new_conn DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -2241,7 +2241,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/ECS/NewConnectionCount` IS NOT NULL | STATS total_new_conn = SUM(`metrics.amazonaws.com/AWS/ECS/NewConnectionCount`) BY ServiceName, ClusterName, cloud.region | SORT total_new_conn DESC | LIMIT 10"
+                "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/ECS/NewConnectionCount` IS NOT NULL | STATS total_new_conn = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ECS/NewConnectionCount`)) BY ServiceName, ClusterName, cloud.region | SORT total_new_conn DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [

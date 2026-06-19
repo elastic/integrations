@@ -206,7 +206,7 @@
                     "pie-layer-chart-status-donut": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`), f_err = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`), f_thr = SUM(`metrics.amazonaws.com/AWS/Lambda/Throttles`) BY FunctionName, cloud.region | EVAL lambda_state = CASE(f_err > 0, \"erroring\", f_thr > 0, \"throttled\", f_inv > 0, \"healthy\", \"idle\") | STATS functions = COUNT(*) BY lambda_state"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), f_err = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)), f_thr = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)) BY FunctionName, cloud.region | EVAL lambda_state = CASE(f_err > 0, \"erroring\", f_thr > 0, \"throttled\", f_inv > 0, \"healthy\", \"idle\") | STATS functions = COUNT(*) BY lambda_state"
                       },
                       "columns": [
                         {
@@ -245,7 +245,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`), f_err = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`), f_thr = SUM(`metrics.amazonaws.com/AWS/Lambda/Throttles`) BY FunctionName, cloud.region | EVAL lambda_state = CASE(f_err > 0, \"erroring\", f_thr > 0, \"throttled\", f_inv > 0, \"healthy\", \"idle\") | STATS functions = COUNT(*) BY lambda_state"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), f_err = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)), f_thr = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)) BY FunctionName, cloud.region | EVAL lambda_state = CASE(f_err > 0, \"erroring\", f_thr > 0, \"throttled\", f_inv > 0, \"healthy\", \"idle\") | STATS functions = COUNT(*) BY lambda_state"
               },
               "visualization": {
                 "shape": "donut",
@@ -395,7 +395,7 @@
                     "xy-layer-chart-lambda-count": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`), f_err = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`), f_thr = SUM(`metrics.amazonaws.com/AWS/Lambda/Throttles`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), FunctionName, cloud.region | EVAL state = CASE(f_err > 0, \"erroring\", f_thr > 0, \"throttled\", f_inv > 0, \"healthy\", \"idle\") | STATS total = COUNT(*), healthy = COUNT(*) WHERE state == \"healthy\", erroring = COUNT(*) WHERE state == \"erroring\", throttled = COUNT(*) WHERE state == \"throttled\", idle = COUNT(*) WHERE state == \"idle\" BY timestamp | SORT timestamp ASC"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), f_err = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)), f_thr = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | EVAL state = CASE(f_err > 0, \"erroring\", f_thr > 0, \"throttled\", f_inv > 0, \"healthy\", \"idle\") | STATS total = COUNT(*), healthy = COUNT(*) WHERE state == \"healthy\", erroring = COUNT(*) WHERE state == \"erroring\", throttled = COUNT(*) WHERE state == \"throttled\", idle = COUNT(*) WHERE state == \"idle\" BY timestamp | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -476,7 +476,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`), f_err = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`), f_thr = SUM(`metrics.amazonaws.com/AWS/Lambda/Throttles`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), FunctionName, cloud.region | EVAL state = CASE(f_err > 0, \"erroring\", f_thr > 0, \"throttled\", f_inv > 0, \"healthy\", \"idle\") | STATS total = COUNT(*), healthy = COUNT(*) WHERE state == \"healthy\", erroring = COUNT(*) WHERE state == \"erroring\", throttled = COUNT(*) WHERE state == \"throttled\", idle = COUNT(*) WHERE state == \"idle\" BY timestamp | SORT timestamp ASC"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), f_err = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)), f_thr = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | EVAL state = CASE(f_err > 0, \"erroring\", f_thr > 0, \"throttled\", f_inv > 0, \"healthy\", \"idle\") | STATS total = COUNT(*), healthy = COUNT(*) WHERE state == \"healthy\", erroring = COUNT(*) WHERE state == \"erroring\", throttled = COUNT(*) WHERE state == \"throttled\", idle = COUNT(*) WHERE state == \"idle\" BY timestamp | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -581,7 +581,7 @@
                     "layer-kpi-impaired": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_err = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`) BY FunctionName, cloud.region | STATS impaired = COUNT(*) WHERE f_err > 0 | KEEP impaired"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_err = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY FunctionName, cloud.region | STATS impaired = COUNT(*) WHERE f_err > 0 | KEEP impaired"
                       },
                       "columns": [
                         {
@@ -610,7 +610,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_err = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`) BY FunctionName, cloud.region | STATS impaired = COUNT(*) WHERE f_err > 0 | KEEP impaired"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_err = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY FunctionName, cloud.region | STATS impaired = COUNT(*) WHERE f_err > 0 | KEEP impaired"
               },
               "visualization": {
                 "layerId": "layer-kpi-impaired",
@@ -710,7 +710,7 @@
                     "layer-kpi-pending": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_thr = SUM(`metrics.amazonaws.com/AWS/Lambda/Throttles`) BY FunctionName, cloud.region | STATS pending = COUNT(*) WHERE f_thr > 0 | KEEP pending"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_thr = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)) BY FunctionName, cloud.region | STATS pending = COUNT(*) WHERE f_thr > 0 | KEEP pending"
                       },
                       "columns": [
                         {
@@ -739,7 +739,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_thr = SUM(`metrics.amazonaws.com/AWS/Lambda/Throttles`) BY FunctionName, cloud.region | STATS pending = COUNT(*) WHERE f_thr > 0 | KEEP pending"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_thr = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)) BY FunctionName, cloud.region | STATS pending = COUNT(*) WHERE f_thr > 0 | KEEP pending"
               },
               "visualization": {
                 "layerId": "layer-kpi-pending",
@@ -840,7 +840,7 @@
                     "layer-kpi-stopped": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`) BY FunctionName, cloud.region | STATS stopped = COUNT(*) WHERE f_inv == 0 OR f_inv IS NULL | KEEP stopped"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)) BY FunctionName, cloud.region | STATS stopped = COUNT(*) WHERE f_inv == 0 OR f_inv IS NULL | KEEP stopped"
                       },
                       "columns": [
                         {
@@ -869,7 +869,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`) BY FunctionName, cloud.region | STATS stopped = COUNT(*) WHERE f_inv == 0 OR f_inv IS NULL | KEEP stopped"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)) BY FunctionName, cloud.region | STATS stopped = COUNT(*) WHERE f_inv == 0 OR f_inv IS NULL | KEEP stopped"
               },
               "visualization": {
                 "layerId": "layer-kpi-stopped",
@@ -934,7 +934,7 @@
                     "layer-kpi-running": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`), f_err = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`), f_thr = SUM(`metrics.amazonaws.com/AWS/Lambda/Throttles`) BY FunctionName, cloud.region | STATS healthy = COUNT(*) WHERE f_inv > 0 AND (f_err == 0 OR f_err IS NULL) AND (f_thr == 0 OR f_thr IS NULL) | KEEP healthy"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), f_err = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)), f_thr = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)) BY FunctionName, cloud.region | STATS healthy = COUNT(*) WHERE f_inv > 0 AND (f_err == 0 OR f_err IS NULL) AND (f_thr == 0 OR f_thr IS NULL) | KEEP healthy"
                       },
                       "columns": [
                         {
@@ -963,7 +963,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`), f_err = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`), f_thr = SUM(`metrics.amazonaws.com/AWS/Lambda/Throttles`) BY FunctionName, cloud.region | STATS healthy = COUNT(*) WHERE f_inv > 0 AND (f_err == 0 OR f_err IS NULL) AND (f_thr == 0 OR f_thr IS NULL) | KEEP healthy"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_inv = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), f_err = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)), f_thr = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)) BY FunctionName, cloud.region | STATS healthy = COUNT(*) WHERE f_inv > 0 AND (f_err == 0 OR f_err IS NULL) AND (f_thr == 0 OR f_thr IS NULL) | KEEP healthy"
               },
               "visualization": {
                 "layerId": "layer-kpi-running",
@@ -1400,7 +1400,7 @@
                     "layer-kpi-net-in": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS invocations_total = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`)"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS invocations_total = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`))"
                       },
                       "columns": [
                         {
@@ -1422,7 +1422,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS invocations_total = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`)"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS invocations_total = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`))"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-in",
@@ -1491,7 +1491,7 @@
                     "layer-kpi-net-out": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS errors_total = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`)"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS errors_total = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`))"
                       },
                       "columns": [
                         {
@@ -1513,7 +1513,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS errors_total = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`)"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS errors_total = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`))"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-out",
@@ -1581,7 +1581,7 @@
                     "xy-layer-chart-net": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`), errors = -SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), errors = -SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -1629,7 +1629,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`), errors = -SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), errors = -SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -1713,7 +1713,7 @@
                     "xy-layer-chart-disk": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS throttles = SUM(`metrics.amazonaws.com/AWS/Lambda/Throttles`), async_dropped = -SUM(`metrics.amazonaws.com/AWS/Lambda/AsyncEventsDropped`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS throttles = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)), async_dropped = -SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/AsyncEventsDropped`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -1761,7 +1761,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS throttles = SUM(`metrics.amazonaws.com/AWS/Lambda/Throttles`), async_dropped = -SUM(`metrics.amazonaws.com/AWS/Lambda/AsyncEventsDropped`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS throttles = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)), async_dropped = -SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/AsyncEventsDropped`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -1845,7 +1845,7 @@
                     "xy-layer-top10-invocations": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL | STATS invocations = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`) BY FunctionName, cloud.region | SORT invocations DESC | LIMIT 10"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)) BY FunctionName, cloud.region | SORT invocations DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -1874,7 +1874,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL | STATS invocations = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`) BY FunctionName, cloud.region | SORT invocations DESC | LIMIT 10"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)) BY FunctionName, cloud.region | SORT invocations DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -1954,7 +1954,7 @@
                     "xy-layer-top10-errors": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL | STATS errors = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`) BY FunctionName, cloud.region | SORT errors DESC | LIMIT 10"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL | STATS errors = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY FunctionName, cloud.region | SORT errors DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -1983,7 +1983,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL | STATS errors = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`) BY FunctionName, cloud.region | SORT errors DESC | LIMIT 10"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL | STATS errors = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY FunctionName, cloud.region | SORT errors DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -2290,7 +2290,7 @@
                     "xy-layer-chart-cpu": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" AND `metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions` IS NOT NULL | WHERE stat == \"Maximum\" | STATS metric = MAX(`metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" AND `metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions` IS NOT NULL | WHERE stat == \"Maximum\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -2325,7 +2325,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" AND `metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions` IS NOT NULL | WHERE stat == \"Maximum\" | STATS metric = MAX(`metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" AND `metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions` IS NOT NULL | WHERE stat == \"Maximum\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
