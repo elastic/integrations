@@ -253,7 +253,7 @@
                     "pie-layer-chart-status-donut": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS services = COUNT(*) BY state"
+                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS services = COUNT(*) BY state"
                       },
                       "columns": [
                         {
@@ -292,7 +292,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS services = COUNT(*) BY state"
+                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS services = COUNT(*) BY state"
               },
               "visualization": {
                 "shape": "donut",
@@ -455,7 +455,7 @@
                     "xy-layer-chart-ec2-count": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS cpu_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_max IS NULL AND mem_max IS NULL, \"no data\", cpu_max > 80 OR mem_max > 80, \"saturated\", cpu_max > 50 OR mem_max > 50, \"hot\", cpu_max < 5, \"idle\", \"healthy\") | STATS total = COUNT(*), saturated = COUNT(*) WHERE state == \"saturated\", hot = COUNT(*) WHERE state == \"hot\", healthy = COUNT(*) WHERE state == \"healthy\", idle = COUNT(*) WHERE state == \"idle\", no_data = COUNT(*) WHERE state == \"no data\" BY timestamp | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS cpu_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_max IS NULL AND mem_max IS NULL, \"no data\", cpu_max > 80 OR mem_max > 80, \"saturated\", cpu_max > 50 OR mem_max > 50, \"hot\", cpu_max < 5, \"idle\", \"healthy\") | STATS total = COUNT(*), saturated = COUNT(*) WHERE state == \"saturated\", hot = COUNT(*) WHERE state == \"hot\", healthy = COUNT(*) WHERE state == \"healthy\", idle = COUNT(*) WHERE state == \"idle\", no_data = COUNT(*) WHERE state == \"no data\" BY timestamp | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -549,7 +549,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS cpu_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_max IS NULL AND mem_max IS NULL, \"no data\", cpu_max > 80 OR mem_max > 80, \"saturated\", cpu_max > 50 OR mem_max > 50, \"hot\", cpu_max < 5, \"idle\", \"healthy\") | STATS total = COUNT(*), saturated = COUNT(*) WHERE state == \"saturated\", hot = COUNT(*) WHERE state == \"hot\", healthy = COUNT(*) WHERE state == \"healthy\", idle = COUNT(*) WHERE state == \"idle\", no_data = COUNT(*) WHERE state == \"no data\" BY timestamp | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS cpu_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_max IS NULL AND mem_max IS NULL, \"no data\", cpu_max > 80 OR mem_max > 80, \"saturated\", cpu_max > 50 OR mem_max > 50, \"hot\", cpu_max < 5, \"idle\", \"healthy\") | STATS total = COUNT(*), saturated = COUNT(*) WHERE state == \"saturated\", hot = COUNT(*) WHERE state == \"hot\", healthy = COUNT(*) WHERE state == \"healthy\", idle = COUNT(*) WHERE state == \"idle\", no_data = COUNT(*) WHERE state == \"no data\" BY timestamp | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -659,7 +659,7 @@
                     "layer-kpi-impaired": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS saturated = COUNT(*) WHERE state == \"saturated\" | KEEP saturated"
+                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS saturated = COUNT(*) WHERE state == \"saturated\" | KEEP saturated"
                       },
                       "columns": [
                         {
@@ -688,7 +688,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS saturated = COUNT(*) WHERE state == \"saturated\" | KEEP saturated"
+                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS saturated = COUNT(*) WHERE state == \"saturated\" | KEEP saturated"
               },
               "visualization": {
                 "layerId": "layer-kpi-impaired",
@@ -789,7 +789,7 @@
                     "layer-kpi-pending": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS hot = COUNT(*) WHERE state == \"hot\" | KEEP hot"
+                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS hot = COUNT(*) WHERE state == \"hot\" | KEEP hot"
                       },
                       "columns": [
                         {
@@ -818,7 +818,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS hot = COUNT(*) WHERE state == \"hot\" | KEEP hot"
+                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS hot = COUNT(*) WHERE state == \"hot\" | KEEP hot"
               },
               "visualization": {
                 "layerId": "layer-kpi-pending",
@@ -920,7 +920,7 @@
                     "layer-kpi-stopped": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS idle = COUNT(*) WHERE state == \"idle\" | KEEP idle"
+                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS idle = COUNT(*) WHERE state == \"idle\" | KEEP idle"
                       },
                       "columns": [
                         {
@@ -949,7 +949,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS idle = COUNT(*) WHERE state == \"idle\" | KEEP idle"
+                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS idle = COUNT(*) WHERE state == \"idle\" | KEEP idle"
               },
               "visualization": {
                 "layerId": "layer-kpi-stopped",
@@ -1015,7 +1015,7 @@
                     "layer-kpi-running": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS healthy = COUNT(*) WHERE state == \"healthy\" | KEEP healthy"
+                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS healthy = COUNT(*) WHERE state == \"healthy\" | KEEP healthy"
                       },
                       "columns": [
                         {
@@ -1044,7 +1044,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS healthy = COUNT(*) WHERE state == \"healthy\" | KEEP healthy"
+                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS healthy = COUNT(*) WHERE state == \"healthy\" | KEEP healthy"
               },
               "visualization": {
                 "layerId": "layer-kpi-running",
@@ -1113,7 +1113,7 @@
                     "tbl-layer-tbl-instances": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS c_cpu_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_cpu_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_mem_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_mem_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), c_active_conn = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)), c_processed_bytes = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ProcessedBytes`, NULL)) BY ServiceName, ClusterName, cloud.account.id, cloud.region | EVAL c_state = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, \"no data\", c_cpu_max > 0.8 OR c_mem_max > 0.8, \"saturated\", c_cpu_max > 0.5 OR c_mem_max > 0.5, \"hot\", c_cpu_max < 0.05, \"idle\", \"healthy\"), c_state_sort = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, 3, c_cpu_max > 0.8 OR c_mem_max > 0.8, 1, c_cpu_max > 0.5 OR c_mem_max > 0.5, 2, c_cpu_max < 0.05, 5, 4) | SORT c_state_sort ASC"
+                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS c_cpu_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_cpu_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_mem_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_mem_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), c_active_conn = AVG(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)), c_processed_bytes = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ProcessedBytes`, NULL)) BY ServiceName, ClusterName, cloud.account.id, cloud.region | EVAL c_state = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, \"no data\", c_cpu_max > 0.8 OR c_mem_max > 0.8, \"saturated\", c_cpu_max > 0.5 OR c_mem_max > 0.5, \"hot\", c_cpu_max < 0.05, \"idle\", \"healthy\"), c_state_sort = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, 3, c_cpu_max > 0.8 OR c_mem_max > 0.8, 1, c_cpu_max > 0.5 OR c_mem_max > 0.5, 2, c_cpu_max < 0.05, 5, 4) | SORT c_state_sort ASC"
                       },
                       "columns": [
                         {
@@ -1303,7 +1303,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS c_cpu_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_cpu_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_mem_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_mem_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), c_active_conn = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)), c_processed_bytes = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ProcessedBytes`, NULL)) BY ServiceName, ClusterName, cloud.account.id, cloud.region | EVAL c_state = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, \"no data\", c_cpu_max > 0.8 OR c_mem_max > 0.8, \"saturated\", c_cpu_max > 0.5 OR c_mem_max > 0.5, \"hot\", c_cpu_max < 0.05, \"idle\", \"healthy\"), c_state_sort = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, 3, c_cpu_max > 0.8 OR c_mem_max > 0.8, 1, c_cpu_max > 0.5 OR c_mem_max > 0.5, 2, c_cpu_max < 0.05, 5, 4) | SORT c_state_sort ASC"
+                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS c_cpu_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_cpu_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_mem_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_mem_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), c_active_conn = AVG(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)), c_processed_bytes = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ProcessedBytes`, NULL)) BY ServiceName, ClusterName, cloud.account.id, cloud.region | EVAL c_state = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, \"no data\", c_cpu_max > 0.8 OR c_mem_max > 0.8, \"saturated\", c_cpu_max > 0.5 OR c_mem_max > 0.5, \"hot\", c_cpu_max < 0.05, \"idle\", \"healthy\"), c_state_sort = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, 3, c_cpu_max > 0.8 OR c_mem_max > 0.8, 1, c_cpu_max > 0.5 OR c_mem_max > 0.5, 2, c_cpu_max < 0.05, 5, 4) | SORT c_state_sort ASC"
               },
               "visualization": {
                 "columns": [
@@ -1687,7 +1687,7 @@
                     "layer-kpi-net-out": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount` IS NOT NULL | WHERE stat == \"Average\" | STATS active_conn_avg = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`)) | KEEP active_conn_avg"
+                        "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS active_conn_avg = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`)) | KEEP active_conn_avg"
                       },
                       "columns": [
                         {
@@ -1709,7 +1709,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount` IS NOT NULL | WHERE stat == \"Average\" | STATS active_conn_avg = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`)) | KEEP active_conn_avg"
+                "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS active_conn_avg = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`)) | KEEP active_conn_avg"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-out",
@@ -1909,7 +1909,7 @@
                     "xy-layer-top10-cpu": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | STATS peak_cpu = MAX(max_over_time(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`)) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_cpu DESC | LIMIT 10"
+                        "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Maximum\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | STATS peak_cpu = MAX(max_over_time(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`)) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_cpu DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -1946,7 +1946,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | STATS peak_cpu = MAX(max_over_time(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`)) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_cpu DESC | LIMIT 10"
+                "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Maximum\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | STATS peak_cpu = MAX(max_over_time(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`)) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_cpu DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -2026,7 +2026,7 @@
                     "xy-layer-top10-netin": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL | STATS peak_mem = MAX(max_over_time(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`)) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_mem DESC | LIMIT 10"
+                        "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Maximum\" AND `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL | STATS peak_mem = MAX(max_over_time(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`)) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_mem DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -2063,7 +2063,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL | STATS peak_mem = MAX(max_over_time(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`)) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_mem DESC | LIMIT 10"
+                "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Maximum\" AND `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL | STATS peak_mem = MAX(max_over_time(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`)) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_mem DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -2816,7 +2816,7 @@
                     "xy-layer-chart-conn-active": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_active_conn = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | WHERE col_active_conn IS NOT NULL | SORT timestamp ASC, col_active_conn DESC, ServiceName ASC | LIMIT 10 BY timestamp"
+                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_active_conn = AVG(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | WHERE col_active_conn IS NOT NULL | SORT timestamp ASC, col_active_conn DESC, ServiceName ASC | LIMIT 10 BY timestamp"
                       },
                       "columns": [
                         {
@@ -2851,7 +2851,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_active_conn = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | WHERE col_active_conn IS NOT NULL | SORT timestamp ASC, col_active_conn DESC, ServiceName ASC | LIMIT 10 BY timestamp"
+                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_active_conn = AVG(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | WHERE col_active_conn IS NOT NULL | SORT timestamp ASC, col_active_conn DESC, ServiceName ASC | LIMIT 10 BY timestamp"
               },
               "visualization": {
                 "layers": [
