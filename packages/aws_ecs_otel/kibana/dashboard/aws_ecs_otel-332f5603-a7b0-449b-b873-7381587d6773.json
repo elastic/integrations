@@ -1112,7 +1112,7 @@
                     "tbl-layer-tbl-instances": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS c_cpu_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_cpu_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_mem_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_mem_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), c_active_conn = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)), c_processed_bytes = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ProcessedBytes`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL c_state = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, \"no data\", c_cpu_max > 0.8 OR c_mem_max > 0.8, \"saturated\", c_cpu_max > 0.5 OR c_mem_max > 0.5, \"hot\", c_cpu_max < 0.05, \"idle\", \"healthy\"), c_state_sort = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, 3, c_cpu_max > 0.8 OR c_mem_max > 0.8, 1, c_cpu_max > 0.5 OR c_mem_max > 0.5, 2, c_cpu_max < 0.05, 5, 4) | SORT c_state_sort ASC"
+                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS c_cpu_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_cpu_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_mem_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_mem_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), c_active_conn = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)), c_processed_bytes = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ProcessedBytes`, NULL)) BY ServiceName, ClusterName, cloud.account.id, cloud.region | EVAL c_state = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, \"no data\", c_cpu_max > 0.8 OR c_mem_max > 0.8, \"saturated\", c_cpu_max > 0.5 OR c_mem_max > 0.5, \"hot\", c_cpu_max < 0.05, \"idle\", \"healthy\"), c_state_sort = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, 3, c_cpu_max > 0.8 OR c_mem_max > 0.8, 1, c_cpu_max > 0.5 OR c_mem_max > 0.5, 2, c_cpu_max < 0.05, 5, 4) | SORT c_state_sort ASC"
                       },
                       "columns": [
                         {
@@ -1129,6 +1129,16 @@
                           "columnId": "ClusterName",
                           "fieldName": "ClusterName",
                           "label": "Cluster",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "string",
+                            "esType": "keyword"
+                          }
+                        },
+                        {
+                          "columnId": "cloud.account.id",
+                          "fieldName": "cloud.account.id",
+                          "label": "Account",
                           "customLabel": true,
                           "meta": {
                             "type": "string",
@@ -1292,7 +1302,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS c_cpu_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_cpu_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_mem_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_mem_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), c_active_conn = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)), c_processed_bytes = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ProcessedBytes`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL c_state = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, \"no data\", c_cpu_max > 0.8 OR c_mem_max > 0.8, \"saturated\", c_cpu_max > 0.5 OR c_mem_max > 0.5, \"hot\", c_cpu_max < 0.05, \"idle\", \"healthy\"), c_state_sort = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, 3, c_cpu_max > 0.8 OR c_mem_max > 0.8, 1, c_cpu_max > 0.5 OR c_mem_max > 0.5, 2, c_cpu_max < 0.05, 5, 4) | SORT c_state_sort ASC"
+                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS c_cpu_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_cpu_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_mem_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_mem_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), c_active_conn = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)), c_processed_bytes = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ProcessedBytes`, NULL)) BY ServiceName, ClusterName, cloud.account.id, cloud.region | EVAL c_state = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, \"no data\", c_cpu_max > 0.8 OR c_mem_max > 0.8, \"saturated\", c_cpu_max > 0.5 OR c_mem_max > 0.5, \"hot\", c_cpu_max < 0.05, \"idle\", \"healthy\"), c_state_sort = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, 3, c_cpu_max > 0.8 OR c_mem_max > 0.8, 1, c_cpu_max > 0.5 OR c_mem_max > 0.5, 2, c_cpu_max < 0.05, 5, 4) | SORT c_state_sort ASC"
               },
               "visualization": {
                 "columns": [
@@ -1308,6 +1318,12 @@
                     "isTransposed": false,
                     "isMetric": false,
                     "width": 154
+                  },
+                  {
+                    "columnId": "cloud.account.id",
+                    "isTransposed": false,
+                    "isMetric": false,
+                    "width": 100.125
                   },
                   {
                     "columnId": "cloud.region",

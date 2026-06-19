@@ -347,7 +347,7 @@
                     "tbl-layer-tbl-instances": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat IN (\"Maximum\", \"Sum\") | STATS c_sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), c_recv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesReceived`, NULL)), c_del = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`, NULL)), c_empty = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfEmptyReceives`, NULL)), c_depth = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)), c_inflight = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`, NULL)), c_oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), c_region = MAX(cloud.region) BY QueueName, cloud.region | EVAL c_state_sort = CASE( c_oldest > 300, 1, c_depth > 1000, 2, c_sent > 0, 3, 4), c_state = CASE( c_oldest > 300, \"stale\", c_depth > 1000, \"backlogged\", c_sent > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
+                        "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat IN (\"Maximum\", \"Sum\") | STATS c_sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), c_recv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesReceived`, NULL)), c_del = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`, NULL)), c_empty = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfEmptyReceives`, NULL)), c_depth = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)), c_inflight = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`, NULL)), c_oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), c_account = MAX(cloud.account.id), c_region = MAX(cloud.region) BY QueueName, cloud.region | EVAL c_state_sort = CASE( c_oldest > 300, 1, c_depth > 1000, 2, c_sent > 0, 3, 4), c_state = CASE( c_oldest > 300, \"stale\", c_depth > 1000, \"backlogged\", c_sent > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
                       },
                       "columns": [
                         {
@@ -379,6 +379,16 @@
                             "esType": "keyword"
                           },
                           "label": "State",
+                          "customLabel": true
+                        },
+                        {
+                          "columnId": "c_account",
+                          "fieldName": "c_account",
+                          "meta": {
+                            "type": "string",
+                            "esType": "keyword"
+                          },
+                          "label": "Account",
                           "customLabel": true
                         },
                         {
@@ -443,7 +453,7 @@
                             "esType": "double"
                           },
                           "inMetricDimension": true,
-                          "label": "Max visible (depth)",
+                          "label": "Max depth",
                           "customLabel": true
                         },
                         {
@@ -454,7 +464,7 @@
                             "esType": "double"
                           },
                           "inMetricDimension": true,
-                          "label": "Max not visible (in-flight)",
+                          "label": "Max in-flight",
                           "customLabel": true
                         },
                         {
@@ -465,7 +475,7 @@
                             "esType": "double"
                           },
                           "inMetricDimension": true,
-                          "label": "Oldest msg age (s, max)",
+                          "label": "Max oldest age (s)",
                           "customLabel": true
                         }
                       ],
@@ -488,7 +498,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat IN (\"Maximum\", \"Sum\") | STATS c_sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), c_recv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesReceived`, NULL)), c_del = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`, NULL)), c_empty = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfEmptyReceives`, NULL)), c_depth = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)), c_inflight = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`, NULL)), c_oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), c_region = MAX(cloud.region) BY QueueName, cloud.region | EVAL c_state_sort = CASE( c_oldest > 300, 1, c_depth > 1000, 2, c_sent > 0, 3, 4), c_state = CASE( c_oldest > 300, \"stale\", c_depth > 1000, \"backlogged\", c_sent > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
+                "esql": "FROM metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat IN (\"Maximum\", \"Sum\") | STATS c_sent = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`, NULL)), c_recv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesReceived`, NULL)), c_del = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`, NULL)), c_empty = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/SQS/NumberOfEmptyReceives`, NULL)), c_depth = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`, NULL)), c_inflight = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`, NULL)), c_oldest = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`, NULL)), c_account = MAX(cloud.account.id), c_region = MAX(cloud.region) BY QueueName, cloud.region | EVAL c_state_sort = CASE( c_oldest > 300, 1, c_depth > 1000, 2, c_sent > 0, 3, 4), c_state = CASE( c_oldest > 300, \"stale\", c_depth > 1000, \"backlogged\", c_sent > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
               },
               "visualization": {
                 "columns": [
@@ -586,6 +596,11 @@
                     },
                     "isMetric": false,
                     "oneClickFilter": true
+                  },
+                  {
+                    "columnId": "c_account",
+                    "isTransposed": false,
+                    "isMetric": false
                   },
                   {
                     "columnId": "c_region",

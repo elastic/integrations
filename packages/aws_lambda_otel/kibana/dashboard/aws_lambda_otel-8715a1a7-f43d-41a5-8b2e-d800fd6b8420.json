@@ -1113,7 +1113,7 @@
                     "tbl-layer-tbl-instances": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat IN (\"Average\", \"Maximum\", \"Sum\") | STATS c_inv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Invocations`, NULL)), c_err = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Errors`, NULL)), c_thr = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Throttles`, NULL)), c_dur_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/Lambda/Duration`, NULL)), c_dur_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/Lambda/Duration`, NULL)), c_conc_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions`, NULL)), c_region = MAX(cloud.region) BY FunctionName, cloud.region | EVAL c_state_sort = CASE(c_err > 0, 1, c_thr > 0, 2, c_inv > 0, 3, 4), c_state = CASE(c_err > 0, \"erroring\", c_thr > 0, \"throttled\", c_inv > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
+                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat IN (\"Average\", \"Maximum\", \"Sum\") | STATS c_inv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Invocations`, NULL)), c_err = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Errors`, NULL)), c_thr = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Throttles`, NULL)), c_dur_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/Lambda/Duration`, NULL)), c_dur_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/Lambda/Duration`, NULL)), c_conc_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions`, NULL)), c_account = MAX(cloud.account.id), c_region = MAX(cloud.region) BY FunctionName, cloud.region | EVAL c_state_sort = CASE(c_err > 0, 1, c_thr > 0, 2, c_inv > 0, 3, 4), c_state = CASE(c_err > 0, \"erroring\", c_thr > 0, \"throttled\", c_inv > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
                       },
                       "columns": [
                         {
@@ -1147,6 +1147,16 @@
                             "esType": "keyword"
                           },
                           "inMetricDimension": true
+                        },
+                        {
+                          "columnId": "c_account",
+                          "fieldName": "c_account",
+                          "label": "Account",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "string",
+                            "esType": "keyword"
+                          }
                         },
                         {
                           "columnId": "c_region",
@@ -1232,7 +1242,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat IN (\"Average\", \"Maximum\", \"Sum\") | STATS c_inv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Invocations`, NULL)), c_err = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Errors`, NULL)), c_thr = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Throttles`, NULL)), c_dur_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/Lambda/Duration`, NULL)), c_dur_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/Lambda/Duration`, NULL)), c_conc_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions`, NULL)), c_region = MAX(cloud.region) BY FunctionName, cloud.region | EVAL c_state_sort = CASE(c_err > 0, 1, c_thr > 0, 2, c_inv > 0, 3, 4), c_state = CASE(c_err > 0, \"erroring\", c_thr > 0, \"throttled\", c_inv > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
+                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat IN (\"Average\", \"Maximum\", \"Sum\") | STATS c_inv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Invocations`, NULL)), c_err = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Errors`, NULL)), c_thr = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/Lambda/Throttles`, NULL)), c_dur_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/Lambda/Duration`, NULL)), c_dur_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/Lambda/Duration`, NULL)), c_conc_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions`, NULL)), c_account = MAX(cloud.account.id), c_region = MAX(cloud.region) BY FunctionName, cloud.region | EVAL c_state_sort = CASE(c_err > 0, 1, c_thr > 0, 2, c_inv > 0, 3, 4), c_state = CASE(c_err > 0, \"erroring\", c_thr > 0, \"throttled\", c_inv > 0, \"healthy\", \"idle\") | SORT c_state_sort ASC"
               },
               "visualization": {
                 "columns": [
@@ -1327,6 +1337,11 @@
                         "type": "categorical"
                       }
                     }
+                  },
+                  {
+                    "columnId": "c_account",
+                    "isTransposed": false,
+                    "isMetric": false
                   },
                   {
                     "columnId": "c_region",
