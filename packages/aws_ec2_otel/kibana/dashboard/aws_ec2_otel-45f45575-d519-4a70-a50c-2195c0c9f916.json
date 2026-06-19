@@ -1288,8 +1288,8 @@
         "panelIndex": "kpi-net-in",
         "gridData": {
           "y": 12,
-          "x": 40,
-          "w": 8,
+          "x": 32,
+          "w": 16,
           "h": 6,
           "i": "kpi-net-in",
           "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
@@ -1387,8 +1387,8 @@
         "panelIndex": "kpi-net-out",
         "gridData": {
           "y": 18,
-          "x": 40,
-          "w": 8,
+          "x": 32,
+          "w": 16,
           "h": 6,
           "i": "kpi-net-out",
           "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
@@ -1535,8 +1535,8 @@
         "panelIndex": "chart-net",
         "gridData": {
           "y": 12,
-          "x": 20,
-          "w": 20,
+          "x": 16,
+          "w": 16,
           "h": 12,
           "i": "chart-net",
           "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
@@ -1682,9 +1682,9 @@
         },
         "panelIndex": "chart-disk",
         "gridData": {
-          "y": 12,
-          "x": 0,
-          "w": 20,
+          "y": 0,
+          "x": 32,
+          "w": 16,
           "h": 12,
           "i": "chart-disk",
           "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
@@ -2156,8 +2156,8 @@
         "panelIndex": "chart-memory",
         "gridData": {
           "y": 0,
-          "x": 0,
-          "w": 24,
+          "x": 16,
+          "w": 16,
           "h": 12,
           "i": "chart-memory",
           "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
@@ -2328,9 +2328,9 @@
         },
         "panelIndex": "chart-cpu",
         "gridData": {
-          "y": 0,
-          "x": 24,
-          "w": 24,
+          "y": 12,
+          "x": 0,
+          "w": 16,
           "h": 12,
           "i": "chart-cpu",
           "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
@@ -2543,6 +2543,127 @@
           "w": 6,
           "h": 2,
           "i": "nav-otel-dashboards"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Disk write operations by instance",
+          "description": "Disk read operations per instance over time — average DiskReadOps per CloudWatch period (averaged per time bucket). Top 10 instances by read ops per bucket. Rising values indicate increasing read activity from attached storage.",
+          "attributes": {
+            "title": "Disk read operations by instance",
+            "description": "Disk read operations per instance over time — average DiskReadOps per CloudWatch period (averaged per time bucket). Top 10 instances by read ops per bucket. Rising values indicate increasing read activity from attached storage.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-disk-read-ops": {
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "TS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/DiskReadOps` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/DiskReadOps`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, metric DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "InstanceId",
+                          "fieldName": "InstanceId",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "metric",
+                          "fieldName": "metric",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Disk write ops",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "TS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND `metrics.amazonaws.com/AWS/EC2/DiskReadOps` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(avg_over_time(`metrics.amazonaws.com/AWS/EC2/DiskReadOps`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, metric DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-disk-read-ops",
+                    "accessors": [
+                      "metric"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "InstanceId"
+                    ],
+                    "yConfig": []
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-disk-read-ops"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-disk-read-ops",
+        "gridData": {
+          "y": 0,
+          "x": 0,
+          "w": 16,
+          "h": 12,
+          "i": "chart-disk-read-ops",
+          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
         }
       }
     ],
