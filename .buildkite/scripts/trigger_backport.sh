@@ -43,11 +43,6 @@ main() {
         old_inventory_ref="HEAD^"
         new_entry_msg="skipping create for initial entries"
         new_entry_hint="To create branches for these entries, trigger the integrations-backport pipeline manually."
-        with_github_cli
-        pr_number=""
-        pr_number="$(retry 3 resolve_pr_number "${BUILDKITE_COMMIT}")" || {
-            echo "Warning: could not resolve PR number after retries, PR comments will be skipped" >&2
-        }
     fi
 
     backports_yml_changed_exit=0
@@ -61,6 +56,13 @@ main() {
     fi
 
     echo "--- .backports.yml changed — finding new entries"
+
+    if [[ "${BUILDKITE_PULL_REQUEST}" == "false" ]]; then
+        with_github_cli
+        pr_number="$(retry 3 resolve_pr_number "${BUILDKITE_COMMIT}")" || {
+            echo "Warning: could not resolve PR number after retries, PR comments will be skipped" >&2
+        }
+    fi
 
     OLD_INVENTORY=""
     PIPELINE_FILE=""

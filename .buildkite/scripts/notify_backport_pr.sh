@@ -31,7 +31,15 @@ echo "--- Creating body file"
 BODY_FILE="$(mktemp)"
 trap 'rm -f "${BODY_FILE}"' EXIT
 
-if [[ "${NOTIFY_STATUS}" == "success" ]]; then
+BRANCH_ALREADY_EXISTED="$(buildkite-agent meta-data get BRANCH_ALREADY_EXISTED --default "")"
+
+if [[ "${NOTIFY_STATUS}" == "success" ]] && [[ "${BRANCH_ALREADY_EXISTED}" == "true" ]]; then
+    cat > "${BODY_FILE}" <<EOF
+:information_source: Backport branch \`${BACKPORT_BRANCH_NAME}\` for package \`${PACKAGE_NAME}\` \`${PACKAGE_VERSION}\` already existed — no action taken.
+
+[Buildkite build](${BUILDKITE_BUILD_URL})
+EOF
+elif [[ "${NOTIFY_STATUS}" == "success" ]]; then
     cat > "${BODY_FILE}" <<EOF
 :white_check_mark: Backport branch \`${BACKPORT_BRANCH_NAME}\` created successfully for package \`${PACKAGE_NAME}\` \`${PACKAGE_VERSION}\`.
 

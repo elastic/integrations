@@ -66,7 +66,9 @@ EOF
 run_generate() {
     local old="$1" new="$2" dry_run="$3" pr_number="$4" out="$5"
     : > "${out}"
-    generate_trigger_pipeline "${old}" "${new}" "${dry_run}" "${pr_number}" "${out}" || true
+    local exit_code=0
+    generate_trigger_pipeline "${old}" "${new}" "${dry_run}" "${pr_number}" "${out}" || exit_code=$?
+    assert_exit_code "generate_trigger_pipeline exits 0" "0" "${exit_code}"
 }
 
 OLD="${WORK_DIR}/old.yml"
