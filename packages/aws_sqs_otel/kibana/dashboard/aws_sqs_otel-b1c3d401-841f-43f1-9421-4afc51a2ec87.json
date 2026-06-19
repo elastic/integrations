@@ -1612,7 +1612,7 @@
                     "xy-layer-chart-net": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS sent = SUM(sum_over_time(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`)), deleted = -1 * COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE sent IS NOT NULL | SORT timestamp ASC"
+                        "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS sent = SUM(sum_over_time(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`)), deleted = -1 * COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE sent IS NOT NULL | SORT timestamp ASC, sent DESC, QueueName ASC | LIMIT 10 BY timestamp"
                       },
                       "columns": [
                         {
@@ -1660,7 +1660,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS sent = SUM(sum_over_time(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`)), deleted = -1 * COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE sent IS NOT NULL | SORT timestamp ASC"
+                "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS sent = SUM(sum_over_time(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`)), deleted = -1 * COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE sent IS NOT NULL | SORT timestamp ASC, sent DESC, QueueName ASC | LIMIT 10 BY timestamp"
               },
               "visualization": {
                 "layers": [
@@ -1744,7 +1744,7 @@
                     "xy-layer-chart-disk": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS visible = MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)), not_visible = -1 * COALESCE(MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE visible IS NOT NULL | SORT timestamp ASC"
+                        "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS visible = MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)), not_visible = -1 * COALESCE(MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE visible IS NOT NULL | SORT timestamp ASC, visible DESC, QueueName ASC | LIMIT 10 BY timestamp"
                       },
                       "columns": [
                         {
@@ -1792,7 +1792,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS visible = MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)), not_visible = -1 * COALESCE(MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE visible IS NOT NULL | SORT timestamp ASC"
+                "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS visible = MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)), not_visible = -1 * COALESCE(MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE visible IS NOT NULL | SORT timestamp ASC, visible DESC, QueueName ASC | LIMIT 10 BY timestamp"
               },
               "visualization": {
                 "layers": [
@@ -2203,7 +2203,7 @@
                     "xy-layer-chart-memory": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Maximum\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC"
+                        "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Maximum\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC, metric DESC, QueueName ASC | LIMIT 10 BY timestamp"
                       },
                       "columns": [
                         {
@@ -2260,7 +2260,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Maximum\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC"
+                "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Maximum\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC, metric DESC, QueueName ASC | LIMIT 10 BY timestamp"
               },
               "visualization": {
                 "layers": [
@@ -2362,7 +2362,7 @@
                     "xy-layer-chart-cpu": {
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC"
+                        "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC, metric DESC, QueueName ASC | LIMIT 10 BY timestamp"
                       },
                       "columns": [
                         {
@@ -2419,7 +2419,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC"
+                "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE metric IS NOT NULL | SORT timestamp ASC, metric DESC, QueueName ASC | LIMIT 10 BY timestamp"
               },
               "visualization": {
                 "layers": [

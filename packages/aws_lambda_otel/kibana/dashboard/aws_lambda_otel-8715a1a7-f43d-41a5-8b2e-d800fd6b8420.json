@@ -1581,7 +1581,7 @@
                     "xy-layer-chart-net": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), errors = -SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), errors = -SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, invocations DESC, FunctionName ASC | LIMIT 10 BY timestamp"
                       },
                       "columns": [
                         {
@@ -1629,7 +1629,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), errors = -SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), errors = -SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, invocations DESC, FunctionName ASC | LIMIT 10 BY timestamp"
               },
               "visualization": {
                 "layers": [
@@ -1713,7 +1713,7 @@
                     "xy-layer-chart-disk": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS throttles = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)), async_dropped = -SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/AsyncEventsDropped`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS throttles = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)), async_dropped = -SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/AsyncEventsDropped`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, throttles DESC, FunctionName ASC | LIMIT 10 BY timestamp"
                       },
                       "columns": [
                         {
@@ -1761,7 +1761,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS throttles = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)), async_dropped = -SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/AsyncEventsDropped`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS throttles = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)), async_dropped = -SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/AsyncEventsDropped`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, throttles DESC, FunctionName ASC | LIMIT 10 BY timestamp"
               },
               "visualization": {
                 "layers": [
@@ -2172,7 +2172,7 @@
                     "xy-layer-chart-memory": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" AND `metrics.amazonaws.com/AWS/Lambda/Duration` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/Lambda/Duration`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" AND `metrics.amazonaws.com/AWS/Lambda/Duration` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/Lambda/Duration`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, metric DESC, FunctionName ASC | LIMIT 10 BY timestamp"
                       },
                       "columns": [
                         {
@@ -2207,7 +2207,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" AND `metrics.amazonaws.com/AWS/Lambda/Duration` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/Lambda/Duration`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" AND `metrics.amazonaws.com/AWS/Lambda/Duration` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/Lambda/Duration`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, metric DESC, FunctionName ASC | LIMIT 10 BY timestamp"
               },
               "visualization": {
                 "layers": [
@@ -2290,7 +2290,7 @@
                     "xy-layer-chart-cpu": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" AND `metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions` IS NOT NULL | WHERE stat == \"Maximum\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" AND `metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions` IS NOT NULL | WHERE stat == \"Maximum\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, metric DESC, FunctionName ASC | LIMIT 10 BY timestamp"
                       },
                       "columns": [
                         {
@@ -2325,7 +2325,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" AND `metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions` IS NOT NULL | WHERE stat == \"Maximum\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" AND `metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions` IS NOT NULL | WHERE stat == \"Maximum\" | STATS metric = MAX(max_over_time(`metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, metric DESC, FunctionName ASC | LIMIT 10 BY timestamp"
               },
               "visualization": {
                 "layers": [

@@ -1712,7 +1712,7 @@
                     "xy-layer-chart-net": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ProcessedBytes` IS NOT NULL | WHERE stat == \"Sum\" | STATS col_bytes = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ECS/ProcessedBytes`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC"
+                        "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ProcessedBytes` IS NOT NULL | WHERE stat == \"Sum\" | STATS col_bytes = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ECS/ProcessedBytes`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC, col_bytes DESC, ServiceName ASC | LIMIT 10 BY timestamp"
                       },
                       "columns": [
                         {
@@ -1757,7 +1757,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ProcessedBytes` IS NOT NULL | WHERE stat == \"Sum\" | STATS col_bytes = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ECS/ProcessedBytes`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC"
+                "esql": "TS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ProcessedBytes` IS NOT NULL | WHERE stat == \"Sum\" | STATS col_bytes = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ECS/ProcessedBytes`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC, col_bytes DESC, ServiceName ASC | LIMIT 10 BY timestamp"
               },
               "visualization": {
                 "layers": [
@@ -1840,7 +1840,7 @@
                     "xy-layer-chart-disk": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), col_active_conn = -AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), col_active_conn = -AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC, col_new_conn DESC, ServiceName ASC | LIMIT 10 BY timestamp"
                       },
                       "columns": [
                         {
@@ -1884,7 +1884,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), col_active_conn = -AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), col_active_conn = -AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC, col_new_conn DESC, ServiceName ASC | LIMIT 10 BY timestamp"
               },
               "visualization": {
                 "layers": [
@@ -2321,7 +2321,7 @@
                     "xy-layer-chart-memory": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`) / 100.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`) / 100.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC, metric DESC, ServiceName ASC | LIMIT 10 BY timestamp"
                       },
                       "columns": [
                         {
@@ -2386,7 +2386,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`) / 100.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`) / 100.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC, metric DESC, ServiceName ASC | LIMIT 10 BY timestamp"
               },
               "visualization": {
                 "layers": [
@@ -2488,7 +2488,7 @@
                     "xy-layer-chart-cpu": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`) / 100.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC"
+                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`) / 100.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC, metric DESC, ServiceName ASC | LIMIT 10 BY timestamp"
                       },
                       "columns": [
                         {
@@ -2553,7 +2553,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`) / 100.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC"
+                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`) / 100.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC, metric DESC, ServiceName ASC | LIMIT 10 BY timestamp"
               },
               "visualization": {
                 "layers": [
