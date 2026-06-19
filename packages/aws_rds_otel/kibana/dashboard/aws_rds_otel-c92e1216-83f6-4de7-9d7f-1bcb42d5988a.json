@@ -296,7 +296,7 @@
                     "tbl-layer-tbl-instances": {
                       "index": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
                       "query": {
-                        "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat IN (\"Average\", \"Maximum\") | STATS c_cpu_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/CPUUtilization`, NULL)), c_conn_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/DatabaseConnections`, NULL)), c_storage_min = MIN(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/FreeStorageSpace`, NULL)), c_cpu = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/CPUUtilization`, NULL)) / 100.0, c_conn = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/DatabaseConnections`, NULL)), c_mem = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/FreeableMemory`, NULL)), c_storage = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/FreeStorageSpace`, NULL)), c_read_iops = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/ReadIOPS`, NULL)), c_write_iops = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/WriteIOPS`, NULL)), c_read_lat = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/ReadLatency`, NULL)) * 1000, c_write_lat = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/WriteLatency`, NULL)) * 1000, c_region = MAX(cloud.region) BY DBInstanceIdentifier, cloud.region | EVAL c_state_sort = CASE( c_cpu_max > 80, 1, c_storage_min < 5368709120, 2, c_conn_max == 0 OR c_conn_max IS NULL, 3, 4), c_state = CASE( c_cpu_max > 80, \"saturated\", c_storage_min < 5368709120, \"low-storage\", c_conn_max == 0 OR c_conn_max IS NULL, \"idle\", \"healthy\") | SORT c_state_sort ASC"
+                        "esql": "TS metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" AND stat == \"Average\" | STATS c_cpu_max = MAX(max_over_time(`metrics.amazonaws.com/AWS/RDS/CPUUtilization`)), c_conn_max = MAX(max_over_time(`metrics.amazonaws.com/AWS/RDS/DatabaseConnections`)), c_storage_min = MIN(min_over_time(`metrics.amazonaws.com/AWS/RDS/FreeStorageSpace`)), c_cpu = AVG(avg_over_time(`metrics.amazonaws.com/AWS/RDS/CPUUtilization`)) / 100.0, c_conn = MAX(last_over_time(`metrics.amazonaws.com/AWS/RDS/DatabaseConnections`)), c_mem = MAX(last_over_time(`metrics.amazonaws.com/AWS/RDS/FreeableMemory`)), c_storage = MAX(last_over_time(`metrics.amazonaws.com/AWS/RDS/FreeStorageSpace`)), c_read_iops = AVG(avg_over_time(`metrics.amazonaws.com/AWS/RDS/ReadIOPS`)), c_write_iops = AVG(avg_over_time(`metrics.amazonaws.com/AWS/RDS/WriteIOPS`)), c_read_lat = AVG(avg_over_time(`metrics.amazonaws.com/AWS/RDS/ReadLatency`)) * 1000, c_write_lat = AVG(avg_over_time(`metrics.amazonaws.com/AWS/RDS/WriteLatency`)) * 1000 BY DBInstanceIdentifier, c_region = cloud.region | EVAL c_state_sort = CASE( c_cpu_max > 80, 1, c_storage_min < 5368709120, 2, c_conn_max == 0 OR c_conn_max IS NULL, 3, 4), c_state = CASE( c_cpu_max > 80, \"saturated\", c_storage_min < 5368709120, \"low-storage\", c_conn_max == 0 OR c_conn_max IS NULL, \"idle\", \"healthy\") | SORT c_state_sort ASC"
                       },
                       "columns": [
                         {
@@ -344,7 +344,7 @@
                         {
                           "columnId": "c_cpu",
                           "fieldName": "c_cpu",
-                          "label": "Average CPU (%)",
+                          "label": "Avg CPU (%)",
                           "customLabel": true,
                           "meta": {
                             "type": "number",
@@ -363,7 +363,7 @@
                         {
                           "columnId": "c_conn",
                           "fieldName": "c_conn",
-                          "label": "Max connections",
+                          "label": "Current connections",
                           "customLabel": true,
                           "meta": {
                             "type": "number",
@@ -374,7 +374,7 @@
                         {
                           "columnId": "c_mem",
                           "fieldName": "c_mem",
-                          "label": "Average free memory",
+                          "label": "Current free memory",
                           "customLabel": true,
                           "meta": {
                             "type": "number",
@@ -393,7 +393,7 @@
                         {
                           "columnId": "c_storage",
                           "fieldName": "c_storage",
-                          "label": "Average free storage",
+                          "label": "Current free storage",
                           "customLabel": true,
                           "meta": {
                             "type": "number",
@@ -412,7 +412,7 @@
                         {
                           "columnId": "c_read_iops",
                           "fieldName": "c_read_iops",
-                          "label": "Average read IOPS",
+                          "label": "Avg read IOPS",
                           "customLabel": true,
                           "meta": {
                             "type": "number",
@@ -423,7 +423,7 @@
                         {
                           "columnId": "c_write_iops",
                           "fieldName": "c_write_iops",
-                          "label": "Average write IOPS",
+                          "label": "Avg write IOPS",
                           "customLabel": true,
                           "meta": {
                             "type": "number",
@@ -434,7 +434,7 @@
                         {
                           "columnId": "c_read_lat",
                           "fieldName": "c_read_lat",
-                          "label": "Average read latency (ms)",
+                          "label": "Avg read latency (ms)",
                           "customLabel": true,
                           "meta": {
                             "type": "number",
@@ -445,7 +445,7 @@
                         {
                           "columnId": "c_write_lat",
                           "fieldName": "c_write_lat",
-                          "label": "Average write latency (ms)",
+                          "label": "Avg write latency (ms)",
                           "customLabel": true,
                           "meta": {
                             "type": "number",
@@ -461,7 +461,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat IN (\"Average\", \"Maximum\") | STATS c_cpu_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/CPUUtilization`, NULL)), c_conn_max = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/DatabaseConnections`, NULL)), c_storage_min = MIN(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/FreeStorageSpace`, NULL)), c_cpu = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/CPUUtilization`, NULL)) / 100.0, c_conn = MAX(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/DatabaseConnections`, NULL)), c_mem = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/FreeableMemory`, NULL)), c_storage = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/FreeStorageSpace`, NULL)), c_read_iops = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/ReadIOPS`, NULL)), c_write_iops = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/WriteIOPS`, NULL)), c_read_lat = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/ReadLatency`, NULL)) * 1000, c_write_lat = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/RDS/WriteLatency`, NULL)) * 1000, c_region = MAX(cloud.region) BY DBInstanceIdentifier, cloud.region | EVAL c_state_sort = CASE( c_cpu_max > 80, 1, c_storage_min < 5368709120, 2, c_conn_max == 0 OR c_conn_max IS NULL, 3, 4), c_state = CASE( c_cpu_max > 80, \"saturated\", c_storage_min < 5368709120, \"low-storage\", c_conn_max == 0 OR c_conn_max IS NULL, \"idle\", \"healthy\") | SORT c_state_sort ASC"
+                "esql": "TS metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" AND stat == \"Average\" | STATS c_cpu_max = MAX(max_over_time(`metrics.amazonaws.com/AWS/RDS/CPUUtilization`)), c_conn_max = MAX(max_over_time(`metrics.amazonaws.com/AWS/RDS/DatabaseConnections`)), c_storage_min = MIN(min_over_time(`metrics.amazonaws.com/AWS/RDS/FreeStorageSpace`)), c_cpu = AVG(avg_over_time(`metrics.amazonaws.com/AWS/RDS/CPUUtilization`)) / 100.0, c_conn = MAX(last_over_time(`metrics.amazonaws.com/AWS/RDS/DatabaseConnections`)), c_mem = MAX(last_over_time(`metrics.amazonaws.com/AWS/RDS/FreeableMemory`)), c_storage = MAX(last_over_time(`metrics.amazonaws.com/AWS/RDS/FreeStorageSpace`)), c_read_iops = AVG(avg_over_time(`metrics.amazonaws.com/AWS/RDS/ReadIOPS`)), c_write_iops = AVG(avg_over_time(`metrics.amazonaws.com/AWS/RDS/WriteIOPS`)), c_read_lat = AVG(avg_over_time(`metrics.amazonaws.com/AWS/RDS/ReadLatency`)) * 1000, c_write_lat = AVG(avg_over_time(`metrics.amazonaws.com/AWS/RDS/WriteLatency`)) * 1000 BY DBInstanceIdentifier, c_region = cloud.region | EVAL c_state_sort = CASE( c_cpu_max > 80, 1, c_storage_min < 5368709120, 2, c_conn_max == 0 OR c_conn_max IS NULL, 3, 4), c_state = CASE( c_cpu_max > 80, \"saturated\", c_storage_min < 5368709120, \"low-storage\", c_conn_max == 0 OR c_conn_max IS NULL, \"idle\", \"healthy\") | SORT c_state_sort ASC"
               },
               "visualization": {
                 "columns": [
