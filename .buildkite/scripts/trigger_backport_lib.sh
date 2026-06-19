@@ -115,7 +115,7 @@ generate_trigger_pipeline() {
     key: "trigger-backport-${pkg}"
     trigger: "integrations-backport"
     build:
-      meta_data:
+      env:
         DRY_RUN: "${dry_run}"
         PACKAGE_NAME: "${pkg}"
         PACKAGE_VERSION: "${base_version}"
