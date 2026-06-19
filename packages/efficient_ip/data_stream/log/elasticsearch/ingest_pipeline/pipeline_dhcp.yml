@@ -304,9 +304,6 @@ processors:
       allow_duplicates: false
       ignore_failure: true
 on_failure:
-  - set:
-      field: event.kind
-      value: pipeline_error
   - append:
       field: error.message
       value: >-
@@ -314,3 +311,10 @@ on_failure:
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
         failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
