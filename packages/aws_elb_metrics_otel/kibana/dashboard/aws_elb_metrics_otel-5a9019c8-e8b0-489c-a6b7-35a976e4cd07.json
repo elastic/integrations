@@ -1639,10 +1639,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Requests (+) / target 5xx (−) over time",
-          "description": "Request count (+) and backend (target) 5xx responses (−, mirrored) per load balancer over time, summed per bucket. Top 10 load balancers by requests per bucket. A growing negative band indicates rising backend errors.",
+          "description": "Request count (left axis) and backend (target) 5xx responses (right axis) per load balancer over time, summed per bucket. Separate axes because 5xx volume is far smaller than total requests. Top 10 load balancers by requests per bucket; watch for 5xx rising against steady request volume.",
           "attributes": {
-            "title": "Requests (+) / target 5xx (−) over time",
-            "description": "Request count (+) and backend (target) 5xx responses (−, mirrored) per load balancer over time, summed per bucket. Top 10 load balancers by requests per bucket. A growing negative band indicates rising backend errors.",
+            "title": "Requests & target 5xx over time",
+            "description": "Request count (left axis) and backend (target) 5xx responses (right axis) per load balancer over time, summed per bucket. Separate axes because 5xx volume is far smaller than total requests. Top 10 load balancers by requests per bucket; watch for 5xx rising against steady request volume.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1653,7 +1653,7 @@
                     "xy-layer-chart-net": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "TS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`)), errors = -1 * COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC, invocations DESC, LoadBalancer ASC | LIMIT 10 BY timestamp"
+                        "esql": "TS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`)), errors = COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC, invocations DESC, LoadBalancer ASC | LIMIT 10 BY timestamp"
                       },
                       "columns": [
                         {
@@ -1701,7 +1701,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "TS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`)), errors = -1 * COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC, invocations DESC, LoadBalancer ASC | LIMIT 10 BY timestamp"
+                "esql": "TS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`)), errors = COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC, invocations DESC, LoadBalancer ASC | LIMIT 10 BY timestamp"
               },
               "visualization": {
                 "layers": [
@@ -1717,6 +1717,17 @@
                     "showGridlines": false,
                     "splitAccessors": [
                       "LoadBalancer"
+                    ],
+                    "yConfig": [
+                      {
+                        "forAccessor": "invocations",
+                        "axisMode": "left"
+                      },
+                      {
+                        "forAccessor": "errors",
+                        "axisMode": "right",
+                        "color": "#F6726A"
+                      }
                     ]
                   }
                 ],
@@ -1729,7 +1740,7 @@
                 "axisTitlesVisibilitySettings": {
                   "x": false,
                   "yLeft": false,
-                  "yRight": false
+                  "yRight": true
                 }
               },
               "adHocDataViews": {

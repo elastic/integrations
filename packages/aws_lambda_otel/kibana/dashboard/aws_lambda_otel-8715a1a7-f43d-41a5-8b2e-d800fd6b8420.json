@@ -1567,10 +1567,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Invocations (+) / Errors (−) over time",
-          "description": "Invocations (+) and errors (−, mirrored) per function over time, summed per bucket. Top 10 functions by invocations per bucket. A growing negative band indicates rising failures.",
+          "description": "Invocations (left axis) and errors (right axis) per function over time, summed per bucket. Separate axes because errors are far smaller than invocations. Top 10 functions by invocations per bucket; a rising error line against steady invocations indicates a failing function.",
           "attributes": {
-            "title": "Invocations (+) / Errors (−) over time",
-            "description": "Invocations (+) and errors (−, mirrored) per function over time, summed per bucket. Top 10 functions by invocations per bucket. A growing negative band indicates rising failures.",
+            "title": "Invocations & errors over time",
+            "description": "Invocations (left axis) and errors (right axis) per function over time, summed per bucket. Separate axes because errors are far smaller than invocations. Top 10 functions by invocations per bucket; a rising error line against steady invocations indicates a failing function.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1581,7 +1581,7 @@
                     "xy-layer-chart-net": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), errors = -SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, invocations DESC, FunctionName ASC | LIMIT 10 BY timestamp"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), errors = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, invocations DESC, FunctionName ASC | LIMIT 10 BY timestamp"
                       },
                       "columns": [
                         {
@@ -1629,7 +1629,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), errors = -SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, invocations DESC, FunctionName ASC | LIMIT 10 BY timestamp"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), errors = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, invocations DESC, FunctionName ASC | LIMIT 10 BY timestamp"
               },
               "visualization": {
                 "layers": [
@@ -1645,6 +1645,17 @@
                     "showGridlines": false,
                     "splitAccessors": [
                       "FunctionName"
+                    ],
+                    "yConfig": [
+                      {
+                        "forAccessor": "invocations",
+                        "axisMode": "left"
+                      },
+                      {
+                        "forAccessor": "errors",
+                        "axisMode": "right",
+                        "color": "#F6726A"
+                      }
                     ]
                   }
                 ],
@@ -1657,7 +1668,7 @@
                 "axisTitlesVisibilitySettings": {
                   "x": false,
                   "yLeft": false,
-                  "yRight": false
+                  "yRight": true
                 }
               },
               "adHocDataViews": {
@@ -1699,10 +1710,10 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "Throttles (+) / Async dropped (−) over time",
-          "description": "Throttles (+) and dropped async events (−, mirrored) per function over time, summed per bucket. Top 10 functions by throttles per bucket. Throttles indicate hitting concurrency limits; dropped async events indicate exhausted retries.",
+          "description": "Throttles and dropped async events per function over time, summed per bucket (both plotted positive on a shared axis since magnitudes are comparable). Top 10 functions by throttles per bucket. Throttles indicate hitting concurrency limits; dropped async events indicate exhausted retries.",
           "attributes": {
-            "title": "Throttles (+) / Async dropped (−) over time",
-            "description": "Throttles (+) and dropped async events (−, mirrored) per function over time, summed per bucket. Top 10 functions by throttles per bucket. Throttles indicate hitting concurrency limits; dropped async events indicate exhausted retries.",
+            "title": "Throttles & async dropped over time",
+            "description": "Throttles and dropped async events per function over time, summed per bucket (both plotted positive on a shared axis since magnitudes are comparable). Top 10 functions by throttles per bucket. Throttles indicate hitting concurrency limits; dropped async events indicate exhausted retries.",
             "visualizationType": "lnsXY",
             "version": 2,
             "references": [],
@@ -1713,7 +1724,7 @@
                     "xy-layer-chart-disk": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS throttles = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)), async_dropped = -SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/AsyncEventsDropped`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, throttles DESC, FunctionName ASC | LIMIT 10 BY timestamp"
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS throttles = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)), async_dropped = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/AsyncEventsDropped`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, throttles DESC, FunctionName ASC | LIMIT 10 BY timestamp"
                       },
                       "columns": [
                         {
@@ -1761,7 +1772,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS throttles = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)), async_dropped = -SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/AsyncEventsDropped`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, throttles DESC, FunctionName ASC | LIMIT 10 BY timestamp"
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS throttles = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)), async_dropped = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/AsyncEventsDropped`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, throttles DESC, FunctionName ASC | LIMIT 10 BY timestamp"
               },
               "visualization": {
                 "layers": [
