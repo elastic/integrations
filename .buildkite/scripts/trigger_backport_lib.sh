@@ -112,7 +112,7 @@ generate_trigger_pipeline() {
 
         cat >> "${pipeline_file}" <<EOF
   - label: ":git: ${label_prefix}: ${branch}"
-    key: "trigger-backport-${pkg}"
+    key: "trigger-${branch//./-}"
     trigger: "integrations-backport"
     build:
       env:
