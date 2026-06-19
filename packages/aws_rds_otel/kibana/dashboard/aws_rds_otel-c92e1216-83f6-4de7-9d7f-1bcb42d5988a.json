@@ -1487,270 +1487,6 @@
       {
         "type": "vis",
         "embeddableConfig": {
-          "title": "Read IOPS (+) / Write IOPS (−)",
-          "description": "Read (+) and write (−, mirrored) IOPS per database over time, averaged per bucket. Top 10 databases by read IOPS per bucket. Sustained high values indicate I/O-bound workloads.",
-          "attributes": {
-            "title": "Read IOPS (+) / Write IOPS (−)",
-            "description": "Read (+) and write (−, mirrored) IOPS per database over time, averaged per bucket. Top 10 databases by read IOPS per bucket. Sustained high values indicate I/O-bound workloads.",
-            "visualizationType": "lnsXY",
-            "version": 2,
-            "references": [],
-            "state": {
-              "datasourceStates": {
-                "textBased": {
-                  "layers": {
-                    "xy-layer-chart-disk": {
-                      "index": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
-                      "query": {
-                        "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/ReadIOPS` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/WriteIOPS` IS NOT NULL) | STATS col_dr = AVG(`metrics.amazonaws.com/AWS/RDS/ReadIOPS`), col_dw = -AVG(`metrics.amazonaws.com/AWS/RDS/WriteIOPS`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC, col_dr DESC, DBInstanceIdentifier ASC | LIMIT 10 BY timestamp"
-                      },
-                      "columns": [
-                        {
-                          "columnId": "timestamp",
-                          "fieldName": "timestamp",
-                          "meta": {
-                            "type": "date",
-                            "esType": "date"
-                          }
-                        },
-                        {
-                          "columnId": "DBInstanceIdentifier",
-                          "fieldName": "DBInstanceIdentifier",
-                          "meta": {
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "col_dr",
-                          "fieldName": "col_dr",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "label": "Read IOPS",
-                          "customLabel": true
-                        },
-                        {
-                          "columnId": "col_dw",
-                          "fieldName": "col_dw",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "label": "Write IOPS",
-                          "customLabel": true
-                        }
-                      ],
-                      "timeField": "@timestamp"
-                    }
-                  }
-                }
-              },
-              "filters": [],
-              "query": {
-                "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/ReadIOPS` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/WriteIOPS` IS NOT NULL) | STATS col_dr = AVG(`metrics.amazonaws.com/AWS/RDS/ReadIOPS`), col_dw = -AVG(`metrics.amazonaws.com/AWS/RDS/WriteIOPS`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC, col_dr DESC, DBInstanceIdentifier ASC | LIMIT 10 BY timestamp"
-              },
-              "visualization": {
-                "layers": [
-                  {
-                    "layerId": "xy-layer-chart-disk",
-                    "accessors": [
-                      "col_dr",
-                      "col_dw"
-                    ],
-                    "layerType": "data",
-                    "seriesType": "line",
-                    "xAccessor": "timestamp",
-                    "showGridlines": false,
-                    "splitAccessors": [
-                      "DBInstanceIdentifier"
-                    ]
-                  }
-                ],
-                "preferredSeriesType": "line",
-                "legend": {
-                  "isVisible": true,
-                  "position": "bottom"
-                },
-                "valueLabels": "hide",
-                "axisTitlesVisibilitySettings": {
-                  "x": false,
-                  "yLeft": false,
-                  "yRight": false
-                }
-              },
-              "adHocDataViews": {
-                "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf": {
-                  "id": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
-                  "title": "metrics-aws.rds.otel-*",
-                  "timeFieldName": "@timestamp",
-                  "sourceFilters": [],
-                  "type": "esql",
-                  "fieldFormats": {},
-                  "runtimeFieldMap": {},
-                  "allowNoIndex": true,
-                  "name": "metrics-aws.rds.otel-*",
-                  "allowHidden": false,
-                  "managed": false
-                }
-              },
-              "internalReferences": [
-                {
-                  "type": "index-pattern",
-                  "id": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
-                  "name": "indexpattern-datasource-layer-xy-layer-chart-disk"
-                }
-              ]
-            }
-          }
-        },
-        "panelIndex": "chart-disk",
-        "gridData": {
-          "y": 12,
-          "x": 0,
-          "w": 20,
-          "h": 12,
-          "i": "chart-disk",
-          "sectionId": "aws-rds-per-database-section"
-        }
-      },
-      {
-        "type": "vis",
-        "embeddableConfig": {
-          "title": "Network rx (+) / tx (−) MiB/s",
-          "description": "Network receive (+) and transmit (−, mirrored) throughput per database over time, in MiB/s (averaged per bucket). Top 10 databases by receive throughput per bucket.",
-          "attributes": {
-            "title": "Network rx (+) / tx (−) MiB/s",
-            "description": "Network receive (+) and transmit (−, mirrored) throughput per database over time, in MiB/s (averaged per bucket). Top 10 databases by receive throughput per bucket.",
-            "visualizationType": "lnsXY",
-            "version": 2,
-            "references": [],
-            "state": {
-              "datasourceStates": {
-                "textBased": {
-                  "layers": {
-                    "xy-layer-chart-net": {
-                      "index": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
-                      "query": {
-                        "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput` IS NOT NULL) | STATS col_ni = AVG(`metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput`) / 1048576.0, col_no = -AVG(`metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput`) / 1048576.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC, col_ni DESC, DBInstanceIdentifier ASC | LIMIT 10 BY timestamp"
-                      },
-                      "columns": [
-                        {
-                          "columnId": "timestamp",
-                          "fieldName": "timestamp",
-                          "meta": {
-                            "type": "date",
-                            "esType": "date"
-                          }
-                        },
-                        {
-                          "columnId": "DBInstanceIdentifier",
-                          "fieldName": "DBInstanceIdentifier",
-                          "meta": {
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "col_ni",
-                          "fieldName": "col_ni",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "label": "Rx",
-                          "customLabel": true
-                        },
-                        {
-                          "columnId": "col_no",
-                          "fieldName": "col_no",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "label": "Tx",
-                          "customLabel": true
-                        }
-                      ],
-                      "timeField": "@timestamp"
-                    }
-                  }
-                }
-              },
-              "filters": [],
-              "query": {
-                "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput` IS NOT NULL) | STATS col_ni = AVG(`metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput`) / 1048576.0, col_no = -AVG(`metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput`) / 1048576.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | SORT timestamp ASC, col_ni DESC, DBInstanceIdentifier ASC | LIMIT 10 BY timestamp"
-              },
-              "visualization": {
-                "layers": [
-                  {
-                    "layerId": "xy-layer-chart-net",
-                    "accessors": [
-                      "col_ni",
-                      "col_no"
-                    ],
-                    "layerType": "data",
-                    "seriesType": "line",
-                    "xAccessor": "timestamp",
-                    "showGridlines": false,
-                    "splitAccessors": [
-                      "DBInstanceIdentifier"
-                    ]
-                  }
-                ],
-                "preferredSeriesType": "line",
-                "legend": {
-                  "isVisible": true,
-                  "position": "bottom"
-                },
-                "valueLabels": "hide",
-                "axisTitlesVisibilitySettings": {
-                  "x": false,
-                  "yLeft": false,
-                  "yRight": false
-                }
-              },
-              "adHocDataViews": {
-                "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf": {
-                  "id": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
-                  "title": "metrics-aws.rds.otel-*",
-                  "timeFieldName": "@timestamp",
-                  "sourceFilters": [],
-                  "type": "esql",
-                  "fieldFormats": {},
-                  "runtimeFieldMap": {},
-                  "allowNoIndex": true,
-                  "name": "metrics-aws.rds.otel-*",
-                  "allowHidden": false,
-                  "managed": false
-                }
-              },
-              "internalReferences": [
-                {
-                  "type": "index-pattern",
-                  "id": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
-                  "name": "indexpattern-datasource-layer-xy-layer-chart-net"
-                }
-              ]
-            }
-          }
-        },
-        "panelIndex": "chart-net",
-        "gridData": {
-          "y": 12,
-          "x": 20,
-          "w": 20,
-          "h": 12,
-          "i": "chart-net",
-          "sectionId": "aws-rds-per-database-section"
-        }
-      },
-      {
-        "type": "vis",
-        "embeddableConfig": {
           "title": "",
           "description": "Highest concurrent connections observed on any single database — peak over the selected time range. Approaching an instance's connection limit can reject new clients.",
           "hide_title": true,
@@ -1838,9 +1574,9 @@
         },
         "panelIndex": "kpi-net-in",
         "gridData": {
-          "y": 12,
-          "x": 40,
-          "w": 8,
+          "y": 36,
+          "x": 0,
+          "w": 24,
           "h": 6,
           "i": "kpi-net-in",
           "sectionId": "aws-rds-per-database-section"
@@ -1944,9 +1680,9 @@
         },
         "panelIndex": "kpi-net-out",
         "gridData": {
-          "y": 18,
-          "x": 40,
-          "w": 8,
+          "y": 36,
+          "x": 24,
+          "w": 24,
           "h": 6,
           "i": "kpi-net-out",
           "sectionId": "aws-rds-per-database-section"
@@ -2061,10 +1797,10 @@
         },
         "panelIndex": "top10-cpu",
         "gridData": {
-          "y": 24,
+          "y": 42,
           "x": 0,
           "w": 16,
-          "h": 12,
+          "h": 11,
           "i": "top10-cpu",
           "sectionId": "aws-rds-per-database-section"
         }
@@ -2170,10 +1906,10 @@
         },
         "panelIndex": "top10-connections",
         "gridData": {
-          "y": 24,
+          "y": 42,
           "x": 16,
           "w": 16,
-          "h": 12,
+          "h": 11,
           "i": "top10-connections",
           "sectionId": "aws-rds-per-database-section"
         }
@@ -2279,10 +2015,10 @@
         },
         "panelIndex": "top10-readiops",
         "gridData": {
-          "y": 24,
+          "y": 42,
           "x": 32,
           "w": 16,
-          "h": 12,
+          "h": 11,
           "i": "top10-readiops",
           "sectionId": "aws-rds-per-database-section"
         }
@@ -2408,7 +2144,7 @@
         "panelIndex": "chart-memory",
         "gridData": {
           "y": 0,
-          "x": 0,
+          "x": 24,
           "w": 24,
           "h": 12,
           "i": "chart-memory",
@@ -2575,7 +2311,7 @@
         "panelIndex": "chart-cpu",
         "gridData": {
           "y": 0,
-          "x": 24,
+          "x": 0,
           "w": 24,
           "h": 12,
           "i": "chart-cpu",
@@ -2728,6 +2464,490 @@
           "w": 6,
           "h": 2,
           "i": "nav-otel-dashboards"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Read IOPS",
+          "description": "Read IOPS per database over time — averaged per bucket. Top 10 databases by read IOPS per bucket.",
+          "attributes": {
+            "title": "Read IOPS",
+            "description": "Read IOPS per database over time — averaged per bucket. Top 10 databases by read IOPS per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-iops-read": {
+                      "index": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
+                      "query": {
+                        "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/ReadIOPS` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/WriteIOPS` IS NOT NULL) | STATS col_dr = AVG(`metrics.amazonaws.com/AWS/RDS/ReadIOPS`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | WHERE col_dr IS NOT NULL | SORT timestamp ASC, col_dr DESC, DBInstanceIdentifier ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "DBInstanceIdentifier",
+                          "fieldName": "DBInstanceIdentifier",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "col_dr",
+                          "fieldName": "col_dr",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Read IOPS",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/ReadIOPS` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/WriteIOPS` IS NOT NULL) | STATS col_dr = AVG(`metrics.amazonaws.com/AWS/RDS/ReadIOPS`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | WHERE col_dr IS NOT NULL | SORT timestamp ASC, col_dr DESC, DBInstanceIdentifier ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-iops-read",
+                    "accessors": [
+                      "col_dr"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "DBInstanceIdentifier"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf": {
+                  "id": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
+                  "title": "metrics-aws.rds.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.rds.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-iops-read"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-iops-read",
+        "gridData": {
+          "sectionId": "aws-rds-per-database-section",
+          "i": "chart-iops-read",
+          "y": 12,
+          "x": 0,
+          "w": 24,
+          "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Write IOPS",
+          "description": "Write IOPS per database over time — averaged per bucket. Top 10 databases by write IOPS per bucket.",
+          "attributes": {
+            "title": "Write IOPS",
+            "description": "Write IOPS per database over time — averaged per bucket. Top 10 databases by write IOPS per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-iops-write": {
+                      "index": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
+                      "query": {
+                        "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/ReadIOPS` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/WriteIOPS` IS NOT NULL) | STATS col_dw = AVG(`metrics.amazonaws.com/AWS/RDS/WriteIOPS`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | WHERE col_dw IS NOT NULL | SORT timestamp ASC, col_dw DESC, DBInstanceIdentifier ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "DBInstanceIdentifier",
+                          "fieldName": "DBInstanceIdentifier",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "col_dw",
+                          "fieldName": "col_dw",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Write IOPS",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/ReadIOPS` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/WriteIOPS` IS NOT NULL) | STATS col_dw = AVG(`metrics.amazonaws.com/AWS/RDS/WriteIOPS`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | WHERE col_dw IS NOT NULL | SORT timestamp ASC, col_dw DESC, DBInstanceIdentifier ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-iops-write",
+                    "accessors": [
+                      "col_dw"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "DBInstanceIdentifier"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf": {
+                  "id": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
+                  "title": "metrics-aws.rds.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.rds.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-iops-write"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-iops-write",
+        "gridData": {
+          "sectionId": "aws-rds-per-database-section",
+          "i": "chart-iops-write",
+          "y": 12,
+          "x": 24,
+          "w": 24,
+          "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Network rx",
+          "description": "Network receive throughput per database over time (MiB/s, averaged per bucket). Top 10 databases by receive throughput per bucket.",
+          "attributes": {
+            "title": "Network rx",
+            "description": "Network receive throughput per database over time (MiB/s, averaged per bucket). Top 10 databases by receive throughput per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-net-rx": {
+                      "index": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
+                      "query": {
+                        "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput` IS NOT NULL) | STATS col_ni = AVG(`metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput`) / 1048576.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | WHERE col_ni IS NOT NULL | SORT timestamp ASC, col_ni DESC, DBInstanceIdentifier ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "DBInstanceIdentifier",
+                          "fieldName": "DBInstanceIdentifier",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "col_ni",
+                          "fieldName": "col_ni",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Rx",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput` IS NOT NULL) | STATS col_ni = AVG(`metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput`) / 1048576.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | WHERE col_ni IS NOT NULL | SORT timestamp ASC, col_ni DESC, DBInstanceIdentifier ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-net-rx",
+                    "accessors": [
+                      "col_ni"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "DBInstanceIdentifier"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf": {
+                  "id": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
+                  "title": "metrics-aws.rds.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.rds.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-net-rx"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-net-rx",
+        "gridData": {
+          "sectionId": "aws-rds-per-database-section",
+          "i": "chart-net-rx",
+          "y": 24,
+          "x": 0,
+          "w": 24,
+          "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Network tx",
+          "description": "Network transmit throughput per database over time (MiB/s, averaged per bucket). Top 10 databases by transmit throughput per bucket.",
+          "attributes": {
+            "title": "Network tx",
+            "description": "Network transmit throughput per database over time (MiB/s, averaged per bucket). Top 10 databases by transmit throughput per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-net-tx": {
+                      "index": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
+                      "query": {
+                        "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput` IS NOT NULL) | STATS col_no = AVG(`metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput`) / 1048576.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | WHERE col_no IS NOT NULL | SORT timestamp ASC, col_no DESC, DBInstanceIdentifier ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "DBInstanceIdentifier",
+                          "fieldName": "DBInstanceIdentifier",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "col_no",
+                          "fieldName": "col_no",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Tx",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM metrics-aws.rds.otel-* | WHERE DBInstanceIdentifier IS NOT NULL AND DBInstanceIdentifier != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/RDS/NetworkReceiveThroughput` IS NOT NULL OR `metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput` IS NOT NULL) | STATS col_no = AVG(`metrics.amazonaws.com/AWS/RDS/NetworkTransmitThroughput`) / 1048576.0 BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), DBInstanceIdentifier, cloud.region | WHERE col_no IS NOT NULL | SORT timestamp ASC, col_no DESC, DBInstanceIdentifier ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-net-tx",
+                    "accessors": [
+                      "col_no"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "DBInstanceIdentifier"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf": {
+                  "id": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
+                  "title": "metrics-aws.rds.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.rds.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "ccad7b1133a69c9f7e6e7e01f7a7937f158273890dea0030f085bad62093bfcf",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-net-tx"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-net-tx",
+        "gridData": {
+          "sectionId": "aws-rds-per-database-section",
+          "i": "chart-net-tx",
+          "y": 24,
+          "x": 24,
+          "w": 24,
+          "h": 12
         }
       }
     ],

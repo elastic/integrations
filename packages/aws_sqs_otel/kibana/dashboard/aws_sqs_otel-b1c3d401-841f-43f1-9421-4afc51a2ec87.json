@@ -1556,9 +1556,9 @@
         },
         "panelIndex": "kpi-net-in",
         "gridData": {
-          "y": 12,
-          "x": 40,
-          "w": 8,
+          "y": 36,
+          "x": 0,
+          "w": 24,
           "h": 6,
           "i": "kpi-net-in",
           "sectionId": "aws-sqs-per-queue-section"
@@ -1647,275 +1647,11 @@
         },
         "panelIndex": "kpi-net-out",
         "gridData": {
-          "y": 18,
-          "x": 40,
-          "w": 8,
+          "y": 36,
+          "x": 24,
+          "w": 24,
           "h": 6,
           "i": "kpi-net-out",
-          "sectionId": "aws-sqs-per-queue-section"
-        }
-      },
-      {
-        "type": "vis",
-        "embeddableConfig": {
-          "title": "Sent (+) / Deleted (−) over time",
-          "description": "Messages sent (+, producer) and deleted (−, consumer; mirrored) per queue over time, summed per bucket. Top 10 queues by messages sent per bucket. A widening gap (more sent than deleted) indicates a growing backlog.",
-          "attributes": {
-            "title": "Sent (+) / Deleted (−) over time",
-            "description": "Messages sent (+, producer) and deleted (−, consumer; mirrored) per queue over time, summed per bucket. Top 10 queues by messages sent per bucket. A widening gap (more sent than deleted) indicates a growing backlog.",
-            "visualizationType": "lnsXY",
-            "version": 2,
-            "references": [],
-            "state": {
-              "datasourceStates": {
-                "textBased": {
-                  "layers": {
-                    "xy-layer-chart-net": {
-                      "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
-                      "query": {
-                        "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS sent = SUM(sum_over_time(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`)), deleted = -1 * COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE sent IS NOT NULL | SORT timestamp ASC, sent DESC, QueueName ASC | LIMIT 10 BY timestamp"
-                      },
-                      "columns": [
-                        {
-                          "columnId": "timestamp",
-                          "fieldName": "timestamp",
-                          "meta": {
-                            "type": "date",
-                            "esType": "date"
-                          }
-                        },
-                        {
-                          "columnId": "QueueName",
-                          "fieldName": "QueueName",
-                          "meta": {
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "sent",
-                          "fieldName": "sent",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "label": "Sent",
-                          "customLabel": true
-                        },
-                        {
-                          "columnId": "deleted",
-                          "fieldName": "deleted",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "label": "Deleted",
-                          "customLabel": true
-                        }
-                      ],
-                      "timeField": "@timestamp"
-                    }
-                  }
-                }
-              },
-              "filters": [],
-              "query": {
-                "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS sent = SUM(sum_over_time(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`)), deleted = -1 * COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE sent IS NOT NULL | SORT timestamp ASC, sent DESC, QueueName ASC | LIMIT 10 BY timestamp"
-              },
-              "visualization": {
-                "layers": [
-                  {
-                    "layerId": "xy-layer-chart-net",
-                    "accessors": [
-                      "sent",
-                      "deleted"
-                    ],
-                    "layerType": "data",
-                    "seriesType": "line",
-                    "xAccessor": "timestamp",
-                    "showGridlines": false,
-                    "splitAccessors": [
-                      "QueueName"
-                    ]
-                  }
-                ],
-                "preferredSeriesType": "line",
-                "legend": {
-                  "isVisible": true,
-                  "position": "bottom"
-                },
-                "valueLabels": "hide",
-                "axisTitlesVisibilitySettings": {
-                  "x": false,
-                  "yLeft": false,
-                  "yRight": false
-                }
-              },
-              "adHocDataViews": {
-                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
-                  "id": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
-                  "title": "metrics-aws.sqs.otel-*",
-                  "timeFieldName": "@timestamp",
-                  "sourceFilters": [],
-                  "type": "esql",
-                  "fieldFormats": {},
-                  "runtimeFieldMap": {},
-                  "allowNoIndex": true,
-                  "name": "metrics-aws.sqs.otel-*",
-                  "allowHidden": false,
-                  "managed": false
-                }
-              },
-              "internalReferences": [
-                {
-                  "type": "index-pattern",
-                  "id": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
-                  "name": "indexpattern-datasource-layer-xy-layer-chart-net"
-                }
-              ]
-            }
-          }
-        },
-        "panelIndex": "chart-net",
-        "gridData": {
-          "y": 12,
-          "x": 20,
-          "w": 20,
-          "h": 12,
-          "i": "chart-net",
-          "sectionId": "aws-sqs-per-queue-section"
-        }
-      },
-      {
-        "type": "vis",
-        "embeddableConfig": {
-          "title": "Visible (+) / Not visible (−) over time",
-          "description": "Visible/ready messages (+) and in-flight/not-visible messages (−, mirrored) per queue over time, peak per bucket. Top 10 queues by visible depth per bucket. Rising visible messages indicate consumers falling behind.",
-          "attributes": {
-            "title": "Visible (+) / Not visible (−) over time",
-            "description": "Visible/ready messages (+) and in-flight/not-visible messages (−, mirrored) per queue over time, peak per bucket. Top 10 queues by visible depth per bucket. Rising visible messages indicate consumers falling behind.",
-            "visualizationType": "lnsXY",
-            "version": 2,
-            "references": [],
-            "state": {
-              "datasourceStates": {
-                "textBased": {
-                  "layers": {
-                    "xy-layer-chart-disk": {
-                      "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
-                      "query": {
-                        "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS visible = MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)), not_visible = -1 * COALESCE(MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE visible IS NOT NULL | SORT timestamp ASC, visible DESC, QueueName ASC | LIMIT 10 BY timestamp"
-                      },
-                      "columns": [
-                        {
-                          "columnId": "timestamp",
-                          "fieldName": "timestamp",
-                          "meta": {
-                            "type": "date",
-                            "esType": "date"
-                          }
-                        },
-                        {
-                          "columnId": "QueueName",
-                          "fieldName": "QueueName",
-                          "meta": {
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "visible",
-                          "fieldName": "visible",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "label": "Visible (depth)",
-                          "customLabel": true
-                        },
-                        {
-                          "columnId": "not_visible",
-                          "fieldName": "not_visible",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "label": "Not visible (in-flight)",
-                          "customLabel": true
-                        }
-                      ],
-                      "timeField": "@timestamp"
-                    }
-                  }
-                }
-              },
-              "filters": [],
-              "query": {
-                "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS visible = MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)), not_visible = -1 * COALESCE(MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE visible IS NOT NULL | SORT timestamp ASC, visible DESC, QueueName ASC | LIMIT 10 BY timestamp"
-              },
-              "visualization": {
-                "layers": [
-                  {
-                    "layerId": "xy-layer-chart-disk",
-                    "accessors": [
-                      "visible",
-                      "not_visible"
-                    ],
-                    "layerType": "data",
-                    "seriesType": "line",
-                    "xAccessor": "timestamp",
-                    "showGridlines": false,
-                    "splitAccessors": [
-                      "QueueName"
-                    ]
-                  }
-                ],
-                "preferredSeriesType": "line",
-                "legend": {
-                  "isVisible": true,
-                  "position": "bottom"
-                },
-                "valueLabels": "hide",
-                "axisTitlesVisibilitySettings": {
-                  "x": false,
-                  "yLeft": false,
-                  "yRight": false
-                }
-              },
-              "adHocDataViews": {
-                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
-                  "id": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
-                  "title": "metrics-aws.sqs.otel-*",
-                  "timeFieldName": "@timestamp",
-                  "sourceFilters": [],
-                  "type": "esql",
-                  "fieldFormats": {},
-                  "runtimeFieldMap": {},
-                  "allowNoIndex": true,
-                  "name": "metrics-aws.sqs.otel-*",
-                  "allowHidden": false,
-                  "managed": false
-                }
-              },
-              "internalReferences": [
-                {
-                  "type": "index-pattern",
-                  "id": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
-                  "name": "indexpattern-datasource-layer-xy-layer-chart-disk"
-                }
-              ]
-            }
-          }
-        },
-        "panelIndex": "chart-disk",
-        "gridData": {
-          "y": 12,
-          "x": 0,
-          "w": 20,
-          "h": 12,
-          "i": "chart-disk",
           "sectionId": "aws-sqs-per-queue-section"
         }
       },
@@ -2020,10 +1756,10 @@
         },
         "panelIndex": "top10-invocations",
         "gridData": {
-          "y": 24,
+          "y": 42,
           "x": 0,
           "w": 16,
-          "h": 12,
+          "h": 11,
           "i": "top10-invocations",
           "sectionId": "aws-sqs-per-queue-section"
         }
@@ -2129,10 +1865,10 @@
         },
         "panelIndex": "top10-errors",
         "gridData": {
-          "y": 24,
+          "y": 42,
           "x": 16,
           "w": 16,
-          "h": 12,
+          "h": 11,
           "i": "top10-errors",
           "sectionId": "aws-sqs-per-queue-section"
         }
@@ -2238,10 +1974,10 @@
         },
         "panelIndex": "top10-duration",
         "gridData": {
-          "y": 24,
+          "y": 42,
           "x": 32,
           "w": 16,
-          "h": 12,
+          "h": 11,
           "i": "top10-duration",
           "sectionId": "aws-sqs-per-queue-section"
         }
@@ -2397,7 +2133,7 @@
         },
         "panelIndex": "chart-memory",
         "gridData": {
-          "y": 0,
+          "y": 24,
           "x": 0,
           "w": 24,
           "h": 12,
@@ -2556,7 +2292,7 @@
         },
         "panelIndex": "chart-cpu",
         "gridData": {
-          "y": 0,
+          "y": 24,
           "x": 24,
           "w": 24,
           "h": 12,
@@ -2710,6 +2446,490 @@
           "w": 6,
           "h": 2,
           "i": "nav-otel-dashboards"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Messages sent",
+          "description": "Messages sent per queue over time — summed per bucket. Top 10 queues by messages sent per bucket.",
+          "attributes": {
+            "title": "Messages sent",
+            "description": "Messages sent per queue over time — summed per bucket. Top 10 queues by messages sent per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-msg-sent": {
+                      "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
+                      "query": {
+                        "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS sent = SUM(sum_over_time(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE sent IS NOT NULL | SORT timestamp ASC, sent DESC, QueueName ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "QueueName",
+                          "fieldName": "QueueName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "sent",
+                          "fieldName": "sent",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Sent",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS sent = SUM(sum_over_time(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesSent`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE sent IS NOT NULL | SORT timestamp ASC, sent DESC, QueueName ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-msg-sent",
+                    "accessors": [
+                      "sent"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "QueueName"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
+                  "title": "metrics-aws.sqs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.sqs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-msg-sent"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-msg-sent",
+        "gridData": {
+          "sectionId": "aws-sqs-per-queue-section",
+          "i": "chart-msg-sent",
+          "y": 0,
+          "x": 0,
+          "w": 24,
+          "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Messages deleted",
+          "description": "Messages deleted per queue over time — summed per bucket. Top 10 queues by messages deleted per bucket.",
+          "attributes": {
+            "title": "Messages deleted",
+            "description": "Messages deleted per queue over time — summed per bucket. Top 10 queues by messages deleted per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-msg-del": {
+                      "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
+                      "query": {
+                        "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS deleted = COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE deleted IS NOT NULL | SORT timestamp ASC, deleted DESC, QueueName ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "QueueName",
+                          "fieldName": "QueueName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "deleted",
+                          "fieldName": "deleted",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Deleted",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Sum\" | STATS deleted = COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/SQS/NumberOfMessagesDeleted`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE deleted IS NOT NULL | SORT timestamp ASC, deleted DESC, QueueName ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-msg-del",
+                    "accessors": [
+                      "deleted"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "QueueName"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
+                  "title": "metrics-aws.sqs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.sqs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-msg-del"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-msg-del",
+        "gridData": {
+          "sectionId": "aws-sqs-per-queue-section",
+          "i": "chart-msg-del",
+          "y": 0,
+          "x": 24,
+          "w": 24,
+          "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Visible messages",
+          "description": "Visible (ready) messages per queue over time — peak per bucket. Top 10 queues by visible messages per bucket.",
+          "attributes": {
+            "title": "Visible messages",
+            "description": "Visible (ready) messages per queue over time — peak per bucket. Top 10 queues by visible messages per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-msg-vis": {
+                      "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
+                      "query": {
+                        "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS visible = MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE visible IS NOT NULL | SORT timestamp ASC, visible DESC, QueueName ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "QueueName",
+                          "fieldName": "QueueName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "visible",
+                          "fieldName": "visible",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Visible (depth)",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS visible = MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE visible IS NOT NULL | SORT timestamp ASC, visible DESC, QueueName ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-msg-vis",
+                    "accessors": [
+                      "visible"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "QueueName"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
+                  "title": "metrics-aws.sqs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.sqs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-msg-vis"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-msg-vis",
+        "gridData": {
+          "sectionId": "aws-sqs-per-queue-section",
+          "i": "chart-msg-vis",
+          "y": 12,
+          "x": 0,
+          "w": 24,
+          "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "In-flight messages",
+          "description": "In-flight (not visible) messages per queue over time — peak per bucket. Top 10 queues by in-flight messages per bucket.",
+          "attributes": {
+            "title": "In-flight messages",
+            "description": "In-flight (not visible) messages per queue over time — peak per bucket. Top 10 queues by in-flight messages per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-msg-inflight": {
+                      "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
+                      "query": {
+                        "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS not_visible = COALESCE(MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE not_visible IS NOT NULL | SORT timestamp ASC, not_visible DESC, QueueName ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "QueueName",
+                          "fieldName": "QueueName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "not_visible",
+                          "fieldName": "not_visible",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Not visible (in-flight)",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "TS metrics-aws.sqs.otel-* | WHERE QueueName IS NOT NULL AND QueueName != \"\" | WHERE stat == \"Average\" | STATS not_visible = COALESCE(MAX(max_over_time(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesNotVisible`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), QueueName, cloud.region | WHERE not_visible IS NOT NULL | SORT timestamp ASC, not_visible DESC, QueueName ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-msg-inflight",
+                    "accessors": [
+                      "not_visible"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "QueueName"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
+                  "title": "metrics-aws.sqs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.sqs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-msg-inflight"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-msg-inflight",
+        "gridData": {
+          "sectionId": "aws-sqs-per-queue-section",
+          "i": "chart-msg-inflight",
+          "y": 12,
+          "x": 24,
+          "w": 24,
+          "h": 12
         }
       }
     ],

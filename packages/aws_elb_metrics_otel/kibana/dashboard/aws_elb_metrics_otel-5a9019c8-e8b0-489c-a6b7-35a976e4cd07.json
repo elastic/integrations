@@ -1574,9 +1574,9 @@
         },
         "panelIndex": "kpi-net-in",
         "gridData": {
-          "y": 12,
-          "x": 40,
-          "w": 8,
+          "y": 36,
+          "x": 0,
+          "w": 24,
           "h": 6,
           "i": "kpi-net-in",
           "sectionId": "aws-elb-per-load-balancer-section"
@@ -1673,154 +1673,11 @@
         },
         "panelIndex": "kpi-net-out",
         "gridData": {
-          "y": 18,
-          "x": 40,
-          "w": 8,
+          "y": 36,
+          "x": 24,
+          "w": 24,
           "h": 6,
           "i": "kpi-net-out",
-          "sectionId": "aws-elb-per-load-balancer-section"
-        }
-      },
-      {
-        "type": "vis",
-        "embeddableConfig": {
-          "title": "Requests & target 5xx over time",
-          "description": "Request count (left axis) and backend (target) 5xx responses (right axis) per load balancer over time, summed per bucket. Separate axes because 5xx volume is far smaller than total requests. Top 10 load balancers by requests per bucket; watch for 5xx rising against steady request volume.",
-          "attributes": {
-            "title": "Requests & target 5xx over time",
-            "description": "Request count (left axis) and backend (target) 5xx responses (right axis) per load balancer over time, summed per bucket. Separate axes because 5xx volume is far smaller than total requests. Top 10 load balancers by requests per bucket; watch for 5xx rising against steady request volume.",
-            "visualizationType": "lnsXY",
-            "version": 2,
-            "references": [],
-            "state": {
-              "datasourceStates": {
-                "textBased": {
-                  "layers": {
-                    "xy-layer-chart-net": {
-                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
-                      "query": {
-                        "esql": "TS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`)), errors = COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC, invocations DESC, LoadBalancer ASC | LIMIT 10 BY timestamp"
-                      },
-                      "columns": [
-                        {
-                          "columnId": "timestamp",
-                          "fieldName": "timestamp",
-                          "meta": {
-                            "type": "date",
-                            "esType": "date"
-                          }
-                        },
-                        {
-                          "columnId": "LoadBalancer",
-                          "fieldName": "LoadBalancer",
-                          "meta": {
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "invocations",
-                          "fieldName": "invocations",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "label": "Requests",
-                          "customLabel": true
-                        },
-                        {
-                          "columnId": "errors",
-                          "fieldName": "errors",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "label": "Target 5xx",
-                          "customLabel": true
-                        }
-                      ],
-                      "timeField": "@timestamp"
-                    }
-                  }
-                }
-              },
-              "filters": [],
-              "query": {
-                "esql": "TS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`)), errors = COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC, invocations DESC, LoadBalancer ASC | LIMIT 10 BY timestamp"
-              },
-              "visualization": {
-                "layers": [
-                  {
-                    "layerId": "xy-layer-chart-net",
-                    "accessors": [
-                      "invocations",
-                      "errors"
-                    ],
-                    "layerType": "data",
-                    "seriesType": "line",
-                    "xAccessor": "timestamp",
-                    "showGridlines": false,
-                    "splitAccessors": [
-                      "LoadBalancer"
-                    ],
-                    "yConfig": [
-                      {
-                        "forAccessor": "invocations",
-                        "axisMode": "left"
-                      },
-                      {
-                        "forAccessor": "errors",
-                        "axisMode": "right",
-                        "color": "#F6726A"
-                      }
-                    ]
-                  }
-                ],
-                "preferredSeriesType": "line",
-                "legend": {
-                  "isVisible": true,
-                  "position": "bottom"
-                },
-                "valueLabels": "hide",
-                "axisTitlesVisibilitySettings": {
-                  "x": false,
-                  "yLeft": false,
-                  "yRight": true
-                }
-              },
-              "adHocDataViews": {
-                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
-                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
-                  "title": "metrics-aws.elb.otel-*",
-                  "timeFieldName": "@timestamp",
-                  "sourceFilters": [],
-                  "type": "esql",
-                  "fieldFormats": {},
-                  "runtimeFieldMap": {},
-                  "allowNoIndex": true,
-                  "name": "metrics-aws.elb.otel-*",
-                  "allowHidden": false,
-                  "managed": false
-                }
-              },
-              "internalReferences": [
-                {
-                  "type": "index-pattern",
-                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
-                  "name": "indexpattern-datasource-layer-xy-layer-chart-net"
-                }
-              ]
-            }
-          }
-        },
-        "panelIndex": "chart-net",
-        "gridData": {
-          "y": 12,
-          "x": 20,
-          "w": 20,
-          "h": 12,
-          "i": "chart-net",
           "sectionId": "aws-elb-per-load-balancer-section"
         }
       },
@@ -1967,7 +1824,7 @@
         "gridData": {
           "y": 12,
           "x": 0,
-          "w": 20,
+          "w": 24,
           "h": 12,
           "i": "chart-disk",
           "sectionId": "aws-elb-per-load-balancer-section"
@@ -2074,10 +1931,10 @@
         },
         "panelIndex": "top10-invocations",
         "gridData": {
-          "y": 24,
+          "y": 42,
           "x": 0,
           "w": 16,
-          "h": 12,
+          "h": 11,
           "i": "top10-invocations",
           "sectionId": "aws-elb-per-load-balancer-section"
         }
@@ -2183,10 +2040,10 @@
         },
         "panelIndex": "top10-errors",
         "gridData": {
-          "y": 24,
+          "y": 42,
           "x": 16,
           "w": 16,
-          "h": 12,
+          "h": 11,
           "i": "top10-errors",
           "sectionId": "aws-elb-per-load-balancer-section"
         }
@@ -2292,10 +2149,10 @@
         },
         "panelIndex": "top10-duration",
         "gridData": {
-          "y": 24,
+          "y": 42,
           "x": 32,
           "w": 16,
-          "h": 12,
+          "h": 11,
           "i": "top10-duration",
           "sectionId": "aws-elb-per-load-balancer-section"
         }
@@ -2424,9 +2281,9 @@
         },
         "panelIndex": "chart-elb-count",
         "gridData": {
-          "y": 0,
-          "x": 0,
-          "w": 16,
+          "y": 12,
+          "x": 24,
+          "w": 24,
           "h": 12,
           "i": "chart-elb-count",
           "sectionId": "aws-elb-per-load-balancer-section"
@@ -2542,9 +2399,9 @@
         },
         "panelIndex": "chart-memory",
         "gridData": {
-          "y": 0,
-          "x": 16,
-          "w": 16,
+          "y": 24,
+          "x": 0,
+          "w": 24,
           "h": 12,
           "i": "chart-memory",
           "sectionId": "aws-elb-per-load-balancer-section"
@@ -2658,9 +2515,9 @@
         },
         "panelIndex": "chart-cpu",
         "gridData": {
-          "y": 0,
-          "x": 32,
-          "w": 16,
+          "y": 24,
+          "x": 24,
+          "w": 24,
           "h": 12,
           "i": "chart-cpu",
           "sectionId": "aws-elb-per-load-balancer-section"
@@ -2811,6 +2668,248 @@
           "w": 6,
           "h": 2,
           "i": "nav-otel-dashboards"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Requests",
+          "description": "Request count per load balancer over time — summed per bucket. Top 10 load balancers by requests per bucket.",
+          "attributes": {
+            "title": "Requests",
+            "description": "Request count per load balancer over time — summed per bucket. Top 10 load balancers by requests per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-req": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "TS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), LoadBalancer, cloud.region | WHERE invocations IS NOT NULL | SORT timestamp ASC, invocations DESC, LoadBalancer ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "LoadBalancer",
+                          "fieldName": "LoadBalancer",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "invocations",
+                          "fieldName": "invocations",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Requests",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "TS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), LoadBalancer, cloud.region | WHERE invocations IS NOT NULL | SORT timestamp ASC, invocations DESC, LoadBalancer ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-req",
+                    "accessors": [
+                      "invocations"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "LoadBalancer"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": true
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-aws.elb.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.elb.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-req"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-req",
+        "gridData": {
+          "sectionId": "aws-elb-per-load-balancer-section",
+          "i": "chart-req",
+          "y": 0,
+          "x": 0,
+          "w": 24,
+          "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Target 5xx",
+          "description": "Backend (target) 5xx responses per load balancer over time — summed per bucket. Top 10 load balancers by 5xx per bucket.",
+          "attributes": {
+            "title": "Target 5xx",
+            "description": "Backend (target) 5xx responses per load balancer over time — summed per bucket. Top 10 load balancers by 5xx per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-5xx": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "TS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS errors = COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), LoadBalancer, cloud.region | WHERE errors IS NOT NULL | SORT timestamp ASC, errors DESC, LoadBalancer ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "LoadBalancer",
+                          "fieldName": "LoadBalancer",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "errors",
+                          "fieldName": "errors",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Target 5xx",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "TS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS errors = COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), LoadBalancer, cloud.region | WHERE errors IS NOT NULL | SORT timestamp ASC, errors DESC, LoadBalancer ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-5xx",
+                    "accessors": [
+                      "errors"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "LoadBalancer"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": true
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-aws.elb.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.elb.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-5xx"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-5xx",
+        "gridData": {
+          "sectionId": "aws-elb-per-load-balancer-section",
+          "i": "chart-5xx",
+          "y": 0,
+          "x": 24,
+          "w": 24,
+          "h": 12
         }
       }
     ],

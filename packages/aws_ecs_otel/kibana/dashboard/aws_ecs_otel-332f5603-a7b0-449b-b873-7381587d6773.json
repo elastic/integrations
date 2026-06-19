@@ -1656,9 +1656,9 @@
         },
         "panelIndex": "kpi-net-in",
         "gridData": {
-          "y": 12,
-          "x": 40,
-          "w": 8,
+          "y": 24,
+          "x": 24,
+          "w": 24,
           "h": 6,
           "i": "kpi-net-in",
           "sectionId": "aws-ecs-per-service-section"
@@ -1748,9 +1748,9 @@
         },
         "panelIndex": "kpi-net-out",
         "gridData": {
-          "y": 18,
-          "x": 40,
-          "w": 8,
+          "y": 30,
+          "x": 24,
+          "w": 24,
           "h": 6,
           "i": "kpi-net-out",
           "sectionId": "aws-ecs-per-service-section"
@@ -1876,151 +1876,11 @@
         },
         "panelIndex": "chart-net",
         "gridData": {
-          "y": 12,
-          "x": 20,
-          "w": 20,
+          "y": 24,
+          "x": 0,
+          "w": 24,
           "h": 12,
           "i": "chart-net",
-          "sectionId": "aws-ecs-per-service-section"
-        }
-      },
-      {
-        "type": "vis",
-        "embeddableConfig": {
-          "title": "New & active connections",
-          "description": "New Service Connect connections (left axis, summed per bucket) and average active connections (right axis) per service over time. Plotted on separate axes because their magnitudes differ. Top 10 services by new connections per bucket.",
-          "attributes": {
-            "title": "New & active connections",
-            "description": "New Service Connect connections (left axis, summed per bucket) and average active connections (right axis) per service over time. Plotted on separate axes because their magnitudes differ. Top 10 services by new connections per bucket.",
-            "visualizationType": "lnsXY",
-            "version": 2,
-            "references": [],
-            "state": {
-              "datasourceStates": {
-                "textBased": {
-                  "layers": {
-                    "xy-layer-chart-disk": {
-                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
-                      "query": {
-                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), col_active_conn = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC, col_new_conn DESC, ServiceName ASC | LIMIT 10 BY timestamp"
-                      },
-                      "columns": [
-                        {
-                          "columnId": "timestamp",
-                          "fieldName": "timestamp",
-                          "meta": {
-                            "type": "date",
-                            "esType": "date"
-                          }
-                        },
-                        {
-                          "columnId": "ServiceName",
-                          "fieldName": "ServiceName",
-                          "meta": {
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "col_new_conn",
-                          "fieldName": "col_new_conn",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true
-                        },
-                        {
-                          "columnId": "col_active_conn",
-                          "fieldName": "col_active_conn",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true
-                        }
-                      ],
-                      "timeField": "@timestamp"
-                    }
-                  }
-                }
-              },
-              "filters": [],
-              "query": {
-                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), col_active_conn = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC, col_new_conn DESC, ServiceName ASC | LIMIT 10 BY timestamp"
-              },
-              "visualization": {
-                "layers": [
-                  {
-                    "layerId": "xy-layer-chart-disk",
-                    "accessors": [
-                      "col_new_conn",
-                      "col_active_conn"
-                    ],
-                    "layerType": "data",
-                    "seriesType": "line",
-                    "xAccessor": "timestamp",
-                    "showGridlines": false,
-                    "splitAccessors": [
-                      "ServiceName"
-                    ],
-                    "yConfig": [
-                      {
-                        "forAccessor": "col_new_conn",
-                        "axisMode": "left",
-                        "color": "#54B399"
-                      },
-                      {
-                        "forAccessor": "col_active_conn",
-                        "axisMode": "right",
-                        "color": "#6092C0"
-                      }
-                    ]
-                  }
-                ],
-                "preferredSeriesType": "line",
-                "legend": {
-                  "isVisible": true,
-                  "position": "bottom"
-                },
-                "valueLabels": "hide",
-                "axisTitlesVisibilitySettings": {
-                  "x": false,
-                  "yLeft": false,
-                  "yRight": true
-                }
-              },
-              "adHocDataViews": {
-                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
-                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
-                  "title": "metrics-aws.ecs.otel-*",
-                  "timeFieldName": "@timestamp",
-                  "sourceFilters": [],
-                  "type": "esql",
-                  "fieldFormats": {},
-                  "runtimeFieldMap": {},
-                  "allowNoIndex": true,
-                  "name": "metrics-aws.ecs.otel-*",
-                  "allowHidden": false,
-                  "managed": false
-                }
-              },
-              "internalReferences": [
-                {
-                  "type": "index-pattern",
-                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
-                  "name": "indexpattern-datasource-layer-xy-layer-chart-disk"
-                }
-              ]
-            }
-          }
-        },
-        "panelIndex": "chart-disk",
-        "gridData": {
-          "y": 12,
-          "x": 0,
-          "w": 20,
-          "h": 12,
-          "i": "chart-disk",
           "sectionId": "aws-ecs-per-service-section"
         }
       },
@@ -2133,10 +1993,10 @@
         },
         "panelIndex": "top10-cpu",
         "gridData": {
-          "y": 24,
+          "y": 36,
           "x": 0,
           "w": 16,
-          "h": 12,
+          "h": 11,
           "i": "top10-cpu",
           "sectionId": "aws-ecs-per-service-section"
         }
@@ -2250,10 +2110,10 @@
         },
         "panelIndex": "top10-netin",
         "gridData": {
-          "y": 24,
+          "y": 36,
           "x": 16,
           "w": 16,
-          "h": 12,
+          "h": 11,
           "i": "top10-netin",
           "sectionId": "aws-ecs-per-service-section"
         }
@@ -2359,10 +2219,10 @@
         },
         "panelIndex": "top10-ebswrite",
         "gridData": {
-          "y": 24,
+          "y": 36,
           "x": 32,
           "w": 16,
-          "h": 12,
+          "h": 11,
           "i": "top10-ebswrite",
           "sectionId": "aws-ecs-per-service-section"
         }
@@ -2527,7 +2387,7 @@
         "panelIndex": "chart-memory",
         "gridData": {
           "y": 0,
-          "x": 0,
+          "x": 24,
           "w": 24,
           "h": 12,
           "i": "chart-memory",
@@ -2694,7 +2554,7 @@
         "panelIndex": "chart-cpu",
         "gridData": {
           "y": 0,
-          "x": 24,
+          "x": 0,
           "w": 24,
           "h": 12,
           "i": "chart-cpu",
@@ -2810,6 +2670,244 @@
           "w": 6,
           "h": 2,
           "i": "nav-otel-dashboards"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "New connections",
+          "description": "New Service Connect connections per service over time — total per bucket. Top 10 services by new connections per bucket.",
+          "attributes": {
+            "title": "New connections",
+            "description": "New Service Connect connections per service over time — total per bucket. Top 10 services by new connections per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-conn-new": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | WHERE col_new_conn IS NOT NULL | SORT timestamp ASC, col_new_conn DESC, ServiceName ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "ServiceName",
+                          "fieldName": "ServiceName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "col_new_conn",
+                          "fieldName": "col_new_conn",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | WHERE col_new_conn IS NOT NULL | SORT timestamp ASC, col_new_conn DESC, ServiceName ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-conn-new",
+                    "accessors": [
+                      "col_new_conn"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "ServiceName"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": true
+                }
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-conn-new"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-conn-new",
+        "gridData": {
+          "sectionId": "aws-ecs-per-service-section",
+          "i": "chart-conn-new",
+          "y": 12,
+          "x": 0,
+          "w": 24,
+          "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Active connections",
+          "description": "Average active Service Connect connections per service over time. Top 10 services by active connections per bucket.",
+          "attributes": {
+            "title": "Active connections",
+            "description": "Average active Service Connect connections per service over time. Top 10 services by active connections per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-conn-active": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_active_conn = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | WHERE col_active_conn IS NOT NULL | SORT timestamp ASC, col_active_conn DESC, ServiceName ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "ServiceName",
+                          "fieldName": "ServiceName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "col_active_conn",
+                          "fieldName": "col_active_conn",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_active_conn = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | WHERE col_active_conn IS NOT NULL | SORT timestamp ASC, col_active_conn DESC, ServiceName ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-conn-active",
+                    "accessors": [
+                      "col_active_conn"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "ServiceName"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": true
+                }
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-conn-active"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-conn-active",
+        "gridData": {
+          "sectionId": "aws-ecs-per-service-section",
+          "i": "chart-conn-active",
+          "y": 12,
+          "x": 24,
+          "w": 24,
+          "h": 12
         }
       }
     ],

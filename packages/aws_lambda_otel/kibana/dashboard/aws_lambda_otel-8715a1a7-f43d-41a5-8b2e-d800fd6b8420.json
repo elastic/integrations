@@ -1525,9 +1525,9 @@
         },
         "panelIndex": "kpi-net-in",
         "gridData": {
-          "y": 12,
-          "x": 40,
-          "w": 8,
+          "y": 36,
+          "x": 0,
+          "w": 24,
           "h": 6,
           "i": "kpi-net-in",
           "sectionId": "aws-lambda-per-function-section"
@@ -1616,286 +1616,11 @@
         },
         "panelIndex": "kpi-net-out",
         "gridData": {
-          "y": 18,
-          "x": 40,
-          "w": 8,
+          "y": 36,
+          "x": 24,
+          "w": 24,
           "h": 6,
           "i": "kpi-net-out",
-          "sectionId": "aws-lambda-per-function-section"
-        }
-      },
-      {
-        "type": "vis",
-        "embeddableConfig": {
-          "title": "Invocations & errors over time",
-          "description": "Invocations (left axis) and errors (right axis) per function over time, summed per bucket. Separate axes because errors are far smaller than invocations. Top 10 functions by invocations per bucket; a rising error line against steady invocations indicates a failing function.",
-          "attributes": {
-            "title": "Invocations & errors over time",
-            "description": "Invocations (left axis) and errors (right axis) per function over time, summed per bucket. Separate axes because errors are far smaller than invocations. Top 10 functions by invocations per bucket; a rising error line against steady invocations indicates a failing function.",
-            "visualizationType": "lnsXY",
-            "version": 2,
-            "references": [],
-            "state": {
-              "datasourceStates": {
-                "textBased": {
-                  "layers": {
-                    "xy-layer-chart-net": {
-                      "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
-                      "query": {
-                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), errors = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, invocations DESC, FunctionName ASC | LIMIT 10 BY timestamp"
-                      },
-                      "columns": [
-                        {
-                          "columnId": "timestamp",
-                          "fieldName": "timestamp",
-                          "meta": {
-                            "type": "date",
-                            "esType": "date"
-                          }
-                        },
-                        {
-                          "columnId": "FunctionName",
-                          "fieldName": "FunctionName",
-                          "meta": {
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "invocations",
-                          "fieldName": "invocations",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "label": "Invocations",
-                          "customLabel": true
-                        },
-                        {
-                          "columnId": "errors",
-                          "fieldName": "errors",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "label": "Errors",
-                          "customLabel": true
-                        }
-                      ],
-                      "timeField": "@timestamp"
-                    }
-                  }
-                }
-              },
-              "filters": [],
-              "query": {
-                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)), errors = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, invocations DESC, FunctionName ASC | LIMIT 10 BY timestamp"
-              },
-              "visualization": {
-                "layers": [
-                  {
-                    "layerId": "xy-layer-chart-net",
-                    "accessors": [
-                      "invocations",
-                      "errors"
-                    ],
-                    "layerType": "data",
-                    "seriesType": "line",
-                    "xAccessor": "timestamp",
-                    "showGridlines": false,
-                    "splitAccessors": [
-                      "FunctionName"
-                    ],
-                    "yConfig": [
-                      {
-                        "forAccessor": "invocations",
-                        "axisMode": "left"
-                      },
-                      {
-                        "forAccessor": "errors",
-                        "axisMode": "right",
-                        "color": "#F6726A"
-                      }
-                    ]
-                  }
-                ],
-                "preferredSeriesType": "line",
-                "legend": {
-                  "isVisible": true,
-                  "position": "bottom"
-                },
-                "valueLabels": "hide",
-                "axisTitlesVisibilitySettings": {
-                  "x": false,
-                  "yLeft": false,
-                  "yRight": true
-                }
-              },
-              "adHocDataViews": {
-                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
-                  "id": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
-                  "title": "metrics-aws.lambda.otel-*",
-                  "timeFieldName": "@timestamp",
-                  "sourceFilters": [],
-                  "type": "esql",
-                  "fieldFormats": {},
-                  "runtimeFieldMap": {},
-                  "allowNoIndex": true,
-                  "name": "metrics-aws.lambda.otel-*",
-                  "allowHidden": false,
-                  "managed": false
-                }
-              },
-              "internalReferences": [
-                {
-                  "type": "index-pattern",
-                  "id": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
-                  "name": "indexpattern-datasource-layer-xy-layer-chart-net"
-                }
-              ]
-            }
-          }
-        },
-        "panelIndex": "chart-net",
-        "gridData": {
-          "y": 12,
-          "x": 20,
-          "w": 20,
-          "h": 12,
-          "i": "chart-net",
-          "sectionId": "aws-lambda-per-function-section"
-        }
-      },
-      {
-        "type": "vis",
-        "embeddableConfig": {
-          "title": "Throttles & async dropped over time",
-          "description": "Throttles and dropped async events per function over time, summed per bucket (both plotted positive on a shared axis since magnitudes are comparable). Top 10 functions by throttles per bucket. Throttles indicate hitting concurrency limits; dropped async events indicate exhausted retries.",
-          "attributes": {
-            "title": "Throttles & async dropped over time",
-            "description": "Throttles and dropped async events per function over time, summed per bucket (both plotted positive on a shared axis since magnitudes are comparable). Top 10 functions by throttles per bucket. Throttles indicate hitting concurrency limits; dropped async events indicate exhausted retries.",
-            "visualizationType": "lnsXY",
-            "version": 2,
-            "references": [],
-            "state": {
-              "datasourceStates": {
-                "textBased": {
-                  "layers": {
-                    "xy-layer-chart-disk": {
-                      "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
-                      "query": {
-                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS throttles = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)), async_dropped = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/AsyncEventsDropped`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, throttles DESC, FunctionName ASC | LIMIT 10 BY timestamp"
-                      },
-                      "columns": [
-                        {
-                          "columnId": "timestamp",
-                          "fieldName": "timestamp",
-                          "meta": {
-                            "type": "date",
-                            "esType": "date"
-                          }
-                        },
-                        {
-                          "columnId": "FunctionName",
-                          "fieldName": "FunctionName",
-                          "meta": {
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "throttles",
-                          "fieldName": "throttles",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "label": "Throttles",
-                          "customLabel": true
-                        },
-                        {
-                          "columnId": "async_dropped",
-                          "fieldName": "async_dropped",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "label": "Async dropped",
-                          "customLabel": true
-                        }
-                      ],
-                      "timeField": "@timestamp"
-                    }
-                  }
-                }
-              },
-              "filters": [],
-              "query": {
-                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS throttles = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)), async_dropped = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/AsyncEventsDropped`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | SORT timestamp ASC, throttles DESC, FunctionName ASC | LIMIT 10 BY timestamp"
-              },
-              "visualization": {
-                "layers": [
-                  {
-                    "layerId": "xy-layer-chart-disk",
-                    "accessors": [
-                      "throttles",
-                      "async_dropped"
-                    ],
-                    "layerType": "data",
-                    "seriesType": "line",
-                    "xAccessor": "timestamp",
-                    "showGridlines": false,
-                    "splitAccessors": [
-                      "FunctionName"
-                    ]
-                  }
-                ],
-                "preferredSeriesType": "line",
-                "legend": {
-                  "isVisible": true,
-                  "position": "bottom"
-                },
-                "valueLabels": "hide",
-                "axisTitlesVisibilitySettings": {
-                  "x": false,
-                  "yLeft": false,
-                  "yRight": false
-                }
-              },
-              "adHocDataViews": {
-                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
-                  "id": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
-                  "title": "metrics-aws.lambda.otel-*",
-                  "timeFieldName": "@timestamp",
-                  "sourceFilters": [],
-                  "type": "esql",
-                  "fieldFormats": {},
-                  "runtimeFieldMap": {},
-                  "allowNoIndex": true,
-                  "name": "metrics-aws.lambda.otel-*",
-                  "allowHidden": false,
-                  "managed": false
-                }
-              },
-              "internalReferences": [
-                {
-                  "type": "index-pattern",
-                  "id": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
-                  "name": "indexpattern-datasource-layer-xy-layer-chart-disk"
-                }
-              ]
-            }
-          }
-        },
-        "panelIndex": "chart-disk",
-        "gridData": {
-          "y": 12,
-          "x": 0,
-          "w": 20,
-          "h": 12,
-          "i": "chart-disk",
           "sectionId": "aws-lambda-per-function-section"
         }
       },
@@ -2000,10 +1725,10 @@
         },
         "panelIndex": "top10-invocations",
         "gridData": {
-          "y": 24,
+          "y": 42,
           "x": 0,
           "w": 16,
-          "h": 12,
+          "h": 11,
           "i": "top10-invocations",
           "sectionId": "aws-lambda-per-function-section"
         }
@@ -2109,10 +1834,10 @@
         },
         "panelIndex": "top10-errors",
         "gridData": {
-          "y": 24,
+          "y": 42,
           "x": 16,
           "w": 16,
-          "h": 12,
+          "h": 11,
           "i": "top10-errors",
           "sectionId": "aws-lambda-per-function-section"
         }
@@ -2218,10 +1943,10 @@
         },
         "panelIndex": "top10-duration",
         "gridData": {
-          "y": 24,
+          "y": 42,
           "x": 32,
           "w": 16,
-          "h": 12,
+          "h": 11,
           "i": "top10-duration",
           "sectionId": "aws-lambda-per-function-section"
         }
@@ -2336,7 +2061,7 @@
         },
         "panelIndex": "chart-memory",
         "gridData": {
-          "y": 0,
+          "y": 24,
           "x": 0,
           "w": 24,
           "h": 12,
@@ -2454,7 +2179,7 @@
         },
         "panelIndex": "chart-cpu",
         "gridData": {
-          "y": 0,
+          "y": 24,
           "x": 24,
           "w": 24,
           "h": 12,
@@ -2571,6 +2296,490 @@
           "w": 6,
           "h": 2,
           "i": "nav-otel-dashboards"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Invocations",
+          "description": "Invocations per function over time — summed per bucket. Top 10 functions by invocations per bucket.",
+          "attributes": {
+            "title": "Invocations",
+            "description": "Invocations per function over time — summed per bucket. Top 10 functions by invocations per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-inv": {
+                      "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
+                      "query": {
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | WHERE invocations IS NOT NULL | SORT timestamp ASC, invocations DESC, FunctionName ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "FunctionName",
+                          "fieldName": "FunctionName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "invocations",
+                          "fieldName": "invocations",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Invocations",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Invocations`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | WHERE invocations IS NOT NULL | SORT timestamp ASC, invocations DESC, FunctionName ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-inv",
+                    "accessors": [
+                      "invocations"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "FunctionName"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": true
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
+                  "title": "metrics-aws.lambda.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.lambda.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-inv"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-inv",
+        "gridData": {
+          "sectionId": "aws-lambda-per-function-section",
+          "i": "chart-inv",
+          "y": 0,
+          "x": 0,
+          "w": 24,
+          "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Errors",
+          "description": "Errors per function over time — summed per bucket. Top 10 functions by errors per bucket.",
+          "attributes": {
+            "title": "Errors",
+            "description": "Errors per function over time — summed per bucket. Top 10 functions by errors per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-err": {
+                      "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
+                      "query": {
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS errors = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | WHERE errors IS NOT NULL | SORT timestamp ASC, errors DESC, FunctionName ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "FunctionName",
+                          "fieldName": "FunctionName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "errors",
+                          "fieldName": "errors",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Errors",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" AND (`metrics.amazonaws.com/AWS/Lambda/Invocations` IS NOT NULL OR `metrics.amazonaws.com/AWS/Lambda/Errors` IS NOT NULL) | STATS errors = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | WHERE errors IS NOT NULL | SORT timestamp ASC, errors DESC, FunctionName ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-err",
+                    "accessors": [
+                      "errors"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "FunctionName"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": true
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
+                  "title": "metrics-aws.lambda.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.lambda.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-err"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-err",
+        "gridData": {
+          "sectionId": "aws-lambda-per-function-section",
+          "i": "chart-err",
+          "y": 0,
+          "x": 24,
+          "w": 24,
+          "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Throttles",
+          "description": "Throttles per function over time — summed per bucket. Top 10 functions by throttles per bucket.",
+          "attributes": {
+            "title": "Throttles",
+            "description": "Throttles per function over time — summed per bucket. Top 10 functions by throttles per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-thr": {
+                      "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
+                      "query": {
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS throttles = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | WHERE throttles IS NOT NULL | SORT timestamp ASC, throttles DESC, FunctionName ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "FunctionName",
+                          "fieldName": "FunctionName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "throttles",
+                          "fieldName": "throttles",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Throttles",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS throttles = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Throttles`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | WHERE throttles IS NOT NULL | SORT timestamp ASC, throttles DESC, FunctionName ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-thr",
+                    "accessors": [
+                      "throttles"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "FunctionName"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
+                  "title": "metrics-aws.lambda.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.lambda.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-thr"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-thr",
+        "gridData": {
+          "sectionId": "aws-lambda-per-function-section",
+          "i": "chart-thr",
+          "y": 12,
+          "x": 0,
+          "w": 24,
+          "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Async dropped",
+          "description": "Dropped async events per function over time — summed per bucket. Top 10 functions by dropped events per bucket.",
+          "attributes": {
+            "title": "Async dropped",
+            "description": "Dropped async events per function over time — summed per bucket. Top 10 functions by dropped events per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-async": {
+                      "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
+                      "query": {
+                        "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS async_dropped = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/AsyncEventsDropped`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | WHERE async_dropped IS NOT NULL | SORT timestamp ASC, async_dropped DESC, FunctionName ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "FunctionName",
+                          "fieldName": "FunctionName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "async_dropped",
+                          "fieldName": "async_dropped",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Async dropped",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "TS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS async_dropped = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/AsyncEventsDropped`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), FunctionName, cloud.region | WHERE async_dropped IS NOT NULL | SORT timestamp ASC, async_dropped DESC, FunctionName ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-async",
+                    "accessors": [
+                      "async_dropped"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "FunctionName"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
+                  "title": "metrics-aws.lambda.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.lambda.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-async"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-async",
+        "gridData": {
+          "sectionId": "aws-lambda-per-function-section",
+          "i": "chart-async",
+          "y": 12,
+          "x": 24,
+          "w": 24,
+          "h": 12
         }
       }
     ],
