@@ -311,6 +311,8 @@ echo "---Check if the backport-branch exists"
 if branchExist "$BACKPORT_BRANCH_NAME"; then
   MSG="The backport branch: **$BACKPORT_BRANCH_NAME** is already created. Not updating contents of the branch."
   buildkite-agent annotate "$MSG" --style "warning"
+  # Set meta-data so the notify step can distinguish this success case
+  # (branch pre-existed) from a branch that was freshly created.
   buildkite-agent meta-data set BRANCH_ALREADY_EXISTED true
   exit 0
 fi
