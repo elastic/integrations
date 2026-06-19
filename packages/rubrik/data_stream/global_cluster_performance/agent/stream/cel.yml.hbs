@@ -38,6 +38,7 @@ processors:
 
 state:
     index: 0
+    page_size: {{pageSize}}
     queries:
       - |
         query ClusterGlobalPerformance($first: Int, $after: String) {
@@ -81,9 +82,7 @@ program: |-
         "Body": {
           "query": state.queries[state.index],
           "variables": {
-            {{#if pageSize}}
-            "first": {{pageSize}},
-            {{/if}}
+            ?"first": state.?page_size.orValue(null) != null ? optional.of(int(state.page_size)) : optional.none(),
             "after": has(state.cursor) ? state.cursor.after : null,
           }
         }.encode_json(),

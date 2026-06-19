@@ -322,7 +322,7 @@ program: |
                 }
               )
             :
-              [{}],
+              [{"message": "retry"}],
             "next_page": {
               ?"result_token": body.?NextToken,
               ?"rule_token": config_rules.?next_page.rule_token,
@@ -401,7 +401,11 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- drop_event:
+    when:
+      equals:
+        message: retry
+{{#if processors}}
 {{processors}}
 {{/if}}
