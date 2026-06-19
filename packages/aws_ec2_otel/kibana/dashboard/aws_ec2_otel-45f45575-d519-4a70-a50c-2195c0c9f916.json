@@ -1286,9 +1286,9 @@
         },
         "panelIndex": "kpi-net-in",
         "gridData": {
-          "y": 12,
-          "x": 32,
-          "w": 16,
+          "y": 36,
+          "x": 24,
+          "w": 24,
           "h": 6,
           "i": "kpi-net-in",
           "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
@@ -1385,307 +1385,11 @@
         },
         "panelIndex": "kpi-net-out",
         "gridData": {
-          "y": 18,
-          "x": 32,
-          "w": 16,
+          "y": 42,
+          "x": 24,
+          "w": 24,
           "h": 6,
           "i": "kpi-net-out",
-          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
-        }
-      },
-      {
-        "type": "vis",
-        "embeddableConfig": {
-          "title": "Network in (+) / out (−)",
-          "description": "Inbound (+) and outbound (−) network traffic per instance over time, in bytes per CloudWatch period (averaged per time bucket). Outbound is negated for mirrored comparison. Limited to the top 10 instances by inbound traffic per bucket.",
-          "attributes": {
-            "title": "Network in (+) / out (−)",
-            "description": "Inbound (+) and outbound (−) network traffic per instance over time, in bytes per CloudWatch period (averaged per time bucket). Outbound is negated for mirrored comparison. Limited to the top 10 instances by inbound traffic per bucket.",
-            "visualizationType": "lnsXY",
-            "version": 2,
-            "references": [],
-            "state": {
-              "datasourceStates": {
-                "textBased": {
-                  "layers": {
-                    "xy-layer-chart-net": {
-                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
-                      "query": {
-                        "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/NetworkOut` IS NOT NULL) | STATS col_ni = AVG(`metrics.amazonaws.com/AWS/EC2/NetworkIn`), col_no = -AVG(`metrics.amazonaws.com/AWS/EC2/NetworkOut`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_ni DESC, InstanceId ASC | LIMIT 10 BY timestamp"
-                      },
-                      "columns": [
-                        {
-                          "columnId": "timestamp",
-                          "fieldName": "timestamp",
-                          "meta": {
-                            "type": "date",
-                            "esType": "date"
-                          }
-                        },
-                        {
-                          "columnId": "InstanceId",
-                          "fieldName": "InstanceId",
-                          "meta": {
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "col_ni",
-                          "fieldName": "col_ni",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "params": {
-                            "format": {
-                              "id": "bytes",
-                              "params": {
-                                "decimals": 2
-                              }
-                            }
-                          },
-                          "label": "Network in",
-                          "customLabel": true
-                        },
-                        {
-                          "columnId": "col_no",
-                          "fieldName": "col_no",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "params": {
-                            "format": {
-                              "id": "bytes",
-                              "params": {
-                                "decimals": 2
-                              }
-                            }
-                          },
-                          "label": "Network out",
-                          "customLabel": true
-                        }
-                      ],
-                      "timeField": "@timestamp"
-                    }
-                  }
-                }
-              },
-              "filters": [],
-              "query": {
-                "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/NetworkOut` IS NOT NULL) | STATS col_ni = AVG(`metrics.amazonaws.com/AWS/EC2/NetworkIn`), col_no = -AVG(`metrics.amazonaws.com/AWS/EC2/NetworkOut`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_ni DESC, InstanceId ASC | LIMIT 10 BY timestamp"
-              },
-              "visualization": {
-                "layers": [
-                  {
-                    "layerId": "xy-layer-chart-net",
-                    "accessors": [
-                      "col_ni",
-                      "col_no"
-                    ],
-                    "layerType": "data",
-                    "seriesType": "line",
-                    "xAccessor": "timestamp",
-                    "showGridlines": false,
-                    "splitAccessors": [
-                      "InstanceId"
-                    ]
-                  }
-                ],
-                "preferredSeriesType": "line",
-                "legend": {
-                  "isVisible": true,
-                  "position": "bottom"
-                },
-                "valueLabels": "hide",
-                "axisTitlesVisibilitySettings": {
-                  "x": false,
-                  "yLeft": false,
-                  "yRight": false
-                }
-              },
-              "adHocDataViews": {
-                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
-                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
-                  "title": "metrics-aws.ec2.otel-*",
-                  "timeFieldName": "@timestamp",
-                  "sourceFilters": [],
-                  "type": "esql",
-                  "fieldFormats": {},
-                  "runtimeFieldMap": {},
-                  "allowNoIndex": true,
-                  "name": "metrics-aws.ec2.otel-*",
-                  "allowHidden": false,
-                  "managed": false
-                }
-              },
-              "internalReferences": [
-                {
-                  "type": "index-pattern",
-                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
-                  "name": "indexpattern-datasource-layer-xy-layer-chart-net"
-                }
-              ]
-            }
-          }
-        },
-        "panelIndex": "chart-net",
-        "gridData": {
-          "y": 12,
-          "x": 16,
-          "w": 16,
-          "h": 12,
-          "i": "chart-net",
-          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
-        }
-      },
-      {
-        "type": "vis",
-        "embeddableConfig": {
-          "title": "Disk read (+) / write (−)",
-          "description": "Disk read (+) and write (−) volume per instance over time, in bytes per CloudWatch period (averaged per time bucket). Write is negated. Top 10 instances by read volume per bucket. Sustained high values indicate I/O-heavy workloads.",
-          "attributes": {
-            "title": "Disk read (+) / write (−)",
-            "description": "Disk read (+) and write (−) volume per instance over time, in bytes per CloudWatch period (averaged per time bucket). Write is negated. Top 10 instances by read volume per bucket. Sustained high values indicate I/O-heavy workloads.",
-            "visualizationType": "lnsXY",
-            "version": 2,
-            "references": [],
-            "state": {
-              "datasourceStates": {
-                "textBased": {
-                  "layers": {
-                    "xy-layer-chart-disk": {
-                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
-                      "query": {
-                        "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/EC2/DiskReadBytes` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes` IS NOT NULL) | STATS col_dr = AVG(`metrics.amazonaws.com/AWS/EC2/DiskReadBytes`), col_dw = -AVG(`metrics.amazonaws.com/AWS/EC2/DiskWriteBytes`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_dr DESC, InstanceId ASC | LIMIT 10 BY timestamp"
-                      },
-                      "columns": [
-                        {
-                          "columnId": "timestamp",
-                          "fieldName": "timestamp",
-                          "meta": {
-                            "type": "date",
-                            "esType": "date"
-                          }
-                        },
-                        {
-                          "columnId": "InstanceId",
-                          "fieldName": "InstanceId",
-                          "meta": {
-                            "type": "string"
-                          }
-                        },
-                        {
-                          "columnId": "col_dr",
-                          "fieldName": "col_dr",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "params": {
-                            "format": {
-                              "id": "bytes",
-                              "params": {
-                                "decimals": 2
-                              }
-                            }
-                          },
-                          "label": "Disk read",
-                          "customLabel": true
-                        },
-                        {
-                          "columnId": "col_dw",
-                          "fieldName": "col_dw",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "params": {
-                            "format": {
-                              "id": "bytes",
-                              "params": {
-                                "decimals": 2
-                              }
-                            }
-                          },
-                          "label": "Disk write",
-                          "customLabel": true
-                        }
-                      ],
-                      "timeField": "@timestamp"
-                    }
-                  }
-                }
-              },
-              "filters": [],
-              "query": {
-                "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Average\" AND (`metrics.amazonaws.com/AWS/EC2/DiskReadBytes` IS NOT NULL OR `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes` IS NOT NULL) | STATS col_dr = AVG(`metrics.amazonaws.com/AWS/EC2/DiskReadBytes`), col_dw = -AVG(`metrics.amazonaws.com/AWS/EC2/DiskWriteBytes`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_dr DESC, InstanceId ASC | LIMIT 10 BY timestamp"
-              },
-              "visualization": {
-                "layers": [
-                  {
-                    "layerId": "xy-layer-chart-disk",
-                    "accessors": [
-                      "col_dr",
-                      "col_dw"
-                    ],
-                    "layerType": "data",
-                    "seriesType": "line",
-                    "xAccessor": "timestamp",
-                    "showGridlines": false,
-                    "splitAccessors": [
-                      "InstanceId"
-                    ]
-                  }
-                ],
-                "preferredSeriesType": "line",
-                "legend": {
-                  "isVisible": true,
-                  "position": "bottom"
-                },
-                "valueLabels": "hide",
-                "axisTitlesVisibilitySettings": {
-                  "x": false,
-                  "yLeft": false,
-                  "yRight": false
-                }
-              },
-              "adHocDataViews": {
-                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
-                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
-                  "title": "metrics-aws.ec2.otel-*",
-                  "timeFieldName": "@timestamp",
-                  "sourceFilters": [],
-                  "type": "esql",
-                  "fieldFormats": {},
-                  "runtimeFieldMap": {},
-                  "allowNoIndex": true,
-                  "name": "metrics-aws.ec2.otel-*",
-                  "allowHidden": false,
-                  "managed": false
-                }
-              },
-              "internalReferences": [
-                {
-                  "type": "index-pattern",
-                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
-                  "name": "indexpattern-datasource-layer-xy-layer-chart-disk"
-                }
-              ]
-            }
-          }
-        },
-        "panelIndex": "chart-disk",
-        "gridData": {
-          "y": 0,
-          "x": 32,
-          "w": 16,
-          "h": 12,
-          "i": "chart-disk",
           "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
         }
       },
@@ -1799,7 +1503,7 @@
         },
         "panelIndex": "top10-cpu",
         "gridData": {
-          "y": 24,
+          "y": 48,
           "x": 0,
           "w": 16,
           "h": 11,
@@ -1916,7 +1620,7 @@
         },
         "panelIndex": "top10-netin",
         "gridData": {
-          "y": 24,
+          "y": 48,
           "x": 16,
           "w": 16,
           "h": 11,
@@ -2033,7 +1737,7 @@
         },
         "panelIndex": "top10-ebswrite",
         "gridData": {
-          "y": 24,
+          "y": 48,
           "x": 32,
           "w": 16,
           "h": 11,
@@ -2155,8 +1859,8 @@
         "panelIndex": "chart-memory",
         "gridData": {
           "y": 0,
-          "x": 16,
-          "w": 16,
+          "x": 24,
+          "w": 24,
           "h": 12,
           "i": "chart-memory",
           "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
@@ -2327,9 +2031,9 @@
         },
         "panelIndex": "chart-cpu",
         "gridData": {
-          "y": 12,
+          "y": 36,
           "x": 0,
-          "w": 16,
+          "w": 24,
           "h": 12,
           "i": "chart-cpu",
           "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
@@ -2659,10 +2363,526 @@
         "gridData": {
           "y": 0,
           "x": 0,
-          "w": 16,
+          "w": 24,
           "h": 12,
           "i": "chart-disk-read-ops",
           "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Network in",
+          "description": "Inbound network traffic per instance over time — average NetworkIn (bytes per CloudWatch period) per bucket. Top 10 instances by inbound traffic per bucket.",
+          "attributes": {
+            "title": "Network in",
+            "description": "Inbound network traffic per instance over time — average NetworkIn (bytes per CloudWatch period) per bucket. Top 10 instances by inbound traffic per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-net-in": {
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL | STATS col_ni = AVG(`metrics.amazonaws.com/AWS/EC2/NetworkIn`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_ni DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "InstanceId",
+                          "fieldName": "InstanceId",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "col_ni",
+                          "fieldName": "col_ni",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          },
+                          "label": "Network in",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/EC2/NetworkIn` IS NOT NULL | STATS col_ni = AVG(`metrics.amazonaws.com/AWS/EC2/NetworkIn`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_ni DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-net-in",
+                    "accessors": [
+                      "col_ni"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "InstanceId"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-net-in"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-net-in",
+        "gridData": {
+          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87",
+          "i": "chart-net-in",
+          "y": 24,
+          "x": 0,
+          "w": 24,
+          "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Network out",
+          "description": "Outbound network traffic per instance over time — average NetworkOut (bytes per CloudWatch period) per bucket. Top 10 instances by outbound traffic per bucket.",
+          "attributes": {
+            "title": "Network out",
+            "description": "Outbound network traffic per instance over time — average NetworkOut (bytes per CloudWatch period) per bucket. Top 10 instances by outbound traffic per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-net-out": {
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/EC2/NetworkOut` IS NOT NULL | STATS col_no = AVG(`metrics.amazonaws.com/AWS/EC2/NetworkOut`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_no DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "InstanceId",
+                          "fieldName": "InstanceId",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "col_no",
+                          "fieldName": "col_no",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          },
+                          "label": "Network out",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/EC2/NetworkOut` IS NOT NULL | STATS col_no = AVG(`metrics.amazonaws.com/AWS/EC2/NetworkOut`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_no DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-net-out",
+                    "accessors": [
+                      "col_no"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "InstanceId"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-net-out"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-net-out",
+        "gridData": {
+          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87",
+          "i": "chart-net-out",
+          "y": 24,
+          "x": 24,
+          "w": 24,
+          "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Disk read bytes",
+          "description": "Disk read volume per instance over time — average DiskReadBytes (bytes per CloudWatch period) per bucket. Top 10 instances by read volume per bucket.",
+          "attributes": {
+            "title": "Disk read bytes",
+            "description": "Disk read volume per instance over time — average DiskReadBytes (bytes per CloudWatch period) per bucket. Top 10 instances by read volume per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-disk-read": {
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/EC2/DiskReadBytes` IS NOT NULL | STATS col_dr = AVG(`metrics.amazonaws.com/AWS/EC2/DiskReadBytes`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_dr DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "InstanceId",
+                          "fieldName": "InstanceId",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "col_dr",
+                          "fieldName": "col_dr",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          },
+                          "label": "Disk read",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/EC2/DiskReadBytes` IS NOT NULL | STATS col_dr = AVG(`metrics.amazonaws.com/AWS/EC2/DiskReadBytes`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_dr DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-disk-read",
+                    "accessors": [
+                      "col_dr"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "InstanceId"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-disk-read"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-disk-read",
+        "gridData": {
+          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87",
+          "i": "chart-disk-read",
+          "y": 12,
+          "x": 0,
+          "w": 24,
+          "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Disk write bytes",
+          "description": "Disk write volume per instance over time — average DiskWriteBytes (bytes per CloudWatch period) per bucket. Top 10 instances by write volume per bucket.",
+          "attributes": {
+            "title": "Disk write bytes",
+            "description": "Disk write volume per instance over time — average DiskWriteBytes (bytes per CloudWatch period) per bucket. Top 10 instances by write volume per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-disk-write": {
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes` IS NOT NULL | STATS col_dw = AVG(`metrics.amazonaws.com/AWS/EC2/DiskWriteBytes`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_dw DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "InstanceId",
+                          "fieldName": "InstanceId",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "col_dw",
+                          "fieldName": "col_dw",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          },
+                          "label": "Disk write",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "FROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes` IS NOT NULL | STATS col_dw = AVG(`metrics.amazonaws.com/AWS/EC2/DiskWriteBytes`) BY timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend), InstanceId, cloud.region | SORT timestamp ASC, col_dw DESC, InstanceId ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-disk-write",
+                    "accessors": [
+                      "col_dw"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "InstanceId"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "title": "metrics-aws.ec2.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ec2.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-disk-write"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-disk-write",
+        "gridData": {
+          "sectionId": "294c10a8-765d-400f-bda0-943fe4f52a87",
+          "i": "chart-disk-write",
+          "y": 12,
+          "x": 24,
+          "w": 24,
+          "h": 12
         }
       }
     ],
