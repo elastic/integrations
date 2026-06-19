@@ -124,6 +124,7 @@ processors:
       formats:
         - "MMM d yyyy HH:mm:ss.SSS"
         - "MMM d HH:mm:ss.SSS"
+        - "MMM d HH:mm:ss"
       timezone: '{{{_conf.tz_offset}}}'
 
   # Adding information to event types
@@ -274,6 +275,236 @@ processors:
         - "R%{INT:cisco.wps.slot}/%{INT:cisco.wps.radio}: wncd: Username entry \\(%{DATA:user.name}\\) joined with ssid \\(%{DATA:cisco.ssid}\\) for device with MAC: %{MAC:client.mac}(\\s+on channel \\(%{INT:cisco.wps.channel:int}\\))?"
       ignore_failure: false
   ###
+  - grok:
+      tag: grok_message_a1b2c3d4
+      description: APMGR_AWIPS_SYSLOG-6-APMGR_AWIPS_MESSAGE
+      field: message
+      if: ctx._temp_?.reason == 'APMGR_AWIPS_SYSLOG-6-APMGR_AWIPS_MESSAGE'
+      patterns:
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: AWIPS alarm:\\(%{DATA:cisco.awips.ap_name}\\) %{MAC:client.mac} +Radio MAC %{MAC:destination.mac} +detected %{DATA:cisco.awips.alarm_type} \\(%{INT:cisco.awips.alarm_code:int}\\)"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_e5f6a7b8
+      description: SESSION_MGR-5-FAIL
+      field: message
+      if: ctx._temp_?.reason == 'SESSION_MGR-5-FAIL'
+      patterns:
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Authorization failed or unapplied for client \\(%{MAC:client.mac}\\) on Interface %{DATA:observer.ingress.interface.name} AuditSessionID %{DATA:cisco.audit_session_id}\\. Failure Reason: %{DATA:event.reason}\\. Failed attribute name %{INT}\\."
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Authorization failed or unapplied for client \\(%{MAC:client.mac}\\) on Interface %{DATA:observer.ingress.interface.name} AuditSessionID %{DATA:cisco.audit_session_id}\\. Failure reason: Authc fail\\. Authc failure reason: %{DATA:event.reason}\\."
+        - "R%{INT}/%{INT}: %{WORD}: Authorization failed or unapplied for client \\(%{MAC:client.mac}\\) on Interface %{DATA:observer.ingress.interface.name} AuditSessionID %{DATA:cisco.audit_session_id}\\. Failure Reason: %{DATA:event.reason}\\. Failed attribute name %{INT}\\."
+        - "R%{INT}/%{INT}: %{WORD}: Authorization failed or unapplied for client \\(%{MAC:client.mac}\\) on Interface %{DATA:observer.ingress.interface.name} AuditSessionID %{DATA:cisco.audit_session_id}\\. Failure reason: Authc fail\\. Authc failure reason: %{DATA:event.reason}\\."
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_c9d0e1f2
+      description: DOT1X-5-FAIL
+      field: message
+      if: ctx._temp_?.reason == 'DOT1X-5-FAIL'
+      patterns:
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Authentication failed for client \\(%{MAC:client.mac}\\) with reason \\(%{DATA:event.reason}\\) on Interface %{DATA:observer.ingress.interface.name} AuditSessionID %{DATA:cisco.audit_session_id} Username: %{DATA:user.name}"
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Authentication failed for client \\(%{MAC:client.mac}\\) with reason \\(%{DATA:event.reason}\\) on Interface %{DATA:observer.ingress.interface.name} AuditSessionID %{DATA:cisco.audit_session_id}"
+        - "R%{INT}/%{INT}: %{WORD}: Authentication failed for client \\(%{MAC:client.mac}\\) with reason \\(%{DATA:event.reason}\\) on Interface %{DATA:observer.ingress.interface.name} AuditSessionID %{DATA:cisco.audit_session_id} Username: %{DATA:user.name}"
+        - "R%{INT}/%{INT}: %{WORD}: Authentication failed for client \\(%{MAC:client.mac}\\) with reason \\(%{DATA:event.reason}\\) on Interface %{DATA:observer.ingress.interface.name} AuditSessionID %{DATA:cisco.audit_session_id}"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_a3b4c5d6
+      description: MAB-5-FAIL
+      field: message
+      if: ctx._temp_?.reason == 'MAB-5-FAIL'
+      patterns:
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Authentication failed for client \\(%{MAC:client.mac}\\) with reason \\(%{DATA:event.reason}\\) on Interface %{DATA:observer.ingress.interface.name} AuditSessionID %{DATA:cisco.audit_session_id}"
+        - "R%{INT}/%{INT}: %{WORD}: Authentication failed for client \\(%{MAC:client.mac}\\) with reason \\(%{DATA:event.reason}\\) on Interface %{DATA:observer.ingress.interface.name} AuditSessionID %{DATA:cisco.audit_session_id}"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_e7f8a9b0
+      description: CLIENT_EXCLUSION_SERVER-5-ADD_TO_EXCLUSIONLIST_REASON_DYNAMIC
+      field: message
+      if: ctx._temp_?.reason == 'CLIENT_EXCLUSION_SERVER-5-ADD_TO_EXCLUSIONLIST_REASON_DYNAMIC'
+      patterns:
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Client MAC: %{MAC:client.mac} was added to exclusion list associated with AP Name:%{DATA:cisco.awips.ap_name}, BSSID:MAC: %{MAC:destination.mac}, reason:%{GREEDYDATA:event.reason}"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_c1d2e3f4
+      description: CLIENT_ORCH_LOG-5-ADD_TO_EXCLUSIONLIST_REASON
+      field: message
+      if: ctx._temp_?.reason == 'CLIENT_ORCH_LOG-5-ADD_TO_EXCLUSIONLIST_REASON'
+      patterns:
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Client MAC: %{MAC:client.mac} with IP: %{IP:client.ip} was added to exclusion list, legit Client MAC: %{MAC:destination.mac}, IP: %{IP:server.ip}, reason: %{DATA:event.reason}"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_a5b6c7d8
+      description: CLIENT_ORCH_LOG-5-ADD_TO_EXCLUSIONLIST_MAC_THEFT_REASON
+      # Parses _temp_.full_message instead of message: IPv6 addresses (containing colons)
+      # cause the upstream syslog header grok to truncate the message field prematurely.
+      field: _temp_.full_message
+      if: ctx._temp_?.reason == 'CLIENT_ORCH_LOG-5-ADD_TO_EXCLUSIONLIST_MAC_THEFT_REASON'
+      patterns:
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Client MAC: %{MAC:client.mac} with IP: %{IP:client.ip} was added to exclusion list, legit ifid: %{DATA}, current ifid: %{DATA}, reason: %{DATA:event.reason}"
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Client MAC: %{MAC:client.mac} with IP: %{DATA:client.ip} was added to exclusion list, legit ifid: %{DATA}, current ifid: %{DATA}, reason: %{DATA:event.reason}"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_e9f0a1b2
+      description: FMANFP-6-IPACCESSLOGP
+      field: message
+      if: ctx._temp_?.reason == 'FMANFP-6-IPACCESSLOGP'
+      patterns:
+        - "Chassis %{INT} F%{INT}/%{INT}: %{WORD}: list %{DATA:cisco.acl.name} %{WORD:cisco.acl.action} %{WORD:network.transport} %{IP:source.ip}\\(%{INT:source.port:int}\\) -> %{IP:destination.ip}\\(%{INT:destination.port:int}\\), %{INT} packets?"
+        - "Chassis %{INT} F%{INT}/%{INT}: %{WORD}: list %{DATA:cisco.acl.name} %{WORD:cisco.acl.action} %{WORD:network.transport} \\[%{DATA}\\] %{IP:source.ip}\\(%{INT:source.port:int}\\) -> %{IP:destination.ip}\\(%{INT:destination.port:int}\\), %{INT} packets?"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_c3d4e5f6
+      description: FMANFP-6-IPACCESSLOGNP
+      field: message
+      if: ctx._temp_?.reason == 'FMANFP-6-IPACCESSLOGNP'
+      patterns:
+        - "Chassis %{INT} F%{INT}/%{INT}: %{WORD}: list %{DATA:cisco.acl.name} %{WORD:cisco.acl.action} %{INT} %{IP:source.ip} -> %{IP:destination.ip}, %{INT} packets?"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_a7b8c9d0
+      description: FMANFP-6-IPACCESSLOGDP
+      field: message
+      if: ctx._temp_?.reason == 'FMANFP-6-IPACCESSLOGDP'
+      patterns:
+        - "Chassis %{INT} F%{INT}/%{INT}: %{WORD}: list %{DATA:cisco.acl.name} %{WORD:cisco.acl.action} icmp %{IP:source.ip} -> %{IP:destination.ip} \\(%{DATA}\\), %{INT} packets"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_e1f2a3b4
+      description: SEC_LOGIN-5-LOGIN_SUCCESS, SEC_LOGIN-5-WEBLOGIN_SUCCESS
+      field: _temp_.full_message
+      if: >-
+        ctx._temp_?.reason == 'SEC_LOGIN-5-LOGIN_SUCCESS' ||
+        ctx._temp_?.reason == 'SEC_LOGIN-5-WEBLOGIN_SUCCESS'
+      patterns:
+        - "SEC_LOGIN-5-LOGIN_SUCCESS: Login Success \\[user: %{DATA:user.name}\\] \\[Source: %{IP:client.ip}\\] \\[localport: +%{INT:source.port:int}\\] at %{GREEDYDATA}"
+        - "SEC_LOGIN-5-WEBLOGIN_SUCCESS: Login Success \\[user: %{DATA:user.name}\\] \\[Source: %{IP:client.ip}\\] at %{GREEDYDATA}"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_c5d6e7f8
+      description: DMI-5-AUTH_PASSED
+      field: _temp_.full_message
+      if: ctx._temp_?.reason == 'DMI-5-AUTH_PASSED'
+      patterns:
+        - "DMI-5-AUTH_PASSED: Chassis %{INT} R%{INT}/%{INT}: %{WORD}: User '%{DATA:user.name}' authenticated successfully from %{IP:client.ip}:%{INT:source.port:int}  for %{NOTSPACE:cisco.auth.method} over %{WORD}\\. External groups: %{GREEDYDATA}"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_a9b0c1d2
+      description: SSH-5-SSH2_SESSION, SSH-5-SSH2_CLOSE, SSH-5-SSH2_USERAUTH
+      field: message
+      if: >-
+        ctx._temp_?.reason == 'SSH-5-SSH2_SESSION' ||
+        ctx._temp_?.reason == 'SSH-5-SSH2_CLOSE' ||
+        ctx._temp_?.reason == 'SSH-5-SSH2_USERAUTH'
+      patterns:
+        - "SSH2 Session request from %{IP:client.ip} \\(tty = %{INT}\\) using crypto cipher '%{DATA:tls.cipher}'"
+        - "SSH2 Session from %{IP:client.ip} \\(tty = %{INT}\\) for user '%{DATA:user.name}' using crypto cipher '%{DATA:tls.cipher}'"
+        - "User '%{DATA:user.name}' authentication for SSH2 Session from %{IP:client.ip} \\(tty = %{INT}\\) using crypto cipher '%{DATA:tls.cipher}'"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_e3f4a5b6
+      description: RADIUS_AUDIT_MESSAGE-6-RADIUS_ALIVE, RADIUS_AUDIT_MESSAGE-6-RADIUS_DEAD
+      field: message
+      if: >-
+        ctx._temp_?.reason == 'RADIUS_AUDIT_MESSAGE-6-RADIUS_ALIVE' ||
+        ctx._temp_?.reason == 'RADIUS_AUDIT_MESSAGE-6-RADIUS_DEAD'
+      patterns:
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: RADIUS server %{DATA:cisco.radius.server} is being marked alive\\."
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: RADIUS server %{DATA:cisco.radius.server} is not responding\\."
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_c7d8e9f0
+      description: CAPWAPAC_SMGR_TRACE_MESSAGE-5-AP_JOIN_DISJOIN
+      field: message
+      if: ctx._temp_?.reason == 'CAPWAPAC_SMGR_TRACE_MESSAGE-5-AP_JOIN_DISJOIN'
+      patterns:
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: AP Event: AP Name: %{DATA:cisco.awips.ap_name} Mac: %{MAC:destination.mac} Session-IP: %{IP:source.ip}\\[%{INT:source.port:int}\\] %{IP:destination.ip}\\[%{INT:destination.port:int}\\] %{GREEDYDATA:event.reason}"
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: AP Event: AP Name: %{DATA:cisco.awips.ap_name} Mac: %{MAC:destination.mac} Session-IP: %{IP:source.ip}\\[%{INT:source.port:int}\\] %{GREEDYDATA:event.reason}"
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: AP Event: AP Name: %{DATA:cisco.awips.ap_name} Mac:\\s*Session-IP: %{IP:source.ip}\\[%{INT:source.port:int}\\] %{IP:destination.ip}\\[%{INT:destination.port:int}\\] %{GREEDYDATA:event.reason}"
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: AP Event: AP Name:\\s*Mac: %{MAC:destination.mac} Session-IP: %{IP:source.ip}\\[%{INT:source.port:int}\\] %{GREEDYDATA:event.reason}"
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: AP Event: AP Name:\\s*Mac:\\s*Session-IP: %{IP:source.ip}\\[%{INT:source.port:int}\\] %{GREEDYDATA:event.reason}"
+      ignore_failure: false
+  - remove:
+      tag: remove_empty_ap_name_d1e2f3a4
+      field: cisco.awips.ap_name
+      if: ctx.cisco?.awips?.ap_name != null && ctx.cisco.awips.ap_name.trim() == ""
+      ignore_missing: true
+      ignore_failure: true
+  ###
+  - grok:
+      tag: grok_message_a1b2c3d5
+      description: MM_LOG-4-RETRIES_FAILED
+      field: message
+      if: ctx._temp_?.reason == 'MM_LOG-4-RETRIES_FAILED'
+      patterns:
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: MAC: %{MAC:client.mac}: All retries of handoff_end \\(XID: %{INT}\\) to ipv4: %{IP:destination.ip}  have been exhausted"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_e5f6a7b9
+      description: SISF-4-EXCESS_ARP_ACTIVITY
+      field: message
+      if: ctx._temp_?.reason == 'SISF-4-EXCESS_ARP_ACTIVITY'
+      patterns:
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Excessive ARP activity detected for the client %{MAC:client.mac}\\. client is brought down and added to the exclusion list"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_c9d0e1f3
+      description: SWPORT-4-MAC_CONFLICT
+      field: _temp_.full_message
+      if: ctx._temp_?.reason == 'SWPORT-4-MAC_CONFLICT'
+      patterns:
+        - "SWPORT-4-MAC_CONFLICT: Chassis %{INT} F%{INT}: %{WORD}: Dynamic mac %{MAC:client.mac} from %{NOTSPACE} conflict with %{GREEDYDATA}"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_a3b4c5d7
+      description: SYS-5-CONFIG_P
+      field: message
+      if: ctx._temp_?.reason == 'SYS-5-CONFIG_P'
+      patterns:
+        - "Configured programmatically by process %{DATA} from console as %{DATA:user.name} on %{DATA}"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_e7f8a9b1
+      description: SYS-6-LOGOUT
+      field: message
+      if: ctx._temp_?.reason == 'SYS-6-LOGOUT'
+      patterns:
+        - "User %{DATA:user.name} has exited tty session %{INT}\\(%{IP:client.ip}\\)"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_c1d2e3f5
+      description: LOADBALANCE_TRACE_MESSAGE-5-LB_LOG_MSG
+      field: message
+      if: ctx._temp_?.reason == 'LOADBALANCE_TRACE_MESSAGE-5-LB_LOG_MSG'
+      patterns:
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Loadbalancer Log : AP \\( %{IP:source.ip} \\) : Loadbalancer algorithm assigned Instance \\(%{INT:cisco.loadbalance.instance:int}\\) for site tag \\(%{DATA:cisco.site_tag}\\)"
+      ignore_failure: false
+  ###
+  - grok:
+      tag: grok_message_a5b6c7d9
+      description: MCAST_ERROR_MESSAGE-3-MCAST_GRP_JOIN_LEAVE_FAILED
+      field: message
+      if: ctx._temp_?.reason == 'MCAST_ERROR_MESSAGE-3-MCAST_GRP_JOIN_LEAVE_FAILED'
+      patterns:
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Failed to handle IGMP join\\. No MAC address for client IP: %{IP:client.ip}, group IP: %{IP:destination.ip}, vlan: %{INT:network.vlan.id} for client %{MAC:client.mac}  multicast group %{WORD}, mgid %{INT}"
+      ignore_failure: false
+  ###
   # Client MAC
   - grok:
       tag: grok_message_cf1bf699
@@ -326,6 +557,18 @@ processors:
       pattern: '[-:.]'
       replacement: '-'
       ignore_missing: true
+  - script:
+      tag: script_destination_mac_a8b9c0d1
+      lang: painless
+      if: ctx.destination?.mac != null
+      description: 'Convert Cisco style mac to standard format (XXXX-XXXX-XXXX to XX-XX-XX-XX-XX-XX)'
+      source: |
+        def mac = ctx.destination.mac;
+        def pattern = /^[A-F0-9]{4}(-[A-F0-9]{4}){2}$/;
+        def matcher = pattern.matcher(mac);
+        if (matcher.matches()) {
+           ctx.destination.mac = mac.substring(0,2) + "-" + mac.substring(2,4) + "-" + mac.substring(5,7) + "-" + mac.substring(7,9) + "-" + mac.substring(10,12) + "-" + mac.substring(12,14);
+        }
   - uppercase:
       tag: uppercase_host_mac_73cd4413
       field: host.mac
