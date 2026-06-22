@@ -333,7 +333,7 @@ processors:
       field: message
       if: ctx._temp_?.reason == 'CLIENT_ORCH_LOG-5-ADD_TO_EXCLUSIONLIST_REASON'
       patterns:
-        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Client MAC: %{MAC:client.mac} with IP: %{IP:client.ip} was added to exclusion list, legit Client MAC: %{MAC:destination.mac}, IP: %{IP:server.ip}, reason: %{DATA:event.reason}"
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Client MAC: %{MAC:client.mac} with IP: %{IP:client.ip} was added to exclusion list, legit Client MAC: %{MAC:destination.mac}, IP: %{IP:server.ip}, reason: %{GREEDYDATA:event.reason}"
       ignore_failure: false
   ###
   - grok:
@@ -344,8 +344,8 @@ processors:
       field: _temp_.full_message
       if: ctx._temp_?.reason == 'CLIENT_ORCH_LOG-5-ADD_TO_EXCLUSIONLIST_MAC_THEFT_REASON'
       patterns:
-        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Client MAC: %{MAC:client.mac} with IP: %{IP:client.ip} was added to exclusion list, legit ifid: %{DATA}, current ifid: %{DATA}, reason: %{DATA:event.reason}"
-        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Client MAC: %{MAC:client.mac} with IP: %{DATA:client.ip} was added to exclusion list, legit ifid: %{DATA}, current ifid: %{DATA}, reason: %{DATA:event.reason}"
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Client MAC: %{MAC:client.mac} with IP: %{IP:client.ip} was added to exclusion list, legit ifid: %{DATA}, current ifid: %{DATA}, reason: %{GREEDYDATA:event.reason}"
+        - "Chassis %{INT} R%{INT}/%{INT}: %{WORD}: Client MAC: %{MAC:client.mac} with IP: %{DATA:client.ip} was added to exclusion list, legit ifid: %{DATA}, current ifid: %{DATA}, reason: %{GREEDYDATA:event.reason}"
       ignore_failure: false
   ###
   - grok:
