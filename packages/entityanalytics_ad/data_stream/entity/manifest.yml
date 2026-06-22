@@ -5,7 +5,7 @@ streams:
   - input: entity-analytics
     title: User Identities logs
     enabled: false
-    description: Collect User Identities logs from Active Directory.
+    description: Collect identity logs from Active Directory.
     template_path: entity-analytics.yml.hbs
     vars:
       - name: ad_base_dn
@@ -118,6 +118,9 @@ streams:
         description: >-
           User attributes to request from the AD server (all if not set). Attribute names should be obtained from the
           AD server rather than from the fields within ingested documents, as fields are renamed during ingest.
+          Note: specifying any value here switches the request from "all attributes" to only those listed. Fields
+          derived from relationship attributes (directReports, managedObjects) will not be populated unless those
+          attribute names are explicitly included.
         multi: true
         required: false
         show_user: false
@@ -130,6 +133,14 @@ streams:
         multi: true
         required: false
         show_user: false
+      - name: include_empty_groups
+        required: true
+        show_user: true
+        title: Include empty groups
+        description: Report Active Directory groups that have no direct members as separate documents.
+        type: bool
+        multi: false
+        default: false
       - name: preserve_group_member_list
         required: true
         show_user: false
