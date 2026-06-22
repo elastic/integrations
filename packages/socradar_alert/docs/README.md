@@ -51,8 +51,8 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
    - **API Key** — Your SOCRadar API key.
    - **Company ID** — Your SOCRadar company ID (e.g., `330`).
    - **API URL** — SOCRadar API base URL (default: `https://platform.socradar.com`).
-   - **Initial Lookback Period** — How far back to fetch alarms on first run (e.g., `72h`, `30d`).
-   - **Polling Interval** — How often to poll for new alarms (default: `1m`).
+   - **Initial Lookback Period** — How far back to fetch alarms on first run (e.g., `72h`, `720h` for 30 days).
+   - **Polling Interval** — How often to poll for new alarms (default: `5m`).
 4. Click **Save and continue**.
 
 ### Validation
