@@ -1,0 +1,507 @@
+---
+description: Pipeline for processing Audit logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.3.0
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      if: ctx.event?.original == null
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+  - remove:
+      field:
+        - message
+      tag: remove_message
+      if: ctx.event?.original != null
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - drop:
+      tag: drop_non_audit_header_lines
+      if: >-
+        ctx.event?.original == null ||
+        !(ctx.event.original =~ /^# \d{2}\/[A-Za-z]{3}\/\d{4}:\d{2}:\d{2}:\d{2}\.\d{3} [+-]\d{4};(?: conn=-?\d+;)?(?: op=\d+;)?(?: triggeredByConn=\d+;)?(?: triggeredByOp=\d+;)?(?: origin="[^"]*";)?(?: instanceName="[^"]*";)?(?: threadID=\d+;)?(?: clientIP=[^;]+;)?(?: requesterDN="[^"]*";)?(?: usingAdminSessionWorkerThread=\w+;)?/)
+      description: >-
+        Drops any event where event.original does not match the PingDirectory
+        audit header pattern. This covers logger initialization lines, log
+        rotation markers, log file creation markers, and any other non-audit
+        content before the grok processor runs.
+  - grok:
+      field: event.original
+      tag: parse_audit_header
+      patterns:
+        - '# (?<ping_directory.audit.timestamp>\d{2}\/[A-Za-z]{3}\/\d{4}:\d{2}:\d{2}:\d{2}\.\d{3}) (?<ping_directory.audit.timezone>[+-]\d{4});(?: conn=%{INT:ping_directory.audit.conn:long};)?(?: op=%{NUMBER:ping_directory.audit.op:long};)?(?: triggeredByConn=%{NUMBER:ping_directory.audit.triggered_by_conn:long};)?(?: triggeredByOp=%{NUMBER:ping_directory.audit.triggered_by_op:long};)?(?: origin="%{DATA:ping_directory.audit.origin}";)?(?: instanceName="%{DATA:ping_directory.audit.instance_name}";)?(?: threadID=%{NUMBER:ping_directory.audit.thread_id};)?(?: clientIP=%{IP:ping_directory.audit.client_ip};)?(?: requesterDN="%{DATA:ping_directory.audit.requester_dn_raw}";)?(?: usingAdminSessionWorkerThread=%{WORD:ping_directory.audit.using_admin_session_worker_thread};)?'
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_for_parse_audit_header
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: parse_audit_ldif_fields
+      lang: painless
+      if: ctx.event?.original != null
+      description: >-
+        Extracts LDIF body fields (dn, changetype, modifiersName, modifyTimestamp,
+        creatorsName, createTimestamp, entryUUID) from the multiline audit record
+        in event.original using regex matching, storing raw values under
+        ping_directory.audit for further processing.
+      source: |-
+        def raw = ctx.event.original;
+
+        // Remove operationPurpose JSON block to avoid false matches
+        String body = raw;
+        int opStart = body.indexOf('operationPurpose={');
+        if (opStart >= 0) {
+          int opEnd = body.indexOf('}', opStart);
+          if (opEnd >= 0) {
+            body = body.substring(0, opStart) + body.substring(opEnd + 1);
+          }
+        }
+
+        if (ctx.ping_directory == null) ctx.ping_directory = new HashMap();
+        if (ctx.ping_directory.audit == null) ctx.ping_directory.audit = new HashMap();
+
+        // dn: (DN value, ends before next attribute)
+        def dnMatch = /dn:\s*(.*?)(?=\s+[A-Za-z][A-Za-z0-9-]*:\s|$)/.matcher(body);
+        if (dnMatch.find()) {
+          ctx.ping_directory.audit.dn_raw = dnMatch.group(1).trim();
+        }
+
+        // changetype: single token
+        def ctMatch = /changetype:\s*(\S+)/.matcher(body);
+        if (ctMatch.find()) {
+          ctx.ping_directory.audit.changetype = ctMatch.group(1);
+        }
+
+        // modifiersName: DN value
+        def mnMatch = /modifiersName:\s*(.*?)(?=\s+[A-Za-z][A-Za-z0-9-]*:\s|$)/.matcher(body);
+        if (mnMatch.find()) {
+          ctx.ping_directory.audit.modifiers_name_raw = mnMatch.group(1).trim();
+        }
+
+        // modifyTimestamp: single token (timestamp, no spaces)
+        def mtMatch = /modifyTimestamp:\s*(\S+)/.matcher(body);
+        if (mtMatch.find()) {
+          ctx.ping_directory.audit.modify_timestamp = mtMatch.group(1);
+        }
+
+        // creatorsName: DN value
+        def cnMatch = /creatorsName:\s*(.*?)(?=\s+[A-Za-z][A-Za-z0-9-]*:\s|$)/.matcher(body);
+        if (cnMatch.find()) {
+          ctx.ping_directory.audit.creators_name_raw = cnMatch.group(1).trim();
+        }
+
+        // createTimestamp: single token
+        def crtMatch = /createTimestamp:\s*(\S+)/.matcher(body);
+        if (crtMatch.find()) {
+          ctx.ping_directory.audit.create_timestamp = crtMatch.group(1);
+        }
+
+        // entryUUID: single token
+        def uuidMatch = /entryUUID:\s*(\S+)/.matcher(body);
+        if (uuidMatch.find()) {
+          ctx.ping_directory.audit.entry_uuid = uuidMatch.group(1);
+        }
+  - script:
+      tag: parse_dn_objects
+      lang: painless
+      if: ctx.ping_directory?.audit != null
+      description: >-
+        Converts raw Distinguished Name strings (dn_raw, modifiers_name_raw,
+        requester_dn_raw, creators_name_raw) into structured objects with
+        cn and meta sub-fields, then removes the original raw fields.
+      source: |-
+        def parseDN(String raw) {
+          Map result = new HashMap();
+          if (raw == null || raw.isEmpty()) return result;
+          int commaIdx = raw.indexOf(',');
+          if (commaIdx > 0) {
+            String first = raw.substring(0, commaIdx).trim();
+            String rest = raw.substring(commaIdx + 1).trim();
+            int eqIdx = first.indexOf('=');
+            if (eqIdx > 0) {
+              result.put('cn', first.substring(eqIdx + 1).trim());
+            }
+            result.put('meta', rest);
+          } else {
+            result.put('cn', raw);
+            result.put('meta', '');
+          }
+          return result;
+        }
+
+        if (ctx.ping_directory.audit.dn_raw != null) {
+          ctx.ping_directory.audit.dn = parseDN(ctx.ping_directory.audit.dn_raw);
+          ctx.ping_directory.audit.remove('dn_raw');
+        }
+
+        if (ctx.ping_directory.audit.modifiers_name_raw != null) {
+          ctx.ping_directory.audit.modifiers_name = parseDN(ctx.ping_directory.audit.modifiers_name_raw);
+          ctx.ping_directory.audit.remove('modifiers_name_raw');
+        }
+
+        if (ctx.ping_directory.audit.requester_dn_raw != null) {
+          ctx.ping_directory.audit.requester_dn = parseDN(ctx.ping_directory.audit.requester_dn_raw);
+          ctx.ping_directory.audit.remove('requester_dn_raw');
+        }
+
+        if (ctx.ping_directory.audit.creators_name_raw != null) {
+          ctx.ping_directory.audit.creators_name = parseDN(ctx.ping_directory.audit.creators_name_raw);
+          ctx.ping_directory.audit.remove('creators_name_raw');
+        }
+  - script:
+      tag: parse_operation_purpose
+      lang: painless
+      if: ctx.event?.original != null && ctx.event.original.contains('operationPurpose')
+      description: >-
+        Extracts the operationPurpose JSON block from event.original and parses
+        out applicationName, applicationVersion, and codeLocation into
+        ping_directory.audit.operation_purpose.
+      source: |-
+        def raw = ctx.event.original;
+        int start = raw.indexOf('operationPurpose={ ');
+        if (start >= 0) {
+          start += 'operationPurpose={ '.length() - 1;
+          int end = raw.indexOf('}', start);
+          if (end >= 0) {
+            def block = raw.substring(start, end + 1);
+
+            def appNameMatch = / "applicationName":"([^"]+)"/.matcher(block);
+            def appVerMatch = / "applicationVersion":"([^"]+)"/.matcher(block);
+            def codeLocMatch = / "codeLocation":"([^"]+)"/.matcher(block);
+
+            if (ctx.ping_directory == null) ctx.ping_directory = new HashMap();
+            if (ctx.ping_directory.audit == null) ctx.ping_directory.audit = new HashMap();
+            if (ctx.ping_directory.audit.operation_purpose == null) ctx.ping_directory.audit.operation_purpose = new HashMap();
+
+            if (appNameMatch.find()) {
+              ctx.ping_directory.audit.operation_purpose.application_name = appNameMatch.group(1);
+            }
+            if (appVerMatch.find()) {
+              ctx.ping_directory.audit.operation_purpose.application_version = appVerMatch.group(1);
+            }
+            if (codeLocMatch.find()) {
+              ctx.ping_directory.audit.operation_purpose.code_location = codeLocMatch.group(1);
+            }
+          }
+        }
+  - script:
+      tag: parse_ds_cfg_and_object_class_fields
+      lang: painless
+      if: ctx.event?.original != null
+      description: >-
+        Extracts ds-cfg-* attribute fields into ping_directory.audit.ds_cfg
+        and objectClass values into ping_directory.audit.object_classes from
+        the LDIF body of the audit record.
+      source: |-
+        String raw = ctx.event.original;
+
+        String body = raw;
+        int dnIdx = body.indexOf(' dn:');
+        if (dnIdx >= 0) {
+          body = body.substring(dnIdx).trim();
+        }
+
+        int opStart = body.indexOf('operationPurpose={');
+        if (opStart >= 0) {
+          int opEnd = body.indexOf('}', opStart);
+          if (opEnd >= 0) {
+            body = body.substring(0, opStart) + body.substring(opEnd + 1);
+          }
+        }
+
+        if (ctx.ping_directory == null) ctx.ping_directory = new HashMap();
+        if (ctx.ping_directory.audit == null) ctx.ping_directory.audit = new HashMap();
+
+        Map dsCfgMap = new HashMap();
+        def dsMatcher = /ds-cfg-([a-zA-Z0-9-]+):\s*(\S[^\n]*?)(?=\s+[A-Za-z][A-Za-z0-9-]*:|$)/.matcher(body);
+        while (dsMatcher.find()) {
+          String key = dsMatcher.group(1).replace('-', '_');
+          String value = dsMatcher.group(2).trim();
+
+          def coerced;
+          if (value == 'true' || value == 'True' || value == 'TRUE') {
+            coerced = true;
+          } else if (value == 'false' || value == 'False' || value == 'FALSE') {
+            coerced = false;
+          } else {
+            coerced = value;
+          }
+
+          if (dsCfgMap.containsKey(key)) {
+            def existing = dsCfgMap.get(key);
+            if (existing instanceof ArrayList) {
+              existing.add(coerced);
+            } else {
+              def multi = new ArrayList();
+              multi.add(existing);
+              multi.add(coerced);
+              dsCfgMap.put(key, multi);
+            }
+          } else {
+            dsCfgMap.put(key, coerced);
+          }
+        }
+
+        if (!dsCfgMap.isEmpty()) {
+          ctx.ping_directory.audit.ds_cfg = dsCfgMap;
+        }
+
+        def ocList = new ArrayList();
+        def ocMatcher = /objectClass:\s*(\S+)/.matcher(body);
+        while (ocMatcher.find()) {
+          ocList.add(ocMatcher.group(1).trim());
+        }
+
+        if (!ocList.isEmpty()) {
+          ctx.ping_directory.audit.object_classes = ocList;
+        }
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_iam_into_event_category
+      value: iam
+  - append:
+      field: event.type
+      tag: append_change_into_event_type
+      value: change
+      if: ctx.ping_directory?.audit?.changetype != null && !['delete','DELETE'].contains(ctx.ping_directory.audit.changetype)
+  - append:
+      field: event.type
+      tag: append_deletion_into_event_type
+      value: deletion
+      if: ctx.ping_directory?.audit?.changetype != null && ['delete','DELETE'].contains(ctx.ping_directory.audit.changetype)
+  - convert:
+      field: ping_directory.audit.client_ip
+      tag: convert_clientIP_to_ip
+      if: ctx.ping_directory?.audit?.client_ip != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_invalid_client_ip
+            field: ping_directory.audit.client_ip
+            ignore_missing: true
+        - append:
+            tag: append_error_message_for_convert_clientIP_to_ip
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.ip
+      tag: set_client_ip_from_audit_client_ip
+      copy_from: ping_directory.audit.client_ip
+      ignore_empty_value: true
+  - geoip:
+      field: client.ip
+      tag: geoip_client_ip
+      target_field: client.geo
+      ignore_missing: true
+      description: >-
+        Enriches client.ip with geographic location data, populating
+        client.geo fields such as country, city, and coordinates.
+  - append:
+      field: related.ip
+      tag: append_audit_client_ip_into_related_ip
+      if: ctx.ping_directory?.audit?.client_ip != null
+      value: '{{{ping_directory.audit.client_ip}}}'
+      allow_duplicates: false
+  - date:
+      field: ping_directory.audit.create_timestamp
+      tag: date_createTimestamp
+      target_field: ping_directory.audit.create_timestamp
+      if: ctx.ping_directory?.audit?.create_timestamp != null &&
+        ctx.ping_directory.audit.create_timestamp != ''
+      formats:
+        - yyyyMMddHHmmss.SSSX
+      on_failure:
+        - remove:
+            tag: remove_create_timestamp_on_date_failure
+            field: ping_directory.audit.create_timestamp
+            ignore_missing: true
+        - append:
+            tag: append_error_message_for_date_createTimestamp
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_audit_create_timestamp
+      copy_from: ping_directory.audit.create_timestamp
+      ignore_empty_value: true
+  - set:
+      field: observer.name
+      tag: set_observer_name_from_audit_instance_name
+      copy_from: ping_directory.audit.instance_name
+      ignore_empty_value: true
+  - date:
+      field: ping_directory.audit.modify_timestamp
+      tag: date_modifyTimestamp
+      target_field: ping_directory.audit.modify_timestamp
+      if: ctx.ping_directory?.audit?.modify_timestamp != null && ctx.ping_directory.audit.modify_timestamp != ''
+      formats:
+        - yyyyMMddHHmmss.SSSX
+      on_failure:
+        - remove:
+            tag: remove_modify_timestamp_on_date_failure
+            field: ping_directory.audit.modify_timestamp
+            ignore_missing: true
+        - append:
+            tag: append_error_message_for_date_modifyTimestamp
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_ping_directory_audit_requester_dn_cn_into_related_user
+      if: ctx.ping_directory?.audit?.requester_dn?.cn != null && ctx.ping_directory.audit.requester_dn.cn != ''
+      value: '{{{ping_directory.audit.requester_dn.cn}}}'
+      allow_duplicates: false
+      description: >-
+        Appends the requester DN common name to related.user.
+  - append:
+      field: related.user
+      tag: append_ping_directory_audit_modifiers_name_cn_into_related_user
+      if: ctx.ping_directory?.audit?.modifiers_name?.cn != null && ctx.ping_directory.audit.modifiers_name.cn != ''
+      value: '{{{ping_directory.audit.modifiers_name.cn}}}'
+      allow_duplicates: false
+      description: >-
+        Appends the modifiers name common name to related.user.
+  - append:
+      field: related.user
+      tag: append_ping_directory_audit_creators_name_cn_into_related_user
+      if: ctx.ping_directory?.audit?.creators_name?.cn != null && ctx.ping_directory.audit.creators_name.cn != ''
+      value: '{{{ping_directory.audit.creators_name.cn}}}'
+      allow_duplicates: false
+      description: >-
+        Appends the creators name common name to related.user.
+  - append:
+      field: related.user
+      tag: append_ping_directory_audit_dn_cn_into_related_user
+      if: ctx.ping_directory?.audit?.dn?.cn != null && ctx.ping_directory.audit.dn.cn != ''
+      value: '{{{ping_directory.audit.dn.cn}}}'
+      allow_duplicates: false
+      description: >-
+        Appends the target entry DN common name to related.user.
+        Particularly important for delete operations where the dn is the only identity field.
+  - set:
+      field: event.reason
+      tag: set_event_reason_from_audit_operation_purpose_code_location
+      copy_from: ping_directory.audit.operation_purpose.code_location
+      ignore_empty_value: true
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_from_audit_timezone
+      copy_from: ping_directory.audit.timezone
+      ignore_empty_value: true
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_from_tz_offset
+      copy_from: _conf.tz_offset
+      ignore_empty_value: true
+      override: true
+  - date:
+      field: ping_directory.audit.timestamp
+      tag: date_timestamp_with_timezone
+      if: >
+        ctx.ping_directory?.audit?.timestamp != null &&
+        ctx.ping_directory.audit.timestamp != '' &&
+        ctx.event?.timezone != null &&
+        ctx.event.timezone != ''
+      target_field: ping_directory.audit.timestamp
+      timezone: '{{{event.timezone}}}'
+      formats:
+        - dd/MMM/yyyy:HH:mm:ss.SSS
+      on_failure:
+        - remove:
+            tag: remove_timestamp_on_date_failure_with_timezone
+            field: ping_directory.audit.timestamp
+            ignore_missing: true
+        - append:
+            tag: append_error_message_for_date_timestamp_with_timezone
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ping_directory.audit.timestamp
+      tag: date_timestamp_without_timezone
+      if: >
+        ctx.ping_directory?.audit?.timestamp != null &&
+        ctx.ping_directory.audit.timestamp != '' &&
+        (ctx.event.timezone == null ||
+        ctx.event.timezone == '')
+      target_field: ping_directory.audit.timestamp
+      formats:
+        - dd/MMM/yyyy:HH:mm:ss.SSS
+      on_failure:
+        - remove:
+            tag: remove_timestamp_on_date_failure
+            field: ping_directory.audit.timestamp
+            ignore_missing: true
+        - append:
+            tag: append_error_message_for_date_timestamp_without_timezone
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_ping_directory_audit_timestamp
+      copy_from: ping_directory.audit.timestamp
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_audit_changetype
+      copy_from: ping_directory.audit.changetype
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+      description: >-
+        Converts event.action to lowercase to normalize changetype values
+        such as ADD, MODIFY, DELETE regardless of case in the source log.
+  - set:
+      field: observer.version
+      tag: set_observer_version_from_audit_operation_purpose_application_version
+      copy_from: ping_directory.audit.operation_purpose.application_version
+      ignore_empty_value: true
+  - remove:
+      field:
+        - ping_directory.audit.client_ip
+        - ping_directory.audit.create_timestamp
+        - ping_directory.audit.instance_name
+        - ping_directory.audit.operation_purpose.application_version
+        - ping_directory.audit.operation_purpose.code_location
+        - ping_directory.audit.timestamp
+        - ping_directory.audit.timezone
+        - ping_directory.audit.changetype
+      tag: remove_fields_map_to_ecs
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event_tag
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      tag: append_error_message_on_failure
+      value: >-
+        Processor {{{_ingest.on_failure_processor_type}}}
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
+        {{{/_ingest.on_failure_processor_tag}}}
+        in pipeline '{{{_ingest.pipeline}}}'
+        failed with message '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_pipeline_error
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_tag
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null

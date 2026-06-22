@@ -1,0 +1,37 @@
+paths:
+{{#each paths as |path|}}
+  - {{path}}
+{{/each}}
+exclude_files: ['\.gz$']
+parsers:
+  - multiline:
+      type: pattern
+      pattern: '^# \d{2}/[A-Za-z]{3}/\d{4}:\d{2}:\d{2}:\d{2}\.\d{3} [+-]\d{4};'
+      negate: true
+      match: after
+      max_lines: {{#if max_lines}}{{max_lines}}{{else}}500{{/if}}
+      timeout: 5s
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- rename:
+    fields:
+      - {from: "message", to: "event.original"}
+{{#if tz_offset}}
+fields_under_root: true
+fields:
+  _conf:
+    tz_offset: "{{tz_offset}}"
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
