@@ -2300,22 +2300,22 @@ An example event for `sandbox_verdict` looks as following:
 {
     "@timestamp": "2025-01-15T09:30:01.000Z",
     "agent": {
-        "ephemeral_id": "d95718dd-097e-4447-9363-1723e5ef3b2d",
-        "id": "7523cc90-eed0-49d6-a240-f57e101b03d4",
-        "name": "elastic-agent-42817",
+        "ephemeral_id": "81d8db98-956a-42c2-9713-c23a38afc760",
+        "id": "a7900f7c-b058-4ec3-a5f3-ca831637f27d",
+        "name": "elastic-agent-15444",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.sandbox_verdict",
-        "namespace": "22129",
+        "namespace": "10905",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7523cc90-eed0-49d6-a240-f57e101b03d4",
+        "id": "a7900f7c-b058-4ec3-a5f3-ca831637f27d",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -2323,7 +2323,7 @@ An example event for `sandbox_verdict` looks as following:
         "agent_id_status": "verified",
         "dataset": "zscaler_zia.sandbox_verdict",
         "id": "7353686396818817200",
-        "ingested": "2026-06-01T07:46:47Z",
+        "ingested": "2026-06-22T05:43:57Z",
         "kind": "event",
         "original": "{\"analysis_completed_time\":\"Wed Jan 15 09:30:01 2025\",\"company\":{\"name\":\"Example Corp\"},\"datacenter\":{\"city\":\"Sydney\",\"country\":\"AU\",\"name\":\"Sydney\"},\"event_time\":\"Wed Jan 15 09:30:03 2025\",\"feed_time\":\"Wed Jan 15 09:30:04 2025\",\"file\":{\"ba_md5_url\":\"zsapi/v1/baSso?md5ReportId=098f6bcd4621d373cade4e832627b4f6\\u0026sourceURL=admin.example.net/\",\"extension\":\"zip\",\"hash\":{\"children_md5\":\"5d41402abc4b2a76b9719d911017c592|aab3238922bcc25a6f606eb525ffdc56\",\"md5\":\"098f6bcd4621d373cade4e832627b4f6\",\"sha256\":\"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\"},\"type_category\":\"Archive (zip)\"},\"record_id\":\"7353686396818817200\",\"sourcetype\":\"zscalernss-sandbox_verdict\",\"threat\":{\"indicator\":{\"name\":\"Suspicious.Generic\"},\"tactic\":{\"id\":\"TAC001\"},\"technique\":{\"id\":\"T1059\"}},\"time\":\"Wed Jan 15 09:30:01 2025\",\"tz\":\"GMT\",\"verdict\":\"Suspicious\",\"version\":\"v1\"}",
         "provider": "Zscaler",

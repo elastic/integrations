@@ -41,15 +41,15 @@ processors:
       tag: check_template_version
       lang: painless
       params:
-        pkg_version: 3.20.0
+        pkg_version: 4.2.0
         data_stream: sandbox_verdict
         expect:
           version: v1
       if: ctx.zscaler_zia?.sandbox_verdict != null && ctx._conf?.strict_fields == true
       source: |-
         if (ctx.zscaler_zia.sandbox_verdict.version != params.expect.version) {
-          ctx.error = ctx.error == null ? [:] : ctx.error;
-          ctx.error.message = ctx.error.message == null ? [] : ctx.error.message;
+          ctx.error = ctx.error ?: [:];
+          ctx.error.message = ctx.error.message ?: [];
           ctx.error.message.add('template version mismatch: ' + (ctx.zscaler_zia.sandbox_verdict.version == null ? 'null' : ctx.zscaler_zia.sandbox_verdict.version.toString()) + ' is not expected version (see ' + params.data_stream + ' https://epr.elastic.co/package/zscaler_zia/' + params.pkg_version + '/docs/README.md)');
         }
       on_failure:
@@ -342,11 +342,6 @@ processors:
         - zscaler_zia.sandbox_verdict.threat.indicator.name
         - zscaler_zia.sandbox_verdict.threat.tactic.id
         - zscaler_zia.sandbox_verdict.threat.technique.id
-      tag: remove_duplicate_vendor_fields_mapped_to_ecs
-      ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-  - remove:
-      field:
         - _conf
       tag: remove_unused
       ignore_missing: true
