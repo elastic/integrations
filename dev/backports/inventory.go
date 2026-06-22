@@ -116,6 +116,20 @@ func (e entry) activeResult(now time.Time) ActiveResult {
 // AddEntry inserts a new backport entry into the inventory at path.
 // The branch name is derived as backport-<packageName>-<major>.<minor>.
 // archived is set to false and maintained_until to null.
+// ValidateBranchName checks that branch is a valid backport branch name for the given package:
+// it must match branchRE and start with "backport-<packageName>-".
+func ValidateBranchName(packageName, branch string) error {
+	if !branchRE.MatchString(branch) {
+		return fmt.Errorf("invalid branch %q: must match backport-<package>-<suffix> "+
+			"(package: letters/digits/underscores; suffix: letters/digits/dots/underscores/hyphens; "+
+			"no whitespace, quotes, colons, semicolons, dollar signs, backticks or other special characters)", branch)
+	}
+	if !strings.HasPrefix(branch, "backport-"+packageName+"-") {
+		return fmt.Errorf("branch %q must start with \"backport-%s-\"", branch, packageName)
+	}
+	return nil
+}
+
 // The entry is placed in sorted order: package name ascending, then version descending (newest first).
 // packagesDir is the path to the packages/ directory used to verify that packageName names a real
 // package. Pass an empty string to skip this check.
@@ -299,12 +313,10 @@ func validateEntryFields(i int, e entry, knownPackages map[string]struct{}, pack
 
 	if e.Branch == "" {
 		errs = append(errs, fmt.Errorf("%s: missing required field 'branch'", id))
-	} else if !branchRE.MatchString(e.Branch) {
-		errs = append(errs, fmt.Errorf("%s: invalid branch %q: must match backport-<package>-<suffix> "+
-			"(package: letters/digits/underscores; suffix: letters/digits/dots/underscores/hyphens; "+
-			"no whitespace, quotes, colons, semicolons, dollar signs, backticks or other special characters)", id, e.Branch))
-	} else if e.Package != "" && !strings.HasPrefix(e.Branch, "backport-"+e.Package+"-") {
-		errs = append(errs, fmt.Errorf("%s: branch %q must start with \"backport-%s-\"", id, e.Branch, e.Package))
+	} else if e.Package != "" {
+		if err := ValidateBranchName(e.Package, e.Branch); err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", id, err))
+		}
 	}
 
 	if e.BaseVersion == "" {

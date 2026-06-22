@@ -228,6 +228,16 @@ func ValidateBackportsInventory() error {
 	return backports.ValidateInventory(".backports.yml", "packages")
 }
 
+// ValidateBackportBranchName checks that the given branch name is valid for the given package.
+// The branch must match backport-<package>-<suffix> and start with "backport-<packageName>-".
+func ValidateBackportBranchName(packageName, branch string) error {
+	if err := backports.ValidateBranchName(packageName, branch); err != nil {
+		return err
+	}
+	fmt.Printf("Branch name %q is valid for package %q.\n", branch, packageName)
+	return nil
+}
+
 // ListPackages lists all packages found under the packages directory.
 func ListPackages() error {
 	const packagesDir = "packages"

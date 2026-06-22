@@ -19,9 +19,15 @@ PACKAGE_NAME="$(buildkite-agent meta-data get PACKAGE_NAME --default "${PACKAGE_
 PACKAGE_VERSION="$(buildkite-agent meta-data get PACKAGE_VERSION --default "${PACKAGE_VERSION:-""}")"
 REMOVE_OTHER_PACKAGES="$(buildkite-agent meta-data get REMOVE_OTHER_PACKAGES --default "${REMOVE_OTHER_PACKAGES:-"false"}")"
 BACKPORT_BRANCH_NAME="$(buildkite-agent meta-data get BACKPORT_BRANCH_NAME --default "${BACKPORT_BRANCH_NAME:-""}")"
+PR_NUMBER="$(buildkite-agent meta-data get PR_NUMBER --default "${PR_NUMBER:-""}")"
 
 if [[ -z "$PACKAGE_NAME" ]] || [[ -z "$PACKAGE_VERSION" ]]; then
   buildkite-agent annotate "The variables **PACKAGE_NAME** or **PACKAGE_VERSION** aren't defined, please try again" --style "warning"
+  exit 1
+fi
+
+if [[ -n "${PR_NUMBER}" ]] && ! [[ "${PR_NUMBER}" =~ ^[0-9]+$ ]]; then
+  buildkite-agent annotate "Invalid PR_NUMBER **${PR_NUMBER}**: must be a positive integer" --style "error"
   exit 1
 fi
 
@@ -51,6 +57,12 @@ SOURCE_BRANCH="main"
 EXPECTED_BACKPORT_BRANCH_NAME="backport-${PACKAGE_NAME}-${TRIMMED_PACKAGE_VERSION}"
 if [[ "${BACKPORT_BRANCH_NAME}" == "" ]]; then
   BACKPORT_BRANCH_NAME="${EXPECTED_BACKPORT_BRANCH_NAME}"
+else
+  echo "--- Validating custom backport branch name"
+  if ! mage ValidateBackportBranchName "${PACKAGE_NAME}" "${BACKPORT_BRANCH_NAME}"; then
+    buildkite-agent annotate "Invalid backport branch name **${BACKPORT_BRANCH_NAME}**: must match backport-${PACKAGE_NAME}-<suffix>" --style "error"
+    exit 1
+  fi
 fi
 
 PACKAGES_FOLDER_PATH="packages"
