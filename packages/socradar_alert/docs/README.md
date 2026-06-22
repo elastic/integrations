@@ -4,7 +4,7 @@
 
 ## Overview
 
-The SOCRadar integration collects security alarms from the [SOCRadar](https://socradar.io) platform via its REST API and ingests them into Elasticsearch. Each alarm is stored as a log event in the `logs-socradar.incidents-*` data stream.
+The SOCRadar integration collects security alarms from the [SOCRadar](https://socradar.io) platform via its REST API and ingests them into Elasticsearch. Each alarm is stored as a log event in the `logs-socradar_alert.incidents-*` data stream.
 
 The integration also ships a Detection Rule (`SOCRadar - Alarm Detection`) that automatically creates Kibana Security Alerts for every incoming alarm, enabling bidirectional status synchronization between Kibana and SOCRadar.
 
@@ -57,7 +57,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ### Validation
 
-After installation, open **Kibana → Discover** and filter by index `logs-socradar.incidents-*`. Alarms should appear within one polling interval.
+After installation, open **Kibana → Discover** and filter by index `logs-socradar_alert.incidents-*`. Alarms should appear within one polling interval.
 
 You can also open the **SOCRadar dashboard** from **Kibana → Dashboards** to verify data is flowing correctly.
 
@@ -107,7 +107,7 @@ PUT _watcher/watch/socradar_alarm_status_sync
           "_source": ["kibana.alert.workflow_status", "alarm.alarm_id", "alarm.company_id"],
           "query": {
             "bool": {
-              "must": [{ "term": { "kibana.alert.rule.rule_id": "socradar-alarm-detection-rule" } }],
+              "must": [{ "term": { "kibana.alert.rule.rule_id": "socradar_alert-alarm-detection-rule" } }],
               "filter": [{ "range": { "kibana.alert.workflow_status_updated_at": { "gte": "now-2m" } } }]
             }
           },
@@ -200,7 +200,7 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 ### No alerts in Security → Alerts after enabling the rule
 
 - Check rule execution logs under **Security → Rules → SOCRadar - Alarm Detection → Execution results**.
-- Confirm data exists in **Discover** with index filter `logs-socradar.incidents-*`.
+- Confirm data exists in **Discover** with index filter `logs-socradar_alert.incidents-*`.
 - The rule runs every 5 minutes — wait at least one full cycle after enabling.
 
 ### `GET _watcher/stats` returns an error
@@ -237,7 +237,7 @@ The `incidents` data stream collects alarm events from the SOCRadar API.
 | alarm.alarm_asset | Asset name | keyword |
 | alarm.alarm_assignees | Assigned users | keyword |
 | alarm.alarm_default_risk_level | Default risk level (extracted) | keyword |
-| alarm.alarm_generic_title |  | keyword |
+| alarm.alarm_generic_title | Alarm generic title | keyword |
 | alarm.alarm_id | Unique alarm identifier | keyword |
 | alarm.alarm_main_type | Alarm main type (extracted) | keyword |
 | alarm.alarm_related_assets | Related assets | flattened |
@@ -246,7 +246,7 @@ The `incidents` data stream collects alarm events from the SOCRadar API.
 | alarm.alarm_sub_type | Alarm sub type (extracted) | keyword |
 | alarm.alarm_text | Alarm description | text |
 | alarm.alarm_type_details | Alarm type details | flattened |
-| alarm.alarm_type_id | Alarm generic title (extracted) | keyword |
+| alarm.alarm_type_id | Alarm type identifier | keyword |
 | alarm.approved_by | Approved by | keyword |
 | alarm.company_id | ID of the company | keyword |
 | alarm.content | Alarm content details | flattened |
@@ -257,10 +257,12 @@ The `incidents` data stream collects alarm events from the SOCRadar API.
 | alarm.notification_id | Notification ID | long |
 | alarm.status | Alarm status | keyword |
 | alarm.tags | Alarm tags | keyword |
-| alarm.title |  | keyword |
+| alarm.title | Alarm title | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
 
 
 ### Inputs used

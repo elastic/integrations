@@ -3,7 +3,7 @@
 
 ## Overview
 
-The SOCRadar integration collects security alarms from the [SOCRadar](https://socradar.io) platform via its REST API and ingests them into Elasticsearch. Each alarm is stored as a log event in the `logs-socradar.incidents-*` data stream.
+The SOCRadar integration collects security alarms from the [SOCRadar](https://socradar.io) platform via its REST API and ingests them into Elasticsearch. Each alarm is stored as a log event in the `logs-socradar_alert.incidents-*` data stream.
 
 The integration also ships a Detection Rule (`SOCRadar - Alarm Detection`) that automatically creates Kibana Security Alerts for every incoming alarm, enabling bidirectional status synchronization between Kibana and SOCRadar.
 
@@ -56,7 +56,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ### Validation
 
-After installation, open **Kibana → Discover** and filter by index `logs-socradar.incidents-*`. Alarms should appear within one polling interval.
+After installation, open **Kibana → Discover** and filter by index `logs-socradar_alert.incidents-*`. Alarms should appear within one polling interval.
 
 You can also open the **SOCRadar dashboard** from **Kibana → Dashboards** to verify data is flowing correctly.
 
@@ -106,7 +106,7 @@ PUT _watcher/watch/socradar_alarm_status_sync
           "_source": ["kibana.alert.workflow_status", "alarm.alarm_id", "alarm.company_id"],
           "query": {
             "bool": {
-              "must": [{ "term": { "kibana.alert.rule.rule_id": "socradar-alarm-detection-rule" } }],
+              "must": [{ "term": { "kibana.alert.rule.rule_id": "socradar_alert-alarm-detection-rule" } }],
               "filter": [{ "range": { "kibana.alert.workflow_status_updated_at": { "gte": "now-2m" } } }]
             }
           },
@@ -199,7 +199,7 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 ### No alerts in Security → Alerts after enabling the rule
 
 - Check rule execution logs under **Security → Rules → SOCRadar - Alarm Detection → Execution results**.
-- Confirm data exists in **Discover** with index filter `logs-socradar.incidents-*`.
+- Confirm data exists in **Discover** with index filter `logs-socradar_alert.incidents-*`.
 - The rule runs every 5 minutes — wait at least one full cycle after enabling.
 
 ### `GET _watcher/stats` returns an error

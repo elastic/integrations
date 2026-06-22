@@ -5,10 +5,21 @@ processors:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: Skip pipeline processing for CEL input collection errors.
+  - set:
+      field: event.original
+      copy_from: message
+      tag: set_event_original
+      ignore_empty_value: true
+      if: ctx.event?.original == null
   - json:
       field: message
       target_field: alarm
+      tag: json_decode_message
       ignore_failure: true
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
   - date:
       field: alarm.date
       target_field: '@timestamp'
