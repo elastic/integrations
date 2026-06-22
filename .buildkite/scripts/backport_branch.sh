@@ -57,12 +57,6 @@ SOURCE_BRANCH="main"
 EXPECTED_BACKPORT_BRANCH_NAME="backport-${PACKAGE_NAME}-${TRIMMED_PACKAGE_VERSION}"
 if [[ "${BACKPORT_BRANCH_NAME}" == "" ]]; then
   BACKPORT_BRANCH_NAME="${EXPECTED_BACKPORT_BRANCH_NAME}"
-else
-  echo "--- Validating custom backport branch name"
-  if ! mage ValidateBackportBranchName "${PACKAGE_NAME}" "${BACKPORT_BRANCH_NAME}"; then
-    buildkite-agent annotate "Invalid backport branch name **${BACKPORT_BRANCH_NAME}**: must match backport-${PACKAGE_NAME}-<suffix>" --style "error"
-    exit 1
-  fi
 fi
 
 PACKAGES_FOLDER_PATH="packages"
@@ -295,6 +289,12 @@ add_bin_path
 
 with_yq
 with_mage
+
+echo "--- Validating custom backport branch name"
+if ! mage ValidateBackportBranchName "${PACKAGE_NAME}" "${BACKPORT_BRANCH_NAME}"; then
+  buildkite-agent annotate "Invalid backport branch name **${BACKPORT_BRANCH_NAME}**: must match backport-${PACKAGE_NAME}-<suffix>" --style "error"
+  exit 1
+fi
 
 echo "--- Resolve package path from PACKAGE_NAME"
 PACKAGE_PATH="$(get_package_path "${PACKAGE_NAME}" || true)"
