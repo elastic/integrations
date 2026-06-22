@@ -301,11 +301,11 @@ The `log` data stream provides events from Cisco Aironet Wireless LAN Controller
 | @timestamp | Event timestamp. | date |
 | cisco.acl.action | ACL action (denied or permitted) | keyword |
 | cisco.acl.name | ACL list name for FMANFP logs | keyword |
+| cisco.ap_name | AP name from wireless controller events | keyword |
 | cisco.audit_session_id | AuditSessionID value | keyword |
 | cisco.auth.method | Authentication method | keyword |
 | cisco.awips.alarm_code | AWIPS numeric alarm code | integer |
 | cisco.awips.alarm_type | AWIPS alarm type string | keyword |
-| cisco.awips.ap_name | AP name from AWIPS alarm or exclusion list | keyword |
 | cisco.eapol.descriptor | Cisco eapol descriptor | short |
 | cisco.eapol.type | Cisco eapol type | short |
 | cisco.eapol.version | Cisco eapol version | short |
