@@ -1,4 +1,4 @@
-# AWS EC2 OpenTelemetry Assets
+# AWS EC2 Metrics OpenTelemetry Assets
 
 This package contains Kibana assets for monitoring EC2 instances with AWS CloudWatch metrics collected by the OpenTelemetry Collector.
 

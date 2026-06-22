@@ -1,4 +1,4 @@
-# AWS RDS OpenTelemetry Assets
+# AWS RDS Metrics OpenTelemetry Assets
 
 This package contains Kibana assets for monitoring RDS database instances with AWS CloudWatch metrics collected by the OpenTelemetry Collector.
 

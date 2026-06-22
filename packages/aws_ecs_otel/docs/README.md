@@ -1,4 +1,4 @@
-# AWS ECS OpenTelemetry Assets
+# AWS ECS Metrics OpenTelemetry Assets
 
 This package contains Kibana assets for monitoring ECS services with AWS CloudWatch metrics collected by the OpenTelemetry Collector.
 

@@ -1,4 +1,4 @@
-# AWS SQS OpenTelemetry Assets
+# AWS SQS Metrics OpenTelemetry Assets
 
 This package contains Kibana assets for monitoring SQS queues with AWS CloudWatch metrics collected by the OpenTelemetry Collector.
 

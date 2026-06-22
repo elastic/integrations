@@ -1,4 +1,4 @@
-# AWS Lambda OpenTelemetry Assets
+# AWS Lambda Metrics OpenTelemetry Assets
 
 This package contains Kibana assets for monitoring Lambda functions with AWS CloudWatch metrics collected by the OpenTelemetry Collector.
 
