@@ -1777,7 +1777,7 @@
                                             ],
                                             "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
                                             "query": {
-                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n    AND k8s.pod.uid IS NOT NULL\n  | STATS pod_count = COUNT_DISTINCT(k8s.pod.uid)\n    BY @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT @timestamp\n  | KEEP @timestamp, pod_count"
+                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n    AND k8s.pod.uid IS NOT NULL\n  | STATS last_seen = MAX(@timestamp)\n    BY k8s.pod.uid, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n  | STATS pod_count = COUNT(*) BY @timestamp\n| SORT @timestamp\n  | KEEP @timestamp, pod_count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1787,7 +1787,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n    AND k8s.pod.uid IS NOT NULL\n  | STATS pod_count = COUNT_DISTINCT(k8s.pod.uid)\n    BY @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT @timestamp\n  | KEEP @timestamp, pod_count"
+                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.node.name IS NOT NULL AND k8s.node.name != \"\"\n    AND k8s.pod.uid IS NOT NULL\n  | STATS last_seen = MAX(@timestamp)\n    BY k8s.pod.uid, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n  | STATS pod_count = COUNT(*) BY @timestamp\n| SORT @timestamp\n  | KEEP @timestamp, pod_count"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
