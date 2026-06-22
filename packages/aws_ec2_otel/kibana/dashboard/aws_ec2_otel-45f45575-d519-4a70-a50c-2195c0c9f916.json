@@ -424,7 +424,7 @@
                     "xy-layer-chart-ec2-count": {
                       "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | STATS failed_max = MAX(max_over_time(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL))) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | EVAL state = CASE(failed_max > 0, \"impaired\", failed_max == 0, \"healthy\", \"no data\") | STATS total = COUNT(*), impaired = COUNT(*) WHERE state == \"impaired\", healthy = COUNT(*) WHERE state == \"healthy\", no_data = COUNT(*) WHERE state == \"no data\" BY timestamp | SORT timestamp ASC"
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND stat == \"Maximum\" | STATS failed_max = MAX(max_over_time(`metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | EVAL state = CASE(failed_max > 0, \"impaired\", \"healthy\") | STATS total = COUNT(*), impaired = COUNT(*) WHERE state == \"impaired\", healthy = COUNT(*) WHERE state == \"healthy\" BY timestamp | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -467,17 +467,6 @@
                           },
                           "inMetricDimension": true,
                           "customLabel": true
-                        },
-                        {
-                          "columnId": "no_data",
-                          "fieldName": "no_data",
-                          "label": "No data",
-                          "meta": {
-                            "type": "number",
-                            "esType": "long"
-                          },
-                          "inMetricDimension": true,
-                          "customLabel": true
                         }
                       ],
                       "timeField": "@timestamp"
@@ -494,7 +483,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | STATS failed_max = MAX(max_over_time(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL))) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | EVAL state = CASE(failed_max > 0, \"impaired\", failed_max == 0, \"healthy\", \"no data\") | STATS total = COUNT(*), impaired = COUNT(*) WHERE state == \"impaired\", healthy = COUNT(*) WHERE state == \"healthy\", no_data = COUNT(*) WHERE state == \"no data\" BY timestamp | SORT timestamp ASC"
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND stat == \"Maximum\" | STATS failed_max = MAX(max_over_time(`metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), InstanceId, cloud.region | EVAL state = CASE(failed_max > 0, \"impaired\", \"healthy\") | STATS total = COUNT(*), impaired = COUNT(*) WHERE state == \"impaired\", healthy = COUNT(*) WHERE state == \"healthy\" BY timestamp | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -503,8 +492,7 @@
                     "accessors": [
                       "total",
                       "impaired",
-                      "healthy",
-                      "no_data"
+                      "healthy"
                     ],
                     "layerType": "data",
                     "seriesType": "line",
@@ -516,16 +504,12 @@
                         "color": "#61A2FF"
                       },
                       {
-                        "forAccessor": "healthy",
-                        "color": "#24C292"
-                      },
-                      {
                         "forAccessor": "impaired",
                         "color": "#F6726A"
                       },
                       {
-                        "forAccessor": "no_data",
-                        "color": "#BFDBFF"
+                        "forAccessor": "healthy",
+                        "color": "#24C292"
                       }
                     ]
                   }
