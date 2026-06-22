@@ -340,6 +340,7 @@ func AddBackportEntry(packageName, baseVersion string) error {
 		return err
 	}
 	fmt.Printf("Added: branch=%s base_commit=%s\n", branch, commit)
+	fmt.Printf("Tip: if you need a custom branch name, edit the 'branch' field in .backports.yml before opening the PR (must start with \"backport-%s-\").\n", packageName)
 	return nil
 }
 
