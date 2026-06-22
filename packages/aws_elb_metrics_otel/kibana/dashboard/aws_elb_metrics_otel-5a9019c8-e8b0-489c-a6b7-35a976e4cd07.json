@@ -363,7 +363,7 @@
                     "tbl-layer-tbl-instances": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS c_inv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_err = COALESCE(SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0), c_rejected_count = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), c_active_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), c_healthy_hosts = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), c_unhealthy_hosts = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), c_dur_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_dur_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_processed_bytes = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL)), c_region = MAX(cloud.region) BY LoadBalancer, cloud.region | EVAL c_state_sort = CASE(c_err > 0, 1, c_unhealthy_hosts > 0 OR c_rejected_count > 0, 2, c_healthy_hosts > 0 OR c_inv > 0 OR c_active_conn > 0, 3, c_inv == 0 OR c_active_conn == 0, 4, 5), c_state = CASE(c_err > 0, \"erroring\", c_unhealthy_hosts > 0 OR c_rejected_count > 0, \"degraded\", c_healthy_hosts > 0 OR c_inv > 0 OR c_active_conn > 0, \"healthy\", c_inv == 0 OR c_active_conn == 0, \"idle\", \"no data\") | SORT c_state_sort ASC"
+                        "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS c_inv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_err = COALESCE(SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0), c_rejected_count = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), c_active_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), c_healthy_hosts = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), c_unhealthy_hosts = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), c_dur_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_dur_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_processed_bytes = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL)), c_region = MAX(cloud.region) BY LoadBalancer, c_account = cloud.account.id, cloud.region | EVAL c_state_sort = CASE(c_err > 0, 1, c_unhealthy_hosts > 0 OR c_rejected_count > 0, 2, c_healthy_hosts > 0 OR c_inv > 0 OR c_active_conn > 0, 3, c_inv == 0 OR c_active_conn == 0, 4, 5), c_state = CASE(c_err > 0, \"erroring\", c_unhealthy_hosts > 0 OR c_rejected_count > 0, \"degraded\", c_healthy_hosts > 0 OR c_inv > 0 OR c_active_conn > 0, \"healthy\", c_inv == 0 OR c_active_conn == 0, \"idle\", \"no data\") | SORT c_state_sort ASC"
                       },
                       "columns": [
                         {
@@ -395,6 +395,16 @@
                             "esType": "keyword"
                           },
                           "label": "State",
+                          "customLabel": true
+                        },
+                        {
+                          "columnId": "c_account",
+                          "fieldName": "c_account",
+                          "meta": {
+                            "type": "string",
+                            "esType": "keyword"
+                          },
+                          "label": "Account",
                           "customLabel": true
                         },
                         {
@@ -512,7 +522,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS c_inv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_err = COALESCE(SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0), c_rejected_count = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), c_active_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), c_healthy_hosts = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), c_unhealthy_hosts = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), c_dur_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_dur_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_processed_bytes = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL)), c_region = MAX(cloud.region) BY LoadBalancer, cloud.region | EVAL c_state_sort = CASE(c_err > 0, 1, c_unhealthy_hosts > 0 OR c_rejected_count > 0, 2, c_healthy_hosts > 0 OR c_inv > 0 OR c_active_conn > 0, 3, c_inv == 0 OR c_active_conn == 0, 4, 5), c_state = CASE(c_err > 0, \"erroring\", c_unhealthy_hosts > 0 OR c_rejected_count > 0, \"degraded\", c_healthy_hosts > 0 OR c_inv > 0 OR c_active_conn > 0, \"healthy\", c_inv == 0 OR c_active_conn == 0, \"idle\", \"no data\") | SORT c_state_sort ASC"
+                "esql": "FROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS c_inv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_err = COALESCE(SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0), c_rejected_count = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), c_active_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), c_healthy_hosts = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), c_unhealthy_hosts = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), c_dur_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_dur_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_processed_bytes = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL)), c_region = MAX(cloud.region) BY LoadBalancer, c_account = cloud.account.id, cloud.region | EVAL c_state_sort = CASE(c_err > 0, 1, c_unhealthy_hosts > 0 OR c_rejected_count > 0, 2, c_healthy_hosts > 0 OR c_inv > 0 OR c_active_conn > 0, 3, c_inv == 0 OR c_active_conn == 0, 4, 5), c_state = CASE(c_err > 0, \"erroring\", c_unhealthy_hosts > 0 OR c_rejected_count > 0, \"degraded\", c_healthy_hosts > 0 OR c_inv > 0 OR c_active_conn > 0, \"healthy\", c_inv == 0 OR c_active_conn == 0, \"idle\", \"no data\") | SORT c_state_sort ASC"
               },
               "visualization": {
                 "columns": [
@@ -620,6 +630,11 @@
                         "type": "categorical"
                       }
                     }
+                  },
+                  {
+                    "columnId": "c_account",
+                    "isTransposed": false,
+                    "isMetric": false
                   },
                   {
                     "columnId": "c_region",
