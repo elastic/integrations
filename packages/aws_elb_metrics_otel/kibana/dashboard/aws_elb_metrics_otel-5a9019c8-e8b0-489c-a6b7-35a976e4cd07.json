@@ -363,7 +363,7 @@
                     "tbl-layer-tbl-instances": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS c_inv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_err = COALESCE(SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0), c_rejected_count = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), c_active_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), c_healthy_hosts = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), c_unhealthy_hosts = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), c_dur_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_dur_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_processed_bytes = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL)), c_region = MAX(cloud.region) BY LoadBalancer, c_account = cloud.account.id, cloud.region | EVAL c_state_sort = CASE(c_err > 0, 1, c_unhealthy_hosts > 0 OR c_rejected_count > 0, 2, c_healthy_hosts > 0 OR c_inv > 0 OR c_active_conn > 0, 3, c_inv == 0 OR c_active_conn == 0, 4, 5), c_state = CASE(c_err > 0, \"erroring\", c_unhealthy_hosts > 0 OR c_rejected_count > 0, \"degraded\", c_healthy_hosts > 0 OR c_inv > 0 OR c_active_conn > 0, \"healthy\", c_inv == 0 OR c_active_conn == 0, \"idle\", \"no data\") | SORT c_state_sort ASC"
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND TargetGroup IS NULL AND AvailabilityZone IS NULL | STATS c_inv = SUM(SUM_OVER_TIME(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL))), c_err = COALESCE(SUM(SUM_OVER_TIME(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL))), 0), c_rejected_count = SUM(SUM_OVER_TIME(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL))), c_active_conn = SUM(SUM_OVER_TIME(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL))), c_healthy_hosts = MAX(MAX_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL))), c_unhealthy_hosts = MAX(MAX_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL))), c_dur_avg = AVG(AVG_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL))), c_dur_max = MAX(MAX_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL))), c_processed_bytes = SUM(SUM_OVER_TIME(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL))) BY LoadBalancer, c_account = cloud.account.id, c_region = cloud.region | EVAL c_state_sort = CASE(c_err > 0, 1, c_unhealthy_hosts > 0 OR c_rejected_count > 0, 2, c_healthy_hosts > 0 OR c_inv > 0 OR c_active_conn > 0, 3, c_inv == 0 OR c_active_conn == 0, 4, 5), c_state = CASE(c_err > 0, \"erroring\", c_unhealthy_hosts > 0 OR c_rejected_count > 0, \"degraded\", c_healthy_hosts > 0 OR c_inv > 0 OR c_active_conn > 0, \"healthy\", c_inv == 0 OR c_active_conn == 0, \"idle\", \"no data\") | SORT c_state_sort ASC"
                       },
                       "columns": [
                         {
@@ -473,17 +473,6 @@
                           "customLabel": true
                         },
                         {
-                          "columnId": "c_requests",
-                          "fieldName": "c_requests",
-                          "meta": {
-                            "type": "number",
-                            "esType": "double"
-                          },
-                          "inMetricDimension": true,
-                          "label": "Requests (count, dup)",
-                          "customLabel": true
-                        },
-                        {
                           "columnId": "c_processed_bytes",
                           "fieldName": "c_processed_bytes",
                           "meta": {
@@ -522,7 +511,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS c_inv = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_err = COALESCE(SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), 0), c_rejected_count = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), c_active_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), c_healthy_hosts = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), c_unhealthy_hosts = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), c_dur_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_dur_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL)), c_requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), c_processed_bytes = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL)), c_region = MAX(cloud.region) BY LoadBalancer, c_account = cloud.account.id, cloud.region | EVAL c_state_sort = CASE(c_err > 0, 1, c_unhealthy_hosts > 0 OR c_rejected_count > 0, 2, c_healthy_hosts > 0 OR c_inv > 0 OR c_active_conn > 0, 3, c_inv == 0 OR c_active_conn == 0, 4, 5), c_state = CASE(c_err > 0, \"erroring\", c_unhealthy_hosts > 0 OR c_rejected_count > 0, \"degraded\", c_healthy_hosts > 0 OR c_inv > 0 OR c_active_conn > 0, \"healthy\", c_inv == 0 OR c_active_conn == 0, \"idle\", \"no data\") | SORT c_state_sort ASC"
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND TargetGroup IS NULL AND AvailabilityZone IS NULL | STATS c_inv = SUM(SUM_OVER_TIME(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL))), c_err = COALESCE(SUM(SUM_OVER_TIME(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL))), 0), c_rejected_count = SUM(SUM_OVER_TIME(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL))), c_active_conn = SUM(SUM_OVER_TIME(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL))), c_healthy_hosts = MAX(MAX_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL))), c_unhealthy_hosts = MAX(MAX_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL))), c_dur_avg = AVG(AVG_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL))), c_dur_max = MAX(MAX_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`, NULL))), c_processed_bytes = SUM(SUM_OVER_TIME(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`, NULL))) BY LoadBalancer, c_account = cloud.account.id, c_region = cloud.region | EVAL c_state_sort = CASE(c_err > 0, 1, c_unhealthy_hosts > 0 OR c_rejected_count > 0, 2, c_healthy_hosts > 0 OR c_inv > 0 OR c_active_conn > 0, 3, c_inv == 0 OR c_active_conn == 0, 4, 5), c_state = CASE(c_err > 0, \"erroring\", c_unhealthy_hosts > 0 OR c_rejected_count > 0, \"degraded\", c_healthy_hosts > 0 OR c_inv > 0 OR c_active_conn > 0, \"healthy\", c_inv == 0 OR c_active_conn == 0, \"idle\", \"no data\") | SORT c_state_sort ASC"
               },
               "visualization": {
                 "columns": [
@@ -668,12 +657,6 @@
                     "isMetric": true
                   },
                   {
-                    "columnId": "c_requests",
-                    "isTransposed": false,
-                    "hidden": true,
-                    "isMetric": true
-                  },
-                  {
                     "columnId": "c_processed_bytes",
                     "isTransposed": false,
                     "hidden": true,
@@ -761,7 +744,7 @@
                     "pie-layer-chart-status-donut": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS lbs = COUNT(*) BY lb_state"
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), last_seen = MAX(@timestamp) BY LoadBalancer, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS lbs = COUNT(*) BY lb_state"
                       },
                       "columns": [
                         {
@@ -805,7 +788,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS lbs = COUNT(*) BY lb_state"
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), last_seen = MAX(@timestamp) BY LoadBalancer, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS lbs = COUNT(*) BY lb_state"
               },
               "visualization": {
                 "shape": "donut",
@@ -966,7 +949,7 @@
                     "layer-kpi-impaired": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS last_seen = MAX(@timestamp) BY LoadBalancer, cloud.region | INLINE STATS latest = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest) <= 5 | STATS lbs = COUNT(*)",
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND stat == \"Sum\" | STATS last_seen = MAX(@timestamp) BY LoadBalancer, cloud.region | INLINE STATS latest = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest) <= 5 | STATS lbs = COUNT(*)",
                         "language": "esql"
                       },
                       "columns": [
@@ -996,7 +979,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS last_seen = MAX(@timestamp) BY LoadBalancer, cloud.region | INLINE STATS latest = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest) <= 5 | STATS lbs = COUNT(*)",
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND stat == \"Sum\" | STATS last_seen = MAX(@timestamp) BY LoadBalancer, cloud.region | INLINE STATS latest = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest) <= 5 | STATS lbs = COUNT(*)",
                 "language": "esql"
               },
               "visualization": {
@@ -1062,7 +1045,7 @@
                     "layer-kpi-pending": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS erroring = COUNT(*) WHERE lb_state == \"erroring\"",
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), last_seen = MAX(@timestamp) BY LoadBalancer, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS erroring = COUNT(*) WHERE lb_state == \"erroring\"",
                         "language": "esql"
                       },
                       "columns": [
@@ -1092,7 +1075,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS erroring = COUNT(*) WHERE lb_state == \"erroring\"",
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), last_seen = MAX(@timestamp) BY LoadBalancer, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS erroring = COUNT(*) WHERE lb_state == \"erroring\"",
                 "language": "esql"
               },
               "visualization": {
@@ -1194,7 +1177,7 @@
                     "layer-kpi-stopped": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS degraded = COUNT(*) WHERE lb_state == \"degraded\"",
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), last_seen = MAX(@timestamp) BY LoadBalancer, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS degraded = COUNT(*) WHERE lb_state == \"degraded\"",
                         "language": "esql"
                       },
                       "columns": [
@@ -1224,7 +1207,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS degraded = COUNT(*) WHERE lb_state == \"degraded\"",
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), last_seen = MAX(@timestamp) BY LoadBalancer, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS degraded = COUNT(*) WHERE lb_state == \"degraded\"",
                 "language": "esql"
               },
               "visualization": {
@@ -1325,7 +1308,7 @@
                     "layer-kpi-total": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS idle = COUNT(*) WHERE lb_state == \"idle\"",
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), last_seen = MAX(@timestamp) BY LoadBalancer, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS idle = COUNT(*) WHERE lb_state == \"idle\"",
                         "language": "esql"
                       },
                       "columns": [
@@ -1355,7 +1338,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS idle = COUNT(*) WHERE lb_state == \"idle\"",
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), last_seen = MAX(@timestamp) BY LoadBalancer, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS idle = COUNT(*) WHERE lb_state == \"idle\"",
                 "language": "esql"
               },
               "visualization": {
@@ -1425,7 +1408,7 @@
                     "layer-kpi-running": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS healthy = COUNT(*) WHERE lb_state == \"healthy\"",
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), last_seen = MAX(@timestamp) BY LoadBalancer, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS healthy = COUNT(*) WHERE lb_state == \"healthy\"",
                         "language": "esql"
                       },
                       "columns": [
@@ -1455,7 +1438,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)) BY LoadBalancer, cloud.region | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS healthy = COUNT(*) WHERE lb_state == \"healthy\"",
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), last_seen = MAX(@timestamp) BY LoadBalancer, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS healthy = COUNT(*) WHERE lb_state == \"healthy\"",
                 "language": "esql"
               },
               "visualization": {
@@ -1525,7 +1508,7 @@
                     "layer-kpi-net-in": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS requests_total = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`))"
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND TargetGroup IS NULL | WHERE stat == \"Sum\" | STATS requests_total = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`))"
                       },
                       "columns": [
                         {
@@ -1547,7 +1530,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS requests_total = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`))"
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND TargetGroup IS NULL | WHERE stat == \"Sum\" | STATS requests_total = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`))"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-in",
@@ -1619,7 +1602,7 @@
                     "layer-kpi-net-out": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS processed_bytes_total = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`))"
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND AvailabilityZone IS NULL AND TargetGroup IS NULL | WHERE stat == \"Sum\" | STATS processed_bytes_total = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`))"
                       },
                       "columns": [
                         {
@@ -1649,7 +1632,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" | STATS processed_bytes_total = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`))"
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND AvailabilityZone IS NULL AND TargetGroup IS NULL | WHERE stat == \"Sum\" | STATS processed_bytes_total = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/ProcessedBytes`))"
               },
               "visualization": {
                 "layerId": "layer-kpi-net-out",
@@ -1869,7 +1852,7 @@
                     "xy-layer-top10-invocations": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`)) BY LoadBalancer, cloud.region | SORT invocations DESC | LIMIT 10"
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND TargetGroup IS NULL | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`)) BY LoadBalancer, cloud.region | SORT invocations DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -1898,7 +1881,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`)) BY LoadBalancer, cloud.region | SORT invocations DESC | LIMIT 10"
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND TargetGroup IS NULL | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | STATS invocations = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`)) BY LoadBalancer, cloud.region | SORT invocations DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -1978,7 +1961,7 @@
                     "xy-layer-top10-errors": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count` IS NOT NULL | STATS errors = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`)) BY LoadBalancer, cloud.region | SORT errors DESC | LIMIT 10"
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND TargetGroup IS NULL | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count` IS NOT NULL | STATS errors = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`)) BY LoadBalancer, cloud.region | SORT errors DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -2007,7 +1990,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count` IS NOT NULL | STATS errors = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`)) BY LoadBalancer, cloud.region | SORT errors DESC | LIMIT 10"
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND TargetGroup IS NULL | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count` IS NOT NULL | STATS errors = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`)) BY LoadBalancer, cloud.region | SORT errors DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -2087,7 +2070,7 @@
                     "xy-layer-top10-duration": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime` IS NOT NULL | STATS avg_latency_s = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`)) BY LoadBalancer, cloud.region | SORT avg_latency_s DESC | LIMIT 10"
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND TargetGroup IS NULL | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime` IS NOT NULL | STATS avg_latency_s = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`)) BY LoadBalancer, cloud.region | SORT avg_latency_s DESC | LIMIT 10"
                       },
                       "columns": [
                         {
@@ -2116,7 +2099,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime` IS NOT NULL | STATS avg_latency_s = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`)) BY LoadBalancer, cloud.region | SORT avg_latency_s DESC | LIMIT 10"
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND TargetGroup IS NULL | WHERE stat == \"Average\" AND `metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime` IS NOT NULL | STATS avg_latency_s = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`)) BY LoadBalancer, cloud.region | SORT avg_latency_s DESC | LIMIT 10"
               },
               "visualization": {
                 "layers": [
@@ -2830,7 +2813,7 @@
                     "xy-layer-chart-5xx": {
                       "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS errors = COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), LoadBalancer, cloud.region | WHERE errors IS NOT NULL | SORT timestamp ASC, errors DESC, LoadBalancer ASC | LIMIT 10 BY timestamp"
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count` IS NOT NULL | WHERE stat == \"Sum\" | STATS errors = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC, errors DESC, LoadBalancer ASC | LIMIT 10 BY timestamp"
                       },
                       "columns": [
                         {
@@ -2867,7 +2850,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS errors = COALESCE(SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`)), 0) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), LoadBalancer, cloud.region | WHERE errors IS NOT NULL | SORT timestamp ASC, errors DESC, LoadBalancer ASC | LIMIT 10 BY timestamp"
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" AND `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count` IS NOT NULL | WHERE stat == \"Sum\" | STATS errors = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), LoadBalancer, cloud.region | SORT timestamp ASC, errors DESC, LoadBalancer ASC | LIMIT 10 BY timestamp"
               },
               "visualization": {
                 "layers": [
