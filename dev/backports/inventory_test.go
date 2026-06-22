@@ -724,7 +724,6 @@ func TestValidateBranchFormat(t *testing.T) {
 	}
 }
 
-
 func TestValidateBranchName(t *testing.T) {
 	tests := []struct {
 		packageName string
