@@ -804,7 +804,7 @@
                     "tbl-layer-tbl-instances": {
                       "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | STATS c_failed_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)), c_region = MAX(cloud.region), c_cpu = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/CPUUtilization`, NULL)) / 100.0, c_dr = AVG(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/EC2/DiskReadBytes`, NULL)), c_dw = AVG(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes`, NULL)), c_ni = AVG(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/EC2/NetworkIn`, NULL)), c_no = AVG(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL)), last_seen = MAX(@timestamp) BY InstanceId, c_account = cloud.account.id, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | EVAL c_cpu = COALESCE(c_cpu, 0.0), c_dr = COALESCE(c_dr, 0.0), c_dw = COALESCE(c_dw, 0.0), c_ni = COALESCE(c_ni, 0.0), c_no = COALESCE(c_no, 0.0) | EVAL c_state_sort = CASE(c_failed_max > 0, 1, c_failed_max == 0, 2, 3), c_state = CASE(c_failed_max > 0, \"impaired\", c_failed_max == 0, \"healthy\", \"no data\") | SORT c_state_sort ASC"
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND stat IN (\"Average\", \"Maximum\") | STATS c_failed_max = MAX(MAX_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL))), c_cpu = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/CPUUtilization`, NULL))) / 100.0, c_disk_write_ops = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskWriteOps`, NULL))), c_dr = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskReadBytes`, NULL))), c_dw = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes`, NULL))), c_ni = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkIn`, NULL))), c_no = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL))), last_ms = MAX(TO_LONG(@timestamp)) BY InstanceId, c_account = cloud.account.id, c_region = cloud.region | INLINE STATS latest_ms = MAX(last_ms) | WHERE (latest_ms - last_ms) <= 300000 | EVAL c_cpu = COALESCE(c_cpu, 0.0), c_disk_write_ops = COALESCE(c_disk_write_ops, 0.0), c_dr = COALESCE(c_dr, 0.0), c_dw = COALESCE(c_dw, 0.0), c_ni = COALESCE(c_ni, 0.0), c_no = COALESCE(c_no, 0.0) | EVAL c_state_sort = CASE(c_failed_max > 0, 1, c_failed_max == 0 OR c_failed_max IS NULL, 2, 3), c_state = CASE(c_failed_max > 0, \"impaired\", c_failed_max == 0 OR c_failed_max IS NULL, \"healthy\", \"no data\") | SORT c_state_sort ASC"
                       },
                       "columns": [
                         {
@@ -866,13 +866,32 @@
                             "esType": "double"
                           },
                           "inMetricDimension": true,
-                          "label": "Max CPU (%)",
+                          "label": "Avg CPU (%)",
                           "customLabel": true,
                           "params": {
                             "format": {
                               "id": "percent",
                               "params": {
                                 "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "c_disk_write_ops",
+                          "fieldName": "c_disk_write_ops",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "label": "Avg disk write ops",
+                          "customLabel": true,
+                          "params": {
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 2
                               }
                             }
                           }
@@ -961,7 +980,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | STATS c_failed_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)), c_region = MAX(cloud.region), c_cpu = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/CPUUtilization`, NULL)) / 100.0, c_dr = AVG(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/EC2/DiskReadBytes`, NULL)), c_dw = AVG(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes`, NULL)), c_ni = AVG(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/EC2/NetworkIn`, NULL)), c_no = AVG(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL)), last_seen = MAX(@timestamp) BY InstanceId, c_account = cloud.account.id, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | EVAL c_cpu = COALESCE(c_cpu, 0.0), c_dr = COALESCE(c_dr, 0.0), c_dw = COALESCE(c_dw, 0.0), c_ni = COALESCE(c_ni, 0.0), c_no = COALESCE(c_no, 0.0) | EVAL c_state_sort = CASE(c_failed_max > 0, 1, c_failed_max == 0, 2, 3), c_state = CASE(c_failed_max > 0, \"impaired\", c_failed_max == 0, \"healthy\", \"no data\") | SORT c_state_sort ASC"
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND stat IN (\"Average\", \"Maximum\") | STATS c_failed_max = MAX(MAX_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL))), c_cpu = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/CPUUtilization`, NULL))) / 100.0, c_disk_write_ops = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskWriteOps`, NULL))), c_dr = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskReadBytes`, NULL))), c_dw = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/DiskWriteBytes`, NULL))), c_ni = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkIn`, NULL))), c_no = AVG(LAST_OVER_TIME(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/EC2/NetworkOut`, NULL))), last_ms = MAX(TO_LONG(@timestamp)) BY InstanceId, c_account = cloud.account.id, c_region = cloud.region | INLINE STATS latest_ms = MAX(last_ms) | WHERE (latest_ms - last_ms) <= 300000 | EVAL c_cpu = COALESCE(c_cpu, 0.0), c_disk_write_ops = COALESCE(c_disk_write_ops, 0.0), c_dr = COALESCE(c_dr, 0.0), c_dw = COALESCE(c_dw, 0.0), c_ni = COALESCE(c_ni, 0.0), c_no = COALESCE(c_no, 0.0) | EVAL c_state_sort = CASE(c_failed_max > 0, 1, c_failed_max == 0 OR c_failed_max IS NULL, 2, 3), c_state = CASE(c_failed_max > 0, \"impaired\", c_failed_max == 0 OR c_failed_max IS NULL, \"healthy\", \"no data\") | SORT c_state_sort ASC"
               },
               "visualization": {
                 "columns": [
@@ -1056,6 +1075,11 @@
                   },
                   {
                     "columnId": "c_cpu",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "c_disk_write_ops",
                     "isTransposed": false,
                     "isMetric": true
                   },
