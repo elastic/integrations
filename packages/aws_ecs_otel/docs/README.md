@@ -4,14 +4,6 @@ This package contains Kibana assets for monitoring ECS services with AWS CloudWa
 
 The package is **content only**. It provides a curated metrics dashboard, but it does not configure data collection. Configure the OpenTelemetry Collector CloudWatch receiver to collect the required AWS service metrics and export them to Elasticsearch.
 
-## What's included
-
-| Dashboard | What it covers |
-|-----------|----------------|
-| **AWS ECS** | Monitors service health, CPU and memory utilization, Service Connect connection metrics, processed bytes, and running service state. |
-
-The dashboard reads metric-stream style OpenTelemetry documents from `metrics-aws.ecs.otel-*` and isolates CloudWatch statistics with `stat` before aggregating values.
-
 ## Data requirements
 
 - CloudWatch metrics collected by the OpenTelemetry Collector AWS CloudWatch receiver.
@@ -21,6 +13,14 @@ The dashboard reads metric-stream style OpenTelemetry documents from `metrics-aw
 ## Compatibility
 
 Requires Kibana `^9.5.0`.
+
+## Dashboards
+
+This package includes one pre-built Kibana dashboard:
+
+| Name | Description |
+|---|---|
+| [AWS OTel] ECS | AWS ECS dashboard for CloudWatch metrics collected by the OpenTelemetry Collector. |
 
 ## Alerting Rule Template
 Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
