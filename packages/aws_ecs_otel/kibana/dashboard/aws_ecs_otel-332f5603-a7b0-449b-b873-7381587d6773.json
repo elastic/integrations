@@ -225,7 +225,7 @@
         "gridData": {
           "y": 0,
           "x": 0,
-          "w": 8,
+          "w": 4,
           "h": 4,
           "i": "kpi-total",
           "sectionId": "aws-ecs-overview-section"
@@ -758,8 +758,8 @@
         },
         "panelIndex": "kpi-impaired",
         "gridData": {
-          "y": 4,
-          "x": 0,
+          "y": 0,
+          "x": 4,
           "w": 4,
           "h": 4,
           "i": "kpi-impaired",
@@ -893,7 +893,7 @@
         "panelIndex": "kpi-pending",
         "gridData": {
           "y": 4,
-          "x": 4,
+          "x": 0,
           "w": 4,
           "h": 4,
           "i": "kpi-pending",
@@ -985,7 +985,7 @@
         "panelIndex": "kpi-stopped",
         "gridData": {
           "y": 8,
-          "x": 4,
+          "x": 0,
           "w": 4,
           "h": 4,
           "i": "kpi-stopped",
@@ -1083,8 +1083,8 @@
         },
         "panelIndex": "kpi-running",
         "gridData": {
-          "y": 8,
-          "x": 0,
+          "y": 4,
+          "x": 4,
           "w": 4,
           "h": 4,
           "i": "kpi-running",
@@ -2911,6 +2911,98 @@
           "x": 27,
           "w": 21,
           "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Number of ECS services with no recent CPU or memory data — neither metric reported a value within the 5-minute freshness window.",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-nodata": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS no_data = COUNT(*) WHERE state == \"no data\" | KEEP no_data"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "no_data",
+                          "fieldName": "no_data",
+                          "label": "No data",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "title": "metrics-aws.ecs.otel-*",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS no_data = COUNT(*) WHERE state == \"no data\" | KEEP no_data"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-nodata",
+                "layerType": "data",
+                "metricAccessor": "no_data",
+                "showBar": false,
+                "color": "#61A2FF00",
+                "colorMode": "background",
+                "applyColorTo": "background",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "label": "No data"
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "needsRefresh": false
+            },
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "description": "Number of idle ECS services — services whose latest CPU utilization is under 5%, within a 5-minute freshness window. May indicate over-provisioned or unused services."
+          }
+        },
+        "panelIndex": "kpi-nodata",
+        "gridData": {
+          "x": 4,
+          "y": 8,
+          "w": 4,
+          "h": 4,
+          "i": "kpi-nodata",
+          "sectionId": "aws-ecs-overview-section"
         }
       }
     ],

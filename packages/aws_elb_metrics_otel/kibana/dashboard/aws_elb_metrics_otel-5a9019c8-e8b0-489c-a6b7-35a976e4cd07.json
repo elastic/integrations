@@ -1016,7 +1016,7 @@
         "gridData": {
           "y": 0,
           "x": 0,
-          "w": 8,
+          "w": 4,
           "h": 4,
           "i": "kpi-impaired",
           "sectionId": "aws-elb-overview-section"
@@ -1149,8 +1149,8 @@
         },
         "panelIndex": "kpi-pending",
         "gridData": {
-          "y": 4,
-          "x": 0,
+          "y": 0,
+          "x": 4,
           "w": 4,
           "h": 4,
           "i": "kpi-pending",
@@ -1278,7 +1278,7 @@
         "panelIndex": "kpi-stopped",
         "gridData": {
           "y": 4,
-          "x": 4,
+          "x": 0,
           "w": 4,
           "h": 4,
           "i": "kpi-stopped",
@@ -1378,7 +1378,7 @@
         "panelIndex": "kpi-total",
         "gridData": {
           "y": 8,
-          "x": 4,
+          "x": 0,
           "w": 4,
           "h": 4,
           "i": "kpi-total",
@@ -1477,8 +1477,8 @@
         },
         "panelIndex": "kpi-running",
         "gridData": {
-          "y": 8,
-          "x": 0,
+          "y": 4,
+          "x": 4,
           "w": 4,
           "h": 4,
           "i": "kpi-running",
@@ -2934,6 +2934,106 @@
           "x": 20,
           "w": 14,
           "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Number of load balancers with no recent signal — no requests, connections, or host counts within the 5-minute freshness window.",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "description": "Number of idle load balancers — reporting metrics but serving no traffic, with no healthy/unhealthy hosts or errors, within a 5-minute freshness window.",
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-nodata": {
+                      "index": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), last_seen = MAX(@timestamp) BY LoadBalancer, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS no_data = COUNT(*) WHERE lb_state == \"no data\"",
+                        "language": "esql"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "col-kpi-nodata",
+                          "fieldName": "no_data",
+                          "label": "No data",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                      "title": "metrics-aws.elb.otel-*",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.elb.otel-* | WHERE LoadBalancer IS NOT NULL AND LoadBalancer != \"\" | STATS requests = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`, NULL)), be_5xx = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`, NULL)), rejected = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`, NULL)), active = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ApplicationELB/ActiveConnectionCount`, NULL)), healthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/HealthyHostCount`, NULL)), unhealthy_n = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount`, NULL)), last_seen = MAX(@timestamp) BY LoadBalancer, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | EVAL lb_state = CASE(be_5xx > 0, \"erroring\", unhealthy_n > 0 OR rejected > 0, \"degraded\", healthy_n > 0 OR requests > 0 OR active > 0, \"healthy\", requests == 0 OR active == 0, \"idle\", \"no data\") | STATS no_data = COUNT(*) WHERE lb_state == \"no data\"",
+                "language": "esql"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-nodata",
+                "layerType": "data",
+                "metricAccessor": "col-kpi-nodata",
+                "showBar": false,
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "applyColorTo": "background",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left"
+              },
+              "adHocDataViews": {
+                "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d": {
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "title": "metrics-aws.elb.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.elb.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "23d4f2a8af5fae056d37480b427e848f1aaa59e74c4544c8bd4f1808c689d8ad",
+                  "name": "textBasedLanguages-datasource-layer-layer-kpi-total"
+                }
+              ],
+              "needsRefresh": false
+            }
+          }
+        },
+        "panelIndex": "kpi-nodata",
+        "gridData": {
+          "x": 4,
+          "y": 8,
+          "w": 4,
+          "h": 4,
+          "i": "kpi-nodata",
+          "sectionId": "aws-elb-overview-section"
         }
       }
     ],
