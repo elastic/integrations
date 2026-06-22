@@ -319,7 +319,7 @@ if [ ! -z "$BASE_COMMIT" ]; then
 fi
 
 
-echo "---Check if the backport-branch exists"
+echo "--- Check if the backport-branch exists"
 if branchExist "$BACKPORT_BRANCH_NAME"; then
   MSG="The backport branch: **$BACKPORT_BRANCH_NAME** is already created. Not updating contents of the branch."
   buildkite-agent annotate "$MSG" --style "warning"

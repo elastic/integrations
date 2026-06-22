@@ -121,6 +121,8 @@ generate_trigger_pipeline() {
         PACKAGE_VERSION: "${base_version}"
         BASE_COMMIT: "${base_commit}"
         BACKPORT_BRANCH_NAME: "${branch}"
+        BUILDKITE_REFSPEC: "refs/pull/${BUILDKITE_PULL_REQUEST}/head"
+        BUILDKITE_COMMIT: "${BUILDKITE_COMMIT}"
 EOF
         if [[ -n "${pr_number}" ]]; then
             cat >> "${pipeline_file}" <<EOF
