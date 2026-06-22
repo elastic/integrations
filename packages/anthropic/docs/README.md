@@ -203,7 +203,7 @@ The `audit` data stream collects compliance activity events from the Anthropic C
 | anthropic.audit.folder_id | Folder id as reported in the activity payload. | keyword |
 | anthropic.audit.from_date | Lower bound of the date window referenced by the activity payload (for example, an audit log export's `from_date`). | date |
 | anthropic.audit.ghe_configuration_id | GitHub Enterprise configuration ID on GHE integration activities. | keyword |
-| anthropic.audit.github_webhook_id | Github webhook id as reported in the activity payload. | keyword |
+| anthropic.audit.github_webhook_id | GitHub-assigned webhook ID returned by the activity payload. The Compliance API returns this as a number; it is stored as a keyword identifier. | keyword |
 | anthropic.audit.group_id | Group id as reported in the activity payload. | keyword |
 | anthropic.audit.group_name | Group name as reported in the activity payload. | keyword |
 | anthropic.audit.idp_saml_config_updated | Idp saml config updated as reported in the activity payload. | boolean |
@@ -248,7 +248,7 @@ The `audit` data stream collects compliance activity events from the Anthropic C
 | anthropic.audit.op_name | Op name as reported in the activity payload. | keyword |
 | anthropic.audit.org_id | Org id as reported in the activity payload. | keyword |
 | anthropic.audit.organization_uuid | Deprecated organization UUID associated with the activity, when present. | keyword |
-| anthropic.audit.per_review_limit_usd | Per review limit usd as reported in the activity payload. | long |
+| anthropic.audit.per_review_limit_usd | Per review limit usd as reported in the activity payload. | keyword |
 | anthropic.audit.plan_type | Plan type as reported in the activity payload. | keyword |
 | anthropic.audit.plugin_id | Plugin id as reported in the activity payload. | keyword |
 | anthropic.audit.plugin_name | Plugin name as reported in the activity payload. | keyword |
