@@ -317,13 +317,6 @@ if branchExist "$BACKPORT_BRANCH_NAME"; then
   exit 0
 fi
 
-# Currently, backport branches must follow the expected format.
-if [[ "${BACKPORT_BRANCH_NAME}" != "${EXPECTED_BACKPORT_BRANCH_NAME}" ]]; then
-  MSG="The backport branch name **${BACKPORT_BRANCH_NAME}** does not match the expected name **${EXPECTED_BACKPORT_BRANCH_NAME}**"
-  buildkite-agent annotate "$MSG" --style "error"
-  exit 1
-fi
-
 # backport branch does not exist, running checks and create branch
 version="$(git show "${BASE_COMMIT}":"${PACKAGE_PATH}/manifest.yml" | yq -r .version)"
 echo "--- Check if version from ${BASE_COMMIT} (${version}) matches with version from input step ${PACKAGE_VERSION}"

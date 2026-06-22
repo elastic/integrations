@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/Masterminds/semver/v3"
@@ -48,26 +49,14 @@ var duplicatePackageVersionExceptions = map[string]struct{}{
 
 // branchRE matches a valid backport branch name:
 //
-//	backport-<package>-<major>.<minor|x>
+//	backport-<package>-<suffix>
 //
 // where <package> is one or more letters, digits, or underscores, and
-// <version> is exactly <digits>.<digits> or <digits>.x (e.g. "3.17" or "6.x").
-// Whitespace, quotes, colons, semicolons, and all other special characters
-// are not permitted.
-var branchRE = regexp.MustCompile(`^backport-[a-zA-Z0-9_]+-[0-9]+\.([0-9]+|x)$`)
-
-// legacyBranchNames lists branch names that predate the current naming convention
-// and are intentionally exempt from the branchRE format check.
-// Each entry must include a comment explaining why the exception exists.
-var legacyBranchNames = map[string]struct{}{
-	// backport-aws-7.15.0 used a three-component version before the
-	// backport-<package>-<major>.<minor> convention was established.
-	"backport-aws-7.15.0": {},
-	// backport-security_detection_engine-8.9.10 was a one-off exception to
-	// publish a missing package version; it used a patch-level version rather
-	// than the standard major.minor format.
-	"backport-security_detection_engine-8.9.10": {},
-}
+// <suffix> starts with a letter or digit and may contain letters, digits,
+// dots, underscores, or hyphens (e.g. "3.17", "6.x", "7.15.0", "2024-hotfix").
+// Whitespace, quotes, colons, semicolons, dollar signs, backticks, and all
+// other special characters are not permitted.
+var branchRE = regexp.MustCompile(`^backport-[a-zA-Z0-9_]+-[a-zA-Z0-9][a-zA-Z0-9_.\-]*$`)
 
 // ActiveResult is the result of a CheckActive call.
 type ActiveResult struct {
@@ -310,10 +299,12 @@ func validateEntryFields(i int, e entry, knownPackages map[string]struct{}, pack
 
 	if e.Branch == "" {
 		errs = append(errs, fmt.Errorf("%s: missing required field 'branch'", id))
-	} else if _, isLegacy := legacyBranchNames[e.Branch]; !isLegacy && !branchRE.MatchString(e.Branch) {
-		errs = append(errs, fmt.Errorf("%s: invalid branch %q: must match backport-<package>-<major>.<minor|x> "+
-			"(letters/digits/underscores in package name; "+
-			"no whitespace, quotes, colons, semicolons or other special characters)", id, e.Branch))
+	} else if !branchRE.MatchString(e.Branch) {
+		errs = append(errs, fmt.Errorf("%s: invalid branch %q: must match backport-<package>-<suffix> "+
+			"(package: letters/digits/underscores; suffix: letters/digits/dots/underscores/hyphens; "+
+			"no whitespace, quotes, colons, semicolons, dollar signs, backticks or other special characters)", id, e.Branch))
+	} else if e.Package != "" && !strings.HasPrefix(e.Branch, "backport-"+e.Package+"-") {
+		errs = append(errs, fmt.Errorf("%s: branch %q must start with \"backport-%s-\"", id, e.Branch, e.Package))
 	}
 
 	if e.BaseVersion == "" {

@@ -221,7 +221,7 @@ func TestValidateInventory(t *testing.T) {
 `,
 		},
 		{
-			title: "invalid branch — three-component version (major.minor.x)",
+			title: "valid branch — three-component version (major.minor.x)",
 			contents: `backports:
   - package: aws
     branch: backport-aws-6.14.x
@@ -230,11 +230,9 @@ func TestValidateInventory(t *testing.T) {
     maintained_until: null
     archived: false
 `,
-			wantErr:     true,
-			errContains: []string{"invalid branch"},
 		},
 		{
-			title: "invalid branch — three-component version (major.minor.patch)",
+			title: "valid branch — three-component version (major.minor.patch)",
 			contents: `backports:
   - package: aws
     branch: backport-aws-1.2.3
@@ -243,11 +241,9 @@ func TestValidateInventory(t *testing.T) {
     maintained_until: null
     archived: false
 `,
-			wantErr:     true,
-			errContains: []string{"invalid branch"},
 		},
 		{
-			title: "legacy branch backport-aws-7.15.0 passes despite three-component version",
+			title: "valid branch — three-component version (major.minor.patch) for aws",
 			contents: `backports:
   - package: aws
     branch: backport-aws-7.15.0
@@ -258,7 +254,7 @@ func TestValidateInventory(t *testing.T) {
 `,
 		},
 		{
-			title: "legacy branch backport-security_detection_engine-8.9.10 passes despite three-component version",
+			title: "valid branch — three-component version (major.minor.patch) for security_detection_engine",
 			contents: `backports:
   - package: security_detection_engine
     branch: backport-security_detection_engine-8.9.10
@@ -282,7 +278,20 @@ func TestValidateInventory(t *testing.T) {
 			errContains: []string{"invalid branch"},
 		},
 		{
-			title: "invalid branch — version does not start with a digit",
+			title: "invalid branch — package name mismatch",
+			contents: `backports:
+  - package: aws
+    branch: backport-nginx-3.17
+    base_version: "3.17.0"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{`must start with "backport-aws-"`},
+		},
+		{
+			title: "valid branch — suffix starting with a letter",
 			contents: `backports:
   - package: aws
     branch: backport-aws-v3.17
@@ -291,8 +300,6 @@ func TestValidateInventory(t *testing.T) {
     maintained_until: null
     archived: false
 `,
-			wantErr:     true,
-			errContains: []string{"invalid branch"},
 		},
 		{
 			title: "invalid branch — contains whitespace",
