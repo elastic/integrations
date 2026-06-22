@@ -47,8 +47,10 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
                 - **Alerts**: 9010
                 - **Audit**: 9029
                 - **DNS**: 9011
+                - **Email DLP**: 9025
                 - **Endpoint DLP**: 9023
                 - **Firewall**: 9012
+                - **SaaS Security Activity**: 9026
                 - **SaaS Security**: 9024
                 - **Sandbox Verdict**: 9027
                 - **Tunnel**: 9013
@@ -71,8 +73,10 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
           - Default ports:
               - **Audit**: 9562
               - **DNS**: 9556
+              - **Email DLP**: 9564
               - **Endpoint DLP**: 9561
               - **Firewall**: 9557
+              - **SaaS Security Activity**: 9565
               - **SaaS Security**: 9563
               - **Sandbox Verdict**: 9566
               - **Tunnel**: 9558
@@ -135,6 +139,25 @@ Sample Response:
 {"version":"v3","sourcetype":"zscalernss-dns","event":{"cloudname":"zscaler.net","datetime":"Mon Oct 16 22:55:48 2023","devicemodel":"VMware7,1","restype":"IPv4","dns_req":"mail.safemarch.com","dns_reqtype":"A record","error":"EMPTY_RESP","durationms":"1000","recordid":"45648954","tz":"GMT","devicename":"admin","devicehostname":"THINKPADSMITH","deviceostype":"Windows OS","deviceosversion":"Microsoft Windows 10 Enterprise;64 bit","devicetype":"Zscaler Client Connector","http_code":"100","dnsapp":"Google DNS","dns_gateway_server_protocol":"TCP","protocol":"TCP","company":"Zscaler","reqrulelabel":"RULE_1","resrulelabel":"RULE_RES","clt_sip":"81.2.69.192","srv_dip":"175.16.199.0","srv_dport":"1025","user":"jdoe1@safemarch.com","datacentercity":"Sa","datacentercountry":"US","datacenter":"CA Client Node DC","day":"Mon","day_of_month":"16","department":"EDept","dept":"Sales","deviceappversion":"4.3.0.18","deviceowner":"jsmith","dnsappcat":"Network Service","dns_gateway_rule":"DNS GATEWAY Rule 1","dns_gateway_status":"PRIMARY_SERVER_RESPONSE_PASS","category":"Professional Services","ecs_prefix":"192.168.0.0","ecs_slot":"ECS Slot #17","ednsreq":"ABC123","eedone":"Yes","epochtime":"1578128400","hour":"22","istcp":"1","loc":"Headquarters","location":"ELocation","login":"jdoe@safemarch.com","minutes":"55","month":"Oct","month_of_year":"10","oclientsourceip":"9960223283","odevicename":"2175092224","odeviceowner":"10831489","odomcat":"4951704103","odevicehostname":"2168890624","reqaction":"REQ_ALLOW","dns_resp":"www.example.com","respipcategory":"Adult Themes","resaction":"RES_Action","respipcat":"Adult Themes","second":"48","year":"2023"}}
 ```
 
+### Email DLP Log
+
+- Default port (NSS Feed): _9025_
+- Default port (Cloud NSS Feed): _9564_
+
+See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/nss-feed-output-format-email-dlp-logs)
+
+To collect Email DLP logs, configure the NSS feed in the ZIA Admin Console using the **Feed Output Format** below. The format uses snake_case, nested JSON keys that the integration parses without additional field renaming, and includes a `version` token so the pipeline can validate the template at ingest time.
+
+Zscaler Email DLP Log response format (v1):
+```
+\{"version":"v1","sourcetype":"zscalernss-emaildlp","time":"%s{time}","tz":"%s{tz}","feed_time":"%s{rtime}","record_id":"%llu{recordid}","log_type":"%s{logtype}","severity":"%s{severity}","actions":"%s{actions}","rule":\{"labels":"%s{rulelabels}"\},"company":\{"name":"%s{company}"\},"department":"%s{departmentname}","tenant":"%s{tenant}","application":\{"name":"%s{appname}"\},"datacenter":\{"name":"%s{datacenter}","city":"%s{datacentercity}","country":"%s{datacentercountry}"\},"user_name":"%s{username}","external_user_name":"%s{extusername}","owner":"%s{owner}","sender":"%s{sender}","dlp":\{"identifier":"%llu{dlpidentifier}","dict_names":"%s{dlpdictnames}","dict_counts":"%s{dlpdictcnts}","engine_names":"%s{dlpengnames}","scan_time":"%llu{scan_time}"\},"email":\{"mail_sent_time":"%s{mail_sent_time}","mail_sent_epoch":"%s{epochmail_sent_time}","zs_rcv_time":"%s{zs_rcv_time}","zs_sent_time":"%s{zs_sent_time}","subject":"%s{subject}","message_id":"%s{msgid}","triggered_recipients":"%s{trigg_rcpts}","other_recipients":"%s{other_rcpts}","triggered_recipient_domains":"%s{trigg_rcpt_doms}","other_recipient_domains":"%s{other_rcpt_doms}","attachments":\{"file_names":"%s{ac_names}","md5s":"%s{ac_md5s}","sizes":"%s{ac_sizes}","file_types":"%s{ac_filetypes}","doc_types":"%s{ac_doctypes}","doc_subtypes":"%s{ac_doc_subtypes}"\}\}\}
+```
+
+Sample Response (multi-attachment, mixed per-recipient dispositions):
+```json
+{"version":"v1","sourcetype":"zscalernss-emaildlp","time":"Tue Jan 14 16:22:01 2026","tz":"GMT","feed_time":"Tue Jan 14 16:22:04 2026","record_id":"9012837465564738291","log_type":"DLP Incident","severity":"Medium Severity|Medium Severity","actions":"Block|Allow","rule":{"labels":"Outbound_Attachment_Rule|Encryption_Check_Rule"},"company":{"name":"Example Corp"},"department":"Operations","tenant":"example.onmicrosoft.com","application":{"name":"Gmail"},"datacenter":{"name":"Frankfurt DC","city":"Frankfurt","country":"DE"},"user_name":"ops.service@example.com","external_user_name":"None","owner":"ops.service@example.com","sender":"ops.service@example.com","dlp":{"identifier":"9012837464123456789","dict_names":"Technical Document|Tax Identification Number","dict_counts":"3|1","engine_names":"PCI|HIPAA","scan_time":"1823"},"email":{"mail_sent_time":"Tue Jan 14 16:22:01 2026","mail_sent_epoch":"1768487721","zs_rcv_time":"Tue Jan 14 16:22:02 2026","zs_sent_time":"Tue Jan 14 16:22:04 2026","subject":"Fw: Monthly metrics package","message_id":"<BEEFCAFE0102030405060708090A0B0C@mail.example.com>","triggered_recipients":"soc-queue@example.com|lead.engineer@example.com","other_recipients":"partner@guest.example.net","triggered_recipient_domains":"example.com|example.com","other_recipient_domains":"guest.example.net","attachments":{"file_names":"runbook.docx|customer_export.csv|architecture.png","md5s":"e2fc714c4727ee9395f324cd2e7f331f|5d41402abc4b2a76b9719d911017c592|098f6bcd4621d373cade4e832627b4f6","sizes":"14208|524288|98304","file_types":"docx|csv|png","doc_types":"Technical Document|Corporate Finance|Unknown","doc_subtypes":"None|None|None"}}}
+```
+
 ### Endpoint DLP Log
 
 - Default port (NSS Feed): _9023_
@@ -167,6 +190,25 @@ Zscaler Firewall Log response format (v2):
 Sample Response:
 ```json
 {"version":"v2","sourcetype":"zscalernss-fw","event":{"datetime":"Mon Oct 16 22:55:48 2023","cltdomain":"www.example.com","cdip":"2a02:cf40::","outbytes":"10000","cdport":"22","destcountry":"USA","devicemodel":"20L8S7WC08","sdip":"67.43.156.0","duration":"600","sdport":"443","tz":"GMT","action":"Blocked","devicehostname":"THINKPADSMITH","recordid":"123456","deviceosversion":"Version 10.14.2 (Build 18C54)","devicename":"admin","nwsvc":"HTTP","deviceostype":"iOS","ipsrulelabel":"Default IPS Rule","nwapp":"Skype","rdr_rulename":"FWD_Rule_1","proto":"TCP","rulelabel":"rule1","dnatrulelabel":"DNAT_Rule_1","srcipcountry":"United States","rule":"Default_Firewall_Filtering_Rule","ssip":"1.128.0.0","inbytes":"10000","ssport":"22","csip":"0.0.0.0","aggregate":"Yes","csport":"25","bypass_time":"Mon Oct 16 22:55:48 2023","user":"jdoe%40safemarch.com","datacentercountry":"US","bypassed_session":"1","day":"Mon","datacentercity":"Sa","department":"sales","datacenter":"CA Client Node DC","deviceappversion":"2.0.0.120","day_of_month":"16","avgduration":"600","dept":"Sales","eedone":"Yes","deviceowner":"jsmith","external_deviceid":"1234","durationms":"600","forward_gateway_name":"FWD_1","epochtime":"1578128400","ipcat":"Finance","flow_type":"Direct","location":"Headquarters","hour":"22","login":"jdo%40safemarch.com","ips_custom_signature":"0","month":"Oct","locationname":"Headquarters","dnat":"Yes","minute":"55","odevicename":"2175092224","month_of_year":"10","ofwd_gw_name":"8794487099","ocsip":"9960223283","oipcat":"5300295980","odeviceowner":"10831489","odnatlabel":"7956407282","odevicehostname":"2168890624","orulelabel":"624054738","oipsrulelabel":"6200694987","second":"48","ordr_rulename":"3399565100","stateful":"Yes","ozpa_app_seg_name":"7648246731","threatcat":"Botnet Callback","numsessions":"5","tsip":"89.160.20.128","threat_name":"Linux.Backdoor.Tsunami","year":"2023","threatname":"Linux.Backdoor","zpa_app_seg_name":"ZPA_test_app_segment","tuntype":"L2 tunnel","ztunnelversion":"ZTUNNEL_1_0"}}
+```
+
+### SaaS Security Activity Log
+
+- Default port (NSS Feed): _9026_
+- Default port (Cloud NSS Feed): _9565_
+
+See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/nss-feed-output-format-saas-security-activity-logs)
+
+To collect SaaS Security Activity logs, configure the NSS feed in the ZIA Admin Console using the **Feed Output Format** below. The format uses snake_case nested JSON keys that the integration parses without additional field renaming, and includes a `version` token so the pipeline can validate the template at ingest time.
+
+Zscaler SaaS Security Activity Log response format (v1):
+```
+\{"version":"v1","sourcetype":"zscalernss-saas_security_activity","time":"%s{time}","tz":"%s{tz}","event_time":"%s{eventtime}","activity":\{"type":"%s{act_type_name}","count":"%d{act_cnt}"\},"is_admin":"%s{is_admin_act}","application":\{"name":"%s{appname}"\},"tenant":"%s{tenant}","user_name":"%s{username}","external_owner":"%s{extownername}","object":\{"type":"%s{objtypename1}","subtype":"%s{objtypename2}","names":"%s{objnames1}","subnames":"%s{objnames2}"\},"src_ip":"%s{src_ip}"\}
+```
+
+Sample Response:
+```json
+{"version":"v1","sourcetype":"zscalernss-saas_security_activity","time":"Tue Jan 14 16:22:01 2026","tz":"GMT","event_time":"Tue Jan 14 16:22:01 2026","activity":{"type":"Share","count":"3"},"is_admin":"0","application":{"name":"SALESFORCE"},"tenant":"example-corp.my.salesforce.com","user_name":"bob.smith@example.com","external_owner":"partner@guest.example.net","object":{"type":"Record","subtype":"Account","names":"[Acme-Corp-Account, Acme-Corp-Opportunity]","subnames":"None"},"src_ip":"81.2.69.144"}
 ```
 
 ### SaaS Security Log
@@ -354,6 +396,16 @@ This is the `dns` dataset.
 
 {{fields "dns"}}
 
+### email_dlp
+
+This is the `email_dlp` dataset.
+
+#### Example
+
+{{event "email_dlp"}}
+
+{{fields "email_dlp"}}
+
 ### endpoint_dlp
 
 This is the `endpoint_dlp` dataset.
@@ -374,7 +426,19 @@ This is the `firewall` dataset.
 
 {{fields "firewall"}}
 
+### saas_security_activity
+
+This is the `saas_security_activity` dataset.
+
+#### Example
+
+{{event "saas_security_activity"}}
+
+{{fields "saas_security_activity"}}
+
 ### saas_security
+
+This is the `saas_security` dataset.
 
 #### Example
 

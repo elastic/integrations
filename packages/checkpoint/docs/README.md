@@ -161,6 +161,19 @@ For more information on architectures that can be used for scaling this integrat
 
 The `firewall` data stream provides events from Check Point devices, including firewall traffic, VPN logs, audit logs, and system events.
 
+#### Gateway identification fields
+
+Check Point Security Gateways identify themselves in syslog payloads through two distinct fields, which the integration maps to ECS as follows:
+
+| Check Point field | Value | ECS target fields |
+|---|---|---|
+| `origin` | Gateway IP address (typed as `ipaddr` in Check Point's `LogFields.xml`) | `observer.ip` (and `observer.name`) |
+| `originsicname` (`CN=<hostname>,O=<management>..<random>`) | Gateway hostname extracted from the `CN` component of the SIC distinguished name | `observer.hostname` |
+
+The raw `originsicname` value is preserved in `checkpoint.origin_sic_name`. Because the firewall is observed remotely over syslog, the gateway is represented through the `observer.*` field set rather than `host.*`.
+
+> **Note:** `observer.name` continues to hold the gateway IP (`origin`) for backward compatibility. To query the gateway by IP use `observer.ip`, and to query it by hostname use `observer.hostname`.
+
 #### firewall fields
 
 **Exported fields**
@@ -798,6 +811,7 @@ The `firewall` data stream provides events from Check Point devices, including f
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.egress.zone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
+| observer.hostname | Hostname of the observer. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ingress.zone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
 | observer.ip | IP addresses of the observer. | ip |

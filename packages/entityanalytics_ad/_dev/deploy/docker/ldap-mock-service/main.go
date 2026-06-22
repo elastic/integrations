@@ -21,7 +21,11 @@ const (
 
 	bindUser = "cn=admin,dc=testserver,dc=local"
 	bindPass = "password"
-	baseDN   = "DC=testserver,DC=local"
+
+	bindUserSpecial = `TESTSERVER\admin#special`
+	bindPassSpecial = `p@ss:word&"quotes'` // YAML-special characters
+
+	baseDN = "DC=testserver,DC=local"
 )
 
 // entry holds the attributes for a single LDAP directory entry.
@@ -317,12 +321,17 @@ func bindHandler(w *gldap.ResponseWriter, r *gldap.Request) {
 		return
 	}
 
-	if m.UserName == bindUser && m.Password == bindPass {
+	switch {
+	case m.UserName == bindUser && m.Password == bindPass:
+		resp.SetResultCode(gldap.ResultSuccess)
+		log.Printf("bind success for %s", m.UserName)
+		return
+	case m.UserName == bindUserSpecial && m.Password == bindPassSpecial:
 		resp.SetResultCode(gldap.ResultSuccess)
 		log.Printf("bind success for %s", m.UserName)
 		return
 	}
-	log.Printf("bind failed for %s", m.UserName)
+	log.Printf("bind failed for %s (password length %d)", m.UserName, len(m.Password))
 }
 
 func searchHandler(w *gldap.ResponseWriter, r *gldap.Request) {

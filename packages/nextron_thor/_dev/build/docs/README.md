@@ -2,6 +2,11 @@
 
 [Nextron Thor APT Scanner](https://www.nextron-systems.com/thor/) is a powerful threat hunting and incident response tool that provides comprehensive scanning capabilities for detecting advanced persistent threats (APTs), malware, and security vulnerabilities across Windows systems. The Nextron Thor APT Scanner integration enables you to consume and analyze Thor Cloud scan results within Elastic Security, providing centralized visibility into threat detection findings and facilitating automated incident response workflows.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Data streams
 
 The Nextron Thor APT Scanner integration collects one type of data:
@@ -10,13 +15,13 @@ The Nextron Thor APT Scanner integration collects one type of data:
 
 ## Requirements
 
-This integration supports Elastic Agent-based data collection.
+This integration supports Agentless and Elastic Agent-based data collection.
 
 ### Elastic Agent
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+For agent-based collection, install Elastic Agent using the [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
-The minimum **kibana.version** required is **9.1.3**.
+The minimum **kibana.version** required is **9.2.0**.
 
 This integration has been tested against the **Nextron Thor Cloud API**.
 

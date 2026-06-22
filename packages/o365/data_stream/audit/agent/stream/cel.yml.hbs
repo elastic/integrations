@@ -92,6 +92,7 @@ redact:
 # - Rewrite legacy cursor data if present.
 # - Set a stopping point if absent.
 # - Generate the list of content types to process if empty.
+# - Filter stale cursor data.
 #
 # A check done on every evaluation:
 # - Ensure there is an active content type.
@@ -137,19 +138,16 @@ program: |-
     )
   ).as(state,
     // Initialize the list of types to consider in this sequence of evaluations.
-    // If content types were changed in the config, remove any that are no
-    // longer configured from the in-progress list.
+    // When there are no more types to consider the sequence will end and this
+    // list will be reinitialized on the next evaluation. It's non-cursor data
+    // so it will be cleared by any restart.
     state.with(
       {
         "todo_types": state.?todo_types.orValue([]).as(existing_todo_types,
-          state.base.content_types.split(",").map(t, t.trim_space()).as(configured_types,
-            existing_todo_types.filter(t, configured_types.exists(c, c == t)).as(filtered,
-              (filtered.size() > 0) ?
-                filtered
-              :
-                configured_types
-            )
-          )
+          (existing_todo_types.size() > 0) ?
+            existing_todo_types
+          :
+            state.base.content_types.split(",").map(t, t.trim_space() != "", t.trim_space())
         ),
       }
     )
@@ -290,10 +288,9 @@ program: |-
             // Fetch successful - Return events, continue with remaining content
             state.with(
               {
-                "events": content_resp.Body.decode_json().map(e,
+                "events": content_resp.Body.decode_json_string_numbers().map(e,
                   {
                     "o365audit": e,
-                    "event": {"original": e.encode_json()},
                   }
                 ),
                 "cursor": state.cursor.with({"todo_content": tail(state.cursor.todo_content)}),
