@@ -485,6 +485,19 @@ func TestValidateInventory(t *testing.T) {
 			wantErr:     true,
 			errContains: []string{"duplicate branch", "duplicate package/version"},
 		},
+		{
+			title: "invalid branch with missing package",
+			contents: `backports:
+  - package: ""
+    branch: totally-wrong
+    base_version: "1.0.0"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{"invalid branch"},
+		},
 	}
 
 	for _, tc := range cases {
@@ -683,6 +696,35 @@ func readInventory(t *testing.T, path string) inventory {
 	return inv
 }
 
+func TestValidateBranchFormat(t *testing.T) {
+	tests := []struct {
+		branch      string
+		wantErr     bool
+		errContains string
+	}{
+		{branch: "backport-aws-3.17", wantErr: false},
+		{branch: "backport-aws-6.x", wantErr: false},
+		{branch: "backport-aws-2024-hotfix", wantErr: false},
+		{branch: "backport-security_detection_engine-8.9", wantErr: false},
+		{branch: "aws-3.17", wantErr: true, errContains: "invalid branch"},
+		{branch: "backport-aws-", wantErr: true, errContains: "invalid branch"},
+		{branch: "backport-aws-3.17 extra", wantErr: true, errContains: "invalid branch"},
+		{branch: "totally-wrong", wantErr: true, errContains: "invalid branch"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.branch, func(t *testing.T) {
+			err := ValidateBranchFormat(tt.branch)
+			if tt.wantErr {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errContains)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+
 func TestValidateBranchName(t *testing.T) {
 	tests := []struct {
 		packageName string
@@ -716,14 +758,10 @@ func TestValidateBranchName(t *testing.T) {
 		t.Run(tt.branch, func(t *testing.T) {
 			err := ValidateBranchName(tt.packageName, tt.branch)
 			if tt.wantErr {
-				if err == nil {
-					t.Fatalf("expected error but got nil")
-				}
-				if tt.errContains != "" && !strings.Contains(err.Error(), tt.errContains) {
-					t.Fatalf("expected error containing %q, got: %v", tt.errContains, err)
-				}
-			} else if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errContains)
+			} else {
+				require.NoError(t, err)
 			}
 		})
 	}

@@ -83,7 +83,10 @@ steps:
   - label: ":github: Notify PR"
     key: "notify-pr"
     command: |
-      outcome=$$(buildkite-agent step get "outcome" --step "create-backport-branch")
+      if ! outcome=$$(buildkite-agent step get "outcome" --step "create-backport-branch"); then
+        echo "Failed to retrieve step outcome, skipping PR notification"
+        exit 0
+      fi
       if [[ "$${outcome}" == "passed" ]]; then
         NOTIFY_STATUS=success .buildkite/scripts/notify_backport_pr.sh
       else

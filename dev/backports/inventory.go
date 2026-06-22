@@ -113,16 +113,25 @@ func (e entry) activeResult(now time.Time) ActiveResult {
 	return result
 }
 
-// AddEntry inserts a new backport entry into the inventory at path.
-// The branch name is derived as backport-<packageName>-<major>.<minor>.
-// archived is set to false and maintained_until to null.
-// ValidateBranchName checks that branch is a valid backport branch name for the given package:
-// it must match branchRE and start with "backport-<packageName>-".
-func ValidateBranchName(packageName, branch string) error {
+// ValidateBranchFormat checks that branch matches the required backport branch format:
+// backport-<package>-<suffix>, where package is letters/digits/underscores and suffix
+// starts with a letter or digit and may contain letters, digits, dots, underscores, or hyphens.
+// Whitespace, quotes, colons, semicolons, dollar signs, backticks, and other special characters
+// are not permitted.
+func ValidateBranchFormat(branch string) error {
 	if !branchRE.MatchString(branch) {
 		return fmt.Errorf("invalid branch %q: must match backport-<package>-<suffix> "+
 			"(package: letters/digits/underscores; suffix: letters/digits/dots/underscores/hyphens; "+
 			"no whitespace, quotes, colons, semicolons, dollar signs, backticks or other special characters)", branch)
+	}
+	return nil
+}
+
+// ValidateBranchName checks that branch is a valid backport branch name for the given package:
+// it must pass ValidateBranchFormat and start with "backport-<packageName>-".
+func ValidateBranchName(packageName, branch string) error {
+	if err := ValidateBranchFormat(branch); err != nil {
+		return err
 	}
 	if !strings.HasPrefix(branch, "backport-"+packageName+"-") {
 		return fmt.Errorf("branch %q must start with \"backport-%s-\"", branch, packageName)
@@ -130,6 +139,9 @@ func ValidateBranchName(packageName, branch string) error {
 	return nil
 }
 
+// AddEntry inserts a new backport entry into the inventory at path.
+// The branch name is derived as backport-<packageName>-<major>.<minor>.
+// archived is set to false and maintained_until to null.
 // The entry is placed in sorted order: package name ascending, then version descending (newest first).
 // packagesDir is the path to the packages/ directory used to verify that packageName names a real
 // package. Pass an empty string to skip this check.
@@ -317,6 +329,8 @@ func validateEntryFields(i int, e entry, knownPackages map[string]struct{}, pack
 		if err := ValidateBranchName(e.Package, e.Branch); err != nil {
 			errs = append(errs, fmt.Errorf("%s: %w", id, err))
 		}
+	} else if err := ValidateBranchFormat(e.Branch); err != nil {
+		errs = append(errs, fmt.Errorf("%s: %w", id, err))
 	}
 
 	if e.BaseVersion == "" {
