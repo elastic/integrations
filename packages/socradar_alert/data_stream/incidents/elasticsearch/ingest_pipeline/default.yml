@@ -21,6 +21,10 @@ processors:
       tag: remove_message
       ignore_missing: true
   - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.3.0
+  - set:
       field: event.kind
       tag: set_event_kind
       value: alert
@@ -67,6 +71,12 @@ processors:
       ignore_empty_value: true
       ignore_failure: true
 on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       value: pipeline_error
@@ -74,9 +84,3 @@ on_failure:
       field: tags
       value: preserve_original_event
       allow_duplicates: false
-  - append:
-      field: error.message
-      value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
