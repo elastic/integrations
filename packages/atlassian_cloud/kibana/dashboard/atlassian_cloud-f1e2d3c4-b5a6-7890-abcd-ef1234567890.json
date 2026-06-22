@@ -95,6 +95,7 @@
                                             ],
                                             "columns": {
                                                 "count": {
+                                                    "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Total Logins",
@@ -137,7 +138,7 @@
                     "y": 0
                 },
                 "panelIndex": "panel-auth-total",
-                "title": "Total Auth Events",
+                "title": "",
                 "type": "lens"
             },
             {
@@ -219,7 +220,7 @@
                     "y": 0
                 },
                 "panelIndex": "panel-auth-failed",
-                "title": "Failed Logins",
+                "title": "",
                 "type": "lens"
             },
             {
@@ -242,6 +243,7 @@
                                             ],
                                             "columns": {
                                                 "unique-users": {
+                                                    "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Unique Users",
@@ -284,7 +286,7 @@
                     "y": 0
                 },
                 "panelIndex": "panel-auth-users",
-                "title": "Unique Users",
+                "title": "",
                 "type": "lens"
             },
             {
@@ -307,9 +309,10 @@
                                             ],
                                             "columns": {
                                                 "unique-ips": {
+                                                    "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Unique IPs",
+                                                    "label": "Unique Source IPs",
                                                     "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -349,7 +352,7 @@
                     "y": 0
                 },
                 "panelIndex": "panel-auth-ips",
-                "title": "Unique Source IPs",
+                "title": "",
                 "type": "lens"
             },
             {
@@ -372,6 +375,7 @@
                                             ],
                                             "columns": {
                                                 "unique-countries": {
+                                                    "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Unique Countries",
@@ -414,7 +418,7 @@
                     "y": 0
                 },
                 "panelIndex": "panel-auth-countries",
-                "title": "Unique Countries",
+                "title": "",
                 "type": "lens"
             },
             {
@@ -833,134 +837,6 @@
             },
             {
                 "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-auth-event-log",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "auth-event-log": {
-                                            "columnOrder": [
-                                                "date",
-                                                "action",
-                                                "user",
-                                                "count"
-                                            ],
-                                            "columns": {
-                                                "action": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Action",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "count",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "size": 20
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "event.action"
-                                                },
-                                                "count": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "date": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": false,
-                                                        "interval": "1h"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "user": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "User",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": true,
-                                                        "orderBy": {
-                                                            "columnId": "count",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "user.name"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "logs-*"
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "meta": {
-                                        "index": "logs-*",
-                                        "key": "event.outcome",
-                                        "params": {
-                                            "query": "failure"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.outcome": "failure"
-                                        }
-                                    }
-                                }
-                            ],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "date"
-                                    },
-                                    {
-                                        "columnId": "action"
-                                    },
-                                    {
-                                        "columnId": "user"
-                                    },
-                                    {
-                                        "columnId": "count"
-                                    }
-                                ],
-                                "layerId": "auth-event-log",
-                                "layerType": "data"
-                            }
-                        },
-                        "title": "Recent Failed Auth Events",
-                        "visualizationType": "lnsDatatable"
-                    },
                     "enhancements": {}
                 },
                 "gridData": {
@@ -971,15 +847,16 @@
                     "y": 36
                 },
                 "panelIndex": "panel-auth-event-log",
+                "panelRefName": "panel_panel-auth-event-log",
                 "title": "Recent Failed Auth Events",
-                "type": "lens"
+                "type": "search"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Atlassian Cloud] Authentication"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-06-22T11:26:25.486Z",
+    "created_at": "2026-06-22T13:46:03.116Z",
     "id": "atlassian_cloud-f1e2d3c4-b5a6-7890-abcd-ef1234567890",
     "references": [
         {
@@ -993,9 +870,9 @@
             "type": "index-pattern"
         },
         {
-            "id": "logs-*",
-            "name": "indexpattern-datasource-layer-auth-event-log",
-            "type": "index-pattern"
+            "id": "atlassian_cloud-e7a2d1b0-3f4c-4d9e-8a1b-5c6d7e8f9a0b",
+            "name": "panel-auth-event-log:panel_panel-auth-event-log",
+            "type": "search"
         },
         {
             "id": "atlassian_cloud-security-solution-default",
