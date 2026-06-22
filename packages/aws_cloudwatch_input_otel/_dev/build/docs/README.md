@@ -1,15 +1,15 @@
 {{- generatedHeader }}
-# AWS CloudWatch OpenTelemetry Input Package
+# AWS CloudWatch OpenTelemetry Input
 
 ## Overview
 
-The AWS CloudWatch OpenTelemetry Input Package collects Amazon CloudWatch metrics for selected AWS services using the [AWS CloudWatch receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/awscloudwatchreceiver) from the OpenTelemetry Collector.
+The AWS CloudWatch OpenTelemetry Input collects Amazon CloudWatch metrics for selected AWS services using the [AWS CloudWatch receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/awscloudwatchreceiver) from the OpenTelemetry Collector.
 
-Instead of listing individual metrics, the package automatically discovers the metrics published in each service's CloudWatch namespace, so newly available metrics are picked up without any configuration changes. This makes it a low-maintenance way to bring AWS infrastructure metrics into Elastic for dashboards, alerting, and analysis.
+Instead of listing individual metrics, the integration automatically discovers the metrics published in each service's CloudWatch namespace, so newly available metrics are picked up without any configuration changes. This makes it a low-maintenance way to bring AWS infrastructure metrics into Elastic for dashboards, alerting, and analysis.
 
 ## How it works
 
-This package configures the AWS CloudWatch receiver in the EDOT (Elastic Distribution of OpenTelemetry) Collector, which:
+This integration configures the AWS CloudWatch receiver in the EDOT (Elastic Distribution of OpenTelemetry) Collector, which:
 
 1. Authenticates to AWS using the credentials you provide.
 2. Discovers the metrics available in the selected service's CloudWatch namespace.
@@ -20,7 +20,7 @@ You add the integration once for each AWS service you want to monitor.
 
 ## Deployment modes
 
-This package can be deployed in two ways:
+This integration can be deployed in two ways:
 
 - **Agentless** (default): Elastic manages the collector for you, with no infrastructure to run. This is the recommended option for most users.
 - **Elastic Agent**: Run the collector on your own Elastic Agent.
@@ -61,7 +61,7 @@ Each service collects a set of statistics chosen to suit that service's metrics 
 
 ## Authentication
 
-The package supports the following ways to authenticate to AWS:
+The integration supports the following ways to authenticate to AWS:
 
 - **Access keys**: Provide an access key ID and secret access key.
 - **Temporary credentials**: Provide an access key ID, secret access key, and session token.
