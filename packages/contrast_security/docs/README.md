@@ -1,7 +1,7 @@
 # Contrast Security
 
 The Contrast Security integration provides dashboards and detection rules for
-[Contrast Security ADR](https://www.contrastsecurity.com/application-detection-and-response)
+[Contrast Security ADR](https://www.contrastsecurity.com/contrast-adr)
 (Application Detection and Response) data in Elastic Security.
 
 ## Data Streams
@@ -44,7 +44,7 @@ Java client (Bulk API). No Elastic Agent configuration is required.
 
 ### Prebuilt Rules
 
-This integration includes prebuilt detection rules for Elastic Security:
+This integration includes prebuilt detection rules for Elastic Security. All rules install disabled; after installing the prebuilt rules, enable the ones you want in Elastic Security.
 
 1. **Contrast ADR: Exploited Attack in Production Environment** - Fires when an
    attack is confirmed exploited in a production environment. Severity: critical.
@@ -74,6 +74,6 @@ filter, and toggle it on.
 
 ## Dashboard
 
-The **Contrast Security Attack Summary** dashboard provides an overview of all attack
+The **[Contrast Security] Attack Summary Overview** dashboard provides an overview of all attack
 activity including outcome distribution, attack types, affected applications, trends
 over time, and most targeted endpoints.

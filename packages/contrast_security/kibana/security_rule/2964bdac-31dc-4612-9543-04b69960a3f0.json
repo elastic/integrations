@@ -1,5 +1,6 @@
 {
     "attributes": {
+        "enabled": false,
         "author": [
             "Contrast Security"
         ],
@@ -16,12 +17,12 @@
         "note": "## Triage and analysis\n\n### Investigating Exploited Attack in Production\n\nContrast ADR confirms exploitation at the code level. When this rule fires, the attack payload reached a dangerous function and modified its behavior.\n\n#### Possible investigation steps:\n\n- Review `rule.name` to identify the attack type (sql-injection, cmd-injection, etc.).\n- Check `source.ip` for the attacker's IP address and investigate its reputation.\n- Review `url.path` to identify the targeted application endpoint.\n- Check `service.name` to identify which application was exploited.\n- Follow the `event.url` link to view full attack details in the Contrast Security console.\n- Review `http.request.body.content` for the attack payload that triggered the rule.\n- Check `error.stack_trace` for the call stack leading to the vulnerable function.\n- Look for related events from the same `source.ip` to identify campaign activity.\n\n### Response and remediation:\n\n- Visit the runbook for the specific attack type at https://contrastsecurity.dev/adr-runbooks/runbooks/{rule.name}/\n- If the exploit is confirmed, initiate your incident response process.\n- Consider enabling Contrast ADR Block Mode for the affected rule to prevent future exploitation.\n- Work with the development team to remediate the underlying vulnerability.",
         "query": "event.dataset: \"contrast_security.attack_event\" and event.outcome: \"success\" and service.environment: \"production\"",
         "references": [
-            "https://www.contrastsecurity.com/application-detection-and-response",
+            "https://www.contrastsecurity.com/contrast-adr",
             "https://contrastsecurity.dev/adr-runbooks/"
         ],
         "related_integrations": [
             {
-                "package": "contrast",
+                "package": "contrast_security",
                 "version": "^0.1.0"
             }
         ],
@@ -37,7 +38,7 @@
                 "type": "keyword"
             },
             {
-                "ecs": false,
+                "ecs": true,
                 "name": "service.environment",
                 "type": "keyword"
             }

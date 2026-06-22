@@ -1,5 +1,6 @@
 {
     "attributes": {
+        "enabled": false,
         "author": [
             "Contrast Security"
         ],
@@ -16,9 +17,9 @@
         "license": "Elastic License v2",
         "name": "Contrast ADR: Exploited Attack Followed by EDR Alert on Same Host",
         "note": "## Triage and analysis\n\n### Investigating Exploited Attack with EDR Corroboration\n\nThis rule fires when Contrast ADR confirms exploitation and an EDR product raises an alert on the same host within 30 minutes. Treat as high-confidence multi-layer compromise evidence.\n\n#### Possible investigation steps:\n\n- Review the ADR attack event: `rule.name` (e.g., cmd-injection, jndi-injection), `source.ip`, `url.path`, `http.request.body.content`, `error.stack_trace`.\n- Follow the `event.url` link on the ADR side to view full attack details in the Contrast Security console.\n- Pivot to the matched EDR alert to see process tree, file activity, network connections, and persistence indicators.\n- Determine whether the EDR detection (e.g., suspicious child process of the application runtime) is plausibly caused by the ADR-observed exploit.\n- Check for additional ADR exploits from the same `source.ip` and additional EDR alerts on the same host to scope the incident.\n\n### Response and remediation:\n\n- Visit the runbook for the specific ADR attack type at https://contrastsecurity.dev/adr-runbooks/runbooks/{rule.name}/\n- Isolate the affected host via your EDR product if compromise is confirmed.\n- Enable Contrast ADR Block Mode for the affected rule to prevent future exploitation.\n- Work with the development team to remediate the underlying vulnerability.",
-        "query": "sequence by host.hostname with maxspan=30m\n  [any where event.dataset == \"contrast_security.attack_event\" and event.outcome == \"success\"]\n  [any where event.kind == \"alert\"]",
+        "query": "sequence by host.hostname with maxspan=30m\n  [any where event.dataset == \"contrast_security.attack_event\" and event.outcome == \"success\"]\n  [any where event.kind == \"alert\" and not event.dataset like \"contrast_security.*\"]",
         "references": [
-            "https://www.contrastsecurity.com/application-detection-and-response",
+            "https://www.contrastsecurity.com/contrast-adr",
             "https://contrastsecurity.dev/adr-runbooks/",
             "https://attack.mitre.org/techniques/T1190/",
             "https://attack.mitre.org/techniques/T1059/"

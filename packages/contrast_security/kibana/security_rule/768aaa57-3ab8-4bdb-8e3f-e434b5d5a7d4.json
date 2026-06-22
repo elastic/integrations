@@ -1,5 +1,6 @@
 {
     "attributes": {
+        "enabled": false,
         "author": [
             "Contrast Security"
         ],
@@ -16,9 +17,9 @@
         "license": "Elastic License v2",
         "name": "Contrast ADR: SQL Injection Followed by DLP Alert on Same Host",
         "note": "## Triage and analysis\n\n### Investigating SQL Injection with DLP Correlation\n\nThis rule fires when Contrast ADR confirms a SQL injection exploit and a DLP product on the same host raises an alert within one hour. Treat as a likely data exfiltration event.\n\n#### Possible investigation steps:\n\n- Review the ADR attack event: `rule.name`, `source.ip`, `url.path`, `http.request.body.content`.\n- Follow the `event.url` link on the ADR side to view full attack details in the Contrast Security console.\n- Pivot to the matched DLP event on the same host to see which data was flagged.\n- Determine whether the data classified by DLP corresponds to what the SQL injection could have accessed (table, column, query result).\n- Check for additional ADR exploit attempts from the same `source.ip` to scope the campaign.\n\n### Response and remediation:\n\n- Visit the SQL injection runbook at https://contrastsecurity.dev/adr-runbooks/runbooks/sql-injection/\n- If the data is sensitive, initiate your data breach response process per your organization's policy.\n- Block the source IP at the perimeter and enable Contrast ADR Block Mode for sql-injection on the affected application.\n- Work with the development team to remediate the underlying SQL injection vulnerability.",
-        "query": "sequence by host.hostname with maxspan=1h\n  [any where event.dataset == \"contrast_security.attack_event\" and rule.name == \"sql-injection\" and event.outcome == \"success\"]\n  [any where event.kind == \"alert\"]",
+        "query": "sequence by host.hostname with maxspan=1h\n  [any where event.dataset == \"contrast_security.attack_event\" and rule.name == \"sql-injection\" and event.outcome == \"success\"]\n  [any where event.kind == \"alert\" and not event.dataset like \"contrast_security.*\"]",
         "references": [
-            "https://www.contrastsecurity.com/application-detection-and-response",
+            "https://www.contrastsecurity.com/contrast-adr",
             "https://contrastsecurity.dev/adr-runbooks/runbooks/sql-injection/",
             "https://attack.mitre.org/techniques/T1530/",
             "https://attack.mitre.org/techniques/T1567/"

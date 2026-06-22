@@ -1,5 +1,6 @@
 {
     "attributes": {
+        "enabled": false,
         "author": [
             "Contrast Security"
         ],
@@ -13,15 +14,15 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Contrast ADR: Security Incident Requiring Investigation",
-        "note": "## Triage and analysis\n\n### Investigating Contrast ADR Incidents\n\nContrast ADR incidents aggregate related attack events into a single finding that warrants investigation.\n\n#### Possible investigation steps:\n\n- Review `message` for the incident title and `event.reason` for the summary.\n- Check `event.risk_score` to understand the incident severity (0-100 scale).\n- Follow the `event.url` link to view the full incident in the Contrast Security console.\n- Review `rule.reference` for recommended runbook links.\n- Check `rule.name` for the attack types involved in this incident.\n- Pivot to `logs-contrast_security.attack_event-*` filtered by `service.name` and the incident time window to find the underlying attack evidence.\n\n### Response and remediation:\n\n- Follow the recommended runbooks linked in the incident.\n- Review the individual attack events that comprise this incident for detailed exploit evidence.\n- Coordinate with the application development team for vulnerability remediation.",
+        "note": "## Triage and analysis\n\n### Investigating Contrast ADR Incidents\n\nContrast ADR incidents aggregate related attack events into a single finding that warrants investigation.\n\n#### Possible investigation steps:\n\n- Review `message` for the incident title and `event.reason` for the summary.\n- Check `event.risk_score` to understand the incident severity (0-100 scale).\n- Follow the `event.url` link to view the full incident in the Contrast Security console.\n- Review `rule.reference` for recommended runbook links.\n- Check `rule.name` for the attack types involved in this incident.\n- Pivot to `logs-contrast_security.attack_event-*` using the incident time window and `rule.name` (the related attack type) to find the underlying attack evidence. Contrast does not currently emit a stable incident-to-attack-event join key, so this pivot is approximate.\n\n### Response and remediation:\n\n- Follow the recommended runbooks linked in the incident.\n- Review the individual attack events that comprise this incident for detailed exploit evidence.\n- Coordinate with the application development team for vulnerability remediation.",
         "query": "event.dataset: \"contrast_security.incident\"",
         "references": [
-            "https://www.contrastsecurity.com/application-detection-and-response",
+            "https://www.contrastsecurity.com/contrast-adr",
             "https://contrastsecurity.dev/adr-runbooks/"
         ],
         "related_integrations": [
             {
-                "package": "contrast",
+                "package": "contrast_security",
                 "version": "^0.1.0"
             }
         ],

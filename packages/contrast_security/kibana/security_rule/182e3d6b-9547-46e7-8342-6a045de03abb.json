@@ -1,5 +1,6 @@
 {
     "attributes": {
+        "enabled": false,
         "author": [
             "Contrast Security"
         ],
@@ -16,9 +17,9 @@
         "license": "Elastic License v2",
         "name": "Contrast ADR: Exploited Attack Confirmed by WAF Alert on Same Request",
         "note": "## Triage and analysis\n\n### Investigating WAF-Confirmed Application Exploit\n\nThis rule fires when Contrast ADR confirms exploitation and a WAF alert exists on the same `source.ip` and `url.path` within 5 minutes. Treat as a confirmed exploit attempt at the gateway level that also succeeded at the application level.\n\n#### Possible investigation steps:\n\n- Review the ADR attack event: `rule.name`, `source.ip`, `url.path`, `http.request.body.content`.\n- Check whether the WAF was in detection-only mode (alerted but did not block) or in blocking mode (alerted but the request bypassed). If blocking mode, investigate how the WAF was bypassed.\n- Follow the `event.url` link on the ADR side to view full attack details in the Contrast Security console.\n- Pivot to the matched WAF event to see the WAF rule that fired and any additional context (geographic, ASN, user-agent).\n- Check for additional exploit attempts from the same `source.ip` across other URLs to scope the campaign.\n\n### Response and remediation:\n\n- Visit the runbook for the specific ADR attack type at https://contrastsecurity.dev/adr-runbooks/runbooks/{rule.name}/\n- If the WAF was bypassed, escalate to the WAF team to tighten the rule. Consider moving the WAF rule from detection to blocking mode for this signature.\n- Enable Contrast ADR Block Mode for the affected rule to prevent future exploitation.\n- Block the source IP at the perimeter.\n- Work with the development team to remediate the underlying vulnerability.",
-        "query": "sequence by source.ip, url.path with maxspan=5m\n  [any where event.dataset == \"contrast_security.attack_event\" and event.outcome == \"success\"]\n  [any where event.kind == \"alert\"]",
+        "query": "sequence by source.ip, url.path with maxspan=5m\n  [any where event.dataset == \"contrast_security.attack_event\" and event.outcome == \"success\"]\n  [any where event.kind == \"alert\" and not event.dataset like \"contrast_security.*\"]",
         "references": [
-            "https://www.contrastsecurity.com/application-detection-and-response",
+            "https://www.contrastsecurity.com/contrast-adr",
             "https://contrastsecurity.dev/adr-runbooks/",
             "https://attack.mitre.org/techniques/T1190/"
         ],

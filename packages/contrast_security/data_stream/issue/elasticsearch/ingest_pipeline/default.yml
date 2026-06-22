@@ -2,21 +2,26 @@
 description: Minimal ingest pipeline for Contrast Security issues.
 processors:
   - set:
+      tag: set_event_ingested
       field: event.ingested
       value: "{{_ingest.timestamp}}"
   - set:
+      tag: set_event_dataset
       field: event.dataset
       value: "contrast_security.issue"
       override: false
   - set:
+      tag: set_event_module
       field: event.module
       value: "contrast_security"
       override: false
   - set:
+      tag: set_event_kind
       field: event.kind
       value: "alert"
       override: false
   - date:
+      tag: date_timestamp
       field: "@timestamp"
       target_field: "@timestamp"
       formats:
@@ -25,8 +30,10 @@ processors:
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_pipeline_error
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message
       field: error.message
       value: "Ingest pipeline error: {{{_ingest.on_failure_message}}}"
