@@ -1,0 +1,337 @@
+---
+description: Pipeline for processing user logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.3.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - drop:
+      tag: drop_retry_events
+      if: ctx.message == 'retry'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      tag: remove_agentless_tags
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      ignore_missing: true
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      if: ctx.event?.original == null
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+  - remove:
+      field:
+        - message
+      tag: remove_message
+      if: ctx.event?.original != null
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: ping_directory.user
+  - script:
+      description: >
+        Convert field names from camelCase to snake_case recursively.
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      source: |-
+        String camelToSnake(String str) {
+            def result = "";
+            for (int i = 0; i < str.length(); i++) {
+                char c = str.charAt(i);
+                if (Character.isUpperCase(c)) {
+                    if (i > 0 && Character.isLowerCase(str.charAt(i - 1))) {
+                        result += "_";
+                    }
+                    result += Character.toLowerCase(c);
+                } else {
+                    result += c;
+                }
+            }
+            return result;
+        }
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              String newKey = camelToSnake(entry.getKey());
+              newObj[newKey] = convertToSnakeCase(entry.getValue());
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+        if (ctx.ping_directory?.user != null) {
+          ctx.ping_directory.user = convertToSnakeCase(ctx.ping_directory.user);
+        }
+      on_failure:
+        - append:
+            tag: append_script_convert_camelcase_to_snake_case_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_iam_into_event_category
+      value: iam
+  - append:
+      field: event.type
+      tag: append_user_into_event_type
+      value: user
+  - set:
+      field: user.full_name
+      tag: set_user_full_name_from_user_formatted
+      copy_from: ping_directory.user.name.formatted
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_display_name_into_related_user
+      if: ctx.ping_directory?.user?.display_name != null
+      value: '{{{ping_directory.user.display_name}}}'
+      allow_duplicates: false
+  - set:
+      field: user.id
+      tag: set_user_id_from_user_id
+      copy_from: ping_directory.user.id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_id_into_related_user
+      if: ctx.ping_directory?.user?.id != null
+      value: '{{{ping_directory.user.id}}}'
+      allow_duplicates: false
+  - date:
+      field: ping_directory.user.meta.created
+      tag: date_meta_created
+      if: ctx.ping_directory?.user?.meta?.created != null && ctx.ping_directory.user.meta.created != ''
+      target_field: ping_directory.user.meta.created
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            tag: append_date_meta_created_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ping_directory.user.meta.last_modified
+      tag: date_meta_last_modified
+      if: ctx.ping_directory?.user?.meta?.last_modified != null && ctx.ping_directory.user.meta.last_modified != ''
+      target_field: ping_directory.user.meta.last_modified
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            tag: append_date_meta_last_modified_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_user_name_family_name_into_related_user
+      if: ctx.ping_directory?.user?.name?.family_name != null
+      value: '{{{ping_directory.user.name.family_name}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_user_name_formatted_into_related_user
+      if: ctx.ping_directory?.user?.name?.formatted != null
+      value: '{{{ping_directory.user.name.formatted}}}'
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_user_name_given_name_into_related_user
+      if: ctx.ping_directory?.user?.name?.given_name != null
+      value: '{{{ping_directory.user.name.given_name}}}'
+      allow_duplicates: false
+  - script:
+      tag: script_process_emails
+      description: >
+        Process SCIM email entries (plain strings or objects).
+        Extracts emails and domains into ECS user fields.
+        Extracts primary and type into ping_directory.user.email (SCIM only).
+      lang: painless
+      source: |
+        if (!(ctx.ping_directory?.user?.emails instanceof List)) return;
+        def emailSet    = new HashSet();
+        def domainSet   = new HashSet();
+        def primarySet = new HashSet();
+        def typeSet     = new HashSet();
+        for (def entry : ctx.ping_directory.user.emails) {
+          if (entry instanceof String && entry.contains('@')) {
+             emailSet.add(entry);
+             domainSet.add(entry.splitOnToken('@')[1]);
+          }
+          else if (entry instanceof Map) {
+            if (entry.containsKey('value') && entry.value != null && entry.value.contains('@')) {
+              emailSet.add(entry.value);
+              domainSet.add(entry.value.splitOnToken('@')[1]);
+            }
+            if (entry.containsKey('primary') && entry.primary != null) {
+              primarySet.add(entry.primary==true? 'true' : 'false');
+            }
+            if (entry.containsKey('type') && entry.type != null) {
+              typeSet.add(entry.type);
+            }
+          }
+        }
+        def emails    = new ArrayList(emailSet);
+        def domains   = new ArrayList(domainSet);
+        def primaries = new ArrayList(primarySet);
+        def types     = new ArrayList(typeSet);
+        if (ctx.user == null) ctx.user = new HashMap();
+        if (!emails.isEmpty()) {
+          ctx.user.email = emails.size() == 1 ? emails[0] : emails;
+        }
+        if (!domains.isEmpty()) {
+          ctx.user.domain = domains.size() == 1 ? domains[0] : domains;
+        }
+
+        if (!primaries.isEmpty() || !types.isEmpty()) {
+          if (ctx.ping_directory.user.email == null) {
+            ctx.ping_directory.user.email = new HashMap();
+          }
+          if (!primaries.isEmpty()) {
+            if (primaries.size() == 1) {
+              ctx.ping_directory.user.email.primary = Boolean.parseBoolean(primaries[0]);
+            } else {
+              def boolList = new ArrayList();
+              for (def p : primaries) {
+                boolList.add(Boolean.parseBoolean(p));
+              }
+              ctx.ping_directory.user.email.primary = boolList;
+            }
+          }
+          if (!types.isEmpty()) {
+            ctx.ping_directory.user.email.type = types.size() == 1 ? types[0] : types;
+          }
+        }
+      on_failure:
+        - append:
+            tag: append_script_process_emails_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: script_append_email_and_domain_to_related_user
+      description: Append email(s) and domain(s) to related.user regardless of single or array.
+      lang: painless
+      source: |
+        if (ctx.related == null) ctx.related = new HashMap();
+        if (ctx.related.user == null) ctx.related.user = [];
+        if (ctx.user?.email!=null){
+          def emails = ctx.user.email instanceof List ? ctx.user.email : [ctx.user.email];
+          for (def e : emails) {
+            if (!ctx.related.user.contains(e)) {
+              ctx.related.user.add(e);
+            }
+          }
+        }
+        if (ctx.user?.domain != null) {
+          def domains = ctx.user.domain instanceof List ? ctx.user.domain : [ctx.user.domain];
+          for (def d : domains) {
+            if (!ctx.related.user.contains(d)) {
+              ctx.related.user.add(d);
+            }
+          }
+        }
+      on_failure:
+        - append:
+            tag: append_script_append_email_to_related_user_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.name
+      tag: set_user_name_from_user_user_name
+      copy_from: ping_directory.user.user_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_user_user_name_into_related_user
+      if: ctx.ping_directory?.user?.user_name != null
+      value: '{{{ping_directory.user.user_name}}}'
+      allow_duplicates: false
+  - remove:
+      field:
+        - ping_directory.user.id
+        - ping_directory.user.name.formatted
+        - ping_directory.user.user_name
+        - ping_directory.user.emails
+      tag: remove fields map to ecs
+      ignore_missing: true
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+      on_failure:
+        - append:
+            tag: append_remove_null_values_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      if: ctx.error?.message != null
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      tag: append_pipeline_failure_message
+      field: error.message
+      value: |-
+        Processor '{{{_ingest.on_failure_processor_type}}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false

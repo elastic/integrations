@@ -1,0 +1,192 @@
+rules:
+  - path: /directory/v1/authenticate
+    methods: ['POST']
+    request_headers:
+      Content-Type:
+        - 'application/json'
+    request_body: '{"credentials":{"authenticationType":"password","dn":"xxxx","staticPassword":"xxxx"}}'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "accessToken": "xxxx"
+          }
+          `}}
+  - path: /scim/v2/Users
+    methods: ['GET']
+    query_params:
+      startIndex: 5
+      count: 2
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
+            "totalResults": 5,
+            "startIndex": 5,
+            "Resources": [
+              {
+                "displayName": "Charlie Brown",
+                "emails": ["charlie.brown@example.com"],
+                "name": {
+                  "familyName": "Brown",
+                  "formatted": "Charlie Brown",
+                  "givenName": "Charlie"
+                },
+                "title": "QA Engineer",
+                "userName": "charlie.brown",
+                "userType": "Full-Time",
+                "id": "aabbcc11-1111-2222-3333-aabbcc112233",
+                "meta": {
+                  "resourceType": "User",
+                  "location": "https://10.50.15.29:2443/scim/v2/Users/aabbcc11-1111-2222-3333-aabbcc112233"
+                },
+                "schemas": [
+                  "urn:ietf:params:scim:schemas:core:2.0:User",
+                  "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
+                ]
+              }
+            ]
+          }
+          `}}
+  - path: /scim/v2/Users
+    methods: ['GET']
+    query_params:
+      startIndex: 3
+      count: 2
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
+            "totalResults": 5,
+            "startIndex": 3,
+            "Resources": [
+              {
+                "displayName": "Bob Wilson",
+                "emails": ["bob.wilson@example.com"],
+                "name": {
+                  "familyName": "Wilson",
+                  "formatted": "Bob Wilson",
+                  "givenName": "Bob"
+                },
+                "title": "HR Manager",
+                "userName": "bob.wilson",
+                "userType": "Full-Time",
+                "id": "ddeeff22-4444-5555-6666-ddeeff224455",
+                "meta": {
+                  "resourceType": "User",
+                  "location": "https://10.50.15.29:2443/scim/v2/Users/ddeeff22-4444-5555-6666-ddeeff224455"
+                },
+                "schemas": [
+                  "urn:ietf:params:scim:schemas:core:2.0:User",
+                  "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
+                ]
+              },
+              {
+                "displayName": "Eve Davis",
+                "emails": ["eve.davis@example.com"],
+                "name": {
+                  "familyName": "Davis",
+                  "formatted": "Eve Davis",
+                  "givenName": "Eve"
+                },
+                "title": "Finance Analyst",
+                "userName": "eve.davis",
+                "userType": "Part-Time",
+                "id": "aabb1122-7777-8888-9999-aabb11229900",
+                "meta": {
+                  "resourceType": "User",
+                  "location": "https://10.50.15.29:2443/scim/v2/Users/aabb1122-7777-8888-9999-aabb11229900"
+                },
+                "schemas": [
+                  "urn:ietf:params:scim:schemas:core:2.0:User",
+                  "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
+                ]
+              }
+            ]
+          }
+          `}}
+  - path: /scim/v2/Users
+    methods: ['GET']
+    query_params:
+      startIndex: 1
+      count: 2
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
+            "totalResults": 5,
+            "startIndex": 1,
+            "Resources": [
+              {
+                "displayName": "John Doe",
+                "emails": ["john.doe@example.com"],
+                "name": {
+                  "familyName": "Doe",
+                  "formatted": "John Doe",
+                  "givenName": "John"
+                },
+                "title": "DevOps Engineer",
+                "userName": "john.doe",
+                "userType": "Full-Time",
+                "id": "c9bbce6c-7d77-4d93-b674-42b1e8a00606",
+                "meta": {
+                  "resourceType": "User",
+                  "location": "https://10.50.15.29:2443/scim/v2/Users/c9bbce6c-7d77-4d93-b674-42b1e8a00606"
+                },
+                "schemas": [
+                  "urn:ietf:params:scim:schemas:core:2.0:User",
+                  "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
+                ]
+              },
+              {
+                "displayName": "Alice Smith",
+                "emails": ["alice.smith@example.com"],
+                "name": {
+                  "familyName": "Smith",
+                  "formatted": "Alice Smith",
+                  "givenName": "Alice"
+                },
+                "title": "Security Engineer",
+                "userName": "alice.smith",
+                "userType": "Full-Time",
+                "id": "615f060a-e289-47c4-803d-7270ecc2e91c",
+                "meta": {
+                  "resourceType": "User",
+                  "location": "https://10.50.15.29:2443/scim/v2/Users/615f060a-e289-47c4-803d-7270ecc2e91c"
+                },
+                "schemas": [
+                  "urn:ietf:params:scim:schemas:core:2.0:User",
+                  "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
+                ]
+              }
+            ]
+          }
+          `}}
