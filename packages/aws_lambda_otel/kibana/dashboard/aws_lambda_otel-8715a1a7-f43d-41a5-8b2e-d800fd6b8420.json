@@ -155,7 +155,7 @@
                     "layer-kpi-total": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | STATS total = COUNT_DISTINCT(CONCAT(TO_STRING(cloud.region), \"/\", TO_STRING(FunctionName))) | KEEP total"
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS last_seen = MAX(@timestamp) BY FunctionName, cloud.region | STATS total = COUNT(last_seen) | KEEP total"
                       },
                       "columns": [
                         {
@@ -184,7 +184,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | STATS total = COUNT_DISTINCT(CONCAT(TO_STRING(cloud.region), \"/\", TO_STRING(FunctionName))) | KEEP total"
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS last_seen = MAX(@timestamp) BY FunctionName, cloud.region | STATS total = COUNT(last_seen) | KEEP total"
               },
               "visualization": {
                 "layerId": "layer-kpi-total",
