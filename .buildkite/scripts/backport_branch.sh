@@ -308,7 +308,7 @@ with_mage
 
 echo "--- Validating custom backport branch name"
 if ! mage ValidateBackportBranchName "${PACKAGE_NAME}" "${BACKPORT_BRANCH_NAME}"; then
-  annotate_and_echo "error" "Invalid backport branch name **${BACKPORT_BRANCH_NAME}**: must match backport-${PACKAGE_NAME}-<suffix>"
+  annotate_and_echo "error" "Invalid backport branch name **${BACKPORT_BRANCH_NAME}**: must match \`backport-${PACKAGE_NAME}-<suffix>\`"
   exit 1
 fi
 
