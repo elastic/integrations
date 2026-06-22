@@ -627,7 +627,7 @@
                     "layer-kpi-impaired": {
                       "index": "661e77f9197b6d4438d2df368baf5f87d7fa48a4e805953cc1efd004870f9f3d",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_err = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY FunctionName, cloud.region | STATS impaired = COUNT(*) WHERE f_err > 0 | KEEP impaired"
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" AND Resource IS NULL | WHERE stat == \"Sum\" | STATS f_err = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY FunctionName, cloud.region | STATS impaired = COUNT(*) WHERE f_err > 0 | KEEP impaired"
                       },
                       "columns": [
                         {
@@ -656,7 +656,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" | WHERE stat == \"Sum\" | STATS f_err = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY FunctionName, cloud.region | STATS impaired = COUNT(*) WHERE f_err > 0 | KEEP impaired"
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.lambda.otel-* | WHERE FunctionName IS NOT NULL AND FunctionName != \"\" AND Resource IS NULL | WHERE stat == \"Sum\" | STATS f_err = SUM(sum_over_time(`metrics.amazonaws.com/AWS/Lambda/Errors`)) BY FunctionName, cloud.region | STATS impaired = COUNT(*) WHERE f_err > 0 | KEEP impaired"
               },
               "visualization": {
                 "layerId": "layer-kpi-impaired",
