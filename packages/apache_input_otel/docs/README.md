@@ -1,7 +1,7 @@
 # Apache HTTP Server (OpenTelemetry)
 
 ## Overview
-This integration enables collection of telemetry data from Apache web servers through OpenTelemetry protocols using the [apachereceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/apachereceiver).
+This input package enables collection of telemetry data from Apache web servers through OpenTelemetry protocols using the [apachereceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/apachereceiver).
 
 
 ### How it works

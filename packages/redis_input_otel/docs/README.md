@@ -1,7 +1,7 @@
 # Redis (OpenTelemetry)
 
 ## Overview
-This integration enables collection of telemetry data from Redis database servers through OpenTelemetry protocols using the [redisreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/redisreceiver).
+This input package enables collection of telemetry data from Redis database servers through OpenTelemetry protocols using the [redisreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/redisreceiver).
 
 
 ### How it works

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This integration enables collection of metrics and logs from MySQL database servers through OpenTelemetry protocols using the [mysqlreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/mysqlreceiver).
+This input package enables collection of metrics and logs from MySQL database servers through OpenTelemetry protocols using the [mysqlreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/mysqlreceiver).
 
 ### How it works
 

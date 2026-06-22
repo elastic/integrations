@@ -1,7 +1,7 @@
 # Nginx (OpenTelemetry)
 
 ## Overview
-This integration enables collection of telemetry data from NGINX web servers through OpenTelemetry protocols using the [nginxreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/nginxreceiver#nginx-receiver).
+This input package enables collection of telemetry data from NGINX web servers through OpenTelemetry protocols using the [nginxreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/nginxreceiver#nginx-receiver).
 
 
 ### How it works
