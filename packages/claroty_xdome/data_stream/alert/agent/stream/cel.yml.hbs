@@ -79,13 +79,13 @@ program: |
                 }
               ]
             }.encode_json()
-          ).with(
+          ).as(req, req.with(
             {
-              "Header": {
+              "Header": req.Header.with({
                 "Authorization": ["Bearer " + string(state.api_token)],
-              },
+              }),
             }
-          ).do_request().as(resp, (resp.StatusCode == 200) ?
+          )).do_request().as(resp, (resp.StatusCode == 200) ?
             resp.Body.decode_json().as(body,
               (has(body.alerts) && body.alerts != null && size(body.alerts) > 0) ?
                 {
@@ -296,13 +296,13 @@ program: |
               "is_resolved"
             ]
           }.encode_json()
-        ).with(
+        ).as(req, req.with(
           {
-            "Header": {
+            "Header": req.Header.with({
               "Authorization": ["Bearer " + string(state.api_token)],
-            },
+            }),
           }
-        ).do_request().as(resp, (resp.StatusCode == 200) ?
+        )).do_request().as(resp, (resp.StatusCode == 200) ?
           bytes(resp.Body).decode_json().as(body,
             (has(body.devices) && body.devices != null && size(body.devices) > 0) ?
               {
