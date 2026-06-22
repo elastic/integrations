@@ -594,7 +594,7 @@
                     "layer-kpi-impaired": {
                       "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS failed_recent = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)) BY InstanceId, cloud.region | STATS impaired = COUNT(*) WHERE failed_recent > 0 | KEEP impaired"
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND stat == \"Maximum\" | STATS failed_recent = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)), last_seen = MAX(@timestamp) BY InstanceId, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | STATS impaired = COUNT(*) WHERE failed_recent > 0 | KEEP impaired"
                       },
                       "columns": [
                         {
@@ -623,7 +623,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS failed_recent = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)) BY InstanceId, cloud.region | STATS impaired = COUNT(*) WHERE failed_recent > 0 | KEEP impaired"
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ec2.otel-* | WHERE InstanceId IS NOT NULL AND InstanceId != \"\" AND stat == \"Maximum\" | STATS failed_recent = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/EC2/StatusCheckFailed`, NULL)), last_seen = MAX(@timestamp) BY InstanceId, cloud.region | INLINE STATS latest_global = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest_global) <= 5 | STATS impaired = COUNT(*) WHERE failed_recent > 0 | KEEP impaired"
               },
               "visualization": {
                 "layerId": "layer-kpi-impaired",
