@@ -1,0 +1,40 @@
+{
+    "id": "anthropic_metrics-token-consumption-spike",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Anthropic] Token Consumption Spike",
+        "description": "Alerts when total token consumption in the current window is unusually high compared to baseline. Fires when any model's hourly token count exceeds a configurable threshold.",
+        "tags": [
+            "Anthropic",
+            "Usage",
+            "Anomaly"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 1,
+            "timeWindowUnit": "h",
+            "esqlQuery": {
+                "esql": "// Alert when hourly token consumption exceeds a threshold per model.\n// Adjust the token threshold in the final WHERE clause as needed.\nFROM metrics-anthropic_metrics.usage-*\n| WHERE anthropic.usage.uncached_input_tokens IS NOT NULL AND anthropic.usage.model IS NOT NULL\n| STATS total_tokens = SUM(anthropic.usage.uncached_input_tokens) + SUM(anthropic.usage.cached_input_tokens) + SUM(anthropic.usage.cache_creation_input_tokens) + SUM(anthropic.usage.output_tokens) BY anthropic.usage.model\n| WHERE total_tokens > 500000"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "anthropic_metrics-602de168-1b42-4dd6-a463-9c4878e5db94"
+                }
+            ]
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

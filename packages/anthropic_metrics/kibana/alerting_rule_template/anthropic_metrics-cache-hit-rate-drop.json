@@ -1,0 +1,40 @@
+{
+    "id": "anthropic_metrics-cache-hit-rate-drop",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Anthropic] Cache Hit Rate Drop",
+        "description": "Alerts when the input token cache hit ratio drops below 30%. A sudden drop means prompts are not hitting cache, which increases cost and latency.",
+        "tags": [
+            "Anthropic",
+            "Usage",
+            "Cost Optimization"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 1,
+            "timeWindowUnit": "h",
+            "esqlQuery": {
+                "esql": "// Alert when cache hit ratio drops below a threshold.\n// Requires minimum token volume (10000) to avoid noisy alerts on low-traffic periods.\n// Adjust both the 10000 volume threshold and the 0.30 ratio threshold as needed.\nFROM metrics-anthropic_metrics.usage-*\n| WHERE anthropic.usage.uncached_input_tokens IS NOT NULL\n| STATS uncached = SUM(anthropic.usage.uncached_input_tokens), cached = SUM(anthropic.usage.cached_input_tokens), cache_creation = SUM(anthropic.usage.cache_creation_input_tokens)\n| EVAL total_input = uncached + cached + cache_creation\n| WHERE total_input > 10000\n| EVAL cache_hit_ratio = cached * 1.0 / total_input\n| WHERE cache_hit_ratio < 0.30"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "anthropic_metrics-602de168-1b42-4dd6-a463-9c4878e5db94"
+                }
+            ]
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

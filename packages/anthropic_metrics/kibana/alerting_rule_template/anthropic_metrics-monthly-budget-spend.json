@@ -1,0 +1,41 @@
+{
+    "id": "anthropic_metrics-monthly-budget-spend",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Anthropic] Monthly Budget Spend Limit",
+        "description": "Alerts when cumulative spend over the rolling 30-day window exceeds a configurable budget. Default threshold is $1,000 (100000 cents). Adjust the threshold in the ES|QL WHERE clause to match your organization's monthly budget.",
+        "tags": [
+            "Anthropic",
+            "Cost",
+            "Budget",
+            "Spend Limit"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "6h"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 30,
+            "timeWindowUnit": "d",
+            "esqlQuery": {
+                "esql": "// Monthly budget spend limit alert.\n// Sums all cost over the rolling 30-day window.\n// Amount is in cents — 100000 = $1,000.00.\n// Adjust the budget threshold in the final WHERE clause.\nFROM metrics-anthropic_metrics.cost-*\n| WHERE anthropic.cost.amount IS NOT NULL\n| STATS monthly_cost_cents = SUM(anthropic.cost.amount)\n| EVAL monthly_cost_usd = ROUND(monthly_cost_cents / 100.0, 2)\n| WHERE monthly_cost_cents > 100000"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "anthropic_metrics-2bd61c2c-4418-458f-a79e-12a74c34b2f0"
+                }
+            ]
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

@@ -1,0 +1,40 @@
+{
+    "id": "anthropic_metrics-cost-anomaly",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Anthropic] Cost Anomaly",
+        "description": "Alerts when daily cost exceeds a configurable threshold. Catches unexpected spend spikes from runaway workloads or new model adoption before they accumulate.",
+        "tags": [
+            "Anthropic",
+            "Cost",
+            "Budget"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1h"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 24,
+            "timeWindowUnit": "h",
+            "esqlQuery": {
+                "esql": "// Alert when daily cost exceeds a threshold (in cents).\n// The amount field is in cents — 5000 = $50.00.\n// Adjust the threshold in the final WHERE clause as needed.\nFROM metrics-anthropic_metrics.cost-*\n| WHERE anthropic.cost.amount IS NOT NULL\n| STATS daily_cost_cents = SUM(anthropic.cost.amount)\n| EVAL daily_cost_usd = ROUND(daily_cost_cents / 100.0, 2)\n| WHERE daily_cost_cents > 5000"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "anthropic_metrics-2bd61c2c-4418-458f-a79e-12a74c34b2f0"
+                }
+            ]
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}
