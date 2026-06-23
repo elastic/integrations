@@ -132,9 +132,9 @@ func Apply(opts Options) (*Result, error) {
 		}, nil
 	}
 
-	if err := gitutil.Run("push", remote, "HEAD"); err != nil {
-		return nil, fmt.Errorf("pushing: %w", err)
-	}
+	// if err := gitutil.Run("push", remote, "HEAD"); err != nil {
+	// 	return nil, fmt.Errorf("pushing: %w", err)
+	// }
 
 	prURL, err := maybeOpenPR(opts.OpenPR, workingBranch, branchName, opts.Package, changes[0].Description, newVersion, opts.SHA, opts.Repository)
 	if err != nil {
@@ -310,16 +310,19 @@ func maybeOpenPR(openPR bool, workingBranch, branchName, pkg, description, newVe
 	}
 	title := fmt.Sprintf("[%s] Backport %s (%s)", pkg, description, newVersion)
 	body := buildPRBody(sha, branchName, repository)
-	stdout, _, err := gh.Exec("pr", "create",
-		"--base", branchName,
-		"--head", workingBranch,
-		"--title", title,
-		"--body", body,
-	)
-	if err != nil {
-		return "", fmt.Errorf("creating PR: %w", err)
-	}
-	return strings.TrimSpace(stdout.String()), nil
+	// stdout, _, err := gh.Exec("pr", "create",
+	// 	"--base", branchName,
+	// 	"--head", workingBranch,
+	// 	"--title", title,
+	// 	"--body", body,
+	// )
+	// if err != nil {
+	// 	return "", fmt.Errorf("creating PR: %w", err)
+	// }
+	// return strings.TrimSpace(stdout.String()), nil
+	fmt.Println("title", title)
+	fmt.Println("body", body)
+	return "", nil
 }
 
 // buildPRBody constructs the PR description, including origin links and an
