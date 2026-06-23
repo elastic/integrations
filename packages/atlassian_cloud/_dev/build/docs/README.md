@@ -30,7 +30,7 @@ This integration supports security monitoring, compliance reporting, and inciden
 * An Atlassian Cloud Organization with admin access.
 * An API key with the `read:events:admin` scope. See the [Atlassian API key management documentation](https://support.atlassian.com/organization-administration/docs/manage-an-organization-with-the-admin-apis/) for creation steps.
 * The Organization ID (UUID) of the Atlassian Cloud organization.
-* Access to a Guard Premium or Cloud Enterprise plan may be required for full visibility into user-created activities.
+* Access to a Guard Premium or Cloud Enterprise plan might be required for full visibility into user-created activities.
 
 ## How do I deploy this integration?
 
@@ -42,8 +42,8 @@ Elastic Agent is required to poll the Atlassian Organizations REST API and ship 
 
 ### Onboard / configure
 1. In [admin.atlassian.com](https://admin.atlassian.com), select your organization.
-2. Navigate to **Organization settings** > **API keys**.
-3. Choose **API keys with scopes** > **Create API key**.
+2. Navigate to **Organization settings** → **API keys**.
+3. Choose **API keys with scopes** → **Create API key**.
 4. Name the key (for example, `Elastic Integration`).
 5. Set an expiration (maximum of 1 year). Plan for rotation before the key expires.
 6. Select the `read:events:admin` scope, then create the key.
