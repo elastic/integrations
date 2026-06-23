@@ -149,7 +149,7 @@ func TestValidateInventory(t *testing.T) {
     maintained_until: null
 `,
 			wantErr:     true,
-			errContains: []string{"missing required field 'archived'"},
+			errContains: []string{"missing required field 'archived'", "missing required field 'remove_other_packages'"},
 		},
 		{
 			title: "invalid base_version — not a semver",
