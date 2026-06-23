@@ -129,8 +129,8 @@ generate_trigger_pipeline() {
         REMOVE_OTHER_PACKAGES: "${remove_other_packages}"
         # By default, this trigger step must execute the code from main branch,
         # uncomment to test changes in backport_branch.sh in a Pull Request build.
-        BUILDKITE_REFSPEC: "refs/pull/${BUILDKITE_PULL_REQUEST}/head"
-        BUILDKITE_COMMIT: "${BUILDKITE_COMMIT}"
+        # BUILDKITE_REFSPEC: "refs/pull/${BUILDKITE_PULL_REQUEST}/head"
+        # BUILDKITE_COMMIT: "${BUILDKITE_COMMIT}"
 EOF
         if [[ -n "${pr_number}" ]]; then
             cat >> "${pipeline_file}" <<EOF
