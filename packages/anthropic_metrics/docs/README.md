@@ -238,7 +238,7 @@ Alert rule templates require Elastic Stack version 9.2.0 or later.
 |---|---|
 | [Anthropic] Cache Hit Rate Drop | Alerts when the input token cache hit ratio drops below 30%. A sudden drop means prompts are not hitting cache, which increases cost and latency. |
 | [Anthropic] Cost Anomaly | Alerts when daily cost exceeds a configurable threshold. Catches unexpected spend spikes from runaway workloads or new model adoption before they accumulate. |
-| [Anthropic] Monthly Budget Spend Limit | Alerts when cumulative spend over the rolling 30-day window exceeds a configurable budget. Default threshold is $1,000 (100000 cents). Adjust the threshold in the ES|QL WHERE clause to match your organization's monthly budget. |
+| [Anthropic] Monthly Budget Spend Limit | Alerts when cumulative spend for the current calendar month exceeds a configurable budget. Resets on the 1st of each month. Default threshold is $1,000 (100000 cents). Adjust the threshold in the ES|QL WHERE clause. |
 | [Anthropic] Single Model Dominance | Alerts when a single model accounts for more than 90% of total token consumption. May indicate a misconfiguration where traffic is not routing to the intended model. |
 | [Anthropic] Token Consumption Spike | Alerts when total token consumption in the current window is unusually high compared to baseline. Fires when any model's hourly token count exceeds a configurable threshold. |
 | [Anthropic] Per-Workspace Daily Cost Spike | Alerts when any single workspace's daily cost exceeds a configurable threshold. Catches runaway spend in individual workspaces that may hide under the org-wide total. Default threshold is $20 (2000 cents). Adjust the threshold in the ES|QL WHERE clause. |
