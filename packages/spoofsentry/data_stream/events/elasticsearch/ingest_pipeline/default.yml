@@ -1,0 +1,275 @@
+---
+description: Pipeline for parsing SpoofSentry domain security events (DomainSeal).
+processors:
+  # ---------------------------------------------------------------------------
+  # The http_endpoint input decodes the request body under `json`. The wire
+  # envelope (see SpoofSentry event dispatcher) is:
+  #   { id, eventId, deduplicationKey, type, tenantId, userId,
+  #     entityType, entityId, data{...}, occurredAt }
+  # ---------------------------------------------------------------------------
+  - set:
+      field: ecs.version
+      value: "8.17.0"
+  - set:
+      field: event.kind
+      value: alert
+  - set:
+      field: event.module
+      value: spoofsentry
+  - set:
+      field: event.dataset
+      value: spoofsentry.events
+  - set:
+      field: event.provider
+      value: "DomainSeal SpoofSentry"
+
+  # --- Timestamp -------------------------------------------------------------
+  - date:
+      field: json.occurredAt
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+      if: ctx.json?.occurredAt != null
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to parse occurredAt: {{{_ingest.on_failure_message}}}"
+
+  # --- Core envelope → ECS ---------------------------------------------------
+  - rename:
+      field: json.type
+      target_field: event.action
+      ignore_missing: true
+  - set:
+      field: labels.event_type
+      copy_from: event.action
+      ignore_empty_value: true
+  - set:
+      field: event.id
+      copy_from: json.eventId
+      ignore_empty_value: true
+  - set:
+      field: event.reference
+      copy_from: json.deduplicationKey
+      ignore_empty_value: true
+  - rename:
+      field: json.id
+      target_field: spoofsentry.delivery_id
+      ignore_missing: true
+  - rename:
+      field: json.tenantId
+      target_field: labels.tenant_id
+      ignore_missing: true
+  - rename:
+      field: json.userId
+      target_field: user.id
+      ignore_missing: true
+  - rename:
+      field: json.entityType
+      target_field: spoofsentry.entity.type
+      ignore_missing: true
+  - rename:
+      field: json.entityId
+      target_field: spoofsentry.entity.id
+      ignore_missing: true
+
+  # --- Lift the event-specific payload into the spoofsentry namespace --------
+  - rename:
+      field: json.data
+      target_field: spoofsentry.event_data
+      ignore_missing: true
+
+  # --- Promote common, cross-event fields to typed mappings ------------------
+  - set:
+      field: spoofsentry.domain_id
+      copy_from: spoofsentry.event_data.domainId
+      ignore_empty_value: true
+  - convert:
+      field: spoofsentry.event_data.riskScore
+      target_field: spoofsentry.risk_score
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to convert riskScore: {{{_ingest.on_failure_message}}}"
+  - convert:
+      field: spoofsentry.event_data.confidence
+      target_field: spoofsentry.confidence
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to convert confidence: {{{_ingest.on_failure_message}}}"
+  - set:
+      field: spoofsentry.status
+      copy_from: spoofsentry.event_data.status
+      ignore_empty_value: true
+  - set:
+      field: spoofsentry.priority
+      copy_from: spoofsentry.event_data.priority
+      ignore_empty_value: true
+  - set:
+      field: spoofsentry.variant
+      copy_from: spoofsentry.event_data.variant
+      ignore_empty_value: true
+  - set:
+      field: spoofsentry.threat_type
+      copy_from: spoofsentry.event_data.threatType
+      ignore_empty_value: true
+  - set:
+      field: spoofsentry.case_number
+      copy_from: spoofsentry.event_data.caseNumber
+      ignore_empty_value: true
+
+  # --- Resolve a real hostname (NOT domainId, which is a UUID) ---------------
+  - set:
+      field: host.domain
+      copy_from: spoofsentry.event_data.domainName
+      ignore_empty_value: true
+  - set:
+      field: host.domain
+      copy_from: spoofsentry.event_data.domain
+      ignore_empty_value: true
+      if: ctx.host?.domain == null
+  - set:
+      field: host.domain
+      copy_from: spoofsentry.event_data.targetDomain
+      ignore_empty_value: true
+      if: ctx.host?.domain == null
+  - set:
+      field: host.domain
+      copy_from: spoofsentry.event_data.matchedDomain
+      ignore_empty_value: true
+      if: ctx.host?.domain == null
+  - set:
+      field: host.domain
+      copy_from: spoofsentry.event_data.variant
+      ignore_empty_value: true
+      if: ctx.host?.domain == null
+  - set:
+      field: host.domain
+      copy_from: spoofsentry.event_data.subdomain
+      ignore_empty_value: true
+      if: ctx.host?.domain == null
+  - set:
+      field: host.name
+      copy_from: host.domain
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: "{{{host.domain}}}"
+      allow_duplicates: false
+      if: ctx.host?.domain != null
+
+  # --- Severity: prefer data.severity, else map from the event type ----------
+  - set:
+      field: labels.severity
+      copy_from: spoofsentry.event_data.severity
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      description: Derive severity from the event type when not supplied in data.
+      if: ctx.labels?.severity == null && ctx.event?.action != null
+      source: |
+        Map sev = new HashMap();
+        sev.put('SPOOF_THREAT_CRITICAL', 'critical');
+        sev.put('SPOOF_DNS_VERIFICATION_FAILED', 'critical');
+        sev.put('SPOOF_INTEGRATION_HEALTH_DEGRADED', 'critical');
+        sev.put('SPOOF_THREAT_DETECTED', 'high');
+        sev.put('SPOOF_FORENSIC_SPOOFING', 'high');
+        sev.put('SPOOF_LOOKALIKE_THREAT', 'high');
+        sev.put('SPOOF_ALERT_GENERATED', 'high');
+        sev.put('SPOOF_DNS_CHANGES_APPLIED', 'high');
+        sev.put('SPOOF_SENDER_BLOCKED', 'medium');
+        sev.put('SPOOF_SENDER_SUSPICIOUS', 'medium');
+        sev.put('SPOOF_DOMAIN_VERIFIED', 'medium');
+        sev.put('SPOOF_DNS_DISCOVERY_COMPLETED', 'medium');
+        sev.put('SPOOF_DNS_PREVIEW_GENERATED', 'medium');
+        sev.put('SPOOF_DNS_VERIFICATION_SUCCEEDED', 'medium');
+        sev.put('SPOOF_MONITORING_ENABLED', 'medium');
+        sev.put('SPOOF_INTEGRATION_CONNECTED', 'medium');
+        sev.put('SPOOF_INTEGRATION_TESTED', 'medium');
+        sev.put('SPOOF_INTEGRATION_DISABLED', 'medium');
+        sev.put('SPOOF_DOMAIN_ADDED', 'low');
+        sev.put('SPOOF_THREAT_RESOLVED', 'info');
+        sev.put('SPOOF_LOOKALIKE_RESOLVED', 'info');
+        sev.put('SPOOF_SIEM_CONNECTED', 'info');
+        String action = ctx.event.action;
+        if (sev.containsKey(action)) {
+          ctx.labels.severity = sev.get(action);
+        } else {
+          ctx.labels.severity = 'low';
+        }
+  - script:
+      lang: painless
+      description: Map the severity string to ECS numeric event.severity (0-10).
+      source: |
+        Map m = new HashMap();
+        m.put('info', 1);
+        m.put('low', 3);
+        m.put('medium', 5);
+        m.put('high', 7);
+        m.put('critical', 10);
+        String s = ctx.labels?.severity;
+        if (s != null && m.containsKey(s.toLowerCase())) {
+          ctx.event.severity = m.get(s.toLowerCase());
+        } else {
+          ctx.event.severity = 1;
+        }
+
+  # --- ECS event.category / event.type from the (prefix-stripped) action -----
+  - script:
+      lang: painless
+      description: Categorize the event into ECS event.category and event.type.
+      if: ctx.event?.action != null
+      source: |
+        String a = ctx.event.action.toLowerCase();
+        if (a.startsWith('spoof_')) { a = a.substring(6); }
+        if (a.contains('takedown')) {
+          ctx.event.category = ['configuration'];
+          ctx.event.type = ['change'];
+        } else if (a.contains('threat') || a.contains('spoofing') || a.contains('lookalike')
+            || a.contains('forensic') || a.contains('campaign') || a.contains('sender')
+            || a.contains('cert') || a.contains('alert')) {
+          ctx.event.category = ['threat'];
+          ctx.event.type = ['indicator'];
+        } else if (a.contains('dns') || a.contains('enforcement') || a.contains('policy')
+            || a.contains('playbook') || a.contains('step')) {
+          ctx.event.category = ['configuration'];
+          ctx.event.type = ['change'];
+        } else if (a.contains('integration') || a.contains('siem') || a.contains('chatops')
+            || a.contains('branding') || a.contains('custom_domain')) {
+          ctx.event.category = ['configuration'];
+          ctx.event.type = ['info'];
+        } else if (a.contains('domain') || a.contains('monitoring') || a.contains('vendor')) {
+          ctx.event.category = ['configuration'];
+          ctx.event.type = ['creation'];
+        } else {
+          ctx.event.category = ['host'];
+          ctx.event.type = ['info'];
+        }
+
+  # --- Cleanup ---------------------------------------------------------------
+  - remove:
+      field: json
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Drop empty top-level placeholder objects left behind by renames.
+      ignore_failure: true
+      source: |
+        if (ctx.spoofsentry instanceof Map
+            && ((Map) ctx.spoofsentry).isEmpty()) { ctx.remove('spoofsentry'); }
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
+  - append:
+      field: tags
+      value: spoofsentry_pipeline_error
+      allow_duplicates: false
