@@ -485,22 +485,21 @@ func PostBackportComment() error {
 // ApplyBackport cherry-picks a fix commit onto a backport branch, bumps the patch
 // version, writes a correct changelog entry, and optionally opens a PR.
 //
-// Usage: mage ApplyBackport <sha> <package> <target> [-openPR] [-json] \
+// Usage: mage ApplyBackport <sha> <package> <target> [-openPR] [-json] [-dryRun] \
 //
-//	[description] [changeType] [link] [repository] [packagesDir]
+//	[repository] [packagesDir]
 //
 // sha, pkg, target are required. All remaining parameters are optional (nil = unset).
-// *bool flags may be passed as -openPR / -json on the command line.
-func ApplyBackport(sha, pkg, target string, openPR, asJSON *bool, description, changeType, link, repository, packagesDir *string) error {
+// *bool flags may be passed as -openPR / -json / -dryRun on the command line.
+func ApplyBackport(sha, pkg, target string, openPR, asJSON, dryRun *bool, remote, repository, packagesDir *string) error {
 	opts := apply.Options{
 		SHA:         sha,
 		Package:     pkg,
 		Target:      target,
 		OpenPR:      openPR != nil && *openPR,
 		AsJSON:      asJSON != nil && *asJSON,
-		Description: deref(description),
-		Type:        deref(changeType),
-		Link:        deref(link),
+		DryRun:      dryRun != nil && *dryRun,
+		Remote:      deref(remote),
 		Repository:  deref(repository),
 		PackagesDir: deref(packagesDir),
 	}
@@ -527,6 +526,9 @@ func ApplyBackport(sha, pkg, target string, openPR, asJSON *bool, description, c
 		}
 		fmt.Fprintf(os.Stderr, "suggested command: %s\n", result.SuggestedCommand)
 		return fmt.Errorf("cherry-pick conflict on %s", strings.Join(result.ConflictingFiles, ", "))
+	} else if result.WorkingBranch != "" {
+		fmt.Printf("dry run: branch %q created locally with version %s — review with: git checkout %s\n",
+			result.WorkingBranch, result.NewVersion, result.WorkingBranch)
 	} else {
 		fmt.Printf("backport success: %s %s", result.TargetBranch, result.NewVersion)
 		if result.PRURL != "" {

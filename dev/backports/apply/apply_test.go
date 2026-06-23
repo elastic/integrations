@@ -28,19 +28,19 @@ func TestResolveBranchName(t *testing.T) {
 		{target: "6.14", pkg: "bad pkg!", wantErr: true},
 	}
 	for _, tc := range tests {
-		got, err := ResolveBranchName(tc.target, tc.pkg)
+		got, err := resolveBranchName(tc.target, tc.pkg)
 		if tc.wantErr {
 			if err == nil {
-				t.Errorf("ResolveBranchName(%q, %q): expected error, got %q", tc.target, tc.pkg, got)
+				t.Errorf("resolveBranchName(%q, %q): expected error, got %q", tc.target, tc.pkg, got)
 			}
 			continue
 		}
 		if err != nil {
-			t.Errorf("ResolveBranchName(%q, %q): unexpected error: %v", tc.target, tc.pkg, err)
+			t.Errorf("resolveBranchName(%q, %q): unexpected error: %v", tc.target, tc.pkg, err)
 			continue
 		}
 		if got != tc.want {
-			t.Errorf("ResolveBranchName(%q, %q) = %q, want %q", tc.target, tc.pkg, got, tc.want)
+			t.Errorf("resolveBranchName(%q, %q) = %q, want %q", tc.target, tc.pkg, got, tc.want)
 		}
 	}
 }
@@ -98,7 +98,7 @@ func TestBumpPatchVersion(t *testing.T) {
 			}
 			f.Close()
 
-			got, err := BumpPatchVersion(f.Name())
+			got, err := bumpPatchVersion(f.Name())
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -123,71 +123,101 @@ func TestBumpPatchVersionMissingField(t *testing.T) {
 	f.WriteString("name: pkg\nformat_version: 3.0.0\n")
 	f.Close()
 
-	if _, err := BumpPatchVersion(f.Name()); err == nil {
+	if _, err := bumpPatchVersion(f.Name()); err == nil {
 		t.Error("expected error for manifest without version field")
 	}
 }
 
 func TestParseEntryFields(t *testing.T) {
 	tests := []struct {
-		name       string
-		entryBlock string
-		wantDesc   string
-		wantType   string
-		wantLink   string
+		name    string
+		block   string
+		want    []changeItem
 	}{
 		{
-			name: "full entry",
-			entryBlock: `- version: "1.2.3"
+			name: "single item",
+			block: `- version: "1.2.3"
   changes:
     - description: Fix a bug in the ingestion pipeline.
       type: bugfix
       link: https://github.com/elastic/integrations/pull/123`,
-			wantDesc: "Fix a bug in the ingestion pipeline.",
-			wantType: "bugfix",
-			wantLink: "https://github.com/elastic/integrations/pull/123",
+			want: []changeItem{
+				{Description: "Fix a bug in the ingestion pipeline.", Type: "bugfix", Link: "https://github.com/elastic/integrations/pull/123"},
+			},
 		},
 		{
-			name: "missing link",
-			entryBlock: `- version: "1.2.3"
+			name: "multiple items",
+			block: `- version: "1.2.3"
+  changes:
+    - description: Fix a bug.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/1
+    - description: Add a feature.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/2`,
+			want: []changeItem{
+				{Description: "Fix a bug.", Type: "bugfix", Link: "https://github.com/elastic/integrations/pull/1"},
+				{Description: "Add a feature.", Type: "enhancement", Link: "https://github.com/elastic/integrations/pull/2"},
+			},
+		},
+		{
+			name:  "missing link",
+			block: `- version: "1.2.3"
   changes:
     - description: Some enhancement.
       type: enhancement`,
-			wantDesc: "Some enhancement.",
-			wantType: "enhancement",
-			wantLink: "",
+			want: []changeItem{{Description: "Some enhancement.", Type: "enhancement"}},
 		},
 		{
-			name:       "empty block",
-			entryBlock: "",
-			wantDesc:   "",
-			wantType:   "",
-			wantLink:   "",
+			name:  "empty block",
+			block: "",
+			want:  nil,
 		},
 		{
-			name:       "invalid yaml",
-			entryBlock: "not: [valid yaml: {",
-			wantDesc:   "",
-			wantType:   "",
-			wantLink:   "",
+			name:  "invalid yaml",
+			block: "not: [valid yaml: {",
+			want:  nil,
 		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			desc, changeType, link := ParseEntryFields(tc.entryBlock)
-			if desc != tc.wantDesc || changeType != tc.wantType || link != tc.wantLink {
-				t.Errorf("ParseEntryFields() = (%q, %q, %q), want (%q, %q, %q)",
-					desc, changeType, link, tc.wantDesc, tc.wantType, tc.wantLink)
+			got := parseEntryFields(tc.block)
+			if len(got) != len(tc.want) {
+				t.Fatalf("parseEntryFields() returned %d items, want %d: %+v", len(got), len(tc.want), got)
+			}
+			for i, item := range got {
+				if item != tc.want[i] {
+					t.Errorf("item[%d] = %+v, want %+v", i, item, tc.want[i])
+				}
 			}
 		})
 	}
 }
 
 func TestBuildEntryBlock(t *testing.T) {
-	got := BuildEntryBlock("1.2.4", "Fix the thing.", "bugfix", "https://github.com/elastic/integrations/pull/999")
+	changes := []changeItem{{Description: "Fix the thing.", Type: "bugfix", Link: "https://github.com/elastic/integrations/pull/999"}}
+	got := buildEntryBlock("1.2.4", changes)
 	want := "- version: \"1.2.4\"\n  changes:\n    - description: Fix the thing.\n      type: bugfix\n      link: https://github.com/elastic/integrations/pull/999"
 	if got != want {
-		t.Errorf("BuildEntryBlock() =\n%s\nwant:\n%s", got, want)
+		t.Errorf("buildEntryBlock() =\n%s\nwant:\n%s", got, want)
+	}
+}
+
+func TestBuildEntryBlockMultipleItems(t *testing.T) {
+	changes := []changeItem{
+		{Description: "Fix a bug.", Type: "bugfix", Link: "https://github.com/elastic/integrations/pull/1"},
+		{Description: "Add a feature.", Type: "enhancement", Link: "https://github.com/elastic/integrations/pull/2"},
+	}
+	block := buildEntryBlock("1.2.4", changes)
+	var entries []changelogEntryYAML
+	if err := yaml.Unmarshal([]byte(block), &entries); err != nil {
+		t.Fatalf("output is not valid YAML: %v\noutput:\n%s", err, block)
+	}
+	if len(entries) == 0 || len(entries[0].Changes) != 2 {
+		t.Fatalf("expected 2 change items, got %d", len(entries[0].Changes))
+	}
+	if entries[0].Changes[0].Description != "Fix a bug." || entries[0].Changes[1].Description != "Add a feature." {
+		t.Errorf("unexpected change items: %+v", entries[0].Changes)
 	}
 }
 
@@ -202,7 +232,8 @@ func TestBuildEntryBlockSpecialChars(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			block := BuildEntryBlock("1.0.1", tc.description, "bugfix", "https://github.com/elastic/integrations/pull/1")
+			changes := []changeItem{{Description: tc.description, Type: "bugfix", Link: "https://github.com/elastic/integrations/pull/1"}}
+			block := buildEntryBlock("1.0.1", changes)
 			var entries []changelogEntryYAML
 			if err := yaml.Unmarshal([]byte(block), &entries); err != nil {
 				t.Fatalf("output is not valid YAML: %v\noutput:\n%s", err, block)
@@ -225,7 +256,7 @@ func TestBumpPatchVersionPreservesRestOfFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, err := BumpPatchVersion(path); err != nil {
+	if _, err := bumpPatchVersion(path); err != nil {
 		t.Fatal(err)
 	}
 	updated, _ := os.ReadFile(path)

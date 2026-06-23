@@ -29,10 +29,9 @@ type Options struct {
 	Package     string // package name as in manifest.yml (required)
 	Target      string // "6.14", "6.x", or full "backport-aws-6.14" (required)
 	OpenPR      bool   // create a GitHub PR when true
-	Description string // overrides description extracted from cherry-pick diff
-	Type        string // overrides type extracted from cherry-pick diff
-	Link        string // overrides placeholder link (original PR URL) extracted from cherry-pick diff
+	DryRun      bool   // commit locally but skip push and PR creation
 	AsJSON      bool   // emit JSON output instead of human-readable text
+	Remote      string // git remote to fetch from and push to; default "origin"
 	PackagesDir string // path to packages dir; default "packages"
 	Repository  string // "org/repo" e.g. "elastic/integrations"
 }
@@ -43,6 +42,7 @@ type Result struct {
 	SHA              string   `json:"sha"`
 	TargetBranch     string   `json:"target_branch"`
 	NewVersion       string   `json:"new_version,omitempty"`
+	WorkingBranch    string   `json:"working_branch,omitempty"` // populated on dry run
 	PRURL            string   `json:"pr_url,omitempty"`
 	ConflictingFiles []string `json:"conflicting_files,omitempty"`
 	SuggestedCommand string   `json:"suggested_command,omitempty"`
@@ -66,6 +66,10 @@ func Apply(opts Options) (*Result, error) {
 	if packagesDir == "" {
 		packagesDir = "packages"
 	}
+	remote := opts.Remote
+	if remote == "" {
+		remote = "origin"
+	}
 	sha8 := opts.SHA[:8]
 
 	pkgDir, err := resolvePackage(packagesDir, opts.Package)
@@ -73,7 +77,7 @@ func Apply(opts Options) (*Result, error) {
 		return nil, err
 	}
 
-	branchName, err := ResolveBranchName(opts.Target, opts.Package)
+	branchName, err := resolveBranchName(opts.Target, opts.Package)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +86,7 @@ func Apply(opts Options) (*Result, error) {
 	}
 
 	workingBranch := workingBranchName(opts.Package, branchName, sha8)
-	if err := prepareWorkingBranch(branchName, workingBranch); err != nil {
+	if err := prepareWorkingBranch(remote, branchName, workingBranch); err != nil {
 		return nil, err
 	}
 
@@ -103,21 +107,36 @@ func Apply(opts Options) (*Result, error) {
 	changelogPath := filepath.Join(pkgDir, "changelog.yml")
 	manifestPath := filepath.Join(pkgDir, "manifest.yml")
 
-	description, changeType, link, err := extractChangelogFields(changelogPath, opts)
+	changes, err := extractChangelogFields(changelogPath)
 	if err != nil {
 		return nil, err
 	}
 
-	newVersion, err := resetAndWriteChanges(manifestPath, changelogPath, description, changeType, link)
+	newVersion, err := resetAndWriteChanges(manifestPath, changelogPath, changes)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := commitAndPush(pkgDir, opts.Package, sha8, description, newVersion); err != nil {
+	if err := commitChanges(pkgDir, opts.SHA, newVersion); err != nil {
 		return nil, err
 	}
 
-	prURL, err := maybeOpenPR(opts.OpenPR, workingBranch, branchName, opts.Package, description, newVersion, opts.SHA, opts.Repository)
+	if opts.DryRun {
+		success = true
+		return &Result{
+			Status:        "success",
+			SHA:           opts.SHA,
+			TargetBranch:  branchName,
+			NewVersion:    newVersion,
+			WorkingBranch: workingBranch,
+		}, nil
+	}
+
+	if err := gitutil.Run("push", remote, "HEAD"); err != nil {
+		return nil, fmt.Errorf("pushing: %w", err)
+	}
+
+	prURL, err := maybeOpenPR(opts.OpenPR, workingBranch, branchName, opts.Package, changes[0].Description, newVersion, opts.SHA, opts.Repository)
 	if err != nil {
 		return nil, err
 	}
@@ -171,15 +190,16 @@ func workingBranchName(pkg, branchName, sha8 string) string {
 	return fmt.Sprintf("auto-backport/%s-%s-%s", pkg, versionSuffix, sha8)
 }
 
-// prepareWorkingBranch fetches the backport branch and creates a local working branch off it.
-func prepareWorkingBranch(branchName, workingBranch string) error {
-	if err := gitutil.Run("fetch", "origin", branchName); err != nil {
+// prepareWorkingBranch fetches the backport branch from remote and creates a
+// local working branch off it.
+func prepareWorkingBranch(remote, branchName, workingBranch string) error {
+	if err := gitutil.Run("fetch", remote, branchName); err != nil {
 		return fmt.Errorf(
-			"fetching %q from remote failed — verify that the .backports.yml PR was merged and the creation pipeline succeeded: %w",
-			branchName, err,
+			"fetching %q from remote %q failed — verify that the .backports.yml PR was merged and the creation pipeline succeeded: %w",
+			branchName, remote, err,
 		)
 	}
-	if err := gitutil.Run("checkout", "-b", workingBranch, "origin/"+branchName); err != nil {
+	if err := gitutil.Run("checkout", "-b", workingBranch, remote+"/"+branchName); err != nil {
 		return fmt.Errorf("creating working branch %s: %w", workingBranch, err)
 	}
 	return nil
@@ -209,64 +229,55 @@ func cherryPickOrConflict(sha, branchName, workingBranch, pkg string) *Result {
 	}
 }
 
-// extractChangelogFields reads the staged diff of changelogPath, extracts the
-// description / type / link from the cherry-picked entry, and applies any
-// overrides from opts.
-func extractChangelogFields(changelogPath string, opts Options) (description, changeType, link string, err error) {
+// extractChangelogFields reads the staged diff of changelogPath and extracts
+// all change items from the cherry-picked changelog entry.
+func extractChangelogFields(changelogPath string) ([]changeItem, error) {
 	diff, err := gitutil.Output("diff", "--cached", "--", changelogPath)
 	if err != nil {
-		return "", "", "", fmt.Errorf("reading staged changelog diff: %w", err)
+		return nil, fmt.Errorf("reading staged changelog diff: %w", err)
 	}
 	_, entryBlock, err := changelog.ExtractFromDiff(diff)
 	if err != nil {
-		return "", "", "", fmt.Errorf("extracting changelog entry from diff: %w", err)
+		return nil, fmt.Errorf("extracting changelog entry from diff: %w", err)
 	}
-	description, changeType, link = ParseEntryFields(entryBlock)
-	if opts.Description != "" {
-		description = opts.Description
+	changes := parseEntryFields(entryBlock)
+	if len(changes) == 0 || changes[0].Description == "" || changes[0].Type == "" {
+		return nil, fmt.Errorf("could not extract changelog entry from cherry-pick diff")
 	}
-	if opts.Type != "" {
-		changeType = opts.Type
-	}
-	if opts.Link != "" {
-		link = opts.Link
-	}
-	if description == "" || changeType == "" {
-		return "", "", "", fmt.Errorf(
-			"could not extract description/type from cherry-pick diff; use --description and --type to provide them explicitly",
-		)
-	}
-	return description, changeType, link, nil
+	return changes, nil
 }
 
 // resetAndWriteChanges resets changelog.yml and manifest.yml to the backport-branch
 // state (discarding the cherry-picked version bump and entry), bumps the patch
 // version, and inserts a fresh changelog entry. Returns the new version string.
-func resetAndWriteChanges(manifestPath, changelogPath, description, changeType, link string) (string, error) {
+func resetAndWriteChanges(manifestPath, changelogPath string, changes []changeItem) (string, error) {
 	if err := gitutil.Run("checkout", "HEAD", "--", changelogPath, manifestPath); err != nil {
 		return "", fmt.Errorf("resetting changelog and manifest: %w", err)
 	}
-	newVersion, err := BumpPatchVersion(manifestPath)
+	newVersion, err := bumpPatchVersion(manifestPath)
 	if err != nil {
 		return "", fmt.Errorf("bumping version in %s: %w", manifestPath, err)
 	}
-	if err := changelog.InsertEntry(changelogPath, newVersion, BuildEntryBlock(newVersion, description, changeType, link)); err != nil {
+	if err := changelog.InsertEntry(changelogPath, newVersion, buildEntryBlock(newVersion, changes)); err != nil {
 		return "", fmt.Errorf("inserting changelog entry: %w", err)
 	}
 	return newVersion, nil
 }
 
-// commitAndPush stages all package changes, commits, and pushes the working branch.
-func commitAndPush(pkgDir, pkg, sha8, description, newVersion string) error {
-	commitMsg := fmt.Sprintf("[%s] Backport %s: %s (%s)", pkg, sha8, description, newVersion)
+// commitChanges stages all package changes and commits with the original commit
+// message plus a cherry-pick annotation.
+func commitChanges(pkgDir, sha, newVersion string) error {
+	originalMsg, err := gitutil.Output("log", "--format=%B", "-n", "1", sha)
+	if err != nil {
+		return fmt.Errorf("reading original commit message for %s: %w", sha, err)
+	}
+	commitMsg := strings.TrimRight(originalMsg, "\n") +
+		fmt.Sprintf("\n\n(cherry picked from commit %s)\n\nBackport version: %s", sha, newVersion)
 	if err := gitutil.Run("add", pkgDir); err != nil {
 		return fmt.Errorf("staging changes: %w", err)
 	}
 	if err := gitutil.Run("commit", "-m", commitMsg); err != nil {
 		return fmt.Errorf("committing: %w", err)
-	}
-	if err := gitutil.Run("push", "origin", "HEAD"); err != nil {
-		return fmt.Errorf("pushing: %w", err)
 	}
 	return nil
 }
@@ -293,10 +304,10 @@ func maybeOpenPR(openPR bool, workingBranch, branchName, pkg, description, newVe
 	return strings.TrimSpace(stdout.String()), nil
 }
 
-// ResolveBranchName derives the full backport branch name from target.
+// resolveBranchName derives the full backport branch name from target.
 // If target already matches the branch pattern it is returned as-is.
 // Otherwise "backport-<packageName>-<target>" is constructed and validated.
-func ResolveBranchName(target, packageName string) (string, error) {
+func resolveBranchName(target, packageName string) (string, error) {
 	if branchRE.MatchString(target) {
 		return target, nil
 	}
@@ -317,9 +328,9 @@ func ResolveBranchName(target, packageName string) (string, error) {
 //	group 2: the raw version digits (stops at whitespace or a quote character)
 var manifestVersionRE = regexp.MustCompile(`(?m)^(version:\s*["']?)([0-9]+\.[0-9]+\.[0-9][^\s"']*)`)
 
-// BumpPatchVersion reads manifestPath, increments the patch version by one,
+// bumpPatchVersion reads manifestPath, increments the patch version by one,
 // writes the file back preserving existing formatting, and returns the new version.
-func BumpPatchVersion(manifestPath string) (string, error) {
+func bumpPatchVersion(manifestPath string) (string, error) {
 	data, err := os.ReadFile(manifestPath)
 	if err != nil {
 		return "", fmt.Errorf("reading %s: %w", manifestPath, err)
@@ -349,6 +360,13 @@ func BumpPatchVersion(manifestPath string) (string, error) {
 	return newVersion, nil
 }
 
+// changeItem represents a single entry in a changelog changes list.
+type changeItem struct {
+	Description string
+	Type        string
+	Link        string
+}
+
 type changelogEntryYAML struct {
 	Version string `yaml:"version"`
 	Changes []struct {
@@ -358,29 +376,43 @@ type changelogEntryYAML struct {
 	} `yaml:"changes"`
 }
 
-// ParseEntryFields extracts description, type, and link from a changelog entry
-// block as returned by changelog.ExtractFromDiff. Returns empty strings when
-// the block cannot be parsed or contains no change items.
-func ParseEntryFields(entryBlock string) (description, changeType, link string) {
+// parseEntryFields extracts all change items from a changelog entry block as
+// returned by changelog.ExtractFromDiff. Returns nil when the block cannot be
+// parsed or contains no change items.
+func parseEntryFields(entryBlock string) []changeItem {
 	if entryBlock == "" {
-		return "", "", ""
+		return nil
 	}
 	var entries []changelogEntryYAML
 	if err := yaml.Unmarshal([]byte(entryBlock), &entries); err != nil || len(entries) == 0 {
-		return "", "", ""
+		return nil
 	}
-	if len(entries[0].Changes) == 0 {
-		return "", "", ""
+	changes := make([]changeItem, 0, len(entries[0].Changes))
+	for _, c := range entries[0].Changes {
+		changes = append(changes, changeItem{Description: c.Description, Type: c.Type, Link: c.Link})
 	}
-	c := entries[0].Changes[0]
-	return c.Description, c.Type, c.Link
+	return changes
 }
 
-// BuildEntryBlock constructs the YAML changelog entry block for the given fields.
-// The version is double-quoted to match the format used by elastic-package.
-// All other fields are encoded via yaml.Marshal so that special characters
-// (e.g. ": " in a description) are quoted rather than written as raw scalars.
-func BuildEntryBlock(version, description, changeType, link string) string {
+// buildEntryBlock constructs the YAML changelog entry block for the given
+// version and change items. The version is double-quoted to match the format
+// used by elastic-package. All string fields are encoded via yaml.Marshal so
+// that special characters (e.g. ": " in a description) are quoted correctly.
+func buildEntryBlock(version string, changes []changeItem) string {
+	changeNodes := make([]*yaml.Node, 0, len(changes))
+	for _, c := range changes {
+		changeNodes = append(changeNodes, &yaml.Node{
+			Kind: yaml.MappingNode,
+			Content: []*yaml.Node{
+				{Kind: yaml.ScalarNode, Value: "description"},
+				{Kind: yaml.ScalarNode, Value: c.Description},
+				{Kind: yaml.ScalarNode, Value: "type"},
+				{Kind: yaml.ScalarNode, Value: c.Type},
+				{Kind: yaml.ScalarNode, Value: "link"},
+				{Kind: yaml.ScalarNode, Value: c.Link},
+			},
+		})
+	}
 	n := &yaml.Node{
 		Kind: yaml.SequenceNode,
 		Content: []*yaml.Node{{
@@ -389,17 +421,7 @@ func BuildEntryBlock(version, description, changeType, link string) string {
 				{Kind: yaml.ScalarNode, Value: "version"},
 				{Kind: yaml.ScalarNode, Value: version, Style: yaml.DoubleQuotedStyle},
 				{Kind: yaml.ScalarNode, Value: "changes"},
-				{Kind: yaml.SequenceNode, Content: []*yaml.Node{{
-					Kind: yaml.MappingNode,
-					Content: []*yaml.Node{
-						{Kind: yaml.ScalarNode, Value: "description"},
-						{Kind: yaml.ScalarNode, Value: description},
-						{Kind: yaml.ScalarNode, Value: "type"},
-						{Kind: yaml.ScalarNode, Value: changeType},
-						{Kind: yaml.ScalarNode, Value: "link"},
-						{Kind: yaml.ScalarNode, Value: link},
-					},
-				}}},
+				{Kind: yaml.SequenceNode, Content: changeNodes},
 			},
 		}},
 	}

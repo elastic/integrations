@@ -3,8 +3,7 @@
 #
 # Usage:
 #   dev/scripts/backport_apply.sh --sha <sha> --package <pkg> --target <target> \
-#     [--open-pr] [--json] \
-#     [--description <text>] [--type <type>] [--link <url>] \
+#     [--open-pr] [--json] [--dry-run] \
 #     [--repository <org/repo>] [--packages-dir <path>]
 #
 # Required:
@@ -15,11 +14,10 @@
 # Optional flags passed as mage *bool params:
 #   --open-pr    Create a GitHub PR after pushing the working branch.
 #   --json       Emit JSON output (success/conflict schemas per issue spec).
+#   --dry-run    Commit locally but skip push and PR creation for local review.
 #
 # Optional strings passed as mage *string params:
-#   --description  Override description extracted from the cherry-pick diff.
-#   --type         Override change type (e.g. bugfix, enhancement).
-#   --link         Override placeholder link written in the changelog entry.
+#   --remote       Git remote to fetch from and push to (default: origin).
 #   --repository   GitHub repository (org/repo) used in PR body and links.
 #   --packages-dir Path to packages directory (default: packages).
 
@@ -33,9 +31,8 @@ pkg=""
 target=""
 open_pr="false"
 as_json="false"
-description=""
-change_type=""
-link=""
+dry_run="false"
+remote=""
 repository=""
 packages_dir=""
 
@@ -51,9 +48,8 @@ while [[ $# -gt 0 ]]; do
         --target)        target="$2";        shift 2 ;;
         --open-pr)       open_pr="true";     shift   ;;
         --json)          as_json="true";     shift   ;;
-        --description)   description="$2";   shift 2 ;;
-        --type)          change_type="$2";   shift 2 ;;
-        --link)          link="$2";          shift 2 ;;
+        --dry-run)       dry_run="true";     shift   ;;
+        --remote)        remote="$2";        shift 2 ;;
         --repository)    repository="$2";    shift 2 ;;
         --packages-dir)  packages_dir="$2";  shift 2 ;;
         -h|--help)       usage ;;
@@ -73,8 +69,9 @@ cd "${REPO_ROOT}"
 bool_flags=()
 [[ "$open_pr" == "true" ]] && bool_flags+=("-openPR")
 [[ "$as_json"  == "true" ]] && bool_flags+=("-json")
+[[ "$dry_run"  == "true" ]] && bool_flags+=("-dryRun")
 
 exec mage ApplyBackport \
     "$sha" "$pkg" "$target" \
     "${bool_flags[@]+"${bool_flags[@]}"}" \
-    "$description" "$change_type" "$link" "$repository" "$packages_dir"
+    "$remote" "$repository" "$packages_dir"
