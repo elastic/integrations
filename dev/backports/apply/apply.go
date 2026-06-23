@@ -70,6 +70,10 @@ func Apply(opts Options) (*Result, error) {
 	if remote == "" {
 		remote = "origin"
 	}
+	repository := opts.Repository
+	if repository == "" {
+		repository = "elastic/integrations"
+	}
 	sha8 := opts.SHA[:8]
 
 	pkgDir, err := resolvePackage(packagesDir, opts.Package)
@@ -136,7 +140,7 @@ func Apply(opts Options) (*Result, error) {
 	// 	return nil, fmt.Errorf("pushing: %w", err)
 	// }
 
-	prURL, err := maybeOpenPR(opts.OpenPR, workingBranch, branchName, opts.Package, changes[0].Description, newVersion, opts.SHA, opts.Repository)
+	prURL, err := maybeOpenPR(opts.OpenPR, workingBranch, branchName, opts.Package, changes[0].Description, newVersion, opts.SHA, repository)
 	if err != nil {
 		return nil, err
 	}
