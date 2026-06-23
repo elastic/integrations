@@ -68,7 +68,7 @@ cd "${REPO_ROOT}"
 # All optional strings must be passed in declaration order; empty string = nil in mage.
 bool_flags=()
 [[ "$open_pr" == "true" ]] && bool_flags+=("-openPR")
-[[ "$as_json"  == "true" ]] && bool_flags+=("-json")
+[[ "$as_json"  == "true" ]] && bool_flags+=("-asJSON")
 [[ "$dry_run"  == "true" ]] && bool_flags+=("-dryRun")
 
 exec mage ApplyBackport \
