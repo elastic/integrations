@@ -194,12 +194,13 @@ func workingBranchName(pkg, branchName, sha8 string) string {
 // local working branch off it.
 func prepareWorkingBranch(remote, branchName, workingBranch string) error {
 	if err := gitutil.Run("fetch", remote, branchName); err != nil {
-		return fmt.Errorf(
-			"fetching %q from remote %q failed — verify that the .backports.yml PR was merged and the creation pipeline succeeded: %w",
-			branchName, remote, err,
-		)
+		fmt.Println("fetching", branchName, "from remote", remote, "failed — verify that the .backports.yml PR was merged and the creation pipeline succeeded: %w", err)
+		// return fmt.Errorf(
+		// 	"fetching %q from remote %q failed — verify that the .backports.yml PR was merged and the creation pipeline succeeded: %w",
+		// 	branchName, remote, err,
+		// )
 	}
-	if err := gitutil.Run("checkout", "-b", workingBranch, remote+"/"+branchName); err != nil {
+	if err := gitutil.Run("checkout", "-b", workingBranch, branchName); err != nil {
 		return fmt.Errorf("creating working branch %s: %w", workingBranch, err)
 	}
 	return nil
@@ -211,6 +212,7 @@ func cherryPickOrConflict(sha, branchName, workingBranch, pkg string) *Result {
 	if err := gitutil.Run("cherry-pick", "-n", sha); err == nil {
 		return nil
 	}
+	_ = gitutil.Run("diff")
 	files, _ := conflictingFiles()
 	// reset --hard instead of cherry-pick --abort: with -n, git does not always
 	// write CHERRY_PICK_HEAD, so --abort may fail and leave the index dirty.
