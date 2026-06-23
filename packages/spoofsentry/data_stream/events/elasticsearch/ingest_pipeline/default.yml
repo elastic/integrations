@@ -10,9 +10,11 @@ processors:
   - set:
       field: ecs.version
       value: "8.17.0"
+  # event.kind defaults to "event"; the categorizer below escalates threat
+  # detections to "alert". Routine/operational events stay "event".
   - set:
       field: event.kind
-      value: alert
+      value: event
   - set:
       field: event.module
       value: spoofsentry
@@ -222,33 +224,43 @@ processors:
   # --- ECS event.category / event.type from the (prefix-stripped) action -----
   - script:
       lang: painless
-      description: Categorize the event into ECS event.category and event.type.
+      description: >-
+        Categorize the event into ECS event.category/event.type and set event.kind
+        (alert only for threat detections; event for operational/configuration events).
       if: ctx.event?.action != null
       source: |
         String a = ctx.event.action.toLowerCase();
         if (a.startsWith('spoof_')) { a = a.substring(6); }
+        // Resolved/acknowledged lifecycle updates are informational, not alerts.
+        boolean closed = a.contains('resolved') || a.contains('acknowledged');
         if (a.contains('takedown')) {
           ctx.event.category = ['configuration'];
           ctx.event.type = ['change'];
+          ctx.event.kind = 'event';
         } else if (a.contains('threat') || a.contains('spoofing') || a.contains('lookalike')
             || a.contains('forensic') || a.contains('campaign') || a.contains('sender')
             || a.contains('cert') || a.contains('alert')) {
           ctx.event.category = ['threat'];
           ctx.event.type = ['indicator'];
+          ctx.event.kind = closed ? 'event' : 'alert';
         } else if (a.contains('dns') || a.contains('enforcement') || a.contains('policy')
             || a.contains('playbook') || a.contains('step')) {
           ctx.event.category = ['configuration'];
           ctx.event.type = ['change'];
+          ctx.event.kind = 'event';
         } else if (a.contains('integration') || a.contains('siem') || a.contains('chatops')
             || a.contains('branding') || a.contains('custom_domain')) {
           ctx.event.category = ['configuration'];
           ctx.event.type = ['info'];
+          ctx.event.kind = 'event';
         } else if (a.contains('domain') || a.contains('monitoring') || a.contains('vendor')) {
           ctx.event.category = ['configuration'];
           ctx.event.type = ['creation'];
+          ctx.event.kind = 'event';
         } else {
           ctx.event.category = ['host'];
           ctx.event.type = ['info'];
+          ctx.event.kind = 'event';
         }
 
   # --- Cleanup ---------------------------------------------------------------
