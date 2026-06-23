@@ -309,10 +309,7 @@ func maybeOpenPR(openPR bool, workingBranch, branchName, pkg, description, newVe
 		return "", nil
 	}
 	title := fmt.Sprintf("[%s] Backport %s (%s)", pkg, description, newVersion)
-	body := fmt.Sprintf("Automated backport of commit `%s` onto `%s`.", sha, branchName)
-	if repository != "" {
-		body += fmt.Sprintf("\n\nOriginal commit: https://github.com/%s/commit/%s", repository, sha)
-	}
+	body := buildPRBody(sha, branchName, repository)
 	stdout, _, err := gh.Exec("pr", "create",
 		"--base", branchName,
 		"--head", workingBranch,
@@ -323,6 +320,48 @@ func maybeOpenPR(openPR bool, workingBranch, branchName, pkg, description, newVe
 		return "", fmt.Errorf("creating PR: %w", err)
 	}
 	return strings.TrimSpace(stdout.String()), nil
+}
+
+// buildPRBody constructs the PR description, including origin links and an
+// author checklist.
+func buildPRBody(sha, branchName, repository string) string {
+	var b strings.Builder
+	fmt.Fprintf(&b, "Automated backport of commit `%s` onto `%s`.\n", sha, branchName)
+
+	if repository != "" {
+		fmt.Fprintf(&b, "\n## Origin\n\n")
+		fmt.Fprintf(&b, "- Commit: https://github.com/%s/commit/%s\n", repository, sha)
+		if prURL := findOriginPR(sha, repository); prURL != "" {
+			fmt.Fprintf(&b, "- Source PR: %s\n", prURL)
+		}
+	}
+
+	b.WriteString("\n## Author's checklist\n\n")
+	b.WriteString("- [ ] Review the version set in `manifest.yml` and `changelog.yml`\n")
+	b.WriteString("- [ ] Review the links set in `changelog.yml`\n")
+
+	return b.String()
+}
+
+// findOriginPR returns the HTML URL of the first PR associated with sha in
+// repository (e.g. "elastic/integrations"). Returns an empty string when the
+// PR cannot be determined (no repository given, API error, or no associated PR).
+func findOriginPR(sha, repository string) string {
+	if repository == "" {
+		return ""
+	}
+	stdout, _, err := gh.Exec("api",
+		fmt.Sprintf("repos/%s/commits/%s/pulls", repository, sha),
+		"--jq", ".[0].html_url",
+	)
+	if err != nil {
+		return ""
+	}
+	url := strings.TrimSpace(stdout.String())
+	if url == "null" {
+		return ""
+	}
+	return url
 }
 
 // resolveBranchName derives the full backport branch name from target.
