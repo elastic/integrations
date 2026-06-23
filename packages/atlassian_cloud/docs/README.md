@@ -5,7 +5,21 @@
 ## Overview
 The Atlassian Cloud integration for Elastic enables collection of organization-wide audit log events from [Atlassian Cloud](https://www.atlassian.com/) products including Jira, Confluence, Bitbucket, Trello, and other Atlassian Cloud applications.
 
-This integration polls the [Atlassian Organizations REST API](https://developer.atlassian.com/cloud/admin/organization/rest/) to collect administrative and security-relevant events such as user management, authentication, product access changes, organization policy updates, app/marketplace activity, and API token lifecycle events. The audit log captures activity across all Atlassian Cloud products in an organization in a unified format, complementing the product-specific Atlassian integrations (`atlassian_jira`, `atlassian_confluence`, `atlassian_bitbucket`).
+This integration polls the [Atlassian Organizations REST API](https://developer.atlassian.com/cloud/admin/organization/rest/) to collect administrative and security-relevant events such as user management, authentication, product access changes, organization policy updates, app/marketplace activity, and API token lifecycle events. The audit log captures activity across all Atlassian Cloud products in an organization in a unified format.
+
+### When should I use this integration?
+
+Elastic provides several Atlassian integrations. Choose the one that best fits your needs:
+
+* **Atlassian Cloud** (this integration) — Collects **organization-level** audit events from the Atlassian Organizations API. Events span all Atlassian Cloud products (Jira, Confluence, Bitbucket, Trello, and others) in a single stream. Use this integration when you need unified visibility into organization-wide administrative activity such as SSO policy changes, cross-product user provisioning, marketplace app management, and domain verification. This integration is only available for Atlassian Cloud and does not support self-hosted deployments.
+
+* **Atlassian Jira** (`atlassian_jira`) — Collects **Jira-specific** audit events from the Jira audit API. Use this integration when you need detailed Jira administrative activity such as permission scheme changes, project configuration updates, custom field modifications, and Jira-specific user and group management. This integration supports both Atlassian Cloud and self-hosted Jira Data Center deployments.
+
+* **Atlassian Confluence** (`atlassian_confluence`) — Collects Confluence-specific audit events. Use this for detailed Confluence administrative activity.
+
+* **Atlassian Bitbucket** (`atlassian_bitbucket`) — Collects Bitbucket-specific audit events. Use this for detailed Bitbucket administrative activity.
+
+These integrations are **complementary** and can be used together. For example, you might use this integration for broad organization-level security monitoring while also using the Jira integration for deeper Jira-specific audit detail. Events from each integration are stored in separate data streams, so there is no conflict when running them side by side.
 
 ### Compatibility
 This integration is compatible with the Atlassian Cloud Organizations REST API v1, accessed via the `/admin/v1/orgs/{orgId}/events-stream` endpoint. Atlassian Cloud Organization admin access and an API key with the `read:events:admin` scope are required.
@@ -121,6 +135,9 @@ The `audit` data stream provides organization-wide audit events from Atlassian C
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.geo.city_name | City name. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.region_name | Region name. | keyword |
