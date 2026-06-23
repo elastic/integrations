@@ -60,6 +60,30 @@ Each service collects a set of statistics chosen to suit that service's metrics 
 | AWS Secret Access Key | The secret key paired with the access key. |
 | AWS Session Token | Required only when using temporary (STS) credentials. |
 
+### Collection settings
+
+Each service template exposes two settings that control how metrics are polled from CloudWatch:
+
+| Setting | Description |
+|---|---|
+| **Collection Interval** | How often the integration polls CloudWatch (one `GetMetricData` cycle). Shorter intervals give fresher data but increase the number of API calls. |
+| **Period** | The CloudWatch aggregation window for each data point. It must match the resolution at which the AWS service publishes the metric, otherwise you may see gaps or repeated values. |
+
+Guidance:
+
+- Set **Period** to the metric's native publishing resolution — typically **5 minutes** for services on 5-minute resolution (for example, EC2 basic monitoring) and **1 minute** for services that publish at 1-minute resolution (for example, RDS and Application ELB).
+- In most cases, set **Collection Interval** equal to **Period**. Polling more frequently than the period just re-reads the same data point; polling less frequently can miss points.
+- The defaults below are pre-tuned per service, so you typically don't need to change them.
+
+| Service | Collection Interval | Period |
+|---|---------------------|-----------------|
+| AWS EC2 | 5m                  | 5m              |
+| AWS Lambda | 1m                  | 1m              |
+| AWS RDS | 1m                  | 1m              |
+| AWS SQS | 1m                  | 1m              |
+| AWS Application ELB | 1m                  | 1m              |
+| AWS ECS | 1m                  | 1m              |
+
 ## Authentication
 
 The integration supports the following ways to authenticate to AWS:
