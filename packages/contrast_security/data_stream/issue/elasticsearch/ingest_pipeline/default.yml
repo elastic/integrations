@@ -2,10 +2,6 @@
 description: Minimal ingest pipeline for Contrast Security issues.
 processors:
   - set:
-      tag: set_event_ingested
-      field: event.ingested
-      value: "{{_ingest.timestamp}}"
-  - set:
       tag: set_event_dataset
       field: event.dataset
       value: "contrast_security.issue"
@@ -29,11 +25,19 @@ processors:
         - UNIX_MS
       ignore_failure: true
 on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}' in pipeline '{{{ _ingest.pipeline }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       tag: set_pipeline_error
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_error_message
-      field: error.message
-      value: "Ingest pipeline error: {{{_ingest.on_failure_message}}}"
+      tag: append_preserve_original_event
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
