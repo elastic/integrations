@@ -201,6 +201,17 @@ processors:
       field: event.kind
       tag: set_event_kind_to_event
       value: event
+  - append:
+      field: event.category
+      tag: append_event_category_malware
+      value: malware
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.sandbox_verdict?.threat?.indicator?.name != null
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+      allow_duplicates: false
   - set:
       field: event.provider
       tag: set_event_provider_to_zscaler
@@ -269,11 +280,6 @@ processors:
       tag: set_file_extension_from_sandbox_verdict_file_extension
       copy_from: zscaler_zia.sandbox_verdict.file.extension
       ignore_empty_value: true
-  - set:
-      field: file.type
-      tag: set_file_type_from_sandbox_verdict_file_type_category
-      copy_from: zscaler_zia.sandbox_verdict.file.type_category
-      ignore_empty_value: true
 
   # url.*
   - set:
@@ -337,7 +343,6 @@ processors:
         - zscaler_zia.sandbox_verdict.file.hash.md5
         - zscaler_zia.sandbox_verdict.file.hash.sha256
         - zscaler_zia.sandbox_verdict.file.extension
-        - zscaler_zia.sandbox_verdict.file.type_category
         - zscaler_zia.sandbox_verdict.file.ba_md5_url
         - zscaler_zia.sandbox_verdict.threat.indicator.name
         - zscaler_zia.sandbox_verdict.threat.tactic.id
