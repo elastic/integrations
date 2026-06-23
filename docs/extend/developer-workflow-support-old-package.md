@@ -89,7 +89,7 @@ Sometimes, when we drop the support for an earlier version of the stack and late
     * **PACKAGE_NAME** (default: "") — enter the package name, as defined in the `name` field of manifest.yml, for example `aws`
     * **PACKAGE_VERSION** (default: "") — enter the package version, for example: 1.19.7, 1.0.0-beta1
     * **BASE_COMMIT** (default: "") — enter the commit from the previous step (for example: 8cb321075afb9b77ea965e1373a03a603d9c9796)
-    * **REMOVE_OTHER_PACKAGES** (default: "false") — If set to "true", all packages from the **packages** folder except the target package will be removed from the created branch. This will help to reduce CI time on the backport branch and avoid CI errors unrelated to the package being fixed, since only the affected package needs to be tested and published.
+    * **REMOVE_OTHER_PACKAGES** (default: "true") — If set to "true", all packages from the **packages** folder except the target package will be removed from the created branch. This will help to reduce CI time on the backport branch and avoid CI errors unrelated to the package being fixed, since only the affected package needs to be tested and published.
     * **DRY_RUN** (default: "true")
 
         * **`true`** — Performs checks and a local dry run only. It will:
