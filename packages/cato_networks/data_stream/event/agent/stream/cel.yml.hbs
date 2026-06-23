@@ -64,7 +64,7 @@ program: |
       }
     ).do_request().as(resp,
       (resp.StatusCode == 200) ?
-        bytes(resp.Body).decode_json().as(body,
+        resp.Body.decode_json().as(body,
           // in case of rate limit and wrong API key, StatusCode will be 200 and eventsFeed will be null
           (body.?data.eventsFeed.orValue(null) != null) ?
             {

@@ -962,9 +962,9 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2026-03-02T10:43:11.573Z",
     "agent": {
-        "ephemeral_id": "8ed899a2-8eba-45c9-b4b4-027a265c69ce",
-        "id": "b809a727-e9df-4ca2-9577-868f6eb9aba1",
-        "name": "elastic-agent-93434",
+        "ephemeral_id": "846a24a5-bb00-4814-bec9-3bad2ddd7a10",
+        "id": "1c9a4c17-ed99-4319-8615-d20baede7c42",
+        "name": "elastic-agent-82418",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -1022,7 +1022,7 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "cato_networks.event",
-        "namespace": "30842",
+        "namespace": "51060",
         "type": "logs"
     },
     "destination": {
@@ -1038,16 +1038,19 @@ An example event for `event` looks as following:
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "b809a727-e9df-4ca2-9577-868f6eb9aba1",
+        "id": "1c9a4c17-ed99-4319-8615-d20baede7c42",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "action": "prompt",
         "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
         "dataset": "cato_networks.event",
         "id": "250b9bf09f51bff2",
-        "ingested": "2026-05-14T07:18:40Z",
+        "ingested": "2026-06-23T09:12:20Z",
         "kind": "event",
         "original": "{\"ISP_name\":\"Cato Networks Inc.\",\"account_id\":\"12345\",\"account_name\":\"Demo-Mode\",\"action\":\"Prompt\",\"ad_name\":\"James Smith\",\"app_stack\":\"TCP, TLS, HTTP(S)\",\"application_id\":\"http\",\"application_name\":\"HTTP(S)\",\"application_risk\":\"2\",\"application_type\":\"System\",\"categories\":\"Gambling\",\"cato_app\":\"http\",\"client_class\":\"unclassified tls\",\"client_ip\":\"1.128.0.0\",\"client_version\":\"5.21.5.8548\",\"configured_host_name\":\"VTL-US02-Win11\",\"congestion_algorithm\":\"BBR\",\"connection_origin\":\"Cato Client\",\"dest_country\":\"United States\",\"dest_country_code\":\"US\",\"dest_ip\":\"89.160.20.128\",\"dest_port\":\"443\",\"device_categories\":\"PC\",\"device_id\":\"699b0f1b352cc37b4a5e4d4d\",\"device_name\":\"VTL-US02-Win11\",\"device_os_type\":\"Windows Workstation\",\"device_posture_profile\":\"Windows managed\",\"device_type\":\"Workstation\",\"domain_name\":\"ahjlighting.com\",\"egress_pop_name\":\"Bucharest\",\"event_count\":\"1\",\"event_id\":\"250b9bf09f51bff2\",\"event_sub_type\":\"Internet Firewall\",\"event_type\":\"Security\",\"flow_id\":\"362862917479975360\",\"full_path_url\":\"https://ahjlighting.com/\",\"host_ip\":\"1.128.0.0\",\"host_mac\":\"7a:1e:52:8f:4f:96\",\"http_request_method\":\"GET\",\"internalId\":\"250b9bf09f51bff2\",\"internal_id\":\"250b9bf09f51bff2\",\"ip_protocol\":\"TCP\",\"network_rule\":\"Akira Impossible Travel\",\"os_type\":\"OS_WINDOWS\",\"os_version\":\"11\",\"pop_name\":\"Miami\",\"prompt_action\":\"\",\"public_ip\":\"81.2.69.144\",\"qos_priority\":\"10\",\"request_size\":\"0\",\"rule_id\":\"8512269566766760473\",\"rule_name\":\"Prompt for Risky Categories\",\"server_ip\":\"89.160.20.128\",\"src_country\":\"United States\",\"src_country_code\":\"US\",\"src_ip\":\"1.128.0.0\",\"src_is_site_or_vpn\":\"SDP User\",\"src_isp_ip\":\"89.160.20.112\",\"src_port\":\"59929\",\"src_site_id\":\"1000033\",\"src_site_name\":\"Jane Smith\",\"static_host\":\"false\",\"tcp_acceleration\":\"true\",\"time\":\"1772448191573\",\"time_str\":\"2026-03-02T10:43:11Z\",\"tls_inspection\":\"true\",\"traffic_direction\":\"OUTBOUND\",\"url\":\"https://ahjlighting.com/\",\"user_agent\":\"Python-urllib/3.10\",\"user_id\":\"1000033\",\"user_name\":\"Jane Smith\",\"user_reference_id\":\"2770852121\",\"visible_device_id\":\"7a-1e-52-8f-4f-96\",\"vpn_user_email\":\"jane.smith@test.example.com\"}",
         "type": [
