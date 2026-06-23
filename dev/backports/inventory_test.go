@@ -772,7 +772,7 @@ func TestValidateBranchFormat(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.branch, func(t *testing.T) {
-			err := ValidateBranchFormat(tt.branch)
+			err := validateBranchFormat(tt.branch)
 			if tt.wantErr {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), tt.errContains)

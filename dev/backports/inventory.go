@@ -114,12 +114,12 @@ func (e entry) activeResult(now time.Time) ActiveResult {
 	return result
 }
 
-// ValidateBranchFormat checks that branch matches the required backport branch format:
+// validateBranchFormat checks that branch matches the required backport branch format:
 // backport-<package>-<suffix>, where package is letters/digits/underscores and suffix
 // starts with a letter or digit and may contain letters, digits, dots, underscores, or hyphens.
 // Whitespace, quotes, colons, semicolons, dollar signs, backticks, and other special characters
 // are not permitted.
-func ValidateBranchFormat(branch string) error {
+func validateBranchFormat(branch string) error {
 	if !branchRE.MatchString(branch) {
 		return fmt.Errorf("invalid branch %q: must match backport-<package>-<suffix> "+
 			"(package: letters/digits/underscores; suffix: letters/digits/dots/underscores/hyphens; "+
@@ -131,7 +131,7 @@ func ValidateBranchFormat(branch string) error {
 // ValidateBranchName checks that branch is a valid backport branch name for the given package:
 // it must pass ValidateBranchFormat and start with "backport-<packageName>-".
 func ValidateBranchName(packageName, branch string) error {
-	if err := ValidateBranchFormat(branch); err != nil {
+	if err := validateBranchFormat(branch); err != nil {
 		return err
 	}
 	if !strings.HasPrefix(branch, "backport-"+packageName+"-") {
@@ -331,7 +331,7 @@ func validateEntryFields(i int, e entry, knownPackages map[string]struct{}, pack
 		if err := ValidateBranchName(e.Package, e.Branch); err != nil {
 			errs = append(errs, fmt.Errorf("%s: %w", id, err))
 		}
-	} else if err := ValidateBranchFormat(e.Branch); err != nil {
+	} else if err := validateBranchFormat(e.Branch); err != nil {
 		errs = append(errs, fmt.Errorf("%s: %w", id, err))
 	}
 
