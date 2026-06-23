@@ -7,10 +7,10 @@ package apply
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
-	"gopkg.in/yaml.v3"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestResolveBranchName(t *testing.T) {
@@ -28,20 +28,15 @@ func TestResolveBranchName(t *testing.T) {
 		{target: "6.14", pkg: "bad pkg!", wantErr: true},
 	}
 	for _, tc := range tests {
-		got, err := resolveBranchName(tc.target, tc.pkg)
-		if tc.wantErr {
-			if err == nil {
-				t.Errorf("resolveBranchName(%q, %q): expected error, got %q", tc.target, tc.pkg, got)
+		t.Run(tc.target+"/"+tc.pkg, func(t *testing.T) {
+			got, err := resolveBranchName(tc.target, tc.pkg)
+			if tc.wantErr {
+				require.Error(t, err)
+				return
 			}
-			continue
-		}
-		if err != nil {
-			t.Errorf("resolveBranchName(%q, %q): unexpected error: %v", tc.target, tc.pkg, err)
-			continue
-		}
-		if got != tc.want {
-			t.Errorf("resolveBranchName(%q, %q) = %q, want %q", tc.target, tc.pkg, got, tc.want)
-		}
+			require.NoError(t, err)
+			assert.Equal(t, tc.want, got)
+		})
 	}
 }
 
@@ -54,85 +49,79 @@ func TestWorkingBranchName(t *testing.T) {
 	}
 	for _, tc := range tests {
 		got := workingBranchName(tc.pkg, tc.branch, tc.sha8)
-		if got != tc.want {
-			t.Errorf("workingBranchName(%q, %q, %q) = %q, want %q", tc.pkg, tc.branch, tc.sha8, got, tc.want)
-		}
+		assert.Equal(t, tc.want, got)
 	}
 }
 
 func TestBumpPatchVersion(t *testing.T) {
 	tests := []struct {
-		name    string
-		content string
-		want    string
+		name        string
+		content     string
+		wantVersion string
+		wantContent string
+		wantErr     bool
 	}{
 		{
-			name:    "unquoted",
-			content: "name: aws\nversion: 6.14.2\nformat_version: 3.0.0\n",
-			want:    "6.14.3",
+			name:        "unquoted",
+			content:     "name: aws\nversion: 6.14.2\nformat_version: 3.0.0\n",
+			wantVersion: "6.14.3",
+			wantContent: "name: aws\nversion: 6.14.3\nformat_version: 3.0.0\n",
 		},
 		{
-			name:    "double-quoted",
-			content: "name: zscaler\nversion: \"1.23.3\"\nformat_version: 3.0.0\n",
-			want:    "1.23.4",
+			name:        "double-quoted",
+			content:     "name: zscaler\nversion: \"1.23.3\"\nformat_version: 3.0.0\n",
+			wantVersion: "1.23.4",
+			wantContent: "name: zscaler\nversion: \"1.23.4\"\nformat_version: 3.0.0\n",
 		},
 		{
-			name:    "single-quoted",
-			content: "name: prom\nversion: '2.0.1'\nformat_version: 3.0.0\n",
-			want:    "2.0.2",
+			name:        "single-quoted",
+			content:     "name: prom\nversion: '2.0.1'\nformat_version: 3.0.0\n",
+			wantVersion: "2.0.2",
+			wantContent: "name: prom\nversion: '2.0.2'\nformat_version: 3.0.0\n",
 		},
 		{
-			name:    "patch zero",
-			content: "version: 1.0.0\n",
-			want:    "1.0.1",
+			name:        "patch zero",
+			content:     "version: 1.0.0\n",
+			wantVersion: "1.0.1",
+			wantContent: "version: 1.0.1\n",
+		},
+		{
+			name:        "preserves rest of file",
+			content:     "name: mypackage\nformat_version: 3.0.0\nversion: 2.5.9\ndescription: A package.\n",
+			wantVersion: "2.5.10",
+			wantContent: "name: mypackage\nformat_version: 3.0.0\nversion: 2.5.10\ndescription: A package.\n",
+		},
+		{
+			name:    "missing version field",
+			content: "name: pkg\nformat_version: 3.0.0\n",
+			wantErr: true,
 		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			f, err := os.CreateTemp(t.TempDir(), "manifest-*.yml")
-			if err != nil {
-				t.Fatal(err)
-			}
-			if _, err := f.WriteString(tc.content); err != nil {
-				t.Fatal(err)
-			}
-			f.Close()
+			path := filepath.Join(t.TempDir(), "manifest.yml")
+			require.NoError(t, os.WriteFile(path, []byte(tc.content), 0o644))
 
-			got, err := bumpPatchVersion(f.Name())
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
+			got, err := bumpPatchVersion(path)
+			if tc.wantErr {
+				require.Error(t, err)
+				return
 			}
-			if got != tc.want {
-				t.Errorf("got %q, want %q", got, tc.want)
-			}
+			require.NoError(t, err)
+			assert.Equal(t, tc.wantVersion, got)
 
-			// Verify the file was actually updated.
-			updated, _ := os.ReadFile(f.Name())
-			if !strings.Contains(string(updated), tc.want) {
-				t.Errorf("file does not contain new version %q:\n%s", tc.want, updated)
-			}
+			updated, err := os.ReadFile(path)
+			require.NoError(t, err)
+			assert.Equal(t, tc.wantContent, string(updated))
 		})
-	}
-}
-
-func TestBumpPatchVersionMissingField(t *testing.T) {
-	f, err := os.CreateTemp(t.TempDir(), "manifest-*.yml")
-	if err != nil {
-		t.Fatal(err)
-	}
-	f.WriteString("name: pkg\nformat_version: 3.0.0\n")
-	f.Close()
-
-	if _, err := bumpPatchVersion(f.Name()); err == nil {
-		t.Error("expected error for manifest without version field")
 	}
 }
 
 func TestParseEntryFields(t *testing.T) {
 	tests := []struct {
-		name    string
-		block   string
-		want    []changeItem
+		name  string
+		block string
+		want  []changeItem
 	}{
 		{
 			name: "single item",
@@ -161,7 +150,7 @@ func TestParseEntryFields(t *testing.T) {
 			},
 		},
 		{
-			name:  "missing link",
+			name: "missing link",
 			block: `- version: "1.2.3"
   changes:
     - description: Some enhancement.
@@ -182,86 +171,80 @@ func TestParseEntryFields(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			got := parseEntryFields(tc.block)
-			if len(got) != len(tc.want) {
-				t.Fatalf("parseEntryFields() returned %d items, want %d: %+v", len(got), len(tc.want), got)
-			}
-			for i, item := range got {
-				if item != tc.want[i] {
-					t.Errorf("item[%d] = %+v, want %+v", i, item, tc.want[i])
-				}
-			}
+			assert.Equal(t, tc.want, got)
 		})
 	}
 }
 
 func TestBuildEntryBlock(t *testing.T) {
-	changes := []changeItem{{Description: "Fix the thing.", Type: "bugfix", Link: "https://github.com/elastic/integrations/pull/999"}}
-	got := buildEntryBlock("1.2.4", changes)
-	want := "- version: \"1.2.4\"\n  changes:\n    - description: Fix the thing.\n      type: bugfix\n      link: https://github.com/elastic/integrations/pull/999"
-	if got != want {
-		t.Errorf("buildEntryBlock() =\n%s\nwant:\n%s", got, want)
-	}
-}
-
-func TestBuildEntryBlockMultipleItems(t *testing.T) {
-	changes := []changeItem{
-		{Description: "Fix a bug.", Type: "bugfix", Link: "https://github.com/elastic/integrations/pull/1"},
-		{Description: "Add a feature.", Type: "enhancement", Link: "https://github.com/elastic/integrations/pull/2"},
-	}
-	block := buildEntryBlock("1.2.4", changes)
-	var entries []changelogEntryYAML
-	if err := yaml.Unmarshal([]byte(block), &entries); err != nil {
-		t.Fatalf("output is not valid YAML: %v\noutput:\n%s", err, block)
-	}
-	if len(entries) == 0 || len(entries[0].Changes) != 2 {
-		t.Fatalf("expected 2 change items, got %d", len(entries[0].Changes))
-	}
-	if entries[0].Changes[0].Description != "Fix a bug." || entries[0].Changes[1].Description != "Add a feature." {
-		t.Errorf("unexpected change items: %+v", entries[0].Changes)
-	}
-}
-
-func TestBuildEntryBlockSpecialChars(t *testing.T) {
 	tests := []struct {
-		name        string
-		description string
+		name    string
+		version string
+		changes []changeItem
+		want    string
 	}{
-		{"colon-space", "Fix error: timeout in handler"},
-		{"leading bracket", "[aws] fix panic on nil"},
-		{"hash", "remove # legacy field"},
+		{
+			name:    "single item",
+			version: "1.2.4",
+			changes: []changeItem{{Description: "Fix the thing.", Type: "bugfix", Link: "https://github.com/elastic/integrations/pull/999"}},
+			want: "- version: \"1.2.4\"\n" +
+				"  changes:\n" +
+				"    - description: Fix the thing.\n" +
+				"      type: bugfix\n" +
+				"      link: https://github.com/elastic/integrations/pull/999",
+		},
+		{
+			name:    "multiple items",
+			version: "1.2.4",
+			changes: []changeItem{
+				{Description: "Fix a bug.", Type: "bugfix", Link: "https://github.com/elastic/integrations/pull/1"},
+				{Description: "Add a feature.", Type: "enhancement", Link: "https://github.com/elastic/integrations/pull/2"},
+			},
+			want: "- version: \"1.2.4\"\n" +
+				"  changes:\n" +
+				"    - description: Fix a bug.\n" +
+				"      type: bugfix\n" +
+				"      link: https://github.com/elastic/integrations/pull/1\n" +
+				"    - description: Add a feature.\n" +
+				"      type: enhancement\n" +
+				"      link: https://github.com/elastic/integrations/pull/2",
+		},
+		{
+			name:    "colon-space in description",
+			version: "1.0.1",
+			changes: []changeItem{{Description: "Fix error: timeout in handler", Type: "bugfix", Link: "https://github.com/elastic/integrations/pull/1"}},
+			want: "- version: \"1.0.1\"\n" +
+				"  changes:\n" +
+				"    - description: 'Fix error: timeout in handler'\n" +
+				"      type: bugfix\n" +
+				"      link: https://github.com/elastic/integrations/pull/1",
+		},
+		{
+			name:    "leading bracket in description",
+			version: "1.0.1",
+			changes: []changeItem{{Description: "[aws] fix panic on nil", Type: "bugfix", Link: "https://github.com/elastic/integrations/pull/1"}},
+			want: "- version: \"1.0.1\"\n" +
+				"  changes:\n" +
+				"    - description: '[aws] fix panic on nil'\n" +
+				"      type: bugfix\n" +
+				"      link: https://github.com/elastic/integrations/pull/1",
+		},
+		{
+			name:    "hash in description",
+			version: "1.0.1",
+			changes: []changeItem{{Description: "remove # legacy field", Type: "bugfix", Link: "https://github.com/elastic/integrations/pull/1"}},
+			want: "- version: \"1.0.1\"\n" +
+				"  changes:\n" +
+				"    - description: 'remove # legacy field'\n" +
+				"      type: bugfix\n" +
+				"      link: https://github.com/elastic/integrations/pull/1",
+		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			changes := []changeItem{{Description: tc.description, Type: "bugfix", Link: "https://github.com/elastic/integrations/pull/1"}}
-			block := buildEntryBlock("1.0.1", changes)
-			var entries []changelogEntryYAML
-			if err := yaml.Unmarshal([]byte(block), &entries); err != nil {
-				t.Fatalf("output is not valid YAML: %v\noutput:\n%s", err, block)
-			}
-			if len(entries) == 0 || len(entries[0].Changes) == 0 {
-				t.Fatalf("unexpected structure after Unmarshal: %+v", entries)
-			}
-			if got := entries[0].Changes[0].Description; got != tc.description {
-				t.Errorf("round-trip description = %q, want %q", got, tc.description)
-			}
+			got, err := buildEntryBlock(tc.version, tc.changes)
+			require.NoError(t, err)
+			assert.Equal(t, tc.want, got)
 		})
-	}
-}
-
-func TestBumpPatchVersionPreservesRestOfFile(t *testing.T) {
-	content := "name: mypackage\nformat_version: 3.0.0\nversion: 2.5.9\ndescription: A package.\n"
-	dir := t.TempDir()
-	path := filepath.Join(dir, "manifest.yml")
-	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
-		t.Fatal(err)
-	}
-
-	if _, err := bumpPatchVersion(path); err != nil {
-		t.Fatal(err)
-	}
-	updated, _ := os.ReadFile(path)
-	want := "name: mypackage\nformat_version: 3.0.0\nversion: 2.5.10\ndescription: A package.\n"
-	if string(updated) != want {
-		t.Errorf("file content after bump:\n%s\nwant:\n%s", updated, want)
 	}
 }

@@ -106,7 +106,11 @@ func Apply(opts Options) (*Result, error) {
 	changelogPath := filepath.Join(pkgDir, "changelog.yml")
 	manifestPath := filepath.Join(pkgDir, "manifest.yml")
 
-	if conflict := cherryPickOrConflict(opts.SHA, branchName, opts.Package, changelogPath, manifestPath); conflict != nil {
+	conflict, err := cherryPickOrConflict(opts.SHA, branchName, opts.Package, changelogPath, manifestPath)
+	if err != nil {
+		return nil, err
+	}
+	if conflict != nil {
 		return conflict, nil
 	}
 
@@ -213,8 +217,8 @@ func prepareWorkingBranch(remote, branchName, workingBranch string) error {
 // conflicts in them should never block the backport. If other files still
 // conflict after that, it resets the index and returns a populated conflict
 // Result; the caller's defer is responsible for branch cleanup.
-// On success it returns nil.
-func cherryPickOrConflict(sha, branchName, pkg, changelogPath, manifestPath string) *Result {
+// On success it returns (nil, nil).
+func cherryPickOrConflict(sha, branchName, pkg, changelogPath, manifestPath string) (*Result, error) {
 	cherryErr := gitutil.Run("cherry-pick", "-n", sha)
 
 	// Always restore manifest and changelog to HEAD. They are the most likely
@@ -223,14 +227,18 @@ func cherryPickOrConflict(sha, branchName, pkg, changelogPath, manifestPath stri
 	_ = gitutil.Run("checkout", "HEAD", "--", changelogPath, manifestPath)
 
 	if cherryErr == nil {
-		return nil
+		return nil, nil
 	}
 
 	// cherry-pick failed; check whether non-manifest/changelog conflicts remain.
-	files, _ := conflictingFiles()
+	files, err := conflictingFiles()
+	if err != nil {
+		_ = gitutil.Run("reset", "--hard", "HEAD")
+		return nil, fmt.Errorf("checking conflict state after cherry-pick: %w", err)
+	}
 	if len(files) == 0 {
 		// Only manifest/changelog conflicted — we resolved them above; continue.
-		return nil
+		return nil, nil
 	}
 
 	// reset --hard instead of cherry-pick --abort: with -n, git does not always
@@ -246,7 +254,7 @@ func cherryPickOrConflict(sha, branchName, pkg, changelogPath, manifestPath stri
 			"dev/scripts/backport_apply.sh --sha %s --package %s --target %s --open-pr",
 			sha, pkg, branchName,
 		),
-	}
+	}, nil
 }
 
 // extractChangelogFields reads changelog.yml directly from the source commit
@@ -284,7 +292,11 @@ func resetAndWriteChanges(manifestPath, changelogPath string, changes []changeIt
 	if err != nil {
 		return "", fmt.Errorf("bumping version in %s: %w", manifestPath, err)
 	}
-	if err := changelog.InsertEntry(changelogPath, newVersion, buildEntryBlock(newVersion, changes)); err != nil {
+	entryBlock, err := buildEntryBlock(newVersion, changes)
+	if err != nil {
+		return "", err
+	}
+	if err := changelog.InsertEntry(changelogPath, newVersion, entryBlock); err != nil {
 		return "", fmt.Errorf("inserting changelog entry: %w", err)
 	}
 	return newVersion, nil
@@ -462,7 +474,7 @@ func parseEntryFields(entryBlock string) []changeItem {
 // version and change items. The version is double-quoted to match the format
 // used by elastic-package. All string fields are encoded via yaml.Marshal so
 // that special characters (e.g. ": " in a description) are quoted correctly.
-func buildEntryBlock(version string, changes []changeItem) string {
+func buildEntryBlock(version string, changes []changeItem) (string, error) {
 	changeNodes := make([]*yaml.Node, 0, len(changes))
 	for _, c := range changes {
 		changeNodes = append(changeNodes, &yaml.Node{
@@ -489,8 +501,11 @@ func buildEntryBlock(version string, changes []changeItem) string {
 			},
 		}},
 	}
-	out, _ := yaml.Marshal(n)
-	return strings.TrimRight(string(out), "\n")
+	out, err := yaml.Marshal(n)
+	if err != nil {
+		return "", fmt.Errorf("marshalling changelog entry: %w", err)
+	}
+	return strings.TrimRight(string(out), "\n"), nil
 }
 
 // conflictingFiles returns files in a conflict state after a failed cherry-pick.
