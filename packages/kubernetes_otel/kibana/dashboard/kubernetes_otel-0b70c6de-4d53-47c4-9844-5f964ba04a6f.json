@@ -3,6 +3,38 @@
         "description": "Workload monitoring with Deployments, DaemonSets, StatefulSets, Jobs, container restart trends, and deployment drilldowns.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
+                "filter": [
+                    {
+                        "meta": {
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "params": [
+                                "k8sclusterreceiver.otel",
+                                "kubeletstatsreceiver.otel"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "k8sclusterreceiver.otel"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "kubeletstatsreceiver.otel"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -27,37 +59,37 @@
                     "layout": "horizontal",
                     "links": [
                         {
-                            "destinationRefName": "link_02b16bcb-9073-43a1-a6b7-ca2bd02fe321_dashboard",
+                            "destinationRefName": "link_1e3ff145-06a4-4e59-854f-ff2f39628055_dashboard",
                             "label": "Overview",
                             "options": {},
                             "type": "dashboardLink"
                         },
                         {
-                            "destinationRefName": "link_a0cec3c9-85ce-4486-970c-fc1fd994418a_dashboard",
+                            "destinationRefName": "link_f6993d94-47ac-4e0f-8d02-dcf54f7324c1_dashboard",
                             "label": "Clusters",
                             "options": {},
                             "type": "dashboardLink"
                         },
                         {
-                            "destinationRefName": "link_3fa37faf-7e87-42a8-9ede-2a06533d3cc8_dashboard",
+                            "destinationRefName": "link_1c421e35-9935-49af-8e37-5f6071f2b00f_dashboard",
                             "label": "Nodes",
                             "options": {},
                             "type": "dashboardLink"
                         },
                         {
-                            "destinationRefName": "link_a37dc1ba-1855-40e3-b3bc-10aeeaca3f0b_dashboard",
+                            "destinationRefName": "link_d834b852-779e-414f-83d7-0ce113cd080a_dashboard",
                             "label": "Namespaces",
                             "options": {},
                             "type": "dashboardLink"
                         },
                         {
-                            "destinationRefName": "link_e90f7302-7c8c-4b19-90f4-d5411d1c1dcd_dashboard",
+                            "destinationRefName": "link_603244df-834f-4c79-8a62-ad5e3f805822_dashboard",
                             "label": "Workload resources",
                             "options": {},
                             "type": "dashboardLink"
                         },
                         {
-                            "destinationRefName": "link_ea675733-c1d8-43ca-9354-5a7899fb4012_dashboard",
+                            "destinationRefName": "link_86e9a898-e3f0-409c-b761-a5a741d9574b_dashboard",
                             "label": "Pods",
                             "options": {},
                             "type": "dashboardLink"
@@ -80,17 +112,17 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                                "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                                    "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                     "managed": false,
-                                    "name": "metrics-*",
+                                    "name": "metrics-k8sclusterreceiver.otel-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-*",
+                                    "title": "metrics-k8sclusterreceiver.otel-*",
                                     "type": "esql"
                                 }
                             },
@@ -98,9 +130,9 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                                            "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-*"
+                                            "title": "metrics-k8sclusterreceiver.otel-*"
                                         }
                                     ],
                                     "layers": {
@@ -118,9 +150,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                                            "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "query": {
-                                                "esql": "FROM metrics-*\n| WHERE k8s.deployment.name IS NOT NULL\n  AND k8s.deployment.available IS NOT NULL\n| STATS count = COUNT_DISTINCT(k8s.deployment.name)\n"
+                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.deployment.name IS NOT NULL\n  AND k8s.deployment.name != \"\"\n  AND k8s.deployment.available IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.deployment.name\n| WHERE @timestamp == latest_ts\n| STATS count = COUNT(*)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -128,26 +160,27 @@
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-*\n| WHERE k8s.deployment.name IS NOT NULL\n  AND k8s.deployment.available IS NOT NULL\n| STATS count = COUNT_DISTINCT(k8s.deployment.name)\n"
+                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.deployment.name IS NOT NULL\n  AND k8s.deployment.name != \"\"\n  AND k8s.deployment.available IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.deployment.name\n| WHERE @timestamp == latest_ts\n| STATS count = COUNT(*)"
                             },
                             "visualization": {
                                 "applyColorTo": "background",
-                                "color": "#61A2FF",
                                 "colorMode": "background",
                                 "layerId": "c069c5ac-dcdc-f1b8-1f4e-2539b0f16301",
                                 "layerType": "data",
                                 "metricAccessor": "9f004cfb-3448-bdfe-58ee-2c77580a9c20",
-                                "showBar": false
+                                "primaryAlign": "left",
+                                "primaryPosition": "top",
+                                "showBar": false,
+                                "titlesTextAlign": "left"
                             }
                         },
                         "title": "",
-                        "type": "lens",
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Total deployment count. COUNT_DISTINCT(k8s.deployment.name).",
+                    "description": "Total number of deployments with available replica metrics, based on distinct deployment names observed in the selected time range.",
                     "hide_title": true
                 },
                 "gridData": {
@@ -156,10 +189,10 @@
                     "sectionId": "section-deploy-metrics",
                     "w": 6,
                     "x": 0,
-                    "y": 16
+                    "y": 13
                 },
                 "panelIndex": "v2-workloads-alt-total-deployments",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -167,23 +200,29 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
+                                "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                                    "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                     "managed": false,
-                                    "name": "metrics-*",
+                                    "name": "metrics-k8sclusterreceiver.otel-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-*",
+                                    "title": "metrics-k8sclusterreceiver.otel-*",
                                     "type": "esql"
                                 }
                             },
                             "datasourceStates": {
                                 "textBased": {
-                                    "indexPatternRefs": [],
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-k8sclusterreceiver.otel-*"
+                                        }
+                                    ],
                                     "layers": {
                                         "f5b1d7b4-0818-809d-e59d-829dcd9c8c7b": {
                                             "columns": [
@@ -196,12 +235,13 @@
                                                     "meta": {
                                                         "esType": "long",
                                                         "type": "number"
-                                                    }
+                                                    },
+                                                    "params": {}
                                                 }
                                             ],
-                                            "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
+                                            "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "query": {
-                                                "esql": "FROM metrics-*\n| WHERE k8s.container.restarts IS NOT NULL\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n| STATS max_restarts = MAX(k8s.container.restarts) BY k8s.pod.uid, k8s.container.name\n| STATS total_restarts = SUM(max_restarts)\n"
+                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.container.restarts IS NOT NULL\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n  AND k8s.container.name != \"\"\n| STATS\n    restarts_per = MAX(k8s.container.restarts),\n    last_seen = MAX(@timestamp)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, k8s.container.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| STATS total_restarts = SUM(restarts_per)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -209,12 +249,12 @@
                                 }
                             },
                             "filters": [],
-                            "internalReferences": [],
+                            "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-*\n| WHERE k8s.container.restarts IS NOT NULL\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n| STATS max_restarts = MAX(k8s.container.restarts) BY k8s.pod.uid, k8s.container.name\n| STATS total_restarts = SUM(max_restarts)\n"
+                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.container.restarts IS NOT NULL\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.container.name IS NOT NULL\n  AND k8s.container.name != \"\"\n| STATS\n    restarts_per = MAX(k8s.container.restarts),\n    last_seen = MAX(@timestamp)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.pod.uid, k8s.container.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| STATS total_restarts = SUM(restarts_per)"
                             },
                             "visualization": {
-                                "applyColorTo": "background",
+                                "applyColorTo": "value",
                                 "colorMode": "background",
                                 "layerId": "f5b1d7b4-0818-809d-e59d-829dcd9c8c7b",
                                 "layerType": "data",
@@ -248,21 +288,23 @@
                                             },
                                             {
                                                 "color": "#F6726A",
-                                                "stop": 3408
+                                                "stop": 394
                                             }
                                         ]
                                     },
                                     "type": "palette"
                                 },
-                                "showBar": false
+                                "primaryAlign": "left",
+                                "primaryPosition": "top",
+                                "showBar": false,
+                                "titlesTextAlign": "left"
                             }
                         },
                         "title": "",
-                        "type": "lens",
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Total container restarts. MAX(k8s.container.restarts) per pod+container, then SUM."
+                    "description": "Total container restarts across all pods, summed from the maximum restart count per container observed in the selected time range."
                 },
                 "gridData": {
                     "h": 6,
@@ -270,422 +312,10 @@
                     "sectionId": "section-deploy-metrics",
                     "w": 6,
                     "x": 0,
-                    "y": 22
+                    "y": 19
                 },
                 "panelIndex": "c585ade6-5e12-4a1c-aea7-c2ebc1189e98",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
-                                    "allowHidden": false,
-                                    "allowNoIndex": false,
-                                    "fieldFormats": {},
-                                    "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
-                                    "managed": false,
-                                    "name": "metrics-*",
-                                    "runtimeFieldMap": {},
-                                    "sourceFilters": [],
-                                    "timeFieldName": "@timestamp",
-                                    "title": "metrics-*",
-                                    "type": "esql"
-                                }
-                            },
-                            "datasourceStates": {
-                                "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
-                                            "timeField": "@timestamp",
-                                            "title": "metrics-*"
-                                        }
-                                    ],
-                                    "layers": {
-                                        "fdfad702-0d8c-6690-f73b-71e4e64101a4": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "58394d5d-f244-ac4d-0efc-444da7cb5700",
-                                                    "customLabel": true,
-                                                    "fieldName": "desired",
-                                                    "inMetricDimension": true,
-                                                    "label": "Desired",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "1d07e96c-590b-03f1-4108-cbe912c2ac4a",
-                                                    "customLabel": true,
-                                                    "fieldName": "available",
-                                                    "inMetricDimension": true,
-                                                    "label": "Available",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "24258928-91bb-7193-d4df-0329829a7575",
-                                                    "customLabel": false,
-                                                    "fieldName": "timestamp",
-                                                    "label": "timestamp"
-                                                }
-                                            ],
-                                            "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
-                                            "query": {
-                                                "esql": "TS metrics-*\n| WHERE k8s.deployment.name IS NOT NULL\n  AND (k8s.deployment.available IS NOT NULL OR k8s.deployment.desired IS NOT NULL)\n| STATS\n    available = SUM(k8s.deployment.available),\n    desired = SUM(k8s.deployment.desired)\n  BY timestamp = TBUCKET(50 , ?_tstart, ?_tend)\n| sort timestamp\n| KEEP timestamp, available, desired\n"
-                                            },
-                                            "timeField": "@timestamp"
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "needsRefresh": false,
-                            "query": {
-                                "esql": "TS metrics-*\n| WHERE k8s.deployment.name IS NOT NULL\n  AND (k8s.deployment.available IS NOT NULL OR k8s.deployment.desired IS NOT NULL)\n| STATS\n    available = SUM(k8s.deployment.available),\n    desired = SUM(k8s.deployment.desired)\n  BY timestamp = TBUCKET(50 , ?_tstart, ?_tend)\n| sort timestamp\n| KEEP timestamp, available, desired\n"
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "58394d5d-f244-ac4d-0efc-444da7cb5700",
-                                            "1d07e96c-590b-03f1-4108-cbe912c2ac4a"
-                                        ],
-                                        "layerId": "fdfad702-0d8c-6690-f73b-71e4e64101a4",
-                                        "layerType": "data",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "xAccessor": "24258928-91bb-7193-d4df-0329829a7575"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "bottom"
-                                },
-                                "preferredSeriesType": "line",
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "",
-                        "version": 2,
-                        "visualizationType": "lnsXY"
-                    },
-                    "description": "Deployment replica trend. SUM(k8s.deployment.available) vs SUM(k8s.deployment.desired) per 1m bucket.",
-                    "title": "Deployment replicas over time"
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "v2-workloads-alt-deploy-trend",
-                    "sectionId": "section-deploy-metrics",
-                    "w": 13,
-                    "x": 6,
-                    "y": 16
-                },
-                "panelIndex": "v2-workloads-alt-deploy-trend",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed": {
-                                    "allowHidden": false,
-                                    "allowNoIndex": false,
-                                    "fieldFormats": {},
-                                    "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
-                                    "managed": false,
-                                    "name": "metrics-*",
-                                    "runtimeFieldMap": {},
-                                    "sourceFilters": [],
-                                    "timeFieldName": "@timestamp",
-                                    "title": "metrics-*",
-                                    "type": "esql"
-                                }
-                            },
-                            "datasourceStates": {
-                                "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
-                                            "timeField": "@timestamp",
-                                            "title": "metrics-*"
-                                        }
-                                    ],
-                                    "layers": {
-                                        "9d698809-25fc-7d1d-9030-db07c457d87b": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "014ea010-d756-94db-97ff-f77ab7e7788f",
-                                                    "customLabel": true,
-                                                    "fieldName": "Desired scheduled",
-                                                    "inMetricDimension": true,
-                                                    "label": "Desired scheduled",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "cc602dc1-bbd6-334b-b4f0-87b9fa141ed1",
-                                                    "customLabel": true,
-                                                    "fieldName": "Current scheduled",
-                                                    "inMetricDimension": true,
-                                                    "label": "Current scheduled",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "3b77cf63-db0d-00a4-1a3e-eb05af4e63d0",
-                                                    "customLabel": true,
-                                                    "fieldName": "Ready",
-                                                    "inMetricDimension": true,
-                                                    "label": "Ready",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "24258928-91bb-7193-d4df-0329829a7575",
-                                                    "customLabel": false,
-                                                    "fieldName": "timestamp",
-                                                    "label": "timestamp"
-                                                }
-                                            ],
-                                            "index": "0e2ef7c055c1cbe93cdfae543c1c67b1578b09d63c8e8b2751d8016d3592c0ed",
-                                            "query": {
-                                                "esql": "TS metrics-*\n| WHERE k8s.daemonset.name IS NOT NULL\n  AND (k8s.daemonset.current_scheduled_nodes IS NOT NULL OR k8s.daemonset.desired_scheduled_nodes IS NOT NULL)\n| STATS\n    `Current scheduled` = SUM(k8s.daemonset.current_scheduled_nodes),\n    `Desired scheduled` = SUM(k8s.daemonset.desired_scheduled_nodes),\n    Ready = SUM(k8s.daemonset.ready_nodes)\n  BY timestamp = TBUCKET(50 , ?_tstart, ?_tend)\n| sort timestamp\n| KEEP timestamp, `Desired scheduled`, `Current scheduled`, Ready\n"
-                                            },
-                                            "timeField": "@timestamp"
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "needsRefresh": false,
-                            "query": {
-                                "esql": "TS metrics-*\n| WHERE k8s.daemonset.name IS NOT NULL\n  AND (k8s.daemonset.current_scheduled_nodes IS NOT NULL OR k8s.daemonset.desired_scheduled_nodes IS NOT NULL)\n| STATS\n    `Current scheduled` = SUM(k8s.daemonset.current_scheduled_nodes),\n    `Desired scheduled` = SUM(k8s.daemonset.desired_scheduled_nodes),\n    Ready = SUM(k8s.daemonset.ready_nodes)\n  BY timestamp = TBUCKET(50 , ?_tstart, ?_tend)\n| sort timestamp\n| KEEP timestamp, `Desired scheduled`, `Current scheduled`, Ready\n"
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "014ea010-d756-94db-97ff-f77ab7e7788f",
-                                            "cc602dc1-bbd6-334b-b4f0-87b9fa141ed1",
-                                            "3b77cf63-db0d-00a4-1a3e-eb05af4e63d0"
-                                        ],
-                                        "layerId": "9d698809-25fc-7d1d-9030-db07c457d87b",
-                                        "layerType": "data",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "xAccessor": "24258928-91bb-7193-d4df-0329829a7575"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "bottom"
-                                },
-                                "preferredSeriesType": "line",
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "",
-                        "version": 2,
-                        "visualizationType": "lnsXY"
-                    },
-                    "description": "DaemonSet scheduling trend. SUM of desired, scheduled, and ready nodes per 1m bucket.",
-                    "title": "DaemonSet scheduling over time"
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "v2-workloads-alt-daemonset-trend",
-                    "sectionId": "section-deploy-metrics",
-                    "w": 14,
-                    "x": 19,
-                    "y": 16
-                },
-                "panelIndex": "v2-workloads-alt-daemonset-trend",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6": {
-                                    "allowHidden": false,
-                                    "allowNoIndex": false,
-                                    "fieldFormats": {},
-                                    "id": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
-                                    "managed": false,
-                                    "name": "metrics-*",
-                                    "runtimeFieldMap": {},
-                                    "sourceFilters": [],
-                                    "timeFieldName": "@timestamp",
-                                    "title": "metrics-*",
-                                    "type": "esql"
-                                }
-                            },
-                            "datasourceStates": {
-                                "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
-                                            "timeField": "@timestamp",
-                                            "title": "metrics-*"
-                                        }
-                                    ],
-                                    "layers": {
-                                        "fa263ac0-f497-434a-84c3-a8310197b0c4": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "total_restarts",
-                                                    "customLabel": true,
-                                                    "fieldName": "total_restarts",
-                                                    "inMetricDimension": true,
-                                                    "label": "Container restarts",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "timestamp",
-                                                    "customLabel": false,
-                                                    "fieldName": "timestamp",
-                                                    "label": "timestamp",
-                                                    "meta": {
-                                                        "esType": "date",
-                                                        "type": "date"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "k8s.deployment.name",
-                                                    "customLabel": false,
-                                                    "fieldName": "k8s.deployment.name",
-                                                    "label": "k8s.deployment.name",
-                                                    "meta": {
-                                                        "esType": "keyword",
-                                                        "type": "string"
-                                                    }
-                                                }
-                                            ],
-                                            "index": "84f6ce3ff5709eed7dd3934d32b8aae90586b3a31f0765f56763d26f57372fa6",
-                                            "query": {
-                                                "esql": "TS metrics-*\n| WHERE k8s.container.name IS NOT NULL\n  AND k8s.container.restarts IS NOT NULL\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.deployment.name IS NOT NULL\n| STATS max_restarts = MAX(k8s.container.restarts)\n    BY timestamp = TBUCKET(50, ?_tstart, ?_tend),\n       k8s.deployment.name, k8s.pod.uid, k8s.container.name\n| STATS total_restarts = SUM(max_restarts)\n    BY timestamp, k8s.deployment.name\n| Where total_restarts > 0\n| SORT total_restarts DESC"
-                                            },
-                                            "timeField": "@timestamp"
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "needsRefresh": false,
-                            "query": {
-                                "esql": "TS metrics-*\n| WHERE k8s.container.name IS NOT NULL\n  AND k8s.container.restarts IS NOT NULL\n  AND k8s.pod.uid IS NOT NULL\n  AND k8s.deployment.name IS NOT NULL\n| STATS max_restarts = MAX(k8s.container.restarts)\n    BY timestamp = TBUCKET(50, ?_tstart, ?_tend),\n       k8s.deployment.name, k8s.pod.uid, k8s.container.name\n| STATS total_restarts = SUM(max_restarts)\n    BY timestamp, k8s.deployment.name\n| Where total_restarts > 0\n| SORT total_restarts DESC"
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "total_restarts"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "elastic_line_optimized",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rules": [
-                                                        {
-                                                            "type": "other"
-                                                        }
-                                                    ],
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "fa263ac0-f497-434a-84c3-a8310197b0c4",
-                                        "layerType": "data",
-                                        "seriesType": "line",
-                                        "splitAccessors": [
-                                            "k8s.deployment.name"
-                                        ],
-                                        "xAccessor": "timestamp"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "layout": "list",
-                                    "position": "bottom",
-                                    "showSingleSeries": false
-                                },
-                                "preferredSeriesType": "line",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "",
-                        "version": 2,
-                        "visualizationType": "lnsXY"
-                    },
-                    "description": "Container restarts over time per deployment. max(k8s.container.restarts) broken down by k8s.deployment.name.",
-                    "title": "Top 10 deployments by container restarts"
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "e2adfa82-6921-44da-84fb-609bc7b86e61",
-                    "sectionId": "section-deploy-metrics",
-                    "w": 15,
-                    "x": 33,
-                    "y": 16
-                },
-                "panelIndex": "e2adfa82-6921-44da-84fb-609bc7b86e61",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -718,7 +348,7 @@
                                     ],
                                     "layers": {
                                         "2bc4e7dc-d6e6-470e-b5ea-c6c962d95588": {
-                                            "columns": [
+                                            "allColumns": [
                                                 {
                                                     "columnId": "k8s.deployment.name",
                                                     "fieldName": "k8s.deployment.name",
@@ -796,9 +426,87 @@
                                                     }
                                                 }
                                             ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "k8s.deployment.name",
+                                                    "fieldName": "k8s.deployment.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "availability",
+                                                    "customLabel": true,
+                                                    "fieldName": "availability",
+                                                    "inMetricDimension": true,
+                                                    "label": "Availability",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "available",
+                                                    "customLabel": true,
+                                                    "fieldName": "available",
+                                                    "inMetricDimension": true,
+                                                    "label": "Available replicas",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "desired",
+                                                    "customLabel": true,
+                                                    "fieldName": "desired",
+                                                    "inMetricDimension": true,
+                                                    "label": "Desired replicas",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "k8s.namespace.name",
+                                                    "fieldName": "k8s.namespace.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "k8s.cluster.name",
+                                                    "fieldName": "k8s.cluster.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "restarts",
+                                                    "customLabel": true,
+                                                    "fieldName": "restarts",
+                                                    "inMetricDimension": true,
+                                                    "label": "Container restarts",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
                                             "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "query": {
-                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.deployment.name IS NOT NULL\n  AND (k8s.deployment.available IS NOT NULL\n    OR k8s.container.restarts IS NOT NULL)\n| EVAL is_deploy_doc = CASE(k8s.deployment.available IS NOT NULL, 1, 0)\n| INLINE STATS latest_deploy_ts = MAX(CASE(is_deploy_doc == 1, @timestamp, NULL))\n    BY k8s.deployment.name\n| EVAL keep_deploy = CASE(\n    is_deploy_doc == 1 AND @timestamp == latest_deploy_ts, 1,\n    is_deploy_doc == 0, 1,\n    0)\n| WHERE keep_deploy == 1\n| STATS\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    available = MAX(k8s.deployment.available),\n    desired   = MAX(k8s.deployment.desired),\n    max_restarts = MAX(k8s.container.restarts)\n  BY k8s.namespace.name, k8s.deployment.name, k8s.pod.uid, k8s.container.name\n| STATS\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    available = MAX(available),\n    desired   = MAX(desired),\n    restarts  = SUM(max_restarts)\n  BY k8s.namespace.name, k8s.deployment.name\n| EVAL\n    restarts = COALESCE(restarts, 0),\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL)\n| SORT availability ASC\n| LIMIT 100"
+                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.deployment.name IS NOT NULL\n  AND k8s.deployment.name != \"\"\n  AND (\n    k8s.deployment.available IS NOT NULL\n    OR k8s.container.restarts IS NOT NULL\n  )\n| EVAL is_deploy_doc = CASE(k8s.deployment.available IS NOT NULL, 1, 0)\n| INLINE STATS latest_deploy_ts = MAX(CASE(is_deploy_doc == 1, @timestamp, NULL))\n    BY k8s.cluster.name, k8s.namespace.name, k8s.deployment.name\n| EVAL keep_deploy = CASE(\n    is_deploy_doc == 1 AND @timestamp == latest_deploy_ts, 1,\n    is_deploy_doc == 0, 1,\n    0)\n| WHERE keep_deploy == 1\n| STATS\n    available = MAX(k8s.deployment.available),\n    desired   = MAX(k8s.deployment.desired),\n    max_restarts = MAX(k8s.container.restarts),\n    last_seen = MAX(@timestamp)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.deployment.name,\n     k8s.pod.uid, k8s.container.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| STATS\n    available = MAX(available),\n    desired   = MAX(desired),\n    restarts  = SUM(max_restarts)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.deployment.name\n| EVAL\n    restarts = COALESCE(restarts, 0),\n    availability = CASE(\n      desired IS NOT NULL AND desired \u003e 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL)\n| SORT availability ASC, restarts DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -808,7 +516,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.deployment.name IS NOT NULL\n  AND (k8s.deployment.available IS NOT NULL\n    OR k8s.container.restarts IS NOT NULL)\n| EVAL is_deploy_doc = CASE(k8s.deployment.available IS NOT NULL, 1, 0)\n| INLINE STATS latest_deploy_ts = MAX(CASE(is_deploy_doc == 1, @timestamp, NULL))\n    BY k8s.deployment.name\n| EVAL keep_deploy = CASE(\n    is_deploy_doc == 1 AND @timestamp == latest_deploy_ts, 1,\n    is_deploy_doc == 0, 1,\n    0)\n| WHERE keep_deploy == 1\n| STATS\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    available = MAX(k8s.deployment.available),\n    desired   = MAX(k8s.deployment.desired),\n    max_restarts = MAX(k8s.container.restarts)\n  BY k8s.namespace.name, k8s.deployment.name, k8s.pod.uid, k8s.container.name\n| STATS\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    available = MAX(available),\n    desired   = MAX(desired),\n    restarts  = SUM(max_restarts)\n  BY k8s.namespace.name, k8s.deployment.name\n| EVAL\n    restarts = COALESCE(restarts, 0),\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL)\n| SORT availability ASC\n| LIMIT 100"
+                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.deployment.name IS NOT NULL\n  AND k8s.deployment.name != \"\"\n  AND (\n    k8s.deployment.available IS NOT NULL\n    OR k8s.container.restarts IS NOT NULL\n  )\n| EVAL is_deploy_doc = CASE(k8s.deployment.available IS NOT NULL, 1, 0)\n| INLINE STATS latest_deploy_ts = MAX(CASE(is_deploy_doc == 1, @timestamp, NULL))\n    BY k8s.cluster.name, k8s.namespace.name, k8s.deployment.name\n| EVAL keep_deploy = CASE(\n    is_deploy_doc == 1 AND @timestamp == latest_deploy_ts, 1,\n    is_deploy_doc == 0, 1,\n    0)\n| WHERE keep_deploy == 1\n| STATS\n    available = MAX(k8s.deployment.available),\n    desired   = MAX(k8s.deployment.desired),\n    max_restarts = MAX(k8s.container.restarts),\n    last_seen = MAX(@timestamp)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.deployment.name,\n     k8s.pod.uid, k8s.container.name\n| INLINE STATS latest_ts = MAX(last_seen)\n| WHERE DATE_DIFF(\"minute\", last_seen, latest_ts) \u003c= 5\n| STATS\n    available = MAX(available),\n    desired   = MAX(desired),\n    restarts  = SUM(max_restarts)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.deployment.name\n| EVAL\n    restarts = COALESCE(restarts, 0),\n    availability = CASE(\n      desired IS NOT NULL AND desired \u003e 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL)\n| SORT availability ASC, restarts DESC"
                             },
                             "visualization": {
                                 "columns": [
@@ -824,41 +532,27 @@
                                     },
                                     {
                                         "columnId": "k8s.namespace.name",
-                                        "oneClickFilter": true
+                                        "oneClickFilter": true,
+                                        "width": 327.0238095238095
                                     },
                                     {
                                         "columnId": "k8s.deployment.name",
                                         "oneClickFilter": true
                                     },
                                     {
-                                        "columnId": "restarts"
-                                    },
-                                    {
-                                        "colorMode": "cell",
-                                        "columnId": "availability",
+                                        "colorMode": "badge",
+                                        "columnId": "restarts",
                                         "palette": {
                                             "name": "custom",
                                             "params": {
                                                 "colorStops": [
                                                     {
-                                                        "color": "#f6726a",
+                                                        "color": "#AEE8D2",
                                                         "stop": 0
                                                     },
                                                     {
-                                                        "color": "#ffc9c2",
-                                                        "stop": 20
-                                                    },
-                                                    {
-                                                        "color": "#fcd883",
-                                                        "stop": 40
-                                                    },
-                                                    {
-                                                        "color": "#aee8d2",
-                                                        "stop": 60
-                                                    },
-                                                    {
-                                                        "color": "#24c292",
-                                                        "stop": 80
+                                                        "color": "#FFC9C2",
+                                                        "stop": 11.8
                                                     }
                                                 ],
                                                 "continuity": "above",
@@ -866,38 +560,69 @@
                                                 "progression": "fixed",
                                                 "rangeMax": null,
                                                 "rangeMin": 0,
-                                                "rangeType": "percent",
+                                                "rangeType": "number",
                                                 "reverse": false,
                                                 "steps": 5,
                                                 "stops": [
                                                     {
-                                                        "color": "#f6726a",
-                                                        "stop": 20
+                                                        "color": "#AEE8D2",
+                                                        "stop": 11.8
                                                     },
                                                     {
-                                                        "color": "#ffc9c2",
-                                                        "stop": 40
-                                                    },
-                                                    {
-                                                        "color": "#fcd883",
-                                                        "stop": 60
-                                                    },
-                                                    {
-                                                        "color": "#aee8d2",
-                                                        "stop": 80
-                                                    },
-                                                    {
-                                                        "color": "#24c292",
-                                                        "stop": 100
+                                                        "color": "#FFC9C2",
+                                                        "stop": 59
                                                     }
                                                 ]
                                             },
                                             "type": "palette"
                                         }
+                                    },
+                                    {
+                                        "colorMode": "badge",
+                                        "columnId": "availability",
+                                        "palette": {
+                                            "name": "custom",
+                                            "params": {
+                                                "colorStops": [
+                                                    {
+                                                        "color": "#FFC9C2",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#AEE8D2",
+                                                        "stop": 1
+                                                    }
+                                                ],
+                                                "continuity": "none",
+                                                "name": "custom",
+                                                "progression": "fixed",
+                                                "rangeMax": 1,
+                                                "rangeMin": 0,
+                                                "rangeType": "number",
+                                                "reverse": false,
+                                                "steps": 5,
+                                                "stops": [
+                                                    {
+                                                        "color": "#FFC9C2",
+                                                        "stop": 1
+                                                    },
+                                                    {
+                                                        "color": "#AEE8D2",
+                                                        "stop": 2
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        },
+                                        "width": 309.85714285714283
                                     }
                                 ],
                                 "layerId": "2bc4e7dc-d6e6-470e-b5ea-c6c962d95588",
                                 "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
                                 "showRowNumbers": true
                             }
                         },
@@ -905,15 +630,24 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Deployment listing with available/desired counts, availability percentage, and restarts. Drills down to Deployment Detail.",
+                    "description": "Deployments ranked by availability (lowest first). Click a deployment name to drill into deployment details, a namespace to drill into namespace details, or a cluster to drill into cluster details. Availability = available replicas ÷ desired replicas. Available and desired replica counts are latest values. Container restarts = sum across all pods and containers over the selected time range.",
                     "drilldowns": [
+                        {
+                            "dashboardRefName": "dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
+                            "label": "3. View cluster details",
+                            "open_in_new_tab": false,
+                            "trigger": "on_apply_filter",
+                            "type": "dashboard_drilldown",
+                            "use_filters": false,
+                            "use_time_range": true
+                        },
                         {
                             "dashboardRefName": "dashboard_drilldown_kubernetes_otel-8cf34def-60de-4bf3-9b06-d4ffc6cb4236",
                             "label": "1. View deployment details",
                             "open_in_new_tab": false,
                             "trigger": "on_apply_filter",
                             "type": "dashboard_drilldown",
-                            "use_filters": true,
+                            "use_filters": false,
                             "use_time_range": true
                         },
                         {
@@ -922,23 +656,13 @@
                             "open_in_new_tab": false,
                             "trigger": "on_apply_filter",
                             "type": "dashboard_drilldown",
-                            "use_filters": true,
-                            "use_time_range": true
-                        },
-                        {
-                            "dashboardRefName": "dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
-                            "label": "3. View cluster details",
-                            "open_in_new_tab": false,
-                            "trigger": "on_apply_filter",
-                            "type": "dashboard_drilldown",
-                            "use_filters": true,
+                            "use_filters": false,
                             "use_time_range": true
                         }
-                    ],
-                    "title": "Deployments"
+                    ]
                 },
                 "gridData": {
-                    "h": 16,
+                    "h": 13,
                     "i": "72287a15-e7ee-4918-868e-86e2d58057d6",
                     "sectionId": "section-deploy-metrics",
                     "w": 48,
@@ -946,7 +670,545 @@
                     "y": 0
                 },
                 "panelIndex": "72287a15-e7ee-4918-868e-86e2d58057d6",
-                "type": "lens"
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
+                                    "managed": false,
+                                    "name": "metrics-k8sclusterreceiver.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-k8sclusterreceiver.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-k8sclusterreceiver.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "fdfad702-0d8c-6690-f73b-71e4e64101a4": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "58394d5d-f244-ac4d-0efc-444da7cb5700",
+                                                    "customLabel": true,
+                                                    "fieldName": "desired",
+                                                    "inMetricDimension": true,
+                                                    "label": "Desired",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "1d07e96c-590b-03f1-4108-cbe912c2ac4a",
+                                                    "customLabel": true,
+                                                    "fieldName": "available",
+                                                    "inMetricDimension": true,
+                                                    "label": "Available",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "24258928-91bb-7193-d4df-0329829a7575",
+                                                    "customLabel": false,
+                                                    "fieldName": "timestamp",
+                                                    "label": "timestamp"
+                                                }
+                                            ],
+                                            "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
+                                            "query": {
+                                                "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.deployment.name IS NOT NULL\n  AND k8s.deployment.name != \"\"\n  AND (\n    k8s.deployment.available IS NOT NULL\n    OR k8s.deployment.desired IS NOT NULL\n  )\n| STATS\n    avail_per = MAX(k8s.deployment.available),\n    desired_per = MAX(k8s.deployment.desired)\n  BY timestamp = TBUCKET(50, ?_tstart, ?_tend),\n     k8s.cluster.name,\n     k8s.namespace.name,\n     k8s.deployment.name\n| STATS\n    available = SUM(avail_per),\n    desired = SUM(desired_per)\n  BY timestamp\n| SORT timestamp\n| KEEP timestamp, available, desired"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.deployment.name IS NOT NULL\n  AND k8s.deployment.name != \"\"\n  AND (\n    k8s.deployment.available IS NOT NULL\n    OR k8s.deployment.desired IS NOT NULL\n  )\n| STATS\n    avail_per = MAX(k8s.deployment.available),\n    desired_per = MAX(k8s.deployment.desired)\n  BY timestamp = TBUCKET(50, ?_tstart, ?_tend),\n     k8s.cluster.name,\n     k8s.namespace.name,\n     k8s.deployment.name\n| STATS\n    available = SUM(avail_per),\n    desired = SUM(desired_per)\n  BY timestamp\n| SORT timestamp\n| KEEP timestamp, available, desired"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "58394d5d-f244-ac4d-0efc-444da7cb5700",
+                                            "1d07e96c-590b-03f1-4108-cbe912c2ac4a"
+                                        ],
+                                        "layerId": "fdfad702-0d8c-6690-f73b-71e4e64101a4",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "24258928-91bb-7193-d4df-0329829a7575"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "line",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Total available and desired deployment replica counts across all clusters, summed per time bucket.",
+                    "title": "Deployment replicas over time"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "v2-workloads-alt-deploy-trend",
+                    "sectionId": "section-deploy-metrics",
+                    "w": 21,
+                    "x": 6,
+                    "y": 13
+                },
+                "panelIndex": "v2-workloads-alt-deploy-trend",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
+                                    "managed": false,
+                                    "name": "metrics-k8sclusterreceiver.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-k8sclusterreceiver.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-k8sclusterreceiver.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "fa263ac0-f497-434a-84c3-a8310197b0c4": {
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "total_restarts",
+                                                    "customLabel": true,
+                                                    "fieldName": "total_restarts",
+                                                    "inMetricDimension": true,
+                                                    "label": "Container restarts",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "timestamp",
+                                                    "customLabel": false,
+                                                    "fieldName": "timestamp",
+                                                    "label": "timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "k8s.deployment.name",
+                                                    "customLabel": false,
+                                                    "fieldName": "k8s.deployment.name",
+                                                    "label": "k8s.deployment.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "a511dbea-0d53-46b9-9d09-76693cde4680",
+                                                    "fieldName": "k8s.cluster.name",
+                                                    "label": "k8s.cluster.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "metrics-k8sclusterreceiver.otel-*",
+                                                            "sourceField": "k8s.cluster.name"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "009c62f7-cdad-4324-9ade-dc18379b3a2a",
+                                                    "fieldName": "k8s.namespace.name",
+                                                    "label": "k8s.namespace.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "metrics-k8sclusterreceiver.otel-*",
+                                                            "sourceField": "k8s.namespace.name"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "k8s.cluster.name",
+                                                    "fieldName": "k8s.cluster.name",
+                                                    "label": "k8s.cluster.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "k8s.namespace.name",
+                                                    "fieldName": "k8s.namespace.name",
+                                                    "label": "k8s.namespace.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "deployment_id",
+                                                    "fieldName": "deployment_id",
+                                                    "label": "deployment_id",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "total_restarts",
+                                                    "customLabel": true,
+                                                    "fieldName": "total_restarts",
+                                                    "inMetricDimension": true,
+                                                    "label": "Container restarts",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "timestamp",
+                                                    "customLabel": false,
+                                                    "fieldName": "timestamp",
+                                                    "label": "timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "k8s.deployment.name",
+                                                    "customLabel": false,
+                                                    "fieldName": "k8s.deployment.name",
+                                                    "label": "k8s.deployment.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "009c62f7-cdad-4324-9ade-dc18379b3a2a",
+                                                    "fieldName": "k8s.namespace.name",
+                                                    "label": "k8s.namespace.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "metrics-k8sclusterreceiver.otel-*",
+                                                            "sourceField": "k8s.namespace.name"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "a511dbea-0d53-46b9-9d09-76693cde4680",
+                                                    "fieldName": "k8s.cluster.name",
+                                                    "label": "k8s.cluster.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "metrics-k8sclusterreceiver.otel-*",
+                                                            "sourceField": "k8s.cluster.name"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
+                                            "query": {
+                                                "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.deployment.name IS NOT NULL\n  AND k8s.deployment.name != \"\"\n  AND k8s.container.name IS NOT NULL\n  AND k8s.container.name != \"\"\n  AND k8s.container.restarts IS NOT NULL\n  AND k8s.pod.uid IS NOT NULL\n| STATS max_restarts = MAX(k8s.container.restarts)\n    BY timestamp = TBUCKET(50, ?_tstart, ?_tend),\n       k8s.cluster.name,\n       k8s.namespace.name,\n       k8s.deployment.name,\n       k8s.pod.uid,\n       k8s.container.name\n| STATS total_restarts = SUM(max_restarts)\n    BY timestamp, k8s.cluster.name, k8s.namespace.name, k8s.deployment.name\n| EVAL deployment_id = CONCAT(k8s.cluster.name, \"/\", k8s.namespace.name, \"/\", k8s.deployment.name)\n| SORT timestamp ASC, total_restarts DESC\n| LIMIT 10 BY timestamp\n| SORT timestamp"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.deployment.name IS NOT NULL\n  AND k8s.deployment.name != \"\"\n  AND k8s.container.name IS NOT NULL\n  AND k8s.container.name != \"\"\n  AND k8s.container.restarts IS NOT NULL\n  AND k8s.pod.uid IS NOT NULL\n| STATS max_restarts = MAX(k8s.container.restarts)\n    BY timestamp = TBUCKET(50, ?_tstart, ?_tend),\n       k8s.cluster.name,\n       k8s.namespace.name,\n       k8s.deployment.name,\n       k8s.pod.uid,\n       k8s.container.name\n| STATS total_restarts = SUM(max_restarts)\n    BY timestamp, k8s.cluster.name, k8s.namespace.name, k8s.deployment.name\n| EVAL deployment_id = CONCAT(k8s.cluster.name, \"/\", k8s.namespace.name, \"/\", k8s.deployment.name)\n| SORT timestamp ASC, total_restarts DESC\n| LIMIT 10 BY timestamp\n| SORT timestamp"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "total_restarts"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "elastic_line_optimized",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "fa263ac0-f497-434a-84c3-a8310197b0c4",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "splitAccessors": [
+                                            "k8s.deployment.name",
+                                            "009c62f7-cdad-4324-9ade-dc18379b3a2a",
+                                            "a511dbea-0d53-46b9-9d09-76693cde4680"
+                                        ],
+                                        "xAccessor": "timestamp"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 2,
+                                    "position": "bottom",
+                                    "showSingleSeries": false
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Top 10 deployments by total container restarts over time (per time bucket). Restarts use the latest count per container in each bucket, summed across all pods and containers for each deployment (by cluster, namespace, and deployment name). Values reflect cumulative restart counts, not new restarts in the interval.",
+                    "title": "Top 10 deployments by container restarts"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "e2adfa82-6921-44da-84fb-609bc7b86e61",
+                    "sectionId": "section-deploy-metrics",
+                    "w": 21,
+                    "x": 27,
+                    "y": 13
+                },
+                "panelIndex": "e2adfa82-6921-44da-84fb-609bc7b86e61",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
+                                    "managed": false,
+                                    "name": "metrics-k8sclusterreceiver.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-k8sclusterreceiver.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-k8sclusterreceiver.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "9d698809-25fc-7d1d-9030-db07c457d87b": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "014ea010-d756-94db-97ff-f77ab7e7788f",
+                                                    "customLabel": true,
+                                                    "fieldName": "Desired scheduled",
+                                                    "inMetricDimension": true,
+                                                    "label": "Desired scheduled",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "cc602dc1-bbd6-334b-b4f0-87b9fa141ed1",
+                                                    "customLabel": true,
+                                                    "fieldName": "Current scheduled",
+                                                    "inMetricDimension": true,
+                                                    "label": "Current scheduled",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "3b77cf63-db0d-00a4-1a3e-eb05af4e63d0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Ready",
+                                                    "inMetricDimension": true,
+                                                    "label": "Ready",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "24258928-91bb-7193-d4df-0329829a7575",
+                                                    "customLabel": false,
+                                                    "fieldName": "timestamp",
+                                                    "label": "timestamp"
+                                                }
+                                            ],
+                                            "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
+                                            "query": {
+                                                "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.daemonset.name IS NOT NULL\n  AND k8s.daemonset.name != \"\"\n  AND (\n    k8s.daemonset.current_scheduled_nodes IS NOT NULL\n    OR k8s.daemonset.desired_scheduled_nodes IS NOT NULL\n  )\n| STATS\n    current_scheduled = MAX(k8s.daemonset.current_scheduled_nodes),\n    desired_scheduled = MAX(k8s.daemonset.desired_scheduled_nodes),\n    ready = MAX(k8s.daemonset.ready_nodes)\n  BY k8s.cluster.name,\n     k8s.namespace.name,\n     k8s.daemonset.name,\n     timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| STATS\n    `Current scheduled` = SUM(current_scheduled),\n    `Desired scheduled` = SUM(desired_scheduled),\n    Ready = SUM(ready)\n  BY timestamp\n| SORT timestamp\n| KEEP timestamp, `Desired scheduled`, `Current scheduled`, Ready"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "TS metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.daemonset.name IS NOT NULL\n  AND k8s.daemonset.name != \"\"\n  AND (\n    k8s.daemonset.current_scheduled_nodes IS NOT NULL\n    OR k8s.daemonset.desired_scheduled_nodes IS NOT NULL\n  )\n| STATS\n    current_scheduled = MAX(k8s.daemonset.current_scheduled_nodes),\n    desired_scheduled = MAX(k8s.daemonset.desired_scheduled_nodes),\n    ready = MAX(k8s.daemonset.ready_nodes)\n  BY k8s.cluster.name,\n     k8s.namespace.name,\n     k8s.daemonset.name,\n     timestamp = TBUCKET(50, ?_tstart, ?_tend)\n| STATS\n    `Current scheduled` = SUM(current_scheduled),\n    `Desired scheduled` = SUM(desired_scheduled),\n    Ready = SUM(ready)\n  BY timestamp\n| SORT timestamp\n| KEEP timestamp, `Desired scheduled`, `Current scheduled`, Ready"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "014ea010-d756-94db-97ff-f77ab7e7788f",
+                                            "cc602dc1-bbd6-334b-b4f0-87b9fa141ed1",
+                                            "3b77cf63-db0d-00a4-1a3e-eb05af4e63d0"
+                                        ],
+                                        "layerId": "9d698809-25fc-7d1d-9030-db07c457d87b",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "24258928-91bb-7193-d4df-0329829a7575"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "line",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Total desired and currently scheduled DaemonSet counts, plus ready node counts, across all clusters, summed per time bucket",
+                    "title": "DaemonSet scheduling over time"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "v2-workloads-alt-daemonset-trend",
+                    "sectionId": "section-other-workloads",
+                    "w": 12,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "v2-workloads-alt-daemonset-trend",
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -979,7 +1241,7 @@
                                     ],
                                     "layers": {
                                         "2de5cfb7-f53e-413e-9eef-7700c321f1e0": {
-                                            "columns": [
+                                            "allColumns": [
                                                 {
                                                     "columnId": "k8s.daemonset.name",
                                                     "fieldName": "k8s.daemonset.name",
@@ -1002,6 +1264,25 @@
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "availability",
+                                                    "customLabel": true,
+                                                    "fieldName": "availability",
+                                                    "inMetricDimension": true,
+                                                    "label": "Availability",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
                                                     }
                                                 },
                                                 {
@@ -1047,6 +1328,43 @@
                                                         "esType": "long",
                                                         "type": "number"
                                                     }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "k8s.daemonset.name",
+                                                    "fieldName": "k8s.daemonset.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "k8s.namespace.name",
+                                                    "fieldName": "k8s.namespace.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "k8s.cluster.name",
+                                                    "fieldName": "k8s.cluster.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "misscheduled",
+                                                    "customLabel": true,
+                                                    "fieldName": "misscheduled",
+                                                    "inMetricDimension": true,
+                                                    "label": "Misscheduled",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
                                                 },
                                                 {
                                                     "columnId": "availability",
@@ -1066,11 +1384,44 @@
                                                             }
                                                         }
                                                     }
+                                                },
+                                                {
+                                                    "columnId": "current",
+                                                    "customLabel": true,
+                                                    "fieldName": "current",
+                                                    "inMetricDimension": true,
+                                                    "label": "Scheduled",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "desired",
+                                                    "customLabel": true,
+                                                    "fieldName": "desired",
+                                                    "inMetricDimension": true,
+                                                    "label": "Desired",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "ready",
+                                                    "customLabel": true,
+                                                    "fieldName": "ready",
+                                                    "inMetricDimension": true,
+                                                    "label": "Ready",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
                                                 }
                                             ],
                                             "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "query": {
-                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.daemonset.name IS NOT NULL\n  AND k8s.daemonset.desired_scheduled_nodes IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp) BY k8s.daemonset.name\n| WHERE @timestamp == latest_ts\n| STATS\n    k8s.cluster.name      = MAX(k8s.cluster.name),\n    current      = MAX(k8s.daemonset.current_scheduled_nodes),\n    desired      = MAX(k8s.daemonset.desired_scheduled_nodes),\n    ready        = MAX(k8s.daemonset.ready_nodes),\n    misscheduled = MAX(k8s.daemonset.misscheduled_nodes)\n  BY k8s.namespace.name, k8s.daemonset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(ready) / TO_DOUBLE(desired), 4),\n      NULL)\n| SORT misscheduled DESC\n| LIMIT 100"
+                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.daemonset.name IS NOT NULL\n  AND k8s.daemonset.name != \"\"\n  AND k8s.daemonset.desired_scheduled_nodes IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp)\n    BY k8s.cluster.name, k8s.namespace.name, k8s.daemonset.name\n| WHERE @timestamp == latest_ts\n| STATS\n    current      = MAX(k8s.daemonset.current_scheduled_nodes),\n    desired      = MAX(k8s.daemonset.desired_scheduled_nodes),\n    ready        = MAX(k8s.daemonset.ready_nodes),\n    misscheduled = MAX(k8s.daemonset.misscheduled_nodes)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.daemonset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired \u003e 0,\n        ROUND(TO_DOUBLE(ready) / TO_DOUBLE(desired), 4),\n      NULL)\n| SORT availability asc, misscheduled desc"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1080,7 +1431,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.daemonset.name IS NOT NULL\n  AND k8s.daemonset.desired_scheduled_nodes IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp) BY k8s.daemonset.name\n| WHERE @timestamp == latest_ts\n| STATS\n    k8s.cluster.name      = MAX(k8s.cluster.name),\n    current      = MAX(k8s.daemonset.current_scheduled_nodes),\n    desired      = MAX(k8s.daemonset.desired_scheduled_nodes),\n    ready        = MAX(k8s.daemonset.ready_nodes),\n    misscheduled = MAX(k8s.daemonset.misscheduled_nodes)\n  BY k8s.namespace.name, k8s.daemonset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(ready) / TO_DOUBLE(desired), 4),\n      NULL)\n| SORT misscheduled DESC\n| LIMIT 100"
+                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.daemonset.name IS NOT NULL\n  AND k8s.daemonset.name != \"\"\n  AND k8s.daemonset.desired_scheduled_nodes IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp)\n    BY k8s.cluster.name, k8s.namespace.name, k8s.daemonset.name\n| WHERE @timestamp == latest_ts\n| STATS\n    current      = MAX(k8s.daemonset.current_scheduled_nodes),\n    desired      = MAX(k8s.daemonset.desired_scheduled_nodes),\n    ready        = MAX(k8s.daemonset.ready_nodes),\n    misscheduled = MAX(k8s.daemonset.misscheduled_nodes)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.daemonset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired \u003e 0,\n        ROUND(TO_DOUBLE(ready) / TO_DOUBLE(desired), 4),\n      NULL)\n| SORT availability asc, misscheduled desc"
                             },
                             "visualization": {
                                 "columns": [
@@ -1102,46 +1453,46 @@
                                     },
                                     {
                                         "columnId": "k8s.namespace.name",
-                                        "oneClickFilter": true
+                                        "oneClickFilter": true,
+                                        "width": 335.67857142857144
                                     },
                                     {
                                         "columnId": "k8s.daemonset.name",
-                                        "oneClickFilter": true
+                                        "oneClickFilter": true,
+                                        "width": 295.25
                                     },
                                     {
-                                        "colorMode": "cell",
+                                        "colorMode": "badge",
                                         "columnId": "availability",
                                         "palette": {
-                                            "name": "status",
+                                            "name": "custom",
                                             "params": {
+                                                "colorStops": [
+                                                    {
+                                                        "color": "#FFC9C2",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#AEE8D2",
+                                                        "stop": 1
+                                                    }
+                                                ],
                                                 "continuity": "above",
-                                                "name": "status",
+                                                "name": "custom",
                                                 "progression": "fixed",
                                                 "rangeMax": null,
                                                 "rangeMin": 0,
-                                                "rangeType": "percent",
+                                                "rangeType": "number",
                                                 "reverse": false,
                                                 "steps": 5,
                                                 "stops": [
                                                     {
-                                                        "color": "#24c292",
-                                                        "stop": 0
+                                                        "color": "#FFC9C2",
+                                                        "stop": 1
                                                     },
                                                     {
-                                                        "color": "#aee8d2",
-                                                        "stop": 20
-                                                    },
-                                                    {
-                                                        "color": "#fcd883",
-                                                        "stop": 40
-                                                    },
-                                                    {
-                                                        "color": "#ffc9c2",
-                                                        "stop": 60
-                                                    },
-                                                    {
-                                                        "color": "#f6726a",
-                                                        "stop": 80
+                                                        "color": "#AEE8D2",
+                                                        "stop": 2
                                                     }
                                                 ]
                                             },
@@ -1151,6 +1502,10 @@
                                 ],
                                 "layerId": "2de5cfb7-f53e-413e-9eef-7700c321f1e0",
                                 "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
                                 "showRowNumbers": true
                             }
                         },
@@ -1158,15 +1513,15 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "DaemonSet listing with scheduled/desired/ready/misscheduled node counts.",
+                    "description": "DaemonSets ranked by misscheduled node count (highest first). Click a DaemonSet name to see its pods, a namespace to drill into namespace details, or a cluster to drill into cluster details. Availability = ready ÷ desired. All counts reflect the latest collected values.",
                     "drilldowns": [
                         {
-                            "dashboardRefName": "dashboard_drilldown_kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
-                            "label": "2. View namespace details",
+                            "dashboardRefName": "dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
+                            "label": "3. View cluster details",
                             "open_in_new_tab": false,
                             "trigger": "on_apply_filter",
                             "type": "dashboard_drilldown",
-                            "use_filters": true,
+                            "use_filters": false,
                             "use_time_range": true
                         },
                         {
@@ -1175,31 +1530,31 @@
                             "open_in_new_tab": false,
                             "trigger": "on_apply_filter",
                             "type": "dashboard_drilldown",
-                            "use_filters": true,
+                            "use_filters": false,
                             "use_time_range": true
                         },
                         {
-                            "dashboardRefName": "dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
-                            "label": "3. View cluster details",
+                            "dashboardRefName": "dashboard_drilldown_kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
+                            "label": "2. View namespace details",
                             "open_in_new_tab": false,
                             "trigger": "on_apply_filter",
                             "type": "dashboard_drilldown",
-                            "use_filters": true,
+                            "use_filters": false,
                             "use_time_range": true
                         }
                     ],
-                    "title": "DaemonSet"
+                    "title": "DaemonSets"
                 },
                 "gridData": {
-                    "h": 13,
+                    "h": 12,
                     "i": "38f010f8-ca9e-4bf0-847f-2f395d39ee5d",
                     "sectionId": "section-other-workloads",
-                    "w": 48,
-                    "x": 0,
+                    "w": 36,
+                    "x": 12,
                     "y": 0
                 },
                 "panelIndex": "38f010f8-ca9e-4bf0-847f-2f395d39ee5d",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -1232,7 +1587,7 @@
                                     ],
                                     "layers": {
                                         "eb8d585c-d830-4baf-87fb-fec3369996b6": {
-                                            "columns": [
+                                            "allColumns": [
                                                 {
                                                     "columnId": "current",
                                                     "customLabel": true,
@@ -1339,9 +1694,132 @@
                                                     }
                                                 }
                                             ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "availability",
+                                                    "customLabel": true,
+                                                    "fieldName": "availability",
+                                                    "inMetricDimension": true,
+                                                    "label": "Availability",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "current",
+                                                    "customLabel": true,
+                                                    "fieldName": "current",
+                                                    "inMetricDimension": true,
+                                                    "label": "Current pods",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "desired",
+                                                    "customLabel": true,
+                                                    "fieldName": "desired",
+                                                    "inMetricDimension": true,
+                                                    "label": "Desired pods",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "ready",
+                                                    "customLabel": true,
+                                                    "fieldName": "ready",
+                                                    "inMetricDimension": true,
+                                                    "label": "Ready pods",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "updated",
+                                                    "customLabel": true,
+                                                    "fieldName": "updated",
+                                                    "inMetricDimension": true,
+                                                    "label": "Updated pods",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "k8s.statefulset.name",
+                                                    "customLabel": false,
+                                                    "fieldName": "k8s.statefulset.name",
+                                                    "label": "k8s.statefulset.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "k8s.namespace.name",
+                                                    "customLabel": false,
+                                                    "fieldName": "k8s.namespace.name",
+                                                    "label": "k8s.namespace.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "not_ready",
+                                                    "customLabel": false,
+                                                    "fieldName": "not_ready",
+                                                    "inMetricDimension": true,
+                                                    "label": "not_ready",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "not_updated",
+                                                    "customLabel": false,
+                                                    "fieldName": "not_updated",
+                                                    "inMetricDimension": true,
+                                                    "label": "not_updated",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "7d656e1e-c894-463e-a61f-dd413001433f",
+                                                    "fieldName": "k8s.cluster.name",
+                                                    "label": "k8s.cluster.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "metrics-k8sclusterreceiver.otel-*",
+                                                            "sourceField": "k8s.cluster.name"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
                                             "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "query": {
-                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.statefulset.name IS NOT NULL\n  AND k8s.statefulset.desired_pods IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp) BY k8s.statefulset.name\n| WHERE @timestamp == latest_ts\n| STATS\n    current = MAX(k8s.statefulset.current_pods),\n    desired = MAX(k8s.statefulset.desired_pods),\n    ready   = MAX(k8s.statefulset.ready_pods),\n    updated = MAX(k8s.statefulset.updated_pods)\n  BY k8s.namespace.name, k8s.statefulset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(ready) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_ready = COALESCE(desired, 0) - COALESCE(ready, 0),\n    not_updated = COALESCE(desired, 0) - COALESCE(updated, 0)\n| SORT not_ready DESC, availability ASC, not_updated DESC, k8s.statefulset.name ASC\n| LIMIT 100"
+                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.statefulset.name IS NOT NULL\n  AND k8s.statefulset.name != \"\"\n  AND k8s.statefulset.desired_pods IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp)\n    BY k8s.cluster.name, k8s.namespace.name, k8s.statefulset.name\n| WHERE @timestamp == latest_ts\n| STATS\n    current = MAX(k8s.statefulset.current_pods),\n    desired = MAX(k8s.statefulset.desired_pods),\n    ready   = MAX(k8s.statefulset.ready_pods),\n    updated = MAX(k8s.statefulset.updated_pods)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.statefulset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired \u003e 0,\n        ROUND(TO_DOUBLE(ready) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_ready = COALESCE(desired, 0) - COALESCE(ready, 0),\n    not_updated = COALESCE(desired, 0) - COALESCE(updated, 0)\n| SORT  availability ASC, not_ready DESC,not_updated DESC, k8s.statefulset.name ASC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1351,7 +1829,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.statefulset.name IS NOT NULL\n  AND k8s.statefulset.desired_pods IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp) BY k8s.statefulset.name\n| WHERE @timestamp == latest_ts\n| STATS\n    current = MAX(k8s.statefulset.current_pods),\n    desired = MAX(k8s.statefulset.desired_pods),\n    ready   = MAX(k8s.statefulset.ready_pods),\n    updated = MAX(k8s.statefulset.updated_pods)\n  BY k8s.namespace.name, k8s.statefulset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(ready) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_ready = COALESCE(desired, 0) - COALESCE(ready, 0),\n    not_updated = COALESCE(desired, 0) - COALESCE(updated, 0)\n| SORT not_ready DESC, availability ASC, not_updated DESC, k8s.statefulset.name ASC\n| LIMIT 100"
+                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.statefulset.name IS NOT NULL\n  AND k8s.statefulset.name != \"\"\n  AND k8s.statefulset.desired_pods IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp)\n    BY k8s.cluster.name, k8s.namespace.name, k8s.statefulset.name\n| WHERE @timestamp == latest_ts\n| STATS\n    current = MAX(k8s.statefulset.current_pods),\n    desired = MAX(k8s.statefulset.desired_pods),\n    ready   = MAX(k8s.statefulset.ready_pods),\n    updated = MAX(k8s.statefulset.updated_pods)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.statefulset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired \u003e 0,\n        ROUND(TO_DOUBLE(ready) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_ready = COALESCE(desired, 0) - COALESCE(ready, 0),\n    not_updated = COALESCE(desired, 0) - COALESCE(updated, 0)\n| SORT  availability ASC, not_ready DESC,not_updated DESC, k8s.statefulset.name ASC"
                             },
                             "visualization": {
                                 "columns": [
@@ -1369,47 +1847,46 @@
                                     },
                                     {
                                         "columnId": "k8s.namespace.name",
-                                        "oneClickFilter": true
+                                        "oneClickFilter": true,
+                                        "width": 343.7142857142857
                                     },
                                     {
                                         "columnId": "k8s.statefulset.name",
                                         "oneClickFilter": true,
-                                        "width": 193
+                                        "width": 289
                                     },
                                     {
-                                        "colorMode": "cell",
+                                        "colorMode": "badge",
                                         "columnId": "availability",
                                         "palette": {
-                                            "name": "status",
+                                            "name": "custom",
                                             "params": {
-                                                "continuity": "above",
-                                                "name": "status",
-                                                "progression": "fixed",
-                                                "rangeMax": null,
-                                                "rangeMin": 0,
-                                                "rangeType": "percent",
-                                                "reverse": false,
-                                                "steps": 5,
-                                                "stops": [
+                                                "colorStops": [
                                                     {
-                                                        "color": "#24c292",
+                                                        "color": "#FFC9C2",
                                                         "stop": 0
                                                     },
                                                     {
                                                         "color": "#aee8d2",
-                                                        "stop": 20
+                                                        "stop": 1
+                                                    }
+                                                ],
+                                                "continuity": "above",
+                                                "name": "custom",
+                                                "progression": "fixed",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "rangeType": "number",
+                                                "reverse": false,
+                                                "steps": 5,
+                                                "stops": [
+                                                    {
+                                                        "color": "#FFC9C2",
+                                                        "stop": 1
                                                     },
                                                     {
-                                                        "color": "#fcd883",
-                                                        "stop": 40
-                                                    },
-                                                    {
-                                                        "color": "#ffc9c2",
-                                                        "stop": 60
-                                                    },
-                                                    {
-                                                        "color": "#f6726a",
-                                                        "stop": 80
+                                                        "color": "#aee8d2",
+                                                        "stop": 2
                                                     }
                                                 ]
                                             },
@@ -1423,10 +1900,20 @@
                                     {
                                         "columnId": "not_updated",
                                         "hidden": true
+                                    },
+                                    {
+                                        "columnId": "7d656e1e-c894-463e-a61f-dd413001433f",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": true
                                     }
                                 ],
                                 "layerId": "eb8d585c-d830-4baf-87fb-fec3369996b6",
                                 "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
                                 "showRowNumbers": true
                             }
                         },
@@ -1434,7 +1921,7 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "StatefulSet listing with current/desired/ready/updated pod counts.",
+                    "description": "ReplicaSets ranked by availability (lowest first). Click a ReplicaSet name to see its pods, a namespace to drill into namespace details, or a cluster to drill into cluster details. Availability = ( available / desired replicas). All counts reflect the latest collected values",
                     "drilldowns": [
                         {
                             "dashboardRefName": "dashboard_drilldown_kubernetes_otel-aa37d8f8-56ca-4452-96ad-456b5154e23d",
@@ -1442,7 +1929,7 @@
                             "open_in_new_tab": false,
                             "trigger": "on_apply_filter",
                             "type": "dashboard_drilldown",
-                            "use_filters": true,
+                            "use_filters": false,
                             "use_time_range": true
                         },
                         {
@@ -1451,22 +1938,31 @@
                             "open_in_new_tab": false,
                             "trigger": "on_apply_filter",
                             "type": "dashboard_drilldown",
-                            "use_filters": true,
+                            "use_filters": false,
+                            "use_time_range": true
+                        },
+                        {
+                            "dashboardRefName": "dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
+                            "label": "3. View cluster details",
+                            "open_in_new_tab": false,
+                            "trigger": "on_apply_filter",
+                            "type": "dashboard_drilldown",
+                            "use_filters": false,
                             "use_time_range": true
                         }
                     ],
                     "title": "StatefulSets"
                 },
                 "gridData": {
-                    "h": 15,
+                    "h": 12,
                     "i": "6efc2bbb-059f-422a-9a2e-09b83f8554f3",
                     "sectionId": "section-other-workloads",
-                    "w": 24,
+                    "w": 48,
                     "x": 0,
-                    "y": 13
+                    "y": 12
                 },
                 "panelIndex": "6efc2bbb-059f-422a-9a2e-09b83f8554f3",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -1499,7 +1995,26 @@
                                     ],
                                     "layers": {
                                         "70b6e48d-80db-4ee4-88a6-fd3676937521": {
-                                            "columns": [
+                                            "allColumns": [
+                                                {
+                                                    "columnId": "completion",
+                                                    "customLabel": true,
+                                                    "fieldName": "completion",
+                                                    "inMetricDimension": true,
+                                                    "label": "Completion",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
                                                 {
                                                     "columnId": "active",
                                                     "customLabel": true,
@@ -1565,6 +2080,46 @@
                                                     }
                                                 },
                                                 {
+                                                    "columnId": "remaining",
+                                                    "customLabel": false,
+                                                    "fieldName": "remaining",
+                                                    "inMetricDimension": true,
+                                                    "label": "remaining",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "8d2f4aba-bb28-4734-bd0e-327aa28d4e5c",
+                                                    "fieldName": "k8s.cluster.name",
+                                                    "label": "k8s.cluster.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "metrics-k8sclusterreceiver.otel-*",
+                                                            "sourceField": "k8s.cluster.name"
+                                                        },
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "failed",
+                                                    "customLabel": true,
+                                                    "fieldName": "failed",
+                                                    "inMetricDimension": true,
+                                                    "label": "Failed pods",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
                                                     "columnId": "completion",
                                                     "customLabel": true,
                                                     "fieldName": "completion",
@@ -1584,6 +2139,59 @@
                                                     }
                                                 },
                                                 {
+                                                    "columnId": "active",
+                                                    "customLabel": true,
+                                                    "fieldName": "active",
+                                                    "inMetricDimension": true,
+                                                    "label": "Active pods",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "successful",
+                                                    "customLabel": true,
+                                                    "fieldName": "successful",
+                                                    "inMetricDimension": true,
+                                                    "label": "Successful pods",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "desired",
+                                                    "customLabel": true,
+                                                    "fieldName": "desired",
+                                                    "inMetricDimension": true,
+                                                    "label": "Desired pods",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "k8s.job.name",
+                                                    "customLabel": false,
+                                                    "fieldName": "k8s.job.name",
+                                                    "label": "k8s.job.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "k8s.namespace.name",
+                                                    "customLabel": false,
+                                                    "fieldName": "k8s.namespace.name",
+                                                    "label": "k8s.namespace.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
                                                     "columnId": "remaining",
                                                     "customLabel": false,
                                                     "fieldName": "remaining",
@@ -1593,11 +2201,27 @@
                                                         "esType": "long",
                                                         "type": "number"
                                                     }
+                                                },
+                                                {
+                                                    "columnId": "8d2f4aba-bb28-4734-bd0e-327aa28d4e5c",
+                                                    "fieldName": "k8s.cluster.name",
+                                                    "label": "k8s.cluster.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "params": {
+                                                            "id": "string"
+                                                        },
+                                                        "sourceParams": {
+                                                            "indexPattern": "metrics-k8sclusterreceiver.otel-*",
+                                                            "sourceField": "k8s.cluster.name"
+                                                        },
+                                                        "type": "string"
+                                                    }
                                                 }
                                             ],
                                             "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "query": {
-                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.job.name IS NOT NULL\n  AND k8s.job.active_pods IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp) BY k8s.job.name\n| WHERE @timestamp == latest_ts\n| STATS\n    active     = MAX(k8s.job.active_pods),\n    successful = MAX(k8s.job.successful_pods),\n    failed     = MAX(k8s.job.failed_pods),\n    desired    = MAX(k8s.job.desired_successful_pods)\n  BY k8s.namespace.name, k8s.job.name\n| EVAL\n    completion = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(successful) / TO_DOUBLE(desired), 4),\n      NULL),\n    remaining = COALESCE(desired, 0) - COALESCE(successful, 0)\n| SORT failed DESC, remaining DESC, completion ASC, k8s.job.name ASC\n| LIMIT 100"
+                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.job.name IS NOT NULL\n  AND k8s.job.name != \"\"\n  AND k8s.job.active_pods IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp)\n    BY k8s.cluster.name, k8s.namespace.name, k8s.job.name\n| WHERE @timestamp == latest_ts\n| STATS\n    active     = MAX(k8s.job.active_pods),\n    successful = MAX(k8s.job.successful_pods),\n    failed     = MAX(k8s.job.failed_pods),\n    desired    = MAX(k8s.job.desired_successful_pods)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.job.name\n| EVAL\n    completion = CASE(\n      desired IS NOT NULL AND desired \u003e 0,\n        ROUND(TO_DOUBLE(successful) / TO_DOUBLE(desired), 4),\n      NULL),\n    remaining = COALESCE(desired, 0) - COALESCE(successful, 0)\n| SORT failed DESC, remaining DESC, completion ASC, k8s.job.name ASC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1607,7 +2231,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.job.name IS NOT NULL\n  AND k8s.job.active_pods IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp) BY k8s.job.name\n| WHERE @timestamp == latest_ts\n| STATS\n    active     = MAX(k8s.job.active_pods),\n    successful = MAX(k8s.job.successful_pods),\n    failed     = MAX(k8s.job.failed_pods),\n    desired    = MAX(k8s.job.desired_successful_pods)\n  BY k8s.namespace.name, k8s.job.name\n| EVAL\n    completion = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(successful) / TO_DOUBLE(desired), 4),\n      NULL),\n    remaining = COALESCE(desired, 0) - COALESCE(successful, 0)\n| SORT failed DESC, remaining DESC, completion ASC, k8s.job.name ASC\n| LIMIT 100"
+                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.cluster.name IS NOT NULL\n  AND k8s.cluster.name != \"\"\n  AND k8s.namespace.name IS NOT NULL\n  AND k8s.namespace.name != \"\"\n  AND k8s.job.name IS NOT NULL\n  AND k8s.job.name != \"\"\n  AND k8s.job.active_pods IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp)\n    BY k8s.cluster.name, k8s.namespace.name, k8s.job.name\n| WHERE @timestamp == latest_ts\n| STATS\n    active     = MAX(k8s.job.active_pods),\n    successful = MAX(k8s.job.successful_pods),\n    failed     = MAX(k8s.job.failed_pods),\n    desired    = MAX(k8s.job.desired_successful_pods)\n  BY k8s.cluster.name, k8s.namespace.name, k8s.job.name\n| EVAL\n    completion = CASE(\n      desired IS NOT NULL AND desired \u003e 0,\n        ROUND(TO_DOUBLE(successful) / TO_DOUBLE(desired), 4),\n      NULL),\n    remaining = COALESCE(desired, 0) - COALESCE(successful, 0)\n| SORT failed DESC, remaining DESC, completion ASC, k8s.job.name ASC"
                             },
                             "visualization": {
                                 "columns": [
@@ -1618,53 +2242,88 @@
                                         "columnId": "successful"
                                     },
                                     {
-                                        "columnId": "failed"
+                                        "colorMode": "badge",
+                                        "columnId": "failed",
+                                        "palette": {
+                                            "name": "custom",
+                                            "params": {
+                                                "colorStops": [
+                                                    {
+                                                        "color": "#AEE8D2",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#FFC9C2",
+                                                        "stop": 1
+                                                    }
+                                                ],
+                                                "continuity": "above",
+                                                "name": "custom",
+                                                "progression": "fixed",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "rangeType": "number",
+                                                "reverse": false,
+                                                "steps": 5,
+                                                "stops": [
+                                                    {
+                                                        "color": "#AEE8D2",
+                                                        "stop": 1
+                                                    },
+                                                    {
+                                                        "color": "#FFC9C2",
+                                                        "stop": 7
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
                                     },
                                     {
                                         "columnId": "desired"
                                     },
                                     {
                                         "columnId": "k8s.namespace.name",
-                                        "oneClickFilter": true
+                                        "oneClickFilter": true,
+                                        "width": 340.25
                                     },
                                     {
                                         "columnId": "k8s.job.name",
-                                        "oneClickFilter": true
+                                        "oneClickFilter": true,
+                                        "width": 286.25
                                     },
                                     {
-                                        "colorMode": "cell",
+                                        "colorMode": "badge",
                                         "columnId": "completion",
                                         "palette": {
-                                            "name": "status",
+                                            "name": "custom",
                                             "params": {
+                                                "colorStops": [
+                                                    {
+                                                        "color": "#FFC9C2",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#AEE8D2",
+                                                        "stop": 1
+                                                    }
+                                                ],
                                                 "continuity": "above",
-                                                "name": "status",
+                                                "name": "custom",
                                                 "progression": "fixed",
                                                 "rangeMax": null,
                                                 "rangeMin": 0,
-                                                "rangeType": "percent",
+                                                "rangeType": "number",
                                                 "reverse": false,
                                                 "steps": 5,
                                                 "stops": [
                                                     {
-                                                        "color": "#24c292",
-                                                        "stop": 0
+                                                        "color": "#FFC9C2",
+                                                        "stop": 1
                                                     },
                                                     {
-                                                        "color": "#aee8d2",
-                                                        "stop": 20
-                                                    },
-                                                    {
-                                                        "color": "#fcd883",
-                                                        "stop": 40
-                                                    },
-                                                    {
-                                                        "color": "#ffc9c2",
-                                                        "stop": 60
-                                                    },
-                                                    {
-                                                        "color": "#f6726a",
-                                                        "stop": 80
+                                                        "color": "#AEE8D2",
+                                                        "stop": 2
                                                     }
                                                 ]
                                             },
@@ -1674,10 +2333,20 @@
                                     {
                                         "columnId": "remaining",
                                         "hidden": true
+                                    },
+                                    {
+                                        "columnId": "8d2f4aba-bb28-4734-bd0e-327aa28d4e5c",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": true
                                     }
                                 ],
                                 "layerId": "70b6e48d-80db-4ee4-88a6-fd3676937521",
                                 "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
                                 "showRowNumbers": true
                             }
                         },
@@ -1685,30 +2354,48 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Job listing with active/successful/failed/desired pod counts.",
+                    "description": "Jobs ranked by failed pods (highest first), then by remaining completions. Click a Job name to see its pods, a namespace to drill into namespace details, or a cluster to drill into cluster details. Completion = successful ÷ desired pods. All pod counts reflect the latest collected values.",
                     "drilldowns": [
                         {
-                            "dashboardRefName": "dashboard_drilldown_kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
-                            "label": "1. View namespace details",
+                            "dashboardRefName": "dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
+                            "label": "2. View cluster details",
                             "open_in_new_tab": false,
                             "trigger": "on_apply_filter",
                             "type": "dashboard_drilldown",
-                            "use_filters": true,
+                            "use_filters": false,
+                            "use_time_range": true
+                        },
+                        {
+                            "dashboardRefName": "dashboard_drilldown_kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
+                            "label": "2. View namespace details",
+                            "open_in_new_tab": false,
+                            "trigger": "on_apply_filter",
+                            "type": "dashboard_drilldown",
+                            "use_filters": false,
+                            "use_time_range": true
+                        },
+                        {
+                            "dashboardRefName": "dashboard_drilldown_kubernetes_otel-2a4e0bbf-43c9-4a02-b97d-87a4d05270fd",
+                            "label": "1. View pods in job",
+                            "open_in_new_tab": false,
+                            "trigger": "on_apply_filter",
+                            "type": "dashboard_drilldown",
+                            "use_filters": false,
                             "use_time_range": true
                         }
                     ],
                     "title": "Jobs"
                 },
                 "gridData": {
-                    "h": 15,
+                    "h": 12,
                     "i": "10464629-43fb-42f8-b36b-0f587c8c342f",
                     "sectionId": "section-other-workloads",
-                    "w": 24,
-                    "x": 24,
-                    "y": 13
+                    "w": 48,
+                    "x": 0,
+                    "y": 24
                 },
                 "panelIndex": "10464629-43fb-42f8-b36b-0f587c8c342f",
-                "type": "lens"
+                "type": "vis"
             },
             {
                 "embeddableConfig": {
@@ -1741,7 +2428,7 @@
                                     ],
                                     "layers": {
                                         "bdc1e70e-2126-4713-a7e7-537fd05d3f6b": {
-                                            "columns": [
+                                            "allColumns": [
                                                 {
                                                     "columnId": "available",
                                                     "customLabel": true,
@@ -1820,9 +2507,88 @@
                                                     }
                                                 }
                                             ],
+                                            "columns": [
+                                                {
+                                                    "columnId": "availability",
+                                                    "customLabel": true,
+                                                    "fieldName": "availability",
+                                                    "inMetricDimension": true,
+                                                    "label": "Availability",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "available",
+                                                    "customLabel": true,
+                                                    "fieldName": "available",
+                                                    "inMetricDimension": true,
+                                                    "label": "Available replicas",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "desired",
+                                                    "customLabel": true,
+                                                    "fieldName": "desired",
+                                                    "inMetricDimension": true,
+                                                    "label": "Desired replicas",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "k8s.replicaset.name",
+                                                    "fieldName": "k8s.replicaset.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "k8s.namespace.name",
+                                                    "fieldName": "k8s.namespace.name",
+                                                    "label": "Namespace",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "k8s.cluster.name",
+                                                    "fieldName": "k8s.cluster.name",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "not_available",
+                                                    "customLabel": false,
+                                                    "fieldName": "not_available",
+                                                    "inMetricDimension": true,
+                                                    "label": "not_available",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
                                             "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "query": {
-                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.replicaset.name IS NOT NULL\n  AND k8s.replicaset.available IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp) BY k8s.replicaset.name\n| WHERE @timestamp == latest_ts\n| STATS\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    available = MAX(k8s.replicaset.available),\n    desired   = MAX(k8s.replicaset.desired)\n  BY k8s.namespace.name, k8s.replicaset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_available = COALESCE(desired, 0) - COALESCE(available, 0)\n| SORT not_available DESC, availability ASC, k8s.replicaset.name ASC\n| LIMIT 100"
+                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.replicaset.name IS NOT NULL\n  AND k8s.replicaset.available IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp) BY k8s.replicaset.name\n| WHERE @timestamp == latest_ts\n| STATS\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    available = MAX(k8s.replicaset.available),\n    desired   = MAX(k8s.replicaset.desired)\n  BY k8s.namespace.name, k8s.replicaset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired \u003e 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_available = COALESCE(desired, 0) - COALESCE(available, 0)\n| SORT not_available DESC, availability ASC, k8s.replicaset.name ASC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1832,7 +2598,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.replicaset.name IS NOT NULL\n  AND k8s.replicaset.available IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp) BY k8s.replicaset.name\n| WHERE @timestamp == latest_ts\n| STATS\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    available = MAX(k8s.replicaset.available),\n    desired   = MAX(k8s.replicaset.desired)\n  BY k8s.namespace.name, k8s.replicaset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired > 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_available = COALESCE(desired, 0) - COALESCE(available, 0)\n| SORT not_available DESC, availability ASC, k8s.replicaset.name ASC\n| LIMIT 100"
+                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n| WHERE k8s.replicaset.name IS NOT NULL\n  AND k8s.replicaset.available IS NOT NULL\n| INLINE STATS latest_ts = MAX(@timestamp) BY k8s.replicaset.name\n| WHERE @timestamp == latest_ts\n| STATS\n    k8s.cluster.name = MAX(k8s.cluster.name),\n    available = MAX(k8s.replicaset.available),\n    desired   = MAX(k8s.replicaset.desired)\n  BY k8s.namespace.name, k8s.replicaset.name\n| EVAL\n    availability = CASE(\n      desired IS NOT NULL AND desired \u003e 0,\n        ROUND(TO_DOUBLE(available) / TO_DOUBLE(desired), 4),\n      NULL),\n    not_available = COALESCE(desired, 0) - COALESCE(available, 0)\n| SORT not_available DESC, availability ASC, k8s.replicaset.name ASC"
                             },
                             "visualization": {
                                 "columns": [
@@ -1848,38 +2614,27 @@
                                     },
                                     {
                                         "columnId": "k8s.replicaset.name",
-                                        "oneClickFilter": true
+                                        "oneClickFilter": true,
+                                        "width": 347.6666666666667
                                     },
                                     {
                                         "columnId": "k8s.cluster.name",
                                         "oneClickFilter": true
                                     },
                                     {
-                                        "colorMode": "cell",
+                                        "colorMode": "badge",
                                         "columnId": "availability",
                                         "palette": {
                                             "name": "custom",
                                             "params": {
                                                 "colorStops": [
                                                     {
-                                                        "color": "#f6726a",
+                                                        "color": "#FFC9C2",
                                                         "stop": 0
                                                     },
                                                     {
-                                                        "color": "#ffc9c2",
-                                                        "stop": 20
-                                                    },
-                                                    {
-                                                        "color": "#fcd883",
-                                                        "stop": 40
-                                                    },
-                                                    {
-                                                        "color": "#aee8d2",
-                                                        "stop": 60
-                                                    },
-                                                    {
-                                                        "color": "#24c292",
-                                                        "stop": 80
+                                                        "color": "#AEE8D2",
+                                                        "stop": 1
                                                     }
                                                 ],
                                                 "continuity": "above",
@@ -1887,29 +2642,17 @@
                                                 "progression": "fixed",
                                                 "rangeMax": null,
                                                 "rangeMin": 0,
-                                                "rangeType": "percent",
+                                                "rangeType": "number",
                                                 "reverse": false,
                                                 "steps": 5,
                                                 "stops": [
                                                     {
-                                                        "color": "#f6726a",
-                                                        "stop": 20
+                                                        "color": "#FFC9C2",
+                                                        "stop": 1
                                                     },
                                                     {
-                                                        "color": "#ffc9c2",
-                                                        "stop": 40
-                                                    },
-                                                    {
-                                                        "color": "#fcd883",
-                                                        "stop": 60
-                                                    },
-                                                    {
-                                                        "color": "#aee8d2",
-                                                        "stop": 80
-                                                    },
-                                                    {
-                                                        "color": "#24c292",
-                                                        "stop": 100
+                                                        "color": "#AEE8D2",
+                                                        "stop": 2
                                                     }
                                                 ]
                                             },
@@ -1923,6 +2666,10 @@
                                 ],
                                 "layerId": "bdc1e70e-2126-4713-a7e7-537fd05d3f6b",
                                 "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
                                 "showRowNumbers": true
                             }
                         },
@@ -1930,7 +2677,7 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Replicaset listing with current/desired/ready/updated pod counts.",
+                    "description": "ReplicaSets sorted by unavailable replicas (desired minus available), then by availability. Shows available and desired pod counts from the latest collected data for each ReplicaSet. Click a row to drill down.",
                     "drilldowns": [
                         {
                             "dashboardRefName": "dashboard_drilldown_kubernetes_otel-aa37d8f8-56ca-4452-96ad-456b5154e23d",
@@ -1938,7 +2685,7 @@
                             "open_in_new_tab": false,
                             "trigger": "on_apply_filter",
                             "type": "dashboard_drilldown",
-                            "use_filters": true,
+                            "use_filters": false,
                             "use_time_range": true
                         },
                         {
@@ -1947,36 +2694,33 @@
                             "open_in_new_tab": false,
                             "trigger": "on_apply_filter",
                             "type": "dashboard_drilldown",
-                            "use_filters": true,
+                            "use_filters": false,
                             "use_time_range": true
                         },
                         {
-                            "dashboardRefName": "dashboard_drilldown_",
+                            "dashboardRefName": "dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
                             "label": "3. View cluster details",
                             "open_in_new_tab": false,
                             "trigger": "on_apply_filter",
                             "type": "dashboard_drilldown",
-                            "use_filters": true,
+                            "use_filters": false,
                             "use_time_range": true
                         }
                     ],
-                    "title": "Replicasets"
+                    "title": "ReplicaSets"
                 },
                 "gridData": {
-                    "h": 11,
+                    "h": 12,
                     "i": "6c961d92-244e-4019-b6d1-4d75f81db4c0",
                     "sectionId": "section-other-workloads",
                     "w": 48,
                     "x": 0,
-                    "y": 28
+                    "y": 36
                 },
                 "panelIndex": "6c961d92-244e-4019-b6d1-4d75f81db4c0",
-                "type": "lens"
+                "type": "vis"
             }
         ],
-        "pinned_panels": {
-            "panels": {}
-        },
         "sections": [
             {
                 "collapsed": false,
@@ -1995,43 +2739,48 @@
                 "title": "Other workload resources"
             }
         ],
-        "timeFrom": "2026-04-04T20:13:59.991Z",
+        "timeFrom": "now-24h/h",
         "timeRestore": true,
-        "timeTo": "2026-04-05T05:12:18.942Z",
+        "timeTo": "now",
         "title": "[Kubernetes OTel] Workloads"
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-04-06T10:52:20.976Z",
+    "created_at": "2026-06-17T05:39:44.087Z",
     "id": "kubernetes_otel-0b70c6de-4d53-47c4-9844-5f964ba04a6f",
     "references": [
         {
             "id": "kubernetes_otel-7b1ac87f-60ea-477f-b506-8a248026afbb",
-            "name": "v2-workloads-alt-nav:link_02b16bcb-9073-43a1-a6b7-ca2bd02fe321_dashboard",
+            "name": "v2-workloads-alt-nav:link_1e3ff145-06a4-4e59-854f-ff2f39628055_dashboard",
             "type": "dashboard"
         },
         {
             "id": "kubernetes_otel-fe68e0e9-0506-4ad7-96be-070cf7592a7e",
-            "name": "v2-workloads-alt-nav:link_a0cec3c9-85ce-4486-970c-fc1fd994418a_dashboard",
+            "name": "v2-workloads-alt-nav:link_f6993d94-47ac-4e0f-8d02-dcf54f7324c1_dashboard",
             "type": "dashboard"
         },
         {
             "id": "kubernetes_otel-0c88decf-de83-47a4-a5df-0a79dc8daff5",
-            "name": "v2-workloads-alt-nav:link_3fa37faf-7e87-42a8-9ede-2a06533d3cc8_dashboard",
+            "name": "v2-workloads-alt-nav:link_1c421e35-9935-49af-8e37-5f6071f2b00f_dashboard",
             "type": "dashboard"
         },
         {
             "id": "kubernetes_otel-c0765efe-f172-42c4-a2ea-f4552b6f42dc",
-            "name": "v2-workloads-alt-nav:link_a37dc1ba-1855-40e3-b3bc-10aeeaca3f0b_dashboard",
+            "name": "v2-workloads-alt-nav:link_d834b852-779e-414f-83d7-0ce113cd080a_dashboard",
             "type": "dashboard"
         },
         {
             "id": "kubernetes_otel-0b70c6de-4d53-47c4-9844-5f964ba04a6f",
-            "name": "v2-workloads-alt-nav:link_e90f7302-7c8c-4b19-90f4-d5411d1c1dcd_dashboard",
+            "name": "v2-workloads-alt-nav:link_603244df-834f-4c79-8a62-ad5e3f805822_dashboard",
             "type": "dashboard"
         },
         {
             "id": "kubernetes_otel-aa37d8f8-56ca-4452-96ad-456b5154e23d",
-            "name": "v2-workloads-alt-nav:link_ea675733-c1d8-43ca-9354-5a7899fb4012_dashboard",
+            "name": "v2-workloads-alt-nav:link_86e9a898-e3f0-409c-b761-a5a741d9574b_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
+            "name": "72287a15-e7ee-4918-868e-86e2d58057d6:dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
             "type": "dashboard"
         },
         {
@@ -2046,12 +2795,7 @@
         },
         {
             "id": "kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
-            "name": "72287a15-e7ee-4918-868e-86e2d58057d6:dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
-            "type": "dashboard"
-        },
-        {
-            "id": "kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
-            "name": "38f010f8-ca9e-4bf0-847f-2f395d39ee5d:dashboard_drilldown_kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
+            "name": "38f010f8-ca9e-4bf0-847f-2f395d39ee5d:dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
             "type": "dashboard"
         },
         {
@@ -2060,8 +2804,8 @@
             "type": "dashboard"
         },
         {
-            "id": "kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
-            "name": "38f010f8-ca9e-4bf0-847f-2f395d39ee5d:dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
+            "id": "kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
+            "name": "38f010f8-ca9e-4bf0-847f-2f395d39ee5d:dashboard_drilldown_kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
             "type": "dashboard"
         },
         {
@@ -2075,8 +2819,23 @@
             "type": "dashboard"
         },
         {
+            "id": "kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
+            "name": "6efc2bbb-059f-422a-9a2e-09b83f8554f3:dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
+            "type": "dashboard"
+        },
+        {
+            "id": "kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
+            "name": "10464629-43fb-42f8-b36b-0f587c8c342f:dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
+            "type": "dashboard"
+        },
+        {
             "id": "kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
             "name": "10464629-43fb-42f8-b36b-0f587c8c342f:dashboard_drilldown_kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
+            "type": "dashboard"
+        },
+        {
+            "id": "kubernetes_otel-2a4e0bbf-43c9-4a02-b97d-87a4d05270fd",
+            "name": "10464629-43fb-42f8-b36b-0f587c8c342f:dashboard_drilldown_kubernetes_otel-2a4e0bbf-43c9-4a02-b97d-87a4d05270fd",
             "type": "dashboard"
         },
         {
@@ -2088,6 +2847,16 @@
             "id": "kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
             "name": "6c961d92-244e-4019-b6d1-4d75f81db4c0:dashboard_drilldown_kubernetes_otel-286af595-d3df-4b11-a127-bb096d86db62",
             "type": "dashboard"
+        },
+        {
+            "id": "kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
+            "name": "6c961d92-244e-4019-b6d1-4d75f81db4c0:dashboard_drilldown_kubernetes_otel-7b103a47-6eda-47e5-a949-9855bd58aa13",
+            "type": "dashboard"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard",

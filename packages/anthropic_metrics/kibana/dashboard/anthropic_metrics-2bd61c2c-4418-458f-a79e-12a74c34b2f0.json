@@ -1,0 +1,1669 @@
+{
+    "accessControl": {
+        "accessMode": "default",
+        "owner": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    },
+    "attributes": {
+        "description": "Cost reporting for Anthropic API consumption. Covers total spend by workspace, billing line item breakdown, inference geography (data residency), and invoice reconciliation. Data sourced from metrics-anthropic_metrics.cost-*.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "autoApplyFilters": true,
+            "hidePanelBorders": false,
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "layout": "horizontal",
+                    "links": [
+                        {
+                            "destinationRefName": "link_8e32cb47-1d33-41ec-b827-9b4728226456_dashboard",
+                            "label": "Cost \u0026 Billing",
+                            "options": {
+                                "open_in_new_tab": false,
+                                "use_filters": true,
+                                "use_time_range": true
+                            },
+                            "type": "dashboardLink"
+                        },
+                        {
+                            "destinationRefName": "link_741402d0-813f-47b7-90c2-c38d8c24f896_dashboard",
+                            "label": "Usage \u0026 Rate Limit Monitor",
+                            "options": {
+                                "open_in_new_tab": false,
+                                "use_filters": true,
+                                "use_time_range": true
+                            },
+                            "type": "dashboardLink"
+                        }
+                    ],
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 2,
+                    "i": "1d92f8b8-c16a-4452-bdb8-dafbf7125147",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "1d92f8b8-c16a-4452-bdb8-dafbf7125147",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "content": "## Anthropic — Cost \u0026 Billing\nDetailed cost reporting across all workspaces, models, and inference geographies. Aligned with **Anthropic's billing line items** for invoice reconciliation. "
+                },
+                "gridData": {
+                    "h": 4,
+                    "i": "69c7c2b7-a15d-41ec-b60b-4ef92f14afb4",
+                    "w": 48,
+                    "x": 0,
+                    "y": 2
+                },
+                "panelIndex": "69c7c2b7-a15d-41ec-b60b-4ef92f14afb4",
+                "type": "markdown"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.cost-*-c4e21e2f295df1bb32145826ba6547463640f0068bc634e50e39f538ecd03299": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.cost-*-c4e21e2f295df1bb32145826ba6547463640f0068bc634e50e39f538ecd03299",
+                                    "name": "metrics-anthropic_metrics.cost-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.cost-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Total Cost (USD)",
+                                                    "label": "Total Cost (USD)",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "custom",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "pattern": "$0,0.00"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.cost-*-c4e21e2f295df1bb32145826ba6547463640f0068bc634e50e39f538ecd03299",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS `Total Cost (USD)` = SUM(amount_usd)"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.cost-*-c4e21e2f295df1bb32145826ba6547463640f0068bc634e50e39f538ecd03299",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS `Total Cost (USD)` = SUM(amount_usd)"
+                            },
+                            "visualization": {
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "subtitle": "",
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "5ed0ec2f-8664-4749-a6d0-7dad90c52f9a",
+                    "w": 16,
+                    "x": 0,
+                    "y": 6
+                },
+                "panelIndex": "5ed0ec2f-8664-4749-a6d0-7dad90c52f9a",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.cost-*-84eb03a8565e9a11b462b140cd2161f5e0bef0187791a3200bb26c7ccd642f8c": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.cost-*-84eb03a8565e9a11b462b140cd2161f5e0bef0187791a3200bb26c7ccd642f8c",
+                                    "name": "metrics-anthropic_metrics.cost-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.cost-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "workspace_count",
+                                                    "label": "Active Workspaces",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.cost-*-84eb03a8565e9a11b462b140cd2161f5e0bef0187791a3200bb26c7ccd642f8c",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.cost-* | STATS workspace_count = COUNT_DISTINCT(anthropic.cost.workspace_id)"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.cost-*-84eb03a8565e9a11b462b140cd2161f5e0bef0187791a3200bb26c7ccd642f8c",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.cost-* | STATS workspace_count = COUNT_DISTINCT(anthropic.cost.workspace_id)"
+                            },
+                            "visualization": {
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "subtitle": "",
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "f268e8ca-5bcf-4bf0-a5ad-b6b06af93c22",
+                    "w": 16,
+                    "x": 16,
+                    "y": 6
+                },
+                "panelIndex": "f268e8ca-5bcf-4bf0-a5ad-b6b06af93c22",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.cost-*-964371c7eabf67cebb0ebdc0ffe0dd99e64e2097b8b004fb5ae3ccff6447c148": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.cost-*-964371c7eabf67cebb0ebdc0ffe0dd99e64e2097b8b004fb5ae3ccff6447c148",
+                                    "name": "metrics-anthropic_metrics.cost-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.cost-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "line_items",
+                                                    "label": "Billing Line Items",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.cost-*-964371c7eabf67cebb0ebdc0ffe0dd99e64e2097b8b004fb5ae3ccff6447c148",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.cost-* | STATS line_items = COUNT_DISTINCT(anthropic.cost.description)"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.cost-*-964371c7eabf67cebb0ebdc0ffe0dd99e64e2097b8b004fb5ae3ccff6447c148",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.cost-* | STATS line_items = COUNT_DISTINCT(anthropic.cost.description)"
+                            },
+                            "visualization": {
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "subtitle": "",
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "title": ""
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "07d5230e-58ff-4c21-9cde-c296a7c3e8dc",
+                    "w": 16,
+                    "x": 32,
+                    "y": 6
+                },
+                "panelIndex": "07d5230e-58ff-4c21-9cde-c296a7c3e8dc",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "Line-by-line cost breakdown aligned with Anthropic invoice format including model and inference geography for full attribution.",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.cost-*-734dbb195fe0e6b948ad1b134918dec7ee26997dd35c2b25bc19fabd7ab3d67e": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.cost-*-734dbb195fe0e6b948ad1b134918dec7ee26997dd35c2b25bc19fabd7ab3d67e",
+                                    "name": "metrics-anthropic_metrics.cost-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.cost-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "datatable_accessor_row_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.cost.workspace_id",
+                                                    "label": "Workspace",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.cost.description",
+                                                    "label": "Description",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_2",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.cost.currency",
+                                                    "label": "Currency",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_3",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.cost.model",
+                                                    "label": "Model",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_4",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.cost.inference_geo",
+                                                    "label": "Inference Geo",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Total Cost (USD)",
+                                                    "inMetricDimension": true,
+                                                    "label": "Total Cost (USD)",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "custom",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "pattern": "$0,0.00"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.cost-*-734dbb195fe0e6b948ad1b134918dec7ee26997dd35c2b25bc19fabd7ab3d67e",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL AND anthropic.cost.workspace_id IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS `Total Cost (USD)` = SUM(amount_usd), record_count = COUNT(*) BY anthropic.cost.workspace_id, anthropic.cost.model, anthropic.cost.inference_geo, anthropic.cost.description, anthropic.cost.currency | SORT anthropic.cost.workspace_id ASC, `Total Cost (USD)` DESC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.cost-*-734dbb195fe0e6b948ad1b134918dec7ee26997dd35c2b25bc19fabd7ab3d67e",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL AND anthropic.cost.workspace_id IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS `Total Cost (USD)` = SUM(amount_usd), record_count = COUNT(*) BY anthropic.cost.workspace_id, anthropic.cost.model, anthropic.cost.inference_geo, anthropic.cost.description, anthropic.cost.currency | SORT anthropic.cost.workspace_id ASC, `Total Cost (USD)` DESC"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "datatable_accessor_row_0",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": true
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_row_1",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": true,
+                                        "width": 334.66666666666663
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_row_2",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": true
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_row_3",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": true,
+                                        "width": 303.2666666666667
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_row_4",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": true
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_metric_0",
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "summaryLabel": "Grand Total",
+                                        "summaryRow": "sum"
+                                    }
+                                ],
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "sorting": {
+                                    "columnId": "datatable_accessor_metric_0",
+                                    "direction": "desc"
+                                }
+                            }
+                        },
+                        "title": "Invoice Reconciliation",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "Line-by-line cost breakdown aligned with Anthropic invoice format including model and inference geography for full attribution.",
+                    "title": "Invoice Reconciliation"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "603e078e-ae29-4b7b-a793-dda412e921fa",
+                    "w": 48,
+                    "x": 0,
+                    "y": 11
+                },
+                "panelIndex": "603e078e-ae29-4b7b-a793-dda412e921fa",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.cost-*-e19e355375d906bf18cf31e4e9e43245bec72d94d710f58d6c9b356d8b72dc6b": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.cost-*-e19e355375d906bf18cf31e4e9e43245bec72d94d710f58d6c9b356d8b72dc6b",
+                                    "name": "metrics-anthropic_metrics.cost-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.cost-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "partition_value_accessor_metric_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "total_cost_usd",
+                                                    "label": "Total Cost (USD)",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "partition_value_accessor_group_by_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.cost.workspace_id",
+                                                    "label": "Workspace",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.cost-*-e19e355375d906bf18cf31e4e9e43245bec72d94d710f58d6c9b356d8b72dc6b",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL AND anthropic.cost.workspace_id IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS total_cost_usd = SUM(amount_usd) BY anthropic.cost.workspace_id | SORT total_cost_usd DESC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.cost-*-e19e355375d906bf18cf31e4e9e43245bec72d94d710f58d6c9b356d8b72dc6b",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL AND anthropic.cost.workspace_id IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS total_cost_usd = SUM(amount_usd) BY anthropic.cost.workspace_id | SORT total_cost_usd DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "allowMultipleMetrics": false,
+                                        "categoryDisplay": "default",
+                                        "collapseFns": {},
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "elastic_line_optimized",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "layer_0",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "partition_value_accessor_metric_0"
+                                        ],
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 1,
+                                        "primaryGroups": [
+                                            "partition_value_accessor_group_by_0"
+                                        ],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "Total Cost by Workspace",
+                        "version": 2,
+                        "visualizationType": "lnsPie"
+                    },
+                    "title": "Total Cost by Workspace"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "30ca4032-bbe6-42cd-85ad-464313ae0e9c",
+                    "w": 24,
+                    "x": 0,
+                    "y": 23
+                },
+                "panelIndex": "30ca4032-bbe6-42cd-85ad-464313ae0e9c",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.cost-*-b86da93c039ce6539bcb48b0d3614d351d3154114848a620eb94dee06675dbfa": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.cost-*-b86da93c039ce6539bcb48b0d3614d351d3154114848a620eb94dee06675dbfa",
+                                    "name": "metrics-anthropic_metrics.cost-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.cost-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "partition_value_accessor_metric_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "total_cost_usd",
+                                                    "label": "Total Cost (USD)",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "partition_value_accessor_group_by_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.cost.model",
+                                                    "label": "Model",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.cost-*-b86da93c039ce6539bcb48b0d3614d351d3154114848a620eb94dee06675dbfa",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL AND anthropic.cost.model IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS total_cost_usd = SUM(amount_usd) BY anthropic.cost.model | SORT total_cost_usd DESC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.cost-*-b86da93c039ce6539bcb48b0d3614d351d3154114848a620eb94dee06675dbfa",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL AND anthropic.cost.model IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS total_cost_usd = SUM(amount_usd) BY anthropic.cost.model | SORT total_cost_usd DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "allowMultipleMetrics": false,
+                                        "categoryDisplay": "default",
+                                        "collapseFns": {},
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "elastic_line_optimized",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "layer_0",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendSize": "medium",
+                                        "metrics": [
+                                            "partition_value_accessor_metric_0"
+                                        ],
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 1,
+                                        "primaryGroups": [
+                                            "partition_value_accessor_group_by_0"
+                                        ],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "Cost by Model",
+                        "version": 2,
+                        "visualizationType": "lnsPie"
+                    },
+                    "title": "Cost by Model"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "5172cb31-f8d4-4865-b7d0-41a4ea5b56d5",
+                    "w": 24,
+                    "x": 24,
+                    "y": 23
+                },
+                "panelIndex": "5172cb31-f8d4-4865-b7d0-41a4ea5b56d5",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.cost-*-1bfe180debbb2e18c38261e081395cad095435da767de7ab8d23132b805b82c4": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.cost-*-1bfe180debbb2e18c38261e081395cad095435da767de7ab8d23132b805b82c4",
+                                    "name": "metrics-anthropic_metrics.cost-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.cost-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "partition_value_accessor_metric_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "total_cost_usd",
+                                                    "label": "Total Cost (USD)",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "partition_value_accessor_group_by_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.cost.inference_geo",
+                                                    "label": "Inference Geography",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.cost-*-1bfe180debbb2e18c38261e081395cad095435da767de7ab8d23132b805b82c4",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL AND anthropic.cost.inference_geo IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS total_cost_usd = SUM(amount_usd) BY anthropic.cost.inference_geo | SORT total_cost_usd DESC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.cost-*-1bfe180debbb2e18c38261e081395cad095435da767de7ab8d23132b805b82c4",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL AND anthropic.cost.inference_geo IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS total_cost_usd = SUM(amount_usd) BY anthropic.cost.inference_geo | SORT total_cost_usd DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "allowMultipleMetrics": false,
+                                        "categoryDisplay": "default",
+                                        "collapseFns": {},
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "elastic_line_optimized",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "layer_0",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "partition_value_accessor_metric_0"
+                                        ],
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 1,
+                                        "primaryGroups": [
+                                            "partition_value_accessor_group_by_0"
+                                        ],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "Cost by Inference Geography",
+                        "version": 2,
+                        "visualizationType": "lnsPie"
+                    },
+                    "title": "Cost by Inference Geography"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "64271e21-7e06-40eb-a80f-db461237612e",
+                    "w": 24,
+                    "x": 0,
+                    "y": 35
+                },
+                "panelIndex": "64271e21-7e06-40eb-a80f-db461237612e",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.cost-*-5bdfff1fc8276717316e0468d68065898c740c0600bc4885a495fec42c7e6e7e": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.cost-*-5bdfff1fc8276717316e0468d68065898c740c0600bc4885a495fec42c7e6e7e",
+                                    "name": "metrics-anthropic_metrics.cost-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.cost-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_horizontal_stacked_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_horizontal_stacked_x",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.cost.inference_geo",
+                                                    "label": "Inference Geography",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_horizontal_stacked_y_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Total Cost (USD)",
+                                                    "label": "Total Cost (USD)",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "custom",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "pattern": "$0,0.00"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_horizontal_stacked_breakdown",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.cost.model",
+                                                    "label": "Model",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.cost-*-5bdfff1fc8276717316e0468d68065898c740c0600bc4885a495fec42c7e6e7e",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL AND anthropic.cost.inference_geo IS NOT NULL AND anthropic.cost.model IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS `Total Cost (USD)` = SUM(amount_usd) BY anthropic.cost.inference_geo, anthropic.cost.model | SORT `Total Cost (USD)` DESC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.cost-*-5bdfff1fc8276717316e0468d68065898c740c0600bc4885a495fec42c7e6e7e",
+                                    "name": "indexpattern-datasource-layer-bar_horizontal_stacked_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL AND anthropic.cost.inference_geo IS NOT NULL AND anthropic.cost.model IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS `Total Cost (USD)` = SUM(amount_usd) BY anthropic.cost.inference_geo, anthropic.cost.model | SORT `Total Cost (USD)` DESC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_horizontal_stacked_y_0"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "elastic_line_optimized",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "bar_horizontal_stacked_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "splitAccessors": [
+                                            "bar_horizontal_stacked_breakdown"
+                                        ],
+                                        "xAccessor": "bar_horizontal_stacked_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_horizontal_stacked_y_0"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar_horizontal_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Cost by Inference Geography and Model",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Cost by Inference Geography and Model"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "df392bd3-53a9-4656-83ff-1974b297a0e4",
+                    "w": 24,
+                    "x": 24,
+                    "y": 35
+                },
+                "panelIndex": "df392bd3-53a9-4656-83ff-1974b297a0e4",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.cost-*-f067389c26f2a08536404228dee35c472548af0b6db29a8dc27fe224cafce66a": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.cost-*-f067389c26f2a08536404228dee35c472548af0b6db29a8dc27fe224cafce66a",
+                                    "name": "metrics-anthropic_metrics.cost-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.cost-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_horizontal_stacked_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_horizontal_stacked_x",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.cost.workspace_id",
+                                                    "label": "Workspace ID",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_horizontal_stacked_y_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Total Cost (USD)",
+                                                    "label": "Total Cost (USD)",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "custom",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "pattern": "$0,0.00"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_horizontal_stacked_breakdown",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.cost.inference_geo",
+                                                    "label": "Inference Geography",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.cost-*-f067389c26f2a08536404228dee35c472548af0b6db29a8dc27fe224cafce66a",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL AND anthropic.cost.workspace_id IS NOT NULL AND anthropic.cost.inference_geo IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS `Total Cost (USD)` = SUM(amount_usd) BY anthropic.cost.workspace_id, anthropic.cost.inference_geo | SORT `Total Cost (USD)` DESC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.cost-*-f067389c26f2a08536404228dee35c472548af0b6db29a8dc27fe224cafce66a",
+                                    "name": "indexpattern-datasource-layer-bar_horizontal_stacked_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL AND anthropic.cost.workspace_id IS NOT NULL AND anthropic.cost.inference_geo IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS `Total Cost (USD)` = SUM(amount_usd) BY anthropic.cost.workspace_id, anthropic.cost.inference_geo | SORT `Total Cost (USD)` DESC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_horizontal_stacked_y_0"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "elastic_line_optimized",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "bar_horizontal_stacked_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "splitAccessors": [
+                                            "bar_horizontal_stacked_breakdown"
+                                        ],
+                                        "xAccessor": "bar_horizontal_stacked_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_horizontal_stacked_y_0"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar_horizontal_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Cost by Workspace and Inference Geography",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Cost by Workspace and Inference Geography"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "17733309-9709-42c4-9919-fea3b9423f53",
+                    "w": 24,
+                    "x": 0,
+                    "y": 47
+                },
+                "panelIndex": "17733309-9709-42c4-9919-fea3b9423f53",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.cost-*-694d366d2a3442d7c74b455b3a413d9ee1468d5477027f436670b4b993492caf": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.cost-*-694d366d2a3442d7c74b455b3a413d9ee1468d5477027f436670b4b993492caf",
+                                    "name": "metrics-anthropic_metrics.cost-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "title": "metrics-anthropic_metrics.cost-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_horizontal_stacked_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_horizontal_stacked_x",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.cost.workspace_id",
+                                                    "label": "Workspace",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_horizontal_stacked_y_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Total Cost (USD)",
+                                                    "label": "Total Cost (USD)",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "custom",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "pattern": "$0,0.00"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_horizontal_stacked_breakdown",
+                                                    "customLabel": true,
+                                                    "fieldName": "anthropic.cost.model",
+                                                    "label": "Model",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.cost-*-694d366d2a3442d7c74b455b3a413d9ee1468d5477027f436670b4b993492caf",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL AND anthropic.cost.model IS NOT NULL AND anthropic.cost.workspace_id IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS `Total Cost (USD)` = SUM(amount_usd) BY anthropic.cost.workspace_id, anthropic.cost.model | SORT `Total Cost (USD)` DESC"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.cost-*-694d366d2a3442d7c74b455b3a413d9ee1468d5477027f436670b4b993492caf",
+                                    "name": "indexpattern-datasource-layer-bar_horizontal_stacked_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL AND anthropic.cost.model IS NOT NULL AND anthropic.cost.workspace_id IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS `Total Cost (USD)` = SUM(amount_usd) BY anthropic.cost.workspace_id, anthropic.cost.model | SORT `Total Cost (USD)` DESC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_horizontal_stacked_y_0"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "elastic_line_optimized",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "bar_horizontal_stacked_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal_stacked",
+                                        "splitAccessors": [
+                                            "bar_horizontal_stacked_breakdown"
+                                        ],
+                                        "xAccessor": "bar_horizontal_stacked_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_horizontal_stacked_y_0"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar_horizontal_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Cost by Workspace and Model",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Cost by Workspace and Model"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "3c21c089-6b80-40e1-a6b4-dcb3fe4475ae",
+                    "w": 24,
+                    "x": 24,
+                    "y": 47
+                },
+                "panelIndex": "3c21c089-6b80-40e1-a6b4-dcb3fe4475ae",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-anthropic_metrics.cost-*-@timestamp": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "metrics-anthropic_metrics.cost-*-@timestamp",
+                                    "name": "metrics-anthropic_metrics.cost-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-anthropic_metrics.cost-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_x",
+                                                    "customLabel": true,
+                                                    "fieldName": "bucket",
+                                                    "label": "Date",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_y_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Total Cost (USD)",
+                                                    "label": "Total Cost (USD)",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 2,
+                                                                "suffix": " USD"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-anthropic_metrics.cost-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS `Total Cost (USD)` = SUM(amount_usd) BY bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-anthropic_metrics.cost-*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-bar_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-anthropic_metrics.cost-* | WHERE anthropic.cost.amount IS NOT NULL | EVAL amount_usd = anthropic.cost.amount / 100.0 | STATS `Total Cost (USD)` = SUM(amount_usd) BY bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT bucket ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_y_0"
+                                        ],
+                                        "layerId": "bar_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar",
+                                        "xAccessor": "bar_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_y_0"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "maxLines": 1,
+                                    "position": "bottom"
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Daily / Monthly Cost Over Time",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": " Cost Over Time"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "3297ec6d-4cb9-4477-91a7-8fec069861db",
+                    "w": 48,
+                    "x": 0,
+                    "y": 59
+                },
+                "panelIndex": "3297ec6d-4cb9-4477-91a7-8fec069861db",
+                "type": "vis"
+            }
+        ],
+        "pinned_panels": {
+            "panels": {
+                "c1d2e3f4-a5b6-7890-cdef-1234567890ab": {
+                    "config": {
+                        "dataViewRefName": "c1d2e3f4-a5b6-7890-cdef-1234567890ab:optionsListDataView",
+                        "exclude": false,
+                        "exists_selected": false,
+                        "field_name": "anthropic.cost.model",
+                        "ignore_validations": false,
+                        "run_past_timeout": false,
+                        "search_technique": "wildcard",
+                        "selected_options": [],
+                        "single_select": false,
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Model",
+                        "use_global_filters": true
+                    },
+                    "grow": false,
+                    "order": 1,
+                    "type": "options_list_control",
+                    "width": "medium"
+                },
+                "ed7f9c24-69ae-4f5d-9973-3870c09a19a3": {
+                    "config": {
+                        "dataViewRefName": "ed7f9c24-69ae-4f5d-9973-3870c09a19a3:optionsListDataView",
+                        "exclude": false,
+                        "exists_selected": false,
+                        "field_name": "anthropic.cost.workspace_id",
+                        "ignore_validations": false,
+                        "run_past_timeout": false,
+                        "search_technique": "wildcard",
+                        "selected_options": [],
+                        "single_select": false,
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Workspace",
+                        "use_global_filters": true
+                    },
+                    "grow": false,
+                    "order": 0,
+                    "type": "options_list_control",
+                    "width": "medium"
+                }
+            }
+        },
+        "refreshInterval": {
+            "pause": true,
+            "value": 0
+        },
+        "timeFrom": "now-3d",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "[Anthropic] Cost \u0026 Billing"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-05-29T17:49:19.229Z",
+    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "id": "anthropic_metrics-2bd61c2c-4418-458f-a79e-12a74c34b2f0",
+    "references": [
+        {
+            "id": "anthropic_metrics-2bd61c2c-4418-458f-a79e-12a74c34b2f0",
+            "name": "1d92f8b8-c16a-4452-bdb8-dafbf7125147:link_8e32cb47-1d33-41ec-b827-9b4728226456_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "anthropic_metrics-602de168-1b42-4dd6-a463-9c4878e5db94",
+            "name": "1d92f8b8-c16a-4452-bdb8-dafbf7125147:link_741402d0-813f-47b7-90c2-c38d8c24f896_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "metrics-*",
+            "name": "ed7f9c24-69ae-4f5d-9973-3870c09a19a3:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "c1d2e3f4-a5b6-7890-cdef-1234567890ab:optionsListDataView",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+}

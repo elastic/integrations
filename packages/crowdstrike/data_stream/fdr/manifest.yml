@@ -46,7 +46,8 @@ streams:
         required: true
         show_user: true
         title: Enrich Host and User Metadata
-        description: Uses data in aidmaster and userinfo to add host and user information to events. The aidmaster blob must contain the string "aidmaster" in its path and the userinfo blob path must contain "userinfo", and the FDR Notification Parsing Script must sort events so that aidmaster and userinfo events appear first in the stream.
+        description: >-
+          Deprecated — ingest-time cache enrichment will be removed in a future major version. Use query-time LOOKUP JOIN enrichment instead (see documentation). When enabled, uses data in aidmaster and userinfo to add host and user information to events via the Elastic Agent metadata cache. The aidmaster blob must contain the string "aidmaster" in its path and the userinfo blob path must contain "userinfo", and the FDR Notification Parsing Script must sort events so that aidmaster and userinfo events appear first in the stream.
         type: bool
         multi: false
         default: true
@@ -54,15 +55,17 @@ streams:
         required: true
         show_user: false
         title: Keep Original Host and User Metadata
-        description: Keep the aidmaster and userinfo documents after they have been used for event enrichment.
+        description: >-
+          Deprecated — this option will be removed in a future major version when ingest-time cache enrichment is removed. Metadata events will always be indexed after removal. Keep the aidmaster and userinfo documents after they have been used for event enrichment. Must be enabled for LOOKUP JOIN query-time enrichment transforms to have source data.
         type: bool
         multi: false
-        default: false
+        default: true
       - name: metadata_ttl
         required: true
         show_user: true
         title: Metadata TTL
-        description: The period of time that metadata is considered valid for. Valid time units are h, m, s, ms, us/µs and ns.
+        description: >-
+          Deprecated — this option will be removed in a future major version when ingest-time cache enrichment is removed. The period of time that metadata is considered valid for. Valid time units are h, m, s, ms, us/µs and ns.
         type: text
         multi: false
         default: 168h
@@ -70,7 +73,8 @@ streams:
         required: true
         show_user: false
         title: Metadata cache capacity
-        description: "The maximum amount of metadata objects to cache. Operations that would cause the capacity to be exceeded will result in evictions of the oldest elements. The capacity should not be lower than the number of elements that are expected to be referenced when processing the input as evicted elements are lost. Values at or below zero indicate no limit. \nWARNING: This setting needs to be set only if the amount of metadata elements is known beforehand, otherwise it might lead to enrichment data loss. If you are not sure, leave it untouched.\n"
+        description: >-
+          Deprecated — this option will be removed in a future major version when ingest-time cache enrichment is removed. The maximum amount of metadata objects to cache. Operations that would cause the capacity to be exceeded will result in evictions of the oldest elements. The capacity should not be lower than the number of elements that are expected to be referenced when processing the input as evicted elements are lost. Values at or below zero indicate no limit. WARNING: This setting needs to be set only if the amount of metadata elements is known beforehand, otherwise it might lead to enrichment data loss. If you are not sure, leave it untouched.
         type: text
         multi: false
         default: 0
@@ -78,7 +82,8 @@ streams:
         required: true
         show_user: false
         title: Metadata cache write interval
-        description: The interval between periodic cache writes to the backing file. Valid time units are h, m, s, ms, us/µs and ns. The contents are always written out to the backing file when the processor is closed. Default is zero, no periodic writes.
+        description: >-
+          Deprecated — this option will be removed in a future major version when ingest-time cache enrichment is removed. The interval between periodic cache writes to the backing file. Valid time units are h, m, s, ms, us/µs and ns. The contents are always written out to the backing file when the processor is closed. Default is zero, no periodic writes.
         type: text
         multi: false
         default: 0
@@ -237,7 +242,6 @@ streams:
         default: 5
         required: false
         show_user: false
-
       - name: prune_fields
         type: bool
         title: Prune Fields
@@ -246,8 +250,7 @@ streams:
         required: false
         show_user: false
         description: >-
-          Prune fields deletes fields that are less likely to be useful. This includes `agent.ephemeral_id`, `ecs.version`,
-          `event.timezone` and `log.offset`.
+          Prune fields deletes fields that are less likely to be useful. This includes `agent.ephemeral_id`, `ecs.version`, `event.timezone` and `log.offset`.
   - input: logfile
     title: Falcon Data Replicator logs
     description: Collect Falcon Data Replicator logs through file system.
@@ -264,7 +267,8 @@ streams:
         required: true
         show_user: true
         title: Enrich Host and User Metadata
-        description: Uses data in aidmaster and userinfo to add host and user information to events. The aidmaster file must be included in the paths configuration, include the string "aidmaster" in the path host information file path and "userinfo" in the user information file path, and have a file paths that sorts before the FDR log file paths.
+        description: >-
+          Deprecated — ingest-time cache enrichment will be removed in a future major version. Use query-time LOOKUP JOIN enrichment instead (see documentation). When enabled, uses data in aidmaster and userinfo to add host and user information to events. The aidmaster file must be included in the paths configuration, include the string "aidmaster" in the path host information file path and "userinfo" in the user information file path, and have a file paths that sorts before the FDR log file paths.
         type: bool
         multi: false
         default: true
@@ -272,15 +276,17 @@ streams:
         required: true
         show_user: false
         title: Keep Original Host and User Metadata
-        description: Keep the aidmaster and userinfo documents after they have been used for event enrichment.
+        description: >-
+          Deprecated — this option will be removed in a future major version when ingest-time cache enrichment is removed. Metadata events will always be indexed after removal. Keep the aidmaster and userinfo documents after they have been used for event enrichment. Must be enabled for LOOKUP JOIN query-time enrichment transforms to have source data.
         type: bool
         multi: false
-        default: false
+        default: true
       - name: metadata_ttl
         required: true
         show_user: true
         title: Metadata TTL
-        description: The period of time that host metadata is considered valid for. Valid time units are h, m, s, ms, us/µs and ns.
+        description: >-
+          Deprecated — this option will be removed in a future major version when ingest-time cache enrichment is removed. The period of time that host metadata is considered valid for. Valid time units are h, m, s, ms, us/µs and ns.
         type: text
         multi: false
         default: 168h
@@ -308,6 +314,7 @@ streams:
         show_user: false
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
       - name: prune_fields
         type: bool
         title: Prune Fields
@@ -316,5 +323,4 @@ streams:
         required: false
         show_user: false
         description: >-
-          Prune fields deletes fields that are less likely to be useful. This includes `agent.ephemeral_id`, `ecs.version`,
-          `event.timezone` and `log.offset`.
+          Prune fields deletes fields that are less likely to be useful. This includes `agent.ephemeral_id`, `ecs.version`, `event.timezone` and `log.offset`.

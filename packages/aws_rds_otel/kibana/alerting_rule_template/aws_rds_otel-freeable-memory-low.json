@@ -1,0 +1,48 @@
+{
+  "id": "aws_rds_otel-freeable-memory-low",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when freeable memory on an RDS instance falls below an absolute byte floor. Persistent low memory leads to swapping and latency; correlate with DatabaseConnections and SwapUsage.",
+    "name": "[AWS RDS OTel] Freeable memory low",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_rds",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Freeable Memory Low\n\n### Triage\n1. Check `SwapUsage` — rising swap confirms memory pressure.\n2. Review `DatabaseConnections` for connection storms or leaks.\n3. Inspect query workload — heavy sorts, large joins, or missing indexes increase memory use.\n4. Compare instance class memory to workload; undersized classes are a common root cause.\n\n### Mitigation\n- Reduce connection count or enable connection pooling.\n- Tune or terminate expensive queries.\n- Scale up to a larger instance class with more RAM.\n\n### Note\nSet the byte floor based on instance class RAM (default: 256 MB)."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.rds.otel-*\n| WHERE Namespace == \"AWS/RDS\"\n    AND MetricName == \"FreeableMemory\"\n    AND stat == \"Average\"\n| STATS min_freeable_memory = MIN(`metrics.amazonaws.com/AWS/RDS/FreeableMemory`)\n    BY DBInstanceIdentifier, cloud.region\n// Absolute byte floor — adjust per instance class (default: 256 MB)\n| WHERE min_freeable_memory < 268435456\n| SORT min_freeable_memory ASC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "DBInstanceIdentifier",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
