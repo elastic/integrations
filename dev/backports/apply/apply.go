@@ -100,14 +100,14 @@ func Apply(opts Options) (*Result, error) {
 		}
 	}()
 
-	if conflict := cherryPickOrConflict(opts.SHA, branchName, workingBranch, opts.Package); conflict != nil {
-		return conflict, nil
-	}
-
 	changelogPath := filepath.Join(pkgDir, "changelog.yml")
 	manifestPath := filepath.Join(pkgDir, "manifest.yml")
 
-	changes, err := extractChangelogFields(changelogPath)
+	if conflict := cherryPickOrConflict(opts.SHA, branchName, workingBranch, opts.Package, changelogPath, manifestPath); conflict != nil {
+		return conflict, nil
+	}
+
+	changes, err := extractChangelogFields(opts.SHA, changelogPath)
 	if err != nil {
 		return nil, err
 	}
@@ -206,14 +206,30 @@ func prepareWorkingBranch(remote, branchName, workingBranch string) error {
 	return nil
 }
 
-// cherryPickOrConflict attempts the cherry-pick. On conflict it cleans up and
-// returns a populated conflict Result; on success it returns nil.
-func cherryPickOrConflict(sha, branchName, workingBranch, pkg string) *Result {
-	if err := gitutil.Run("cherry-pick", "-n", sha); err == nil {
+// cherryPickOrConflict attempts the cherry-pick. manifest.yml and changelog.yml
+// are always restored to HEAD afterwards — we manage those files ourselves, so
+// conflicts in them should never block the backport. If other files still
+// conflict after that, it cleans up and returns a populated conflict Result;
+// on success it returns nil.
+func cherryPickOrConflict(sha, branchName, workingBranch, pkg, changelogPath, manifestPath string) *Result {
+	cherryErr := gitutil.Run("cherry-pick", "-n", sha)
+
+	// Always restore manifest and changelog to HEAD. They are the most likely
+	// source of spurious conflicts (version bump and entry differ per branch) and
+	// we overwrite them ourselves in resetAndWriteChanges anyway.
+	_ = gitutil.Run("checkout", "HEAD", "--", changelogPath, manifestPath)
+
+	if cherryErr == nil {
 		return nil
 	}
-	_ = gitutil.Run("diff")
+
+	// cherry-pick failed; check whether non-manifest/changelog conflicts remain.
 	files, _ := conflictingFiles()
+	if len(files) == 0 {
+		// Only manifest/changelog conflicted — we resolved them above; continue.
+		return nil
+	}
+
 	// reset --hard instead of cherry-pick --abort: with -n, git does not always
 	// write CHERRY_PICK_HEAD, so --abort may fail and leave the index dirty.
 	_ = gitutil.Run("reset", "--hard", "HEAD")
@@ -231,20 +247,23 @@ func cherryPickOrConflict(sha, branchName, workingBranch, pkg string) *Result {
 	}
 }
 
-// extractChangelogFields reads the staged diff of changelogPath and extracts
-// all change items from the cherry-picked changelog entry.
-func extractChangelogFields(changelogPath string) ([]changeItem, error) {
-	diff, err := gitutil.Output("diff", "--cached", "--", changelogPath)
+// extractChangelogFields reads changelog.yml directly from the source commit
+// and returns the change items from its first (newest) entry.
+func extractChangelogFields(sha, changelogPath string) ([]changeItem, error) {
+	content, err := gitutil.Output("show", sha+":"+changelogPath)
 	if err != nil {
-		return nil, fmt.Errorf("reading staged changelog diff: %w", err)
+		return nil, fmt.Errorf("reading changelog from commit %s: %w", sha, err)
 	}
-	_, entryBlock, err := changelog.ExtractFromDiff(diff)
-	if err != nil {
-		return nil, fmt.Errorf("extracting changelog entry from diff: %w", err)
+	var entries []changelogEntryYAML
+	if err := yaml.Unmarshal([]byte(content), &entries); err != nil || len(entries) == 0 {
+		return nil, fmt.Errorf("parsing changelog from commit %s: %w", sha, err)
 	}
-	changes := parseEntryFields(entryBlock)
+	changes := make([]changeItem, 0, len(entries[0].Changes))
+	for _, c := range entries[0].Changes {
+		changes = append(changes, changeItem{Description: c.Description, Type: c.Type, Link: c.Link})
+	}
 	if len(changes) == 0 || changes[0].Description == "" || changes[0].Type == "" {
-		return nil, fmt.Errorf("could not extract changelog entry from cherry-pick diff")
+		return nil, fmt.Errorf("no valid changelog entry found in commit %s", sha)
 	}
 	return changes, nil
 }
@@ -378,9 +397,8 @@ type changelogEntryYAML struct {
 	} `yaml:"changes"`
 }
 
-// parseEntryFields extracts all change items from a changelog entry block as
-// returned by changelog.ExtractFromDiff. Returns nil when the block cannot be
-// parsed or contains no change items.
+// parseEntryFields extracts all change items from a changelog entry block.
+// Returns nil when the block cannot be parsed or contains no change items.
 func parseEntryFields(entryBlock string) []changeItem {
 	if entryBlock == "" {
 		return nil
