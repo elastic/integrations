@@ -9,14 +9,14 @@ resource.proxy_url: {{proxy_url}}
 {{#if ssl}}
 resource.ssl: {{ssl}}
 {{/if}}
-# Disable HTTP keep-alive so each poll opens a fresh connection.
-# Without this, the server-side connection may be closed mid-read during
-# the large NDJSON download, causing "read on closed response body".
-resource.keep_alive.disable: true
+# The large NDJSON download can intermittently fail with "read on closed
+# response body" (a transient HTTP/2 stream reset). These retries are the
+# mitigation: a fresh attempt almost always succeeds, so the agent self-heals
+# without a manual restart.
 resource.retry:
-  max_attempts: 3
-  wait_min: 30s
-  wait_max: 5m
+  max_attempts: 5
+  wait_min: 10s
+  wait_max: 1m
 resource.tracer:
   enabled: {{enable_request_tracer}}
   # Include the data stream namespace so multiple Ticura integration instances

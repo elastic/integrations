@@ -73,7 +73,7 @@ The integration keeps a **deduplicated, automatically-expiring view** of current
 2. **Per-indicator expiry** — the transform's retention policy drops an indicator from the latest index once its source-provided `ticura.indicator.ages_out` timestamp passes, so expired indicators leave the active view automatically.
 3. **Raw-stream ILM** — the raw `logs-ti_ticura.indicator-*` data stream rolls over every 24 hours and is deleted 1 day after rollover for storage hygiene. The latest index — queried by dashboards, saved searches, and Elastic Security's Indicator Match rules — is the source of truth for "currently active" indicators.
 
-Raw-stream documents are tagged `labels.is_ioc_transform_source: "true"` and the transform's deduplicated output `"false"`; dashboards and saved searches filter on `labels.is_ioc_transform_source: "false"` to show only the current, non-expired set. Each indicator is stored with its `ticura.indicator.uuid` as the document `_id`, so re-ingests overwrite in place instead of duplicating.
+Raw-stream documents are tagged `labels.is_ioc_transform_source: "true"` and the transform's deduplicated output `"false"`; dashboards and saved searches filter on `labels.is_ioc_transform_source: "false"` to show only the current, non-expired set. Each indicator's document `_id` is a fingerprint of its `ticura.indicator.uuid`, so re-ingests overwrite in place instead of duplicating.
 
 **Important — keep the download interval below 24 hours** so every indicator still in the feed is re-ingested before the raw backing index rolls over.
 
@@ -282,7 +282,7 @@ These are preserved alongside the ECS-mapped fields for per-field provenance (se
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `ticura.indicator.uuid` | keyword | Stable Ticura indicator ID (used as document `_id`). |
+| `ticura.indicator.uuid` | keyword | Stable Ticura indicator ID (basis for the document `_id` fingerprint). |
 | `ticura.indicator.main_type` / `sub_type` | keyword | High-level type and subtype as classified by Ticura. |
 | `ticura.indicator.risk` / `risk_category` | long / keyword | Numeric 0–100 risk and its categorical label (low / medium / high / critical). |
 | `ticura.indicator.confidence` / `confidence_category` | long / keyword | Numeric 0–100 confidence and label. |

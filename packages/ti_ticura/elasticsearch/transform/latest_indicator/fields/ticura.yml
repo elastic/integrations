@@ -4,7 +4,7 @@
   fields:
     - name: uuid
       type: keyword
-      description: Stable Ticura-assigned UUID for the indicator. Used as Elasticsearch document `_id` for deduplication.
+      description: Stable Ticura-assigned UUID for the indicator. The document `_id` is a fingerprint of this value, so re-ingests deduplicate by overwriting in place.
     - name: main_type
       type: keyword
       description: High-level indicator type (IPV4, IPV6, DOMAIN, URL, HASH).
@@ -124,14 +124,14 @@
           description: MITRE group reference URL.
 - name: ticura.indicator.merged
   type: group
-  description: Merged enrichment metadata aggregated from both ticura.* and additional_info.*.
+  description: Merged enrichment metadata aggregated from both ticura.indicator.* and ticura.indicator.additional_info.*.
   fields:
     - name: countries
       type: keyword
-      description: Deduplicated, sorted union of ticura.countries and additional_info.countries.
+      description: Deduplicated, sorted union of ticura.indicator.countries and ticura.indicator.additional_info.countries.
     - name: industries
       type: keyword
-      description: Deduplicated, sorted union of ticura.industries and additional_info.industries.
+      description: Deduplicated, sorted union of ticura.indicator.industries and ticura.indicator.additional_info.industries.
     - name: actors
       type: keyword
-      description: Deduplicated, sorted union of ticura.actors and additional_info.actors.
+      description: Deduplicated, sorted union of ticura.indicator.actors and ticura.indicator.additional_info.actors.

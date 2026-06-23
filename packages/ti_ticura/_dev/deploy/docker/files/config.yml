@@ -17,7 +17,8 @@ rules:
           {{file "/files/ticura-feed.ndjson"}}
   # ── Expired-indicator feed (10 normal + 1 already-expired) ───────────────
   # Used by: test-expired-config.yml
-  # The 11th indicator has ages_out in the past → pipeline sets expired=true.
+  # The 11th indicator has ages_out in the past → the transform retention_policy
+  # drops it from the latest index (it is still indexed in the raw stream).
   - path: /v1/feeds/expired/full
     methods: ["GET"]
     query_params:
@@ -33,7 +34,7 @@ rules:
           {{file "/files/ticura-feed-expired.ndjson"}}
   # ── Malformed-events feed (10 good + 2 malformed) ────────────────────────
   # Used by: test-malformed-config.yml
-  # Two bad lines: one with no ticura block, one with ticura.uuid absent.
+  # Two bad lines: one with no ticura block, one with ticura.indicator.uuid absent.
   # Both must be silently dropped → hit_count still 10.
   - path: /v1/feeds/malformed/full
     methods: ["GET"]
