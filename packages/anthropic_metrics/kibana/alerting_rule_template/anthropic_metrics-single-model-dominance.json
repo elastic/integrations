@@ -31,7 +31,10 @@
                 {
                     "id": "anthropic_metrics-602de168-1b42-4dd6-a463-9c4878e5db94"
                 }
-            ]
+            ],
+            "investigation_guide": {
+                "blob": "## Single Model Dominance\n\n### Triage Steps\n1. Open the Token Usage dashboard and check the model breakdown panel to see which model dominates.\n2. Verify whether the dominance is intentional (e.g., a standardization decision) or a misconfiguration.\n3. Check `anthropic.usage.workspace_id` to see if the dominance is org-wide or limited to specific workspaces.\n4. Review application routing configurations to confirm traffic is being directed to the intended models.\n5. Compare the current model distribution against the previous week to identify when the shift occurred.\n\n### Common Causes\n- Intentional standardization on a single model (may be a false positive — consider tuning)\n- Load balancer or routing misconfiguration sending all traffic to one model\n- A fallback configuration where a primary model is unavailable and all traffic routes to the backup\n- A new workload overwhelming other models' share of traffic\n\n### Tuning\n- Adjust the `90.0` dominance percentage threshold to match your organization's model diversity goals.\n- The alert requires at least 2 active models and `10000` tokens minimum volume to avoid false positives on low-traffic periods.\n- If single-model usage is expected for your org, consider disabling this alert."
+            }
         }
     },
     "managed": true,
