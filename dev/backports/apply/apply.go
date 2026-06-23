@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -107,7 +106,7 @@ func Apply(opts Options) (*Result, error) {
 	changelogPath := filepath.Join(pkgDir, "changelog.yml")
 	manifestPath := filepath.Join(pkgDir, "manifest.yml")
 
-	if conflict := cherryPickOrConflict(opts.SHA, branchName, workingBranch, opts.Package, changelogPath, manifestPath); conflict != nil {
+	if conflict := cherryPickOrConflict(opts.SHA, branchName, opts.Package, changelogPath, manifestPath); conflict != nil {
 		return conflict, nil
 	}
 
@@ -212,9 +211,10 @@ func prepareWorkingBranch(remote, branchName, workingBranch string) error {
 // cherryPickOrConflict attempts the cherry-pick. manifest.yml and changelog.yml
 // are always restored to HEAD afterwards — we manage those files ourselves, so
 // conflicts in them should never block the backport. If other files still
-// conflict after that, it cleans up and returns a populated conflict Result;
-// on success it returns nil.
-func cherryPickOrConflict(sha, branchName, workingBranch, pkg, changelogPath, manifestPath string) *Result {
+// conflict after that, it resets the index and returns a populated conflict
+// Result; the caller's defer is responsible for branch cleanup.
+// On success it returns nil.
+func cherryPickOrConflict(sha, branchName, pkg, changelogPath, manifestPath string) *Result {
 	cherryErr := gitutil.Run("cherry-pick", "-n", sha)
 
 	// Always restore manifest and changelog to HEAD. They are the most likely
@@ -235,9 +235,8 @@ func cherryPickOrConflict(sha, branchName, workingBranch, pkg, changelogPath, ma
 
 	// reset --hard instead of cherry-pick --abort: with -n, git does not always
 	// write CHERRY_PICK_HEAD, so --abort may fail and leave the index dirty.
+	// Branch checkout and deletion are left to the caller's defer.
 	_ = gitutil.Run("reset", "--hard", "HEAD")
-	_ = gitutil.Run("checkout", "-")
-	_ = gitutil.Run("branch", "-D", workingBranch)
 	return &Result{
 		Status:           "conflict",
 		SHA:              sha,
@@ -258,8 +257,11 @@ func extractChangelogFields(sha, changelogPath string) ([]changeItem, error) {
 		return nil, fmt.Errorf("reading changelog from commit %s: %w", sha, err)
 	}
 	var entries []changelogEntryYAML
-	if err := yaml.Unmarshal([]byte(content), &entries); err != nil || len(entries) == 0 {
+	if err := yaml.Unmarshal([]byte(content), &entries); err != nil {
 		return nil, fmt.Errorf("parsing changelog from commit %s: %w", sha, err)
+	}
+	if len(entries) == 0 {
+		return nil, fmt.Errorf("no changelog entries found in commit %s", sha)
 	}
 	changes := make([]changeItem, 0, len(entries[0].Changes))
 	for _, c := range entries[0].Changes {
@@ -493,7 +495,7 @@ func buildEntryBlock(version string, changes []changeItem) string {
 
 // conflictingFiles returns files in a conflict state after a failed cherry-pick.
 func conflictingFiles() ([]string, error) {
-	out, err := exec.Command("git", "status", "--porcelain").Output()
+	out, err := gitutil.Output("status", "--porcelain")
 	if err != nil {
 		return nil, err
 	}
