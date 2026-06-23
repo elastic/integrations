@@ -45,6 +45,7 @@ const validEntry = `backports:
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `
 
 func TestValidateInventory(t *testing.T) {
@@ -67,6 +68,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "abcdef1234"
     maintained_until: "2027-01-15"
     archived: false
+    remove_other_packages: false
 `,
 		},
 		{
@@ -78,6 +80,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "86356203eb"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 		},
 		{
@@ -92,6 +95,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"missing required field 'package'"},
@@ -104,6 +108,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"missing required field 'branch'"},
@@ -116,6 +121,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"missing required field 'base_version'"},
@@ -128,6 +134,7 @@ func TestValidateInventory(t *testing.T) {
     base_version: "3.17.0"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"missing required field 'base_commit'"},
@@ -153,6 +160,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"invalid base_version", "semantic version"},
@@ -166,6 +174,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"invalid base_version"},
@@ -179,6 +188,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "xyz_not_hex"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"invalid base_commit", "lowercase hex SHA"},
@@ -192,6 +202,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "abc12"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"invalid base_commit", "lowercase hex SHA"},
@@ -205,6 +216,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5B593F6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"invalid base_commit", "lowercase hex SHA"},
@@ -218,6 +230,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 		},
 		{
@@ -229,6 +242,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 		},
 		{
@@ -240,6 +254,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 		},
 		{
@@ -251,6 +266,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 		},
 		{
@@ -262,6 +278,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 		},
 		{
@@ -273,6 +290,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"invalid branch"},
@@ -286,6 +304,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{`must start with "backport-aws-"`},
@@ -299,6 +318,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 		},
 		{
@@ -310,6 +330,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"invalid branch"},
@@ -323,6 +344,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"invalid branch"},
@@ -342,6 +364,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"invalid branch"},
@@ -355,6 +378,7 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: "01/15/2027"
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"invalid maintained_until", "must be YYYY-MM-DD"},
@@ -368,11 +392,13 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
   - branch: backport-aws-1.51
     base_version: "1.51.2"
     base_commit: "88ad4b8432"
     maintained_until: "not-a-date"
     archived: true
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"missing required field 'package'", "invalid maintained_until"},
@@ -386,12 +412,14 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
   - package: aws
     branch: backport-aws-3.17
     base_version: "3.18.0"
     base_commit: "aabbccddee"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{`duplicate branch "backport-aws-3.17"`},
@@ -405,12 +433,14 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
   - package: aws
     branch: backport-aws-3.17x
     base_version: "3.17.0"
     base_commit: "aabbccddee"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"duplicate package/version", "aws", "3.17.0"},
@@ -424,12 +454,14 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
   - package: aws
     branch: backport-aws-3.13
     base_version: "3.13.0"
     base_commit: "aabbccddee"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 		},
 		{
@@ -441,12 +473,14 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
   - package: azure
     branch: backport-azure-1.0
     base_version: "1.0.0"
     base_commit: "aabbccddee"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 		},
 		{
@@ -458,12 +492,14 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
   - package: security_detection_engine
     branch: backport-security_detection_engine-8.18
     base_version: "8.17.7"
     base_commit: "aabbccddee"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 		},
 		{
@@ -475,12 +511,14 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
   - package: aws
     branch: backport-aws-3.17
     base_version: "3.17.0"
     base_commit: "aabbccddee"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"duplicate branch", "duplicate package/version"},
@@ -494,9 +532,23 @@ func TestValidateInventory(t *testing.T) {
     base_commit: "5b593f6681"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `,
 			wantErr:     true,
 			errContains: []string{"invalid branch"},
+		},
+		{
+			title: "missing remove_other_packages field",
+			contents: `backports:
+  - package: aws
+    branch: backport-aws-3.17
+    base_version: "3.17.0"
+    base_commit: "5b593f6681"
+    maintained_until: null
+    archived: false
+`,
+			wantErr:     true,
+			errContains: []string{"missing required field 'remove_other_packages'"},
 		},
 	}
 
@@ -526,6 +578,7 @@ func TestValidateInventoryPackageValidation(t *testing.T) {
     base_commit: "abcdef1234"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `
 	}
 
@@ -563,6 +616,7 @@ const checkActiveInventory = `backports:
     base_commit: "aabbccddee"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 
   - package: mypkg
     branch: backport-mypkg-2.0
@@ -570,6 +624,7 @@ const checkActiveInventory = `backports:
     base_commit: "11223344ff"
     maintained_until: null
     archived: true
+    remove_other_packages: false
 
   - package: mypkg
     branch: backport-mypkg-3.0
@@ -577,6 +632,7 @@ const checkActiveInventory = `backports:
     base_commit: "aabbccddee"
     maintained_until: "2020-01-01"
     archived: false
+    remove_other_packages: false
 
   - package: mypkg
     branch: backport-mypkg-4.0
@@ -584,6 +640,7 @@ const checkActiveInventory = `backports:
     base_commit: "aabbccddee"
     maintained_until: "2099-12-31"
     archived: false
+    remove_other_packages: false
 
   - package: mypkg
     branch: backport-mypkg-5.0
@@ -591,6 +648,7 @@ const checkActiveInventory = `backports:
     base_commit: "aabbccddee"
     maintained_until: "2099-12-31"
     archived: true
+    remove_other_packages: false
 `
 
 func TestCheckActive(t *testing.T) {
@@ -663,6 +721,7 @@ func TestCheckActiveMaintainedUntilBoundary(t *testing.T) {
     base_commit: "aabbccddee"
     maintained_until: "` + mu + `"
     archived: false
+    remove_other_packages: false
 `
 	path := writeTemp(t, inv)
 
@@ -774,12 +833,14 @@ func TestAddEntry(t *testing.T) {
     base_commit: "def5678901"
     maintained_until: null
     archived: false
+    remove_other_packages: false
   - package: aws
     branch: backport-aws-1.19
     base_version: "1.19.5"
     base_commit: "abc1234567"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `
 
 	t.Run("inserts between versions of the same package", func(t *testing.T) {
@@ -803,12 +864,14 @@ func TestAddEntry(t *testing.T) {
     base_commit: "aabbccddee"
     maintained_until: null
     archived: false
+    remove_other_packages: false
   - package: gcp
     branch: backport-gcp-1.0
     base_version: "1.0.0"
     base_commit: "ffeeddccbb"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `
 		path := writeTemp(t, inv)
 		branch, err := AddEntry(path, "elastic_agent", "2.3.0", "112233aabb", "")
@@ -867,6 +930,8 @@ func TestAddEntry(t *testing.T) {
 		assert.Nil(t, e.MaintainedUntil)
 		require.NotNil(t, e.Archived)
 		assert.False(t, *e.Archived)
+		require.NotNil(t, e.RemoveOtherPackages)
+		assert.True(t, *e.RemoveOtherPackages)
 	})
 
 	t.Run("existing entries keep double-quoted style", func(t *testing.T) {
@@ -890,6 +955,7 @@ backports:
     base_commit: "aabbccddee"
     maintained_until: null
     archived: false
+    remove_other_packages: false
 `
 		path := writeTemp(t, inv)
 		_, err := AddEntry(path, "aws", "2.0.0", "ffeeddccbb", "")

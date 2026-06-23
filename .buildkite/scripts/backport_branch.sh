@@ -33,7 +33,7 @@ DRY_RUN="$(buildkite-agent meta-data get DRY_RUN --default "${DRY_RUN:-"true"}")
 BASE_COMMIT="$(buildkite-agent meta-data get BASE_COMMIT --default "${BASE_COMMIT:-""}")"
 PACKAGE_NAME="$(buildkite-agent meta-data get PACKAGE_NAME --default "${PACKAGE_NAME:-""}")"
 PACKAGE_VERSION="$(buildkite-agent meta-data get PACKAGE_VERSION --default "${PACKAGE_VERSION:-""}")"
-REMOVE_OTHER_PACKAGES="$(buildkite-agent meta-data get REMOVE_OTHER_PACKAGES --default "${REMOVE_OTHER_PACKAGES:-"false"}")"
+REMOVE_OTHER_PACKAGES="$(buildkite-agent meta-data get REMOVE_OTHER_PACKAGES --default "${REMOVE_OTHER_PACKAGES:-"true"}")"
 BACKPORT_BRANCH_NAME="$(buildkite-agent meta-data get BACKPORT_BRANCH_NAME --default "${BACKPORT_BRANCH_NAME:-""}")"
 PR_NUMBER="$(buildkite-agent meta-data get PR_NUMBER --default "${PR_NUMBER:-""}")"
 
@@ -54,6 +54,9 @@ PARAMETERS=(
     "**PACKAGE_NAME**=$PACKAGE_NAME"
     "**PACKAGE_VERSION**=$PACKAGE_VERSION"
     "**REMOVE_OTHER_PACKAGES**=$REMOVE_OTHER_PACKAGES"
+    "Optional parameters:"
+    "**BACKPORT_BRANCH_NAME**=$BACKPORT_BRANCH_NAME"
+    "**PR_NUMBER**=$PR_NUMBER"
 )
 
 # Show each parameter in a different line

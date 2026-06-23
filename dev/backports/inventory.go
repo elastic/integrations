@@ -25,12 +25,13 @@ type inventory struct {
 }
 
 type entry struct {
-	Package         string  `yaml:"package"`
-	Branch          string  `yaml:"branch"`
-	BaseVersion     string  `yaml:"base_version"`
-	BaseCommit      string  `yaml:"base_commit"`
-	MaintainedUntil *string `yaml:"maintained_until"` // null → nil; "YYYY-MM-DD" → &string
-	Archived        *bool   `yaml:"archived"`         // nil when field is absent
+	Package              string  `yaml:"package"`
+	Branch               string  `yaml:"branch"`
+	BaseVersion          string  `yaml:"base_version"`
+	BaseCommit           string  `yaml:"base_commit"`
+	MaintainedUntil      *string `yaml:"maintained_until"`       // null → nil; "YYYY-MM-DD" → &string
+	Archived             *bool   `yaml:"archived"`               // nil when field is absent
+	RemoveOtherPackages  *bool   `yaml:"remove_other_packages"`  // nil when field is absent
 }
 
 const maintainedUntilLayout = "2006-01-02"
@@ -270,6 +271,7 @@ func newEntryNode(pkg, branch, baseVersion, baseCommit string) *yaml.Node {
 			key("base_commit"), quoted(baseCommit),
 			key("maintained_until"), scalar("null", "!!null", 0),
 			key("archived"), scalar("false", "!!bool", 0),
+			key("remove_other_packages"), scalar("true", "!!bool", 0),
 		},
 	}
 }
@@ -347,6 +349,10 @@ func validateEntryFields(i int, e entry, knownPackages map[string]struct{}, pack
 
 	if e.Archived == nil {
 		errs = append(errs, fmt.Errorf("%s: missing required field 'archived'", id))
+	}
+
+	if e.RemoveOtherPackages == nil {
+		errs = append(errs, fmt.Errorf("%s: missing required field 'remove_other_packages'", id))
 	}
 
 	if e.MaintainedUntil != nil {

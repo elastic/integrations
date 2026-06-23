@@ -136,6 +136,8 @@ Sometimes, when we drop the support for an earlier version of the stack and late
 
     The PR requires review from the `elastic/ecosystem` team (they are the CODEOWNERS of `.backports.yml`). Once merged to `main`, the branch `backport-<package_name>-<major>.<minor>` is created and pushed automatically. A comment is posted on the merged PR confirming success or failure of the branch creation.
 
+    By default, the backport branch is created with only the target package in the `packages/` directory — all other packages are removed. This keeps the branch lean and avoids running tests for unrelated packages on every PR opened against it.
+
 3. **Create a PR for the bug fix**
 
     Create a new branch in your own remote (it is advised **not to use** a branch name starting with `backport-`), and apply bugfixes there. Remember to update the version in the package manifest (update patch version like `1.19.<x+1>`) and add a new changelog entry for this patch version.

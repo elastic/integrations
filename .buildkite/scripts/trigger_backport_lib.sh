@@ -99,10 +99,15 @@ generate_trigger_pipeline() {
             continue
         fi
 
-        local pkg base_version base_commit
+        local pkg base_version base_commit remove_other_packages
         pkg="$(yq "${entry} | .package" "${new_inventory}")"
         base_version="$(yq "${entry} | .base_version" "${new_inventory}")"
         base_commit="$(yq "${entry} | .base_commit" "${new_inventory}")"
+        remove_other_packages="$(yq "${entry} | .remove_other_packages" "${new_inventory}")"
+        # Default to true if not set in the inventory entry
+        if [[ -z "${remove_other_packages}" ]] || [[ "${remove_other_packages}" == "null" ]]; then
+            remove_other_packages="true"
+        fi
 
         echo "  Queuing ${label_prefix}: ${branch} (package=${pkg} version=${base_version} base_commit=${base_commit})"
 
@@ -121,6 +126,7 @@ generate_trigger_pipeline() {
         PACKAGE_VERSION: "${base_version}"
         BASE_COMMIT: "${base_commit}"
         BACKPORT_BRANCH_NAME: "${branch}"
+        REMOVE_OTHER_PACKAGES: "${remove_other_packages}"
         # By default, this trigger step must execute the code from main branch,
         # uncomment to test changes in backport_branch.sh in a Pull Request build.
         # BUILDKITE_REFSPEC: "refs/pull/${BUILDKITE_PULL_REQUEST}/head"
