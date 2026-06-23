@@ -14,7 +14,7 @@ This integration is compatible with Elastic Package Registry version 1.10.0 and 
 
 ### How it works
 
-The integration collects Prometheus-formatted metrics from the `/metrics` endpoint exposed by the Elastic Package Registry service.
+The integration uses the [Prometheus input](https://www.elastic.co/docs/reference/integrations/prometheus_input) to collect metrics from the `/metrics` endpoint exposed by the Elastic Package Registry service.
 
 ## What data does this integration collect?
 
@@ -63,6 +63,8 @@ For more information on architectures that can be used for scaling this integrat
 ## Reference
 
 ### Inputs used
+
+This integration uses the `prometheus_input` package. The following input is used:
 
 
 
