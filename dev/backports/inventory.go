@@ -25,13 +25,13 @@ type inventory struct {
 }
 
 type entry struct {
-	Package              string  `yaml:"package"`
-	Branch               string  `yaml:"branch"`
-	BaseVersion          string  `yaml:"base_version"`
-	BaseCommit           string  `yaml:"base_commit"`
-	MaintainedUntil      *string `yaml:"maintained_until"`       // null → nil; "YYYY-MM-DD" → &string
-	Archived             *bool   `yaml:"archived"`               // nil when field is absent
-	RemoveOtherPackages  *bool   `yaml:"remove_other_packages"`  // nil when field is absent
+	Package             string  `yaml:"package"`
+	Branch              string  `yaml:"branch"`
+	BaseVersion         string  `yaml:"base_version"`
+	BaseCommit          string  `yaml:"base_commit"`
+	MaintainedUntil     *string `yaml:"maintained_until"`      // null → nil; "YYYY-MM-DD" → &string
+	Archived            *bool   `yaml:"archived"`              // nil when field is absent
+	RemoveOtherPackages *bool   `yaml:"remove_other_packages"` // nil when field is absent
 }
 
 const maintainedUntilLayout = "2006-01-02"
