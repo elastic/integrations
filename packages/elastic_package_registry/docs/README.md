@@ -61,7 +61,8 @@ You can verify that metrics endpoint is enabled by making an HTTP request to
 | package_registry.http.request_duration_seconds.histogram | A histogram of latencies for requests to the http server | histogram |  |  |
 | package_registry.http.request_size_bytes.histogram | A histogram of sizes of requests to the http server | histogram |  |  |
 | package_registry.http.response_size_bytes.histogram | A histogram of response sizes for requests to the http server | histogram |  |  |
-| package_registry.http_requests_total.counter | Counter for requests to the http server | double |  | counter |
+| package_registry.http_requests_total.counter | Cumulative count of requests to the http server (first scrape) | double |  | counter |
+| package_registry.http_requests_total.rate | Rate of requests to the http server | double |  | gauge |
 | package_registry.in_flight_requests | Requests currently being served by the http server | double |  | gauge |
 | package_registry.indexer.get_duration_seconds.histogram | A histogram of latencies for get processes run by the indexer | histogram |  |  |
 | package_registry.labels.code | HTTP Code | keyword |  |  |
@@ -77,9 +78,12 @@ You can verify that metrics endpoint is enabled by making an HTTP request to
 | package_registry.start_time | Date where Elastic Package Registry started | date |  |  |
 | package_registry.start_time_seconds | Start time of the process since unix epoch in seconds | double | s | gauge |
 | package_registry.storage_indexer.update_index_duration_seconds.histogram | A histogram of latencies for update index processes run by the storage indexer | histogram |  |  |
-| package_registry.storage_indexer.update_index_error_total.counter | A counter for all the update index processes that finished with error in the storage indexer | long |  |  |
-| package_registry.storage_indexer.update_index_success_total.counter | A counter for all the update index processes that finished with success in the storage indexer | long |  |  |
-| package_registry.storage_requests_total.counter | Counter for requests performed to the storage | long |  | counter |
+| package_registry.storage_indexer.update_index_error_total.counter | Cumulative count of update index processes that finished with error in the storage indexer (first scrape) | double |  | counter |
+| package_registry.storage_indexer.update_index_error_total.rate | Rate of update index processes that finished with error in the storage indexer | double |  | gauge |
+| package_registry.storage_indexer.update_index_success_total.counter | Cumulative count of update index processes that finished with success in the storage indexer (first scrape) | double |  | counter |
+| package_registry.storage_indexer.update_index_success_total.rate | Rate of update index processes that finished with success in the storage indexer | double |  | gauge |
+| package_registry.storage_requests_total.counter | Cumulative count of requests performed to the storage (first scrape) | double |  | counter |
+| package_registry.storage_requests_total.rate | Rate of requests performed to the storage | double |  | gauge |
 | package_registry.uptime | Elastic Package Registry uptime in seconds | long | s | counter |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
@@ -92,54 +96,55 @@ An example event for `metrics` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-28T09:54:47.993Z",
+    "@timestamp": "2026-06-23T10:43:04.026Z",
     "agent": {
-        "ephemeral_id": "fb0962b4-3f3f-48d6-81d6-3df63366f744",
-        "id": "97cba3e2-ea7d-4d80-aa69-75752faa1576",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "477e2cb5-928f-4e3a-b884-233bd26b8873",
+        "id": "d01a1c9f-e0c3-4a3e-89bf-c33f5b9de0b3",
+        "name": "elastic-agent-53593",
         "type": "metricbeat",
-        "version": "8.0.0"
+        "version": "9.4.2"
     },
     "data_stream": {
         "dataset": "elastic_package_registry.metrics",
-        "namespace": "ep",
+        "namespace": "75445",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.3.1"
     },
     "elastic_agent": {
-        "id": "97cba3e2-ea7d-4d80-aa69-75752faa1576",
+        "id": "d01a1c9f-e0c3-4a3e-89bf-c33f5b9de0b3",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "9.4.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "elastic_package_registry.metrics",
-        "duration": 7602509,
-        "ingested": "2022-07-28T09:54:51Z",
+        "duration": 3321584,
+        "ingested": "2026-06-23T10:43:05Z",
         "kind": "metric",
         "module": "prometheus"
     },
     "host": {
-        "architecture": "x86_64",
+        "architecture": "aarch64",
         "containerized": false,
-        "hostname": "docker-fleet-agent",
+        "hostname": "elastic-agent-53593",
         "ip": [
-            "172.31.0.7"
+            "172.29.0.2",
+            "172.18.0.4"
         ],
         "mac": [
-            "02:42:ac:1f:00:07"
+            "26-44-A9-95-0C-74",
+            "82-F9-58-82-4E-4A"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-53593",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.10.104-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "family": "",
+            "kernel": "6.12.76-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
@@ -147,8 +152,8 @@ An example event for `metrics` looks as following:
         "period": 30000
     },
     "package_registry": {
-        "http": {
-            "request_duration_seconds": {
+        "indexer": {
+            "get_duration_seconds": {
                 "histogram": {
                     "counts": [
                         0,
@@ -176,80 +181,19 @@ An example event for `metrics` looks as following:
                         1.75,
                         3.75,
                         7.5,
-                        15
-                    ]
-                }
-            },
-            "request_size_bytes": {
-                "histogram": {
-                    "counts": [
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "values": [
-                        8,
-                        24,
-                        48,
-                        96,
-                        192,
-                        384,
-                        768,
-                        33280,
-                        163840,
-                        458752
-                    ]
-                }
-            },
-            "response_size_bytes": {
-                "histogram": {
-                    "counts": [
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "values": [
-                        8,
-                        24,
-                        48,
-                        96,
-                        192,
-                        384,
-                        768,
-                        33280,
-                        163840,
-                        458752
+                        10
                     ]
                 }
             }
         },
-        "http_requests_total": {
-            "counter": 20
-        },
         "labels": {
-            "code": "200",
-            "instance": "elastic-package-service_elastic_package_registry_1:9110",
-            "job": "prometheus",
-            "method": "get",
-            "path": "/"
+            "indexer": "FileSystemIndexer",
+            "instance": "svc-elastic_package_registry:9110",
+            "job": "prometheus"
         }
     },
     "service": {
-        "address": "http://elastic-package-service_elastic_package_registry_1:9110/metrics",
+        "address": "http://svc-elastic_package_registry:9110/metrics",
         "type": "elastic_package_registry"
     }
 }
