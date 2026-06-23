@@ -198,13 +198,12 @@ func workingBranchName(pkg, branchName, sha8 string) string {
 // local working branch off it.
 func prepareWorkingBranch(remote, branchName, workingBranch string) error {
 	if err := gitutil.Run("fetch", remote, branchName); err != nil {
-		fmt.Println("fetching", branchName, "from remote", remote, "failed — verify that the .backports.yml PR was merged and the creation pipeline succeeded: %w", err)
-		// return fmt.Errorf(
-		// 	"fetching %q from remote %q failed — verify that the .backports.yml PR was merged and the creation pipeline succeeded: %w",
-		// 	branchName, remote, err,
-		// )
+		return fmt.Errorf(
+			"fetching %q from remote %q failed — verify that the .backports.yml PR was merged and the creation pipeline succeeded: %w",
+			branchName, remote, err,
+		)
 	}
-	if err := gitutil.Run("checkout", "-b", workingBranch, branchName); err != nil {
+	if err := gitutil.Run("checkout", "-b", workingBranch, remote+"/"+branchName); err != nil {
 		return fmt.Errorf("creating working branch %s: %w", workingBranch, err)
 	}
 	return nil
