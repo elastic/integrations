@@ -23,6 +23,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/elastic/integrations/dev/backports"
+	"github.com/elastic/integrations/dev/backports/apply"
 	"github.com/elastic/integrations/dev/backports/changelog"
 	"github.com/elastic/integrations/dev/citools"
 	"github.com/elastic/integrations/dev/codeowners"
@@ -479,6 +480,69 @@ func PostBackportComment() error {
 		os.Getenv("RUN_ID"),
 		repository,
 	)
+}
+
+// ApplyBackport cherry-picks a fix commit onto a backport branch, bumps the patch
+// version, writes a correct changelog entry, and optionally opens a PR.
+//
+// Usage: mage ApplyBackport <sha> <package> <target> [-openPR] [-json] \
+//
+//	[description] [changeType] [link] [repository] [packagesDir]
+//
+// sha, pkg, target are required. All remaining parameters are optional (nil = unset).
+// *bool flags may be passed as -openPR / -json on the command line.
+func ApplyBackport(sha, pkg, target string, openPR, asJSON *bool, description, changeType, link, repository, packagesDir *string) error {
+	opts := apply.Options{
+		SHA:         sha,
+		Package:     pkg,
+		Target:      target,
+		OpenPR:      openPR != nil && *openPR,
+		AsJSON:      asJSON != nil && *asJSON,
+		Description: deref(description),
+		Type:        deref(changeType),
+		Link:        deref(link),
+		Repository:  deref(repository),
+		PackagesDir: deref(packagesDir),
+	}
+
+	result, err := apply.Apply(opts)
+	if err != nil {
+		return err
+	}
+
+	if opts.AsJSON {
+		data, err := json.Marshal(result)
+		if err != nil {
+			return fmt.Errorf("marshalling result: %w", err)
+		}
+		fmt.Println(string(data))
+		if result.Status == "conflict" {
+			return fmt.Errorf("cherry-pick conflict on %s", strings.Join(result.ConflictingFiles, ", "))
+		}
+	} else if result.Status == "conflict" {
+		fmt.Fprintf(os.Stderr, "conflict: cherry-pick of %s onto %s failed\n", result.SHA, result.TargetBranch)
+		fmt.Fprintf(os.Stderr, "conflicting files:\n")
+		for _, f := range result.ConflictingFiles {
+			fmt.Fprintf(os.Stderr, "  %s\n", f)
+		}
+		fmt.Fprintf(os.Stderr, "suggested command: %s\n", result.SuggestedCommand)
+		return fmt.Errorf("cherry-pick conflict on %s", strings.Join(result.ConflictingFiles, ", "))
+	} else {
+		fmt.Printf("backport success: %s %s", result.TargetBranch, result.NewVersion)
+		if result.PRURL != "" {
+			fmt.Printf(", PR: %s", result.PRURL)
+		}
+		fmt.Println()
+	}
+	return nil
+}
+
+// deref returns the string pointed to by s, or "" if s is nil.
+func deref(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }
 
 // writeGitHubOutputs appends key=value pairs to the file named by $GITHUB_OUTPUT.
