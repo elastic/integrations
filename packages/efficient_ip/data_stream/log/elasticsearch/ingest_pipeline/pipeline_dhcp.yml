@@ -2,6 +2,7 @@
 description: Pipeline for parsing EfficientIP DHCP logs.
 processors:
   - set:
+      tag: set_network_protocol_dhcp
       field: network.protocol
       value: dhcp
   - grok:
@@ -102,6 +103,7 @@ processors:
       tag: set_refused_outcome
       if: ctx.message != null && ctx.message.contains('REFUSED')
   - gsub:
+      tag: normalize_event_action_spaces
       field: event.action
       pattern: ' '
       replacement: '_'
@@ -149,15 +151,18 @@ processors:
       patterns:
         - '^%{GREEDYDATA:efficient_ip.log.dhcp.message}$'
   - lowercase:
+      tag: lowercase_event_action
       field: event.action
       ignore_failure: true
       ignore_missing: true
   - gsub:
+      tag: normalize_client_mac_delimiters
       field: client.mac
       ignore_missing: true
       pattern: '[-:.]'
       replacement: '-'
   - uppercase:
+      tag: uppercase_client_mac
       field: client.mac
       ignore_missing: true
   - convert:
@@ -168,9 +173,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_client_ip_on_convert_failure
             field: client.ip
             ignore_missing: true
         - append:
+            tag: append_error_on_convert_client_ip_failure
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -178,6 +185,7 @@ processors:
               {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
               failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_related_ip_client_ip
       field: related.ip
       value: '{{{client.ip}}}'
       if: ctx.client?.ip != null
@@ -191,9 +199,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_dhcp_link_address_on_convert_failure
             field: efficient_ip.log.dhcp.link_address
             ignore_missing: true
         - append:
+            tag: append_error_on_convert_dhcp_link_address_failure
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -201,6 +211,7 @@ processors:
               {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
               failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_related_ip_dhcp_link_address
       field: related.ip
       value: '{{{efficient_ip.log.dhcp.link_address}}}'
       if: ctx.efficient_ip?.log?.dhcp?.link_address != null
@@ -214,9 +225,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_dhcp_peer_address_on_convert_failure
             field: efficient_ip.log.dhcp.peer_address
             ignore_missing: true
         - append:
+            tag: append_error_on_convert_dhcp_peer_address_failure
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -224,6 +237,7 @@ processors:
               {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
               failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_related_ip_dhcp_peer_address
       field: related.ip
       value: '{{{efficient_ip.log.dhcp.peer_address}}}'
       if: ctx.efficient_ip?.log?.dhcp?.peer_address != null
@@ -237,9 +251,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_dhcp_router_ip_on_convert_failure
             field: efficient_ip.log.dhcp.router.ip
             ignore_missing: true
         - append:
+            tag: append_error_on_convert_dhcp_router_ip_failure
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -247,6 +263,7 @@ processors:
               {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
               failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_related_ip_dhcp_router_ip
       field: related.ip
       value: '{{{efficient_ip.log.dhcp.router.ip}}}'
       if: ctx.efficient_ip?.log?.dhcp?.router?.ip != null
@@ -260,9 +277,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_dhcp_interface_ip_on_convert_failure
             field: efficient_ip.log.dhcp.interface.ip
             ignore_missing: true
         - append:
+            tag: append_error_on_convert_dhcp_interface_ip_failure
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -270,6 +289,7 @@ processors:
               {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
               failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_related_ip_dhcp_interface_ip
       field: related.ip
       value: '{{{efficient_ip.log.dhcp.interface.ip}}}'
       if: ctx.efficient_ip?.log?.dhcp?.interface?.ip != null
@@ -283,9 +303,11 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_dhcp_relay_interface_ip_on_convert_failure
             field: efficient_ip.log.dhcp.relay.interface.ip
             ignore_missing: true
         - append:
+            tag: append_error_on_convert_dhcp_relay_interface_ip_failure
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -293,12 +315,14 @@ processors:
               {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
               failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_related_ip_dhcp_relay_interface_ip
       field: related.ip
       value: '{{{efficient_ip.log.dhcp.relay.interface.ip}}}'
       if: ctx.efficient_ip?.log?.dhcp?.relay?.interface?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hosts_dhcp_client_hostname
       field: related.hosts
       value: '{{{efficient_ip.log.dhcp.client_hostname}}}'
       if: ctx.efficient_ip?.log?.dhcp?.client_hostname != null
@@ -306,6 +330,7 @@ processors:
       ignore_failure: true
 on_failure:
   - append:
+      tag: append_pipeline_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -313,9 +338,11 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
         failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_event_kind_pipeline_error
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_preserve_original_event_tag
       field: tags
       value: preserve_original_event
       allow_duplicates: false

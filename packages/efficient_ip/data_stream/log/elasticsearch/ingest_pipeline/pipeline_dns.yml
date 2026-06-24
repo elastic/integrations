@@ -2,6 +2,7 @@
 description: Pipeline for parsing EfficientIP DNS logs.
 processors:
   - set:
+      tag: set_network_protocol_dns
       field: network.protocol
       value: dns
   - grok:
@@ -28,9 +29,11 @@ processors:
         - yyyy-MM-dd HH:mm:ss.SSS'Z'
       on_failure:
         - remove:
+            tag: remove_tmp_timestamp_on_date_tz_failure
             field: _tmp.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_on_date_tz_failure
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -46,15 +49,18 @@ processors:
         - yyyy-MM-dd HH:mm:ss.SSS'Z'
       on_failure:
         - remove:
+            tag: remove_tmp_timestamp_on_date_notz_failure
             field: _tmp.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_on_date_notz_failure
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - script:
+      tag: parse_dns_answers
       lang: painless
       if: "ctx.dns_answers_data != null && ctx.dns_answers_data != ''"
       description: "Parse DNS answer records"
@@ -126,49 +132,58 @@ processors:
         ctx.efficient_ip.log.dns.put('answers', answers);
         ctx.remove('dns_answers_data');
   - convert:
+      tag: convert_server_ip
       field: server.ip
       if: ctx.server?.ip != null && ctx.server.ip != ''
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_server_ip_on_convert_failure
             field: server.ip
             ignore_missing: true
         - append:
+            tag: append_error_on_convert_server_ip_failure
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
+      tag: append_related_ip_server_ip
       field: related.ip
       value: '{{{server.ip}}}'
       if: ctx.server?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_client_ip
       field: related.ip
       value: '{{{client.ip}}}'
       if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hosts_dns_question_name
       field: related.hosts
       value: '{{{dns.question.name}}}'
       if: ctx.dns?.question?.name != null
       allow_duplicates: false
       ignore_failure: true
   - registered_domain:
+      tag: parse_registered_domain
       field: "dns.question.name"
       target_field: "dns.question"
       if: ctx.dns?.question != null
   - remove:
+      tag: remove_repeat_message_and_question_domain
       field:
         - repeat_message
         - dns.question.domain
       ignore_missing: true
 on_failure:
   - append:
+      tag: append_pipeline_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -176,9 +191,11 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
         failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_event_kind_pipeline_error
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_preserve_original_event_tag
       field: tags
       value: preserve_original_event
       allow_duplicates: false
