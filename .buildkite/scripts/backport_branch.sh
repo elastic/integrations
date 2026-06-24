@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source .buildkite/scripts/common.sh
+source "$(dirname "${BASH_SOURCE[0]}")/backport_branch_lib.sh"
 
 set -euo pipefail
 
@@ -94,24 +95,6 @@ branchExist() {
   fi
 }
 
-# get_package_path returns the path of the package with the given name as
-# defined in the manifest.yml `name` field. Returns 1 if not found.
-get_package_path() {
-  local package_name="${1}"
-  local package_path=""
-
-  while IFS= read -r package_path; do
-    local name
-    name=$(yq -r '.name' "${package_path}/manifest.yml")
-    if [[ "${name}" == "${package_name}" ]]; then
-      echo "${package_path}"
-      return 0
-    fi
-  done < <(list_all_directories)
-
-  return 1
-}
-
 createLocalBackportBranch() {
   local branch_name=$1
   local source_commit=$2
@@ -121,23 +104,6 @@ createLocalBackportBranch() {
     buildkite-agent annotate "The backport branch **$BACKPORT_BRANCH_NAME** could not be created." --style "warning"
     exit 1
   fi
-}
-
-removeOtherPackages() {
-  local package_path_to_keep="${1}"
-  local package_path
-  local package_paths=""
-  package_paths=$(list_all_directories)
-  for package_path in ${package_paths}; do
-    if [[ -d "$package_path" ]] && [[ "${package_path}" != "${package_path_to_keep}" ]]; then
-      echo "Removing directory: ${package_path}"
-      rm -rf "$package_path"
-
-      echo "Removing ${package_path} from .github/CODEOWNERS"
-      sed -i "\|^/${package_path}/|d" .github/CODEOWNERS
-      sed -i "\|^/${package_path} |d" .github/CODEOWNERS
-    fi
-  done
 }
 
 update_git_config() {
@@ -246,7 +212,23 @@ updateBackportBranchContents() {
 
   if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
     echo "--- Removing all packages from $PACKAGES_FOLDER_PATH folder"
-    removeOtherPackages "${PACKAGE_PATH}"
+
+    # Build the list of packages to keep: the target package plus any packages
+    # it requires (composable packages declare dependencies under requires.input
+    # and requires.content in their manifest.yml).
+    local -a packages_to_keep=("${PACKAGE_PATH}")
+    while IFS= read -r req_name; do
+      local req_path
+      req_path=$(get_package_path "${req_name}" || true)
+      if [[ -n "${req_path}" ]]; then
+        echo "Keeping required package: ${req_path} (required by ${PACKAGE_NAME})"
+        packages_to_keep+=("${req_path}")
+      else
+        echo "Warning: required package '${req_name}' not found in packages folder"
+      fi
+    done < <(get_required_package_names "${PACKAGE_PATH}")
+
+    remove_other_packages "${packages_to_keep[@]}"
     ls -la "${PACKAGES_FOLDER_PATH}"
 
     git add "${PACKAGES_FOLDER_PATH}/"
