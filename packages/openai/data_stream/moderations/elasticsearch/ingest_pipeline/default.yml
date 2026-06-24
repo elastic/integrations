@@ -25,6 +25,14 @@ processors:
     - remove:
         field: openai.moderations.results
         ignore_missing: true
+    - drop:
+        tag: drop_finalization_sentinel
+        if: ctx.openai?.moderations?.skip != null
+        description: >-
+          Drops the keep-alive sentinel the CEL program emits when a page contains only buckets
+          still inside the finalization grace period while pagination must continue. The sentinel
+          keeps filebeat's want_more chain alive (a zero-event evaluation ends the polling cycle
+          early); it carries no usage data and must not be indexed.
     # Add base OpenAI fields
     - rename:
         field: openai.moderations.model
@@ -50,6 +58,12 @@ processors:
         field: openai.moderations.object
         target_field: openai.base.usage_object_type
         ignore_missing: true
+    - set:
+        field: openai.base.usage_tokens
+        tag: set_base_usage_tokens
+        description: Single token source — copy_from suffices; no summation needed unlike completions.
+        copy_from: openai.moderations.input_tokens
+        ignore_empty_value: true
     - date:
         field: openai.moderations.start_time
         target_field: openai.base.start_time

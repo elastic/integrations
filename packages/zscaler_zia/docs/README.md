@@ -47,6 +47,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
                 - **Alerts**: 9010
                 - **Audit**: 9029
                 - **DNS**: 9011
+                - **Email DLP**: 9025
                 - **Endpoint DLP**: 9023
                 - **Firewall**: 9012
                 - **SaaS Security Activity**: 9026
@@ -71,6 +72,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
           - Default ports:
               - **Audit**: 9562
               - **DNS**: 9556
+              - **Email DLP**: 9564
               - **Endpoint DLP**: 9561
               - **Firewall**: 9557
               - **SaaS Security Activity**: 9565
@@ -133,6 +135,25 @@ Zscaler DNS Log response format (v3):
 Sample Response:
 ```json
 {"version":"v3","sourcetype":"zscalernss-dns","event":{"cloudname":"zscaler.net","datetime":"Mon Oct 16 22:55:48 2023","devicemodel":"VMware7,1","restype":"IPv4","dns_req":"mail.safemarch.com","dns_reqtype":"A record","error":"EMPTY_RESP","durationms":"1000","recordid":"45648954","tz":"GMT","devicename":"admin","devicehostname":"THINKPADSMITH","deviceostype":"Windows OS","deviceosversion":"Microsoft Windows 10 Enterprise;64 bit","devicetype":"Zscaler Client Connector","http_code":"100","dnsapp":"Google DNS","dns_gateway_server_protocol":"TCP","protocol":"TCP","company":"Zscaler","reqrulelabel":"RULE_1","resrulelabel":"RULE_RES","clt_sip":"81.2.69.192","srv_dip":"175.16.199.0","srv_dport":"1025","user":"jdoe1@safemarch.com","datacentercity":"Sa","datacentercountry":"US","datacenter":"CA Client Node DC","day":"Mon","day_of_month":"16","department":"EDept","dept":"Sales","deviceappversion":"4.3.0.18","deviceowner":"jsmith","dnsappcat":"Network Service","dns_gateway_rule":"DNS GATEWAY Rule 1","dns_gateway_status":"PRIMARY_SERVER_RESPONSE_PASS","category":"Professional Services","ecs_prefix":"192.168.0.0","ecs_slot":"ECS Slot #17","ednsreq":"ABC123","eedone":"Yes","epochtime":"1578128400","hour":"22","istcp":"1","loc":"Headquarters","location":"ELocation","login":"jdoe@safemarch.com","minutes":"55","month":"Oct","month_of_year":"10","oclientsourceip":"9960223283","odevicename":"2175092224","odeviceowner":"10831489","odomcat":"4951704103","odevicehostname":"2168890624","reqaction":"REQ_ALLOW","dns_resp":"www.example.com","respipcategory":"Adult Themes","resaction":"RES_Action","respipcat":"Adult Themes","second":"48","year":"2023"}}
+```
+
+### Email DLP Log
+
+- Default port (NSS Feed): _9025_
+- Default port (Cloud NSS Feed): _9564_
+
+See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/nss-feed-output-format-email-dlp-logs)
+
+To collect Email DLP logs, configure the NSS feed in the ZIA Admin Console using the **Feed Output Format** below. The format uses snake_case, nested JSON keys that the integration parses without additional field renaming, and includes a `version` token so the pipeline can validate the template at ingest time.
+
+Zscaler Email DLP Log response format (v1):
+```
+\{"version":"v1","sourcetype":"zscalernss-emaildlp","time":"%s{time}","tz":"%s{tz}","feed_time":"%s{rtime}","record_id":"%llu{recordid}","log_type":"%s{logtype}","severity":"%s{severity}","actions":"%s{actions}","rule":\{"labels":"%s{rulelabels}"\},"company":\{"name":"%s{company}"\},"department":"%s{departmentname}","tenant":"%s{tenant}","application":\{"name":"%s{appname}"\},"datacenter":\{"name":"%s{datacenter}","city":"%s{datacentercity}","country":"%s{datacentercountry}"\},"user_name":"%s{username}","external_user_name":"%s{extusername}","owner":"%s{owner}","sender":"%s{sender}","dlp":\{"identifier":"%llu{dlpidentifier}","dict_names":"%s{dlpdictnames}","dict_counts":"%s{dlpdictcnts}","engine_names":"%s{dlpengnames}","scan_time":"%llu{scan_time}"\},"email":\{"mail_sent_time":"%s{mail_sent_time}","mail_sent_epoch":"%s{epochmail_sent_time}","zs_rcv_time":"%s{zs_rcv_time}","zs_sent_time":"%s{zs_sent_time}","subject":"%s{subject}","message_id":"%s{msgid}","triggered_recipients":"%s{trigg_rcpts}","other_recipients":"%s{other_rcpts}","triggered_recipient_domains":"%s{trigg_rcpt_doms}","other_recipient_domains":"%s{other_rcpt_doms}","attachments":\{"file_names":"%s{ac_names}","md5s":"%s{ac_md5s}","sizes":"%s{ac_sizes}","file_types":"%s{ac_filetypes}","doc_types":"%s{ac_doctypes}","doc_subtypes":"%s{ac_doc_subtypes}"\}\}\}
+```
+
+Sample Response (multi-attachment, mixed per-recipient dispositions):
+```json
+{"version":"v1","sourcetype":"zscalernss-emaildlp","time":"Tue Jan 14 16:22:01 2026","tz":"GMT","feed_time":"Tue Jan 14 16:22:04 2026","record_id":"9012837465564738291","log_type":"DLP Incident","severity":"Medium Severity|Medium Severity","actions":"Block|Allow","rule":{"labels":"Outbound_Attachment_Rule|Encryption_Check_Rule"},"company":{"name":"Example Corp"},"department":"Operations","tenant":"example.onmicrosoft.com","application":{"name":"Gmail"},"datacenter":{"name":"Frankfurt DC","city":"Frankfurt","country":"DE"},"user_name":"ops.service@example.com","external_user_name":"None","owner":"ops.service@example.com","sender":"ops.service@example.com","dlp":{"identifier":"9012837464123456789","dict_names":"Technical Document|Tax Identification Number","dict_counts":"3|1","engine_names":"PCI|HIPAA","scan_time":"1823"},"email":{"mail_sent_time":"Tue Jan 14 16:22:01 2026","mail_sent_epoch":"1768487721","zs_rcv_time":"Tue Jan 14 16:22:02 2026","zs_sent_time":"Tue Jan 14 16:22:04 2026","subject":"Fw: Monthly metrics package","message_id":"<BEEFCAFE0102030405060708090A0B0C@mail.example.com>","triggered_recipients":"soc-queue@example.com|lead.engineer@example.com","other_recipients":"partner@guest.example.net","triggered_recipient_domains":"example.com|example.com","other_recipient_domains":"guest.example.net","attachments":{"file_names":"runbook.docx|customer_export.csv|architecture.png","md5s":"e2fc714c4727ee9395f324cd2e7f331f|5d41402abc4b2a76b9719d911017c592|098f6bcd4621d373cade4e832627b4f6","sizes":"14208|524288|98304","file_types":"docx|csv|png","doc_types":"Technical Document|Corporate Finance|Unknown","doc_subtypes":"None|None|None"}}}
 ```
 
 ### Endpoint DLP Log
@@ -850,6 +871,284 @@ An example event for `dns` looks as following:
 | zscaler_zia.dns.timezone | The time zone. This is the same as the time zone you specified when you configured the NSS feed. | keyword |
 | zscaler_zia.dns.user |  | keyword |
 | zscaler_zia.dns.year | Year. | long |
+
+
+### email_dlp
+
+This is the `email_dlp` dataset.
+
+#### Example
+
+An example event for `email_dlp` looks as following:
+
+```json
+{
+    "@timestamp": "2024-03-15T11:30:00.000Z",
+    "agent": {
+        "ephemeral_id": "cc383ad1-0a59-46b0-848b-c184068dde67",
+        "id": "2d92333f-8868-46a3-aff7-fd1e86297d41",
+        "name": "elastic-agent-13097",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "zscaler_zia.email_dlp",
+        "namespace": "64712",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "2d92333f-8868-46a3-aff7-fd1e86297d41",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "email": {
+        "attachments": [
+            {
+                "file": {
+                    "extension": "pdf",
+                    "hash": {
+                        "md5": "5d41402abc4b2a76b9719d911017c592"
+                    },
+                    "name": "contract.pdf",
+                    "size": 189440
+                }
+            },
+            {
+                "file": {
+                    "extension": "pdf",
+                    "hash": {
+                        "md5": "aab3238922bcc25a6f606eb525ffdc56"
+                    },
+                    "name": "w2-2023.pdf",
+                    "size": 76800
+                }
+            }
+        ],
+        "delivery_timestamp": "2024-03-15T11:30:02.000Z",
+        "from": {
+            "address": [
+                "hr.lead@example.com"
+            ]
+        },
+        "message_id": "<HR2024031500001@mail.example.com>",
+        "origination_timestamp": "2024-03-15T11:30:00.000Z",
+        "subject": "Onboarding documents — confidential",
+        "to": {
+            "address": [
+                "new.employee@example.com"
+            ]
+        },
+        "x_mailer": "Exchange"
+    },
+    "event": {
+        "action": [
+            "block"
+        ],
+        "agent_id_status": "verified",
+        "category": [
+            "email",
+            "intrusion_detection"
+        ],
+        "dataset": "zscaler_zia.email_dlp",
+        "ingested": "2026-06-17T11:50:19Z",
+        "kind": "event",
+        "original": "{\"actions\":\"Block\",\"application\":{\"name\":\"Exchange\"},\"company\":{\"name\":\"Example Corp\"},\"datacenter\":{\"city\":\"Sydney\",\"country\":\"AU\",\"name\":\"Sydney DC\"},\"department\":\"Human Resources\",\"dlp\":{\"dict_counts\":\"4|2|3\",\"dict_names\":\"Social Security Number (US)|Bank Account Numbers|Credit Cards\",\"engine_names\":\"HIPAA|PCI|GLBA\",\"identifier\":\"6644778888776655443\",\"scan_time\":\"4521\"},\"email\":{\"attachments\":{\"doc_subtypes\":\"None|None\",\"doc_types\":\"Legal|Tax Forms\",\"file_names\":\"contract.pdf|w2-2023.pdf\",\"file_types\":\"pdf|pdf\",\"md5s\":\"5d41402abc4b2a76b9719d911017c592|aab3238922bcc25a6f606eb525ffdc56\",\"sizes\":\"189440|76800\"},\"mail_sent_epoch\":\"1710502200\",\"mail_sent_time\":\"Fri Mar 15 11:30:00 2024\",\"message_id\":\"\\u003cHR2024031500001@mail.example.com\\u003e\",\"other_recipient_domains\":\"None\",\"other_recipients\":\"None\",\"subject\":\"Onboarding documents — confidential\",\"triggered_recipient_domains\":\"example.com\",\"triggered_recipients\":\"new.employee@example.com\",\"zs_rcv_time\":\"Fri Mar 15 11:30:02 2024\",\"zs_sent_time\":\"Fri Mar 15 11:30:07 2024\"},\"external_user_name\":\"None\",\"feed_time\":\"Fri Mar 15 11:30:07 2024\",\"log_type\":\"DLP Incident\",\"owner\":\"hr.lead@example.com\",\"record_id\":\"6644778899001122334\",\"rule\":{\"labels\":\"PII_Block_Rule\"},\"sender\":\"hr.lead@example.com\",\"severity\":\"High Severity\",\"sourcetype\":\"zscalernss-emaildlp\",\"tenant\":\"example-corp\",\"time\":\"Fri Mar 15 11:30:00 2024\",\"tz\":\"GMT\",\"user_name\":\"hr.lead@example.com\",\"version\":\"v1\"}",
+        "provider": "Zscaler",
+        "severity": 73,
+        "timezone": "GMT",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "observer": {
+        "geo": {
+            "city_name": "Sydney",
+            "country_iso_code": "AU",
+            "name": "Sydney DC"
+        },
+        "name": "Sydney DC",
+        "product": "Zscaler ZIA",
+        "vendor": "Zscaler"
+    },
+    "organization": {
+        "name": "Example Corp"
+    },
+    "related": {
+        "hash": [
+            "5d41402abc4b2a76b9719d911017c592",
+            "aab3238922bcc25a6f606eb525ffdc56"
+        ],
+        "user": [
+            "hr.lead@example.com",
+            "new.employee@example.com"
+        ]
+    },
+    "rule": {
+        "name": [
+            "PII_Block_Rule"
+        ],
+        "ruleset": [
+            "HIPAA",
+            "PCI",
+            "GLBA"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "zscaler_zia-email_dlp"
+    ],
+    "user": {
+        "domain": "example.com",
+        "email": "hr.lead@example.com",
+        "name": "hr.lead@example.com"
+    },
+    "zscaler_zia": {
+        "email_dlp": {
+            "department": "Human Resources",
+            "dlp": {
+                "dict_counts": [
+                    4,
+                    2,
+                    3
+                ],
+                "dict_names": [
+                    "Social Security Number (US)",
+                    "Bank Account Numbers",
+                    "Credit Cards"
+                ],
+                "dictionaries": [
+                    {
+                        "count": 4,
+                        "name": "Social Security Number (US)"
+                    },
+                    {
+                        "count": 2,
+                        "name": "Bank Account Numbers"
+                    },
+                    {
+                        "count": 3,
+                        "name": "Credit Cards"
+                    }
+                ],
+                "identifier": "6644778888776655443",
+                "scan_time": 4521
+            },
+            "email": {
+                "attachments": {
+                    "doc_types": [
+                        "Legal",
+                        "Tax Forms"
+                    ],
+                    "file_names": [
+                        "contract.pdf",
+                        "w2-2023.pdf"
+                    ],
+                    "file_types": [
+                        "pdf",
+                        "pdf"
+                    ],
+                    "md5s": [
+                        "5d41402abc4b2a76b9719d911017c592",
+                        "aab3238922bcc25a6f606eb525ffdc56"
+                    ],
+                    "sizes": [
+                        189440,
+                        76800
+                    ]
+                },
+                "mail_sent_epoch": "2024-03-15T11:30:00.000Z",
+                "triggered_recipient_domains": [
+                    "example.com"
+                ],
+                "triggered_recipients": [
+                    "new.employee@example.com"
+                ],
+                "zs_sent_time": "2024-03-15T11:30:07.000Z"
+            },
+            "feed_time": "2024-03-15T11:30:07.000Z",
+            "log_type": "DLP Incident",
+            "record_id": "6644778899001122334",
+            "severity": [
+                "High Severity"
+            ],
+            "sourcetype": "zscalernss-emaildlp",
+            "tenant": "example-corp",
+            "user_name": "hr.lead@example.com",
+            "version": "v1"
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |  |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |  |
+| email.attachments.file.hash.md5 | MD5 hash. | keyword |  |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |  |
+| email.attachments.file.size | Attachment file size in bytes. | long |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
+| input.type | Type of Filebeat input. | keyword |  |
+| log.offset | Log offset. | long |  |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |  |
+| zscaler_zia.email_dlp.actions | The action taken (i.e., Allow, Block, Custom Header Insertion). | keyword |  |
+| zscaler_zia.email_dlp.application.name | The name of the email application. | keyword |  |
+| zscaler_zia.email_dlp.company.name | The name of the company. | keyword |  |
+| zscaler_zia.email_dlp.datacenter.city | The city where the data center is located. | keyword |  |
+| zscaler_zia.email_dlp.datacenter.country | The country where the data center is located. | keyword |  |
+| zscaler_zia.email_dlp.datacenter.name | The name of the data center. | keyword |  |
+| zscaler_zia.email_dlp.department | The name of the department. | keyword |  |
+| zscaler_zia.email_dlp.dlp.dict_counts | The number of hits for each dictionary. | long |  |
+| zscaler_zia.email_dlp.dlp.dict_names | The name of the DLP dictionary. | keyword |  |
+| zscaler_zia.email_dlp.dlp.dictionaries.count | The number of hits for this DLP dictionary. | long |  |
+| zscaler_zia.email_dlp.dlp.dictionaries.name | The name of the DLP dictionary. | keyword |  |
+| zscaler_zia.email_dlp.dlp.engine_names | The name of the DLP engine. | keyword |  |
+| zscaler_zia.email_dlp.dlp.identifier | The unique DLP identifier. | keyword |  |
+| zscaler_zia.email_dlp.dlp.scan_time | DLP engine scan time, from when Zscaler received the email until policy evaluation completed, in milliseconds. | long | ms |
+| zscaler_zia.email_dlp.email.attachments.doc_subtypes | The document subtype of each email attachment. | keyword |  |
+| zscaler_zia.email_dlp.email.attachments.doc_types | The document type of each email attachment. | keyword |  |
+| zscaler_zia.email_dlp.email.attachments.file_names | The file name of each email attachment. | keyword |  |
+| zscaler_zia.email_dlp.email.attachments.file_types | The file type of each email attachment. | keyword |  |
+| zscaler_zia.email_dlp.email.attachments.md5s | The MD5 hash of each email attachment. | keyword |  |
+| zscaler_zia.email_dlp.email.attachments.sizes | The size of each email attachment in bytes. | long | byte |
+| zscaler_zia.email_dlp.email.mail_sent_epoch | The date and time at which the email was sent in epoch format. | keyword |  |
+| zscaler_zia.email_dlp.email.mail_sent_time | The date and time at which the user sent the email. | date |  |
+| zscaler_zia.email_dlp.email.message_id | The unique email message identifier. | keyword |  |
+| zscaler_zia.email_dlp.email.other_recipient_domains | Domains for the recipients where no DLP rule triggered. | keyword |  |
+| zscaler_zia.email_dlp.email.other_recipients | Recipients where no DLP rule triggered. | keyword |  |
+| zscaler_zia.email_dlp.email.subject | The subject of the email. | keyword |  |
+| zscaler_zia.email_dlp.email.triggered_recipient_domains | Domains for the recipients where a DLP rule triggered. | keyword |  |
+| zscaler_zia.email_dlp.email.triggered_recipients | Recipients where a DLP rule triggered (action taken). | keyword |  |
+| zscaler_zia.email_dlp.email.zs_rcv_time | The date and time at which Zscaler received the email. | date |  |
+| zscaler_zia.email_dlp.email.zs_sent_time | The date and time at which Zscaler sent the email. | date |  |
+| zscaler_zia.email_dlp.external_user_name | The user who sent the email but is not provisioned to Internet & SaaS. | keyword |  |
+| zscaler_zia.email_dlp.feed_time | The feed time (i.e., when a transaction is received by the NSS from the Nanolog). | date |  |
+| zscaler_zia.email_dlp.log_type | The type of record (i.e., DLP Incident, Sensitive Activity, or Scan). | keyword |  |
+| zscaler_zia.email_dlp.owner | The username or email address of the user who sent the email. | keyword |  |
+| zscaler_zia.email_dlp.record_id | The unique record identifier. | keyword |  |
+| zscaler_zia.email_dlp.rule.labels | The name of the DLP rule. | keyword |  |
+| zscaler_zia.email_dlp.sender | The username or email address of the user who sent the email. | keyword |  |
+| zscaler_zia.email_dlp.severity | The severity. A DLP incident violates a DLP rule and the severity (i.e., High, Medium, Low, Information) is based on the rule that was violated. A sensitive activity does not violate a rule but is reported for visibility (i.e., Information). A scan does not violate a rule and the field displays NA. | keyword |  |
+| zscaler_zia.email_dlp.sourcetype | NSS feed sourcetype identifier for Email DLP. | keyword |  |
+| zscaler_zia.email_dlp.tenant | The name of the email tenant. | keyword |  |
+| zscaler_zia.email_dlp.time | The log time (i.e., when a transaction is logged by the Zscaler Nanolog). | date |  |
+| zscaler_zia.email_dlp.tz | The time zone. This is the same as the time zone you specified when you configured the NSS feed. | keyword |  |
+| zscaler_zia.email_dlp.user_name | The user who sent the email and is provisioned to Internet & SaaS (ZIA). | keyword |  |
+| zscaler_zia.email_dlp.version | Feed Output Format template version expected by this integration. | keyword |  |
 
 
 ### endpoint_dlp
@@ -1666,6 +1965,10 @@ An example event for `saas_security` looks as following:
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.hash.md5 | MD5 hash. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
+| email.attachments.file.size | Attachment file size in bytes. | long |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |

@@ -73,6 +73,32 @@ steps:
     key: "check-dev-scripts"
     command: ".buildkite/scripts/run_dev_scripts_tests.sh"
 
+  - label: ":ballot_box_with_check: Backports inventory validation"
+    key: "check-backports-inventory"
+    command: ".buildkite/scripts/check_backports_inventory.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+    if_changed:
+      - ".backports.yml"
+      - ".buildkite/scripts/run_dev_scripts_tests.sh"
+      - "dev/scripts/**.sh"
+      - "dev/backports/**"
+
+  - label: ":git: Trigger backport dry-runs"
+    key: "trigger-backport-dryrun"
+    command: ".buildkite/scripts/trigger_backport_dryrun.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+    depends_on:
+      - step: "check-backports-inventory"
+        allow_failure: false
+    if_changed:
+      - ".backports.yml"
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') != "false" &&
+      build.env('BUILDKITE_PIPELINE_SLUG') == "integrations" &&
+      build.env('BUILDKITE_PULL_REQUEST_BASE_BRANCH') == "main"
+
   - label: ":junit: Sources Junit annotate"
     agents:
       # requires at least "bash", "curl" and "git"
