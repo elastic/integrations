@@ -5,14 +5,15 @@ processors:
       field: network.protocol
       value: dns
   - grok:
+      tag: grok_dns_message
       field: message
       patterns:
-        - "%{CLIENT}\\s*\\(%{GREEDYDATA}.\\)\\:\\s*%{NOTSPACE:efficient_ip.log.dns.category}\\: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} \\(%{IP:server.ip}\\) -> %{WORD:dns.response_code}(\\s+%{GREEDYDATA:dns_answers_data})?"
-        - "%{CLIENT}\\s+(\\(%{GREEDYDATA}.\\))?\\s*%{NOTSPACE:efficient_ip.log.dns.category}\\: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type}\\s+\\(%{IP:server.ip}\\)$"
-        - "%{CLIENT}\\s+update '%{DATA:dns.question.name}/%{WORD:dns.question.class}' %{GREEDYDATA:efficient_ip.log.dns.category}"
-        - "%{CLIENT}\\s+\\(%{DATA}\\):\\s+transfer of '%{DATA:dns.question.name}/%{WORD:dns.question.class}':\\s+%{GREEDYDATA:efficient_ip.log.dns.message}"
-        - "%{CLIENT}\\s+updating zone '%{DATA:dns.question.name}/%{WORD:dns.question.class}':\\s+%{GREEDYDATA:efficient_ip.log.dns.message}"
-        - "Last message %{GREEDYDATA:efficient_ip.log.dns.message}"
+        - "^%{CLIENT}\\s*\\(%{GREEDYDATA}.\\)\\:\\s*%{NOTSPACE:efficient_ip.log.dns.category}\\: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} \\(%{IP:server.ip}\\) -> %{WORD:dns.response_code}(\\s+%{GREEDYDATA:dns_answers_data})?"
+        - "^%{CLIENT}\\s+(\\(%{GREEDYDATA}.\\))?\\s*%{NOTSPACE:efficient_ip.log.dns.category}\\: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type}\\s+\\(%{IP:server.ip}\\)$"
+        - "^%{CLIENT}\\s+update '%{DATA:dns.question.name}/%{WORD:dns.question.class}' %{GREEDYDATA:efficient_ip.log.dns.category}"
+        - "^%{CLIENT}\\s+\\(%{DATA}\\):\\s+transfer of '%{DATA:dns.question.name}/%{WORD:dns.question.class}':\\s+%{GREEDYDATA:efficient_ip.log.dns.message}"
+        - "^%{CLIENT}\\s+updating zone '%{DATA:dns.question.name}/%{WORD:dns.question.class}':\\s+%{GREEDYDATA:efficient_ip.log.dns.message}"
+        - "^Last message %{GREEDYDATA:efficient_ip.log.dns.message}"
       pattern_definitions:
         CLIENT: 'client (?:%{DATA} )?%{IP:client.ip}#%{NUMBER:client.port:long}:?'
         VIEW: 'view %{DATA:efficient_ip.log.view}: '
