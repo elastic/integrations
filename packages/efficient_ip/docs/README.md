@@ -25,7 +25,6 @@ This integration collects the following data types from EfficientIP DDI solution
 
 All events are forwarded via syslog and processed through Elastic ingest pipelines for analysis and visualization within the Elastic Stack.
 
-
 ## What do I need to use this integration?
 
 Minimum requirement Elastic stack 9.1.x and EfficientIP version 8.4.7e
@@ -75,6 +74,7 @@ To collect logs via UDP, select **Collect logs via UDP** and configure the follo
 - Read Buffer - UDP socket read buffer size for handling bursts of messages
 - Read Timeout - How long to wait for incoming packets before checking for shutdown
 </details>
+
 
 ### Future updates
 
