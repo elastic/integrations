@@ -73,11 +73,23 @@ The integration keeps a **deduplicated, automatically-expiring view** of current
 2. **Per-indicator expiry** — the transform's retention policy drops an indicator from the latest index once its source-provided `ticura.indicator.ages_out` timestamp passes, so expired indicators leave the active view automatically.
 3. **Raw-stream ILM** — the raw `logs-ti_ticura.indicator-*` data stream rolls over every 24 hours and is deleted 1 day after rollover for storage hygiene. The latest index — queried by dashboards, saved searches, and Elastic Security's Indicator Match rules — is the source of truth for "currently active" indicators.
 
-Raw-stream documents are tagged `labels.is_ioc_transform_source: "true"` and the transform's deduplicated output `"false"`; dashboards and saved searches filter on `labels.is_ioc_transform_source: "false"` to show only the current, non-expired set. Each indicator's document `_id` is a fingerprint of its `ticura.indicator.uuid`, so re-ingests overwrite in place instead of duplicating.
+Raw-stream documents are tagged `labels.is_ioc_transform_source: "true"` and the transform's deduplicated output `"false"`; dashboards and saved searches filter on `labels.is_ioc_transform_source: "false"` to show only the current, non-expired set. Each indicator's document `_id` is a fingerprint of `ticura.indicator.uuid` **and** Ticura's per-object content fingerprint (`ticura.indicator.fingerprint`). Because the raw stream is a data stream (indexed `op_type=create`), an unchanged indicator that is re-exported keeps the same `_id` and is rejected as a duplicate (no churn), while a content change yields a new fingerprint — and therefore a new `_id` — so the updated version is ingested. The latest-IOC transform keeps the newest version per `ticura.indicator.uuid` (ordered by `event.ingested`, since `last_seen`/`@timestamp` need not change on a content-only update) and collapses the duplicates that accumulate across index rollovers.
 
-**Important — keep the download interval below 24 hours** so every indicator still in the feed is re-ingested before the raw backing index rolls over.
+**Important — keep the download interval below 24 hours.** Every indicator is re-asserted on each download, and the active view expires on a ~24-hour window, so a longer interval can let still-active indicators briefly drop out of dashboards and Indicator Match rules between downloads. The same interval bounds deletion: an indicator Ticura removes from the feed leaves the active set within roughly a day of its last download, and never faster than one interval — so a shorter interval also removes deleted indicators sooner.
 
 If you need to retain raw indicator history longer (for example, for forensic queries against retired IOCs), increase `delete.min_age` in the ILM policy `logs-ti_ticura.indicator-default_policy`.
+
+### Operational considerations
+
+The "active" indicator set is defined by **recency of download**: an indicator stays in the latest index (`logs-ti_ticura_latest.indicator`) only while it keeps being re-asserted by the feed. The transform's retention policy removes an indicator once its `ticura.indicator.ages_out` (a sliding ~24-hour window, refreshed on each download) lapses.
+
+A direct consequence: **if downloads stop — agent down, network/API outage, expired or revoked API key — the latest index drains and is empty within roughly 24 hours of the last successful download.** Dashboards and any Elastic Security Indicator Match rules built on it then stop matching. The failure is silent (no error in the active view — it simply empties), and the emptying tends to happen relatively abruptly around the 24-hour mark rather than gradually.
+
+This is inherent to a feed that signals removal by *omission* (Ticura sends a full snapshot each download and does not emit explicit delete events), so "currently active" can only mean "seen in a recent download." It is not specific to a misconfiguration. Recommended practices:
+
+- **Monitor ingest freshness.** Alert if no `ti_ticura` documents have been ingested recently (well under 24 hours) — for example, watch `event.ingested` on `logs-ti_ticura.indicator-*`, or the health of the integration's agent and the `logs-ti_ticura.latest_indicator-default` transform. Because the active view empties silently, this monitor is your early warning, not the dashboards.
+- **Keep the download interval well below 24 hours** (see above) — both so still-active indicators are refreshed before they expire, and so transient blips are absorbed by the CEL input's built-in retries.
+- **Do not shorten the retention window to delete removed indicators faster.** The window doubles as your outage tolerance: a shorter window evicts removed indicators sooner but also empties the active set sooner during any outage (a short window would drop coverage during a brief network blip). The ~24-hour window is a deliberate balance for a feed that has no explicit delete signal.
 
 ---
 
@@ -282,7 +294,8 @@ These are preserved alongside the ECS-mapped fields for per-field provenance (se
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `ticura.indicator.uuid` | keyword | Stable Ticura indicator ID (basis for the document `_id` fingerprint). |
+| `ticura.indicator.uuid` | keyword | Stable Ticura indicator ID (with `ticura.indicator.fingerprint`, forms the document `_id`). |
+| `ticura.indicator.fingerprint` | keyword | Ticura content fingerprint; changes on any content change, driving update detection via the `_id`. |
 | `ticura.indicator.main_type` / `sub_type` | keyword | High-level type and subtype as classified by Ticura. |
 | `ticura.indicator.risk` / `risk_category` | long / keyword | Numeric 0–100 risk and its categorical label (low / medium / high / critical). |
 | `ticura.indicator.confidence` / `confidence_category` | long / keyword | Numeric 0–100 confidence and label. |
@@ -320,7 +333,7 @@ warm:   min_age: 0s
 delete: min_age: 1d
 ```
 
-This is **tuned for re-asserting threat-intel feeds** — re-ingests of the same `ticura.indicator.uuid` overwrite in place, while indicators Ticura removes from the feed age out within ~48h. If you need different retention semantics:
+This is **tuned for re-asserting threat-intel feeds** — each `ticura.indicator.uuid` resolves to a single latest entry (the newest content version, deduplicated by the transform), while indicators Ticura removes from the feed age out within ~48h. If you need different retention semantics:
 
 - **Keep "removed" indicators queryable longer**: increase `delete.min_age` (for example, to `7d` to retain a week of dropped-indicator history in the warm tier).
 - **Reduce storage overhead during normal operation**: there isn't any with this policy — only one backing index is in hot at a time.

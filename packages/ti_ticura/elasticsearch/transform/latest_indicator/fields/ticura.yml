@@ -4,7 +4,10 @@
   fields:
     - name: uuid
       type: keyword
-      description: Stable Ticura-assigned UUID for the indicator. The document `_id` is a fingerprint of this value, so re-ingests deduplicate by overwriting in place.
+      description: Stable Ticura-assigned UUID for the indicator. Combined with `ticura.indicator.fingerprint` it forms the document `_id`, so an unchanged indicator re-exported is deduplicated (data stream `op_type=create` rejects the identical `_id`) while a content change ingests as a new version; the latest_indicator transform keeps the newest version per UUID.
+    - name: fingerprint
+      type: keyword
+      description: Content fingerprint (hash) of the indicator, supplied by Ticura. It changes whenever the indicator's content changes (and is stable across re-exports otherwise). Combined with `ticura.indicator.uuid` it forms the document `_id`, so content updates are ingested as new versions while unchanged re-exports are rejected as duplicates.
     - name: main_type
       type: keyword
       description: High-level indicator type (IPV4, IPV6, DOMAIN, URL, HASH).

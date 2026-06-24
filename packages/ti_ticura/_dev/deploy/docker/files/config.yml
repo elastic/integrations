@@ -49,17 +49,23 @@ rules:
             - "application/x-ndjson"
         body: |
           {{file "/files/ticura-feed-malformed.ndjson"}}
-  # ── Auth-error response ───────────────────────────────────────────────────
-  # Used by: test-auth-error-config.yml
-  # Returns 401 — verifies CEL input handles auth failures gracefully.
-  - path: /v1/feeds/autherror/full
+  # ── Update-detection feed (fingerprint-based _id) ────────────────────────
+  # Used by: test-update-config.yml
+  # 4 lines: the same uuid (upd00001) appears at TWO fingerprints (a content
+  # update with an unchanged last_seen) plus 2 other indicators. Because _id =
+  # fingerprint(uuid + ticura.indicator.fingerprint), all 4 are distinct _ids →
+  # hit_count 4. A regression to a uuid-only _id would collide the two versions
+  # of upd00001 → hit_count 3.
+  - path: /v1/feeds/update/full
     methods: ["GET"]
     query_params:
       targetFormat: "ECSV1"
+    request_headers:
+      x-api-key: "test-token"
     responses:
-      - status_code: 401
+      - status_code: 200
         headers:
           Content-Type:
-            - "application/json"
+            - "application/x-ndjson"
         body: |
-          {"error":"Unauthorized","message":"Invalid API key"}
+          {{file "/files/ticura-feed-update.ndjson"}}

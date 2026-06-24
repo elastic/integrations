@@ -1,14 +1,28 @@
 # Keeps a deduplicated "latest" view of Ticura indicators for Elastic Security's
 # Indicator Match rules and the Threat Intelligence UI, which read from the
 # logs-ti_ticura_latest.indicator index this transform maintains. The ingest pipeline
-# already sets _id to a fingerprint of ticura.indicator.uuid, so re-ingesting the full feed overwrites each
-# indicator in place within a single backing index. This transform additionally
-# collapses the duplicates that still accumulate across ILM rollovers (where _id
-# uniqueness no longer holds) into one newest doc per indicator, and drops aged-out
-# entries via the retention_policy on ticura.indicator.ages_out.
+# sets _id to a fingerprint of [ticura.indicator.uuid, ticura.indicator.fingerprint]:
+# an unchanged indicator re-exported keeps the same _id and is rejected as a duplicate
+# by the data stream (op_type=create), while a content change yields a new fingerprint
+# -> new _id -> a fresh version is ingested. This transform keeps the newest version
+# per ticura.indicator.uuid sorted by event.ingested (NOT @timestamp: @timestamp comes
+# from last_seen, which does not advance on a content-only update, so the newest
+# *ingested* version is the correct "latest"). It also drops aged-out entries via the
+# retention_policy on ticura.indicator.ages_out and collapses the duplicates that
+# accumulate across index rollovers.
 source:
   index:
     - "logs-ti_ticura.indicator-*"
+  # Only real indicators belong in the deduplicated "latest" index. A transient
+  # HTTP error (e.g. 401/5xx) makes the CEL input emit an {error:{...}} event that
+  # the pipeline indexes into the raw stream for observability but which has no
+  # ticura.indicator.uuid. Exclude those placeholders so they never reach the
+  # latest index that Elastic Security's Indicator Match rules read.
+  query:
+    bool:
+      filter:
+        - exists:
+            field: ticura.indicator.uuid
 # Bump the version suffix on dest.index only for a breaking mapping change, and bump
 # _meta.fleet_transform_version for any change to this config to take effect (the old
 # destination index is not removed automatically).
@@ -21,8 +35,10 @@ latest:
   unique_key:
     - event.dataset
     - ticura.indicator.uuid
-  sort: "@timestamp"
-description: Latest Ticura threat intelligence indicators (deduplicated by ticura.indicator.uuid; expired entries removed via ticura.indicator.ages_out).
+  # Sort by ingest time, not @timestamp: a content-only update keeps the same last_seen
+  # (= @timestamp), so the freshest version is the most recently ingested one.
+  sort: "event.ingested"
+description: Latest Ticura threat intelligence indicators (newest version per ticura.indicator.uuid by event.ingested; expired entries removed via ticura.indicator.ages_out).
 frequency: 60s
 sync:
   time:
@@ -43,6 +59,6 @@ retention_policy:
 _meta:
   managed: true
   # Bump to delete, reinstall, and restart the transform during package upgrade.
-  fleet_transform_version: 0.2.0
+  fleet_transform_version: 0.4.0
 settings:
   num_failure_retries: -1

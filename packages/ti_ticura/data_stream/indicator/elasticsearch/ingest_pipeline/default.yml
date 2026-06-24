@@ -81,19 +81,30 @@ processors:
       tag: set_event_category_threat
       field: event.category
       value: ["threat"]
-  # threat.indicator.id is ECS array-typed; ensure array shape of the source value.
-  - append:
-      tag: append_threat_indicator_id
-      field: threat.indicator.id
-      value: []
+  # threat.indicator.id is ECS array-typed, but the ECSV1 feed delivers it as a
+  # scalar. Wrap it in a list when needed. (An `append` with `value: []` promoted a
+  # scalar to an array on 8.x but is a no-op on 9.x, so use an explicit script for
+  # version-stable output.)
+  - script:
+      tag: normalize_threat_indicator_id
       if: ctx.threat?.indicator?.id != null
+      lang: painless
+      source: |
+        if (!(ctx.threat.indicator.id instanceof List)) {
+          ctx.threat.indicator.id = [ctx.threat.indicator.id];
+        }
 
-  # Deterministic _id from the stable Ticura UUID so re-ingesting the full feed
-  # overwrites each indicator in place instead of creating duplicates.
+  # Deterministic _id from the stable UUID plus Ticura's content fingerprint. The raw
+  # stream is a data stream (indexed op_type=create): an unchanged indicator re-exported
+  # keeps the same _id and is rejected as a duplicate (no churn), while a content change
+  # yields a new fingerprint -> new _id -> a fresh version is ingested. The
+  # latest_indicator transform then keeps the newest version per UUID (by event.ingested)
+  # and collapses duplicates that accumulate across index rollovers.
   - fingerprint:
       tag: fingerprint_id
       fields:
         - ticura.indicator.uuid
+        - ticura.indicator.fingerprint
       target_field: "_id"
       ignore_missing: true
 
