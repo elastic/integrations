@@ -150,7 +150,7 @@ Model on `packages/otlp_input_otel/_dev/test/policy/`:
   hand-write). Verify the injected `transform/componentid-1` sets
   `data_stream.dataset` to the configured value and `data_stream.type` to `logs`.
 
-### 5. System tests + docker (`_dev/test/system/`, `_dev/deploy/docker/`)
+### 5. System tests + docker (`_dev/test/system/`, `_dev/deploy/docker/`) — DONE
 Model on `packages/otlp_input_otel/_dev/deploy/docker/` (generator-only compose;
 generator sends OTLP straight to `elastic-agent:4317`, waits for `SIGHUP`).
 - `docker-compose.yml`: single `generator` service (`build: .`), no intermediate
