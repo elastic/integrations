@@ -142,7 +142,7 @@ How it works (OTLP → EDOT collector → agent → Elasticsearch), Configuratio
 (endpoints + `data_stream.dataset`, note the two datasets), link to upstream docs.
 `docs/README.md` is rendered by `elastic-package build`.
 
-### 4. Policy tests (`_dev/test/policy/`)
+### 4. Policy tests (`_dev/test/policy/`) — DONE
 Model on `packages/otlp_input_otel/_dev/test/policy/`:
 - `test-default.yml`: `vars: ~` → default dataset `cloud_defend.logs`.
 - `test-file-dataset.yml`: `vars: {data_stream.dataset: cloud_defend.file}`.
@@ -167,13 +167,6 @@ generator sends OTLP straight to `elastic-agent:4317`, waits for `SIGHUP`).
   - `test-logs-config.yml`: `data_stream.dataset: cloud_defend.logs`.
   - `test-file-config.yml`: `data_stream.dataset: cloud_defend.file`.
   Both reuse the same generator; the dataset differs only by the agent var.
-
-### 6. Icon, changelog, cleanup
-- Replace `img/sample-logo.svg` with `img/cloud_defend_otellogo.svg` (start from
-  `packages/cloud_defend/img/logo.svg`; ideally a combined product+OTel mark).
-- Remove `img/sample-screenshot.png`, `fields/`, and `plan_prompt.md`.
-- `changelog.yml`: keep the `0.0.1` entry; fix the PR link when the PR exists.
-- Copy this plan to `packages/cloud_defend_otel/plan.md` (user-requested).
 
 ## Verification
 
