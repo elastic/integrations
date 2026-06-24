@@ -1,0 +1,48 @@
+{
+  "id": "aws_rds_otel-cpu-utilization-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when average CPU utilization is sustained above a threshold. Latency rises sharply above ~80% CPU; correlate with SwapUsage for memory-related CPU pressure.",
+    "name": "[AWS RDS OTel] CPU utilization high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_rds",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## CPU Utilization High\n\n### Triage\n1. Check `SwapUsage` — swapping can inflate CPU and latency.\n2. Review `DatabaseConnections` for connection storms driving CPU.\n3. Inspect slow query logs or Performance Insights for expensive queries (out of scope for this rule).\n4. On T-family instances, verify CPU credit balance if credit metrics are collected.\n\n### Mitigation\n- Optimize top CPU-consuming queries (indexes, query rewrite).\n- Scale up instance class or add read replicas.\n- Reduce connection count and idle sessions."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.rds.otel-*\n| WHERE Namespace == \"AWS/RDS\"\n    AND MetricName == \"CPUUtilization\"\n    AND stat == \"Average\"\n| STATS avg_cpu_utilization = AVG(`metrics.amazonaws.com/AWS/RDS/CPUUtilization`)\n    BY DBInstanceIdentifier, cloud.region\n// Percent CPU — adjust threshold (default: 80%)\n| WHERE avg_cpu_utilization > 80.0\n| SORT avg_cpu_utilization DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "DBInstanceIdentifier",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
