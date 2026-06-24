@@ -96,11 +96,17 @@ processors:
       pattern_definitions:
         ADD_FORWARD: (?i:add forward map)
         REVERSE_UPDATE: (?i:reverse map update)
+  - set:
+      field: event.outcome
+      value: failure
+      tag: set_refused_outcome
+      if: ctx.message != null && ctx.message.contains('REFUSED')
   - gsub:
       field: event.action
       pattern: ' '
       replacement: '_'
-      if: ctx.event?.outcome?.equalsIgnoreCase('refused') == true
+      ignore_missing: true
+      if: ctx.event?.action != null && ctx.event.action.contains(' ')
   - set:
       field: event.outcome
       value: failure
