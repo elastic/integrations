@@ -1,5 +1,5 @@
 {{- generatedHeader }}
-# AWS CloudWatch OpenTelemetry Input
+# AWS CloudWatch (OpenTelemetry)
 
 ## Overview
 
