@@ -4,45 +4,55 @@ title: "Defend for Containers OTEL input package (BETA)"
 version: 0.0.1
 source:
   license: "Elastic-2.0"
-description: "Elastic Defend for Containers (BETA) provides cloud-native runtime protections for containerized environments."
+description: "Receive Elastic Defend for Containers (BETA) telemetry via OTLP using the OpenTelemetry Collector."
 type: input
 categories:
   - security
   - containers
   - kubernetes
+  - observability
+  - opentelemetry
 conditions:
   kibana:
     version: "^8.19.0 || ^9.3.0"
   elastic:
     subscription: "enterprise"
-screenshots:
-  - src: /img/sample-screenshot.png
-    title: Sample screenshot
-    size: 600x600
-    type: image/png
+    capabilities:
+      - security
 icons:
   - src: /img/sample-logo.svg
     title: Sample logo
     size: 32x32
     type: image/svg+xml
 policy_templates:
-  - name: sample
+  - name: cloud_defendreceiver
     type: logs
-    title: Sample logs
-    description: Collect sample logs
-    input: logfile
+    title: Defend for Containers (OpenTelemetry)
+    description: Receive cloud_defend telemetry via OTLP and route to a dataset.
+    input: otelcol
     template_path: input.yml.hbs
     vars:
-      - name: paths
+      - name: grpc_endpoint
         type: text
-        title: Paths
-        multi: true
-        default:
-          - /var/log/*.log
-elasticsearch:
-  index_template:
-    mappings:
-      subobjects: false
+        required: true
+        show_user: true
+        title: gRPC Endpoint
+        description: Address and port to listen on for OTLP gRPC connections.
+        default: localhost:4317
+      - name: http_endpoint
+        type: text
+        required: true
+        show_user: true
+        title: HTTP Endpoint
+        description: Address and port to listen on for OTLP HTTP connections.
+        default: localhost:4318
+      - name: data_stream.dataset
+        type: text
+        required: false
+        show_user: true
+        title: Data Stream Dataset
+        description: Dataset to write data to (e.g. cloud_defend.logs or cloud_defend.file).
+        default: cloud_defend.logs
 owner:
   github: elastic/cloud-services
   type: elastic
