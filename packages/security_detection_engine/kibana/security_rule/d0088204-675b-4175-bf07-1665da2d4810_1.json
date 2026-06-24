@@ -1,0 +1,117 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic",
+            "descambiado"
+        ],
+        "description": "Identifies the creation of a Temporary Access Pass (TAP) for an Entra ID user account. A TAP is a time-limited passcode that allows passwordless authentication and bypasses existing MFA requirements, including phishing-resistant methods. An attacker with User Administrator or Authentication Administrator privileges can issue a TAP for a target account, sign in without the current password, and register new persistent authentication methods before the TAP expires.",
+        "false_positives": [
+            "Help desk teams issuing TAPs for locked-out users or new employee onboarding workflows. Automated identity lifecycle systems that provision TAPs during device enrollment."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-azure.auditlogs-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Entra ID Temporary Access Pass Created for User",
+        "note": "## Triage and analysis\n\n### Investigating Entra ID Temporary Access Pass Created for User\n\nA Temporary Access Pass is a time-limited credential that bypasses all existing MFA factors for the\ntarget account. In a steady-state tenant, TAP creation is rare and should be correlated against help\ndesk records or onboarding workflows.\n\n#### Possible investigation steps\n\n- Identify the administrator who created the TAP (`azure.auditlogs.properties.initiated_by`) and verify\n  whether the action was authorized by a help desk ticket or change management record.\n- Identify the target account and assess its privilege level -- TAPs issued for Global Administrators,\n  Application Administrators, or accounts with high-value data access are highest risk.\n- Check for sign-ins by the target account using the TAP credential: look for sign-ins where\n  `azure.signinlogs.properties.authentication_details` contains \"Temporary Access Pass\" shortly after\n  the TAP creation event.\n- If the TAP was used to sign in, review what authentication methods were registered during or after\n  the session -- an attacker will use the TAP window to add a persistent authenticator.\n- Check whether the creating administrator's account shows anomalous activity in the preceding 24 hours.\n\n### False positive analysis\n\n- TAP creation by your identity team for locked-out users is a legitimate workflow. Confirm via help\n  desk ticket correlation.\n- New employee onboarding that provisions TAPs as part of passwordless enrollment is expected behavior.\n\n### Response and remediation\n\n- Revoke the TAP immediately if unauthorized: Entra ID > Users > Authentication methods.\n- Audit all authentication methods registered by the target account after TAP creation and remove any\n  that were not previously present.\n- Reset the target account's password and revoke all active sessions.\n- Review the creating administrator's recent actions for signs of compromise.\n",
+        "query": "data_stream.dataset: \"azure.auditlogs\" and\n(\n    (\n        azure.auditlogs.operation_name: \"User registered security info\" and\n        azure.auditlogs.properties.result_reason: \"User registered temporary access pass method\"\n    ) or (\n        azure.auditlogs.operation_name: \"Create Temporary Access Pass method for user\"\n    ) or (\n        azure.auditlogs.operation_name: \"Admin registered security info\" and\n        azure.auditlogs.properties.target_resources.*.modified_properties.*.display_name: *TemporaryAccessPass*\n    )\n) and\nevent.outcome: (\"Success\" or \"success\")\n",
+        "references": [
+            "https://learn.microsoft.com/en-us/entra/identity/authentication/howto-authentication-temporary-access-pass",
+            "https://dirkjanm.io/lateral-movement-and-hash-dumping-with-temporary-access-passes-microsoft-entra/",
+            "https://specterops.io/blog/2023/03/29/id-tap-that-pass/"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure",
+                "version": "^1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.auditlogs.operation_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.auditlogs.properties.result_reason",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.auditlogs.properties.target_resources.*.modified_properties.*.display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "d0088204-675b-4175-bf07-1665da2d4810",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Microsoft Entra ID",
+            "Data Source: Microsoft Entra ID Audit Logs",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Initial Access",
+            "Tactic: Lateral Movement",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.004",
+                                "name": "Cloud Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1550",
+                        "name": "Use Alternate Authentication Material",
+                        "reference": "https://attack.mitre.org/techniques/T1550/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "d0088204-675b-4175-bf07-1665da2d4810_1",
+    "type": "security-rule"
+}
