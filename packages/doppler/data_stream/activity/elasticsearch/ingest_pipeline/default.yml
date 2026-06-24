@@ -311,7 +311,30 @@ processors:
       name: logs-doppler.activity@custom
       ignore_missing_pipeline: true
       tag: pipeline_logs_doppler_activity_custom
+  # A processor above may have caught its own failure (appending to error.message)
+  # and let the document continue. Reflect any such handled error in event.kind and
+  # preserve the original event so the failure is still discoverable downstream.
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
 on_failure:
+  - set:
+      field: event.kind
+      tag: set_event_kind_pipeline_error
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_failure
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       tag: append_pipeline_failure_message
@@ -320,11 +343,3 @@ on_failure:
         with tag '{{{ _ingest.on_failure_processor_tag }}}'
         in pipeline '{{{ _ingest.pipeline }}}'
         failed with message '{{{ _ingest.on_failure_message }}}'
-  - set:
-      field: error.type
-      tag: set_error_type
-      value: pipeline_error
-  - set:
-      field: event.kind
-      tag: set_event_kind_pipeline_error
-      value: pipeline_error

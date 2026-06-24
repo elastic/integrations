@@ -167,52 +167,9 @@ The `activity` data stream contains Doppler workplace and project activity event
 | doppler.actor.token_type.name | Name of the API token type, when the actor is an API token. | keyword |
 | doppler.workplace.id | Identifier of the Doppler workplace (tenant) the event belongs to. Also copied to `organization.id` for ECS-normalized, cross-source tenant correlation. | keyword |
 | doppler.workplace.name | Name of the Doppler workplace (tenant) the event belongs to. Also copied to `organization.name`. | keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| error.type | The type of the error, for example the class name of the exception. | keyword |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset. | constant_keyword |
-| event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
-| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| group.id | Unique identifier for the group on the system/platform. | keyword |
-| group.name | Name of the group. | keyword |
 | input.type | Type of filebeat input. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| organization.id | Unique identifier for the organization. | keyword |
-| organization.name | Organization name. | keyword |
-| organization.name.text | Multi-field of `organization.name`. | match_only_text |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
-| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
-| url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
-| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
-| url.full.text | Multi-field of `url.full`. | match_only_text |
-| url.password | Password of the request. | keyword |
-| url.path | Path of the request, such as "/search". | wildcard |
-| url.port | Port of the request, such as 443. | long |
-| url.query | The field contains the entire query string, excluding the leading `?` character, such as "q=elasticsearch". If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
-| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
-| url.username | Username of the request. | keyword |
-| user.email | User email address. | keyword |
-| user.full_name | User's full name, if available. | keyword |
-| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
-| user.target.email | User email address. | keyword |
-| user.target.full_name | User's full name, if available. | keyword |
-| user.target.full_name.text | Multi-field of `user.target.full_name`. | match_only_text |
-| user.target.id | Unique identifier of the user. | keyword |
-| user.target.name | Short name or login of the user. | keyword |
-| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
 
 
 ##### activity sample event
@@ -243,19 +200,19 @@ An example event for `activity` looks as following:
                 "serviceAccountName": "example-service-account-3",
                 "serviceAccountTokenId": "b292275b-cf26-40be-85d8-0fe54f99aad3",
                 "serviceAccountTokenName": "example-service-account-4",
-                "serviceAccountUrl": "https://dashboard.doppler.com/workplace/b1ba07b330497a9ca137/team/service_accounts/64f61675-c2d9-4c8f-8b59-d1caf8debfb4"
+                "serviceAccountUrl": "https://dashboard.doppler.com/workplace/efbd98ca78c68ffdced3/team/service_accounts/64f61675-c2d9-4c8f-8b59-d1caf8debfb4"
             },
             "token": {
                 "id": "b292275b-cf26-40be-85d8-0fe54f99aad3",
                 "name": "example-service-account-4"
             },
-            "url": "https://dashboard.doppler.com/workplace/b1ba07b330497a9ca137/logs?id=MwtgYglYXJ3uDpv4YkyjHKCG"
+            "url": "https://dashboard.doppler.com/workplace/efbd98ca78c68ffdced3/logs?id=MwtgYglYXJ3uDpv4YkyjHKCG"
         },
         "actor": {
             "kind": "user"
         },
         "workplace": {
-            "id": "b1ba07b330497a9ca137",
+            "id": "efbd98ca78c68ffdced3",
             "name": "Example Corp"
         }
     },
@@ -278,7 +235,7 @@ An example event for `activity` looks as following:
         "ingested": "2026-06-23T05:46:38Z",
         "kind": "event",
         "module": "doppler",
-        "original": "{\"createdAt\":\"2026-05-11T20:12:43.104Z\",\"link\":\"https://dashboard.doppler.com/workplace/b1ba07b330497a9ca137/logs?id=MwtgYglYXJ3uDpv4YkyjHKCG\",\"metadata\":{\"serviceAccountId\":\"64f61675-c2d9-4c8f-8b59-d1caf8debfb4\",\"serviceAccountName\":\"example-service-account-3\",\"serviceAccountTokenApiKeyPreview\":\"d1pdkucXtX9K\",\"serviceAccountTokenId\":\"b292275b-cf26-40be-85d8-0fe54f99aad3\",\"serviceAccountTokenName\":\"example-service-account-4\",\"serviceAccountUrl\":\"https://dashboard.doppler.com/workplace/b1ba07b330497a9ca137/team/service_accounts/64f61675-c2d9-4c8f-8b59-d1caf8debfb4\"},\"slug\":\"nzXovfNKOK837wck9ngWJjb5\",\"source\":\"doppler\",\"text\":\"Created token \\u003cstrong\\u003eexample-service-account-4\\u003c/strong\\u003e for service account \\u003ca class=\\\"text-purple-500 hover:underline\\\" rel=\\\"noopener\\\" href=\\\"https://dashboard.doppler.com/workplace/b1ba07b330497a9ca137/team/service_accounts/64f61675-c2d9-4c8f-8b59-d1caf8debfb4\\\"\\u003eYusuf Thomas\\u003c/a\\u003e\",\"title\":\"Activity Log: nzXovfNKOK837wck9ngWJjb5\",\"type\":\"team.service_account.token.create\",\"user\":{\"email\":\"grace.moore@example.com\",\"kind\":\"user\",\"name\":\"Ivan Anderson\",\"profile_image_url\":\"https://www.gravatar.com/avatar/4ddcebc59eebe793c595e20f0081a6f0?s=500\\u0026d=retro\",\"slug\":\"fcb8e8ff-0036-45c4-8a0b-6c16df16d9bd\",\"username\":\"victor.moore\"},\"workplace\":{\"id\":\"b1ba07b330497a9ca137\",\"name\":\"Example Corp\"}}",
+        "original": "{\"createdAt\":\"2026-05-11T20:12:43.104Z\",\"link\":\"https://dashboard.doppler.com/workplace/efbd98ca78c68ffdced3/logs?id=MwtgYglYXJ3uDpv4YkyjHKCG\",\"metadata\":{\"serviceAccountId\":\"64f61675-c2d9-4c8f-8b59-d1caf8debfb4\",\"serviceAccountName\":\"example-service-account-3\",\"serviceAccountTokenApiKeyPreview\":\"b540be76b8cf\",\"serviceAccountTokenId\":\"b292275b-cf26-40be-85d8-0fe54f99aad3\",\"serviceAccountTokenName\":\"example-service-account-4\",\"serviceAccountUrl\":\"https://dashboard.doppler.com/workplace/efbd98ca78c68ffdced3/team/service_accounts/64f61675-c2d9-4c8f-8b59-d1caf8debfb4\"},\"slug\":\"nzXovfNKOK837wck9ngWJjb5\",\"source\":\"doppler\",\"text\":\"Created token <strong>example-service-account-4</strong> for service account <a class=\\\"text-purple-500 hover:underline\\\" rel=\\\"noopener\\\" href=\\\"https://dashboard.doppler.com/workplace/efbd98ca78c68ffdced3/team/service_accounts/64f61675-c2d9-4c8f-8b59-d1caf8debfb4\\\">Yusuf Thomas</a>\",\"title\":\"Activity Log: nzXovfNKOK837wck9ngWJjb5\",\"type\":\"team.service_account.token.create\",\"user\":{\"email\":\"grace.moore@example.com\",\"kind\":\"user\",\"name\":\"Ivan Anderson\",\"profile_image_url\":\"https://www.gravatar.com/avatar/15c106ed034102804bb3d6924913101c?s=500&d=retro\",\"slug\":\"fcb8e8ff-0036-45c4-8a0b-6c16df16d9bd\",\"username\":\"victor.moore\"},\"workplace\":{\"id\":\"efbd98ca78c68ffdced3\",\"name\":\"Example Corp\"}}",
         "outcome": "success",
         "provider": "doppler",
         "type": [
@@ -294,7 +251,7 @@ An example event for `activity` looks as following:
         "vendor": "Doppler"
     },
     "organization": {
-        "id": "b1ba07b330497a9ca137",
+        "id": "efbd98ca78c68ffdced3",
         "name": "Example Corp"
     },
     "related": {
@@ -312,8 +269,8 @@ An example event for `activity` looks as following:
     ],
     "url": {
         "domain": "dashboard.doppler.com",
-        "full": "https://dashboard.doppler.com/workplace/b1ba07b330497a9ca137/logs?id=MwtgYglYXJ3uDpv4YkyjHKCG",
-        "path": "/workplace/b1ba07b330497a9ca137/logs",
+        "full": "https://dashboard.doppler.com/workplace/efbd98ca78c68ffdced3/logs?id=MwtgYglYXJ3uDpv4YkyjHKCG",
+        "path": "/workplace/efbd98ca78c68ffdced3/logs",
         "query": "id=MwtgYglYXJ3uDpv4YkyjHKCG",
         "scheme": "https"
     },
@@ -357,49 +314,9 @@ The `secret_read` data stream contains `security.secret_read` events, rerouted f
 | doppler.secret_read.secrets | The expanded list of secrets that were read. Each entry has `project`, `environment`, `config`, `name`, `version`, and (for inherited values) an `inherited_from` reference of `\{project, environment, config\}`. Vendor sends abbreviated keys (`p`, `e`, `c`, `s`, `v`, `r`) which the pipeline expands. As a `flattened` field this is for investigation; prefer the sidecar arrays above for ES|QL detections. | flattened |
 | doppler.workplace.id | Identifier of the Doppler workplace (tenant) the event belongs to. | keyword |
 | doppler.workplace.name | Name of the Doppler workplace (tenant) the event belongs to. | keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| error.type | The type of the error, for example the class name of the exception. | keyword |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset. | constant_keyword |
-| event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
-| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of filebeat input. | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| organization.id | Unique identifier for the organization. | keyword |
-| organization.name | Organization name. | keyword |
-| organization.name.text | Multi-field of `organization.name`. | match_only_text |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| source.as.organization.name | Organization name. | keyword |
-| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
-| source.geo.city_name | City name. | keyword |
-| source.geo.continent_name | Name of the continent. | keyword |
-| source.geo.country_iso_code | Country ISO code. | keyword |
-| source.geo.country_name | Country name. | keyword |
-| source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.region_iso_code | Region ISO code. | keyword |
-| source.geo.region_name | Region name. | keyword |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| tags | List of keywords used to tag each event. | keyword |
-| user.email | User email address. | keyword |
-| user.full_name | User's full name, if available. | keyword |
-| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
-| user_agent.name | Name of the user agent. | keyword |
-| user_agent.os.name | Operating system name, without the version. | keyword |
-| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
 
 
 ##### secret_read sample event
@@ -475,7 +392,7 @@ An example event for `secret_read` looks as following:
             ]
         },
         "workplace": {
-            "id": "b1ba07b330497a9ca137",
+            "id": "efbd98ca78c68ffdced3",
             "name": "Example Corp"
         }
     },
@@ -498,7 +415,7 @@ An example event for `secret_read` looks as following:
         "ingested": "2026-06-23T05:46:38Z",
         "kind": "event",
         "module": "doppler",
-        "original": "{\"createdAt\":\"2026-06-15T00:01:16.402Z\",\"metadata\":{\"secrets\":[{\"c\":\"dev\",\"e\":\"dev\",\"m\":\"m\",\"p\":\"example-project-38\",\"s\":\"EXAMPLE_SECRET_43\",\"v\":3},{\"c\":\"dev\",\"e\":\"dev\",\"m\":\"m\",\"p\":\"example-project-38\",\"s\":\"EXAMPLE_SECRET_44\",\"v\":1},{\"c\":\"prod\",\"e\":\"prod\",\"m\":\"m\",\"p\":\"example-project-16\",\"r\":{\"c\":\"dev\",\"e\":\"dev\",\"p\":\"example-project-38\"},\"s\":\"EXAMPLE_SECRET_54\",\"v\":8}]},\"session\":{\"browser\":null,\"ip\":\"198.51.100.1\",\"method\":\"API\",\"os\":null},\"source\":\"doppler\",\"title\":\"Secret Read\",\"type\":\"security.secret_read\",\"user\":{\"email\":\"dave.wilson@example.com\",\"kind\":\"user\",\"name\":\"Ivan Martin\",\"profile_image_url\":\"https://www.gravatar.com/avatar/21e336062966e7977556ec324d042357?s=500\\u0026d=retro\",\"slug\":\"aa4c1c7a-83b6-46be-83ae-712102c616fc\",\"username\":\"mallory.white\"},\"workplace\":{\"id\":\"b1ba07b330497a9ca137\",\"name\":\"Example Corp\"}}",
+        "original": "{\"createdAt\":\"2026-06-15T00:01:16.402Z\",\"metadata\":{\"secrets\":[{\"c\":\"dev\",\"e\":\"dev\",\"m\":\"m\",\"p\":\"example-project-38\",\"s\":\"EXAMPLE_SECRET_43\",\"v\":3},{\"c\":\"dev\",\"e\":\"dev\",\"m\":\"m\",\"p\":\"example-project-38\",\"s\":\"EXAMPLE_SECRET_44\",\"v\":1},{\"c\":\"prod\",\"e\":\"prod\",\"m\":\"m\",\"p\":\"example-project-16\",\"r\":{\"c\":\"dev\",\"e\":\"dev\",\"p\":\"example-project-38\"},\"s\":\"EXAMPLE_SECRET_54\",\"v\":8}]},\"session\":{\"browser\":null,\"ip\":\"198.51.100.1\",\"method\":\"API\",\"os\":null},\"source\":\"doppler\",\"title\":\"Secret Read\",\"type\":\"security.secret_read\",\"user\":{\"email\":\"dave.wilson@example.com\",\"kind\":\"user\",\"name\":\"Ivan Martin\",\"profile_image_url\":\"https://www.gravatar.com/avatar/cb16299dced55e7ee984433be5293d5b?s=500&d=retro\",\"slug\":\"aa4c1c7a-83b6-46be-83ae-712102c616fc\",\"username\":\"mallory.white\"},\"workplace\":{\"id\":\"efbd98ca78c68ffdced3\",\"name\":\"Example Corp\"}}",
         "outcome": "success",
         "provider": "doppler",
         "type": [
@@ -516,7 +433,7 @@ An example event for `secret_read` looks as following:
         "vendor": "Doppler"
     },
     "organization": {
-        "id": "b1ba07b330497a9ca137",
+        "id": "efbd98ca78c68ffdced3",
         "name": "Example Corp"
     },
     "related": {
