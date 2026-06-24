@@ -28,13 +28,6 @@
         - name: iaid
           type: keyword
           description: Identity Association Identifier (IAID) of the client.
-        - name: inform
-          type: group
-          description: Details of a DHCPINFORM message.
-          fields:
-            - name: message
-              type: keyword
-              description: Additional information included in a DHCPINFORM message.
         - name: interface
           type: group
           description: Interface through which the DHCP request was received.
@@ -55,9 +48,6 @@
             - name: duration
               type: long
               description: Duration of the DHCP lease, in seconds.
-            - name: message
-              type: keyword
-              description: Additional information related to the DHCP lease.
         - name: lease_query
           type: group
           description: Details of a DHCPLEASEQUERY message.
@@ -71,16 +61,6 @@
         - name: message
           type: text
           description: Raw or unparsed DHCP log message.
-        - name: network
-          type: keyword
-          description: Network associated with the DHCP operation.
-        - name: offered
-          type: group
-          description: Details of the lease offered to the client.
-          fields:
-            - name: duration
-              type: long
-              description: Duration of the offered DHCP lease, in seconds.
         - name: peer_address
           type: keyword
           description: Peer address of the relay agent in a Relay-forward message.
@@ -95,23 +75,6 @@
                 - name: ip
                   type: ip
                   description: IP address of the relay agent interface.
-                - name: name
-                  type: keyword
-                  description: Name of the relay agent interface.
-        - name: release
-          type: group
-          description: Details of a DHCPRELEASE message.
-          fields:
-            - name: info
-              type: keyword
-              description: Additional information included in a DHCPRELEASE message.
-        - name: request
-          type: group
-          description: Details of a DHCPREQUEST message.
-          fields:
-            - name: message
-              type: keyword
-              description: Additional information included in a DHCPREQUEST message.
         - name: router
           type: group
           description: Router associated with the requested lease.
@@ -122,9 +85,6 @@
         - name: trans_id
           type: keyword
           description: Transaction ID of the DHCP exchange.
-        - name: uid
-          type: keyword
-          description: Unique identifier of the DHCP client.
         - name: validation_second
           type: long
           description: Number of seconds for which the assigned address is valid.
@@ -134,72 +94,20 @@
     - name: type
       type: keyword
       description: Type of EfficientIP log (for example, DHCP or DNS).
-    - name: view
-      type: keyword
-      description: DNS view associated with the log message.
     - name: dns
       type: group
       description: Fields parsed from EfficientIP DNS server log messages.
       fields:
-        - name: after_query
-          type: text
-          description: Information logged after the DNS query was processed.
-        - name: answers_policy
-          type: text
-          description: Response policy applied to the DNS answers.
-        - name: before_query
-          type: text
-          description: Information logged before the DNS query was processed.
         - name: category
-          type: text
+          type: keyword
           description: Category of the DNS log message (for example, query or answer).
-        - name: failed_message
-          type: text
-          description: Details of a failed DNS operation.
         - name: message
           type: text
           description: Raw or unparsed DNS log message.
-        - name: view_name
-          type: text
-          description: Name of the DNS view that handled the query.
-        - name: version
-          type: text
-          description: Version information reported in the DNS log message.
-        - name: header_flags
-          type: keyword
-          description: DNS header flags present in the message.
-        - name: rpz
-          type: group
-          description: Response Policy Zone (RPZ) details applied to the DNS query.
-          fields:
-            - name: action
-              type: keyword
-              description: RPZ action taken for the DNS query.
-            - name: domain
-              type: keyword
-              description: Domain matched by the RPZ rule.
-            - name: domain_rewrite
-              type: keyword
-              description: Domain to which the query was rewritten by the RPZ rule.
-            - name: query_class
-              type: keyword
-              description: DNS query class matched by the RPZ rule.
-            - name: query_class_rewrite
-              type: keyword
-              description: DNS query class to which the query was rewritten by the RPZ rule.
-            - name: rule_type
-              type: keyword
-              description: Type of RPZ rule that matched the query.
-            - name: type
-              type: keyword
-              description: Type of RPZ policy applied.
         - name: answers
           type: group
           description: DNS answer records returned in the response.
           fields:
-            - name: ancount
-              type: long
-              description: Number of answer records in the DNS response.
             - name: type
               type: keyword
               description: Resource record type of the DNS answer (for example, A, AAAA, or CNAME).
