@@ -107,15 +107,15 @@ processors:
         // Doppler normally sends secrets as a list, but tolerate a single object
         // so the read is never silently dropped before doppler.metadata is removed.
         def raw = ctx.doppler.metadata.secrets;
-        ArrayList src = new ArrayList();
-        if (raw instanceof List) { src.addAll(raw); }
-        else if (raw instanceof Map) { src.add(raw); }
+        ArrayList secrets = new ArrayList();
+        if (raw instanceof List) { secrets.addAll(raw); }
+        else if (raw instanceof Map) { secrets.add(raw); }
         ArrayList out = new ArrayList();
         ArrayList names = new ArrayList();
         ArrayList projects = new ArrayList();
         ArrayList envs = new ArrayList();
         ArrayList configs = new ArrayList();
-        for (def s : src) {
+        for (def s : secrets) {
           if (!(s instanceof Map)) { continue; }
           HashMap m = new HashMap();
           if (s.p != null) { m.project = s.p; if (!projects.contains(s.p)) { projects.add(s.p); } }
