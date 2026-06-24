@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source .buildkite/scripts/common.sh
+source "$(dirname "${BASH_SOURCE[0]}")/backport_branch_lib.sh"
 
 set -euo pipefail
 
@@ -18,6 +19,7 @@ BASE_COMMIT="$(buildkite-agent meta-data get BASE_COMMIT --default "${BASE_COMMI
 PACKAGE_NAME="$(buildkite-agent meta-data get PACKAGE_NAME --default "${PACKAGE_NAME:-""}")"
 PACKAGE_VERSION="$(buildkite-agent meta-data get PACKAGE_VERSION --default "${PACKAGE_VERSION:-""}")"
 REMOVE_OTHER_PACKAGES="$(buildkite-agent meta-data get REMOVE_OTHER_PACKAGES --default "${REMOVE_OTHER_PACKAGES:-"false"}")"
+BACKPORT_BRANCH_NAME="$(buildkite-agent meta-data get BACKPORT_BRANCH_NAME --default "${BACKPORT_BRANCH_NAME:-""}")"
 
 if [[ -z "$PACKAGE_NAME" ]] || [[ -z "$PACKAGE_VERSION" ]]; then
   buildkite-agent annotate "The variables **PACKAGE_NAME** or **PACKAGE_VERSION** aren't defined, please try again" --style "warning"
@@ -45,7 +47,13 @@ SOURCE_BRANCH="main"
 # git checkout -b test_main
 # SOURCE_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 # echo "--- SOURCE_BRANCH: ${SOURCE_BRANCH}"
-BACKPORT_BRANCH_NAME="backport-${PACKAGE_NAME}-${TRIMMED_PACKAGE_VERSION}"
+
+# If the backport branch name is not set, use the expected one.
+EXPECTED_BACKPORT_BRANCH_NAME="backport-${PACKAGE_NAME}-${TRIMMED_PACKAGE_VERSION}"
+if [[ "${BACKPORT_BRANCH_NAME}" == "" ]]; then
+  BACKPORT_BRANCH_NAME="${EXPECTED_BACKPORT_BRANCH_NAME}"
+fi
+
 PACKAGES_FOLDER_PATH="packages"
 MSG=""
 
@@ -87,24 +95,6 @@ branchExist() {
   fi
 }
 
-# get_package_path returns the path of the package with the given name as
-# defined in the manifest.yml `name` field. Returns 1 if not found.
-get_package_path() {
-  local package_name="${1}"
-  local package_path=""
-
-  while IFS= read -r package_path; do
-    local name
-    name=$(yq -r '.name' "${package_path}/manifest.yml")
-    if [[ "${name}" == "${package_name}" ]]; then
-      echo "${package_path}"
-      return 0
-    fi
-  done < <(list_all_directories)
-
-  return 1
-}
-
 createLocalBackportBranch() {
   local branch_name=$1
   local source_commit=$2
@@ -114,23 +104,6 @@ createLocalBackportBranch() {
     buildkite-agent annotate "The backport branch **$BACKPORT_BRANCH_NAME** could not be created." --style "warning"
     exit 1
   fi
-}
-
-removeOtherPackages() {
-  local package_path_to_keep="${1}"
-  local package_path
-  local package_paths=""
-  package_paths=$(list_all_directories)
-  for package_path in ${package_paths}; do
-    if [[ -d "$package_path" ]] && [[ "${package_path}" != "${package_path_to_keep}" ]]; then
-      echo "Removing directory: ${package_path}"
-      rm -rf "$package_path"
-
-      echo "Removing ${package_path} from .github/CODEOWNERS"
-      sed -i "\|^/${package_path}/|d" .github/CODEOWNERS
-      sed -i "\|^/${package_path} |d" .github/CODEOWNERS
-    fi
-  done
 }
 
 update_git_config() {
@@ -169,7 +142,9 @@ updateBackportBranchContents() {
   local COVERAGE_SCRIPTS_FOLDER="dev/coverage"
   local CODEOWNERS_SCRIPTS_FOLDER="dev/codeowners"
   local PACKAGENAMES_SCRIPTS_FOLDER="dev/packagenames"
+  local BACKPORTS_SCRIPTS_FOLDER="dev/backports"
   local DEV_SCRIPTS_FOLDER="dev/scripts"
+  local BACKPORTS_FOLDER="dev/backports"
 
   if git ls-tree -d --name-only main:${MAGEFILE_SCRIPTS_FOLDER} > /dev/null 2>&1 ; then
     echo "--- Copying magefile scripts from $SOURCE_BRANCH..."
@@ -193,13 +168,17 @@ updateBackportBranchContents() {
     git checkout "$SOURCE_BRANCH" -- "${PACKAGENAMES_SCRIPTS_FOLDER}"
     git add "${PACKAGENAMES_SCRIPTS_FOLDER}"
 
-    if git ls-tree -d --name-only "${SOURCE_BRANCH}:${DEV_SCRIPTS_FOLDER}" > /dev/null 2>&1; then
-      echo "Copying $DEV_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
-      git checkout "$SOURCE_BRANCH" -- "${DEV_SCRIPTS_FOLDER}"
-      git add "${DEV_SCRIPTS_FOLDER}"
-    else
-      echo "Skipping $DEV_SCRIPTS_FOLDER (not found on $SOURCE_BRANCH)"
-    fi
+    echo "Copying $BACKPORTS_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- "${BACKPORTS_SCRIPTS_FOLDER}"
+    git add "${BACKPORTS_SCRIPTS_FOLDER}"
+
+    echo "Copying $DEV_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- "${DEV_SCRIPTS_FOLDER}"
+    git add "${DEV_SCRIPTS_FOLDER}"
+
+    echo "Copying $BACKPORTS_FOLDER from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- "${BACKPORTS_FOLDER}"
+    git add "${BACKPORTS_FOLDER}"
 
     echo "Copying magefile.go from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "magefile.go"
@@ -233,7 +212,23 @@ updateBackportBranchContents() {
 
   if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
     echo "--- Removing all packages from $PACKAGES_FOLDER_PATH folder"
-    removeOtherPackages "${PACKAGE_PATH}"
+
+    # Build the list of packages to keep: the target package plus any packages
+    # it requires (composable packages declare dependencies under requires.input
+    # and requires.content in their manifest.yml).
+    local -a packages_to_keep=("${PACKAGE_PATH}")
+    while IFS= read -r req_name; do
+      local req_path
+      req_path=$(get_package_path "${req_name}" || true)
+      if [[ -n "${req_path}" ]]; then
+        echo "Keeping required package: ${req_path} (required by ${PACKAGE_NAME})"
+        packages_to_keep+=("${req_path}")
+      else
+        echo "Warning: required package '${req_name}' not found in packages folder"
+      fi
+    done < <(get_required_package_names "${PACKAGE_PATH}")
+
+    remove_other_packages "${packages_to_keep[@]}"
     ls -la "${PACKAGES_FOLDER_PATH}"
 
     git add "${PACKAGES_FOLDER_PATH}/"
@@ -298,11 +293,19 @@ if [ ! -z "$BASE_COMMIT" ]; then
   fi
 fi
 
+
 echo "---Check if the backport-branch exists"
 if branchExist "$BACKPORT_BRANCH_NAME"; then
   MSG="The backport branch: **$BACKPORT_BRANCH_NAME** is already created. Not updating contents of the branch."
   buildkite-agent annotate "$MSG" --style "warning"
   exit 0
+fi
+
+# Currently, backport branches must follow the expected format.
+if [[ "${BACKPORT_BRANCH_NAME}" != "${EXPECTED_BACKPORT_BRANCH_NAME}" ]]; then
+  MSG="The backport branch name **${BACKPORT_BRANCH_NAME}** does not match the expected name **${EXPECTED_BACKPORT_BRANCH_NAME}**"
+  buildkite-agent annotate "$MSG" --style "error"
+  exit 1
 fi
 
 # backport branch does not exist, running checks and create branch

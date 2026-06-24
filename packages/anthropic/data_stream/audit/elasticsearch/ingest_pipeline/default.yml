@@ -554,11 +554,20 @@ processors:
       field: json.from_date
       ignore_missing: true
       tag: remove_json_from_date
-  - rename:
+  - convert:
       field: json.github_webhook_id
       target_field: anthropic.audit.github_webhook_id
+      type: string
       ignore_missing: true
-      tag: rename_github_webhook_id
+      tag: convert_github_webhook_id
+      description: >-
+        The Compliance API returns the GitHub-assigned webhook ID as a number,
+        but it is stored as a keyword identifier.
+  - remove:
+      field: json.github_webhook_id
+      ignore_missing: true
+      tag: remove_json_github_webhook_id
+      if: ctx.json?.github_webhook_id != null && ctx.anthropic.audit.github_webhook_id != null
   - rename:
       field: json.group_id
       target_field: anthropic.audit.group_id

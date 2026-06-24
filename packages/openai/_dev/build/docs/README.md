@@ -6,11 +6,13 @@ With the OpenAI integration, you can track API usage metrics across their models
 
 ## Data collection
 
-The OpenAI integration leverages two OpenAI APIs for data collection:
+The OpenAI integration leverages the following OpenAI APIs for data collection:
 
 - **Usage API**: The [OpenAI Usage API](https://platform.openai.com/docs/api-reference/usage) delivers comprehensive insights into your API activity, helping you understand and optimize your organization's OpenAI API usage.
 
 - **Audit Logs API**: The [OpenAI Audit Logs API](https://platform.openai.com/docs/api-reference/audit-logs) collects organization audit logs, providing visibility into user actions, API key lifecycle events, login attempts, role assignments, and other platform activity for security oversight and compliance.
+
+- **Rate Limits API**: The [OpenAI Rate Limits API](https://platform.openai.com/docs/api-reference/project-rate-limits) collects the configured per-project, per-model rate limits (requests, tokens and images per minute, plus daily and batch limits). Combined with usage data, this lets you monitor how close each project is to being throttled.
 
 ## Data streams
 
@@ -24,6 +26,7 @@ The OpenAI integration collects the following data streams:
 - `embeddings`: Collects embeddings usage metrics.
 - `images`: Collects images usage metrics.
 - `moderations`: Collects moderations usage metrics.
+- `rate_limits`: Collects per-project, per-model rate limits.
 - `vector_stores`: Collects vector stores usage metrics.
 
 > Note: Users can view OpenAI metrics in the `logs-*` index pattern using Kibana Discover.
@@ -44,7 +47,7 @@ To generate an Admin key, please generate a key or use an existing one from the 
 
 ## Collection behavior
 
-Among the configuration options for the OpenAI integration, the following settings are particularly relevant: "Initial interval" and "Bucket width" for usage metrics, and "Initial interval" and "Interval" for audit logs.
+Among the configuration options for the OpenAI integration, the following settings are particularly relevant: "Initial interval", "Bucket width" and "Finalization grace period" for usage metrics, and "Initial interval" and "Interval" for audit logs.
 
 ### Initial interval
 
@@ -88,21 +91,88 @@ Example: For 100 API calls to a particular model per hour:
 
 > For optimal results with historical data, use 1-day bucket widths for long periods (15+ days), 1-hour for medium periods (1-15 days), and 1-minute only for the most recent 24 hours of data.
 
+### Finalization grace period
+
+OpenAI's Usage API does not finalize a per-minute bucket the moment it ends — a bucket's token and request counts keep climbing for several minutes afterward as late usage is accounted for. To avoid ingesting these partial, still-changing counts, each of the six token- and request-based usage data streams — `completions`, `embeddings`, `moderations`, `images`, `audio_speeches`, and `audio_transcriptions` — waits a configurable **finalization grace period** before treating a bucket as final. (The `code_interpreter_sessions` and `vector_stores` streams do not report token or request counts, do not feed the rate limit headroom dashboard, and have no grace setting.)
+
+> **Note:** This finalization lag is *observed* behavior, not a documented OpenAI guarantee. The Usage API reference does not specify a revision window or finalization delay, so the recommended `15m` value below is an empirically chosen buffer, not a figure published by OpenAI; the lag may change without notice.
+
+- Controls how long to wait after a bucket's end time before the bucket is ingested
+- Default value: `0s`. Buckets are ingested as soon as they are read, with no added delay. This keeps usage data fresh and is the least disruptive setting for existing deployments, but it can undercount usage during heavy bursts, because OpenAI is still revising a bucket's counts for several minutes after its end time and the bucket is read before those counts settle.
+- Recommended for accurate counts: `15m`. Setting the grace to 15 minutes gives each per-minute bucket time to finalize before it is ingested, so the stored token and request counts match what OpenAI eventually reports. Choose this when accurate usage and rate limit headroom matter more than freshness — for example, when reconciling against the OpenAI dashboard or driving the headroom alert.
+- How it works: buckets whose end time is younger than the grace period are skipped and re-fetched on a later poll, so only finalized counts are stored.
+- Trade-off: a longer grace period is safer against undercounting (heavy bursts take OpenAI longer to finalize) but delays when usage first appears in Elasticsearch by up to the grace period. With `15m`, these six usage data streams — and the rate limit headroom panels and alert that read from them — trail real time by roughly 15 minutes. With the default `0s` there is no added lag, but the most recent minutes can be permanently undercounted: each bucket is ingested as soon as its minute closes — before OpenAI finishes revising it — and is not re-read afterward, so later upward revisions are never reflected.
+- Where to change it: use the **Finalization grace period** setting for each of these six usage data streams.
+
+> If usage metrics read lower than the OpenAI dashboard under high-volume bursts, increase the finalization grace period — `15m` is recommended. If you need the freshest possible dashboards and can tolerate undercounting the most recent minutes, keep the default `0s`.
+
+#### Known limitation: residual undercount under high-volume bursts
+
+The finalization grace period eliminates the bulk of the undercount, but it cannot fully remove it. OpenAI's per-minute usage finalization is non-monotonic: during high-volume bursts a bucket's counts can continue to be revised upward for hours — beyond any fixed grace period. Because each bucket is ingested once and not re-fetched after it is treated as final, those late revisions are not reflected, so a small residual undercount (observed at a few percent of a single minute's volume) may remain for the busiest buckets. This does not affect the headroom dashboard's ability to flag over-limit conditions, since the gap is small relative to the limit. If you require usage counts that exactly match the OpenAI dashboard, prefer a larger bucket width (`1h` or `1d`), which OpenAI finalizes more stably than `1m`.
+
 ### Collection process
 
 With default settings (Interval: `5m`, Bucket width: `1m`, Initial interval: `24h`), the OpenAI integration follows this collection pattern:
 
 1. Starts collection from (current_time - initial_interval)
-2. Collects data up to (current_time - bucket_width)
-3. Excludes incomplete current bucket for data accuracy and wait for bucket completion
+2. Collects data up to (current_time - finalization_grace)
+3. Skips buckets OpenAI has not yet finalized (those whose end time is within the finalization grace period) and re-fetches them on a later poll once they are final
 4. Runs every 5 minutes by default (configurable)
-5. From second collection, start from end of previous bucket timestamp and collect up to (current_time - bucket_width)
+5. From the second collection onward, resumes from the oldest not-yet-finalized bucket so late-arriving counts are captured without duplication
 
 #### Example timeline
 
-With default settings (Interval: `5m`, Bucket width: `1m`, Initial interval: `24h`):
+With these settings (Interval: `5m`, Bucket width: `1m`, Initial interval: `24h`) and a finalization grace period of `15m` (the recommended setting for accurate counts):
 
-The integration starts at 10:00 AM, collects data from 10:00 AM the previous day, and continues until 9:59 AM the current day. The next collection starts at 10:05 AM, collecting from the 10:00 AM bucket to the 10:04 AM bucket, as the "Interval" is 5 minutes.
+The integration starts at 10:00 AM and collects data from 10:00 AM the previous day up to 9:45 AM the current day — the most recent 15 minutes are still finalizing and are skipped. The next collection starts at 10:05 AM and resumes from the 9:45 AM bucket, re-fetching any of those buckets that have since been finalized and continuing up to 9:50 AM.
+
+With the default grace period of `0s`, collection instead runs all the way up to the current time and no buckets are skipped — each bucket is ingested as soon as its minute closes. Those buckets appear immediately, but because they are read before OpenAI finishes revising them and are not re-read once ingested, any later upward revisions are not reflected and the counts can stay undercounted.
+
+## Rate limit headroom
+
+The `rate_limits` data stream collects the per-project, per-model limits OpenAI enforces (requests, tokens and images per minute, plus daily and batch limits). On its own a limit is just a number; it becomes actionable when compared against actual usage. The OpenAI dashboard ships two **Rate limit headroom** panels — one broken down per project and model, and an org-wide rollup by model across all active projects — plus a prebuilt **[OpenAI] Rate limit headroom low** threshold alert that do exactly this.
+
+### How the comparison works
+
+Limits and usage are joined on the exact `project_id`, but the `model` is **normalized** before joining: a trailing dated snapshot suffix (`-YYYY-MM-DD`) is stripped from both sides so that each model collapses to its base family. The Usage API reports per dated snapshot (for example `gpt-image-1-2025-04-23`, `omni-moderation-2024-09-26`), while the Rate Limits API often lists only the base family name (`gpt-image-1`, `omni-moderation`). Without normalization the dated usage row would find no matching limit and be dropped from the join, so the queries apply `REPLACE(<model>, "-[0-9]{4}-[0-9]{2}-[0-9]{2}$", "")` to align dated usage snapshots with base rate-limit names. When the Rate Limits API does report the dated snapshot as its own row, normalization simply collapses it onto the same base key as the family row.
+
+Utilization is computed as `usage / limit`, where usage is the **peak** value over the look-back window:
+
+1. Usage is summed per project, model and 1-minute bucket.
+2. The peak (maximum) minute in the window is taken.
+3. That peak is divided by the configured limit.
+
+Only matching units are compared:
+
+- tokens ↔ tokens per minute (TPM)
+- requests ↔ requests per minute (RPM)
+- images ↔ images per minute
+
+Audio is deliberately left out. OpenAI enforces an audio limit (`max_audio_megabytes_per_1_minute`), but the Usage API reports audio only in seconds (`audio_transcriptions`) and characters (`audio_speeches`) — never in megabytes — so there is no comparable usage figure to divide by the limit. Audio therefore stays usage-only until a megabyte-denominated usage metric is available. Usage measured in characters or sessions likewise has no corresponding rate limit and stays usage-only.
+
+> **Hard requirement:** the peak 1-minute calculation depends on the usage streams (`completions`, `embeddings`, `moderations`, ...) running with **`bucket_width: 1m`**. This is the default, but the value is user-editable — if it is changed to `1h` or `1d`, the headroom numbers will be wrong because a wider bucket smears per-minute peaks.
+
+> **Note on aggregation:** OpenAI returns identical limits for both the model family (`gpt-4o-mini`) and its dated snapshot (`gpt-4o-mini-2024-07-18`). After normalization both collapse onto the same base `model` key, so the per-minute aggregation takes the limit as `MAX(...)` over the rows in each `project_id`/`model`/minute bucket. `MAX` (not `SUM`) is what prevents the duplicated family and snapshot limit rows from double-counting capacity — they report the same number, so the max equals either one. A base model that has a limit but no usage in the window appears as a 0%-utilization row.
+
+### Org-wide rollup by model
+
+The **Rate limit headroom - by model (org-wide)** panel answers a different question: "how is model X doing across the whole org?" It drops the `project_id` breakdown and aggregates by model alone. For each project it first takes that project's peak 1-minute usage over the window (exactly as the per-project panel does), then sums those per-project peaks into the org-wide usage figure.
+
+Because each project's peak can fall in a different minute, this sum-of-peaks is an **indicative upper bound** rather than a true simultaneous org-wide peak — it assumes every project peaked at once, so it can read higher than the actual combined load in any single minute. This is intentional: it keeps the usage rollup aligned with the limit rollup (see below) and errs toward flagging pressure rather than hiding it.
+
+OpenAI enforces rate limits **per project**, so there is no single org-wide throttle boundary to divide against. The rollup therefore presents its limit columns as a **synthetic aggregate** (each project's limit stabilized as the max over the window, then summed across projects) and labels both the limit and utilization columns accordingly (`limit (aggregate)`, `utilization (approx.)`). Use these for relative comparison and trend-spotting across models; the exact throttle distance for any individual project still lives in the per-project panel and the alert.
+
+### Alert
+
+The **[OpenAI] Rate limit headroom low** rule fires when peak 1-minute token usage (TPM) reaches 80% or more of the configured limit for a project and model. It is grouped by `project_id::model` and re-examines the most recent 15-minute window every 5 minutes.
+
+The rule keys on the **peak** minute in that window, so even a single 1-minute spike at or above the threshold is enough to fire it — usage does not have to stay high. Because the 15-minute look-back is three times the 5-minute schedule, one breaching minute stays in view across the three consecutive runs that the `alertDelay` of 3 requires, so it satisfies the delay on its own. The net effect is that the alert fires roughly 10–15 minutes after a breaching minute rather than only on sustained pressure; the delay suppresses an alert from a breach seen on just one or two runs, not from a single high minute.
+
+> **Scope:** this rule tracks **token** utilization (TPM) only. Request-per-minute (RPM) and image-per-minute headroom appear on the dashboard panels but are **not** alerted — a project can approach its RPM or image limit without firing this rule. Use the panels to watch those dimensions.
+
+> **Dependency:** the comparison needs a current limit. If the `rate_limits` stream stops collecting (for example, an expired admin key or a projects-list API error), the limit ages out of the window, every utilization becomes null, and this rule silently stops firing rather than alerting on the gap. If you rely on the alert, also monitor the freshness of `event.dataset: openai.rate_limits`.
+
+To tune the threshold, edit the `WHERE tpm_utilization >= 0.8` line in the rule's ES|QL query.
 
 ## Metrics reference
 
@@ -173,6 +243,14 @@ The `moderations` data stream captures moderations usage metrics.
 {{event "moderations"}}
 
 {{fields "moderations"}}
+
+### Rate limits
+
+The `rate_limits` data stream captures per-project, per-model rate limits.
+
+{{event "rate_limits"}}
+
+{{fields "rate_limits"}}
 
 ### Vector stores
 

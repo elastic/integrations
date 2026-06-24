@@ -1,0 +1,517 @@
+dashboards:
+  - id: azure_gateway_otel-waf
+    name: '[Azure Application Gateway OTel] WAF'
+    description: >-
+      Web Application Firewall posture for an Azure Application Gateway, based on
+      `ApplicationGatewayFirewallLog` records. Shows match volume, action breakdown, top
+      rulesets and rules, top offenders, targeted URLs and policy scope/mode distribution.
+
+    time_range:
+      from: now-24h
+      to: now
+
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    filters:
+      - field: data_stream.dataset
+        equals: azure.application_gateway.otel
+      - field: attributes.azure.category
+        equals: ApplicationGatewayFirewallLog
+
+    controls:
+      - type: options
+        label: Gateway
+        data_view: logs-*
+        field: resource.attributes.cloud.resource_id
+      - type: options
+        label: Action
+        data_view: logs-*
+        field: attributes.security_rule.action
+      - type: options
+        label: Policy Scope
+        data_view: logs-*
+        field: attributes.azure.firewall.policy.scope.type
+      - type: options
+        label: Ruleset
+        data_view: logs-*
+        field: attributes.security_rule.ruleset.name
+
+    panels:
+      # ─── Navigation ─────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: azure_gateway_otel-overview
+              with_filters: false
+            - label: WAF
+              dashboard: azure_gateway_otel-waf
+              with_filters: false
+            - label: Backend Health
+              dashboard: azure_gateway_otel-backend-health
+              with_filters: false
+
+      # ─── Dashboard Overview Panel + KPIs ────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [Azure Application Gateway OTel] WAF
+
+            This dashboard analyses Web Application Firewall activity from
+            `ApplicationGatewayFirewallLog` records:
+            - WAF evaluation volume over time
+            - Action breakdown (Matched / Detected / Blocked / Allowed)
+            - Top rulesets and individual rule IDs firing
+            - Top offending client IPs and targeted hosts/URLs
+            - WAF mode (Detection vs Prevention) and policy-scope mix
+            - Detail table for rule descriptions and matched evidence
+
+      - title: Total Matches
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - STATS matches = COUNT(*)
+          primary:
+            field: matches
+            label: Total Matches
+            format:
+              type: number
+              compact: true
+
+      - title: Blocked
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - STATS blocked = COUNT(*) WHERE attributes.security_rule.action == "Blocked"
+          primary:
+            field: blocked
+            label: Blocked
+            format:
+              type: number
+              compact: true
+
+      - title: Detected
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - STATS detected = COUNT(*) WHERE attributes.security_rule.action == "Detected"
+          primary:
+            field: detected
+            label: Detected
+            format:
+              type: number
+              compact: true
+
+      - title: Unique Rules Fired
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - STATS unique_rules = COUNT_DISTINCT(attributes.security_rule.uuid)
+          primary:
+            field: unique_rules
+            label: Unique Rule IDs
+            format:
+              type: number
+
+      - title: Unique Rulesets
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - STATS unique_rulesets = COUNT_DISTINCT(attributes.security_rule.ruleset.name)
+          primary:
+            field: unique_rulesets
+            label: Unique Rulesets
+            format:
+              type: number
+
+      - title: Offending Clients
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - STATS clients = COUNT_DISTINCT(attributes.client.address)
+          primary:
+            field: clients
+            label: Offending Clients
+            format:
+              type: number
+              compact: true
+
+      - title: Targeted Hosts
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - STATS hosts = COUNT_DISTINCT(attributes.host.name)
+          primary:
+            field: hosts
+            label: Targeted Hosts
+            format:
+              type: number
+
+      - title: Policies Active
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - STATS policies = COUNT_DISTINCT(attributes.azure.firewall.policy.id)
+          primary:
+            field: policies
+            label: WAF Policies
+            format:
+              type: number
+
+      # ─── Section: WAF Activity Over Time ────────────────────────────
+      - title: Activity
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## WAF Activity Over Time'
+
+      - title: WAF Matches by Action
+        description: WAF rule evaluations bucketed over time, stacked by action.
+        size: {w: 32, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - STATS matches = COUNT(*) BY time_bucket = BUCKET(@timestamp, 30, ?_tstart, ?_tend), action = attributes.security_rule.action
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: matches
+              label: Matches
+          breakdown:
+            field: action
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: "Blocked"
+                color: '#CC5642'
+              - value: "Detected"
+                color: '#D6BF57'
+              - value: "Matched"
+                color: '#6092C0'
+              - value: "Allowed"
+                color: '#54B399'
+          legend:
+            visible: show
+            position: right
+
+      - title: Action Distribution
+        description: Share of WAF actions observed.
+        size: {w: 16, h: 12}
+        esql:
+          type: pie
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - WHERE attributes.security_rule.action IS NOT NULL
+            - STATS count = COUNT(*) BY action = attributes.security_rule.action
+            - SORT count DESC
+          metrics:
+            - field: count
+          breakdowns:
+            - field: action
+              label: Action
+          appearance:
+            donut: medium
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: "Blocked"
+                color: '#CC5642'
+              - value: "Detected"
+                color: '#D6BF57'
+              - value: "Matched"
+                color: '#6092C0'
+              - value: "Allowed"
+                color: '#54B399'
+          legend:
+            visible: show
+
+      # ─── Section: Rule and Ruleset Breakdowns ───────────────────────
+      - title: Rules
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Rulesets and Rules'
+
+      - title: Top Rulesets
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - WHERE attributes.security_rule.ruleset.name IS NOT NULL
+            - STATS matches = COUNT(*) BY ruleset = attributes.security_rule.ruleset.name, action = attributes.security_rule.action
+            - SORT matches DESC
+          dimension:
+            field: ruleset
+          metrics:
+            - field: matches
+              label: Matches
+          breakdown:
+            field: action
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: "Blocked"
+                color: '#CC5642'
+              - value: "Detected"
+                color: '#D6BF57'
+              - value: "Matched"
+                color: '#6092C0'
+              - value: "Allowed"
+                color: '#54B399'
+          legend:
+            visible: show
+            position: right
+
+      - title: Ruleset Versions
+        description: Mix of WAF ruleset versions observed.
+        size: {w: 24, h: 12}
+        esql:
+          type: pie
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - WHERE attributes.security_rule.version IS NOT NULL
+            - STATS matches = COUNT(*) BY ruleset = attributes.security_rule.ruleset.name, version = attributes.security_rule.version
+            - SORT matches DESC
+            - LIMIT 25
+          metrics:
+            - field: matches
+          breakdowns:
+            - field: ruleset
+              label: Ruleset
+            - field: version
+              label: Version
+          appearance:
+            donut: medium
+          legend:
+            visible: show
+
+      - title: Top Rule IDs
+        description: WAF rules ranked by match count. Description is the first body text seen.
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - WHERE attributes.security_rule.uuid IS NOT NULL
+            - STATS `Matches` = COUNT(*), `Blocked` = COUNT(*) WHERE attributes.security_rule.action == "Blocked", `Detected` = COUNT(*) WHERE attributes.security_rule.action == "Detected", `Clients` = COUNT_DISTINCT(attributes.client.address), `Description` = VALUES(body.text) BY `Rule ID` = attributes.security_rule.uuid, `Ruleset` = attributes.security_rule.ruleset.name
+            - SORT `Matches` DESC
+            - LIMIT 100
+          breakdowns:
+            - field: Rule ID
+              label: Rule ID
+            - field: Ruleset
+              label: Ruleset
+            - field: Description
+              label: Rule Description
+          metrics:
+            - field: Matches
+              label: Matches
+            - field: Blocked
+              label: Blocked
+            - field: Detected
+              label: Detected
+            - field: Clients
+              label: Distinct Clients
+
+      # ─── Section: Top Offenders & Targets ───────────────────────────
+      - title: Offenders
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Top Offenders and Targets'
+
+      - title: Top Offending Clients
+        size: {w: 16, h: 12}
+        esql:
+          type: datatable
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - WHERE attributes.client.address IS NOT NULL
+            - STATS `Matches` = COUNT(*), `Blocked` = COUNT(*) WHERE attributes.security_rule.action == "Blocked", `Rules` = COUNT_DISTINCT(attributes.security_rule.uuid), `Targets` = COUNT_DISTINCT(attributes.host.name) BY `Client` = attributes.client.address
+            - SORT `Matches` DESC
+            - LIMIT 100
+          breakdowns:
+            - field: Client
+              label: Client IP
+          metrics:
+            - field: Matches
+              label: Matches
+            - field: Blocked
+              label: Blocked
+            - field: Rules
+              label: Rules Fired
+            - field: Targets
+              label: Targeted Hosts
+
+      - title: Top Targeted URLs
+        description: >-
+          Request URLs (including query string) most frequently flagged by WAF rules.
+          Firewall log records expose the full URL as `url.original`; matched payloads
+          (SQLi, XSS, traversal, …) are typically visible in the query string.
+        size: {w: 16, h: 12}
+        esql:
+          type: datatable
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - WHERE attributes.url.original IS NOT NULL
+            - STATS `Matches` = COUNT(*), `Blocked` = COUNT(*) WHERE attributes.security_rule.action == "Blocked", `Clients` = COUNT_DISTINCT(attributes.client.address) BY `URL` = attributes.url.original
+            - SORT `Matches` DESC
+            - LIMIT 100
+          breakdowns:
+            - field: URL
+              label: URL
+          metrics:
+            - field: Matches
+              label: Matches
+            - field: Blocked
+              label: Blocked
+            - field: Clients
+              label: Distinct Clients
+
+      - title: Top Targeted Hosts
+        size: {w: 16, h: 12}
+        esql:
+          type: datatable
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - WHERE attributes.host.name IS NOT NULL
+            - STATS `Matches` = COUNT(*), `Blocked` = COUNT(*) WHERE attributes.security_rule.action == "Blocked", `Clients` = COUNT_DISTINCT(attributes.client.address) BY `Host` = attributes.host.name
+            - SORT `Matches` DESC
+            - LIMIT 100
+          breakdowns:
+            - field: Host
+              label: Host
+          metrics:
+            - field: Matches
+              label: Matches
+            - field: Blocked
+              label: Blocked
+            - field: Clients
+              label: Distinct Clients
+
+      # ─── Section: Policy Posture ────────────────────────────────────
+      - title: Policy
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Policy Scope and Coverage'
+
+      - title: Policy Scope Type
+        description: >-
+          Distribution of WAF evaluations across policy scope types (Global, Listener, Location).
+        size: {w: 16, h: 12}
+        esql:
+          type: pie
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - WHERE attributes.azure.firewall.policy.scope.type IS NOT NULL
+            - STATS count = COUNT(*) BY scope = attributes.azure.firewall.policy.scope.type
+            - SORT count DESC
+          metrics:
+            - field: count
+          breakdowns:
+            - field: scope
+              label: Scope Type
+          appearance:
+            donut: medium
+          legend:
+            visible: show
+
+      - title: Policy Object
+        description: WAF evaluations by policy object (listener name, location, or Global).
+        size: {w: 16, h: 12}
+        esql:
+          type: pie
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - WHERE attributes.azure.firewall.policy.object.name IS NOT NULL
+            - STATS count = COUNT(*) BY object = attributes.azure.firewall.policy.object.name
+            - SORT count DESC
+            - LIMIT 15
+          metrics:
+            - field: count
+          breakdowns:
+            - field: object
+              label: Policy Object
+          appearance:
+            donut: medium
+          legend:
+            visible: show
+
+      - title: Rule Category Mix
+        description: Distribution of WAF rule categories firing (e.g. OWASP CRS).
+        size: {w: 16, h: 12}
+        esql:
+          type: pie
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayFirewallLog"
+            - WHERE attributes.security_rule.category IS NOT NULL
+            - STATS count = COUNT(*) BY category = attributes.security_rule.category
+            - SORT count DESC
+            - LIMIT 10
+          metrics:
+            - field: count
+          breakdowns:
+            - field: category
+              label: Rule Category
+          appearance:
+            donut: medium
+          legend:
+            visible: show

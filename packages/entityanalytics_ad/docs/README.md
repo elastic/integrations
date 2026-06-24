@@ -41,6 +41,8 @@ The Active Directory provider periodically contacts the server, retrieving updat
 
 Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations will send the entire list of users in state, along with write markers to indicate the start and end of the synchronization event. Incremental updates will only send data for changed users during that event. Changes on a user can come in many forms, whether it be a change to the user’s metadata, or a user was added or deleted. By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
 
+This integration provides an **asset inventory**, a point-in-time snapshot of which users and devices exist and their current properties. It does not provide an audit trail of who changed what, or when. If you need to track administrative changes to Active Directory objects, consider collecting Windows Security event logs (e.g., Event IDs 4720, 4722, 4738, 4743) via the [System integration](https://docs.elastic.co/integrations/system).
+
 ## Sample Events
 
 A user document:
@@ -48,9 +50,6 @@ A user document:
 ```json
 {
     "@timestamp": "2024-02-05T06:37:40.876026-05:00",
-    "event": {
-        "action": "user-discovered",
-    },
     "activedirectory": {
         "id": "CN=Guest,CN=Users,DC=testserver,DC=local",
         "user": {

@@ -44,3 +44,12 @@ deactivate
 echo ""
 echo "=== Running check_changelog_entries.sh tests ==="
 run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_check_changelog_entries.sh"
+
+echo ""
+echo "=== Running backport_branch_lib.sh tests ==="
+if ! command -v yq &>/dev/null; then
+    source "${REPO_ROOT}/.buildkite/scripts/common.sh"
+    add_bin_path
+    with_yq
+fi
+run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_backport_branch.sh"

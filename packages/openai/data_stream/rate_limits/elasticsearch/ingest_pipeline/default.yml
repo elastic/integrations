@@ -1,0 +1,94 @@
+---
+description: Pipeline for processing OpenAI rate limits.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: metric
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: openai.rate_limits
+      if: ctx.event?.original != null
+  - drop:
+      tag: drop_pagination_sentinel
+      if: ctx.openai?.rate_limits?.skip != null
+      description: >-
+        Drops the keep-alive sentinel the CEL program emits for an empty project or rate-limit
+        page. The sentinel exists only to keep filebeat's want_more chain alive (a zero-event
+        evaluation ends the polling cycle early); it carries no rate-limit data and must not be
+        indexed.
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      description: Removes the copy of the original message unless the user opted in to preserve it.
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - date:
+      field: openai.rate_limits.collected_at
+      tag: date_collected_at
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      if: ctx.openai?.rate_limits?.collected_at != null
+      on_failure:
+        - append:
+            field: tags
+            tag: append_date_collected_at_failure
+            value: _date_collected_at_parse_failure
+            allow_duplicates: false
+  - set:
+      field: event.created
+      tag: set_event_created
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      tag: append_preserve_original_event_tag
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+###################
+# Failure handler #
+###################
+on_failure:
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: |
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        in pipeline '{{{ _ingest.on_failure_pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: set_event_kind_pipeline_error
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false

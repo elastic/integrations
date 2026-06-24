@@ -174,7 +174,7 @@ main() {
         for f in "${failed_files[@]}"; do
             message+="- \`${f}\`"$'\n'
         done
-        message+=$'\n'"> [!TIP]"$'\n'"> Add the \`${CHANGELOG_SKIP_LABEL}\` label to skip this check."
+        message+=$'\n'"> [!TIP]"$'\n'"> If expected, add the \`${CHANGELOG_SKIP_LABEL}\` label to skip this check. Or, if an issue link was intended, use \`.../issues/<n>\` instead."
         echo "${message}"
         if running_on_buildkite; then
             message+=$'\n\n'"[View Buildkite build](${BUILDKITE_BUILD_URL})"

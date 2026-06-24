@@ -151,3 +151,7 @@ The `rate_limit` data stream collects rate limit configuration from the Anthropi
 #### Rate Limit fields
 
 {{ fields "rate_limit" }}
+
+
+## Alerting Rule Template
+{{alertRuleTemplates}}
