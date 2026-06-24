@@ -1,10 +1,15 @@
-data_stream:
-  dataset: {{data_stream.dataset}}
-paths:
-{{#each paths as |path i|}}
-  - {{path}}
-{{/each}}
-exclude_files: [".gz$"]
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: {{grpc_endpoint}}
+      http:
+        endpoint: {{http_endpoint}}
 processors:
-  - add_locale: ~
-
+  resourcedetection/system:
+    detectors: ["system"]
+service:
+  pipelines:
+    logs:
+      receivers: [otlp]
+      processors: [resourcedetection/system]

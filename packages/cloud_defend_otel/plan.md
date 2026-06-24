@@ -68,7 +68,7 @@ per-data_stream fields; `otlp_input_otel` has none), `img/sample-screenshot.png`
 
 ## Implementation steps
 
-### 1. `manifest.yml` (rewrite)
+### 1. `manifest.yml` (rewrite) — DONE
 Model on `packages/otlp_input_otel/manifest.yml`, but logs-only and cloud_defend-branded.
 
 - `format_version: 3.6.0`, `name: cloud_defend_otel`, `type: input`.
@@ -111,7 +111,7 @@ Model on `packages/otlp_input_otel/manifest.yml`, but logs-only and cloud_defend
   ```
 - `owner: {github: elastic/cloud-services, type: elastic}` (keep from skeleton).
 
-### 2. `agent/input/input.yml.hbs` (rewrite)
+### 2. `agent/input/input.yml.hbs` (rewrite) — DONE
 Minimal `otlpreceiver` template (logs-only) based on `otlp_input_otel` but stripped
 of auth/TLS for the PoC. Must define **only** receivers/processors/pipelines —
 no exporters (agent injects them). Must include `resourcedetection` (submission
@@ -134,7 +134,7 @@ service:
       processors: [resourcedetection/system]
 ```
 
-### 3. `docs/README.md` + `_dev/build/docs/README.md`
+### 3. `docs/README.md` + `_dev/build/docs/README.md` — DONE
 Write `_dev/build/docs/README.md` with `{{- generatedHeader }}` header (see
 `packages/kafka_input_otel/_dev/build/docs/README.md`). Sections: Overview
 (uses the [otlpreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/otlpreceiver)),
