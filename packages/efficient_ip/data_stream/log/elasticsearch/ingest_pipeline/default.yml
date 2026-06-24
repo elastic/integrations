@@ -235,15 +235,6 @@ processors:
       target_field: client.as.organization.name
       ignore_missing: true
       if: ctx.client?.as?.organization_name != null
-  - dissect:
-      tag: dissect_network_transport_view
-      field: network.transport
-      pattern: "view %{}: %{network.transport}"
-      if: ctx.network?.transport instanceof String && ctx.network.transport.contains('view')
-  - lowercase:
-      tag: lowercase_network_transport
-      field: network.transport
-      ignore_missing: true
   - script:
       tag: script_drop_null_empty_values
       description: Drops null/empty values recursively.
