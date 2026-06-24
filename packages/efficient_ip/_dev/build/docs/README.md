@@ -45,8 +45,8 @@ To configure syslog forwarding on an EfficientIP node:
 2. Navigate to **System Settings** > **Logging** or **Event Forwarding**
 3. Select **Syslog** as the destination type
 4. Enter the syslog receiver host IP address and port
-6. Verify the connection and enable syslog forwarding
-7. Configure Elastic Agent to listen on the syslog port and ingest the forwarded events
+5. Verify the connection and enable syslog forwarding
+6. Configure Elastic Agent to listen on the syslog port and ingest the forwarded events
 
 Refer to the EfficientIP documentation for your version for detailed configuration steps specific to your deployment.
 
