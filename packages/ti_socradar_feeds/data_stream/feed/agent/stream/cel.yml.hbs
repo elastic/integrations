@@ -52,7 +52,7 @@ program: |-
       }.format_query()
     ).do_request().as(resp,
       (int(resp.StatusCode) == 200) ?
-        bytes(resp.Body).decode_json().as(body,
+        resp.Body.decode_json().as(body,
           body.filter(item,
             has(item.feed) && size(string(item.feed)) > 0 && (
               !cc.has_checkpoint ?
