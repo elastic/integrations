@@ -2,18 +2,6 @@
 description: Pipeline for processing Ticura threat intelligence feed
 processors:
 
-  # ----- Agentless collector hygiene -----
-  # Strip the agentless collector's organization/division/team metadata so it
-  # doesn't ride into indexed documents, and stop collector error-placeholder
-  # documents before any enrichment runs.
-  - remove:
-      field:
-        - organization
-        - division
-        - team
-      ignore_missing: true
-      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
   - set:
       tag: set_ecs_version
       field: ecs.version

@@ -18,15 +18,7 @@ To use this integration, you need:
 - An active Ticura subscription with at least one configured feed
 - A supported Elastic Stack version with Elastic Security enabled
 
-This integration supports two deployment modes: **agentless** (recommended for Elastic Cloud) and **agent-based** (for on-premises or self-managed deployments).
-
-### Agentless deployment (Elastic Cloud)
-
-No additional installation is required. The integration runs on Elastic-managed infrastructure. Select **Agentless** when adding the integration in Kibana.
-
-### Agent-based deployment (on-premises / self-managed)
-
-Elastic Agent must be installed. If you have none, check the [Elastic Agent installation instructions](https://www.elastic.co/docs/reference/fleet/install-elastic-agents). You can install only one Elastic Agent per host. Elastic Agent is required to stream data from the REST API and ship events to Elastic, where they are processed via the integration's ingest pipelines.
+This integration requires Elastic Agent. If you have none, check the [Elastic Agent installation instructions](https://www.elastic.co/docs/reference/fleet/install-elastic-agents). You can install only one Elastic Agent per host. Elastic Agent streams data from the REST API and ships events to Elastic, where they are processed via the integration's ingest pipelines.
 
 ---
 
@@ -226,6 +218,7 @@ The integration maps indicators to the Elastic Common Schema using the `threat.i
 | `event.kind` | `enrichment` |
 | `event.category` | `["threat"]` |
 | `event.type` | `["indicator"]` |
+| `event.action` | `indicator-update` (set with `override: false`, so a source-supplied value wins) |
 | `event.dataset` | `ti_ticura.indicator` |
 | `event.module` | `ti_ticura` |
 | `event.provider` | `Ticura` |
@@ -244,6 +237,7 @@ The integration maps indicators to the Elastic Common Schema using the `threat.i
 | GeoIP | `threat.indicator.ip` | `threat.indicator.geo.{country_name, city_name, location, ...}` |
 | ASN | `threat.indicator.ip` | `threat.indicator.as.number`, `threat.indicator.as.organization.name` |
 | Hash type | `ticura.indicator.sub_type` (`HASHSHA256` / `HASHMD5` / `HASHSHA1`) | `threat.indicator.file.hash.{sha256, md5, sha1}` (defensive fallback when the source omits the typed field) |
+| Correlation fields | `threat.indicator.ip`, `threat.indicator.file.hash.{sha256, sha1, md5}`, `threat.indicator.url.domain` | `related.ip`, `related.hash`, `related.hosts` (deduplicated, so analysts and Indicator Match rules can pivot on a value without knowing which `threat.indicator.*` field holds it) |
 
 GeoIP and ASN lookups use the GeoLite2 databases bundled with Elasticsearch — no external API calls or keys required.
 
@@ -301,7 +295,7 @@ These are preserved alongside the ECS-mapped fields for per-field provenance (se
 | `ticura.indicator.confidence` / `confidence_category` | long / keyword | Numeric 0–100 confidence and label. |
 | `ticura.indicator.is_inbound` | boolean | True for threats originating outside, targeting the protected environment. |
 | `ticura.indicator.ages_out` | date | Scheduled expiry timestamp. Drives the transform retention policy that removes expired indicators from the latest index. |
-| `ticura.indicator.feed_ingest_timestamp` | date | Pipeline-set; when this document was processed. Updated on every re-ingest. |
+| `ticura.indicator.feed_ingest_timestamp` | date | Pipeline-set ingest time. Because an unchanged indicator re-exported on the next poll keeps the same `_id` and is rejected as a duplicate, the stored value reflects when this content version was first ingested; it only advances when the indicator's content changes (new fingerprint → new document). |
 | `ticura.indicator.countries` / `industries` / `actors` | keyword | Ticura-supplied attribution lists. |
 | `ticura.indicator.cve` | keyword | Associated CVE identifiers. |
 | `ticura.indicator.filter_cats` | nested | Filter categorization metadata. |
@@ -317,7 +311,8 @@ These are preserved alongside the ECS-mapped fields for per-field provenance (se
 | `ticura.indicator.additional_info.malware.name` | keyword | Malware family name. |
 | `ticura.indicator.additional_info.online.is_online` / `last_online` | boolean / date | Online-status enrichment. |
 | `ticura.indicator.additional_info.sinkhole.owner` | keyword | Set for indicators routed to a known sinkhole. |
-| `ticura.indicator.additional_info.countries` / `industries` / `actors` / `cve` | keyword | Supplemental attribution lists (also merged into `ticura.indicator.merged.*` for convenient querying). |
+| `ticura.indicator.additional_info.countries` / `industries` / `actors` | keyword | Supplemental attribution lists. The `countries` / `industries` / `actors` lists are also unioned into `ticura.indicator.merged.*` for convenient querying (see below). |
+| `ticura.indicator.additional_info.cve` | keyword | Supplemental CVE identifiers (kept as-is; not merged). |
 
 The `ticura.indicator.merged.{countries, industries, actors}` fields are deduplicated, sorted unions of the `ticura.indicator.*` and `ticura.indicator.additional_info.*` equivalents — query these when you don't care which source the attribution came from.
 
