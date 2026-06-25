@@ -70,7 +70,10 @@ program: |-
                     "last_timestamp": (size(items) > 0) ?
                       string(int(timestamp(items[size(items) - 1].attributes.processedAt)) * 1000)
                     :
-                      from_millis,
+                      (next != "") ?
+                        from_millis
+                      :
+                        string(int(now) * 1000),
                   },
                   "want_more": next != "",
                 })
