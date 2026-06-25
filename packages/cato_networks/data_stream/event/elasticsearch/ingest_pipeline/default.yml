@@ -582,12 +582,30 @@ processors:
       tag: rename_mitre_attack_tactics
       target_field: cato_networks.event.mitre_attack_tactics
       ignore_missing: true
+  - dissect:
+      field: cato_networks.event.mitre_attack_tactics
+      tag: dissect_mitre_tactic
+      pattern: '%{_tmp_tactic_name} (%{_tmp_tactic_id})'
+      ignore_failure: true
+      if: ctx.cato_networks?.event?.mitre_attack_tactics != null
   - append:
       field: threat.tactic.name
-      tag: append_cato_networks_event_mitre_attack_tactics_into_threat_tactic_name
-      value: '{{{cato_networks.event.mitre_attack_tactics}}}'
+      tag: append_threat_tactic_name_from_mitre_attack_tactics
+      value: '{{{_tmp_tactic_name}}}'
       allow_duplicates: false
-      if: ctx.cato_networks?.event?.mitre_attack_tactics != null
+      if: ctx._tmp_tactic_name != null
+  - append:
+      field: threat.tactic.id
+      tag: append_threat_tactic_id_from_mitre_attack_tactics
+      value: '{{{_tmp_tactic_id}}}'
+      allow_duplicates: false
+      if: ctx._tmp_tactic_id != null
+  - remove:
+      field:
+        - _tmp_tactic_name
+        - _tmp_tactic_id
+      tag: remove_mitre _tactic_dissect_fields
+      ignore_missing: true
   - rename:
       field: json.mitre_attack_techniques
       tag: rename_mitre_attack_techniques
