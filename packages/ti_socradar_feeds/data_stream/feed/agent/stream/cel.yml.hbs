@@ -76,7 +76,7 @@ program: |-
           ).as(filtered_events,
             {
               "events": filtered_events,
-              "want_more": int(state.collection_index) + 1 < size(state.collections),
+              "want_more": false,
               "collection_index": (int(state.collection_index) + 1) % size(state.collections),
               "collections": state.collections.map(c,
                 (c.id == cc.cid) ?
@@ -112,7 +112,7 @@ program: |-
               ),
             },
           },
-          "want_more": int(state.collection_index) + 1 < size(state.collections),
+          "want_more": false,
           "collection_index": (int(state.collection_index) + 1) % size(state.collections),
           "collections": state.collections.map(c,
             {
@@ -130,9 +130,6 @@ program: |-
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
-{{/if}}
-{{#if preserve_duplicate_custom_fields}}
-  - preserve_duplicate_custom_fields
 {{/if}}
 {{#each tags as |tag|}}
   - {{tag}}
