@@ -86,53 +86,14 @@ rules:
             }
           }
           ` }}
-  # Round 1, page 3 — terminal page: empty data, null meta.next per the real API.
-  # The CEL program must treat null/empty/absent meta.next as "no more pages",
-  # clear cursor.token, and advance cursor.last_timestamp to the last event's
-  # processedAt from page 2 (Dana, 2026-05-19T10:03:01.000Z → 1779184981000 ms).
+  # Round 1, page 3 — terminal page: returns Eve (1 event) with no next cursor.
+  # The CEL program sets last_timestamp = Eve's processedAt
+  # (2026-05-19T10:10:01.000Z → 1779185401000 ms) because size(items) > 0.
+  # want_more = false because meta.next is null, ending the pagination loop.
   - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
     methods: ["GET"]
     query_params:
       cursor: cursor-page-3
-      limit: "2"
-    request_headers:
-      Authorization:
-        - "Bearer test-api-key"
-      Accept:
-        - "application/json"
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - "application/json"
-        body: |-
-          {{ minify_json `
-          {
-            "data": [],
-            "links": {},
-            "meta": {
-              "attributes": null,
-              "next": null,
-              "prev": null,
-              "current": null,
-              "page_size": 200,
-              "start_index": null,
-              "end_index": null,
-              "total": 0
-            }
-          }
-          ` }}
-  # Round 2 — fresh time-window request after the polling interval.
-  # The "from" value below is the epoch-millis representation of Dana's
-  # processedAt (2026-05-19T10:03:01.000Z), which the CEL program persisted
-  # in cursor.last_timestamp at the end of round 1. Matching on this exact
-  # value asserts that cross-cycle cursor advancement works.
-  - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
-    methods: ["GET"]
-    query_params:
-      from: "1779184981000"
-      to: "{to:.*}"
-      sortOrder: asc
       limit: "2"
     request_headers:
       Authorization:
@@ -191,10 +152,10 @@ rules:
             }
           }
           ` }}
-  # Steady state — round 3 onwards. The CEL program advances from to Eve's
-  # processedAt (2026-05-19T10:10:01.000Z → 1779185401000 ms). Subsequent
-  # polling intervals all match this rule and receive the realistic empty
-  # response, so cursor.last_timestamp stays put and no further events index.
+  # Round 2 — fresh time-window request after the polling interval.
+  # last_timestamp from round 1 = Eve's processedAt (1779185401000 ms),
+  # so the CEL program sends from=1779185401000. Returns empty data,
+  # confirming no new events. After this, last_timestamp advances to "now".
   - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
     methods: ["GET"]
     query_params:
@@ -229,10 +190,12 @@ rules:
             }
           }
           ` }}
-  # Round 1, page 1 — initial time-window request. This catchall captures any
-  # "from" value (the first poll uses now - initial_interval, which is dynamic)
-  # and must come after the round 2 / steady-state rules so those exact-match
-  # rules take precedence.
+  # Round 1, page 1 + steady-state (round 3+).
+  # This wildcard rule matches any from/to time-window request. It uses
+  # response cycling: the first match returns page 1 events with a pagination
+  # cursor (round 1 initial poll); subsequent matches return empty data
+  # (steady state after round 2 advances last_timestamp to "now").
+  # Must come after the round 2 exact-match rule above.
   - path: /admin/v1/orgs/00000000-0000-0000-0000-000000000000/events-stream
     methods: ["GET"]
     query_params:
@@ -307,6 +270,27 @@ rules:
             "meta": {
               "next": "cursor-page-2",
               "page_size": 2
+            }
+          }
+          ` }}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "data": [],
+            "links": {},
+            "meta": {
+              "attributes": null,
+              "next": null,
+              "prev": null,
+              "current": null,
+              "page_size": 200,
+              "start_index": null,
+              "end_index": null,
+              "total": 0
             }
           }
           ` }}
