@@ -638,9 +638,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2025-12-12T03:21:49.000Z",
     "agent": {
-        "ephemeral_id": "ea119ca4-6fc7-4888-aedd-898827278f94",
-        "id": "99b1a5dc-ff35-4637-883e-591cd24c19f4",
-        "name": "elastic-agent-96767",
+        "ephemeral_id": "0b40a226-81c6-4319-9170-a954022cb470",
+        "id": "97e9d465-1401-4a33-a18a-ab0d10a86193",
+        "name": "elastic-agent-62803",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -912,14 +912,14 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "cato_networks.audit",
-        "namespace": "91877",
+        "namespace": "68045",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "86bca29f-fdbf-4801-930b-2be6492b1988",
+        "id": "97e9d465-1401-4a33-a18a-ab0d10a86193",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -930,7 +930,7 @@ An example event for `audit` looks as following:
             "configuration"
         ],
         "dataset": "cato_networks.audit",
-        "ingested": "2026-05-05T06:43:08Z",
+        "ingested": "2026-06-24T09:16:52Z",
         "kind": "event",
         "original": "{\"account_id\":\"12345\",\"admin\":\"System User #40276\",\"admin_id\":\"40276\",\"change.After.isMacAuthOverride\":\"false\",\"change.After.multiTunnelMode\":\"ACTIVE_PASSIVE\",\"change.After.name\":\"SocketConnectionConfiguration\",\"change.After.offCloudTransportEnabled\":\"false\",\"change.After.permissions.0.actions.0\":\"VIEW\",\"change.After.permissions.0.creationDateMilliseconds\":\"0.000000\",\"change.After.permissions.0.id\":\"488938.000000\",\"change.After.permissions.0.name\":\"DhcpSettings\",\"change.After.permissions.0.newSaveMethod\":\"false\",\"change.After.permissions.0.resource\":\"DhcpSettings\",\"change.After.permissions.0.type\":\"PERMISSION\",\"change.After.permissions.1.actions.0\":\"VIEW\",\"change.After.permissions.1.creationDateMilliseconds\":\"0.000000\",\"change.After.permissions.1.id\":\"488939.000000\",\"change.After.permissions.1.name\":\"IntegrationsCatalog\",\"change.After.permissions.1.newSaveMethod\":\"false\",\"change.After.permissions.1.resource\":\"IntegrationsCatalog\",\"change.After.permissions.1.type\":\"PERMISSION\",\"change.After.preferHigherNaturalOrder\":\"false\",\"change.After.preferPrimaryWAN\":\"false\",\"change.After.rulesMigrationState\":\"LAN_FW\",\"change.After.socketsSettings.primary.id\":\"-1.000000\",\"change.After.socketsSettings.primary.isPrimary\":\"true\",\"change.After.socketsSettings.primary.links.0.creationDateMilliseconds\":\"0.000000\",\"change.After.socketsSettings.primary.links.0.destType.destType\":\"CATO\",\"change.After.socketsSettings.primary.links.0.destType.name\":\"Cato\",\"change.After.socketsSettings.primary.links.0.destType.value\":\"CATO\",\"change.After.socketsSettings.primary.links.0.downstreamBandwidth\":\"100.000000\",\"change.After.socketsSettings.primary.links.0.downstreamBandwidthMbpsPrecision\":\"10.000000\",\"change.After.socketsSettings.primary.links.0.id\":\"826234.000000\",\"change.After.socketsSettings.primary.links.0.interface_id\":\"WAN1\",\"change.After.socketsSettings.primary.links.0.metadata.disabledDestType\":\"true\",\"change.After.socketsSettings.primary.links.0.metadata.linkOrder\":\"5.000000\",\"change.After.socketsSettings.primary.links.0.metadata.physicalName.caption\":\"(WAN1)\",\"change.After.socketsSettings.primary.links.0.metadata.physicalName.name\":\"3\",\"change.After.socketsSettings.primary.links.0.metadata.physicalPosition\":\"bottom\",\"change.After.socketsSettings.primary.links.0.metadata.speed\":\"_1Gbps\",\"change.After.socketsSettings.primary.links.0.metadata.supportedDestinations.0.destType\":\"LAN_LAG\",\"change.After.socketsSettings.primary.links.0.metadata.supportedDestinations.0.name\":\"LAN LAG Member\",\"change.After.socketsSettings.primary.links.0.metadata.supportedDestinations.0.value\":\"LAN_LAG_MEMBER\",\"change.After.socketsSettings.primary.links.0.metadata.supportedDestinations.1.destType\":\"ALTERNATIVE\",\"change.After.socketsSettings.primary.links.0.metadata.supportedDestinations.1.name\":\"Alternative WAN\",\"change.After.socketsSettings.primary.links.0.metadata.supportedDestinations.1.value\":\"ALTERNATIVE\",\"change.After.socketsSettings.primary.links.0.metadata.supportedDestinations.2.destType\":\"INTERFACE_DISABLED\",\"change.After.socketsSettings.primary.links.0.metadata.supportedDestinations.2.name\":\"Disabled\",\"change.After.socketsSettings.primary.links.0.metadata.supportedDestinations.2.value\":\"INTERFACE_DISABLED\",\"change.After.socketsSettings.primary.links.0.metadata.type\":\"lan\",\"change.After.socketsSettings.primary.links.0.name\":\"WAN 01\",\"change.After.socketsSettings.primary.links.0.naturalOrder\":\"1.000000\",\"change.After.socketsSettings.primary.links.0.newSaveMethod\":\"false\",\"change.After.socketsSettings.primary.links.0.offCloudTransportEnabled\":\"true\",\"change.After.socketsSettings.primary.links.0.physicalPort\":\"1.000000\",\"change.After.socketsSettings.primary.links.0.role\":\"wan_1\",\"change.After.socketsSettings.primary.links.0.s2sEnabled\":\"false\",\"change.After.socketsSettings.primary.links.0.type\":\"SOCKETINTERFACE\",\"change.After.socketsSettings.primary.links.0.upstreamBandwidth\":\"100.000000\",\"change.After.socketsSettings.primary.links.0.upstreamBandwidthMbpsPrecision\":\"10.000000\",\"change.After.socketsSettings.primary.links.1.creationDateMilliseconds\":\"0.000000\",\"change.After.socketsSettings.primary.links.1.destType.destType\":\"INTERFACE_DISABLED\",\"change.After.socketsSettings.primary.links.1.destType.name\":\"Disabled\",\"change.After.socketsSettings.primary.links.1.destType.value\":\"INTERFACE_DISABLED\",\"change.After.socketsSettings.primary.links.1.id\":\"826235.000000\",\"change.After.socketsSettings.primary.links.1.interface_id\":\"WAN2\",\"change.After.socketsSettings.primary.links.1.metadata.disabledDestType\":\"false\",\"change.After.socketsSettings.primary.links.1.metadata.linkOrder\":\"6.000000\",\"change.After.socketsSettings.primary.links.1.metadata.physicalName.caption\":\"(WAN2)\",\"change.After.socketsSettings.primary.links.1.metadata.physicalName.name\":\"4\",\"change.After.socketsSettings.primary.links.1.metadata.physicalPosition\":\"bottom\",\"change.After.socketsSettings.primary.links.1.metadata.speed\":\"_1Gbps\",\"change.After.socketsSettings.primary.links.1.metadata.supportedDestinations.0.destType\":\"LAN_LAG\",\"change.After.socketsSettings.primary.links.1.metadata.supportedDestinations.0.name\":\"LAN LAG Member\",\"change.After.socketsSettings.primary.links.1.metadata.supportedDestinations.0.value\":\"LAN_LAG_MEMBER\",\"change.After.socketsSettings.primary.links.1.metadata.supportedDestinations.1.destType\":\"ALTERNATIVE\",\"change.After.socketsSettings.primary.links.1.metadata.supportedDestinations.1.name\":\"Alternative WAN\",\"change.After.socketsSettings.primary.links.1.metadata.supportedDestinations.1.value\":\"ALTERNATIVE\",\"change.After.socketsSettings.primary.links.1.metadata.type\":\"lan\",\"change.After.socketsSettings.primary.links.1.name\":\"WAN 02\",\"change.After.socketsSettings.primary.links.1.naturalOrder\":\"1.000000\",\"change.After.socketsSettings.primary.links.1.newSaveMethod\":\"false\",\"change.After.socketsSettings.primary.links.1.offCloudTransportEnabled\":\"true\",\"change.After.socketsSettings.primary.links.1.physicalPort\":\"2.000000\",\"change.After.socketsSettings.primary.links.1.s2sEnabled\":\"false\",\"change.After.socketsSettings.primary.links.1.type\":\"SOCKETINTERFACE\",\"change.After.socketsSettings.primary.links.2.creationDateMilliseconds\":\"0.000000\",\"change.After.socketsSettings.primary.links.2.destType.destType\":\"INTERFACE_DISABLED\",\"change.After.socketsSettings.primary.links.2.destType.name\":\"Disabled\",\"change.After.socketsSettings.primary.links.2.destType.value\":\"INTERFACE_DISABLED\",\"change.After.socketsSettings.primary.links.2.id\":\"826236.000000\",\"change.After.socketsSettings.primary.links.2.interface_id\":\"USB2\",\"change.After.socketsSettings.primary.links.2.metadata.disabledDestType\":\"false\",\"change.After.socketsSettings.primary.links.2.metadata.linkOrder\":\"1.000000\",\"change.After.socketsSettings.primary.links.2.metadata.physicalName.name\":\"USB1\",\"change.After.socketsSettings.primary.links.2.metadata.physicalPosition\":\"bottom\",\"change.After.socketsSettings.primary.links.2.metadata.speed\":\"_1Gbps\",\"change.After.socketsSettings.primary.links.2.metadata.supportedDestinations.0.destType\":\"CATO\",\"change.After.socketsSettings.primary.links.2.metadata.supportedDestinations.0.name\":\"Cato\",\"change.After.socketsSettings.primary.links.2.metadata.supportedDestinations.0.value\":\"CATO\",\"change.After.socketsSettings.primary.links.2.metadata.supportedDestinations.1.destType\":\"INTERFACE_DISABLED\",\"change.After.socketsSettings.primary.links.2.metadata.supportedDestinations.1.name\":\"Disabled\",\"change.After.socketsSettings.primary.links.2.metadata.supportedDestinations.1.value\":\"INTERFACE_DISABLED\",\"change.After.socketsSettings.primary.links.2.metadata.type\":\"usb\",\"change.After.socketsSettings.primary.links.2.name\":\"USB 02\",\"change.After.socketsSettings.primary.links.2.naturalOrder\":\"1.000000\",\"change.After.socketsSettings.primary.links.2.newSaveMethod\":\"false\",\"change.After.socketsSettings.primary.links.2.offCloudTransportEnabled\":\"true\",\"change.After.socketsSettings.primary.links.2.physicalPort\":\"5.000000\",\"change.After.socketsSettings.primary.links.2.s2sEnabled\":\"false\",\"change.After.socketsSettings.primary.links.2.type\":\"SOCKETINTERFACE\",\"change.After.socketsSettings.primary.overridePrimarySettings\":\"false\",\"change.After.socketsSettings.primary.socketsSettings\":\"primary\",\"change.After.socketsSettings.primary.supportedAddOns.0.id\":\"NONE\",\"change.After.socketsSettings.primary.supportedAddOns.0.name\":\"None\",\"change.After.socketsSettings.primary.supportedAddOns.0.numberOfPorts\":\"0.000000\",\"change.After.socketsSettings.primary.supportedAddOns.0.protoType\":\"ADDON_NONE\",\"change.After.socketsSettings.primary.supportedAddOns.0.value\":\"None\",\"change.After.socketsSettings.primary.supportedAddOns.1.id\":\"41E\",\"change.After.socketsSettings.primary.supportedAddOns.1.name\":\"4 x 1Gbps Copper\",\"change.After.socketsSettings.primary.supportedAddOns.1.numberOfPorts\":\"4.000000\",\"change.After.socketsSettings.primary.supportedAddOns.1.protoType\":\"FOUR_1G_COPPER\",\"change.After.socketsSettings.primary.supportedAddOns.1.value\":\"_4x1GbpsCopper\",\"change.After.socketsSettings.primary.supportedAddOns.2.id\":\"21E\",\"change.After.socketsSettings.primary.supportedAddOns.2.name\":\"2 x 1Gbps Fiber\",\"change.After.socketsSettings.primary.supportedAddOns.2.numberOfPorts\":\"2.000000\",\"change.After.socketsSettings.primary.supportedAddOns.2.protoType\":\"TWO_1G_FIBER\",\"change.After.socketsSettings.primary.supportedAddOns.2.value\":\"_2x1GbpsFiber\",\"change.After.socketsSettings.primary.supportedMigrations.0.automaticallyManaged\":\"false\",\"change.After.socketsSettings.primary.supportedMigrations.0.links.0\":\"lan\",\"change.After.socketsSettings.primary.supportedMigrations.0.links.1\":\"lan\",\"change.After.socketsSettings.primary.supportedMigrations.0.links.2\":\"lan\",\"change.After.socketsSettings.primary.supportedMigrations.0.links.3\":\"lan\",\"change.After.socketsSettings.primary.supportedMigrations.0.name\":\"X1600\",\"change.After.socketsSettings.primary.supportedMigrations.0.possiblePlatform.0\":\"X1600\",\"change.After.socketsSettings.primary.supportedMigrations.0.value\":\"X1600\",\"change.After.socketsSettings.primary.supportedMigrations.1.automaticallyManaged\":\"false\",\"change.After.socketsSettings.primary.supportedMigrations.1.links.0\":\"lan\",\"change.After.socketsSettings.primary.supportedMigrations.1.links.1\":\"lan\",\"change.After.socketsSettings.primary.supportedMigrations.1.links.2\":\"lan\",\"change.After.socketsSettings.primary.supportedMigrations.1.name\":\"X1700\",\"change.After.socketsSettings.primary.supportedMigrations.1.possibleAddOns.0.id\":\"NONE\",\"change.After.socketsSettings.primary.supportedMigrations.1.possibleAddOns.0.name\":\"None\",\"change.After.socketsSettings.primary.supportedMigrations.1.possibleAddOns.0.numberOfPorts\":\"0.000000\",\"change.After.socketsSettings.primary.supportedMigrations.1.possibleAddOns.0.protoType\":\"ADDON_NONE\",\"change.After.socketsSettings.primary.supportedMigrations.1.possibleAddOns.0.value\":\"None\",\"change.After.socketsSettings.primary.supportedMigrations.1.possibleAddOns.1.id\":\"21E\",\"change.After.socketsSettings.primary.supportedMigrations.1.possibleAddOns.1.name\":\"2 x 1Gbps Fiber\",\"change.After.socketsSettings.primary.supportedMigrations.1.possibleAddOns.1.numberOfPorts\":\"2.000000\",\"change.After.socketsSettings.primary.supportedMigrations.1.possibleAddOns.1.protoType\":\"TWO_1G_FIBER\",\"change.After.socketsSettings.primary.supportedMigrations.1.possibleAddOns.1.value\":\"_2x1GbpsFiber\",\"change.After.socketsSettings.primary.supportedMigrations.1.possiblePlatform.0\":\"X1700\",\"change.After.socketsSettings.primary.supportedMigrations.1.possiblePlatform.1\":\"X1700B\",\"change.After.socketsSettings.primary.supportedMigrations.1.value\":\"X1700\",\"change.After.socketsSettings.primary.type.automaticallyManaged\":\"false\",\"change.After.socketsSettings.primary.type.links.0\":\"lan\",\"change.After.socketsSettings.primary.type.links.1\":\"lan\",\"change.After.socketsSettings.primary.type.name\":\"X1500\",\"change.After.socketsSettings.primary.type.possiblePlatform.0\":\"X1500\",\"change.After.socketsSettings.primary.type.possiblePlatform.1\":\"X1500_BR2\",\"change.After.socketsSettings.primary.type.value\":\"X1500\",\"change.After.socketsSettings.primary.upgradesPaused\":\"false\",\"change_type\":\"CREATED\",\"creation_date\":\"1765509709000\",\"insertion_date\":\"1765509715280\",\"model_name\":\"SocketConnectionConfiguration\",\"model_type\":\"Socket Connection Configuration\",\"module\":\"Socket Connection Configuration\"}",
         "type": [
@@ -962,9 +962,9 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2026-03-02T10:43:11.573Z",
     "agent": {
-        "ephemeral_id": "846a24a5-bb00-4814-bec9-3bad2ddd7a10",
-        "id": "1c9a4c17-ed99-4319-8615-d20baede7c42",
-        "name": "elastic-agent-82418",
+        "ephemeral_id": "257112f9-7bd4-4a08-b124-c988c6ac3335",
+        "id": "48cd6ad7-9b34-477e-9bd1-4423042e7f32",
+        "name": "elastic-agent-75091",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -1022,7 +1022,7 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "cato_networks.event",
-        "namespace": "51060",
+        "namespace": "37233",
         "type": "logs"
     },
     "destination": {
@@ -1038,7 +1038,7 @@ An example event for `event` looks as following:
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "1c9a4c17-ed99-4319-8615-d20baede7c42",
+        "id": "48cd6ad7-9b34-477e-9bd1-4423042e7f32",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -1050,7 +1050,7 @@ An example event for `event` looks as following:
         ],
         "dataset": "cato_networks.event",
         "id": "250b9bf09f51bff2",
-        "ingested": "2026-06-23T09:12:20Z",
+        "ingested": "2026-06-24T09:18:13Z",
         "kind": "event",
         "original": "{\"ISP_name\":\"Cato Networks Inc.\",\"account_id\":\"12345\",\"account_name\":\"Demo-Mode\",\"action\":\"Prompt\",\"ad_name\":\"James Smith\",\"app_stack\":\"TCP, TLS, HTTP(S)\",\"application_id\":\"http\",\"application_name\":\"HTTP(S)\",\"application_risk\":\"2\",\"application_type\":\"System\",\"categories\":\"Gambling\",\"cato_app\":\"http\",\"client_class\":\"unclassified tls\",\"client_ip\":\"1.128.0.0\",\"client_version\":\"5.21.5.8548\",\"configured_host_name\":\"VTL-US02-Win11\",\"congestion_algorithm\":\"BBR\",\"connection_origin\":\"Cato Client\",\"dest_country\":\"United States\",\"dest_country_code\":\"US\",\"dest_ip\":\"89.160.20.128\",\"dest_port\":\"443\",\"device_categories\":\"PC\",\"device_id\":\"699b0f1b352cc37b4a5e4d4d\",\"device_name\":\"VTL-US02-Win11\",\"device_os_type\":\"Windows Workstation\",\"device_posture_profile\":\"Windows managed\",\"device_type\":\"Workstation\",\"domain_name\":\"ahjlighting.com\",\"egress_pop_name\":\"Bucharest\",\"event_count\":\"1\",\"event_id\":\"250b9bf09f51bff2\",\"event_sub_type\":\"Internet Firewall\",\"event_type\":\"Security\",\"flow_id\":\"362862917479975360\",\"full_path_url\":\"https://ahjlighting.com/\",\"host_ip\":\"1.128.0.0\",\"host_mac\":\"7a:1e:52:8f:4f:96\",\"http_request_method\":\"GET\",\"internalId\":\"250b9bf09f51bff2\",\"internal_id\":\"250b9bf09f51bff2\",\"ip_protocol\":\"TCP\",\"network_rule\":\"Akira Impossible Travel\",\"os_type\":\"OS_WINDOWS\",\"os_version\":\"11\",\"pop_name\":\"Miami\",\"prompt_action\":\"\",\"public_ip\":\"81.2.69.144\",\"qos_priority\":\"10\",\"request_size\":\"0\",\"rule_id\":\"8512269566766760473\",\"rule_name\":\"Prompt for Risky Categories\",\"server_ip\":\"89.160.20.128\",\"src_country\":\"United States\",\"src_country_code\":\"US\",\"src_ip\":\"1.128.0.0\",\"src_is_site_or_vpn\":\"SDP User\",\"src_isp_ip\":\"89.160.20.112\",\"src_port\":\"59929\",\"src_site_id\":\"1000033\",\"src_site_name\":\"Jane Smith\",\"static_host\":\"false\",\"tcp_acceleration\":\"true\",\"time\":\"1772448191573\",\"time_str\":\"2026-03-02T10:43:11Z\",\"tls_inspection\":\"true\",\"traffic_direction\":\"OUTBOUND\",\"url\":\"https://ahjlighting.com/\",\"user_agent\":\"Python-urllib/3.10\",\"user_id\":\"1000033\",\"user_name\":\"Jane Smith\",\"user_reference_id\":\"2770852121\",\"visible_device_id\":\"7a-1e-52-8f-4f-96\",\"vpn_user_email\":\"jane.smith@test.example.com\"}",
         "type": [
@@ -1079,6 +1079,7 @@ An example event for `event` looks as following:
         "type": "cel"
     },
     "network": {
+        "direction": "outbound",
         "protocol": "tcp"
     },
     "related": {
@@ -1145,7 +1146,7 @@ An example event for `event` looks as following:
 
 ### Inputs used
 
-These input is used in the integration:
+This input is used in the integration:
 
 - [CEL](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
 

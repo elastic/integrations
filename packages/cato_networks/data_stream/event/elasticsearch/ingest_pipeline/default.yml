@@ -50,10 +50,6 @@ processors:
       tag: append_event_category_network
       value: network
       allow_duplicates: false
-  - append:
-      field: event.type
-      tag: append_info_into_event_type
-      value: info
   - rename:
       field: json.account_id
       tag: rename_account_id
@@ -78,6 +74,34 @@ processors:
       field: event.action
       tag: lowercase_event_action
       ignore_missing: true
+  - append:
+      field: event.type
+      tag: append_event_type_allowed
+      value: allowed
+      allow_duplicates: false
+      if: ctx.event?.action == 'allow'
+  - append:
+      field: event.type
+      tag: append_event_type_denied
+      value: denied
+      allow_duplicates: false
+      if: "['block', 'drop'].contains(ctx.event?.action)"
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+      allow_duplicates: false
+      if: "!['allow', 'block', 'drop'].contains(ctx.event?.action)"
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      value: success
+      if: ctx.event?.action == 'succeeded'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      value: failure
+      if: ctx.event?.action == 'failed'
   - rename:
       field: json.ad_name
       tag: rename_ad_name
@@ -905,6 +929,12 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       if: ctx.json?.time_str != null && ctx.json.time_str != ''
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_event_time_str
+      copy_from: cato_networks.event.time_str
+      ignore_empty_value: true
+      if: ctx.cato_networks?.event?.time == null
   - convert:
       field: json.tls_inspection
       tag: convert_tls_inspection_to_boolean
@@ -920,6 +950,16 @@ processors:
       tag: rename_traffic_direction
       target_field: cato_networks.event.traffic_direction
       ignore_missing: true
+  - set:
+      field: network.direction
+      tag: set_network_direction_outbound
+      value: outbound
+      if: ctx.cato_networks?.event?.traffic_direction == 'OUTBOUND'
+  - set:
+      field: network.direction
+      tag: set_network_direction_inbound
+      value: inbound
+      if: ctx.cato_networks?.event?.traffic_direction == 'INBOUND'
   - convert:
       field: json.transaction_size
       tag: convert_transaction_size_to_long

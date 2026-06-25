@@ -140,7 +140,7 @@ For more information on architectures that can be used for scaling this integrat
 
 ### Inputs used
 
-These input is used in the integration:
+This input is used in the integration:
 
 - [CEL](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
 

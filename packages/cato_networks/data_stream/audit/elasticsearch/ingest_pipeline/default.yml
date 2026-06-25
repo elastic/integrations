@@ -1557,6 +1557,12 @@ processors:
         - remove:
             field: cato_networks.audit.insertion_date
             ignore_missing: true
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_audit_insertion_date
+      copy_from: cato_networks.audit.insertion_date
+      ignore_empty_value: true
+      if: ctx.cato_networks?.audit?.creation_date == null
 
   # change.After.allowedUpdatableItems[].* fields conversion
   - foreach:
