@@ -42,8 +42,6 @@ type updateResult struct {
 	Package    string     `json:"package"`
 	Codeowner  string     `json:"codeowner"`
 	Proposals  []proposal `json:"proposals"`
-	Applied    bool       `json:"applied"`
-	SkipReason string     `json:"skip_reason,omitempty"`
 	NewVersion string     `json:"new_version,omitempty"`
 }
 

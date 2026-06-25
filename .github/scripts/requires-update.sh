@@ -89,6 +89,7 @@ while IFS= read -r team_entry; do
     else
       gh issue create \
         --title "$issue_title" \
+        --label "automation" \
         --body "$(generate_issue_body "$team_entry" "$slug")"
       echo "Created issue for team ${slug}."
     fi
@@ -129,7 +130,11 @@ while IFS= read -r team_entry; do
       --base main \
       --head "$branch" \
       --title "[automation] Update required package versions for @elastic/${slug}" \
+      --label "automation" \
+      --reviewer "@elastic/${slug}" \
       --body "$(generate_pr_body "$team_entry")")
+  else
+    gh pr edit "$pr_url" --body "$(generate_pr_body "$team_entry")"
   fi
   pr_number="${pr_url##*/}"
 
