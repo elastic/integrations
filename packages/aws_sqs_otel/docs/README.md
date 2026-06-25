@@ -36,7 +36,7 @@ Alert rule templates require Elastic Stack version 9.2.0 or later.
 
 | Name | Description |
 |---|---|
-| [AWS SQS OTel] Backlog growth | Alerts when a queue's visible message backlog is growing over the evaluation window, indicating producers are outpacing consumers. |
+| [AWS SQS OTel] High backlog | Alerts when a queue's visible message backlog stays above the configured depth across the evaluation window, indicating consumers are not keeping up with producers. Pair with the oldest-message-age alert/SLO, which captures processing lag directly. |
 | [AWS SQS OTel] DLQ has messages | Alerts when any dead-letter queue has one or more visible messages. Any message in a DLQ represents a processing failure and warrants immediate investigation. |
 | [AWS SQS OTel] In-flight saturation | Alerts when in-flight messages approach the standard-queue limit (~120,000), indicating stuck consumers or processing bottlenecks. |
 | [AWS SQS OTel] Oldest message age high | Alerts when the oldest unprocessed message on a queue exceeds a configurable age threshold. This is the headline SQS processing-lag signal. |
