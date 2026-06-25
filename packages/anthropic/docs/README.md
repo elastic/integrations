@@ -4,7 +4,7 @@
 
 ## Overview
 
-The Anthropic integration collects compliance activity audit logs from [Anthropic](https://www.anthropic.com) organizations. Enterprise, Team, and Claude Platform organizations generate audit events for security-relevant activities such as user authentication, organization administration, role and permission changes, API key lifecycle, Claude.ai and Claude Code usage, MCP server configuration, billing updates, and Compliance API access. This integration enables security and compliance teams to monitor administrative activity, detect unauthorized changes, and maintain an audit trail of organization operations in Elasticsearch and Kibana.
+The Anthropic integration collects compliance activity logs from [Claude's Compliance API](https://platform.claude.com/docs/en/manage-claude/compliance-api). Claude Enterprise, Team, and Claude Platform organizations generate audit events for security-relevant activities such as user authentication, organization administration, role and permission changes, API key lifecycle, Claude.ai and Claude Code usage, MCP server configuration, billing updates, and Compliance API access. This integration enables security and compliance teams to monitor administrative activity, detect unauthorized changes, and maintain an audit trail of organization operations in Elasticsearch and Kibana.
 
 ### Compatibility
 
@@ -82,6 +82,14 @@ Admin API keys receive `read:compliance_activities` only when the Compliance API
 Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 Elastic Agent polls the Anthropic Compliance API and ships collected events to Elasticsearch, where they are processed by the integration's ingest pipeline.
+
+### Agentless deployment
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Refer to [Agentless integrations](https://www.elastic.co/docs/reference/fleet/agentless-integrations) for more information.
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the underlying agent infrastructure.
+
+To use an agentless deployment, select **Anthropic** in **Management → Integrations**, click **Add Anthropic**, and choose the agentless option when configuring the integration. Provide the Compliance Access Key or Admin API Key as described in [Onboard / configure](#onboard--configure); Elastic manages the underlying collection infrastructure for you.
 
 ### Onboard / configure
 
@@ -195,7 +203,7 @@ The `audit` data stream collects compliance activity events from the Anthropic C
 | anthropic.audit.folder_id | Folder id as reported in the activity payload. | keyword |
 | anthropic.audit.from_date | Lower bound of the date window referenced by the activity payload (for example, an audit log export's `from_date`). | date |
 | anthropic.audit.ghe_configuration_id | GitHub Enterprise configuration ID on GHE integration activities. | keyword |
-| anthropic.audit.github_webhook_id | Github webhook id as reported in the activity payload. | keyword |
+| anthropic.audit.github_webhook_id | GitHub-assigned webhook ID returned by the activity payload. The Compliance API returns this as a number; it is stored as a keyword identifier. | keyword |
 | anthropic.audit.group_id | Group id as reported in the activity payload. | keyword |
 | anthropic.audit.group_name | Group name as reported in the activity payload. | keyword |
 | anthropic.audit.idp_saml_config_updated | Idp saml config updated as reported in the activity payload. | boolean |
@@ -240,7 +248,7 @@ The `audit` data stream collects compliance activity events from the Anthropic C
 | anthropic.audit.op_name | Op name as reported in the activity payload. | keyword |
 | anthropic.audit.org_id | Org id as reported in the activity payload. | keyword |
 | anthropic.audit.organization_uuid | Deprecated organization UUID associated with the activity, when present. | keyword |
-| anthropic.audit.per_review_limit_usd | Per review limit usd as reported in the activity payload. | long |
+| anthropic.audit.per_review_limit_usd | Per review limit usd as reported in the activity payload. | keyword |
 | anthropic.audit.plan_type | Plan type as reported in the activity payload. | keyword |
 | anthropic.audit.plugin_id | Plugin id as reported in the activity payload. | keyword |
 | anthropic.audit.plugin_name | Plugin name as reported in the activity payload. | keyword |
@@ -300,7 +308,7 @@ The `audit` data stream collects compliance activity events from the Anthropic C
 | anthropic.audit.token_name | Token name as reported in the activity payload. | keyword |
 | anthropic.audit.tool_name | Tool name as reported in the activity payload. | keyword |
 | anthropic.audit.trigger_mode | Trigger mode as reported in the activity payload. | keyword |
-| anthropic.audit.updates | Updates as reported in the activity payload. | keyword |
+| anthropic.audit.updates | Array of setting-change objects on `\*_updated` activities, each with `type`, `previous_value`, and `current_value` as reported in the activity payload. | flattened |
 | anthropic.audit.value | Value as reported in the activity payload. | long |
 | anthropic.audit.version | Version as reported in the activity payload. | keyword |
 | anthropic.audit.webhook_id | Webhook ID on webhook lifecycle activities. | keyword |
