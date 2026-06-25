@@ -69,7 +69,7 @@ Each ingested event represents a single indicator of compromise (IOC) and includ
 
 The integration keeps a **deduplicated, automatically-expiring view** of current indicators, so anything Ticura stops publishing disappears without manual cleanup.
 
-1. **Latest-IOC transform** — a continuous transform deduplicates the raw feed by `ticura.indicator.uuid` into the `logs-ti_ticura_latest.indicator` index, keeping a single document per indicator (the most recent by `@timestamp`). Because the full feed is re-downloaded on every poll, this collapses the per-poll copies into one current document — the same pattern used by Elastic's other threat-intel integrations.
+1. **Latest-IOC transform** — a continuous transform deduplicates the raw feed by `ticura.indicator.uuid` into the `logs-ti_ticura_latest.indicator` index, keeping a single document per indicator (the newest version by `event.ingested`, since `last_seen`/`@timestamp` need not change on a content-only update). Because the full feed is re-downloaded on every poll, this collapses the per-poll copies into one current document — the same pattern used by Elastic's other threat-intel integrations.
 2. **Per-indicator expiry** — the transform's retention policy drops an indicator from the latest index once its source-provided `ticura.indicator.ages_out` timestamp passes, so expired indicators leave the active view automatically.
 3. **Raw-stream ILM** — the raw `logs-ti_ticura.indicator-*` data stream rolls over every 24 hours and is deleted 1 day after rollover for storage hygiene. The latest index — queried by dashboards, saved searches, and Elastic Security's Indicator Match rules — is the source of truth for "currently active" indicators.
 

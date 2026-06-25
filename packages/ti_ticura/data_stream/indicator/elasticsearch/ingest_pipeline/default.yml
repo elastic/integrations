@@ -166,21 +166,16 @@ processors:
       override: false
 
   # ----- ECS canonical severity -----
-  # Ticura's risk score is 0-100; ECS event.severity is documented 1-99.
-  # Clamp to 99 max so we never violate the ECS spec when risk == 100.
-  # override: false so any ECS-native value supplied by the source wins.
-  - script:
-      description: Clamp Ticura's 0-100 risk score to the ECS event.severity 1-99 range without overwriting a source-supplied value.
-      lang: painless
-      if: ctx.ticura?.indicator?.risk != null && ctx.event?.severity == null
-      tag: set_event_severity_clamped
-      source: |
-        long r = ((Number) ctx.ticura.indicator.risk).longValue();
-        if (r > 99L) r = 99L;
-        if (r < 0L) r = 0L;
-        if (ctx.event == null) ctx.event = [:];
-        ctx.event.severity = r;
-      ignore_failure: true
+  # Mirror Ticura's 0-100 risk score into event.severity. ECS does not constrain
+  # event.severity to a fixed range, so the 0-100 scale is kept as-is. override: false
+  # so a value the source already supplied in the ECS namespace wins; ignore_empty_value
+  # skips when risk is absent.
+  - set:
+      tag: set_event_severity
+      field: event.severity
+      copy_from: ticura.indicator.risk
+      override: false
+      ignore_empty_value: true
 
   # ----- MITRE ATT&CK: Ticura namespace -> ECS canonical fields -----
   # Mirror with override: false so values Ticura already wrote into the ECS
