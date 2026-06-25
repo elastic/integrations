@@ -5,7 +5,7 @@
 ## Compatibility
 
 * This integration supports Windows and RedHat/CENTOS Endpoint Operating Systems.
-* This integration requires a TYCHON Elastic Managed license.
+* This integration requires a TYCHON Elastic Managed Integration license.
 * This integration requires [TYCHON Vulnerability Definition](https://support.tychon.io/) files.
 * The Linux Endpoint requires RedHat's [OpenScap](https://www.open-scap.org/tools/openscap-base/) to be installed for STIG and CVE to report data.
 

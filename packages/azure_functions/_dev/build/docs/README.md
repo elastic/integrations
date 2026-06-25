@@ -18,7 +18,7 @@ Elastic Managed integrations allow you to collect data without having to manage 
 
 Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-> **Note:** Elastic Managed deployment is currently supported for Azure Functions metrics only. Log collection is not available via Elastic Managed and requires a traditional Elastic Agent deployment.
+> **Note:** Elastic Managed deployment is currently supported for Azure Functions metrics only. Log collection is not available via Elastic Managed Integration and requires a traditional Elastic Agent deployment.
 
 ## Hosting plans and metrics
 
