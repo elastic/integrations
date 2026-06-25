@@ -338,12 +338,15 @@ processors:
   # ----- IP indicator: GeoIP + ASN enrichment -----
   # Uses the GeoLite2 databases bundled with Elasticsearch (no external calls).
   # Both processors are conditional on threat.indicator.ip so domain/URL/hash
-  # indicators skip them. Failures are tolerated (e.g., private/test IPs).
+  # indicators skip them, and on the target being absent so a value Ticura already
+  # supplied in the ECS namespace wins (override: false intent — the ECSV1 feed
+  # delivers threat.indicator.as for resolved IPs). Failures are tolerated (e.g.,
+  # private/test IPs).
   - geoip:
       tag: geoip_geo
       field: threat.indicator.ip
       target_field: threat.indicator.geo
-      if: ctx.threat?.indicator?.ip != null
+      if: ctx.threat?.indicator?.ip != null && ctx.threat?.indicator?.geo == null
       ignore_missing: true
       on_failure:
         - remove:
@@ -355,7 +358,7 @@ processors:
       field: threat.indicator.ip
       target_field: threat.indicator.as
       properties: [asn, organization_name]
-      if: ctx.threat?.indicator?.ip != null
+      if: ctx.threat?.indicator?.ip != null && ctx.threat?.indicator?.as == null
       ignore_missing: true
       on_failure:
         - remove:

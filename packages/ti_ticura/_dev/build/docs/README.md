@@ -126,7 +126,7 @@ Tactical view focused on what to act on right now:
 | Inbound-only threats | `ticura.indicator.is_inbound:true` count | Threats Ticura specifically flagged as ingress |
 | Sinkhole indicators | `ticura.indicator.additional_info.sinkhole.owner:*` count | Routed to a known sinkhole; valuable investigative context |
 | Indicator subtype distribution | `ticura.indicator.sub_type` | DOMAIN / HASHSHA256 / IPV4PORT / IPV4 / HASHSHA1 / HASHMD5 / IPV6 / EMAIL |
-| Severity distribution | `event.severity` bucketed 0–99 | Where the volume sits — informs alert thresholds |
+| Severity distribution | `event.severity` bucketed 0–100 | Where the volume sits — informs alert thresholds |
 | Hash type breakdown | `ticura.indicator.sub_type` (file indicators only) | SHA-256 / SHA-1 / MD5 mix |
 | Confidence × Risk category | `ticura.indicator.{risk,confidence}Category` cross-tab | Priority quadrants — high-conf + high-risk indicators feed detection rules; low-conf + high-risk indicators need triage |
 | CVE-referenced indicators | `ticura.indicator.cve` count | Volume of vuln-linked IOCs |
@@ -214,7 +214,7 @@ The integration maps indicators to the Elastic Common Schema using the `threat.i
 | ECS Field | Description |
 |----------|-------------|
 | `event.risk_score` | Numeric risk score (0–100), supplied directly by Ticura (equals `ticura.indicator.risk`) |
-| `event.severity` | Numeric severity (0–99, ECS-clamped) — mirrored from `ticura.indicator.risk` |
+| `event.severity` | Numeric severity (0–100) — mirrored directly from `ticura.indicator.risk` |
 | `threat.indicator.marking.tlp` | Traffic Light Protocol marking, if provided |
 | `threat.indicator.reference` | Reference or source URL |
 | `tags` | Tags associated with the indicator |
