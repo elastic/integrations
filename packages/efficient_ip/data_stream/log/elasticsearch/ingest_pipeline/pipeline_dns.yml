@@ -157,6 +157,13 @@ processors:
       if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
+  - gsub:
+      tag: trim_trailing_dot_dns_question_name
+      field: dns.question.name
+      pattern: '\.$'
+      replacement: ''
+      ignore_missing: true
+      if: ctx.dns?.question?.name != null      
   - append:
       tag: append_related_hosts_dns_question_name
       field: related.hosts

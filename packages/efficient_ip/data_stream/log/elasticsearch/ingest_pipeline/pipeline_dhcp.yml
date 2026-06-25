@@ -102,13 +102,6 @@ processors:
       value: failure
       tag: set_refused_outcome
       if: ctx.message != null && ctx.message.contains('REFUSED')
-  - gsub:
-      tag: normalize_event_action_spaces
-      field: event.action
-      pattern: ' '
-      replacement: '_'
-      ignore_missing: true
-      if: ctx.event?.action != null && ctx.event.action.contains(' ')
   - grok:
       tag: grok_Encapsulated_Solicit_message
       field: message
@@ -150,6 +143,13 @@ processors:
       if: ctx.message != null && ctx.event?.action == null
       patterns:
         - '^%{GREEDYDATA:efficient_ip.log.dhcp.message}$'
+  - gsub:
+      tag: normalize_event_action_spaces
+      field: event.action
+      pattern: ' '
+      replacement: '_'
+      ignore_missing: true
+      if: ctx.event?.action != null && ctx.event.action.contains(' ')
   - lowercase:
       tag: lowercase_event_action
       field: event.action
