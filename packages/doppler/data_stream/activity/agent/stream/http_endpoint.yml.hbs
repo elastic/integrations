@@ -1,0 +1,49 @@
+{{#if listen_address}}
+listen_address: {{listen_address}}
+{{/if}}
+{{#if listen_port}}
+listen_port: {{listen_port}}
+{{/if}}
+prefix: doppler
+{{#if preserve_original_event}}
+preserve_original_event: {{preserve_original_event}}
+{{/if}}
+{{#if secret_value}}
+secret.header: Authorization
+secret.value: {{secret_value}}
+{{/if}}
+{{#if url}}
+url: {{url}}
+{{/if}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+
+{{#if tags.length}}
+tags:
+{{#each tags as |tag|}}
+- {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+- preserve_original_event
+{{/if}}
+{{else}}
+{{#if preserve_original_event}}
+tags:
+- preserve_original_event
+{{/if}}
+{{/if}}
+
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/http_endpoint/http-request-trace-*.ndjson"
+  maxbackups: 5
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
