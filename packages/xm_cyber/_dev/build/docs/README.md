@@ -8,7 +8,7 @@ This integration collects data from the XM Cyber REST API using scheduled pollin
 
 ### Compatibility
 
-The XM Cyber integration is compatible with the API version **1.0.0**.
+The XM Cyber integration is compatible with the API version **v2**.
 
 ### How it works
 
@@ -26,12 +26,14 @@ The XM Cyber integration collects the following types of data:
 |---|---|---|
 | `audit_trail` | Audit Records | `/api/audit-trail/auditRecords` |
 | `vulnerability` | CVE records from XM Cyber's Vulnerability Risk Management (VRM) feed, including CVSS v2/v3/v4 scores, EPSS metrics, CISA KEV / in-the-wild exploitation flags, and per-CVE counts of devices, products, and critical assets at risk | `/api/v2/vrm/public/vulnerabilities` |
+| `entity_inventory` | Inventory of entities (devices, identities, and cloud resources) tracked by XM Cyber, enriched with OS, network, agent, and cloud-account metadata. | `/api/entityInventory/entities` |
 
 ### Supported use cases
 
 - **Audit and compliance monitoring**: Track administrative and user activity within your XM Cyber tenant — including console logins, sensor scan results, and configuration changes — and correlate it with the rest of your security telemetry to support compliance reviews and incident investigations.
 - **Risk-based vulnerability prioritization**: Rank CVEs by CVSS impact, EPSS exploit probability, and CISA KEV / in-the-wild exploitation flags to focus remediation effort where it actually reduces business risk.
 - **Attack-path-aware exposure analysis**: Correlate detected CVEs with XM Cyber's attack-technique simulations to identify which vulnerabilities act as choke points or stepping stones to crown-jewel assets.
+- **Asset and exposure visibility**: Maintain a unified inventory of the devices, identities, and cloud resources XM Cyber discovers across hybrid environments — with OS, network, agent, and cloud-account context — to support asset management, attack-surface monitoring, and prioritization of critical assets.
 
 ## What do I need to use this integration?
 
@@ -128,6 +130,18 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 {{event "vulnerability"}}
 
+### Entity Inventory
+
+#### Entity Inventory fields
+
+{{fields "entity_inventory"}}
+
+### Example event
+
+#### Entity Inventory
+
+{{event "entity_inventory"}}
+
 ### Inputs used
 
 {{ inputDocs }}
@@ -142,6 +156,7 @@ These XM Cyber REST API endpoints are used by this integration:
 | `/api/refresh-token` | POST | all | Refresh an expired access token |
 | `/api/audit-trail/auditRecords` | GET | `audit_trail` | Audit Records |
 | `/api/v2/vrm/public/vulnerabilities` | GET | `vulnerabilities` | Paginated exposure rows (attack techniques / CVE context) |
+| `/api/entityInventory/entities` | GET | `entity_inventory` | List entities (devices, identities, cloud resources) tracked by XM Cyber |
 
 ### ILM Policy
 
