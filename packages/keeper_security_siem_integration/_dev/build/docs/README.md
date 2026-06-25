@@ -1,6 +1,6 @@
 # Keeper Security Integration
 
-The Keeper Security integration provides **truly agentless** data collection by allowing Keeper to push audit events directly to Elasticsearch via the Bulk API. This integration enables seamless monitoring and analysis of Keeper Security platform activities without requiring any Elastic Agent installation.
+The Keeper Security integration provides data collection by allowing Keeper to push audit events directly to Elasticsearch via the Bulk API. This integration enables seamless monitoring and analysis of Keeper Security platform activities without requiring any Elastic Agent installation.
 
 ## Overview
 
