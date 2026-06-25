@@ -468,6 +468,21 @@ processors:
         }
         handleMap(ctx);
 
+  # If an earlier processor's on_failure recorded an error.message without aborting
+  # the pipeline, flag the document as a pipeline error and keep its original copy
+  # (mirrors the top-level on_failure below).
+  - set:
+      tag: set_event_kind_pipeline_error
+      if: ctx.error?.message != null
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_tag_3
+      if: ctx.error?.message != null
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+
 on_failure:
   - append:
       tag: append_error_message
