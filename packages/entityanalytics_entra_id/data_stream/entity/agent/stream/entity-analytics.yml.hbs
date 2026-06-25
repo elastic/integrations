@@ -19,6 +19,20 @@ login_scopes:
 {{#if custom_options}}
 {{custom_options}}
 {{/if}}
+{{#if enrich_with_mfa}}
+enrich_with:
+  - mfa
+{{/if}}
+{{#if user_direct_reports}}
+expand.users:
+  - directReports
+{{#if user_app_role_assignments}}
+  - appRoleAssignments
+{{/if}}
+{{else if user_app_role_assignments}}
+expand.users:
+  - appRoleAssignments
+{{/if}}
 {{#if intune_managed_devices}}
 select.devices:
   - accountEnabled
@@ -29,6 +43,7 @@ select.devices:
   - physicalIds
   - extensionAttributes
   - alternativeSecurityIds
+  - approximateLastSignInDateTime
   - isCompliant
   - isManaged
   - manufacturer
