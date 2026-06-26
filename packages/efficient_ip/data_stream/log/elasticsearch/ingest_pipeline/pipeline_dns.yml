@@ -152,7 +152,16 @@ processors:
       field: event.outcome
       value: success
       if: ctx.dns?.response_code == 'NOERROR'
-    
+  - set:
+      tag: set_dns_type_query
+      field: dns.type
+      value: query
+      if: ctx.efficient_ip?.log?.dns?.category == 'query'
+  - set:
+      tag: set_dns_type_answer
+      field: dns.type
+      value: answer
+      if: ctx.efficient_ip?.log?.dns?.category == 'answer'    
 on_failure:
   - append:
       tag: append_pipeline_error_message

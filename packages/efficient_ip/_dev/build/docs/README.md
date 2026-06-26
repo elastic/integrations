@@ -1,27 +1,18 @@
 {{- generatedHeader }}
-{{/*
-This template can be used as a starting point for writing documentation for your new integration. For each section, fill in the details
-described in the comments.
-
-Find more detailed documentation guidelines in https://www.elastic.co/docs/extend/integrations/documentation-guidelines
-*/}}
 # EfficientIP Integration for Elastic
 
 The EfficientIP integration collects and parses data from [EfficientIP](https://efficientip.com/) DDI (DNS, DHCP, and IPAM) solutions, enabling centralized monitoring and analysis of network infrastructure events within Elastic.
 
 ## Overview
-{{/* Complete this section with a short summary of what data this integration collects and what use cases it enables */}}
 The EfficientIP integration for Elastic enables collection of event logs from DNS and DHCP. This integration enables the
 following use cases:
 - DNS query monitoring and threat detection
 - DHCP lease management and IP address tracking
 
 ### Compatibility
-{{/* Complete this section with information on what 3rd party software or hardware versions this integration is compatible with */}}
 This integration is tested with EfficientIP version 8.4.7e
 
 ## What data does this integration collect?
-{{/* Complete this section with information on what types of data the integration collects, and link to reference documentation if available */}}
 This integration collects the following data types from EfficientIP DDI solutions:
 
 - **DNS Events**: Query logs, response codes, and DNS transactions
@@ -30,7 +21,6 @@ This integration collects the following data types from EfficientIP DDI solution
 All events are forwarded via syslog and processed through Elastic ingest pipelines for analysis and visualization within the Elastic Stack.
 
 ## What do I need to use this integration?
-{{/* List any vendor-specific prerequisites needed before starting to install the integration. */}}
 Minimum requirement Elastic stack 9.1.x and EfficientIP version 8.4.7e
 
 
@@ -56,7 +46,6 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 Elastic Agent is required to stream data from the syslog or log file receiver and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
 ### Inputs used
-{{/* All inputs used by this package will be automatically listed here. */}}
 {{ inputDocs }}
 
 ### Future updates
