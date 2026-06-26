@@ -225,10 +225,15 @@ func cherryPickOrConflict(sha, branchName, pkg, changelogPath, manifestPath stri
 	// Always restore manifest and changelog to HEAD. They are the most likely
 	// source of spurious conflicts (version bump and entry differ per branch) and
 	// we overwrite them ourselves in resetAndWriteChanges anyway.
-	_ = gitutil.Run("checkout", "HEAD", "--", changelogPath, manifestPath)
+	checkoutErr := gitutil.Run("checkout", "HEAD", "--", changelogPath, manifestPath)
 
 	if cherryErr == nil {
 		return nil, nil
+	}
+
+	if checkoutErr != nil {
+		_ = gitutil.Run("reset", "--hard", "HEAD")
+		return nil, fmt.Errorf("restoring manifest/changelog after cherry-pick failure: %w", checkoutErr)
 	}
 
 	// cherry-pick failed; check whether non-manifest/changelog conflicts remain.
