@@ -2,7 +2,7 @@
 
 This package contains Kibana assets for monitoring RDS database instances with AWS CloudWatch metrics collected by the OpenTelemetry Collector.
 
-The package is **content only**. It provides a curated metrics dashboard, but it does not configure data collection. Configure the OpenTelemetry Collector CloudWatch receiver to collect the required AWS service metrics and export them to Elasticsearch.
+The package is **content only**. It provides a curated metrics dashboard, but it does not configure data collection. Use the **AWS CloudWatch OpenTelemetry Input Package** (`aws_cloudwatch_input_otel`) to configure the OpenTelemetry Collector CloudWatch receiver and collect the required AWS service metrics into Elasticsearch.
 
 ## Data requirements
 
@@ -22,7 +22,7 @@ This package includes one pre-built Kibana dashboard:
 |---|---|
 | [AWS OTel] RDS | AWS RDS dashboard for CloudWatch metrics collected by the OpenTelemetry Collector. |
 
-## Alerting Rule Template
+## Alerting Rule Templates
 Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
 
 For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
