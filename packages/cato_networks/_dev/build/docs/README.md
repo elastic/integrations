@@ -1,4 +1,4 @@
-# Cato Networks
+# Cato Networks Integration for Elastic
 
 ## Overview
 
