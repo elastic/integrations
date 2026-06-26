@@ -788,16 +788,21 @@ is_pr_affected() {
         '\.buildkite/pipeline\.serverless\.yml'
         '\.buildkite/pull-requests\.json'
         '\.buildkite/scripts/backport_branch\.sh'
+        '\.buildkite/scripts/backport_branch_lib\.sh'
         '\.buildkite/scripts/check_backports_inventory\.sh'
-        '\.buildkite/scripts/trigger_backport_dryrun\.sh'
+        '\.buildkite/scripts/notify_backport_pr\.sh'
+        '\.buildkite/scripts/trigger_backport\.sh'
+        '\.buildkite/scripts/trigger_backport_lib\.sh'
         '\.buildkite/scripts/build_packages\.sh'
         '\.buildkite/scripts/check_changelog_entries\.sh'
         '\.buildkite/scripts/packages/.+\.sh'
         '\.buildkite/scripts/requirements-ci-python-scripts\.txt'
         '\.buildkite/scripts/run_buildkite_scripts_tests\.sh'
         '\.buildkite/scripts/run_dev_scripts_tests\.sh'
+        '\.buildkite/scripts/test_backport_branch\.sh'
         '\.buildkite/scripts/test_check_changelog_entries\.sh'
         '\.buildkite/scripts/test_helpers\.sh'
+        '\.buildkite/scripts/test_trigger_backport\.sh'
         '\.github/dependabot\.yml'
         '\.github/stale\.yml'
         '\.github/workflows/'
@@ -1229,6 +1234,36 @@ delete_and_create_gh_pr_comment() {
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "/repos/${owner}/${repo}/issues/comments/${comment_id}"
+    fi
+
+    local contents
+    contents="$(cat "${comment_file}")"
+    printf -v contents '%s\n%s' "${contents}" "${metadata}"
+
+    echo "Creating new comment"
+    gh pr comment \
+        "${pr_number}" \
+        --repo "${owner}/${repo}" \
+        --body "${contents}"
+}
+
+# Posts a new comment on every pipeline run/retry while staying idempotent
+# within a single attempt. Pass a unique id per attempt (e.g. build-number +
+# retry-count) — if a comment with that id already exists the call is a no-op,
+# so transient gh failures can be retried safely without double-posting.
+create_new_gh_pr_comment() {
+    local owner="$1"
+    local repo="$2"
+    local pr_number="$3"
+    local id="$4"
+    local comment_file="$5"
+    local metadata="<!--COMMENT_GENERATED_WITH_ID_${id}-->"
+
+    local comment_id
+    comment_id=$(get_comment_with_pattern "${owner}" "${repo}" "${pr_number}" "${metadata}")
+    if [[ -n "${comment_id}" ]]; then
+        echo "Comment already posted for id=${id}, skipping"
+        return
     fi
 
     local contents

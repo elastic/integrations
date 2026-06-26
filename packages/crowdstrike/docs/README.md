@@ -359,6 +359,10 @@ FROM logs-crowdstrike.fdr-*
 
 **Ingest-time versus query-time:** The FDR integration’s **Enrich Host and User Metadata** option (`enrich_metadata`, on by default) uses the Elastic Agent (Filebeat) metadata cache to attach `aidmaster` and `userinfo` to events at ingest time. If you rely on query-time host enrichment only (transform + `LOOKUP JOIN` above), set **Enrich Host and User Metadata** to **Off** so host metadata is not applied twice. Turning it off also disables ingest-time enrichment from `userinfo`; if you still need user fields from `userinfo` on every document, keep ingest-time enrichment enabled or supplement with a separate query pattern. Disabling **Enrich Host and User Metadata** automatically makes **Keep Original Host and User Metadata** option (`keep_metadata`) ineffective and the metadata events are retained.
 
+:::{warning}
+**Deprecation notice:** Ingest-time cache enrichment (`enrich_metadata` and related settings — `keep_metadata`, `metadata_ttl`, `metadata_cache_capacity`, `metadata_cache_write_interval`) is deprecated and will be removed in a future major version. Query-time enrichment via `LOOKUP JOIN` is the replacement. The default for `keep_metadata` has been changed to `true` so that metadata events are indexed and the LOOKUP JOIN transforms have source data. Existing installations that upgrade retain their previous `keep_metadata` setting; if it was `false`, set it to `true` to enable query-time enrichment.
+:::
+
 ### Query-time user metadata enrichment (LOOKUP JOIN)
 
 A second transform maintains the latest user metadata per host-user pair from `UserIdentity` and `UserLogon` sensor events in a lookup index. Unlike `userinfo` directory data (which requires [Falcon Discover](https://www.crowdstrike.com/platform/exposure-management/falcon-discover/) and covers only Windows), sensor events are available to all FDR customers on all platforms (Windows, macOS, Linux, ChromeOS). You can enrich FDR events with user metadata at query time using ES|QL [`LOOKUP JOIN`](https://www.elastic.co/docs/reference/query-languages/esql/commands/lookup-join).
@@ -399,6 +403,10 @@ FROM logs-crowdstrike.fdr-*
 **Using enriched fields:** Enrichment from the user lookup is under the `crowdstrike.info.user.*` namespace (e.g. `crowdstrike.info.user.name` for username, `crowdstrike.info.user.domain` for UPN domain, `crowdstrike.info.user.logon_type` for logon type). Use these fields in dashboards and ES|QL detection rules when building on query-time enrichment. Note that detection rules using EQL, threshold, or KQL operate on stored documents and cannot use `LOOKUP JOIN` — those rule types continue to rely on ingest-time cache enrichment for user metadata.
 
 **Ingest-time versus query-time:** The same **Enrich Host and User Metadata** option (`enrich_metadata`) that controls ingest-time host enrichment also controls ingest-time user enrichment from `userinfo` directory data. Query-time user enrichment via the transform is additive — it works regardless of whether ingest-time enrichment is enabled. If you rely on query-time enrichment only, set **Enrich Host and User Metadata** to **Off** so metadata is not applied twice. If both are active, user metadata may appear under `crowdstrike.info.user.*` from both the ingest-time cache and the query-time lookup; the values should be consistent but the ingest-time cache is populated from `userinfo` while the query-time lookup uses sensor events, so field availability may differ.
+
+:::{warning}
+**Deprecation notice:** Ingest-time cache enrichment is deprecated and will be removed in a future major version. Query-time enrichment via the transforms and `LOOKUP JOIN` described above is the replacement. See the deprecation notice in the host metadata section above for details on the `keep_metadata` default change.
+:::
 
 #### ES|QL dashboard panels
 
@@ -811,18 +819,31 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.cmdline |  | keyword |
 | crowdstrike.alert.command_line |  | keyword |
 | crowdstrike.alert.comment |  | keyword |
+| crowdstrike.alert.comments.falcon_user_id |  | keyword |
+| crowdstrike.alert.comments.timestamp |  | date |
+| crowdstrike.alert.comments.value |  | keyword |
 | crowdstrike.alert.composite_id |  | keyword |
 | crowdstrike.alert.confidence |  | long |
 | crowdstrike.alert.context_timestamp |  | date |
 | crowdstrike.alert.control_graph_id |  | keyword |
+| crowdstrike.alert.correlation_rule_case_template_id |  | keyword |
+| crowdstrike.alert.correlation_rule_create_case |  | boolean |
+| crowdstrike.alert.correlation_rule_execution_id |  | keyword |
+| crowdstrike.alert.correlation_rule_id |  | keyword |
+| crowdstrike.alert.correlation_rule_user_id |  | keyword |
+| crowdstrike.alert.correlation_rule_user_uuid |  | keyword |
+| crowdstrike.alert.correlation_rule_version_id |  | keyword |
 | crowdstrike.alert.crawl_edge_ids.Sensor |  | keyword |
 | crowdstrike.alert.crawl_vertex_ids.Sensor |  | keyword |
 | crowdstrike.alert.crawled_timestamp |  | date |
 | crowdstrike.alert.created_timestamp |  | date |
 | crowdstrike.alert.data_domains |  | keyword |
 | crowdstrike.alert.description |  | keyword |
+| crowdstrike.alert.destination_hosts |  | keyword |
+| crowdstrike.alert.destination_ips |  | ip |
 | crowdstrike.alert.detect_type |  | keyword |
 | crowdstrike.alert.detection_context |  | flattened |
+| crowdstrike.alert.detection_id |  | keyword |
 | crowdstrike.alert.device.agent_load_flags |  | long |
 | crowdstrike.alert.device.agent_local_time |  | date |
 | crowdstrike.alert.device.agent_version |  | keyword |
@@ -867,6 +888,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.end_time |  | date |
 | crowdstrike.alert.event_correlation_id |  | keyword |
 | crowdstrike.alert.event_id |  | keyword |
+| crowdstrike.alert.event_ids |  | keyword |
 | crowdstrike.alert.executables_written.filename |  | keyword |
 | crowdstrike.alert.executables_written.filepath |  | keyword |
 | crowdstrike.alert.executables_written.timestamp |  | date |
@@ -895,7 +917,9 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.grandparent_details.user_id |  | keyword |
 | crowdstrike.alert.grandparent_details.user_name |  | keyword |
 | crowdstrike.alert.has_script_or_module_ioc |  | boolean |
+| crowdstrike.alert.has_truncated_entities |  | boolean |
 | crowdstrike.alert.host_name |  | keyword |
+| crowdstrike.alert.host_names |  | keyword |
 | crowdstrike.alert.host_type |  | keyword |
 | crowdstrike.alert.id |  | keyword |
 | crowdstrike.alert.idp_policy.enforced_externally |  | long |
@@ -930,6 +954,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.ldap_search_query_attack |  | long |
 | crowdstrike.alert.lead_id |  | keyword |
 | crowdstrike.alert.lead_type |  | keyword |
+| crowdstrike.alert.linked_case_ids |  | keyword |
 | crowdstrike.alert.local_prevalence |  | keyword |
 | crowdstrike.alert.local_process_id |  | keyword |
 | crowdstrike.alert.location_country_code |  | keyword |
@@ -955,6 +980,8 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.network_accesses.remote_port |  | long |
 | crowdstrike.alert.objective |  | keyword |
 | crowdstrike.alert.operating_system |  | keyword |
+| crowdstrike.alert.original_correlation_rules_entities_count |  | long |
+| crowdstrike.alert.original_indicator_entities_count |  | long |
 | crowdstrike.alert.os_name |  | keyword |
 | crowdstrike.alert.overwatch_note |  | keyword |
 | crowdstrike.alert.overwatch_note_timestamp |  | date |
@@ -1095,6 +1122,15 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.user_name |  | keyword |
 | crowdstrike.alert.user_names |  | keyword |
 | crowdstrike.alert.user_principal |  | keyword |
+| crowdstrike.alert.usernames |  | keyword |
+| crowdstrike.alert.users.aid |  | keyword |
+| crowdstrike.alert.users.full_name |  | keyword |
+| crowdstrike.alert.users.full_name_is_enriched |  | boolean |
+| crowdstrike.alert.users.idp_id |  | keyword |
+| crowdstrike.alert.users.idp_id_is_enriched |  | boolean |
+| crowdstrike.alert.users.sid |  | keyword |
+| crowdstrike.alert.users.user_name |  | keyword |
+| crowdstrike.alert.vendor_pattern_id |  | keyword |
 | crowdstrike.alert.worker_node_name |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |

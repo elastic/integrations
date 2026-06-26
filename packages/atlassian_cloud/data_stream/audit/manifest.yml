@@ -1,0 +1,72 @@
+title: Organization audit logs
+type: logs
+streams:
+  - input: cel
+    title: Organization audit logs
+    description: Collect organization-wide audit events from the Atlassian Cloud Organizations REST API events-stream endpoint.
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Polling Interval
+        description: How often to poll for new events. Consider the rate limit of 50 requests per minute per API path.
+        multi: false
+        required: true
+        show_user: true
+        default: 5m
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: How far back to collect events on the first run.
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: Number of events per page. Maximum 500.
+        multi: false
+        required: true
+        show_user: false
+        default: 200
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before a request times out.
+        multi: false
+        required: false
+        show_user: false
+        default: 60s
+      - name: enable_request_tracer
+        type: bool
+        title: Enable Request Tracer
+        description: The request tracer logs requests and responses to the agent's local filesystem for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging.
+        multi: false
+        required: false
+        show_user: false
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+          - atlassian_cloud-audit
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        description: Preserves a raw copy of the original event in the field `event.original`.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Processors to apply to events.
+        multi: false
+        required: false
+        show_user: false
