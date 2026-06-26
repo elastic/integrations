@@ -120,7 +120,7 @@ Tactical view focused on what to act on right now:
 | Indicator subtype distribution | `ticura.indicator.sub_type` | DOMAIN / HASHSHA256 / IPV4PORT / IPV4 / HASHSHA1 / HASHMD5 / IPV6 / EMAIL |
 | Severity distribution | `event.severity` bucketed 0–100 | Where the volume sits — informs alert thresholds |
 | Hash type breakdown | `ticura.indicator.sub_type` (file indicators only) | SHA-256 / SHA-1 / MD5 mix |
-| Confidence × Risk category | `ticura.indicator.{risk,confidence}Category` cross-tab | Priority quadrants — high-conf + high-risk indicators feed detection rules; low-conf + high-risk indicators need triage |
+| Confidence × Risk category | `ticura.indicator.risk_category` × `ticura.indicator.confidence_category` cross-tab | Priority quadrants — high-conf + high-risk indicators feed detection rules; low-conf + high-risk indicators need triage |
 | CVE-referenced indicators | `ticura.indicator.cve` count | Volume of vuln-linked IOCs |
 | Top CVE references | `ticura.indicator.cve` | Which CVEs lead |
 | Top 15 ASN organizations | `threat.indicator.as.organization.name` | Pattern recognition — which hosting providers keep showing up |
@@ -135,7 +135,7 @@ Strategic time-series view of how the feed is evolving:
 
 | Panel | Source field(s) | Purpose |
 |-------|-----------------|---------|
-| Indicator velocity | `threat.indicator.modified_at` per day, stacked by `threat.indicator.type` | Daily update rate, broken out by IOC type |
+| Indicator velocity | `threat.indicator.first_seen` per day, stacked by `threat.indicator.type` | Daily new-indicator rate, broken out by IOC type |
 | New indicators per day | `threat.indicator.first_seen` | Fresh-intel velocity (line chart) |
 | Indicators expiring per day | `ticura.indicator.ages_out` | Forward-looking expiry wave (bar chart) |
 | Top 30 countries by indicator count | `threat.indicator.geo.country_iso_code` | Geographic distribution (richer than the Overview pie) |

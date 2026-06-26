@@ -120,7 +120,7 @@ Tactical view focused on what to act on right now:
 | Indicator subtype distribution | `ticura.indicator.sub_type` | DOMAIN / HASHSHA256 / IPV4PORT / IPV4 / HASHSHA1 / HASHMD5 / IPV6 / EMAIL |
 | Severity distribution | `event.severity` bucketed 0–100 | Where the volume sits — informs alert thresholds |
 | Hash type breakdown | `ticura.indicator.sub_type` (file indicators only) | SHA-256 / SHA-1 / MD5 mix |
-| Confidence × Risk category | `ticura.indicator.{risk,confidence}Category` cross-tab | Priority quadrants — high-conf + high-risk indicators feed detection rules; low-conf + high-risk indicators need triage |
+| Confidence × Risk category | `ticura.indicator.risk_category` × `ticura.indicator.confidence_category` cross-tab | Priority quadrants — high-conf + high-risk indicators feed detection rules; low-conf + high-risk indicators need triage |
 | CVE-referenced indicators | `ticura.indicator.cve` count | Volume of vuln-linked IOCs |
 | Top CVE references | `ticura.indicator.cve` | Which CVEs lead |
 | Top 15 ASN organizations | `threat.indicator.as.organization.name` | Pattern recognition — which hosting providers keep showing up |
@@ -135,7 +135,7 @@ Strategic time-series view of how the feed is evolving:
 
 | Panel | Source field(s) | Purpose |
 |-------|-----------------|---------|
-| Indicator velocity | `threat.indicator.modified_at` per day, stacked by `threat.indicator.type` | Daily update rate, broken out by IOC type |
+| Indicator velocity | `threat.indicator.first_seen` per day, stacked by `threat.indicator.type` | Daily new-indicator rate, broken out by IOC type |
 | New indicators per day | `threat.indicator.first_seen` | Fresh-intel velocity (line chart) |
 | Indicators expiring per day | `ticura.indicator.ages_out` | Forward-looking expiry wave (bar chart) |
 | Top 30 countries by indicator count | `threat.indicator.geo.country_iso_code` | Geographic distribution (richer than the Overview pie) |
@@ -386,22 +386,22 @@ An example event for `indicator` looks as following:
 {
     "@timestamp": "2026-05-28T10:00:00.000Z",
     "agent": {
-        "ephemeral_id": "45ebd892-6e37-4cce-b354-a4dec28c7384",
-        "id": "4dcd38da-141a-4fe2-a135-876b082ea9dd",
-        "name": "elastic-agent-98322",
+        "ephemeral_id": "358d3b95-fa75-46dd-85e5-241ee6bf8d87",
+        "id": "90c88b35-7a07-4155-876f-ee05f8acf484",
+        "name": "elastic-agent-39899",
         "type": "filebeat",
         "version": "9.4.2"
     },
     "data_stream": {
         "dataset": "ti_ticura.indicator",
-        "namespace": "49500",
+        "namespace": "21612",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "4dcd38da-141a-4fe2-a135-876b082ea9dd",
+        "id": "90c88b35-7a07-4155-876f-ee05f8acf484",
         "snapshot": false,
         "version": "9.4.2"
     },
@@ -412,7 +412,7 @@ An example event for `indicator` looks as following:
             "threat"
         ],
         "dataset": "ti_ticura.indicator",
-        "ingested": "2026-06-26T07:53:32Z",
+        "ingested": "2026-06-26T12:25:49Z",
         "kind": "enrichment",
         "module": "ti_ticura",
         "provider": "Ticura",
@@ -434,7 +434,7 @@ An example event for `indicator` looks as following:
     },
     "related": {
         "ip": [
-            "185.220.101.1"
+            "192.0.2.10"
         ]
     },
     "tags": [
@@ -447,38 +447,20 @@ An example event for `indicator` looks as following:
             "reference": "https://www.ticura.io"
         },
         "indicator": {
-            "as": {
-                "number": 60729,
-                "organization": {
-                    "name": "Stiftung Erneuerbare Freiheit"
-                }
-            },
             "confidence": "High",
             "description": "Test IPv4 malicious IP.",
             "first_seen": "2026-05-01T10:00:00.000Z",
-            "geo": {
-                "city_name": "Brandenburg an der Havel",
-                "continent_name": "Europe",
-                "country_iso_code": "DE",
-                "country_name": "Germany",
-                "location": {
-                    "lat": 52.61709997896105,
-                    "lon": 13.120699971914291
-                },
-                "region_iso_code": "DE-BB",
-                "region_name": "Brandenburg"
-            },
             "id": [
                 "aaaa0001-0001-0001-0001-000000000001"
             ],
-            "ip": "185.220.101.1",
+            "ip": "192.0.2.10",
             "last_seen": "2026-05-28T10:00:00.000Z",
             "marking": {
                 "tlp": "CLEAR",
                 "tlp_version": "2.0"
             },
             "modified_at": "2026-05-28T12:00:00.000Z",
-            "name": "185.220.101.1",
+            "name": "192.0.2.10",
             "provider": "Ticura",
             "type": "ipv4-addr"
         }
@@ -488,7 +470,7 @@ An example event for `indicator` looks as following:
             "ages_out": "2026-06-28T12:00:00.000Z",
             "confidence": 75,
             "confidence_category": "high",
-            "feed_ingest_timestamp": "2026-06-26T07:53:32.414Z",
+            "feed_ingest_timestamp": "2026-06-26T12:25:49.722Z",
             "fingerprint": "4210a52f45deada10decb7547d4f5804155ffe7e6ab179d9ce517ec3a849468d",
             "is_inbound": false,
             "main_type": "IPV4",
