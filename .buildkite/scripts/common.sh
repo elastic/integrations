@@ -704,55 +704,11 @@ is_logsdb_compatible() {
 # pr_has_package_related_files reads file paths from stdin (one per line) and returns 0 if
 # at least one path is not matched by any non-package pattern, meaning package tests should run.
 # Returns 1 if every path is covered by a non-package pattern (no package tests needed).
+# Patterns are loaded from non_package_patterns.txt (one ERE per line; # comments and blank lines ignored).
 # Avoid using grep -q: SIGPIPE under set -o pipefail can cause missed detections.
 # See: https://buildkite.com/elastic/integrations/builds/25606
 pr_has_package_related_files() {
-    local non_package_patterns=(
-        'packages/'
-        '\.agents/skills/'
-        '\.backports\.yml'
-        '\.buildkite/pipeline\.backport\.yml'
-        '\.buildkite/pipeline\.publish\.yml'
-        '\.buildkite/pipeline\.schedule-daily\.yml'
-        '\.buildkite/pipeline\.schedule-weekly\.yml'
-        '\.buildkite/pipeline\.serverless\.yml'
-        '\.buildkite/pull-requests\.json'
-        '\.buildkite/scripts/backport_branch\.sh'
-        '\.buildkite/scripts/backport_branch_lib\.sh'
-        '\.buildkite/scripts/check_backports_inventory\.sh'
-        '\.buildkite/scripts/notify_backport_pr\.sh'
-        '\.buildkite/scripts/trigger_backport\.sh'
-        '\.buildkite/scripts/trigger_backport_lib\.sh'
-        '\.buildkite/scripts/build_packages\.sh'
-        '\.buildkite/scripts/check_changelog_entries\.sh'
-        '\.buildkite/scripts/packages/.+\.sh'
-        '\.buildkite/scripts/requirements-ci-python-scripts\.txt'
-        '\.buildkite/scripts/run_buildkite_scripts_tests\.sh'
-        '\.buildkite/scripts/run_dev_scripts_tests\.sh'
-        '\.buildkite/scripts/test_backport_branch\.sh'
-        '\.buildkite/scripts/test_check_changelog_entries\.sh'
-        '\.buildkite/scripts/test_helpers\.sh'
-        '\.buildkite/scripts/test_non_package_patterns\.sh'
-        '\.buildkite/scripts/test_trigger_backport\.sh'
-        '\.github/dependabot\.yml'
-        '\.github/stale\.yml'
-        '\.github/workflows/'
-        '\.github/CODEOWNERS'
-        '\.github/ISSUE_TEMPLATE/'
-        '\.github/PULL_REQUEST_TEMPLATE\.md'
-        '\.gitignore'
-        '\.mergify\.yml'
-        'catalog-info\.yaml'
-        'dev/backports/'
-        'dev/scripts/'
-        'docs/'
-        'CODE_OF_CONDUCT\.md'
-        'CONTRIBUTING\.md'
-        'README\.md'
-    )
-    local non_package_regex
-    non_package_regex="^($(IFS='|'; echo "${non_package_patterns[*]}"))"
-    grep -E -v "${non_package_regex}" > /dev/null
+    grep -Evf <(grep -Ev '^[[:space:]]*(#|$)' "${SCRIPTS_BUILDKITE_PATH}/non_package_patterns.txt") > /dev/null
 }
 
 # is_pr_affected accepts a package path and returns true if the package is affected by the PR
