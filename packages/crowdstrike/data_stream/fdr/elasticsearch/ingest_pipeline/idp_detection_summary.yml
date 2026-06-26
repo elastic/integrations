@@ -1,0 +1,276 @@
+---
+description: Pipeline for processing Idp Detection Summary events.
+processors:
+  - set:
+      tag: set_event_kind_39295792
+      field: event.kind
+      value: alert
+  - append:
+      field: event.category
+      value: malware
+      tag: append_malware_category
+  - append:
+      field: event.type
+      value: info
+      tag: append_info_type
+  - set:
+      tag: set_event_action_9543b2bf
+      field: event.action
+      value: idp-detection
+  - set:
+      tag: set_event_outcome_60052845
+      field: event.outcome
+      value: success
+      if: ctx.crowdstrike?.AttemptOutcome == true
+  - set:
+      tag: set_event_outcome_dd25ba45
+      field: event.outcome
+      value: failure
+      if: ctx.crowdstrike?.AttemptOutcome == false
+  - rename:
+      field: crowdstrike.Description
+      target_field: rule.description
+      ignore_missing: true
+      tag: rename_description
+  - rename:
+      field: crowdstrike.DetectDescription
+      target_field: rule.description
+      ignore_missing: true
+      tag: rename_detect_description
+  - rename:
+      field: crowdstrike.LocationCountryCode
+      target_field: host.geo.country_iso_code
+      ignore_missing: true
+      tag: rename_location_country_code
+  - convert:
+      field: crowdstrike.PatternId
+      target_field: rule.uuid
+      type: string
+      tag: convert_pattern_id
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.SourceAccountDomain
+      target_field: user.domain
+      ignore_missing: true
+      tag: rename_source_account_domain
+  - rename:
+      field: crowdstrike.SourceAccountName
+      target_field: user.name
+      ignore_missing: true
+      tag: rename_source_account_name
+  - rename:
+      field: crowdstrike.SourceAccountObjectSid
+      target_field: user.id
+      ignore_missing: true
+      tag: rename_source_account_object_sid
+  - rename:
+      field: crowdstrike.SourceEndpointHostName
+      target_field: host.name
+      ignore_missing: true
+      tag: rename_source_endpoint_hostname
+  - rename:
+      field: crowdstrike.SourceEndpointIpAddress
+      target_field: source.ip
+      ignore_missing: true
+      tag: append_source_ip
+  - append:
+      field: threat.technique.name
+      value: "{{{crowdstrike.Technique}}}"
+      tag: append_technique_name
+      if: ctx.crowdstrike?.Technique != null
+  - append:
+      field: threat.technique.id
+      value: "{{{crowdstrike.TechniqueId}}}"
+      tag: append_technique_id
+      if: ctx.crowdstrike?.TechniqueId != null
+  - append:
+      field: threat.tactic.name
+      value: "{{{crowdstrike.Tactic}}}"
+      tag: append_tactic_name
+      if: ctx.crowdstrike?.Tactic != null
+  - append:
+      field: threat.tactic.id
+      value: "{{{crowdstrike.TacticId}}}"
+      tag: append_tactic_id
+      if: ctx.crowdstrike?.TacticId != null
+  - rename:
+      field: crowdstrike.DetectName
+      target_field: rule.name
+      ignore_missing: true
+      tag: rename_detect_name
+  - rename:
+      field: crowdstrike.DetectId
+      target_field: rule.id
+      ignore_missing: true
+      tag: rename_detect_id
+  - rename:
+      field: crowdstrike.FalconHostLink
+      target_field: event.reference
+      ignore_missing: true
+      tag: rename_falcon_host_link
+  - remove:
+      tag: remove_9545c61d
+      field:
+        - event.created
+      ignore_missing: true
+      if: ctx.crowdstrike?.ContextTimeStamp != null
+  - convert:
+      field: crowdstrike.ContextTimeStamp
+      type: string
+      tag: convert_context_timestamp
+      ignore_missing: true
+      if: ctx.crowdstrike?.ContextTimeStamp != null
+  - gsub:
+      field: crowdstrike.ContextTimeStamp
+      pattern: "\\d{6}$"
+      replacement: ""
+      tag: gsub_context_timestamp
+      if: "ctx.crowdstrike?.ContextTimeStamp != null && ctx.crowdstrike.ContextTimeStamp.length() > 18"
+  - date:
+      field: crowdstrike.ContextTimeStamp
+      target_field: event.created
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_context_timestamp_ms
+      if: "ctx.crowdstrike?.ContextTimeStamp != null && ctx.crowdstrike.ContextTimeStamp.length() >= 12"
+  - date:
+      field: crowdstrike.ContextTimeStamp
+      target_field: event.created
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_context_timestamp
+      if: 'ctx.crowdstrike?.ContextTimeStamp != null && ctx.crowdstrike.ContextTimeStamp.length() <= 11'
+  - convert:
+      field: crowdstrike.AccountCreationTimeStamp
+      type: string
+      tag: convert_account_creation_timestamp
+      ignore_missing: true
+      if: ctx.crowdstrike?.AccountCreationTimeStamp != null
+  - gsub:
+      field: crowdstrike.AccountCreationTimeStamp
+      pattern: "\\d{6}$"
+      replacement: ""
+      tag: gsub_account_creation_timestamp
+      if: "ctx.crowdstrike?.AccountCreationTimeStamp != null && ctx.crowdstrike.AccountCreationTimeStamp.length() > 18"
+  - date:
+      field: crowdstrike.AccountCreationTimeStamp
+      target_field: crowdstrike.AccountCreationTimeStamp
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_account_creation_timestamp_ms
+      if: "ctx.crowdstrike?.AccountCreationTimeStamp != null && ctx.crowdstrike.AccountCreationTimeStamp.length() >= 12"
+  - date:
+      field: crowdstrike.AccountCreationTimeStamp
+      target_field: crowdstrike.AccountCreationTimeStamp
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_account_creation_timestamp
+      if: 'ctx.crowdstrike?.AccountCreationTimeStamp != null && ctx.crowdstrike.AccountCreationTimeStamp.length() <= 11'
+  - convert:
+      field: crowdstrike.StartTime
+      type: string
+      tag: convert_start_time_epoch
+      ignore_missing: true
+      if: ctx.crowdstrike?.StartTime != null
+  - gsub:
+      field: crowdstrike.StartTime
+      pattern: "\\d{6}$"
+      replacement: ""
+      tag: gsub_start_time_epoch
+      if: "ctx.crowdstrike?.StartTime != null && ctx.crowdstrike.StartTime.length() > 18"
+  - date:
+      field: crowdstrike.StartTime
+      target_field: event.start
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_event_start_time_epoch_ms
+      if: "ctx.crowdstrike?.StartTime != null && ctx.crowdstrike.StartTime.length() >= 12"
+  - date:
+      field: crowdstrike.StartTime
+      target_field: event.start
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_event_start_time_epoch
+      if: 'ctx.crowdstrike?.StartTime != null && ctx.crowdstrike.StartTime.length() <= 11'
+  - convert:
+      field: crowdstrike.EndTime
+      type: string
+      tag: convert_end_time_epoch
+      ignore_missing: true
+      if: ctx.crowdstrike?.EndTime != null
+  - gsub:
+      field: crowdstrike.EndTime
+      pattern: "\\d{6}$"
+      replacement: ""
+      tag: gsub_end_time_epoch
+      if: "ctx.crowdstrike?.EndTime != null && ctx.crowdstrike.EndTime.length() > 18"
+  - date:
+      field: crowdstrike.EndTime
+      target_field: event.end
+      timezone: UTC
+      formats:
+        - UNIX_MS
+      tag: date_event_end_time_epoch_ms
+      if: "ctx.crowdstrike?.EndTime != null && ctx.crowdstrike.EndTime.length() >= 12"
+  - date:
+      field: crowdstrike.EndTime
+      target_field: event.end
+      timezone: UTC
+      formats:
+        - UNIX
+      tag: date_event_end_time_epoch
+      if: 'ctx.crowdstrike?.EndTime != null && ctx.crowdstrike.EndTime.length() <= 11'
+  - append:
+      field: related.hosts
+      value: "{{{crowdstrike.TargetEndpointHostName}}}"
+      allow_duplicates: false
+      tag: append_target_endpoint_hostname
+      if: ctx.crowdstrike?.TargetEndpointHostName != null
+  - append:
+      field: related.user
+      value: "{{{crowdstrike.TargetAccountName}}}"
+      allow_duplicates: false
+      tag: append_target_account_name
+      if: ctx.crowdstrike?.TargetAccountName != null
+  - append:
+      field: related.hosts
+      value: "{{{crowdstrike.AdditionalAccountDomain}}}"
+      allow_duplicates: false
+      tag: append_additional_account_domain
+      if: ctx.crowdstrike?.AdditionalAccountDomain != null
+  - append:
+      field: related.user
+      value: "{{{crowdstrike.AdditionalAccountName}}}"
+      allow_duplicates: false
+      tag: append_additional_account_name
+      if: ctx.crowdstrike?.AdditionalAccountName != null
+  - append:
+      field: related.hosts
+      value: "{{{crowdstrike.AdditionalEndpointHostName}}}"
+      allow_duplicates: false
+      tag: append_additional_endpoint_hostname
+      if: ctx.crowdstrike?.AdditionalEndpointHostName != null
+  - append:
+      field: related.ip
+      value: "{{{crowdstrike.AdditionalEndpointIpAddress}}}"
+      allow_duplicates: false
+      tag: append_additional_endpoint_ip
+      if: ctx.crowdstrike?.AdditionalEndpointIpAddress != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
