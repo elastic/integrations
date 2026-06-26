@@ -576,33 +576,37 @@ processors:
       field: client.ip
       if: ctx._fields_.clientip != null
 
-  - script:
-      tag: script_normalize_url
-      lang: painless
-      source: >-
-        String raw = ctx._fields_?.url;
-        if (raw == null) { return; }
-        raw = raw.trim();
-        if (raw.length() == 0) { return; }
-        if (ctx._temp_ == null) { ctx._temp_ = [:]; }
-        String lc = raw.toLowerCase();
-        if (lc.startsWith('http://') || lc.startsWith('https://')) {
-          ctx._temp_.url = raw;
-          return;
-        }
-        String scheme;
-        if (ctx.url?.scheme != null) { scheme = ctx.url.scheme.toString().toLowerCase(); }
-        else if (['http','https'].contains(ctx.network?.protocol)) { scheme = ctx.network.protocol; }
-        else if (ctx.server?.port instanceof Number && ctx.server.port == 443) { scheme = 'https'; }
-        else { scheme = 'http'; }
-        String host = ctx.url?.domain;
-        if (raw.startsWith('//')) {
-          ctx._temp_.url = scheme + ':' + raw;
-        } else if (raw.startsWith('/')) {
-          ctx._temp_.url = (host != null && host.length() > 0) ? (scheme + '://' + host + raw) : raw;
-        } else {
-          ctx._temp_.url = scheme + '://' + raw;
-        }
+  - set:
+      tag: set_temp_url_scheme
+      field: _temp_.scheme
+      copy_from: url.scheme
+      ignore_empty_value: true
+  - set:
+      tag: set_temp_url_scheme_from_network_protocol
+      field: _temp_.scheme
+      copy_from: network.protocol
+      ignore_empty_value: true
+      if: ctx._temp_?.scheme == null && ['http', 'https'].contains(ctx.network?.protocol)
+  - set:
+      tag: set_temp_url_from_absolute
+      field: _temp_.url
+      copy_from: _fields_.url
+      ignore_empty_value: true
+      if: >-
+        ctx._fields_?.url instanceof String &&
+        (ctx._fields_.url.toLowerCase().startsWith('http://') ||
+        ctx._fields_.url.toLowerCase().startsWith('https://'))
+  - set:
+      tag: set_temp_url_reconstructed
+      field: _temp_.url
+      value: "{{{_temp_.scheme}}}://{{{url.domain}}}{{{_fields_.url}}}"
+      if: ctx._temp_?.url == null && ctx._temp_?.scheme != null && ctx.url?.domain != null && ctx._fields_?.url != null
+  - set:
+      tag: set_temp_url_fallback
+      field: _temp_.url
+      copy_from: _fields_.url
+      ignore_empty_value: true
+      if: ctx._temp_?.url == null
   - uri_parts:
       tag: process_url
       field: _temp_.url
