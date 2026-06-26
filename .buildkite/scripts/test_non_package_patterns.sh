@@ -56,6 +56,8 @@ NON_PACKAGE_PATHS=(
     ".buildkite/scripts/test_helpers.sh"
     ".buildkite/scripts/test_non_package_patterns.sh"
     ".buildkite/scripts/test_trigger_backport.sh"
+    # TODO: revert — temporarily excluded in non_package_patterns.txt for debugging
+    ".buildkite/scripts/common.sh"
     ".github/dependabot.yml"
     ".github/stale.yml"
     ".github/workflows/test.yml"
@@ -87,7 +89,6 @@ echo ""
 echo "--- pr_has_package_related_files: infra-file changes DO trigger tests"
 
 TRIGGERING_PATHS=(
-    ".buildkite/scripts/common.sh"
     ".buildkite/pipeline.yml"
     "Makefile"
     ".buildkite/scripts/build_packages_serverless.sh"
