@@ -432,7 +432,7 @@
                     "xy-layer-chart-ec2-count": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS cpu_max = MAX(max_over_time(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL))), mem_max = MAX(max_over_time(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL))) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_max IS NULL AND mem_max IS NULL, \"no data\", cpu_max > 80 OR mem_max > 80, \"saturated\", cpu_max > 50 OR mem_max > 50, \"hot\", cpu_max < 5, \"idle\", \"healthy\") | STATS total = COUNT(*), saturated = COUNT(*) WHERE state == \"saturated\", hot = COUNT(*) WHERE state == \"hot\", healthy = COUNT(*) WHERE state == \"healthy\", idle = COUNT(*) WHERE state == \"idle\", no_data = COUNT(*) WHERE state == \"no data\" BY timestamp | SORT timestamp ASC"
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS cpu_max = MAX(MAX_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL))), mem_max = MAX(MAX_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL))) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | EVAL state = CASE(COALESCE(cpu_max, 0) > 80 OR COALESCE(mem_max, 0) > 80, \"saturated\", COALESCE(cpu_max, 0) > 50 OR COALESCE(mem_max, 0) > 50, \"hot\", COALESCE(cpu_max, 0) <= 5 AND COALESCE(mem_max, 0) <= 10, \"idle\", \"healthy\") | STATS total = COUNT(*), saturated = COUNT(*) WHERE state == \"saturated\", hot = COUNT(*) WHERE state == \"hot\", healthy = COUNT(*) WHERE state == \"healthy\", idle = COUNT(*) WHERE state == \"idle\" BY timestamp | SORT timestamp ASC"
                       },
                       "columns": [
                         {
@@ -499,17 +499,6 @@
                             "esType": "long"
                           },
                           "inMetricDimension": true
-                        },
-                        {
-                          "columnId": "no_data",
-                          "fieldName": "no_data",
-                          "label": "No data",
-                          "customLabel": true,
-                          "meta": {
-                            "type": "number",
-                            "esType": "long"
-                          },
-                          "inMetricDimension": true
                         }
                       ],
                       "timeField": "@timestamp"
@@ -526,7 +515,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS cpu_max = MAX(max_over_time(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL))), mem_max = MAX(max_over_time(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL))) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_max IS NULL AND mem_max IS NULL, \"no data\", cpu_max > 80 OR mem_max > 80, \"saturated\", cpu_max > 50 OR mem_max > 50, \"hot\", cpu_max < 5, \"idle\", \"healthy\") | STATS total = COUNT(*), saturated = COUNT(*) WHERE state == \"saturated\", hot = COUNT(*) WHERE state == \"hot\", healthy = COUNT(*) WHERE state == \"healthy\", idle = COUNT(*) WHERE state == \"idle\", no_data = COUNT(*) WHERE state == \"no data\" BY timestamp | SORT timestamp ASC"
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS cpu_max = MAX(MAX_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL))), mem_max = MAX(MAX_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL))) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | EVAL state = CASE(COALESCE(cpu_max, 0) > 80 OR COALESCE(mem_max, 0) > 80, \"saturated\", COALESCE(cpu_max, 0) > 50 OR COALESCE(mem_max, 0) > 50, \"hot\", COALESCE(cpu_max, 0) <= 5 AND COALESCE(mem_max, 0) <= 10, \"idle\", \"healthy\") | STATS total = COUNT(*), saturated = COUNT(*) WHERE state == \"saturated\", hot = COUNT(*) WHERE state == \"hot\", healthy = COUNT(*) WHERE state == \"healthy\", idle = COUNT(*) WHERE state == \"idle\" BY timestamp | SORT timestamp ASC"
               },
               "visualization": {
                 "layers": [
@@ -537,8 +526,7 @@
                       "saturated",
                       "hot",
                       "healthy",
-                      "idle",
-                      "no_data"
+                      "idle"
                     ],
                     "layerType": "data",
                     "seriesType": "line",
@@ -564,10 +552,6 @@
                       {
                         "forAccessor": "idle",
                         "color": "#A8E6CF"
-                      },
-                      {
-                        "forAccessor": "no_data",
-                        "color": "#BFDBFF"
                       }
                     ]
                   }
