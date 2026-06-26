@@ -40,8 +40,8 @@ Monitoring device-trust posture, investigating SSO authentication outcomes along
 
 ## What do I need to use this integration?
 
-- Elastic Agent installed on a host that can receive Kolide webhooks (a publicly reachable HTTPS endpoint), reach `https://api.kolide.com`, and/or read from your AWS S3 bucket or SQS queue.
-- A Kolide tenant with Full Access administrator privileges to create API keys, webhook endpoints, and/or Log Pipeline destinations.
+- Elastic Agent installed on a host that can receive Kolide webhooks (a publicly reachable HTTPS endpoint), reach `https://api.kolide.com`, or read from your AWS S3 bucket or SQS queue.
+- A Kolide tenant with Full Access administrator privileges to create API keys, webhook endpoints, or Log Pipeline destinations.
 
 ## How do I deploy this integration?
 
@@ -54,13 +54,13 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 As a Full Access administrator, sign in to Kolide and choose one or more collection methods:
 
 For webhooks:
-1. Go to Settings > Developers > Webhooks and add **one** new endpoint.
+1. Go to Settings → Developers → Webhooks and add **one** new endpoint.
 2. Provide a publicly reachable HTTPS URL pointing at the Elastic Agent's listening address, port, and path (for example, `https://<agent-host>:9550/kolide/webhook`).
 3. Subscribe the endpoint to **all** event types — the integration routes each event to the correct data stream automatically.
 4. Copy the endpoint signing secret (shown once) — you will provide it to the integration as the HMAC key.
 
 For the REST API:
-1. Go to Settings > Developers > API Keys and create a new key (read access is sufficient).
+1. Go to Settings → Developers → API Keys and create a new key (read access is sufficient).
 2. Copy the API key (shown once); it has the form `k2sk_v1_...`.
 
 For the AWS S3 Log Pipeline:
@@ -78,11 +78,11 @@ Note: Kolide sends webhooks from dynamic AWS us-east-1 IP addresses, so IP allow
 
 ### Set up steps in Kibana
 
-1. In Kibana, go to Management > Integrations and search for Kolide.
+1. In Kibana, go to Management → Integrations and search for Kolide.
 2. Add the integration.
 3. For webhooks: enable the `webhook` data stream (HTTP endpoint input). Set the listen address, port, and URL path, and provide the HMAC signing secret (and optionally the `X-Kolide-Webhook-Identifier` value). All Kolide event types are received on this single endpoint and routed automatically.
 4. For the REST API: enable whichever data streams you want to poll (auth, issues, device, audit), select the CEL input, provide the API URL (`https://api.kolide.com`), the API key, and adjust the polling interval and initial lookback as needed.
-5. For AWS S3 (Log Pipeline): provide your AWS credentials once on the integration, then enable the `aws-s3` input on the data streams you want — `auth`, `audit`, and/or `device_check`. Each defaults to its Kolide prefix (`kolide/auth_logs/`, `kolide/audit_logs/`, `kolide/check_runs/`). For each, set either an SQS queue URL (SQS mode) or a bucket ARN (polling mode). In SQS mode, use a separate queue per prefix (filter S3 notifications by prefix); in polling mode each stream lists only its own prefix. Adjust the bucket list prefix if your Kolide destination uses a custom key template.
+5. For AWS S3 (Log Pipeline): provide your AWS credentials once on the integration, then enable the `aws-s3` input on the data streams you want — `auth`, `audit`, or `device_check`. Each defaults to its Kolide prefix (`kolide/auth_logs/`, `kolide/audit_logs/`, `kolide/check_runs/`). For each, set either an SQS queue URL (SQS mode) or a bucket ARN (polling mode). In SQS mode, use a separate queue per prefix (filter S3 notifications by prefix); in polling mode each stream lists only its own prefix. Adjust the bucket list prefix if your Kolide destination uses a custom key template.
 
 ### Validation
 
@@ -92,7 +92,7 @@ After setup, generate or wait for activity in Kolide (for example, sign in via S
 
 - No data via webhooks: Confirm the Kolide endpoint URL matches the Agent's listen address, port, and path, that the endpoint is publicly reachable over HTTPS, and that the HMAC signing secret matches.
 - Webhook signature failures: Ensure the configured HMAC key equals the Kolide endpoint signing secret; Kolide signs the raw request body with HMAC-SHA256 and sends the lowercase hex digest in the `Authorization` header with no prefix.
-- No data via the REST API: Verify the API key is valid (a 401 indicates a disabled feature or bad token; a 403 indicates the key lacks permission) and that the host can reach `https://api.kolide.com`.
+- No data via the REST API: Verify the API key is valid (a 401 indicates a turned-off feature or bad token, and a 403 indicates the key lacks permission) and that the host can reach `https://api.kolide.com`.
 - No data via AWS S3: Confirm the Elastic Agent credentials can `s3:ListBucket` and `s3:GetObject` on the bucket (and `sqs:ReceiveMessage` in SQS mode), that the bucket list prefix matches your Kolide object key template, and that SQS notifications are filtered to the correct prefix. Kolide writes to `kolide/auth_logs/`, `kolide/audit_logs/`, and `kolide/check_runs/` by default; osquery `results/` objects are not ingested.
 
 ## Performance and scaling
@@ -108,7 +108,7 @@ Kolide's Log Pipeline writes one log per S3 object rather than batching, so the 
 
 This split keeps the small streams responsive while still using S3 for the bulk data.
 
-If you do consume large streams over S3/SQS, you can increase throughput by running multiple Elastic Agents (or scaling out workers) so SQS messages are processed concurrently. Note the one-object-per-log behavior is a Kolide-side limitation; the guidance above is a workaround until it is addressed upstream.
+If you do consume large streams over S3/SQS, you can increase throughput by running multiple Elastic Agents (or scaling out workers) so SQS messages are processed concurrently. Note the one-object-per-log behavior is a Kolide-side limitation. The guidance above is a workaround until it is addressed upstream.
 
 ## Reference
 
