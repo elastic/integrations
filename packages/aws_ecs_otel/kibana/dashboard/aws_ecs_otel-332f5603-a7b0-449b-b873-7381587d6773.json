@@ -117,11 +117,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Total number of ECS services — distinct ServiceName values in the latest collected data for the selected time range.",
+          "description": "Total number of ECS services — distinct services (cluster + service) that reported CPU utilization within the selected time range.",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Total number of ECS services — distinct ServiceName values in the latest collected data for the selected time range.",
+            "description": "Total number of ECS services — distinct services (cluster + service) that reported CPU utilization within the selected time range.",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -132,7 +132,7 @@
                     "layer-kpi-total": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS last_seen = MAX(@timestamp) BY ServiceName, ClusterName, cloud.region | INLINE STATS latest = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest) <= 5 | STATS total = COUNT(*) | KEEP total"
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | STATS latest_ts = MAX(@timestamp) BY ClusterName, ServiceName, cloud.region | STATS total = COUNT(*) | KEEP total"
                       },
                       "columns": [
                         {
@@ -161,7 +161,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS last_seen = MAX(@timestamp) BY ServiceName, ClusterName, cloud.region | INLINE STATS latest = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest) <= 5 | STATS total = COUNT(*) | KEEP total"
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | STATS latest_ts = MAX(@timestamp) BY ClusterName, ServiceName, cloud.region | STATS total = COUNT(*) | KEEP total"
               },
               "visualization": {
                 "layerId": "layer-kpi-total",
