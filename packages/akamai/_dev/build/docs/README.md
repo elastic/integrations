@@ -29,11 +29,11 @@ This collection mode uses the native OpenTelemetry `akamai_siem` receiver embedd
 - Requires Elastic Stack (Kibana, Elastic Agent) version 9.5.0 or later.
 - Configure the API Host, Security Configuration IDs and the EdgeGrid credentials (Client Token, Client Secret, Access Token) under the "Collect Akamai SIEM logs via OpenTelemetry receiver" section.
 - Events are routed to the `akamai.siem` dataset, processed by the same ingest pipeline as the CEL input, and stored in `logs-akamai.siem-<namespace>`.
+- Events are tagged with the values from the "Tags" option (`akamai-siem` and `forwarded` by default), matching the CEL input, so filters and saved searches that rely on those tags keep working. The tags are written into each event by a transform processor.
 - If the integration policy uses a namespace other than `default`, set the "Data Stream Namespace" option to the same value so that the `data_stream.namespace` field written into each event matches the target data stream.
 
 **Note**:
-- The receiver supports persisting its poll cursor through an OpenTelemetry storage extension (equivalent to the CEL input's registry-based cursor), but Fleet cannot yet wire storage extensions into receiver configurations, so cursor persistence is not available in Fleet-managed deployments. After an agent restart the receiver re-fetches the configured Initial Lookback window; replayed events are deduplicated by the ingest pipeline's `event.original` fingerprint within the same backing index.
-- Unlike the CEL input, events collected via the OTel receiver are not tagged with `akamai-siem`/`forwarded` tags.
+- Cursor persistence is enabled by default: the receiver persists its poll cursor through a `file_storage` OpenTelemetry extension and resumes where it left off after an agent restart. This requires Elastic Stack 9.5.0 or later, where Fleet rewrites the renamed storage-extension reference into the receiver configuration. It can be turned off via the "Enable Cursor Persistence" advanced option; when disabled, after a restart the receiver re-fetches the configured Initial Interval window and replayed events are deduplicated by the ingest pipeline's `event.original` fingerprint within the same backing index.
 
 {{fields "siem"}}
 
