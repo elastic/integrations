@@ -1,0 +1,311 @@
+---
+description: Pipeline for processing Claude Code OTel events.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: "9.3.0"
+
+  - json:
+      tag: parse_tool_parameters
+      field: attributes.tool_parameters
+      target_field: attributes.tool_parameters_flattened
+      if: ctx.attributes?.tool_parameters != null && ctx.attributes.tool_parameters != ''
+      on_failure:
+        - append:
+            tag: append_error_tool_parameters
+            field: error.message
+            value: "Failed to parse tool_parameters: {{{_ingest.on_failure_message}}}"
+
+  - json:
+      tag: parse_tool_input
+      field: attributes.tool_input
+      target_field: attributes.tool_input_flattened
+      if: ctx.attributes?.tool_input != null && ctx.attributes.tool_input != ''
+      on_failure:
+        - append:
+            tag: append_error_tool_input
+            field: error.message
+            value: "Failed to parse tool_input: {{{_ingest.on_failure_message}}}"
+
+  - set:
+      tag: extract_mcp_server_name
+      field: attributes.mcp_server_name
+      copy_from: attributes.tool_parameters_flattened.mcp_server_name
+      if: ctx.attributes?.tool_parameters_flattened?.mcp_server_name != null
+  - set:
+      tag: extract_mcp_tool_name
+      field: attributes.mcp_tool_name
+      copy_from: attributes.tool_parameters_flattened.mcp_tool_name
+      if: ctx.attributes?.tool_parameters_flattened?.mcp_tool_name != null
+
+  - set:
+      tag: extract_command_line
+      field: process.command_line
+      copy_from: attributes.tool_parameters_flattened.full_command
+      if: ctx.attributes?.tool_parameters_flattened?.full_command != null
+
+  - set:
+      tag: extract_file_path
+      field: file.path
+      copy_from: attributes.tool_parameters_flattened.file_path
+      if: ctx.attributes?.tool_parameters_flattened?.file_path != null
+  - set:
+      tag: extract_file_path_alt
+      field: file.path
+      copy_from: attributes.tool_parameters_flattened.path
+      if: ctx.file?.path == null && ctx.attributes?.tool_parameters_flattened?.path != null
+
+  - set:
+      tag: extract_url
+      field: url.full
+      copy_from: attributes.tool_parameters_flattened.url
+      if: ctx.attributes?.tool_parameters_flattened?.url != null
+
+  - script:
+      tag: ecs_categorization
+      lang: painless
+      description: Set ECS event.kind, event.category, and event.type from event_name.
+      if: ctx.event_name != null
+      params:
+        categories:
+          tool_result:
+            category:
+              - process
+            type:
+              - info
+          tool_decision:
+            category:
+              - process
+            type:
+              - info
+          api_request:
+            category:
+              - web
+            type:
+              - info
+          api_error:
+            category:
+              - web
+            type:
+              - error
+          api_retries_exhausted:
+            category:
+              - web
+            type:
+              - error
+          api_refusal:
+            category:
+              - web
+            type:
+              - denied
+          user_prompt:
+            category:
+              - process
+            type:
+              - start
+          auth:
+            category:
+              - authentication
+            type:
+              - info
+          permission_mode_changed:
+            category:
+              - configuration
+            type:
+              - change
+          mcp_server_connection:
+            category:
+              - network
+            type:
+              - connection
+          hook_registered:
+            category:
+              - process
+            type:
+              - info
+          hook_execution_start:
+            category:
+              - process
+            type:
+              - info
+          hook_execution_complete:
+            category:
+              - process
+            type:
+              - info
+          plugin_loaded:
+            category:
+              - package
+            type:
+              - info
+          plugin_installed:
+            category:
+              - package
+            type:
+              - info
+          skill_activated:
+            category:
+              - process
+            type:
+              - info
+      source: >
+        def name = ctx.event_name;
+        ctx.event = ctx.event ?: new HashMap();
+        ctx.event.kind = 'event';
+        def entry = params.categories.getOrDefault(name, null);
+        if (entry != null) {
+          ctx.event.category = entry.category;
+          ctx.event.type = entry.type;
+        } else {
+          ctx.event.category = ['host'];
+          ctx.event.type = ['info'];
+        }
+
+  - remove:
+      tag: remove_empty_tool_parameters_flattened
+      field:
+        - attributes.tool_parameters_flattened
+      if: ctx.attributes?.tool_parameters_flattened != null && ctx.attributes.tool_parameters_flattened instanceof Map && ctx.attributes.tool_parameters_flattened.isEmpty()
+      ignore_missing: true
+
+  - remove:
+      tag: remove_empty_tool_input_flattened
+      field:
+        - attributes.tool_input_flattened
+      if: ctx.attributes?.tool_input_flattened != null && ctx.attributes.tool_input_flattened instanceof Map && ctx.attributes.tool_input_flattened.isEmpty()
+      ignore_missing: true
+
+  - script:
+      tag: flatten_attributes_to_root
+      lang: painless
+      description: >-
+        Move OTel log record attributes from attributes.* to root level so they
+        match the explicit field mappings in the package component template.
+      if: ctx.attributes != null
+      source: >
+        def attrs = ctx.attributes;
+        for (def entry : new ArrayList(attrs.entrySet())) {
+          def key = entry.getKey();
+          def val = entry.getValue();
+          if (key == 'event' && val instanceof Map) {
+            ctx.event = ctx.event ?: new HashMap();
+            for (def e : ((Map)val).entrySet()) {
+              ctx.event[e.getKey()] = e.getValue();
+            }
+          } else if (key.startsWith('user.')) {
+            ctx.user = ctx.user ?: new HashMap();
+            ctx.user[key.substring(5)] = val;
+          } else if (key == 'error') {
+            if (val instanceof Map) {
+              def err = (Map)val;
+              if (err.containsKey('message')) {
+                ctx.error_detail = err.message;
+              }
+              if (err.containsKey('type')) {
+                ctx.error_type = err.type;
+              }
+              if (err.containsKey('code')) {
+                ctx.error_code = err.code;
+              }
+            } else {
+              ctx.error_detail = val;
+            }
+          } else if (key == 'prompt' && !(val instanceof Map)) {
+            ctx.prompt_text = val;
+          } else {
+            ctx[key] = val;
+          }
+        }
+        ctx.remove('attributes');
+
+  - set:
+      tag: set_event_action
+      field: event.action
+      copy_from: event_name
+      if: ctx.event_name != null
+
+  - script:
+      tag: set_event_duration
+      lang: painless
+      if: ctx.duration_ms != null
+      source: >
+        ctx.event.duration = ((long)ctx.duration_ms) * 1000000L;
+
+  - set:
+      tag: set_event_outcome_success
+      field: event.outcome
+      value: success
+      if: ctx.success == 'true'
+  - set:
+      tag: set_event_outcome_failure
+      field: event.outcome
+      value: failure
+      if: "ctx.success == 'false' || ctx.event_name == 'api_error' || ctx.event_name == 'api_retries_exhausted'"
+  - set:
+      tag: set_event_outcome_unknown
+      field: event.outcome
+      value: unknown
+      if: ctx.event?.outcome == null
+
+  - set:
+      tag: set_event_provider
+      field: event.provider
+      value: claude-code
+
+  - set:
+      tag: set_event_reason
+      field: event.reason
+      copy_from: error_detail
+      if: ctx.error_detail != null
+
+  - append:
+      tag: append_related_user_email
+      field: related.user
+      value: "{{{user.email}}}"
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - append:
+      tag: append_related_user_id
+      field: related.user
+      value: "{{{user.id}}}"
+      allow_duplicates: false
+      if: ctx.user?.id != null
+
+  - append:
+      tag: append_related_hosts
+      field: related.hosts
+      value: "{{{server_name}}}"
+      allow_duplicates: false
+      if: ctx.server_name != null
+
+  - set:
+      tag: set_pipeline_error_to_event_kind
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      tag: append_pipeline_error_message
+      field: error.message
+      value: >-
+        Processor {{{_ingest.on_failure_processor_type}}}
+        with tag {{{_ingest.on_failure_processor_tag}}}
+        in pipeline {{{_ingest.pipeline}}}
+        failed with message:
+        {{{_ingest.on_failure_message}}}
+  - set:
+      tag: set_pipeline_error_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_on_failure
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
