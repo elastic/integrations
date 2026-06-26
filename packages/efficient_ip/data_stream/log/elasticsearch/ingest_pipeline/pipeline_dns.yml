@@ -9,56 +9,15 @@ processors:
       tag: grok_dns_message
       field: message
       patterns:
-        - "^%{CLIENT}\\s*\\(%{GREEDYDATA}.\\)\\:\\s*%{NOTSPACE:efficient_ip.log.dns.category}\\: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} \\(%{IP:server.ip}\\) -> %{WORD:dns.response_code}(\\s+%{GREEDYDATA:dns_answers_data})?"
+        - "^%{CLIENT}\\s*\\(%{GREEDYDATA}.\\)\\:\\s*%{NOTSPACE:efficient_ip.log.dns.category}\\: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} \\(%{IP:server.ip}\\) -> %{WORD:dns.response_code}(\\s+%{GREEDYDATA:dns_answers_data})?$"
         - "^%{CLIENT}\\s+(\\(%{GREEDYDATA}.\\))?\\s*%{NOTSPACE:efficient_ip.log.dns.category}\\: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type}\\s+\\(%{IP:server.ip}\\)$"
-        - "^%{CLIENT}\\s+update '%{DATA:dns.question.name}/%{WORD:dns.question.class}' %{GREEDYDATA:efficient_ip.log.dns.category}"
-        - "^%{CLIENT}\\s+\\(%{DATA}\\):\\s+transfer of '%{DATA:dns.question.name}/%{WORD:dns.question.class}':\\s+%{GREEDYDATA:efficient_ip.log.dns.message}"
-        - "^%{CLIENT}\\s+updating zone '%{DATA:dns.question.name}/%{WORD:dns.question.class}':\\s+%{GREEDYDATA:efficient_ip.log.dns.message}"
+        - "^%{CLIENT}\\s+update '%{DATA:dns.question.name}/%{WORD:dns.question.class}' %{GREEDYDATA:efficient_ip.log.dns.category}$"
+        - "^%{CLIENT}\\s+\\(%{DATA}\\):\\s+transfer of '%{DATA:dns.question.name}/%{WORD:dns.question.class}':\\s+%{GREEDYDATA:efficient_ip.log.dns.message}$"
+        - "^%{CLIENT}\\s+updating zone '%{DATA:dns.question.name}/%{WORD:dns.question.class}':\\s+%{GREEDYDATA:efficient_ip.log.dns.message}$"
         - "^Last message %{GREEDYDATA:efficient_ip.log.dns.message}"
         - "^%{GREEDYDATA:efficient_ip.log.dns.message}$"
       pattern_definitions:
         CLIENT: 'client (?:%{DATA} )?%{IP:client.ip}#%{NUMBER:client.port:long}:?'
-  - date:
-      field: _tmp.timestamp
-      target_field: _tmp.timestamp
-      if: ctx._tmp?.timestamp != null && ctx.event?.timezone != null
-      tag: date_tmp_timestamp_tz
-      timezone: '{{{event.timezone}}}'
-      formats:
-        - dd-MMM-yyyy HH:mm:ss.SSS
-        - yyyy-MM-dd HH:mm:ss.SSS'Z'
-      on_failure:
-        - remove:
-            tag: remove_tmp_timestamp_on_date_tz_failure
-            field: _tmp.timestamp
-            ignore_missing: true
-        - append:
-            tag: append_error_on_date_tz_failure
-            field: error.message
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-  - date:
-      field: _tmp.timestamp
-      target_field: _tmp.timestamp
-      tag: date_tmp_timestamp_notz
-      if: ctx._tmp?.timestamp != null && ctx.event?.timezone == null
-      formats:
-        - dd-MMM-yyyy HH:mm:ss.SSS
-        - yyyy-MM-dd HH:mm:ss.SSS'Z'
-      on_failure:
-        - remove:
-            tag: remove_tmp_timestamp_on_date_notz_failure
-            field: _tmp.timestamp
-            ignore_missing: true
-        - append:
-            tag: append_error_on_date_notz_failure
-            field: error.message
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - script:
       tag: parse_dns_answers
       lang: painless
@@ -175,6 +134,7 @@ processors:
       tag: parse_registered_domain
       field: "dns.question.name"
       target_field: "dns.question"
+      ignore_missing: true
       if: ctx.dns?.question != null
   - remove:
       tag: remove_repeat_message_and_question_domain

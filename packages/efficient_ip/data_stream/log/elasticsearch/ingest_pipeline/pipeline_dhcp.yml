@@ -28,6 +28,7 @@ processors:
       field: message
       if: ctx.message != null && ctx.message.contains('DHCPREQUEST')
       patterns:
+        - '^%{WORD:event.action} for %{IP:client.ip} \(%{DATA:efficient_ip.log.dhcp.requested_hostname}\) from %{MAC:client.mac} \(%{DATA:efficient_ip.log.dhcp.client_hostname}\) via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name})$'
         - '^%{WORD:event.action} for %{IP:client.ip} \(%{IP:efficient_ip.log.dhcp.router.ip}\) from %{MAC:client.mac} \(%{DATA:efficient_ip.log.dhcp.client_hostname}\) via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name})$'
         - '^%{WORD:event.action} for %{IP:client.ip} from %{MAC:client.mac} \(%{DATA:efficient_ip.log.dhcp.client_hostname}\) via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name})$'
         - '^%{WORD:event.action} for %{IP:client.ip} \(%{IP:efficient_ip.log.dhcp.router.ip}\) from %{MAC:client.mac} via (%{IP:efficient_ip.log.dhcp.interface.ip}|%{WORD:observer.ingress.interface.name})$'
@@ -300,32 +301,6 @@ processors:
       field: related.ip
       value: '{{{efficient_ip.log.dhcp.interface.ip}}}'
       if: ctx.efficient_ip?.log?.dhcp?.interface?.ip != null
-      allow_duplicates: false
-      ignore_failure: true
-  - convert:
-      tag: convert_dhcp_relay_interface_ip
-      field: efficient_ip.log.dhcp.relay.interface.ip
-      if: ctx.efficient_ip?.log?.dhcp?.relay?.interface?.ip != null && ctx.efficient_ip.log.dhcp.relay.interface.ip != ''
-      type: ip
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_dhcp_relay_interface_ip_on_convert_failure
-            field: efficient_ip.log.dhcp.relay.interface.ip
-            ignore_missing: true
-        - append:
-            tag: append_error_on_convert_dhcp_relay_interface_ip_failure
-            field: error.message
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
-              failed with message '{{{ _ingest.on_failure_message }}}'
-  - append:
-      tag: append_related_ip_dhcp_relay_interface_ip
-      field: related.ip
-      value: '{{{efficient_ip.log.dhcp.relay.interface.ip}}}'
-      if: ctx.efficient_ip?.log?.dhcp?.relay?.interface?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
