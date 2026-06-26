@@ -17,7 +17,10 @@ streams:
     description: Collect Akamai SIEM logs with the OpenTelemetry akamai_siem receiver. Requires Elastic Agent and Elastic Stack version 9.5.0 or later. Events are routed to the akamai.siem dataset and processed by its ingest pipeline.
     enabled: false
     vars:
-      - name: endpoint
+      # Variable names mirror the CEL (Beats) `siem` stream so the two
+      # collection modes present the same configuration surface. They render
+      # into the receiver's native config keys in otelcol.yml.hbs.
+      - name: api_host
         type: text
         title: API Host
         description: API Hostname in the form of http(s)://akzz-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.luna.akamaiapis.net without path
@@ -25,13 +28,6 @@ streams:
         required: true
         show_user: true
         default: https://akzz-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.luna.akamaiapis.net
-      - name: config_ids
-        type: text
-        title: Security Configuration IDs
-        description: Unique identifier for each security configuration. To report on more than one configuration, separate integer identifiers with semicolons or commas. ex. 12892;29182;82912
-        multi: false
-        required: true
-        show_user: true
       - name: client_token
         type: password
         title: Client Token
@@ -56,18 +52,33 @@ streams:
         required: true
         show_user: true
         secret: true
-      - name: poll_interval
+      - name: config_ids
         type: text
-        title: Poll Interval
-        description: Time between polling cycles. Supported units for this parameter are h/m/s.
+        title: Config IDs
+        description: Unique identifier for each security configuration, provided as a semicolon-separated string. To report on more than one configuration, separate the integer identifiers with semicolons. ex. 12892;29182;82912
         multi: false
         required: true
         show_user: true
-        default: 1m
-      - name: initial_lookback
+      - name: http_client_timeout
         type: text
-        title: Initial Lookback
-        description: How far back to fetch events on the first poll. Default is the maximum allowed value of 12 hours (Akamai API limit). Supported units for this parameter are h/m/s.
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: false
+        show_user: true
+        default: 60s
+      - name: interval
+        type: text
+        title: Interval
+        description: Interval at which the logs will be pulled. The value must be between 2m and 1h. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 1h
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: Initial interval to poll for events on the first run. Default is the maximum allowed value of 12 hours (Akamai API limit). Supported units for this parameter are h/m/s.
         multi: false
         required: true
         show_user: true
@@ -77,9 +88,43 @@ streams:
         title: Event Limit
         description: Defines the approximate maximum number of security events each fetch returns. The default limit is 10000 and the maximum limit available is 600000.
         multi: false
-        required: true
+        required: false
         show_user: false
         default: 10000
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+        multi: false
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: >-
+          SSL configuration options, provided as a YAML block (as in the CEL input). This block is rendered into the receiver's `tls:` settings, so it uses the OpenTelemetry configtls schema (e.g. `ca_file`/`ca_pem`, `cert_file`/`cert_pem`, `key_file`/`key_pem`, `insecure_skip_verify`, `min_version`, `max_version`) rather than the Beats `ssl` keys (`certificate_authorities`, `verification_mode`, ...).
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        description: >-
+          Tags added to each event. Mirrors the CEL input's tags; a transform processor writes them into each event so that filters and saved searches relying on tags (e.g. `forwarded`, `akamai-siem`) keep working.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - akamai-siem
+          - forwarded
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        multi: false
+        required: true
+        show_user: true
+        default: false
       - name: namespace
         type: text
         title: Data Stream Namespace
@@ -98,10 +143,10 @@ streams:
         default: akamai.siem
       - name: enable_storage
         type: bool
-        title: Enable Cursor Persistence (Technical Preview)
+        title: Enable Cursor Persistence
         description: >-
-          Declares a file_storage OpenTelemetry extension in the stream so the akamai_siem receiver can persist its poll cursor across agent restarts. Requires an Elastic Agent whose akamai_siem receiver supports storage auto-binding; on agents without that support the extension is started but remains unused, and the receiver re-fetches the Initial Lookback window after a restart. The receiver configuration deliberately carries no storage reference, as Fleet renames stream-declared extensions and cannot rewrite such references. Disabled by default while this capability is under development.
+          Declares a file_storage OpenTelemetry extension and references it from the akamai_siem receiver so the receiver persists its poll cursor across agent restarts. Enabled by default. Requires Elastic Stack 9.5.0 or later, where Fleet rewrites the renamed storage-extension reference into the receiver configuration. When disabled, the receiver re-fetches the Initial Interval window after a restart; replayed events are deduplicated by the ingest pipeline's event.original fingerprint within the same backing index.
         multi: false
         required: false
         show_user: false
-        default: false
+        default: true

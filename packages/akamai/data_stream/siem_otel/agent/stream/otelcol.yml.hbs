@@ -1,18 +1,42 @@
 receivers:
   akamai_siem:
-    endpoint: "{{endpoint}}"
+    endpoint: "{{api_host}}"
     config_ids: "{{config_ids}}"
     authentication:
       client_token: "{{client_token}}"
       client_secret: "{{client_secret}}"
       access_token: "{{access_token}}"
-    poll_interval: "{{poll_interval}}"
-    initial_lookback: "{{initial_lookback}}"
+    poll_interval: "{{interval}}"
+    initial_lookback: "{{initial_interval}}"
     event_limit: {{event_limit}}
+{{#if http_client_timeout}}
+    timeout: "{{http_client_timeout}}"
+{{/if}}
+{{#if proxy_url}}
+    proxy_url: "{{proxy_url}}"
+{{/if}}
+{{#if ssl}}
+    tls: {{ssl}}
+{{/if}}
     data_stream:
       type: logs
       dataset: akamai.siem
       namespace: "{{namespace}}"
+{{#if enable_storage}}
+    storage: file_storage
+{{/if}}
+processors:
+  # Mirrors the CEL/Beats input `tags:` setting. The receiver emits bodymap-mode
+  # logs, so tags must be written into the body map: in bodymap mode the
+  # Elasticsearch exporter serializes only the body into the document (resource
+  # and log-record attributes are dropped), so a top-level `tags` array on the
+  # document must live under body["tags"].
+  transform/tags:
+    error_mode: ignore
+    log_statements:
+      - context: log
+        statements:
+          - set(log.body["tags"], [{{#each tags}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}{{#if preserve_original_event}}, "preserve_original_event"{{/if}}])
 {{#if enable_storage}}
 extensions:
   file_storage:
@@ -26,3 +50,4 @@ service:
   pipelines:
     logs:
       receivers: [akamai_siem]
+      processors: [transform/tags]
