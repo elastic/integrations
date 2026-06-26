@@ -236,6 +236,8 @@ func cherryPickOrConflict(sha, branchName, pkg, changelogPath, manifestPath stri
 		return nil, fmt.Errorf("restoring manifest/changelog after cherry-pick failure: %w", checkoutErr)
 	}
 
+	fmt.Fprintf(os.Stderr, "note: conflicts in %s and %s are discarded — these files are managed by the backport pipeline\n", changelogPath, manifestPath)
+
 	// cherry-pick failed; check whether non-manifest/changelog conflicts remain.
 	files, err := conflictingFiles()
 	if err != nil {
