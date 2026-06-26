@@ -24,11 +24,6 @@ processors:
       field: event.original
       target_field: thor
       tag: parse_event_original_json
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-            tag: append_error_message_parse_event_original_json
   # Categorization
   - pipeline:
       tag: pipeline_20a0e7f1
@@ -351,12 +346,21 @@ processors:
       field: network.transport
       ignore_missing: true
       tag: lowercase_network_transport
+  - remove:
+      field: thor.ip
+      ignore_missing: true
+      if: ctx.thor?.ip == '*'
+      tag: remove_thor_ip_wildcard
+  - remove:
+      field: thor.rip
+      ignore_missing: true
+      if: ctx.thor?.rip == '*'
+      tag: remove_thor_rip_wildcard
   - convert:
       tag: convert_thor_ip_24095cde
       field: thor.ip
       type: ip
       ignore_missing: true
-      if: ctx.thor?.ip != null && ctx.thor.ip != '*'
       on_failure:
         - remove:
             tag: remove_thor_ip_90e30997
@@ -397,7 +401,6 @@ processors:
       field: thor.rip
       type: ip
       ignore_missing: true
-      if: ctx.thor?.rip != null && ctx.thor.rip != '*'
       on_failure:
         - remove:
             tag: remove_thor_rip_323b2117
