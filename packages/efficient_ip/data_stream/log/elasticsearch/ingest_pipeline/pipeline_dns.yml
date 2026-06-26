@@ -142,6 +142,17 @@ processors:
         - repeat_message
         - dns.question.domain
       ignore_missing: true
+  - set:
+      tag: set_event_outcome_dns_failure
+      field: event.outcome
+      value: failure
+      if: ctx.dns?.response_code != null && ['SERVFAIL','REFUSED','NXDOMAIN'].contains(ctx.dns.response_code)
+  - set:
+      tag: set_event_outcome_dns_success
+      field: event.outcome
+      value: success
+      if: ctx.dns?.response_code == 'NOERROR'
+    
 on_failure:
   - append:
       tag: append_pipeline_error_message
