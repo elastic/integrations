@@ -819,18 +819,31 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.cmdline |  | keyword |
 | crowdstrike.alert.command_line |  | keyword |
 | crowdstrike.alert.comment |  | keyword |
+| crowdstrike.alert.comments.falcon_user_id |  | keyword |
+| crowdstrike.alert.comments.timestamp |  | date |
+| crowdstrike.alert.comments.value |  | keyword |
 | crowdstrike.alert.composite_id |  | keyword |
 | crowdstrike.alert.confidence |  | long |
 | crowdstrike.alert.context_timestamp |  | date |
 | crowdstrike.alert.control_graph_id |  | keyword |
+| crowdstrike.alert.correlation_rule_case_template_id |  | keyword |
+| crowdstrike.alert.correlation_rule_create_case |  | boolean |
+| crowdstrike.alert.correlation_rule_execution_id |  | keyword |
+| crowdstrike.alert.correlation_rule_id |  | keyword |
+| crowdstrike.alert.correlation_rule_user_id |  | keyword |
+| crowdstrike.alert.correlation_rule_user_uuid |  | keyword |
+| crowdstrike.alert.correlation_rule_version_id |  | keyword |
 | crowdstrike.alert.crawl_edge_ids.Sensor |  | keyword |
 | crowdstrike.alert.crawl_vertex_ids.Sensor |  | keyword |
 | crowdstrike.alert.crawled_timestamp |  | date |
 | crowdstrike.alert.created_timestamp |  | date |
 | crowdstrike.alert.data_domains |  | keyword |
 | crowdstrike.alert.description |  | keyword |
+| crowdstrike.alert.destination_hosts |  | keyword |
+| crowdstrike.alert.destination_ips |  | ip |
 | crowdstrike.alert.detect_type |  | keyword |
 | crowdstrike.alert.detection_context |  | flattened |
+| crowdstrike.alert.detection_id |  | keyword |
 | crowdstrike.alert.device.agent_load_flags |  | long |
 | crowdstrike.alert.device.agent_local_time |  | date |
 | crowdstrike.alert.device.agent_version |  | keyword |
@@ -875,6 +888,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.end_time |  | date |
 | crowdstrike.alert.event_correlation_id |  | keyword |
 | crowdstrike.alert.event_id |  | keyword |
+| crowdstrike.alert.event_ids |  | keyword |
 | crowdstrike.alert.executables_written.filename |  | keyword |
 | crowdstrike.alert.executables_written.filepath |  | keyword |
 | crowdstrike.alert.executables_written.timestamp |  | date |
@@ -903,7 +917,9 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.grandparent_details.user_id |  | keyword |
 | crowdstrike.alert.grandparent_details.user_name |  | keyword |
 | crowdstrike.alert.has_script_or_module_ioc |  | boolean |
+| crowdstrike.alert.has_truncated_entities |  | boolean |
 | crowdstrike.alert.host_name |  | keyword |
+| crowdstrike.alert.host_names |  | keyword |
 | crowdstrike.alert.host_type |  | keyword |
 | crowdstrike.alert.id |  | keyword |
 | crowdstrike.alert.idp_policy.enforced_externally |  | long |
@@ -938,6 +954,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.ldap_search_query_attack |  | long |
 | crowdstrike.alert.lead_id |  | keyword |
 | crowdstrike.alert.lead_type |  | keyword |
+| crowdstrike.alert.linked_case_ids |  | keyword |
 | crowdstrike.alert.local_prevalence |  | keyword |
 | crowdstrike.alert.local_process_id |  | keyword |
 | crowdstrike.alert.location_country_code |  | keyword |
@@ -963,6 +980,8 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.network_accesses.remote_port |  | long |
 | crowdstrike.alert.objective |  | keyword |
 | crowdstrike.alert.operating_system |  | keyword |
+| crowdstrike.alert.original_correlation_rules_entities_count |  | long |
+| crowdstrike.alert.original_indicator_entities_count |  | long |
 | crowdstrike.alert.os_name |  | keyword |
 | crowdstrike.alert.overwatch_note |  | keyword |
 | crowdstrike.alert.overwatch_note_timestamp |  | date |
@@ -1103,6 +1122,15 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.user_name |  | keyword |
 | crowdstrike.alert.user_names |  | keyword |
 | crowdstrike.alert.user_principal |  | keyword |
+| crowdstrike.alert.usernames |  | keyword |
+| crowdstrike.alert.users.aid |  | keyword |
+| crowdstrike.alert.users.full_name |  | keyword |
+| crowdstrike.alert.users.full_name_is_enriched |  | boolean |
+| crowdstrike.alert.users.idp_id |  | keyword |
+| crowdstrike.alert.users.idp_id_is_enriched |  | boolean |
+| crowdstrike.alert.users.sid |  | keyword |
+| crowdstrike.alert.users.user_name |  | keyword |
+| crowdstrike.alert.vendor_pattern_id |  | keyword |
 | crowdstrike.alert.worker_node_name |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
