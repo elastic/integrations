@@ -977,11 +977,11 @@
         "type": "vis",
         "embeddableConfig": {
           "title": "",
-          "description": "Number of healthy ECS services — services with normal CPU and memory utilization (not saturated, hot, or idle), within a 5-minute freshness window.",
+          "description": "Number of ECS services in a normal state — those whose latest CPU or memory utilization is at or above 5% but below the hot threshold (not saturated, hot, or idle).",
           "hide_title": true,
           "attributes": {
             "title": "",
-            "description": "Number of healthy ECS services — services with normal CPU and memory utilization (not saturated, hot, or idle), within a 5-minute freshness window.",
+            "description": "Number of ECS services in a normal state — those whose latest CPU or memory utilization is at or above 5% but below the hot threshold (not saturated, hot, or idle).",
             "visualizationType": "lnsMetric",
             "version": 2,
             "references": [],
@@ -992,13 +992,13 @@
                     "layer-kpi-running": {
                       "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND stat == \"Maximum\" AND (`metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL OR `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL) | INLINE STATS latest_ts = MAX(@timestamp) BY ServiceName, ClusterName, cloud.region | WHERE @timestamp == latest_ts | STATS cpu_max = MAX(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`), mem_max = MAX(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_max IS NULL AND mem_max IS NULL, \"no data\", cpu_max > 80 OR mem_max > 80, \"saturated\", cpu_max > 50 OR mem_max > 50, \"hot\", cpu_max < 5, \"idle\", \"healthy\") | STATS healthy = COUNT(*) WHERE state == \"healthy\" | KEEP healthy"
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS cpu_cur = MAX(LAST_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL))), mem_cur = MAX(LAST_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL))) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", COALESCE(cpu_cur, 0) >= 5 OR COALESCE(mem_cur, 0) >= 5, \"healthy\", \"idle\") | STATS healthy = COUNT(*) WHERE state == \"healthy\" | KEEP healthy"
                       },
                       "columns": [
                         {
                           "columnId": "healthy",
                           "fieldName": "healthy",
-                          "label": "Healthy",
+                          "label": "Normal",
                           "customLabel": true,
                           "meta": {
                             "type": "number",
@@ -1021,7 +1021,7 @@
               },
               "filters": [],
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND stat == \"Maximum\" AND (`metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL OR `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL) | INLINE STATS latest_ts = MAX(@timestamp) BY ServiceName, ClusterName, cloud.region | WHERE @timestamp == latest_ts | STATS cpu_max = MAX(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`), mem_max = MAX(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_max IS NULL AND mem_max IS NULL, \"no data\", cpu_max > 80 OR mem_max > 80, \"saturated\", cpu_max > 50 OR mem_max > 50, \"hot\", cpu_max < 5, \"idle\", \"healthy\") | STATS healthy = COUNT(*) WHERE state == \"healthy\" | KEEP healthy"
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS cpu_cur = MAX(LAST_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL))), mem_cur = MAX(LAST_OVER_TIME(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL))) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", COALESCE(cpu_cur, 0) >= 5 OR COALESCE(mem_cur, 0) >= 5, \"healthy\", \"idle\") | STATS healthy = COUNT(*) WHERE state == \"healthy\" | KEEP healthy"
               },
               "visualization": {
                 "layerId": "layer-kpi-running",
@@ -1034,7 +1034,7 @@
                 "primaryPosition": "top",
                 "titlesTextAlign": "left",
                 "primaryAlign": "left",
-                "label": "Healthy services"
+                "label": "Normal services"
               },
               "adHocDataViews": {
                 "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
