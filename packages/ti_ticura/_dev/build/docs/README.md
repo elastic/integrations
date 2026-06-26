@@ -369,3 +369,17 @@ When `preserve_original_event: true` is enabled in the integration settings, the
 - Indicator relevance and confidence can change over time.
 - The volume of ingested indicators depends on your feed configuration.
 - Indicators are mapped to ECS `threat.indicator.*` and are ready for use by Elastic Security's prebuilt threat-intel Indicator Match rules, or any custom Indicator Match rules you build.
+
+---
+
+## Logs reference
+
+### Indicator
+
+This is the `Indicator` dataset.
+
+#### Example
+
+{{event "indicator"}}
+
+{{fields "indicator"}}
