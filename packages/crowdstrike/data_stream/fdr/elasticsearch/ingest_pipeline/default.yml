@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing CrowdStrike sample logs
+description: Pipeline for processing CrowdStrike FDR logs
 processors:
   # Message decoding.
   - remove:
@@ -360,6 +360,10 @@ processors:
       tag: pipeline_epp_detection_summary_b611643c
       if: ctx.crowdstrike?.ExternalApiType == 'Event_EppDetectionSummaryEvent'
       name: '{{ IngestPipeline "epp_detection_summary" }}'
+  - pipeline:
+      tag: pipeline_idp_detection_summary
+      if: ctx.crowdstrike?.ExternalApiType == 'Event_IdpDetectionSummaryEvent'
+      name: '{{ IngestPipeline "idp_detection_summary" }}'
   # File Integrity Monitor Rule Matched events
   - pipeline:
       tag: pipeline_fim_rule_matched_33f5a923
