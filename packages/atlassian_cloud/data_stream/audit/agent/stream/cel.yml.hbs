@@ -1,0 +1,115 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.rate_limit.limit: 0.83
+resource.rate_limit.burst: 10
+resource.url: {{url}}
+state:
+  org_id: {{org_id}}
+  api_key: {{api_key}}
+  batch_size: {{batch_size}}
+  initial_interval: {{initial_interval}}
+redact:
+  fields:
+    - state.api_key
+program: |-
+  state.?cursor.token.orValue("").as(token,
+    state.?cursor.last_timestamp.orValue(
+      string(int(now - duration(state.initial_interval)) * 1000)
+    ).as(from_millis,
+      state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + "/admin/v1/orgs/" + state.org_id + "/events-stream?" + (
+            (token != "") ?
+              {
+                "limit": [string(int(state.batch_size))],
+                "cursor": [token],
+              }
+            :
+              {
+                "limit": [string(int(state.batch_size))],
+                "from": [from_millis],
+                "to": [string(int(now) * 1000)],
+                "sortOrder": ["asc"],
+              }
+          ).format_query()
+        ).with({
+          "Header": {
+            "Authorization": ["Bearer " + state.api_key],
+            "Accept": ["application/json"],
+          },
+        }).do_request().as(resp,
+          (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              (
+                (has(body.meta) && has(body.meta.next) && body.meta.next != null) ?
+                  string(body.meta.next)
+                :
+                  ""
+              ).as(next,
+                body.?data.orValue([]).as(items, {
+                  "events": items.map(e, {"message": e.encode_json()}),
+                  "cursor": {
+                    ?"token": (next != "") ?
+                      optional.of(next)
+                    :
+                      optional.none(),
+                    "last_timestamp": (size(items) > 0) ?
+                      string(int(timestamp(items[size(items) - 1].attributes.processedAt)) * 1000)
+                    :
+                      (next != "") ?
+                        from_millis
+                      :
+                        string(int(now) * 1000),
+                  },
+                  "want_more": next != "",
+                })
+              )
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET /admin/v1/orgs/" + state.org_id + "/events-stream: " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
