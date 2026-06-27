@@ -1759,7 +1759,7 @@
                                             ],
                                             "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "query": {
-                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.pod.uid IS NOT NULL\n  | STATS pod_count = COUNT_DISTINCT(k8s.pod.uid)\n    BY @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT @timestamp\n  | KEEP @timestamp, pod_count"
+                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.pod.uid IS NOT NULL\n  | STATS last_seen = MAX(@timestamp)\n    BY k8s.pod.uid, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n  | STATS pod_count = COUNT(*) BY @timestamp\n| SORT @timestamp\n  | KEEP @timestamp, pod_count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1768,7 +1768,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.pod.uid IS NOT NULL\n  | STATS pod_count = COUNT_DISTINCT(k8s.pod.uid)\n    BY @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT @timestamp\n  | KEEP @timestamp, pod_count"
+                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.pod.uid IS NOT NULL\n  | STATS last_seen = MAX(@timestamp)\n    BY k8s.pod.uid, @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n  | STATS pod_count = COUNT(*) BY @timestamp\n| SORT @timestamp\n  | KEEP @timestamp, pod_count"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2259,12 +2259,36 @@
                                         "77d39af7-3a44-4b36-a905-9c38249479a1": {
                                             "columns": [
                                                 {
-                                                    "columnId": "@timestamp",
+                                                    "columnId": "k8s.pod.name",
                                                     "fieldName": "k8s.pod.name",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
-                                                    }
+                                                    },
+                                                    "label": "k8s.pod.name",
+                                                    "customLabel": false
+                                                },
+                                                {
+                                                    "columnId": "timestamp",
+                                                    "fieldName": "timestamp",
+                                                    "label": "timestamp",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "params": {
+                                                            "id": "date"
+                                                        },
+                                                        "sourceParams": {
+                                                            "appliedTimeRange": {
+                                                                "from": "2026-03-26T08:10:18.779Z",
+                                                                "to": "2026-03-26T09:10:18.779Z"
+                                                            },
+                                                            "indexPattern": "metrics-*",
+                                                            "params": {},
+                                                            "sourceField": "timestamp"
+                                                        },
+                                                        "type": "date"
+                                                    },
+                                                    "customLabel": false
                                                 },
                                                 {
                                                     "columnId": "cpu_usage",
@@ -2284,33 +2308,11 @@
                                                             }
                                                         }
                                                     }
-                                                },
-                                                {
-                                                    "columnId": "e366aafa-191f-486f-b0ad-366ffa79f8f0",
-                                                    "fieldName": "@timestamp",
-                                                    "label": "",
-                                                    "meta": {
-                                                        "esType": "date",
-                                                        "params": {
-                                                            "id": "date"
-                                                        },
-                                                        "sourceParams": {
-                                                            "appliedTimeRange": {
-                                                                "from": "2026-03-26T08:10:18.779Z",
-                                                                "to": "2026-03-26T09:10:18.779Z"
-                                                            },
-                                                            "indexPattern": "metrics-*",
-                                                            "params": {},
-                                                            "sourceField": "@timestamp"
-                                                        },
-                                                        "type": "date"
-                                                    },
-                                                    "customLabel": true
                                                 }
                                             ],
                                             "index": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
                                             "query": {
-                                                "esql": "  FROM metrics-kubeletstatsreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.pod.uid IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.pod.cpu.usage IS NOT NULL\n  | STATS pod_cpu_usage = MAX(k8s.pod.cpu.usage)\n    BY k8s.pod.uid, k8s.pod.name,\n      @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n  | STATS cpu_usage = MAX(pod_cpu_usage)\n    BY k8s.pod.name, @timestamp\n  | SORT @timestamp ASC, cpu_usage DESC, k8s.pod.name ASC\n  | LIMIT 10 BY @timestamp\n  | KEEP k8s.pod.name, @timestamp, cpu_usage"
+                                                "esql": "  TS metrics-kubeletstatsreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.pod.uid IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.pod.cpu.usage IS NOT NULL\n  | STATS pod_cpu_usage = MAX(k8s.pod.cpu.usage)\n    BY k8s.pod.uid, k8s.pod.name,\n      timestamp = TBUCKET(50, ?_tstart, ?_tend)\n  | STATS cpu_usage = MAX(pod_cpu_usage)\n    BY k8s.pod.name, timestamp\n  | SORT timestamp ASC, cpu_usage DESC, k8s.pod.name ASC\n  | LIMIT 10 BY timestamp\n  | KEEP k8s.pod.name, timestamp, cpu_usage"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2319,7 +2321,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "  FROM metrics-kubeletstatsreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.pod.uid IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.pod.cpu.usage IS NOT NULL\n  | STATS pod_cpu_usage = MAX(k8s.pod.cpu.usage)\n    BY k8s.pod.uid, k8s.pod.name,\n      @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n  | STATS cpu_usage = MAX(pod_cpu_usage)\n    BY k8s.pod.name, @timestamp\n  | SORT @timestamp ASC, cpu_usage DESC, k8s.pod.name ASC\n  | LIMIT 10 BY @timestamp\n  | KEEP k8s.pod.name, @timestamp, cpu_usage"
+                                "esql": "  TS metrics-kubeletstatsreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.pod.uid IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.pod.cpu.usage IS NOT NULL\n  | STATS pod_cpu_usage = MAX(k8s.pod.cpu.usage)\n    BY k8s.pod.uid, k8s.pod.name,\n      timestamp = TBUCKET(50, ?_tstart, ?_tend)\n  | STATS cpu_usage = MAX(pod_cpu_usage)\n    BY k8s.pod.name, timestamp\n  | SORT timestamp ASC, cpu_usage DESC, k8s.pod.name ASC\n  | LIMIT 10 BY timestamp\n  | KEEP k8s.pod.name, timestamp, cpu_usage"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2367,9 +2369,9 @@
                                         "layerType": "data",
                                         "seriesType": "line",
                                         "splitAccessors": [
-                                            "@timestamp"
+                                            "k8s.pod.name"
                                         ],
-                                        "xAccessor": "e366aafa-191f-486f-b0ad-366ffa79f8f0"
+                                        "xAccessor": "timestamp"
                                     }
                                 ],
                                 "legend": {
@@ -2438,36 +2440,19 @@
                                         "7e519d6a-2bf2-4b1c-881d-91d612dd8bf2": {
                                             "columns": [
                                                 {
-                                                    "columnId": "@timestamp",
+                                                    "columnId": "k8s.pod.name",
                                                     "fieldName": "k8s.pod.name",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "mem_ws",
-                                                    "customLabel": false,
-                                                    "fieldName": "mem_ws",
-                                                    "inMetricDimension": true,
-                                                    "label": "mem_ws",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
                                                     },
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "bytes",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        }
-                                                    }
+                                                    "label": "k8s.pod.name",
+                                                    "customLabel": false
                                                 },
                                                 {
-                                                    "columnId": "0becb610-cc42-4db8-b61e-30e10ef6704b",
-                                                    "fieldName": "@timestamp",
-                                                    "label": "",
+                                                    "columnId": "timestamp",
+                                                    "fieldName": "timestamp",
+                                                    "label": "timestamp",
                                                     "meta": {
                                                         "esType": "date",
                                                         "params": {
@@ -2480,16 +2465,35 @@
                                                             },
                                                             "indexPattern": "metrics-*",
                                                             "params": {},
-                                                            "sourceField": "@timestamp"
+                                                            "sourceField": "timestamp"
                                                         },
                                                         "type": "date"
                                                     },
-                                                    "customLabel": true
+                                                    "customLabel": false
+                                                },
+                                                {
+                                                    "columnId": "mem_ws",
+                                                    "customLabel": false,
+                                                    "fieldName": "mem_ws",
+                                                    "inMetricDimension": true,
+                                                    "label": "mem_ws",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             ],
                                             "index": "c939011510bd38ce97144280e9fb6398f12e93be8321360479a2c467d6122e82",
                                             "query": {
-                                                "esql": " FROM metrics-kubeletstatsreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.pod.uid IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.pod.memory.working_set IS NOT NULL\n  | STATS pod_mem_ws = MAX(k8s.pod.memory.working_set)\n    BY k8s.pod.uid, k8s.pod.name,\n      @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n  | STATS mem_ws = MAX(pod_mem_ws)\n    BY k8s.pod.name, @timestamp\n  | SORT @timestamp ASC, mem_ws DESC, k8s.pod.name ASC\n  | LIMIT 10 BY @timestamp\n  | KEEP k8s.pod.name, @timestamp, mem_ws"
+                                                "esql": " TS metrics-kubeletstatsreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.pod.uid IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.pod.memory.working_set IS NOT NULL\n  | STATS pod_mem_ws = MAX(k8s.pod.memory.working_set)\n    BY k8s.pod.uid, k8s.pod.name,\n      timestamp = TBUCKET(50, ?_tstart, ?_tend)\n  | STATS mem_ws = MAX(pod_mem_ws)\n    BY k8s.pod.name, timestamp\n  | SORT timestamp ASC, mem_ws DESC, k8s.pod.name ASC\n  | LIMIT 10 BY timestamp\n  | KEEP k8s.pod.name, timestamp, mem_ws"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2498,7 +2502,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": " FROM metrics-kubeletstatsreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.pod.uid IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.pod.memory.working_set IS NOT NULL\n  | STATS pod_mem_ws = MAX(k8s.pod.memory.working_set)\n    BY k8s.pod.uid, k8s.pod.name,\n      @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n  | STATS mem_ws = MAX(pod_mem_ws)\n    BY k8s.pod.name, @timestamp\n  | SORT @timestamp ASC, mem_ws DESC, k8s.pod.name ASC\n  | LIMIT 10 BY @timestamp\n  | KEEP k8s.pod.name, @timestamp, mem_ws"
+                                "esql": " TS metrics-kubeletstatsreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.pod.uid IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.pod.memory.working_set IS NOT NULL\n  | STATS pod_mem_ws = MAX(k8s.pod.memory.working_set)\n    BY k8s.pod.uid, k8s.pod.name,\n      timestamp = TBUCKET(50, ?_tstart, ?_tend)\n  | STATS mem_ws = MAX(pod_mem_ws)\n    BY k8s.pod.name, timestamp\n  | SORT timestamp ASC, mem_ws DESC, k8s.pod.name ASC\n  | LIMIT 10 BY timestamp\n  | KEEP k8s.pod.name, timestamp, mem_ws"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2546,9 +2550,9 @@
                                         "layerType": "data",
                                         "seriesType": "line",
                                         "splitAccessors": [
-                                            "@timestamp"
+                                            "k8s.pod.name"
                                         ],
-                                        "xAccessor": "0becb610-cc42-4db8-b61e-30e10ef6704b"
+                                        "xAccessor": "timestamp"
                                     }
                                 ],
                                 "legend": {
@@ -2617,28 +2621,19 @@
                                         "687bbe6a-5771-4196-8c85-396b1feceb5e": {
                                             "columns": [
                                                 {
-                                                    "columnId": "@timestamp",
+                                                    "columnId": "k8s.pod.name",
                                                     "fieldName": "k8s.pod.name",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
-                                                    }
+                                                    },
+                                                    "label": "k8s.pod.name",
+                                                    "customLabel": false
                                                 },
                                                 {
-                                                    "columnId": "restarts",
-                                                    "customLabel": false,
-                                                    "fieldName": "restarts",
-                                                    "inMetricDimension": true,
-                                                    "label": "restarts",
-                                                    "meta": {
-                                                        "esType": "long",
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "008b594d-fe49-4278-b0ea-641ae2d4f9ed",
-                                                    "fieldName": "@timestamp",
-                                                    "label": "",
+                                                    "columnId": "timestamp",
+                                                    "fieldName": "timestamp",
+                                                    "label": "timestamp",
                                                     "meta": {
                                                         "esType": "date",
                                                         "params": {
@@ -2651,16 +2646,27 @@
                                                             },
                                                             "indexPattern": "metrics-*",
                                                             "params": {},
-                                                            "sourceField": "@timestamp"
+                                                            "sourceField": "timestamp"
                                                         },
                                                         "type": "date"
                                                     },
-                                                    "customLabel": true
+                                                    "customLabel": false
+                                                },
+                                                {
+                                                    "columnId": "restarts",
+                                                    "customLabel": false,
+                                                    "fieldName": "restarts",
+                                                    "inMetricDimension": true,
+                                                    "label": "restarts",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    }
                                                 }
                                             ],
                                             "index": "e5f06c52b3bd1edcb07a3d4b79333e5b4c9e3eeb578573940c2599ffcc4a1ac3",
                                             "query": {
-                                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.pod.uid IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.container.name IS NOT NULL\n    AND k8s.container.restarts IS NOT NULL\n  | STATS container_restarts = MAX(k8s.container.restarts)\n    BY k8s.pod.uid, k8s.pod.name, k8s.container.name,\n      @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n  | STATS restarts = SUM(container_restarts)\n    BY k8s.pod.name, @timestamp\n  | SORT @timestamp ASC, restarts DESC, k8s.pod.name ASC\n  | LIMIT 10 BY @timestamp\n  | KEEP k8s.pod.name, @timestamp, restarts"
+                                                "esql": "TS metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.pod.uid IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.container.name IS NOT NULL\n    AND k8s.container.restarts IS NOT NULL\n  | STATS container_restarts = MAX(k8s.container.restarts)\n    BY k8s.pod.uid, k8s.pod.name, k8s.container.name,\n      timestamp = TBUCKET(50, ?_tstart, ?_tend)\n  | STATS restarts = SUM(container_restarts)\n    BY k8s.pod.name, timestamp\n  | SORT timestamp ASC, restarts DESC, k8s.pod.name ASC\n  | LIMIT 10 BY timestamp\n  | KEEP k8s.pod.name, timestamp, restarts"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2669,7 +2675,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.pod.uid IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.container.name IS NOT NULL\n    AND k8s.container.restarts IS NOT NULL\n  | STATS container_restarts = MAX(k8s.container.restarts)\n    BY k8s.pod.uid, k8s.pod.name, k8s.container.name,\n      @timestamp = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n  | STATS restarts = SUM(container_restarts)\n    BY k8s.pod.name, @timestamp\n  | SORT @timestamp ASC, restarts DESC, k8s.pod.name ASC\n  | LIMIT 10 BY @timestamp\n  | KEEP k8s.pod.name, @timestamp, restarts"
+                                "esql": "TS metrics-k8sclusterreceiver.otel-*\n  | WHERE k8s.namespace.name IS NOT NULL\n    AND k8s.pod.uid IS NOT NULL\n    AND k8s.pod.name IS NOT NULL\n    AND k8s.container.name IS NOT NULL\n    AND k8s.container.restarts IS NOT NULL\n  | STATS container_restarts = MAX(k8s.container.restarts)\n    BY k8s.pod.uid, k8s.pod.name, k8s.container.name,\n      timestamp = TBUCKET(50, ?_tstart, ?_tend)\n  | STATS restarts = SUM(container_restarts)\n    BY k8s.pod.name, timestamp\n  | SORT timestamp ASC, restarts DESC, k8s.pod.name ASC\n  | LIMIT 10 BY timestamp\n  | KEEP k8s.pod.name, timestamp, restarts"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2717,9 +2723,9 @@
                                         "layerType": "data",
                                         "seriesType": "line",
                                         "splitAccessors": [
-                                            "@timestamp"
+                                            "k8s.pod.name"
                                         ],
-                                        "xAccessor": "008b594d-fe49-4278-b0ea-641ae2d4f9ed"
+                                        "xAccessor": "timestamp"
                                     }
                                 ],
                                 "legend": {

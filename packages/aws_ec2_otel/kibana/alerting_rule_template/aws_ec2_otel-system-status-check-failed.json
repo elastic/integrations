@@ -1,0 +1,44 @@
+{
+  "id": "aws_ec2_otel-system-status-check-failed",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the EC2 system status check fails, indicating underlying AWS host, hardware, or network impairment. Remediation is typically recover (stop/start on new hardware).",
+    "name": "[AWS EC2 OTel] System status check failed",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_ec2",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## EC2 System Status Check Failed\n\n### Meaning\nThe **system status check** validates AWS infrastructure beneath your instance (host hardware, hypervisor, physical network). A failure is an AWS-side problem, not a guest OS issue.\n\n### Remediation\n1. Wait briefly — transient AWS issues sometimes self-resolve.\n2. If persistent, **recover** the instance (stop/start moves it to healthy hardware).\n3. Open an AWS support case if recover does not resolve the issue.\n\n### Do NOT\nReboot alone is unlikely to fix a system check failure — recover is the primary runbook action."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.ec2.otel-*\n| WHERE Namespace == \"AWS/EC2\"\n    AND MetricName == \"StatusCheckFailed_System\"\n    AND stat == \"Maximum\"\n| EVAL ec2_instance = CONCAT(InstanceId, \" (\", cloud.region, \")\")\n| STATS max_failed = MAX(`metrics.amazonaws.com/AWS/EC2/StatusCheckFailed_System`) BY ec2_instance\n// 1 = failed — Maximum stat catches any failure within the period\n| WHERE max_failed >= 1\n| SORT max_failed DESC\n| LIMIT 100"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "ec2_instance",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

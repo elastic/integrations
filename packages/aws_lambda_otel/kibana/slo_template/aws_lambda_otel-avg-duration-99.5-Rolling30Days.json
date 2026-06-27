@@ -1,0 +1,52 @@
+{
+  "attributes": {
+    "name": "[AWS Lambda OTel] Average duration 99.5% rolling 30 days",
+    "description": "Tracks per-function execution latency from CloudWatch Duration (Average statistic). Each 1-minute window is good when average duration stays below 3000 ms; 99.5% of windows must be good over a rolling 30-day period. Sustained duration regressions degrade user-facing response times and increase Lambda billing.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"aws.lambda.otel\" AND Namespace: \"AWS/Lambda\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "avg",
+              "field": "metrics.amazonaws.com/AWS/Lambda/Duration",
+              "filter": "MetricName: \"Duration\" AND stat: \"Average\""
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 3000
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "aws_lambda",
+      "otel"
+    ],
+    "groupBy": [
+      "cloud.region",
+      "FunctionName"
+    ],
+    "artifacts": {
+      "dashboards": [
+        { "id": "aws_lambda_otel-8715a1a7-f43d-41a5-8b2e-d800fd6b8420" }
+      ]
+    }
+  },
+  "id": "aws_lambda_otel-avg-duration-99.5-Rolling30Days",
+  "type": "slo_template"
+}

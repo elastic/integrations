@@ -1,0 +1,48 @@
+{
+  "id": "aws_sqs_otel-oldest-message-age-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the oldest unprocessed message on a queue exceeds a configurable age threshold. This is the headline SQS processing-lag signal.",
+    "name": "[AWS SQS OTel] Oldest message age high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_sqs",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Oldest Message Age High\n\n`ApproximateAgeOfOldestMessage` measures how long the oldest visible message has waited. A sustained climb means consumers are not keeping pace or a poison message is stuck.\n\n### Triage Steps\n1. Check consumer fleet health — are workers running, scaled, and healthy?\n2. Compare `NumberOfMessagesDeleted` vs `NumberOfMessagesSent` for the affected queue.\n3. Inspect `ApproximateNumberOfMessagesVisible` (backlog) and `ApproximateNumberOfMessagesNotVisible` (in-flight).\n4. Look for poison messages — if no DLQ is configured, failed messages loop until retention expires.\n5. Verify visibility timeout is appropriate for your processing duration.\n\n### Customisation\n- Adjust the age threshold in the final `WHERE` clause — 300 seconds suits real-time queues; batch pipelines may need hours.\n- CloudWatch approximate metrics can lag by up to ~15 minutes."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.sqs.otel-*\n// Exclude DLQs — DLQ depth is covered by a separate alert\n| WHERE Namespace == \"AWS/SQS\"\n    AND MetricName == \"ApproximateAgeOfOldestMessage\"\n    AND stat == \"Maximum\"\n    AND QueueName NOT LIKE \"*dlq*\"\n| STATS max_age_seconds = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateAgeOfOldestMessage`)\n    BY QueueName, cloud.region\n// Tune to your SLA: 300s = 5 minutes (real-time); batch queues may need hours\n| WHERE max_age_seconds > 300"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "QueueName",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

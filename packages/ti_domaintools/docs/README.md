@@ -17,6 +17,11 @@ Ideal for threat hunting, phishing prevention, and brand protection.
 For example, if you wanted to monitor Newly Observed Domains (NOD) feed, you could ingest the DomainTools NOD feed.
 Then you can reference ti_domaintools.nod_feed when using visualizations or alerts.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Data streams
 
 The DomainTools Feeds integration collects one type of data streams: **logs**

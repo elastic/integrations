@@ -220,3 +220,28 @@ The `rate_limit` data stream collects rate limit configuration from the Anthropi
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of input that generated the event. | keyword |
 
+
+
+## Alerting Rule Template
+Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
+
+For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
+
+Alert rule templates require Elastic Stack version 9.2.0 or later.
+
+**The following alert rule templates are available:**
+
+<details>
+<summary>View the alert rule templates</summary>
+
+| Name | Description |
+|---|---|
+| [Anthropic] Cache Hit Rate Drop | Alerts when the input token cache hit ratio drops below 30%. A sudden drop means prompts are not hitting cache, which increases cost and latency. |
+| [Anthropic] Cost Anomaly | Alerts when daily cost exceeds a configurable threshold. Catches unexpected spend spikes from runaway workloads or new model adoption before they accumulate. |
+| [Anthropic] Monthly Budget Spend Limit | Alerts when cumulative spend for the current calendar month exceeds a configurable budget. Resets on the 1st of each month. Default threshold is $1,000 (100000 cents). Adjust the threshold in the ES|QL WHERE clause. |
+| [Anthropic] Single Model Dominance | Alerts when a single model accounts for more than 90% of total token consumption. May indicate a misconfiguration where traffic is not routing to the intended model. |
+| [Anthropic] Token Consumption Spike | Alerts when total token consumption in the current window is unusually high compared to baseline. Fires when any model's hourly token count exceeds a configurable threshold. |
+| [Anthropic] Per-Workspace Daily Cost Spike | Alerts when any single workspace's daily cost exceeds a configurable threshold. Catches runaway spend in individual workspaces that may hide under the org-wide total. Default threshold is $20 (2000 cents). Adjust the threshold in the ES|QL WHERE clause. |
+
+</details>
+
