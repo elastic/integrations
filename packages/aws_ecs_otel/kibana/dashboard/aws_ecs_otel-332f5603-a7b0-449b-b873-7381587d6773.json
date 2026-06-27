@@ -1,0 +1,3047 @@
+{
+  "id": "aws_ecs_otel-332f5603-a7b0-449b-b873-7381587d6773",
+  "type": "dashboard",
+  "namespaces": [
+    "default"
+  ],
+  "updated_at": "2026-06-05T11:22:37.943Z",
+  "created_at": "2026-05-19T12:30:01.459Z",
+  "version": "Wzc3ODQsMV0=",
+  "attributes": {
+    "description": "AWS ECS dashboard for CloudWatch metrics collected by the OpenTelemetry Collector.",
+    "title": "[AWS OTel] ECS",
+    "pinned_panels": {
+      "panels": {
+        "ctrl-fargate-account": {
+          "order": 0,
+          "type": "options_list_control",
+          "width": "medium",
+          "grow": true,
+          "config": {
+            "use_global_filters": true,
+            "ignore_validations": false,
+            "title": "Account",
+            "field_name": "cloud.account.id",
+            "exclude": false,
+            "sort": {
+              "by": "_count",
+              "direction": "desc"
+            },
+            "exists_selected": false,
+            "run_past_timeout": false,
+            "search_technique": "wildcard",
+            "selected_options": [],
+            "single_select": false,
+            "dataViewRefName": "ctrl-fargate-account:optionsListDataView"
+          }
+        },
+        "ctrl-fargate-region": {
+          "order": 1,
+          "type": "options_list_control",
+          "width": "medium",
+          "grow": true,
+          "config": {
+            "use_global_filters": true,
+            "ignore_validations": false,
+            "title": "Region",
+            "field_name": "cloud.region",
+            "exclude": false,
+            "sort": {
+              "by": "_count",
+              "direction": "desc"
+            },
+            "exists_selected": false,
+            "run_past_timeout": false,
+            "search_technique": "wildcard",
+            "selected_options": [],
+            "single_select": false,
+            "dataViewRefName": "ctrl-fargate-region:optionsListDataView"
+          }
+        },
+        "ctrl-fargate-service-name": {
+          "order": 2,
+          "type": "options_list_control",
+          "width": "medium",
+          "grow": true,
+          "config": {
+            "use_global_filters": true,
+            "ignore_validations": false,
+            "title": "Service",
+            "field_name": "ServiceName",
+            "exclude": false,
+            "sort": {
+              "by": "_count",
+              "direction": "desc"
+            },
+            "exists_selected": false,
+            "run_past_timeout": false,
+            "search_technique": "wildcard",
+            "selected_options": [],
+            "single_select": false,
+            "dataViewRefName": "ctrl-fargate-service-name:optionsListDataView"
+          }
+        }
+      }
+    },
+    "optionsJSON": {
+      "hidePanelTitles": false,
+      "hidePanelBorders": false,
+      "useMargins": true,
+      "autoApplyFilters": false,
+      "syncColors": false,
+      "syncCursor": true,
+      "syncTooltips": false
+    },
+    "panelsJSON": [
+      {
+        "type": "markdown",
+        "embeddableConfig": {
+          "description": "Monitor your AWS ECS / ECS services in real time.\nPick services via the top-bar selector, or click any row in the ECS services table to filter the dashboard by service / cluster / region.\nState badges follow the same palette as the Services-by-state donut (red=saturated, amber=hot, green=healthy, grey=idle).",
+          "hide_title": true,
+          "hide_border": true,
+          "content": "## ![Amazon ECS](data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIHdpZHRoPSIyNHB4IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCA4MCA4MCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4gICAgPHRpdGxlPkljb24tQXJjaGl0ZWN0dXJlLzY0L0FyY2hfQW1hem9uLUVsYXN0aWMtQ29udGFpbmVyLVNlcnZpY2VfNjQ8L3RpdGxlPiAgICA8ZyBpZD0iSWNvbi1BcmNoaXRlY3R1cmUvNjQvQXJjaF9BbWF6b24tRWxhc3RpYy1Db250YWluZXItU2VydmljZV82NCIgc3Ryb2tlPSJub25lIiBzdHJva2Utd2lkdGg9IjEiIGZpbGw9Im5vbmUiIGZpbGwtcnVsZT0iZXZlbm9kZCI+ICAgICAgICA8ZyBpZD0iSWNvbi1BcmNoaXRlY3R1cmUtQkcvNjQvQ29tcHV0ZSIgZmlsbD0iI0VENzEwMCI+ICAgICAgICAgICAgPHJlY3QgaWQ9IlJlY3RhbmdsZSIgeD0iMCIgeT0iMCIgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIj48L3JlY3Q+ICAgICAgICA8L2c+ICAgICAgICA8cGF0aCBkPSJNNjQsNDguMjM0MDA5NSBMNTYsNDMuNDMzMDExNyBMNTYsMzIuMDAwMDE2OSBDNTYsMzEuNjQ0MDE3MSA1NS44MTIsMzEuMzE1MDE3MiA1NS41MDQsMzEuMTM2MDE3MyBMNDQsMjQuNDI2MDIwNCBMNDQsMTQuNzUyMDI0OCBMNjQsMjYuNTcxMDE5NCBMNjQsNDguMjM0MDA5NSBaIE02NS41MDksMjUuMTM5MDIgTDQzLjUwOSwxMi4xMzkwMjYgQzQzLjE5OSwxMS45NTYwMjYxIDQyLjgxOCwxMS45NTQwMjYxIDQyLjUwNCwxMi4xMzEwMjYgQzQyLjE5MywxMi4zMDkwMjU5IDQyLDEyLjY0MTAyNTcgNDIsMTMuMDAwMDI1NiBMNDIsMjUuMDAwMDIwMSBDNDIsMjUuMzU1MDE5OSA0Mi4xODksMjUuNjg0MDE5OCA0Mi40OTYsMjUuODY0MDE5NyBMNTQsMzIuNTc0MDE2NiBMNTQsNDQuMDAwMDExNCBDNTQsNDQuMzUxMDExMyA1NC4xODUsNDQuNjc3MDExMSA1NC40ODYsNDQuODU3MDExIEw2NC40ODYsNTAuODU3MDA4MyBDNjQuNjQ0LDUwLjk1MjAwODIgNjQuODIyLDUxIDY1LDUxIEM2NS4xNyw1MSA2NS4zNCw1MC45NTcwMDgyIDY1LjQ5Myw1MC44NzAwMDgzIEM2NS44MDcsNTAuNjkzMDA4NCA2Niw1MC4zNjAwMDg1IDY2LDUwIEw2NiwyNi4wMDAwMTk2IEM2NiwyNS42NDYwMTk4IDY1LjgxNCwyNS4zMTkwMiA2NS41MDksMjUuMTM5MDIgTDY1LjUwOSwyNS4xMzkwMiBaIE00MC40NDUsNjYuODYzMDAxIEwxNyw1NC4zOTkwMDY3IEwxNywyNi41NzEwMTk0IEwzNywxNC43NTIwMjQ4IEwzNywyNC40NTEwMjA0IEwyNi40NjMsMzEuMTU2MDE3MyBDMjYuMTc1LDMxLjM0MDAxNzIgMjYsMzEuNjU4MDE3MSAyNiwzMi4wMDAwMTY5IEwyNiw0OS4wMDAwMDkxIEMyNiw0OS4zNzMwMDkgMjYuMjA4LDQ5LjcxNTAwODggMjYuNTM4LDQ5Ljg4NzAwODcgTDM5Ljk5MSw1Ni44ODcwMDU1IEM0MC4yOCw1Ny4wMzcwMDU1IDQwLjYyNCw1Ny4wMzgwMDU1IDQwLjkxMiw1Ni44ODgwMDU1IEw1My45NjQsNTAuMTQ0MDA4NiBMNjEuOTk2LDU0Ljk2NDAwNjQgTDQwLjQ0NSw2Ni44NjMwMDEgWiBNNjQuNTE1LDU0LjE0MjAwNjggTDU0LjUxNSw0OC4xNDIwMDk1IEM1NC4yMTcsNDcuOTY0MDA5NiA1My44NDksNDcuOTUyMDA5NiA1My41NDEsNDguMTEyMDA5NSBMNDAuNDU1LDU0Ljg3MzAwNjUgTDI4LDQ4LjM5MzAwOTQgTDI4LDMyLjU0OTAxNjcgTDM4LjUzNywyNS44NDQwMTk3IEMzOC44MjUsMjUuNjYwMDE5OCAzOSwyNS4zNDIwMTk5IDM5LDI1LjAwMDAyMDEgTDM5LDEzLjAwMDAyNTYgQzM5LDEyLjY0MTAyNTcgMzguODA4LDEyLjMwOTAyNTkgMzguNDk2LDEyLjEzMTAyNiBDMzguMTg0LDExLjk1NDAyNjEgMzcuODAyLDExLjk1NjAyNjEgMzcuNDkxLDEyLjEzOTAyNiBMMTUuNDkxLDI1LjEzOTAyIEMxNS4xODcsMjUuMzE5MDIgMTUsMjUuNjQ2MDE5OCAxNSwyNi4wMDAwMTk2IEwxNSw1NSBDMTUsNTUuMzY5MDA2MiAxNS4yMDQsNTUuNzA5MDA2MSAxNS41Myw1NS44ODMwMDYgTDM5Ljk4NCw2OC44ODMwMDAxIEM0MC4xMzEsNjguOTYxIDQwLjI5Miw2OSA0MC40NTMsNjkgQzQwLjYyLDY5IDQwLjc4Niw2OC45NTggNDAuOTM3LDY4Ljg3NTAwMDEgTDY0LjQ4NCw1NS44NzUwMDYgQzY0Ljc5Nyw1NS43MDIwMDYxIDY0Ljk5Myw1NS4zNzUwMDYyIDY1LjAwMDE0MTYsNTUuMDE4MDA2NCBDNjUuMDA2LDU0LjY2MDAwNjYgNjQuODIxLDU0LjMyNjAwNjcgNjQuNTE1LDU0LjE0MjAwNjggTDY0LjUxNSw1NC4xNDIwMDY4IFoiIGlkPSJBbWF6b24tRWxhc3RpYy1Db250YWluZXItU2VydmljZV9JY29uXzY0X1NxdWlkIiBmaWxsPSIjRkZGRkZGIj48L3BhdGg+ICAgIDwvZz48L3N2Zz4=)&nbsp;&nbsp;AWS ECS dashboard",
+          "settings": {
+            "open_links_in_new_tab": true
+          }
+        },
+        "panelIndex": "hdr",
+        "gridData": {
+          "y": 0,
+          "x": 0,
+          "w": 42,
+          "h": 2,
+          "i": "hdr"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Total number of ECS services — distinct ServiceName values in the latest collected data for the selected time range.",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "description": "Total number of ECS services — distinct ServiceName values in the latest collected data for the selected time range.",
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-total": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS last_seen = MAX(@timestamp) BY ServiceName, ClusterName, cloud.region | INLINE STATS latest = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest) <= 5 | STATS total = COUNT(*) | KEEP total"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "total",
+                          "fieldName": "total",
+                          "label": "Total services",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "title": "metrics-aws.ecs.otel-*",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS last_seen = MAX(@timestamp) BY ServiceName, ClusterName, cloud.region | INLINE STATS latest = MAX(last_seen) | WHERE DATE_DIFF(\"minutes\", last_seen, latest) <= 5 | STATS total = COUNT(*) | KEEP total"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-total",
+                "layerType": "data",
+                "metricAccessor": "total",
+                "showBar": false,
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "applyColorTo": "background",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "label": "Total services"
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "textBasedLanguages-datasource-layer-layer-kpi-total"
+                }
+              ],
+              "needsRefresh": false
+            }
+          }
+        },
+        "panelIndex": "kpi-total",
+        "gridData": {
+          "y": 0,
+          "x": 0,
+          "w": 4,
+          "h": 4,
+          "i": "kpi-total",
+          "sectionId": "aws-ecs-overview-section"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Services by state",
+          "description": "Share of ECS services by latest state — saturated (CPU or memory > 80%), hot (> 50%), idle (CPU < 5%), or healthy. Uses the most recent value per service within a 5-minute freshness window. A growing saturated slice indicates services under resource pressure.",
+          "attributes": {
+            "title": "Services by state",
+            "description": "Share of ECS services by latest state — saturated (CPU or memory > 80%), hot (> 50%), idle (CPU < 5%), or healthy. Uses the most recent value per service within a 5-minute freshness window. A growing saturated slice indicates services under resource pressure.",
+            "visualizationType": "lnsPie",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "pie-layer-chart-status-donut": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS services = COUNT(*) BY state"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "state",
+                          "fieldName": "state",
+                          "label": "State",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "string",
+                            "esType": "keyword"
+                          }
+                        },
+                        {
+                          "columnId": "services",
+                          "fieldName": "services",
+                          "label": "Services",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "title": "metrics-aws.ecs.otel-*",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS services = COUNT(*) BY state"
+              },
+              "visualization": {
+                "shape": "donut",
+                "layers": [
+                  {
+                    "layerId": "pie-layer-chart-status-donut",
+                    "layerType": "data",
+                    "primaryGroups": [
+                      "state"
+                    ],
+                    "metrics": [
+                      "services"
+                    ],
+                    "numberDisplay": "percent",
+                    "percentDecimals": 1,
+                    "categoryDisplay": "default",
+                    "legendDisplay": "default",
+                    "nestedLegend": false,
+                    "legendPosition": "right",
+                    "colorMapping": {
+                      "assignments": [
+                        {
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "saturated"
+                            }
+                          ],
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#F6726A"
+                          },
+                          "touched": true
+                        },
+                        {
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "hot"
+                            }
+                          ],
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#D6BF57"
+                          },
+                          "touched": true
+                        },
+                        {
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "healthy"
+                            }
+                          ],
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#24C292"
+                          },
+                          "touched": true
+                        },
+                        {
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "idle"
+                            }
+                          ],
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#A8E6CF"
+                          },
+                          "touched": true
+                        },
+                        {
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "no data"
+                            }
+                          ],
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#BFDBFF"
+                          },
+                          "touched": true
+                        }
+                      ],
+                      "specialAssignments": [
+                        {
+                          "rules": [
+                            {
+                              "type": "other"
+                            }
+                          ],
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "default",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    },
+                    "emptySizeRatio": 0.7
+                  }
+                ]
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "indexpattern-datasource-layer-pie-layer-chart-status-donut"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-status-donut",
+        "gridData": {
+          "y": 0,
+          "x": 8,
+          "w": 20,
+          "h": 12,
+          "i": "chart-status-donut",
+          "sectionId": "aws-ecs-overview-section"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Service count over time (by state)",
+          "description": "Count of ECS services over time, classified per time bucket as saturated, hot, healthy, or idle by peak CPU/memory utilization. Distinct services are counted per bucket. A rising saturated series indicates spreading resource pressure.",
+          "attributes": {
+            "title": "Service count over time (by state)",
+            "description": "Count of ECS services over time, classified per time bucket as saturated, hot, healthy, or idle by peak CPU/memory utilization. Distinct services are counted per bucket. A rising saturated series indicates spreading resource pressure.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-ec2-count": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS cpu_max = MAX(max_over_time(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL))), mem_max = MAX(max_over_time(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL))) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_max IS NULL AND mem_max IS NULL, \"no data\", cpu_max > 80 OR mem_max > 80, \"saturated\", cpu_max > 50 OR mem_max > 50, \"hot\", cpu_max < 5, \"idle\", \"healthy\") | STATS total = COUNT(*), saturated = COUNT(*) WHERE state == \"saturated\", hot = COUNT(*) WHERE state == \"hot\", healthy = COUNT(*) WHERE state == \"healthy\", idle = COUNT(*) WHERE state == \"idle\", no_data = COUNT(*) WHERE state == \"no data\" BY timestamp | SORT timestamp ASC"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "label": "Time",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "total",
+                          "fieldName": "total",
+                          "label": "Total",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "columnId": "saturated",
+                          "fieldName": "saturated",
+                          "label": "Saturated",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "columnId": "hot",
+                          "fieldName": "hot",
+                          "label": "Hot",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "columnId": "healthy",
+                          "fieldName": "healthy",
+                          "label": "Healthy",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "columnId": "idle",
+                          "fieldName": "idle",
+                          "label": "Idle",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "columnId": "no_data",
+                          "fieldName": "no_data",
+                          "label": "No data",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "title": "metrics-aws.ecs.otel-*",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS cpu_max = MAX(max_over_time(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL))), mem_max = MAX(max_over_time(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL))) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_max IS NULL AND mem_max IS NULL, \"no data\", cpu_max > 80 OR mem_max > 80, \"saturated\", cpu_max > 50 OR mem_max > 50, \"hot\", cpu_max < 5, \"idle\", \"healthy\") | STATS total = COUNT(*), saturated = COUNT(*) WHERE state == \"saturated\", hot = COUNT(*) WHERE state == \"hot\", healthy = COUNT(*) WHERE state == \"healthy\", idle = COUNT(*) WHERE state == \"idle\", no_data = COUNT(*) WHERE state == \"no data\" BY timestamp | SORT timestamp ASC"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-ec2-count",
+                    "accessors": [
+                      "total",
+                      "saturated",
+                      "hot",
+                      "healthy",
+                      "idle",
+                      "no_data"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "yConfig": [
+                      {
+                        "forAccessor": "total",
+                        "color": "#61A2FF"
+                      },
+                      {
+                        "forAccessor": "saturated",
+                        "color": "#F6726A"
+                      },
+                      {
+                        "forAccessor": "hot",
+                        "color": "#D6BF57"
+                      },
+                      {
+                        "forAccessor": "healthy",
+                        "color": "#24C292"
+                      },
+                      {
+                        "forAccessor": "idle",
+                        "color": "#A8E6CF"
+                      },
+                      {
+                        "forAccessor": "no_data",
+                        "color": "#BFDBFF"
+                      }
+                    ]
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom",
+                  "layout": "list"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-ec2-count"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-ec2-count",
+        "gridData": {
+          "y": 0,
+          "x": 28,
+          "w": 20,
+          "h": 12,
+          "i": "chart-ec2-count",
+          "sectionId": "aws-ecs-overview-section"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Number of saturated ECS services — services whose latest CPU or memory utilization exceeds 80%, within a 5-minute freshness window. A non-zero count indicates services under heavy resource pressure that may throttle or be killed.",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-impaired": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS saturated = COUNT(*) WHERE state == \"saturated\" | KEEP saturated"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "saturated",
+                          "fieldName": "saturated",
+                          "label": "Saturated",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "title": "metrics-aws.ecs.otel-*",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS saturated = COUNT(*) WHERE state == \"saturated\" | KEEP saturated"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-impaired",
+                "layerType": "data",
+                "metricAccessor": "saturated",
+                "showBar": false,
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "applyColorTo": "value",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "label": "Saturated services",
+                "palette": {
+                  "name": "custom",
+                  "type": "palette",
+                  "params": {
+                    "steps": 3,
+                    "name": "custom",
+                    "reverse": false,
+                    "rangeType": "number",
+                    "rangeMin": 0,
+                    "rangeMax": null,
+                    "progression": "fixed",
+                    "stops": [
+                      {
+                        "color": "#24C292",
+                        "stop": 1
+                      },
+                      {
+                        "color": "#F6726A",
+                        "stop": 2
+                      }
+                    ],
+                    "colorStops": [
+                      {
+                        "color": "#24C292",
+                        "stop": 0
+                      },
+                      {
+                        "color": "#F6726A",
+                        "stop": 1
+                      }
+                    ],
+                    "continuity": "above",
+                    "maxSteps": 5
+                  }
+                }
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "needsRefresh": false
+            },
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "description": "Number of saturated ECS services — services whose latest CPU or memory utilization exceeds 80%, within a 5-minute freshness window. A non-zero count indicates services under heavy resource pressure that may throttle or be killed."
+          }
+        },
+        "panelIndex": "kpi-impaired",
+        "gridData": {
+          "y": 0,
+          "x": 4,
+          "w": 4,
+          "h": 4,
+          "i": "kpi-impaired",
+          "sectionId": "aws-ecs-overview-section"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Number of hot ECS services — services whose latest CPU or memory utilization is above 50% but not yet saturated (≤ 80%), within a 5-minute freshness window. An early warning of rising resource usage.",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "description": "Number of hot ECS services — services whose latest CPU or memory utilization is above 50% but not yet saturated (≤ 80%), within a 5-minute freshness window. An early warning of rising resource usage.",
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-pending": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS hot = COUNT(*) WHERE state == \"hot\" | KEEP hot"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "hot",
+                          "fieldName": "hot",
+                          "label": "Hot ",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "title": "metrics-aws.ecs.otel-*",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS hot = COUNT(*) WHERE state == \"hot\" | KEEP hot"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-pending",
+                "layerType": "data",
+                "metricAccessor": "hot",
+                "showBar": false,
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "applyColorTo": "value",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "label": "Hot services",
+                "palette": {
+                  "name": "custom",
+                  "type": "palette",
+                  "params": {
+                    "steps": 3,
+                    "name": "custom",
+                    "reverse": false,
+                    "rangeType": "number",
+                    "rangeMin": 0,
+                    "rangeMax": null,
+                    "progression": "fixed",
+                    "stops": [
+                      {
+                        "color": "#24C292",
+                        "stop": 1
+                      },
+                      {
+                        "color": "#D6BF57",
+                        "stop": 2
+                      }
+                    ],
+                    "colorStops": [
+                      {
+                        "color": "#24C292",
+                        "stop": 0
+                      },
+                      {
+                        "color": "#D6BF57",
+                        "stop": 1
+                      }
+                    ],
+                    "continuity": "above",
+                    "maxSteps": 5
+                  }
+                }
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "textBasedLanguages-datasource-layer-layer-kpi-pending"
+                }
+              ],
+              "needsRefresh": false
+            }
+          }
+        },
+        "panelIndex": "kpi-pending",
+        "gridData": {
+          "y": 4,
+          "x": 0,
+          "w": 4,
+          "h": 4,
+          "i": "kpi-pending",
+          "sectionId": "aws-ecs-overview-section"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Number of idle ECS services — services whose latest CPU utilization is under 5%, within a 5-minute freshness window. May indicate over-provisioned or unused services.",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-stopped": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS idle = COUNT(*) WHERE state == \"idle\" | KEEP idle"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "idle",
+                          "fieldName": "idle",
+                          "label": "Idle ",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "title": "metrics-aws.ecs.otel-*",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS idle = COUNT(*) WHERE state == \"idle\" | KEEP idle"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-stopped",
+                "layerType": "data",
+                "metricAccessor": "idle",
+                "showBar": false,
+                "color": "#61A2FF00",
+                "colorMode": "background",
+                "applyColorTo": "background",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "label": "Idle services"
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "needsRefresh": false
+            },
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "description": "Number of idle ECS services — services whose latest CPU utilization is under 5%, within a 5-minute freshness window. May indicate over-provisioned or unused services."
+          }
+        },
+        "panelIndex": "kpi-stopped",
+        "gridData": {
+          "y": 8,
+          "x": 0,
+          "w": 4,
+          "h": 4,
+          "i": "kpi-stopped",
+          "sectionId": "aws-ecs-overview-section"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Number of healthy ECS services — services with normal CPU and memory utilization (not saturated, hot, or idle), within a 5-minute freshness window.",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "description": "Number of healthy ECS services — services with normal CPU and memory utilization (not saturated, hot, or idle), within a 5-minute freshness window.",
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-running": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS healthy = COUNT(*) WHERE state == \"healthy\" | KEEP healthy"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "healthy",
+                          "fieldName": "healthy",
+                          "label": "Healthy",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "title": "metrics-aws.ecs.otel-*",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS healthy = COUNT(*) WHERE state == \"healthy\" | KEEP healthy"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-running",
+                "layerType": "data",
+                "metricAccessor": "healthy",
+                "showBar": false,
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "applyColorTo": "background",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "label": "Healthy services"
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "textBasedLanguages-datasource-layer-layer-kpi-running"
+                }
+              ],
+              "needsRefresh": false
+            }
+          }
+        },
+        "panelIndex": "kpi-running",
+        "gridData": {
+          "y": 4,
+          "x": 4,
+          "w": 4,
+          "h": 4,
+          "i": "kpi-running",
+          "sectionId": "aws-ecs-overview-section"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "ECS services",
+          "description": "All ECS services, ranked worst-first by state. Click a service to drill into its metrics. State reflects the latest CPU/memory utilization within a 5-minute freshness window. Avg and Max CPU/memory are the average and peak utilization (%) over the selected time range; connection and processed-bytes columns are summed or averaged over the range.",
+          "attributes": {
+            "title": "ECS services",
+            "description": "All ECS services, ranked worst-first by state. Click a service to drill into its metrics. State reflects the latest CPU/memory utilization within a 5-minute freshness window. Avg and Max CPU/memory are the average and peak utilization (%) over the selected time range; connection and processed-bytes columns are summed or averaged over the range.",
+            "visualizationType": "lnsDatatable",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "tbl-layer-tbl-instances": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS c_cpu_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_cpu_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_mem_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_mem_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), c_active_conn = AVG(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)), c_processed_bytes = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ProcessedBytes`, NULL)) BY ServiceName, ClusterName, cloud.account.id, cloud.region | EVAL c_state = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, \"no data\", c_cpu_max > 0.8 OR c_mem_max > 0.8, \"saturated\", c_cpu_max > 0.5 OR c_mem_max > 0.5, \"hot\", c_cpu_max < 0.05, \"idle\", \"healthy\"), c_state_sort = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, 5, c_cpu_max > 0.8 OR c_mem_max > 0.8, 1, c_cpu_max > 0.5 OR c_mem_max > 0.5, 2, c_cpu_max < 0.05, 4, 3) | SORT c_state_sort ASC"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "ServiceName",
+                          "fieldName": "ServiceName",
+                          "label": "Service",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "string",
+                            "esType": "keyword"
+                          }
+                        },
+                        {
+                          "columnId": "ClusterName",
+                          "fieldName": "ClusterName",
+                          "label": "Cluster",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "string",
+                            "esType": "keyword"
+                          }
+                        },
+                        {
+                          "columnId": "cloud.account.id",
+                          "fieldName": "cloud.account.id",
+                          "label": "Account",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "string",
+                            "esType": "keyword"
+                          }
+                        },
+                        {
+                          "columnId": "cloud.region",
+                          "fieldName": "cloud.region",
+                          "label": "Region",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "string",
+                            "esType": "keyword"
+                          }
+                        },
+                        {
+                          "columnId": "c_state_sort",
+                          "fieldName": "c_state_sort",
+                          "label": "State order",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "integer"
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "columnId": "c_state",
+                          "fieldName": "c_state",
+                          "label": "State",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "string",
+                            "esType": "keyword"
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "columnId": "c_cpu_avg",
+                          "fieldName": "c_cpu_avg",
+                          "label": "Avg CPU",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "c_cpu_max",
+                          "fieldName": "c_cpu_max",
+                          "label": "Max CPU",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "c_mem_avg",
+                          "fieldName": "c_mem_avg",
+                          "label": "Avg memory",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "c_mem_max",
+                          "fieldName": "c_mem_max",
+                          "label": "Max memory",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "columnId": "c_new_conn",
+                          "fieldName": "c_new_conn",
+                          "label": "Total new connections",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "columnId": "c_active_conn",
+                          "fieldName": "c_active_conn",
+                          "label": "Avg active connections",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true
+                        },
+                        {
+                          "columnId": "c_processed_bytes",
+                          "fieldName": "c_processed_bytes",
+                          "label": "Total processed bytes",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | STATS c_cpu_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_cpu_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)) / 100.0, c_mem_avg = AVG(CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_mem_max = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) / 100.0, c_new_conn = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL)), c_active_conn = AVG(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL)), c_processed_bytes = SUM(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ProcessedBytes`, NULL)) BY ServiceName, ClusterName, cloud.account.id, cloud.region | EVAL c_state = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, \"no data\", c_cpu_max > 0.8 OR c_mem_max > 0.8, \"saturated\", c_cpu_max > 0.5 OR c_mem_max > 0.5, \"hot\", c_cpu_max < 0.05, \"idle\", \"healthy\"), c_state_sort = CASE(c_cpu_max IS NULL AND c_mem_max IS NULL, 5, c_cpu_max > 0.8 OR c_mem_max > 0.8, 1, c_cpu_max > 0.5 OR c_mem_max > 0.5, 2, c_cpu_max < 0.05, 4, 3) | SORT c_state_sort ASC"
+              },
+              "visualization": {
+                "columns": [
+                  {
+                    "columnId": "ServiceName",
+                    "isTransposed": false,
+                    "isMetric": false,
+                    "oneClickFilter": true,
+                    "width": 286
+                  },
+                  {
+                    "columnId": "ClusterName",
+                    "isTransposed": false,
+                    "isMetric": false,
+                    "width": 154
+                  },
+                  {
+                    "columnId": "cloud.account.id",
+                    "isTransposed": false,
+                    "isMetric": false,
+                    "width": 100.125
+                  },
+                  {
+                    "columnId": "cloud.region",
+                    "isTransposed": false,
+                    "isMetric": false,
+                    "width": 100.125
+                  },
+                  {
+                    "columnId": "c_state_sort",
+                    "isTransposed": false,
+                    "hidden": true,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "c_state",
+                    "isTransposed": false,
+                    "width": 99,
+                    "colorMode": "badge",
+                    "colorMapping": {
+                      "assignments": [
+                        {
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "saturated"
+                            }
+                          ],
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#ffc9c2"
+                          },
+                          "touched": true
+                        },
+                        {
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "hot"
+                            }
+                          ],
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#FFF3C2"
+                          },
+                          "touched": true
+                        },
+                        {
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "healthy"
+                            }
+                          ],
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#AEE8D2"
+                          },
+                          "touched": true
+                        },
+                        {
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "idle"
+                            }
+                          ],
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#DAEFE5"
+                          },
+                          "touched": true
+                        },
+                        {
+                          "rules": [
+                            {
+                              "type": "raw",
+                              "value": "no data"
+                            }
+                          ],
+                          "color": {
+                            "type": "colorCode",
+                            "colorCode": "#BFDBFF"
+                          },
+                          "touched": true
+                        }
+                      ],
+                      "specialAssignments": [
+                        {
+                          "rules": [
+                            {
+                              "type": "other"
+                            }
+                          ],
+                          "color": {
+                            "type": "loop"
+                          },
+                          "touched": false
+                        }
+                      ],
+                      "paletteId": "default",
+                      "colorMode": {
+                        "type": "categorical"
+                      }
+                    }
+                  },
+                  {
+                    "columnId": "c_cpu_avg",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "c_cpu_max",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "c_mem_avg",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "c_mem_max",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "c_new_conn",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "c_active_conn",
+                    "isTransposed": false,
+                    "isMetric": true
+                  },
+                  {
+                    "columnId": "c_processed_bytes",
+                    "isTransposed": false,
+                    "isMetric": true
+                  }
+                ],
+                "layerId": "tbl-layer-tbl-instances",
+                "layerType": "data",
+                "paging": {
+                  "size": 25,
+                  "enabled": true
+                },
+                "showRowNumbers": true,
+                "headerRowHeight": "single",
+                "headerRowHeightLines": 1,
+                "rowHeight": "single",
+                "rowHeightLines": 1,
+                "fitRowToContent": false,
+                "sorting": {
+                  "columnId": "c_state_sort",
+                  "direction": "asc"
+                }
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "textBasedLanguages-datasource-layer-tbl-layer-tbl-instances"
+                }
+              ],
+              "needsRefresh": false
+            }
+          },
+          "drilldowns": [
+            {
+              "label": "View raw ECS metric stream in Discover",
+              "encode_url": false,
+              "open_in_new_tab": true,
+              "trigger": "on_click_value",
+              "type": "url_drilldown",
+              "url": "{{kibanaUrl}}/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&_a=(dataSource:(dataViewId:'metrics-*',type:dataView),filters:!((meta:(alias:!n,disabled:!f,index:'metrics-*',key:ServiceName,negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(ServiceName:'{{event.value}}')))),interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc)))"
+            },
+            {
+              "label": "Open service in AWS console",
+              "encode_url": false,
+              "open_in_new_tab": true,
+              "trigger": "on_click_value",
+              "type": "url_drilldown",
+              "url": "https://console.aws.amazon.com/ecs/v2/clusters/services?services-table-text-filter={{event.value}}"
+            }
+          ]
+        },
+        "panelIndex": "tbl-instances",
+        "gridData": {
+          "y": 0,
+          "x": 0,
+          "w": 48,
+          "h": 16,
+          "i": "tbl-instances",
+          "sectionId": "aws-ecs-list-section"
+        }
+      },
+      {
+        "type": "legacy_vis",
+        "embeddableConfig": {
+          "title": "ECS services — hexagon map (click an hex for actions)",
+          "description": "One hexagon per ECS service, ordered worst-first with CPU- or memory-saturated services first. Toggle Color by between Status, CPU utilization, or Memory utilization; metric views support Min, Max, Avg, and Last over the dashboard time range. Click any hexagon to filter the dashboard or open metrics for that service.",
+          "hide_title": false,
+          "savedVis": {
+            "title": "ECS services — hexagon map",
+            "description": "One hexagon per ECS service, ordered worst-first with CPU- or memory-saturated services first. Toggle Color by between Status, CPU utilization, or Memory utilization; metric views support Min, Max, Avg, and Last over the dashboard time range. Click any hexagon to filter the dashboard or open metrics for that service.",
+            "type": "vega",
+            "params": {
+              "spec": "{\"$schema\": \"https://vega.github.io/schema/vega/v5.json\", \"description\": \"One hexagon per ECS service, ordered worst-first with CPU- or memory-saturated services first; services without CPU/memory status metrics are shown as no data. Toggle Color by between Status, CPU utilization, or Memory utilization; metric views support Min, Max, Avg, and Last over the dashboard time range. Click any hexagon to filter the dashboard or open metrics for that service.\", \"usermeta\": {\"x_fargate_hexmap\": true}, \"padding\": {\"top\": 10, \"left\": 10, \"right\": 10, \"bottom\": 15}, \"data\": [{\"name\": \"ts_probe\", \"url\": {\"%type%\": \"esql\", \"%context%\": true, \"%timefield%\": \"@timestamp\", \"query\": \"ROW round_key = CONCAT(TO_STRING(?_tstart), \\\"|\\\", TO_STRING(?_tend)), fetched_at = NOW()\"}}, {\"name\": \"raw_all\", \"url\": {\"%type%\": \"esql\", \"%context%\": true, \"%timefield%\": \"@timestamp\", \"query\": \"SET unmapped_fields = \\\"nullify\\\";\\nFROM metrics-aws.ecs.otel-* | WHERE @timestamp >= ?_tstart AND @timestamp <= ?_tend\\n AND ServiceName IS NOT NULL AND ServiceName != \\\"\\\"\\n AND ClusterName IS NOT NULL AND ClusterName != \\\"\\\" | STATS cpu_min = MIN(CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL))\\n WHERE CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL) IS NOT NULL,\\n cpu_max = MAX(CASE(stat == \\\"Maximum\\\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL))\\n WHERE CASE(stat == \\\"Maximum\\\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL) IS NOT NULL,\\n cpu_avg = AVG(CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL))\\n WHERE CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL) IS NOT NULL,\\n cpu_last = LAST(CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL), @timestamp)\\n WHERE CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL) IS NOT NULL,\\n mem_min = MIN(CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL))\\n WHERE CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL) IS NOT NULL,\\n mem_max = MAX(CASE(stat == \\\"Maximum\\\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL))\\n WHERE CASE(stat == \\\"Maximum\\\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL) IS NOT NULL,\\n mem_avg = AVG(CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL))\\n WHERE CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL) IS NOT NULL,\\n mem_last = LAST(CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL), @timestamp)\\n WHERE CASE(stat == \\\"Average\\\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL) IS NOT NULL\\n BY entity_id = ServiceName, cluster_name = ClusterName | EVAL status_num = CASE(cpu_max IS NULL AND mem_max IS NULL, 4, cpu_max > 80 OR mem_max > 80, 0, cpu_max > 50 OR mem_max > 50, 1, cpu_max < 5, 3, 2),\\n status_label = CASE(cpu_max IS NULL AND mem_max IS NULL, \\\"no data\\\", cpu_max > 80 OR mem_max > 80, \\\"saturated\\\", cpu_max > 50 OR mem_max > 50, \\\"hot\\\", cpu_max < 5, \\\"idle\\\", \\\"healthy\\\"),\\n severity_rank = CASE(cpu_max > 80 OR mem_max > 80, 0, cpu_max > 50 OR mem_max > 50, 1, cpu_max IS NULL AND mem_max IS NULL, 2, cpu_max < 5, 4, 3),\\n round_key = CONCAT(TO_STRING(?_tstart), \\\"|\\\", TO_STRING(?_tend)),\\n fetched_at = NOW() | KEEP entity_id, cluster_name, status_num, status_label, severity_rank,\\n cpu_min, cpu_max, cpu_avg, cpu_last,\\n mem_min, mem_max, mem_avg, mem_last,\\n round_key, fetched_at | LIMIT 10000\"}}, {\"name\": \"ranked_status\", \"source\": \"raw_all\", \"transform\": [{\"type\": \"collect\", \"sort\": {\"field\": [\"severity_rank\", \"entity_id\"], \"order\": [\"ascending\", \"ascending\"]}}, {\"type\": \"window\", \"ops\": [\"row_number\"], \"as\": [\"active_rank\"]}]}, {\"name\": \"ranked_cpu_min\", \"source\": \"raw_all\", \"transform\": [{\"type\": \"formula\", \"as\": \"sort_key\", \"expr\": \"datum.cpu_min == null ? 1e12 : -datum.cpu_min * 1000000\"}, {\"type\": \"collect\", \"sort\": {\"field\": [\"sort_key\", \"entity_id\"], \"order\": [\"ascending\", \"ascending\"]}}, {\"type\": \"window\", \"ops\": [\"row_number\"], \"as\": [\"active_rank\"]}]}, {\"name\": \"ranked_cpu_max\", \"source\": \"raw_all\", \"transform\": [{\"type\": \"formula\", \"as\": \"sort_key\", \"expr\": \"datum.cpu_max == null ? 1e12 : -datum.cpu_max * 1000000\"}, {\"type\": \"collect\", \"sort\": {\"field\": [\"sort_key\", \"entity_id\"], \"order\": [\"ascending\", \"ascending\"]}}, {\"type\": \"window\", \"ops\": [\"row_number\"], \"as\": [\"active_rank\"]}]}, {\"name\": \"ranked_cpu_avg\", \"source\": \"raw_all\", \"transform\": [{\"type\": \"formula\", \"as\": \"sort_key\", \"expr\": \"datum.cpu_avg == null ? 1e12 : -datum.cpu_avg * 1000000\"}, {\"type\": \"collect\", \"sort\": {\"field\": [\"sort_key\", \"entity_id\"], \"order\": [\"ascending\", \"ascending\"]}}, {\"type\": \"window\", \"ops\": [\"row_number\"], \"as\": [\"active_rank\"]}]}, {\"name\": \"ranked_cpu_last\", \"source\": \"raw_all\", \"transform\": [{\"type\": \"formula\", \"as\": \"sort_key\", \"expr\": \"datum.cpu_last == null ? 1e12 : -datum.cpu_last * 1000000\"}, {\"type\": \"collect\", \"sort\": {\"field\": [\"sort_key\", \"entity_id\"], \"order\": [\"ascending\", \"ascending\"]}}, {\"type\": \"window\", \"ops\": [\"row_number\"], \"as\": [\"active_rank\"]}]}, {\"name\": \"ranked_mem_min\", \"source\": \"raw_all\", \"transform\": [{\"type\": \"formula\", \"as\": \"sort_key\", \"expr\": \"datum.mem_min == null ? 1e12 : -datum.mem_min * 1000000\"}, {\"type\": \"collect\", \"sort\": {\"field\": [\"sort_key\", \"entity_id\"], \"order\": [\"ascending\", \"ascending\"]}}, {\"type\": \"window\", \"ops\": [\"row_number\"], \"as\": [\"active_rank\"]}]}, {\"name\": \"ranked_mem_max\", \"source\": \"raw_all\", \"transform\": [{\"type\": \"formula\", \"as\": \"sort_key\", \"expr\": \"datum.mem_max == null ? 1e12 : -datum.mem_max * 1000000\"}, {\"type\": \"collect\", \"sort\": {\"field\": [\"sort_key\", \"entity_id\"], \"order\": [\"ascending\", \"ascending\"]}}, {\"type\": \"window\", \"ops\": [\"row_number\"], \"as\": [\"active_rank\"]}]}, {\"name\": \"ranked_mem_avg\", \"source\": \"raw_all\", \"transform\": [{\"type\": \"formula\", \"as\": \"sort_key\", \"expr\": \"datum.mem_avg == null ? 1e12 : -datum.mem_avg * 1000000\"}, {\"type\": \"collect\", \"sort\": {\"field\": [\"sort_key\", \"entity_id\"], \"order\": [\"ascending\", \"ascending\"]}}, {\"type\": \"window\", \"ops\": [\"row_number\"], \"as\": [\"active_rank\"]}]}, {\"name\": \"ranked_mem_last\", \"source\": \"raw_all\", \"transform\": [{\"type\": \"formula\", \"as\": \"sort_key\", \"expr\": \"datum.mem_last == null ? 1e12 : -datum.mem_last * 1000000\"}, {\"type\": \"collect\", \"sort\": {\"field\": [\"sort_key\", \"entity_id\"], \"order\": [\"ascending\", \"ascending\"]}}, {\"type\": \"window\", \"ops\": [\"row_number\"], \"as\": [\"active_rank\"]}]}, {\"name\": \"active\", \"values\": [], \"on\": [{\"trigger\": \"ts_round !== '' && active_round !== '' && active_round !== ts_round\", \"remove\": \"true\"}, {\"trigger\": \"metric === 'status' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\", \"remove\": \"true\", \"insert\": \"data('ranked_status')\"}, {\"trigger\": \"metric === 'cpu' && effective_agg === 'min' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\", \"remove\": \"true\", \"insert\": \"data('ranked_cpu_min')\"}, {\"trigger\": \"metric === 'cpu' && effective_agg === 'max' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\", \"remove\": \"true\", \"insert\": \"data('ranked_cpu_max')\"}, {\"trigger\": \"metric === 'cpu' && effective_agg === 'avg' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\", \"remove\": \"true\", \"insert\": \"data('ranked_cpu_avg')\"}, {\"trigger\": \"metric === 'cpu' && effective_agg === 'last' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\", \"remove\": \"true\", \"insert\": \"data('ranked_cpu_last')\"}, {\"trigger\": \"metric === 'mem' && effective_agg === 'min' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\", \"remove\": \"true\", \"insert\": \"data('ranked_mem_min')\"}, {\"trigger\": \"metric === 'mem' && effective_agg === 'max' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\", \"remove\": \"true\", \"insert\": \"data('ranked_mem_max')\"}, {\"trigger\": \"metric === 'mem' && effective_agg === 'avg' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\", \"remove\": \"true\", \"insert\": \"data('ranked_mem_avg')\"}, {\"trigger\": \"metric === 'mem' && effective_agg === 'last' && len_raw > 0 && raw_round === ts_round && ts_round !== ''\", \"remove\": \"true\", \"insert\": \"data('ranked_mem_last')\"}]}, {\"name\": \"entities\", \"source\": \"active\", \"transform\": [{\"type\": \"formula\", \"as\": \"active_val\", \"expr\": \"metric=='status' ? null : (metric=='cpu' ? (effective_agg=='min' ? datum.cpu_min : effective_agg=='max' ? datum.cpu_max : effective_agg=='avg' ? datum.cpu_avg : effective_agg=='last' ? datum.cpu_last : null) : (metric=='mem' ? (effective_agg=='min' ? datum.mem_min : effective_agg=='max' ? datum.mem_max : effective_agg=='avg' ? datum.mem_avg : effective_agg=='last' ? datum.mem_last : null) : null))\"}, {\"type\": \"formula\", \"as\": \"index0\", \"expr\": \"datum.active_rank - 1\"}, {\"type\": \"formula\", \"as\": \"col\", \"expr\": \"datum.index0 % gridCols\"}, {\"type\": \"formula\", \"as\": \"row\", \"expr\": \"floor(datum.index0 / gridCols)\"}, {\"type\": \"formula\", \"as\": \"x\", \"expr\": \"datum.col * gapX + (datum.row % 2 == 1 ? gapX / 2 : 0) + hexR + 5\"}, {\"type\": \"formula\", \"as\": \"y\", \"expr\": \"datum.row * gapY + hexR + 5 + hexOffsetY\"}, {\"type\": \"formula\", \"as\": \"hexSize\", \"expr\": \"hexR * hexR * 3.46\"}]}, {\"name\": \"status_counts\", \"source\": \"raw_all\", \"transform\": [{\"type\": \"aggregate\", \"groupby\": [\"status_num\"], \"ops\": [\"count\"], \"as\": [\"count\"]}]}, {\"name\": \"status_legend\", \"values\": [{\"label\": \"Saturated\", \"val\": 0}, {\"label\": \"Hot\", \"val\": 1}, {\"label\": \"Healthy\", \"val\": 2}, {\"label\": \"Idle\", \"val\": 3}, {\"label\": \"No data\", \"val\": 4}], \"transform\": [{\"type\": \"lookup\", \"from\": \"status_counts\", \"key\": \"status_num\", \"fields\": [\"val\"], \"values\": [\"count\"], \"as\": [\"count\"], \"default\": 0}, {\"type\": \"window\", \"ops\": [\"row_number\"], \"as\": [\"idx\"]}]}, {\"name\": \"cpu_counts\", \"source\": \"raw_all\", \"transform\": [{\"type\": \"formula\", \"as\": \"v\", \"expr\": \"agg == 'min' ? datum.cpu_min : agg == 'max' ? datum.cpu_max : agg == 'avg' ? datum.cpu_avg : agg == 'last' ? datum.cpu_last : null\"}, {\"type\": \"formula\", \"as\": \"bucket\", \"expr\": \"datum.v == null ? 3 : (datum.v >= 80 ? 2 : datum.v >= 50 ? 1 : 0)\"}, {\"type\": \"aggregate\", \"groupby\": [\"bucket\"], \"ops\": [\"count\"], \"as\": [\"count\"]}]}, {\"name\": \"mem_counts\", \"source\": \"raw_all\", \"transform\": [{\"type\": \"formula\", \"as\": \"v\", \"expr\": \"agg == 'min' ? datum.mem_min : agg == 'max' ? datum.mem_max : agg == 'avg' ? datum.mem_avg : agg == 'last' ? datum.mem_last : null\"}, {\"type\": \"formula\", \"as\": \"bucket\", \"expr\": \"datum.v == null ? 3 : (datum.v >= 80 ? 2 : datum.v >= 50 ? 1 : 0)\"}, {\"type\": \"aggregate\", \"groupby\": [\"bucket\"], \"ops\": [\"count\"], \"as\": [\"count\"]}]}, {\"name\": \"cpu_legend_stops\", \"values\": [{\"label\": \"≥ 80%\", \"val\": 90, \"bucket\": 2, \"is_nodata\": false}, {\"label\": \"50 – 79%\", \"val\": 60, \"bucket\": 1, \"is_nodata\": false}, {\"label\": \"< 50%\", \"val\": 0, \"bucket\": 0, \"is_nodata\": false}, {\"label\": \"No data\", \"val\": null, \"bucket\": 3, \"is_nodata\": true}], \"transform\": [{\"type\": \"lookup\", \"from\": \"cpu_counts\", \"key\": \"bucket\", \"fields\": [\"bucket\"], \"values\": [\"count\"], \"as\": [\"count\"], \"default\": 0}, {\"type\": \"window\", \"ops\": [\"row_number\"], \"as\": [\"idx\"]}]}, {\"name\": \"mem_legend_stops\", \"values\": [{\"label\": \"≥ 80%\", \"val\": 90, \"bucket\": 2, \"is_nodata\": false}, {\"label\": \"50 – 79%\", \"val\": 60, \"bucket\": 1, \"is_nodata\": false}, {\"label\": \"< 50%\", \"val\": 0, \"bucket\": 0, \"is_nodata\": false}, {\"label\": \"No data\", \"val\": null, \"bucket\": 3, \"is_nodata\": true}], \"transform\": [{\"type\": \"lookup\", \"from\": \"mem_counts\", \"key\": \"bucket\", \"fields\": [\"bucket\"], \"values\": [\"count\"], \"as\": [\"count\"], \"default\": 0}, {\"type\": \"window\", \"ops\": [\"row_number\"], \"as\": [\"idx\"]}]}, {\"name\": \"spinner_dots\", \"values\": [{\"i\": 0}, {\"i\": 1}, {\"i\": 2}, {\"i\": 3}, {\"i\": 4}, {\"i\": 5}, {\"i\": 6}, {\"i\": 7}]}, {\"name\": \"pills\", \"values\": [{\"id\": \"status\", \"label\": \"Status\", \"group\": \"metric\", \"x\": 69, \"w\": 48, \"available_aggs\": [], \"default_agg\": \"last\"}, {\"id\": \"cpu\", \"label\": \"CPU %\", \"group\": \"metric\", \"x\": 125, \"w\": 58, \"available_aggs\": [\"min\", \"max\", \"avg\", \"last\"], \"default_agg\": \"last\"}, {\"id\": \"mem\", \"label\": \"Memory %\", \"group\": \"metric\", \"x\": 191, \"w\": 76, \"available_aggs\": [\"min\", \"max\", \"avg\", \"last\"], \"default_agg\": \"last\"}, {\"id\": \"min\", \"label\": \"Min\", \"group\": \"agg\", \"x\": 425, \"w\": 36, \"valid_for\": [\"cpu\", \"mem\"]}, {\"id\": \"max\", \"label\": \"Max\", \"group\": \"agg\", \"x\": 465, \"w\": 36, \"valid_for\": [\"cpu\", \"mem\"]}, {\"id\": \"avg\", \"label\": \"Avg\", \"group\": \"agg\", \"x\": 505, \"w\": 36, \"valid_for\": [\"cpu\", \"mem\"]}, {\"id\": \"last\", \"label\": \"Last\", \"group\": \"agg\", \"x\": 545, \"w\": 40, \"valid_for\": [\"cpu\", \"mem\"]}, {\"id\": \"sum\", \"label\": \"Sum\", \"group\": \"agg\", \"x\": 589, \"w\": 40, \"valid_for\": []}]}, {\"name\": \"menu_items_data\", \"values\": [{\"id\": \"filter\", \"label\": \"Filter dashboard by this service\", \"idx\": 0}, {\"id\": \"metrics\", \"label\": \"View service metrics in Discover\", \"idx\": 1}]}, {\"name\": \"menu_visible\", \"values\": [{\"_\": 0}], \"transform\": [{\"type\": \"filter\", \"expr\": \"selected_entity != null\"}]}, {\"name\": \"menu_items_visible\", \"source\": \"menu_items_data\", \"transform\": [{\"type\": \"filter\", \"expr\": \"selected_entity != null\"}]}], \"signals\": [{\"name\": \"metric\", \"value\": \"status\", \"on\": [{\"events\": \"@pill_bg:click\", \"update\": \"datum.group === 'metric' ? datum.id : metric\"}]}, {\"name\": \"agg\", \"value\": \"last\", \"on\": [{\"events\": \"@pill_bg:click\", \"update\": \"datum.group === 'agg' && metric !== 'status' && indexof(datum.valid_for, metric) >= 0 ? datum.id : ( datum.group === 'metric' && datum.id !== 'status' ? (indexof(datum.available_aggs, agg) >= 0 ? agg : datum.default_agg) : agg )\"}]}, {\"name\": \"effective_agg\", \"update\": \"metric === 'cpu' ? ((agg === 'min' || agg === 'max' || agg === 'avg' || agg === 'last') ? agg : 'last') : metric === 'mem' ? ((agg === 'min' || agg === 'max' || agg === 'avg' || agg === 'last') ? agg : 'last') : 'last'\"}, {\"name\": \"groupHeaderH\", \"value\": 20}, {\"name\": \"groupGap\", \"value\": 10}, {\"name\": \"group_by\", \"value\": \"none\"}, {\"name\": \"len_raw\", \"update\": \"length(data('raw_all'))\"}, {\"name\": \"len_active\", \"update\": \"length(data('active'))\"}, {\"name\": \"ts_round\", \"update\": \"data('ts_probe')[0] ? data('ts_probe')[0].round_key : ''\"}, {\"name\": \"time_from\", \"update\": \"ts_round !== '' && indexof(ts_round, '|') > 0 ? slice(ts_round, 0, indexof(ts_round, '|')) : ''\"}, {\"name\": \"time_to\", \"update\": \"ts_round !== '' && indexof(ts_round, '|') > 0 ? slice(ts_round, indexof(ts_round, '|') + 1) : ''\"}, {\"name\": \"g_param\", \"update\": \"time_from !== '' && time_to !== '' ? '_g=(time:(from:%27' + time_from + '%27,to:%27' + time_to + '%27))&' : ''\"}, {\"name\": \"raw_round\", \"update\": \"data('raw_all')[0] ? data('raw_all')[0].round_key : ''\"}, {\"name\": \"active_round\", \"update\": \"raw_round\"}, {\"name\": \"raw_fetched_str\", \"update\": \"data('raw_all')[0] ? data('raw_all')[0].fetched_at : ''\"}, {\"name\": \"active_fetched\", \"update\": \"raw_fetched_str !== '' ? toDate(raw_fetched_str) : 0\"}, {\"name\": \"tick\", \"value\": 0, \"on\": [{\"events\": {\"type\": \"timer\", \"throttle\": 100}, \"update\": \"now()\"}]}, {\"name\": \"url_change_at\", \"value\": 0, \"on\": [{\"events\": {\"source\": \"window\", \"type\": \"hashchange\"}, \"update\": \"now()\"}, {\"events\": {\"source\": \"window\", \"type\": \"popstate\"}, \"update\": \"now()\"}]}, {\"name\": \"fetch_tracker\", \"init\": \"{seen: 0, arrived_at: 0}\", \"on\": [{\"events\": {\"signal\": \"tick\"}, \"update\": \"active_fetched > 0 && active_fetched !== fetch_tracker.seen ? {seen: active_fetched, arrived_at: tick} : fetch_tracker\"}]}, {\"name\": \"loading_raw\", \"update\": \"len_active === 0 || ts_round === '' || active_round === '' || active_round !== ts_round || (url_change_at > 0 && fetch_tracker.arrived_at < url_change_at)\"}, {\"name\": \"loading_started_at\", \"value\": 0, \"on\": [{\"events\": {\"signal\": \"tick\"}, \"update\": \"loading_raw ? (loading_started_at === 0 ? tick : loading_started_at) : 0\"}]}, {\"name\": \"loading_elapsed\", \"update\": \"loading_started_at > 0 ? tick - loading_started_at : 0\"}, {\"name\": \"no_data\", \"update\": \"loading_raw && ts_round !== '' && len_raw === 0 && loading_elapsed > 2000\"}, {\"name\": \"loading\", \"update\": \"loading_raw && !no_data\"}, {\"name\": \"loading_timeout\", \"update\": \"loading && loading_elapsed > 15000\"}, {\"name\": \"total_entities\", \"update\": \"len_raw\"}, {\"name\": \"legendW\", \"value\": 138}, {\"name\": \"buttonsH\", \"value\": 34}, {\"name\": \"availW\", \"update\": \"width - 20 - legendW\"}, {\"name\": \"n_groups\", \"value\": 0}, {\"name\": \"availH\", \"update\": \"height - 20 - buttonsH - (group_by !== 'none' ? n_groups * (groupHeaderH + groupGap) : 0)\"}, {\"name\": \"hexOffsetY\", \"update\": \"buttonsH\"}, {\"name\": \"idealCols\", \"update\": \"total_entities > 0 && availH > 0 ? max(1, round(sqrt(total_entities * (availW / availH)))) : 1\"}, {\"name\": \"idealRows\", \"update\": \"max(1, ceil(total_entities / idealCols))\"}, {\"name\": \"hexRInitial\", \"update\": \"min(availW / (idealCols * 2 + 0), availH / (idealRows * 2 + 0))\"}, {\"name\": \"maxColsAtHexR\", \"update\": \"max(idealCols, floor(availW / (max(3, hexRInitial) * 2)))\"}, {\"name\": \"maxColsAtMinR\", \"update\": \"max(1, floor(availW / (3 * 2)))\"}, {\"name\": \"gridCols\", \"update\": \"max(1, min(total_entities, min(maxColsAtHexR, maxColsAtMinR)))\"}, {\"name\": \"gridRows\", \"update\": \"group_by === 'none' ? max(1, ceil(total_entities / gridCols)) : max(1, ceil(total_entities / gridCols) + max(0, n_groups - 1))\"}, {\"name\": \"rByWidth\", \"update\": \"availW / (gridCols * 1.76 + 0.88)\"}, {\"name\": \"rByHeight\", \"update\": \"availH / (gridRows * 1.54 + 0.92)\"}, {\"name\": \"hexR\", \"update\": \"max(3, min(90, min(rByWidth, rByHeight)))\"}, {\"name\": \"gapX\", \"update\": \"hexR * 1.76\"}, {\"name\": \"gapY\", \"update\": \"hexR * 1.54\"}, {\"name\": \"legendX\", \"update\": \"width - legendW + 4\"}, {\"name\": \"tooltip\", \"value\": {}, \"on\": [{\"events\": \"@hexagons:mouseover\", \"update\": \"datum\"}, {\"events\": \"@hexagons:mouseout\", \"update\": \"{}\"}]}, {\"name\": \"selected_entity\", \"value\": null, \"on\": [{\"events\": \"@hexagons:click\", \"update\": \"{id: datum.entity_id, x: datum.x, y: datum.y}\"}, {\"events\": \"@menu_backdrop:click\", \"update\": \"null\"}, {\"events\": \"@menu_item_bg:click\", \"update\": \"null\"}]}, {\"name\": \"menu_x\", \"update\": \"selected_entity ? ((selected_entity.x + hexR + 4 + 248 > width - legendW - 4) ? max(4, selected_entity.x - hexR - 248 - 4) : max(4, selected_entity.x + hexR + 4)) : 0\"}, {\"name\": \"menu_y\", \"update\": \"selected_entity ? max(buttonsH + 4, min(selected_entity.y - 75, height - 90 - 4)) : 0\"}], \"scales\": [{\"name\": \"status_color\", \"type\": \"ordinal\", \"domain\": [0, 1, 2, 3, 4], \"range\": [\"#F6726A\", \"#D6BF57\", \"#24C292\", \"#A8E6CF\", \"#BFDBFF\"]}, {\"name\": \"cpu_color\", \"type\": \"threshold\", \"domain\": [50, 80], \"range\": [\"#24C292\", \"#D6BF57\", \"#F6726A\"]}, {\"name\": \"mem_color\", \"type\": \"threshold\", \"domain\": [50, 80], \"range\": [\"#24C292\", \"#D6BF57\", \"#F6726A\"]}], \"marks\": [{\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"value\": 5}, \"y\": {\"value\": 17}, \"text\": {\"value\": \"Color by:\"}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": 600}, \"fill\": {\"value\": \"#838C99\"}}}}, {\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"value\": 345}, \"y\": {\"value\": 17}, \"text\": {\"value\": \"Aggregation:\"}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": 600}, \"fill\": {\"value\": \"#838C99\"}, \"opacity\": {\"signal\": \"(metric === 'cpu' || metric === 'mem') ? 1 : 0.5\"}}}}, {\"name\": \"pill_bg\", \"type\": \"rect\", \"from\": {\"data\": \"pills\"}, \"encode\": {\"enter\": {}, \"update\": {\"x\": {\"field\": \"x\"}, \"x2\": {\"signal\": \"datum.x + datum.w\"}, \"y\": {\"value\": 6}, \"y2\": {\"value\": 28}, \"cornerRadius\": {\"value\": 4}, \"fill\": {\"signal\": \"((datum.group === 'metric' && datum.id === metric) || (datum.group === 'agg' && datum.id === effective_agg)) ? '#0077CC' : 'transparent'\"}, \"stroke\": {\"signal\": \"((datum.group === 'metric' && datum.id === metric) || (datum.group === 'agg' && datum.id === effective_agg)) ? '#0064B0' : '#838C99'\"}, \"strokeWidth\": {\"value\": 1}, \"opacity\": {\"signal\": \"(datum.group === 'agg' && (!(metric === 'cpu' || metric === 'mem') || indexof(datum.valid_for, metric) < 0)) ? 0.5 : 1\"}, \"cursor\": {\"signal\": \"(datum.group === 'agg' && (!(metric === 'cpu' || metric === 'mem') || indexof(datum.valid_for, metric) < 0)) ? 'default' : 'pointer'\"}}}}, {\"name\": \"pill_label\", \"type\": \"text\", \"interactive\": false, \"from\": {\"data\": \"pills\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"datum.x + datum.w / 2\"}, \"y\": {\"value\": 17}, \"text\": {\"field\": \"label\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": 500}, \"fill\": {\"signal\": \"((datum.group === 'metric' && datum.id === metric) || (datum.group === 'agg' && datum.id === effective_agg)) ? '#FFFFFF' : '#838C99'\"}, \"opacity\": {\"signal\": \"(datum.group === 'agg' && (!(metric === 'cpu' || metric === 'mem') || indexof(datum.valid_for, metric) < 0)) ? 0.5 : 1\"}}}}, {\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"signal\": \"width - legendW - 4\"}, \"y\": {\"value\": 17}, \"text\": {\"signal\": \"total_entities === 0 ? '' : (total_entities < 10000 ? 'Showing ' + total_entities + ' services' : 'Showing top 10,000 services (limit reached)')\"}, \"align\": {\"value\": \"right\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 11}, \"fill\": {\"value\": \"#838C99\"}}}}, {\"name\": \"hexagons\", \"type\": \"symbol\", \"from\": {\"data\": \"entities\"}, \"encode\": {\"enter\": {\"cursor\": {\"value\": \"pointer\"}}, \"update\": {\"x\": {\"field\": \"x\"}, \"y\": {\"field\": \"y\"}, \"size\": {\"field\": \"hexSize\"}, \"fill\": [{\"test\": \"metric == 'status'\", \"scale\": \"status_color\", \"field\": \"status_num\"}, {\"test\": \"datum.active_val == null\", \"value\": \"#BFDBFF\"}, {\"test\": \"metric == 'cpu'\", \"scale\": \"cpu_color\", \"field\": \"active_val\"}, {\"test\": \"metric == 'mem'\", \"scale\": \"mem_color\", \"field\": \"active_val\"}, {\"value\": \"#BFDBFF\"}], \"fillOpacity\": {\"value\": 0.92}, \"shape\": {\"value\": \"M0,-1L0.866,-0.5L0.866,0.5L0,1L-0.866,0.5L-0.866,-0.5Z\"}, \"strokeWidth\": [{\"test\": \"selected_entity && selected_entity.id === datum.entity_id\", \"value\": 3.5}, {\"test\": \"tooltip.entity_id === datum.entity_id\", \"value\": 3}, {\"value\": 1}], \"stroke\": [{\"test\": \"selected_entity && selected_entity.id === datum.entity_id\", \"value\": \"#0077CC\"}, {\"test\": \"tooltip.entity_id === datum.entity_id\", \"value\": \"#222\"}, {\"value\": \"#FFFFFF\"}], \"strokeOpacity\": [{\"test\": \"selected_entity && selected_entity.id === datum.entity_id\", \"value\": 1}, {\"test\": \"tooltip.entity_id === datum.entity_id\", \"value\": 1}, {\"value\": 0.3}]}}}, {\"type\": \"group\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"signal\": \"legendX\"}, \"y\": {\"signal\": \"buttonsH + 8\"}}}, \"marks\": [{\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"y\": {\"value\": 0}, \"text\": {\"value\": \"Status\"}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"top\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"fill\": {\"value\": \"#838C99\"}}, \"update\": {\"opacity\": [{\"test\": \"metric == 'status'\", \"value\": 1}, {\"value\": 0}]}}}, {\"type\": \"symbol\", \"from\": {\"data\": \"status_legend\"}, \"encode\": {\"enter\": {\"x\": {\"value\": 6}, \"y\": {\"signal\": \"28 + (datum.idx - 1) * 22\"}, \"size\": {\"value\": 110}, \"shape\": {\"value\": \"circle\"}, \"fill\": {\"scale\": \"status_color\", \"field\": \"val\"}}, \"update\": {\"opacity\": [{\"test\": \"metric == 'status'\", \"value\": 1}, {\"value\": 0}]}}}, {\"type\": \"text\", \"from\": {\"data\": \"status_legend\"}, \"encode\": {\"enter\": {\"x\": {\"value\": 18}, \"y\": {\"signal\": \"28 + (datum.idx - 1) * 22\"}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 11}, \"fill\": {\"value\": \"#838C99\"}}, \"update\": {\"text\": {\"signal\": \"datum.label + ' (' + datum.count + ')'\"}, \"opacity\": [{\"test\": \"metric == 'status'\", \"value\": 1}, {\"value\": 0}]}}}]}, {\"type\": \"group\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"signal\": \"legendX\"}, \"y\": {\"signal\": \"buttonsH + 8\"}}}, \"marks\": [{\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"y\": {\"value\": 0}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"top\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"fill\": {\"value\": \"#838C99\"}}, \"update\": {\"text\": {\"signal\": \"'CPU% (' + agg + ')'\"}, \"opacity\": [{\"test\": \"metric == 'cpu'\", \"value\": 1}, {\"value\": 0}]}}}, {\"type\": \"symbol\", \"from\": {\"data\": \"cpu_legend_stops\"}, \"encode\": {\"enter\": {\"x\": {\"value\": 6}, \"y\": {\"signal\": \"28 + (datum.idx - 1) * 22\"}, \"size\": {\"value\": 110}, \"shape\": {\"value\": \"circle\"}}, \"update\": {\"fill\": [{\"test\": \"datum.is_nodata\", \"value\": \"#BFDBFF\"}, {\"scale\": \"cpu_color\", \"field\": \"val\"}], \"opacity\": [{\"test\": \"metric == 'cpu'\", \"value\": 1}, {\"value\": 0}]}}}, {\"type\": \"text\", \"from\": {\"data\": \"cpu_legend_stops\"}, \"encode\": {\"enter\": {\"x\": {\"value\": 18}, \"y\": {\"signal\": \"28 + (datum.idx - 1) * 22\"}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 11}, \"fill\": {\"value\": \"#838C99\"}}, \"update\": {\"text\": {\"signal\": \"datum.label + ' (' + datum.count + ')'\"}, \"opacity\": [{\"test\": \"metric == 'cpu'\", \"value\": 1}, {\"value\": 0}]}}}]}, {\"type\": \"group\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"signal\": \"legendX\"}, \"y\": {\"signal\": \"buttonsH + 8\"}}}, \"marks\": [{\"type\": \"text\", \"encode\": {\"enter\": {\"x\": {\"value\": 0}, \"y\": {\"value\": 0}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"top\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": \"bold\"}, \"fill\": {\"value\": \"#838C99\"}}, \"update\": {\"text\": {\"signal\": \"'Memory% (' + agg + ')'\"}, \"opacity\": [{\"test\": \"metric == 'mem'\", \"value\": 1}, {\"value\": 0}]}}}, {\"type\": \"symbol\", \"from\": {\"data\": \"mem_legend_stops\"}, \"encode\": {\"enter\": {\"x\": {\"value\": 6}, \"y\": {\"signal\": \"28 + (datum.idx - 1) * 22\"}, \"size\": {\"value\": 110}, \"shape\": {\"value\": \"circle\"}}, \"update\": {\"fill\": [{\"test\": \"datum.is_nodata\", \"value\": \"#BFDBFF\"}, {\"scale\": \"mem_color\", \"field\": \"val\"}], \"opacity\": [{\"test\": \"metric == 'mem'\", \"value\": 1}, {\"value\": 0}]}}}, {\"type\": \"text\", \"from\": {\"data\": \"mem_legend_stops\"}, \"encode\": {\"enter\": {\"x\": {\"value\": 18}, \"y\": {\"signal\": \"28 + (datum.idx - 1) * 22\"}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 11}, \"fill\": {\"value\": \"#838C99\"}}, \"update\": {\"text\": {\"signal\": \"datum.label + ' (' + datum.count + ')'\"}, \"opacity\": [{\"test\": \"metric == 'mem'\", \"value\": 1}, {\"value\": 0}]}}}]}, {\"type\": \"group\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"signal\": \"tooltip.x + 18 + 290 > width - legendW - 10 ? max(tooltip.x - 18 - 290, 5) : tooltip.x + 18\"}, \"y\": {\"signal\": \"max(tooltip.y - 30, 5)\"}, \"width\": {\"value\": 290}, \"height\": {\"signal\": \"tooltip.entity_id ? (length(tooltip.entity_id) <= 36 ? 110 : 124) : 110\"}, \"opacity\": [{\"test\": \"tooltip.entity_id\", \"value\": 1}, {\"value\": 0}], \"fill\": {\"value\": \"#0E1728\"}, \"stroke\": {\"value\": \"#2A3144\"}, \"strokeWidth\": {\"value\": 1}, \"cornerRadius\": {\"value\": 8}}}, \"marks\": [{\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"value\": 12}, \"y\": {\"value\": 12}, \"text\": {\"signal\": \"tooltip.entity_id ? (length(tooltip.entity_id) <= 36 ? [tooltip.entity_id] : [slice(tooltip.entity_id, 0, 36), slice(tooltip.entity_id, 36)]) : ['']\"}, \"fontSize\": {\"value\": 11}, \"lineHeight\": {\"value\": 14}, \"baseline\": {\"value\": \"top\"}, \"fontWeight\": {\"value\": \"bold\"}, \"fill\": {\"value\": \"#fff\"}}}}, {\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"value\": 12}, \"y\": {\"signal\": \"tooltip.entity_id ? (length(tooltip.entity_id) <= 36 ? 36 : 50) : 36\"}, \"text\": {\"signal\": \"tooltip.entity_id ? 'Status: ' + tooltip.status_label : ''\"}, \"fontSize\": {\"value\": 10}, \"fontWeight\": [{\"test\": \"metric == 'status'\", \"value\": \"bold\"}, {\"value\": \"normal\"}], \"baseline\": {\"value\": \"top\"}, \"fill\": {\"signal\": \"metric == 'status' ? (tooltip.status_num == 0 ? '#F6726A' : tooltip.status_num == 1 ? '#D6BF57' : tooltip.status_num == 2 ? '#24C292' : tooltip.status_num == 3 ? '#A8E6CF' : '#BFDBFF') : '#9da4b3'\"}}}}, {\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"value\": 12}, \"y\": {\"signal\": \"tooltip.entity_id ? (length(tooltip.entity_id) <= 36 ? 50 : 64) : 50\"}, \"text\": {\"signal\": \"tooltip.entity_id ? 'CPU% (' + (metric === 'cpu' ? ((agg === 'min' || agg === 'max' || agg === 'avg' || agg === 'last') ? agg : 'last') : 'last') + '): ' + (tooltip[('cpu_' + (metric === 'cpu' ? ((agg === 'min' || agg === 'max' || agg === 'avg' || agg === 'last') ? agg : 'last') : 'last'))] != null ? format(tooltip[('cpu_' + (metric === 'cpu' ? ((agg === 'min' || agg === 'max' || agg === 'avg' || agg === 'last') ? agg : 'last') : 'last'))], '.1f') + '%' : 'no data') : ''\"}, \"fontSize\": {\"value\": 10}, \"fontWeight\": [{\"test\": \"metric == 'cpu'\", \"value\": \"bold\"}, {\"value\": \"normal\"}], \"baseline\": {\"value\": \"top\"}, \"fill\": {\"signal\": \"metric == 'cpu' ? (tooltip[('cpu_' + (metric === 'cpu' ? ((agg === 'min' || agg === 'max' || agg === 'avg' || agg === 'last') ? agg : 'last') : 'last'))] == null ? '#9da4b3' : tooltip[('cpu_' + (metric === 'cpu' ? ((agg === 'min' || agg === 'max' || agg === 'avg' || agg === 'last') ? agg : 'last') : 'last'))] >= 80 ? '#F6726A' : tooltip[('cpu_' + (metric === 'cpu' ? ((agg === 'min' || agg === 'max' || agg === 'avg' || agg === 'last') ? agg : 'last') : 'last'))] >= 50 ? '#D6BF57' : '#24C292') : '#9da4b3'\"}}}}, {\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"value\": 12}, \"y\": {\"signal\": \"tooltip.entity_id ? (length(tooltip.entity_id) <= 36 ? 64 : 78) : 64\"}, \"text\": {\"signal\": \"tooltip.entity_id ? 'Memory% (' + (metric === 'mem' ? ((agg === 'min' || agg === 'max' || agg === 'avg' || agg === 'last') ? agg : 'last') : 'last') + '): ' + (tooltip[('mem_' + (metric === 'mem' ? ((agg === 'min' || agg === 'max' || agg === 'avg' || agg === 'last') ? agg : 'last') : 'last'))] != null ? format(tooltip[('mem_' + (metric === 'mem' ? ((agg === 'min' || agg === 'max' || agg === 'avg' || agg === 'last') ? agg : 'last') : 'last'))], '.1f') + '%' : 'no data') : ''\"}, \"fontSize\": {\"value\": 10}, \"fontWeight\": [{\"test\": \"metric == 'mem'\", \"value\": \"bold\"}, {\"value\": \"normal\"}], \"baseline\": {\"value\": \"top\"}, \"fill\": {\"signal\": \"metric == 'mem' ? (tooltip[('mem_' + (metric === 'mem' ? ((agg === 'min' || agg === 'max' || agg === 'avg' || agg === 'last') ? agg : 'last') : 'last'))] == null ? '#9da4b3' : tooltip[('mem_' + (metric === 'mem' ? ((agg === 'min' || agg === 'max' || agg === 'avg' || agg === 'last') ? agg : 'last') : 'last'))] >= 80 ? '#F6726A' : tooltip[('mem_' + (metric === 'mem' ? ((agg === 'min' || agg === 'max' || agg === 'avg' || agg === 'last') ? agg : 'last') : 'last'))] >= 50 ? '#D6BF57' : '#24C292') : '#9da4b3'\"}}}}, {\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"value\": 12}, \"y\": {\"signal\": \"tooltip.entity_id ? (length(tooltip.entity_id) <= 36 ? 82 : 96) : 82\"}, \"text\": {\"signal\": \"tooltip.entity_id ? '› Click for actions' : ''\"}, \"fontSize\": {\"value\": 9}, \"fontStyle\": {\"value\": \"italic\"}, \"baseline\": {\"value\": \"top\"}, \"fill\": {\"value\": \"#9da4b3\"}}}}]}, {\"type\": \"rect\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"signal\": \"(width - legendW) / 2 - 120\"}, \"x2\": {\"signal\": \"(width - legendW) / 2 + 120\"}, \"y\": {\"signal\": \"buttonsH + (height - buttonsH) / 2 - 45\"}, \"y2\": {\"signal\": \"buttonsH + (height - buttonsH) / 2 + 45\"}, \"fill\": {\"value\": \"#1A1C21\"}, \"fillOpacity\": {\"signal\": \"(loading || loading_timeout) ? 0.92 : 0\"}, \"stroke\": {\"value\": \"#838C99\"}, \"strokeOpacity\": {\"signal\": \"(loading || loading_timeout) ? 0.4 : 0\"}, \"strokeWidth\": {\"value\": 1}, \"cornerRadius\": {\"value\": 12}}}}, {\"type\": \"symbol\", \"interactive\": false, \"from\": {\"data\": \"spinner_dots\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"(width - legendW) / 2 + 18 * cos(datum.i * PI / 4 - PI / 2)\"}, \"y\": {\"signal\": \"buttonsH + (height - buttonsH) / 2 - 8 + 18 * sin(datum.i * PI / 4 - PI / 2)\"}, \"size\": {\"value\": 70}, \"shape\": {\"value\": \"circle\"}, \"fill\": {\"value\": \"#0077CC\"}, \"opacity\": {\"signal\": \"loading ? 0.15 + 0.85 * (1 - (((floor(tick / 100) % 8) - datum.i + 8) % 8) / 7) : 0\"}}}}, {\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"signal\": \"(width - legendW) / 2\"}, \"y\": {\"signal\": \"buttonsH + (height - buttonsH) / 2 + 28\"}, \"text\": {\"value\": \"Loading data…\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 12}, \"fontWeight\": {\"value\": 500}, \"fill\": {\"value\": \"#FFFFFF\"}, \"opacity\": {\"signal\": \"loading && !loading_timeout ? 1 : 0\"}}}}, {\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"signal\": \"(width - legendW) / 2\"}, \"y\": {\"signal\": \"buttonsH + (height - buttonsH) / 2 + 28\"}, \"text\": {\"value\": \"Still loading… (taking longer than usual)\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 12}, \"fontWeight\": {\"value\": 500}, \"fill\": {\"value\": \"#FFFFFF\"}, \"opacity\": {\"signal\": \"loading_timeout ? 1 : 0\"}}}}, {\"type\": \"text\", \"interactive\": false, \"encode\": {\"update\": {\"x\": {\"signal\": \"(width - legendW) / 2\"}, \"y\": {\"signal\": \"buttonsH + (height - buttonsH) / 2\"}, \"text\": {\"value\": \"No services for the selected time range\"}, \"align\": {\"value\": \"center\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 13}, \"fontWeight\": {\"value\": 500}, \"fill\": {\"value\": \"#838C99\"}, \"opacity\": {\"signal\": \"no_data ? 1 : 0\"}}}}, {\"name\": \"menu_backdrop\", \"type\": \"rect\", \"from\": {\"data\": \"menu_visible\"}, \"encode\": {\"enter\": {\"cursor\": {\"value\": \"default\"}}, \"update\": {\"x\": {\"value\": 0}, \"y\": {\"value\": 0}, \"x2\": {\"signal\": \"width\"}, \"y2\": {\"signal\": \"height\"}, \"fill\": {\"value\": \"#000000\"}, \"fillOpacity\": {\"value\": 0}}}}, {\"name\": \"menu_box\", \"type\": \"rect\", \"from\": {\"data\": \"menu_visible\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"menu_x\"}, \"y\": {\"signal\": \"menu_y\"}, \"width\": {\"value\": 248}, \"height\": {\"value\": 90}, \"fill\": {\"value\": \"#0E1728\"}, \"stroke\": {\"value\": \"#2A3144\"}, \"strokeWidth\": {\"value\": 1}, \"cornerRadius\": {\"value\": 6}}}}, {\"name\": \"menu_header\", \"type\": \"text\", \"interactive\": false, \"from\": {\"data\": \"menu_visible\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"menu_x + 12\"}, \"y\": {\"signal\": \"menu_y + 13.0\"}, \"text\": {\"signal\": \"selected_entity ? 'Service: ' + (length(selected_entity.id) > 30 ? slice(selected_entity.id, 0, 28) + '…' : selected_entity.id) : ''\"}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 11}, \"fontWeight\": {\"value\": 600}, \"fill\": {\"value\": \"#98A2B3\"}}}}, {\"name\": \"menu_separator\", \"type\": \"rule\", \"from\": {\"data\": \"menu_visible\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"menu_x + 8\"}, \"x2\": {\"signal\": \"menu_x + 240\"}, \"y\": {\"signal\": \"menu_y + 26\"}, \"stroke\": {\"value\": \"#2A3144\"}, \"strokeWidth\": {\"value\": 1}}}}, {\"name\": \"menu_item_bg\", \"type\": \"rect\", \"from\": {\"data\": \"menu_items_visible\"}, \"encode\": {\"enter\": {\"cursor\": {\"value\": \"pointer\"}}, \"update\": {\"x\": {\"signal\": \"menu_x\"}, \"y\": {\"signal\": \"menu_y + 30 + datum.idx * 30\"}, \"width\": {\"value\": 248}, \"height\": {\"value\": 30}, \"fill\": {\"value\": \"#0E1728\"}, \"href\": {\"signal\": \"selected_entity ? (datum.id === 'filter' ? ('/app/dashboards#/view/aws_ecs_otel-332f5603-a7b0-449b-b873-7381587d6773?' + g_param + '_a=(filters:!((meta:(alias:!n,disabled:!f,index:%27metrics-*%27,key:ServiceName,negate:!f,params:(query:%27' + selected_entity.id + '%27),type:phrase),query:(match_phrase:(ServiceName:%27' + selected_entity.id + '%27)))),query:(language:kuery,query:%27%27))') : datum.id === 'metrics' ? ('/app/discover#/?_g=(time:(from:%27' + time_from + '%27,to:%27' + time_to + '%27))&_a=(dataSource:(dataViewId:%27metrics-*%27,type:dataView),query:(language:kuery,query:%27' + 'ServiceName:%22' + selected_entity.id + '%22' + '%27))') : '') : ''\"}}, \"hover\": {\"fill\": {\"value\": \"#1A2640\"}}}}, {\"name\": \"menu_item_label\", \"type\": \"text\", \"interactive\": false, \"from\": {\"data\": \"menu_items_visible\"}, \"encode\": {\"update\": {\"x\": {\"signal\": \"menu_x + 14\"}, \"y\": {\"signal\": \"menu_y + 30 + datum.idx * 30 + 15.0\"}, \"text\": {\"field\": \"label\"}, \"align\": {\"value\": \"left\"}, \"baseline\": {\"value\": \"middle\"}, \"fontSize\": {\"value\": 12}, \"fill\": {\"value\": \"#DFE5EF\"}}}}], \"background\": \"transparent\", \"autosize\": {\"type\": \"fit\", \"contains\": \"padding\"}}"
+            },
+            "uiState": {},
+            "data": {
+              "aggs": [],
+              "searchSource": {
+                "query": {
+                  "query": "",
+                  "language": "kuery"
+                },
+                "filter": []
+              }
+            }
+          }
+        },
+        "panelIndex": "fargate-hexmap-0001-aaaa-bbbb-ccccdddd0000",
+        "gridData": {
+          "y": 12,
+          "x": 0,
+          "w": 48,
+          "h": 14,
+          "i": "fargate-hexmap-0001-aaaa-bbbb-ccccdddd0000",
+          "sectionId": "aws-ecs-overview-section"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Total new Service Connect connections across all ECS services, summed over the selected time range. Grows as the range widens.",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "description": "Total new Service Connect connections across all ECS services, summed over the selected time range. Grows as the range widens.",
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-net-in": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/NewConnectionCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS new_conn = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ECS/NewConnectionCount`)) | KEEP new_conn"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "new_conn",
+                          "fieldName": "new_conn",
+                          "label": "New connections (sum)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/NewConnectionCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS new_conn = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ECS/NewConnectionCount`)) | KEEP new_conn"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-net-in",
+                "layerType": "data",
+                "metricAccessor": "new_conn",
+                "showBar": false,
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "applyColorTo": "background",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "label": "New connections (sum)",
+                "valuesTextSize": "s",
+                "titlesTextSize": "xs",
+                "valueFontMode": "default"
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "textBasedLanguages-datasource-layer-layer-kpi-net-in"
+                }
+              ],
+              "needsRefresh": false
+            }
+          }
+        },
+        "panelIndex": "kpi-net-in",
+        "gridData": {
+          "y": 12,
+          "x": 0,
+          "w": 6,
+          "h": 6,
+          "i": "kpi-net-in",
+          "sectionId": "aws-ecs-per-service-section"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Average concurrent Service Connect connections across ECS services, averaged over the selected time range.",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "description": "Average concurrent Service Connect connections across ECS services, averaged over the selected time range.",
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-net-out": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS active_conn_avg = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`)) | KEEP active_conn_avg"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "active_conn_avg",
+                          "fieldName": "active_conn_avg",
+                          "label": "Active connections (avg)",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount` IS NOT NULL | WHERE stat == \"Sum\" | STATS active_conn_avg = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`)) | KEEP active_conn_avg"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-net-out",
+                "layerType": "data",
+                "metricAccessor": "active_conn_avg",
+                "showBar": false,
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "applyColorTo": "background",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "label": "Active connections (avg)",
+                "valuesTextSize": "s",
+                "titlesTextSize": "xs",
+                "valueFontMode": "default"
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "textBasedLanguages-datasource-layer-layer-kpi-net-out"
+                }
+              ],
+              "needsRefresh": false
+            }
+          }
+        },
+        "panelIndex": "kpi-net-out",
+        "gridData": {
+          "y": 18,
+          "x": 0,
+          "w": 6,
+          "h": 6,
+          "i": "kpi-net-out",
+          "sectionId": "aws-ecs-per-service-section"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 ECS services by bytes processed",
+          "description": "Service Connect bytes processed per service over time — ProcessedBytes summed per time bucket (bytes). Limited to the top 10 services by processed bytes per bucket.",
+          "attributes": {
+            "title": "Top 10 ECS services by bytes processed",
+            "description": "Service Connect bytes processed per service over time — ProcessedBytes summed per time bucket (bytes). Limited to the top 10 services by processed bytes per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-net": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ProcessedBytes` IS NOT NULL | WHERE stat == \"Sum\" | STATS col_bytes = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ECS/ProcessedBytes`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC, col_bytes DESC, ServiceName ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "ServiceName",
+                          "fieldName": "ServiceName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "col_bytes",
+                          "fieldName": "col_bytes",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "bytes",
+                              "params": {
+                                "decimals": 2
+                              }
+                            }
+                          },
+                          "label": "Processed bytes",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/ProcessedBytes` IS NOT NULL | WHERE stat == \"Sum\" | STATS col_bytes = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ECS/ProcessedBytes`)) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC, col_bytes DESC, ServiceName ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-net",
+                    "accessors": [
+                      "col_bytes"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "ServiceName"
+                    ]
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-net"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-net",
+        "gridData": {
+          "y": 0,
+          "x": 32,
+          "w": 16,
+          "h": 12,
+          "i": "chart-net",
+          "sectionId": "aws-ecs-per-service-section"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 ECS services by CPU utilization",
+          "description": "Top 10 ECS services by peak CPU utilization (%) over the selected time range (maximum per service). Reference line at 80% marks the high-CPU threshold; bars crossing it indicate services under sustained CPU pressure.",
+          "attributes": {
+            "title": "Top 10 ECS services by CPU utilization",
+            "description": "Top 10 ECS services by peak CPU utilization (%) over the selected time range (maximum per service). Reference line at 80% marks the high-CPU threshold; bars crossing it indicate services under sustained CPU pressure.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-top10-cpu": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Maximum\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | STATS peak_cpu = MAX(max_over_time(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`)) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_cpu DESC | LIMIT 10"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "ServiceName",
+                          "fieldName": "ServiceName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "peak_cpu",
+                          "fieldName": "peak_cpu",
+                          "label": "Max CPU",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Maximum\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | STATS peak_cpu = MAX(max_over_time(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`)) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_cpu DESC | LIMIT 10"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-top10-cpu",
+                    "accessors": [
+                      "peak_cpu"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "bar_horizontal",
+                    "xAccessor": "ServiceName",
+                    "showGridlines": false
+                  }
+                ],
+                "preferredSeriesType": "bar_horizontal",
+                "legend": {
+                  "isVisible": false,
+                  "position": "bottom"
+                },
+                "valueLabels": "show",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "indexpattern-datasource-layer-xy-layer-top10-cpu"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "top10-cpu",
+        "gridData": {
+          "y": 24,
+          "x": 0,
+          "w": 16,
+          "h": 11,
+          "i": "top10-cpu",
+          "sectionId": "aws-ecs-per-service-section"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 ECS services by memory utilization",
+          "description": "Top 10 ECS services by peak memory utilization (%) over the selected time range. Bars approaching 100% risk out-of-memory task kills.",
+          "attributes": {
+            "title": "Top 10 ECS services by memory utilization",
+            "description": "Top 10 ECS services by peak memory utilization (%) over the selected time range. Bars approaching 100% risk out-of-memory task kills.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-top10-netin": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Maximum\" AND `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL | STATS peak_mem = MAX(max_over_time(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`)) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_mem DESC | LIMIT 10"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "ServiceName",
+                          "fieldName": "ServiceName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "peak_mem",
+                          "fieldName": "peak_mem",
+                          "label": "Max memory",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Maximum\" AND `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL | STATS peak_mem = MAX(max_over_time(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`)) / 100.0 BY ServiceName, ClusterName, cloud.region | SORT peak_mem DESC | LIMIT 10"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-top10-netin",
+                    "accessors": [
+                      "peak_mem"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "bar_horizontal",
+                    "xAccessor": "ServiceName",
+                    "showGridlines": false
+                  }
+                ],
+                "preferredSeriesType": "bar_horizontal",
+                "legend": {
+                  "isVisible": false,
+                  "position": "bottom"
+                },
+                "valueLabels": "show",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "indexpattern-datasource-layer-xy-layer-top10-netin"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "top10-netin",
+        "gridData": {
+          "y": 24,
+          "x": 16,
+          "w": 16,
+          "h": 11,
+          "i": "top10-netin",
+          "sectionId": "aws-ecs-per-service-section"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 ECS services by new connections",
+          "description": "Top 10 ECS services by total new Service Connect connections, summed over the selected time range.",
+          "attributes": {
+            "title": "Top 10 ECS services by new connections",
+            "description": "Top 10 ECS services by total new Service Connect connections, summed over the selected time range.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-top10-ebswrite": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/ECS/NewConnectionCount` IS NOT NULL | STATS total_new_conn = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ECS/NewConnectionCount`)) BY ServiceName, ClusterName, cloud.region | SORT total_new_conn DESC | LIMIT 10"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "ServiceName",
+                          "fieldName": "ServiceName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "total_new_conn",
+                          "fieldName": "total_new_conn",
+                          "label": "Total new connections",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | WHERE stat == \"Sum\" AND `metrics.amazonaws.com/AWS/ECS/NewConnectionCount` IS NOT NULL | STATS total_new_conn = SUM(sum_over_time(`metrics.amazonaws.com/AWS/ECS/NewConnectionCount`)) BY ServiceName, ClusterName, cloud.region | SORT total_new_conn DESC | LIMIT 10"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-top10-ebswrite",
+                    "accessors": [
+                      "total_new_conn"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "bar_horizontal",
+                    "xAccessor": "ServiceName",
+                    "showGridlines": false
+                  }
+                ],
+                "preferredSeriesType": "bar_horizontal",
+                "legend": {
+                  "isVisible": false,
+                  "position": "bottom"
+                },
+                "valueLabels": "show",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "indexpattern-datasource-layer-xy-layer-top10-ebswrite"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "top10-ebswrite",
+        "gridData": {
+          "y": 24,
+          "x": 32,
+          "w": 16,
+          "h": 11,
+          "i": "top10-ebswrite",
+          "sectionId": "aws-ecs-per-service-section"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 ECS services by memory utilization",
+          "description": "Average memory utilization (%) per service over time (averaged per time bucket). Reference line at 80% marks the high-memory threshold. Top 10 services by memory per bucket; sustained values above the line risk OOM task kills.",
+          "attributes": {
+            "title": "Top 10 ECS services by memory utilization",
+            "description": "Average memory utilization (%) per service over time (averaged per time bucket). Reference line at 80% marks the high-memory threshold. Top 10 services by memory per bucket; sustained values above the line risk OOM task kills.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-memory": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`)) / 100.0 BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC, metric DESC, ServiceName ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "ServiceName",
+                          "fieldName": "ServiceName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "metric",
+                          "fieldName": "metric",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          },
+                          "label": "Memory utilization",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    },
+                    "ref-mem-80": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nROW alert_threshold = 0.8"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "alert_threshold",
+                          "fieldName": "alert_threshold",
+                          "meta": {
+                            "type": "number",
+                            "esType": "integer"
+                          },
+                          "inMetricDimension": true,
+                          "label": "High memory (80%)",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/MemoryUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ECS/MemoryUtilization`)) / 100.0 BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC, metric DESC, ServiceName ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-memory",
+                    "accessors": [
+                      "metric"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "ServiceName"
+                    ]
+                  },
+                  {
+                    "layerId": "ref-mem-80",
+                    "layerType": "referenceLine",
+                    "accessors": [
+                      "alert_threshold"
+                    ],
+                    "yConfig": [
+                      {
+                        "forAccessor": "alert_threshold",
+                        "axisMode": "left",
+                        "lineStyle": "dashed",
+                        "lineWidth": 2,
+                        "color": "#bd271e",
+                        "fill": "none",
+                        "icon": "alert",
+                        "iconPosition": "right"
+                      }
+                    ]
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-memory"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-memory",
+        "gridData": {
+          "y": 0,
+          "x": 16,
+          "w": 16,
+          "h": 12,
+          "i": "chart-memory",
+          "sectionId": "aws-ecs-per-service-section"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 ECS services by CPU utilization",
+          "description": "Average CPU utilization (%) per service over time (averaged per time bucket). Reference line at 80% marks the high-CPU threshold. Top 10 services by CPU per bucket.",
+          "attributes": {
+            "title": "Top 10 ECS services by CPU utilization",
+            "description": "Average CPU utilization (%) per service over time (averaged per time bucket). Reference line at 80% marks the high-CPU threshold. Top 10 services by CPU per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-cpu": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`)) / 100.0 BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC, metric DESC, ServiceName ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "ServiceName",
+                          "fieldName": "ServiceName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "metric",
+                          "fieldName": "metric",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true,
+                          "params": {
+                            "format": {
+                              "id": "percent",
+                              "params": {
+                                "decimals": 1
+                              }
+                            }
+                          },
+                          "label": "CPU utilization",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    },
+                    "ref-cpu-80": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nROW alert_threshold = 0.8"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "alert_threshold",
+                          "fieldName": "alert_threshold",
+                          "meta": {
+                            "type": "number",
+                            "esType": "integer"
+                          },
+                          "inMetricDimension": true,
+                          "label": "High CPU (80%)",
+                          "customLabel": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND `metrics.amazonaws.com/AWS/ECS/CPUUtilization` IS NOT NULL | WHERE stat == \"Average\" | STATS metric = AVG(avg_over_time(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`)) / 100.0 BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | SORT timestamp ASC, metric DESC, ServiceName ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-cpu",
+                    "accessors": [
+                      "metric"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "ServiceName"
+                    ]
+                  },
+                  {
+                    "layerId": "ref-cpu-80",
+                    "layerType": "referenceLine",
+                    "accessors": [
+                      "alert_threshold"
+                    ],
+                    "yConfig": [
+                      {
+                        "forAccessor": "alert_threshold",
+                        "axisMode": "left",
+                        "lineStyle": "dashed",
+                        "lineWidth": 2,
+                        "color": "#bd271e",
+                        "fill": "none",
+                        "icon": "alert",
+                        "iconPosition": "right"
+                      }
+                    ]
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": false
+                }
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-cpu"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-cpu",
+        "gridData": {
+          "y": 0,
+          "x": 0,
+          "w": 16,
+          "h": 12,
+          "i": "chart-cpu",
+          "sectionId": "aws-ecs-per-service-section"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "description": "Navigation tile — clicking opens the Kibana Dashboards library searched for “AWS OTel” dashboards in a new browser tab, carrying the current panel time range to the destination.",
+          "hide_border": true,
+          "attributes": {
+            "title": "",
+            "description": "Navigation tile — clicking opens the Kibana Dashboards library searched for “AWS OTel” dashboards in a new browser tab, carrying the current panel time range to the destination.",
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-nav-otel": {
+                      "index": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nROW value = \"AWS-Managed-OTel\" | KEEP value"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "col-nav-otel",
+                          "fieldName": "value",
+                          "label": "Browse other AWS OTel dashboards",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "string",
+                            "esType": "keyword"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                      "title": "metrics-aws.ecs*",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nROW value = \"AWS-Managed-OTel\" | KEEP value"
+              },
+              "visualization": {
+                "layerId": "layer-nav-otel",
+                "layerType": "data",
+                "metricAccessor": "col-nav-otel",
+                "showBar": false,
+                "color": "#61a2ff00",
+                "colorMode": "background",
+                "applyColorTo": "background",
+                "icon": "popout",
+                "iconAlign": "right",
+                "primaryPosition": "bottom",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "valuesTextSize": "xs",
+                "titlesTextSize": "xxs",
+                "valueFontMode": "fit"
+              },
+              "adHocDataViews": {
+                "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697": {
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "title": "metrics-aws.ecs*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "0f4e60230636aaf1697f0e9d3717ae56ca807278b1a57a7b138a1e7175e0e697",
+                  "name": "textBasedLanguages-datasource-layer-layer-nav-otel"
+                }
+              ],
+              "needsRefresh": false
+            }
+          },
+          "drilldowns": [
+            {
+              "label": "Browse AWS OTel dashboards",
+              "encode_url": false,
+              "open_in_new_tab": true,
+              "trigger": "on_click_value",
+              "type": "url_drilldown",
+              "url": "{{kibanaUrl}}/app/dashboards#/list?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:{{context.panel.timeRange.from}},to:{{context.panel.timeRange.to}}))&s=AWS%20OTel"
+            }
+          ]
+        },
+        "panelIndex": "nav-otel-dashboards",
+        "gridData": {
+          "y": 0,
+          "x": 42,
+          "w": 6,
+          "h": 2,
+          "i": "nav-otel-dashboards"
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 ECS services by new connections",
+          "description": "New Service Connect connections per service over time — total per bucket. Top 10 services by new connections per bucket.",
+          "attributes": {
+            "title": "Top 10 ECS services by new connections",
+            "description": "New Service Connect connections per service over time — total per bucket. Top 10 services by new connections per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-conn-new": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_new_conn = SUM(sum_over_time(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL))) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | WHERE col_new_conn IS NOT NULL | SORT timestamp ASC, col_new_conn DESC, ServiceName ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "ServiceName",
+                          "fieldName": "ServiceName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "col_new_conn",
+                          "fieldName": "col_new_conn",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_new_conn = SUM(sum_over_time(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL))) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | WHERE col_new_conn IS NOT NULL | SORT timestamp ASC, col_new_conn DESC, ServiceName ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-conn-new",
+                    "accessors": [
+                      "col_new_conn"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "ServiceName"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": true
+                }
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-conn-new"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-conn-new",
+        "gridData": {
+          "sectionId": "aws-ecs-per-service-section",
+          "i": "chart-conn-new",
+          "y": 12,
+          "x": 6,
+          "w": 21,
+          "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "Top 10 ECS services by active connections",
+          "description": "Average active Service Connect connections per service over time. Top 10 services by active connections per bucket.",
+          "attributes": {
+            "title": "Top 10 ECS services by active connections",
+            "description": "Average active Service Connect connections per service over time. Top 10 services by active connections per bucket.",
+            "visualizationType": "lnsXY",
+            "version": 2,
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "xy-layer-chart-conn-active": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_active_conn = AVG(avg_over_time(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL))) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | WHERE col_active_conn IS NOT NULL | SORT timestamp ASC, col_active_conn DESC, ServiceName ASC | LIMIT 10 BY timestamp"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "timestamp",
+                          "fieldName": "timestamp",
+                          "meta": {
+                            "type": "date",
+                            "esType": "date"
+                          }
+                        },
+                        {
+                          "columnId": "ServiceName",
+                          "fieldName": "ServiceName",
+                          "meta": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "columnId": "col_active_conn",
+                          "fieldName": "col_active_conn",
+                          "meta": {
+                            "type": "number",
+                            "esType": "double"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  }
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" AND (CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/NewConnectionCount`, NULL) IS NOT NULL OR CASE(stat == \"Average\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL) IS NOT NULL) | WHERE stat IN (\"Average\", \"Sum\") | STATS col_active_conn = AVG(avg_over_time(CASE(stat == \"Sum\", `metrics.amazonaws.com/AWS/ECS/ActiveConnectionCount`, NULL))) BY timestamp = TBUCKET(50, ?_tstart, ?_tend), ServiceName, ClusterName, cloud.region | WHERE col_active_conn IS NOT NULL | SORT timestamp ASC, col_active_conn DESC, ServiceName ASC | LIMIT 10 BY timestamp"
+              },
+              "visualization": {
+                "layers": [
+                  {
+                    "layerId": "xy-layer-chart-conn-active",
+                    "accessors": [
+                      "col_active_conn"
+                    ],
+                    "layerType": "data",
+                    "seriesType": "line",
+                    "xAccessor": "timestamp",
+                    "showGridlines": false,
+                    "splitAccessors": [
+                      "ServiceName"
+                    ],
+                    "yConfig": null
+                  }
+                ],
+                "preferredSeriesType": "line",
+                "legend": {
+                  "isVisible": true,
+                  "position": "bottom"
+                },
+                "valueLabels": "hide",
+                "axisTitlesVisibilitySettings": {
+                  "x": false,
+                  "yLeft": false,
+                  "yRight": true
+                }
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "internalReferences": [
+                {
+                  "type": "index-pattern",
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "name": "indexpattern-datasource-layer-xy-layer-chart-conn-active"
+                }
+              ]
+            }
+          }
+        },
+        "panelIndex": "chart-conn-active",
+        "gridData": {
+          "sectionId": "aws-ecs-per-service-section",
+          "i": "chart-conn-active",
+          "y": 12,
+          "x": 27,
+          "w": 21,
+          "h": 12
+        }
+      },
+      {
+        "type": "vis",
+        "embeddableConfig": {
+          "title": "",
+          "description": "Number of ECS services with no recent CPU or memory data — neither metric reported a value within the 5-minute freshness window.",
+          "hide_title": true,
+          "attributes": {
+            "title": "",
+            "references": [],
+            "state": {
+              "datasourceStates": {
+                "textBased": {
+                  "layers": {
+                    "layer-kpi-nodata": {
+                      "index": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "query": {
+                        "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS no_data = COUNT(*) WHERE state == \"no data\" | KEEP no_data"
+                      },
+                      "columns": [
+                        {
+                          "columnId": "no_data",
+                          "fieldName": "no_data",
+                          "label": "No data",
+                          "customLabel": true,
+                          "meta": {
+                            "type": "number",
+                            "esType": "long"
+                          },
+                          "inMetricDimension": true
+                        }
+                      ],
+                      "timeField": "@timestamp"
+                    }
+                  },
+                  "indexPatternRefs": [
+                    {
+                      "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                      "title": "metrics-aws.ecs.otel-*",
+                      "timeField": "@timestamp"
+                    }
+                  ]
+                }
+              },
+              "filters": [],
+              "query": {
+                "esql": "SET unmapped_fields = \"nullify\";\nFROM metrics-aws.ecs.otel-* | WHERE ServiceName IS NOT NULL AND ServiceName != \"\" AND ClusterName IS NOT NULL AND ClusterName != \"\" | INLINE STATS latest_global = MAX(@timestamp) | WHERE DATE_DIFF(\"minutes\", @timestamp, latest_global) <= 5 | STATS cpu_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/CPUUtilization`, NULL)), mem_cur = MAX(CASE(stat == \"Maximum\", `metrics.amazonaws.com/AWS/ECS/MemoryUtilization`, NULL)) BY ServiceName, ClusterName, cloud.region | EVAL state = CASE(cpu_cur IS NULL AND mem_cur IS NULL, \"no data\", cpu_cur > 80 OR mem_cur > 80, \"saturated\", cpu_cur > 50 OR mem_cur > 50, \"hot\", cpu_cur < 5, \"idle\", \"healthy\") | STATS no_data = COUNT(*) WHERE state == \"no data\" | KEEP no_data"
+              },
+              "visualization": {
+                "layerId": "layer-kpi-nodata",
+                "layerType": "data",
+                "metricAccessor": "no_data",
+                "showBar": false,
+                "color": "#61A2FF00",
+                "colorMode": "background",
+                "applyColorTo": "background",
+                "primaryPosition": "top",
+                "titlesTextAlign": "left",
+                "primaryAlign": "left",
+                "label": "No data"
+              },
+              "adHocDataViews": {
+                "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345": {
+                  "id": "f4c4fefb5938aa7bb039ed9c7346e80c4836cff29df9bfc4c5abd3c2b2505345",
+                  "title": "metrics-aws.ecs.otel-*",
+                  "timeFieldName": "@timestamp",
+                  "sourceFilters": [],
+                  "type": "esql",
+                  "fieldFormats": {},
+                  "runtimeFieldMap": {},
+                  "allowNoIndex": true,
+                  "name": "metrics-aws.ecs.otel-*",
+                  "allowHidden": false,
+                  "managed": false
+                }
+              },
+              "needsRefresh": false
+            },
+            "visualizationType": "lnsMetric",
+            "version": 2,
+            "description": "Number of idle ECS services — services whose latest CPU utilization is under 5%, within a 5-minute freshness window. May indicate over-provisioned or unused services."
+          }
+        },
+        "panelIndex": "kpi-nodata",
+        "gridData": {
+          "x": 4,
+          "y": 8,
+          "w": 4,
+          "h": 4,
+          "i": "kpi-nodata",
+          "sectionId": "aws-ecs-overview-section"
+        }
+      }
+    ],
+    "sections": [
+      {
+        "collapsed": false,
+        "title": "Overview",
+        "gridData": {
+          "y": 2,
+          "i": "aws-ecs-overview-section"
+        }
+      },
+      {
+        "collapsed": false,
+        "title": "List of ECS services",
+        "gridData": {
+          "y": 3,
+          "i": "aws-ecs-list-section"
+        }
+      },
+      {
+        "collapsed": false,
+        "title": "Per service metrics",
+        "gridData": {
+          "y": 4,
+          "i": "aws-ecs-per-service-section"
+        }
+      }
+    ],
+    "timeRestore": false,
+    "kibanaSavedObjectMeta": {
+      "searchSourceJSON": {
+        "filter": [],
+        "query": {
+          "language": "kuery",
+          "query": ""
+        }
+      }
+    }
+  },
+  "references": [
+    {
+      "name": "ctrl-fargate-service-name:optionsListDataView",
+      "type": "index-pattern",
+      "id": "metrics-*"
+    },
+    {
+      "name": "ctrl-fargate-account:optionsListDataView",
+      "type": "index-pattern",
+      "id": "metrics-*"
+    },
+    {
+      "name": "ctrl-fargate-region:optionsListDataView",
+      "type": "index-pattern",
+      "id": "metrics-*"
+    }
+  ],
+  "managed": false,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.3.0"
+}

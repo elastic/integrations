@@ -1,0 +1,48 @@
+{
+    "id": "aws_elb_metrics_otel-target-5xx-high",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when target-generated 5XX error rate exceeds a tunable threshold for any load balancer target group. Indicates application or backend failures behind the ALB.",
+        "name": "[AWS ELB OTel] High Application Load Balancer target 5XX error rate",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws",
+            "aws_elb"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## High Target 5XX Error Rate\n\nTarget-generated 5XX responses mean the application or backend behind the ALB is failing — not the load balancer itself.\n\n### Triage Steps\n1. Identify the affected load balancer, target group, and region from the alert context.\n2. Check application logs and traces for the backends in the target group.\n3. Review recent deployments, dependency outages, or resource saturation on target instances.\n4. Compare with ELB-generated 5XX — if ELB 5XX is also rising, targets may be unreachable (health check failures, connection timeouts).\n5. Inspect target health (`UnHealthyHostCount`) and response time for the same target group.\n\n### Escalation\nIf target 5XX rate persists above the threshold for more than 15 minutes, page the service owner.\n\n### Tuning\n- Adjust the `error_rate_pct` threshold (default 1%) to match your SLO.\n- Adjust `requests > 100` minimum sample size based on expected traffic volume."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-aws.elb.otel-*\n| WHERE Namespace == \"AWS/ApplicationELB\"\n    AND stat == \"Sum\"\n    AND MetricName IN (\"RequestCount\", \"HTTPCode_Target_5XX_Count\")\n| STATS\n    requests = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/RequestCount`),\n    target_5xx = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/HTTPCode_Target_5XX_Count`)\n    BY LoadBalancer, TargetGroup, cloud.region\n// Minimum request volume — tune to avoid noisy alerts on low-traffic target groups\n| WHERE requests > 100\n| EVAL error_rate_pct = ROUND(target_5xx / requests * 100.0, 2)\n// Alert threshold — tune to match your SLO (default 1%)\n| WHERE error_rate_pct > 1.0\n| SORT error_rate_pct DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "TargetGroup",
+            "termSize": 50,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

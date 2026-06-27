@@ -1,0 +1,48 @@
+{
+    "id": "aws_lambda_otel-high-error-rate",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when a Lambda function exceeds a configurable error rate (Errors / Invocations) over a 15-minute window. Evaluates the top 10 functions by error rate.",
+        "name": "[AWS Lambda OTel] High error rate",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws_lambda",
+            "otel"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## High Error Rate\n\n### Triage Steps\n1. Identify the affected function and region from the alert context.\n2. Check CloudWatch Logs for the function — look for unhandled exceptions and stack traces.\n3. Correlate with recent deployments or configuration changes.\n4. Review downstream dependencies (APIs, databases) that the function calls.\n5. Compare error rate against the function overview dashboard for trend context.\n\n### Escalation\nIf error rate persists above your SLO for more than 15 minutes, page the owning team."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE Namespace == \"AWS/Lambda\"\n    AND stat == \"Sum\"\n    AND MetricName IN (\"Errors\", \"Invocations\")\n| STATS\n    total_errors = SUM(`metrics.amazonaws.com/AWS/Lambda/Errors`),\n    total_invocations = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`)\n  BY FunctionName, cloud.region\n// Minimum invocation volume — tune for low-traffic functions\n| WHERE total_invocations > 10\n| EVAL error_rate_pct = ROUND(total_errors / total_invocations * 100.0, 2)\n// Alert threshold (%): adjust based on SLO (e.g. 1% for most workloads)\n| WHERE error_rate_pct > 1.0\n| EVAL function_id = CONCAT(FunctionName, \"/\", cloud.region)\n| SORT error_rate_pct DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "function_id",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}
