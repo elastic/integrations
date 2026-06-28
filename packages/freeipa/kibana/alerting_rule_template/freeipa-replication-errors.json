@@ -1,0 +1,28 @@
+{
+    "id": "freeipa-replication-errors",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[FreeIPA] Replication Errors",
+        "tags": ["FreeIPA", "Directory Server"],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "1m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "esqlQuery": {
+                "esql": "// Alert when replication agreement errors are detected.\n// Replication failures can cause split-brain and data inconsistency.\n// Groups by agreement name and remote host.\nFROM logs-freeipa.directory_errors-*\n| WHERE freeipa.directory_error.agreement IS NOT NULL\n| STATS error_count = COUNT(*) BY freeipa.directory_error.agreement, freeipa.directory_error.remote_host\n| WHERE error_count >= 1"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 1
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}
