@@ -1,0 +1,70 @@
+interval: {{metrics_interval}}
+resource.url: '{{proxmox_url}}'
+resource.ssl:
+  verification_mode: '{{#if ssl_verification}}full{{else}}none{{/if}}'
+{{#if ssl.certificate_authorities}}
+  certificate_authorities:
+{{#each ssl.certificate_authorities}}
+  - {{this}}
+{{/each}}
+{{/if}}
+state:
+  api_token_id: '{{api_token_id}}'
+  api_token_secret: '{{api_token_secret}}'
+redact:
+  fields:
+    - api_token_secret
+program: |
+  (
+    {"Authorization": ["PVEAPIToken=" + state.api_token_id + "=" + state.api_token_secret]}.as(auth,
+      // First discover local node name and cluster name from /cluster/status
+      request("GET", state.url.trim_right("/") + "/api2/json/cluster/status").with({
+        "Header": auth
+      }).do_request().as(r_cs,
+        (r_cs.StatusCode == 200 ? bytes(r_cs.Body).decode_json().data : []).as(cs_data,
+          cs_data.filter(e, e.type == "cluster").as(cc,
+            cs_data.filter(e, e.type == "node" && e.local == 1).as(ln,
+              (cc.size() > 0 ? cc[0].name : "").as(cluster_name,
+                (ln.size() > 0 ? ln[0].name : "").as(node_name,
+                  node_name != "" ?
+                    request("GET", state.url.trim_right("/") + "/api2/json/nodes/" + node_name + "/status").with({
+                      "Header": auth
+                    }).do_request().as(r_node,
+                      r_node.StatusCode == 200 ?
+                        bytes(r_node.Body).decode_json().as(body, {
+                          "events": [{"message": body.data.encode_json(), "proxmox_cluster_name": cluster_name}],
+                          "url": state.url,
+                          "api_token_id": state.api_token_id,
+                          "api_token_secret": state.api_token_secret,
+                        })
+                      : {
+                          "events": [{"error": {"message": "node/status: HTTP " + string(r_node.StatusCode)}}],
+                          "url": state.url,
+                          "api_token_id": state.api_token_id,
+                          "api_token_secret": state.api_token_secret,
+                        }
+                    )
+                  : {
+                      "events": [{"error": {"message": "could not discover local node name from /cluster/status"}}],
+                      "url": state.url,
+                      "api_token_id": state.api_token_id,
+                      "api_token_secret": state.api_token_secret,
+                    }
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
