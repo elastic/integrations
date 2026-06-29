@@ -1,0 +1,40 @@
+{
+    "id": "oracle_weblogic_otel-high-thread-pool-utilization",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "name": "[Oracle WebLogic OTel] High thread pool utilization",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "oracle_weblogic"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-oracle_weblogic.otel-*\n| WHERE weblogic.threadpool.threads IS NOT NULL\n| STATS\n    total_threads = MAX(LAST_OVER_TIME(weblogic.threadpool.threads)),\n    idle_threads = MAX(LAST_OVER_TIME(weblogic.threadpool.threads.idle))\n  BY attributes.server\n| WHERE total_threads > 0\n| EVAL utilization_pct = ROUND((total_threads - idle_threads) / total_threads * 100.0, 2)\n// Adjust threshold based on expected workload\n// 90% indicates limited headroom for handling traffic spikes\n| WHERE utilization_pct > 90.0\n| SORT utilization_pct DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "attributes.server",
+            "termSize": 10
+        }
+    }
+}

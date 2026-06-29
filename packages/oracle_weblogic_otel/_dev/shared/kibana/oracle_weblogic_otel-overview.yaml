@@ -1,0 +1,415 @@
+dashboards:
+  - id: oracle_weblogic_otel-overview
+    name: '[Oracle WebLogic OTel] Overview'
+    minimum_kibana_version: '8.18.0'
+    description: >-
+      High-level overview of Oracle WebLogic Server health covering all golden
+      signals: latency indicators, traffic, errors, and saturation.
+    time_range:
+      from: "now-1h"
+      to: "now"
+    settings:
+      sync:
+        cursor: true
+    filters:
+      - field: data_stream.dataset
+        equals: oracle_weblogic.otel
+    controls:
+      - type: options
+        label: Server
+        data_view: metrics-*
+        field: attributes.server
+    panels:
+      # ─── Navigation ───────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: oracle_weblogic_otel-overview
+            - label: JVM & Thread Pool
+              dashboard: oracle_weblogic_otel-jvm-thread-pool
+            - label: Transactions & Work Managers
+              dashboard: oracle_weblogic_otel-transactions
+
+      # ─── Dashboard Overview Panel ────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [Oracle WebLogic OTel] Overview
+
+            High-level health overview for Oracle WebLogic Server instances:
+            - Thread pool throughput and saturation
+            - JVM heap utilization
+            - JTA transaction health
+            - Stuck and hogging threads
+            - Network connectivity (open sockets)
+            - Server restart events
+
+      # ─── KPI Row 1 ──────────────────────────────────────────────────
+      - title: Throughput
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.threadpool.throughput IS NOT NULL
+            - STATS throughput = SUM(LAST_OVER_TIME(weblogic.threadpool.throughput))
+          primary:
+            field: throughput
+            label: Throughput
+            format:
+              type: number
+              decimals: 1
+              suffix: " req/s"
+
+      - title: Open Sockets
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.server.open_sockets IS NOT NULL
+            - STATS sockets = SUM(LAST_OVER_TIME(weblogic.server.open_sockets))
+          primary:
+            field: sockets
+            label: Open Sockets
+            format:
+              type: number
+              compact: true
+
+      - title: Active Transactions
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.jta.transactions.active IS NOT NULL
+            - STATS active_txn = SUM(LAST_OVER_TIME(weblogic.jta.transactions.active))
+          primary:
+            field: active_txn
+            label: Active Transactions
+            format:
+              type: number
+              compact: true
+
+      - title: Stuck Threads
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.workmanager.threads.stuck IS NOT NULL
+            - STATS stuck = SUM(LAST_OVER_TIME(weblogic.workmanager.threads.stuck))
+          primary:
+            field: stuck
+            label: Stuck Threads
+            format:
+              type: number
+              decimals: 0
+
+      # ─── KPI Row 2 ──────────────────────────────────────────────────
+      - title: Pending Requests
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.threadpool.requests.pending IS NOT NULL
+            - STATS pending = SUM(LAST_OVER_TIME(weblogic.threadpool.requests.pending))
+          primary:
+            field: pending
+            label: Pending Requests
+            format:
+              type: number
+              compact: true
+
+      - title: Hogging Threads
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.threadpool.threads.hogging IS NOT NULL
+            - STATS hogging = SUM(LAST_OVER_TIME(weblogic.threadpool.threads.hogging))
+          primary:
+            field: hogging
+            label: Hogging Threads
+            format:
+              type: number
+              decimals: 0
+
+      - title: Idle Threads
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.threadpool.threads.idle IS NOT NULL
+            - STATS idle = SUM(LAST_OVER_TIME(weblogic.threadpool.threads.idle))
+          primary:
+            field: idle
+            label: Idle Threads
+            format:
+              type: number
+              decimals: 0
+
+      - title: Server Restarts
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.server.restarts IS NOT NULL
+            - STATS restarts = SUM(INCREASE(weblogic.server.restarts))
+          primary:
+            field: restarts
+            label: Server Restarts
+            format:
+              type: number
+              decimals: 0
+
+      # ─── Gauges ──────────────────────────────────────────────────────
+      - title: JVM Heap Utilization
+        size: {w: 16, h: 10}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.jvm.heap.size IS NOT NULL
+            - STATS heap_size = MAX(LAST_OVER_TIME(weblogic.jvm.heap.size)), heap_free = MAX(LAST_OVER_TIME(weblogic.jvm.heap.free)), heap_max = MAX(LAST_OVER_TIME(weblogic.jvm.heap.max)) BY attributes.server
+            - EVAL heap_util = CASE(heap_max > 0, TO_DOUBLE(heap_size - heap_free) / TO_DOUBLE(heap_max) * 100, 0)
+            - STATS max_heap_util = MAX(heap_util)
+            - EVAL gauge_min = 0, gauge_max = 100, gauge_goal = 85
+          metric:
+            field: max_heap_util
+            label: Heap Util %
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+          minimum:
+            field: gauge_min
+          maximum:
+            field: gauge_max
+          goal:
+            field: gauge_goal
+          color:
+            range_min: 0
+            range_max: 100
+            thresholds:
+              - up_to: 70
+                color: '#54b399'
+              - up_to: 85
+                color: '#d6bf57'
+              - up_to: 100
+                color: '#cc5642'
+          appearance:
+            shape: arc
+            ticks_position: bands
+
+      - title: Thread Pool Utilization
+        size: {w: 16, h: 10}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.threadpool.threads IS NOT NULL
+            - STATS total = MAX(LAST_OVER_TIME(weblogic.threadpool.threads)), idle = MAX(LAST_OVER_TIME(weblogic.threadpool.threads.idle)) BY attributes.server
+            - EVAL util = CASE(total > 0, TO_DOUBLE(total - idle) / TO_DOUBLE(total) * 100, 0)
+            - STATS max_util = MAX(util)
+            - EVAL gauge_min = 0, gauge_max = 100, gauge_goal = 85
+          metric:
+            field: max_util
+            label: Thread Util %
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+          minimum:
+            field: gauge_min
+          maximum:
+            field: gauge_max
+          goal:
+            field: gauge_goal
+          color:
+            range_min: 0
+            range_max: 100
+            thresholds:
+              - up_to: 70
+                color: '#54b399'
+              - up_to: 85
+                color: '#d6bf57'
+              - up_to: 100
+                color: '#cc5642'
+          appearance:
+            shape: arc
+            ticks_position: bands
+
+      - title: Transaction Commit Rate
+        size: {w: 16, h: 10}
+        esql:
+          type: gauge
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.jta.transactions.total IS NOT NULL
+            - STATS total_rate = SUM(RATE(weblogic.jta.transactions.total)), committed_rate = SUM(RATE(weblogic.jta.transactions.committed))
+            - EVAL commit_pct = CASE(total_rate > 0, committed_rate / total_rate * 100, 100)
+            - EVAL gauge_min = 0, gauge_max = 100, gauge_goal = 99
+          metric:
+            field: commit_pct
+            label: Commit Rate %
+            format:
+              type: number
+              decimals: 1
+              suffix: "%"
+          minimum:
+            field: gauge_min
+          maximum:
+            field: gauge_max
+          goal:
+            field: gauge_goal
+          color:
+            range_min: 0
+            range_max: 100
+            thresholds:
+              - up_to: 90
+                color: '#cc5642'
+              - up_to: 99
+                color: '#d6bf57'
+              - up_to: 100
+                color: '#54b399'
+          appearance:
+            shape: arc
+            ticks_position: bands
+
+      # ─── Performance & Traffic ───────────────────────────────────────
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Performance & Traffic'
+
+      - title: Thread Pool Throughput Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.threadpool.throughput IS NOT NULL
+            - STATS throughput = MAX(LAST_OVER_TIME(weblogic.threadpool.throughput)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.server
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: throughput
+              label: Throughput (req/s)
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: attributes.server
+          legend:
+            visible: show
+            position: right
+
+      - title: Open Sockets Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.server.open_sockets IS NOT NULL
+            - STATS sockets = MAX(LAST_OVER_TIME(weblogic.server.open_sockets)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.server
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: sockets
+              label: Open Sockets
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.server
+          legend:
+            visible: show
+            position: right
+
+      # ─── Errors & Stability ─────────────────────────────────────────
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Errors & Stability'
+
+      - title: Transaction Rollbacks & Abandonments Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.jta.transactions.rolled_back IS NOT NULL
+            - STATS rolled_back = SUM(RATE(weblogic.jta.transactions.rolled_back)), abandoned = SUM(RATE(weblogic.jta.transactions.abandoned)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: rolled_back
+              label: Rolled Back/s
+              format:
+                type: number
+                decimals: 2
+            - field: abandoned
+              label: Abandoned/s
+              format:
+                type: number
+                decimals: 2
+          color:
+            assignments:
+              - value: "Rolled Back/s"
+                color: '#d6bf57'
+              - value: "Abandoned/s"
+                color: '#cc5642'
+          legend:
+            visible: show
+            position: right
+
+      - title: Hogging Threads Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-oracle_weblogic.otel-*
+            - WHERE weblogic.threadpool.threads.hogging IS NOT NULL
+            - STATS hogging = SUM(LAST_OVER_TIME(weblogic.threadpool.threads.hogging)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.server
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: hogging
+              label: Hogging Threads
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.server
+          color:
+            assignments:
+              - value: "Hogging Threads"
+                color: '#d6bf57'
+          legend:
+            visible: show
+            position: right
