@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -65,6 +66,17 @@ func Apply(opts Options) (*Result, error) {
 	if packagesDir == "" {
 		packagesDir = "packages"
 	}
+	if filepath.IsAbs(packagesDir) {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return nil, fmt.Errorf("getting working directory: %w", err)
+		}
+		packagesDir, err = filepath.Rel(cwd, packagesDir)
+		if err != nil {
+			return nil, fmt.Errorf("resolving packages dir: %w", err)
+		}
+	}
+	packagesDir = filepath.Clean(packagesDir)
 	remote := opts.Remote
 	if remote == "" {
 		remote = "origin"
@@ -224,15 +236,13 @@ func cherryPickOrConflict(sha, branchName, pkg, changelogPath, manifestPath stri
 	// Always restore manifest and changelog to HEAD. They are the most likely
 	// source of spurious conflicts (version bump and entry differ per branch) and
 	// we overwrite them ourselves in resetAndWriteChanges anyway.
-	checkoutErr := gitutil.Run("checkout", "HEAD", "--", changelogPath, manifestPath)
+	if err := gitutil.Run("checkout", "HEAD", "--", changelogPath, manifestPath); err != nil {
+		_ = gitutil.Run("reset", "--hard", "HEAD")
+		return nil, fmt.Errorf("restoring manifest/changelog after cherry-pick: %w", err)
+	}
 
 	if cherryErr == nil {
 		return nil, nil
-	}
-
-	if checkoutErr != nil {
-		_ = gitutil.Run("reset", "--hard", "HEAD")
-		return nil, fmt.Errorf("restoring manifest/changelog after cherry-pick failure: %w", checkoutErr)
 	}
 
 	fmt.Fprintf(os.Stderr, "note: conflicts in %s and %s are discarded — these files are managed by the backport pipeline\n", changelogPath, manifestPath)
@@ -443,12 +453,13 @@ func bumpPatchVersion(manifestPath string) (string, error) {
 	// Replace the version digits only on the line that starts with "version:",
 	// preserving quotes and surrounding fields.
 	lines := bytes.Split(data, []byte("\n"))
-	for i, line := range lines {
-		if bytes.HasPrefix(line, []byte("version:")) {
-			lines[i] = bytes.Replace(line, []byte(m.Version), []byte(newVersion), 1)
-			break
-		}
+	idx := slices.IndexFunc(lines, func(l []byte) bool {
+		return bytes.HasPrefix(l, []byte("version:"))
+	})
+	if idx == -1 {
+		return "", fmt.Errorf("version line not found in %s", manifestPath)
 	}
+	lines[idx] = bytes.Replace(lines[idx], []byte(m.Version), []byte(newVersion), 1)
 	updated := bytes.Join(lines, []byte("\n"))
 	if err := os.WriteFile(manifestPath, updated, info.Mode()); err != nil {
 		return "", fmt.Errorf("writing %s: %w", manifestPath, err)
