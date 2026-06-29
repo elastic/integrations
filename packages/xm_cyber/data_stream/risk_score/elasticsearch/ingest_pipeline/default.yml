@@ -10,6 +10,15 @@ processors:
       tag: terminate_data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
 
+  - drop:
+      description: Drops CEL informational token-refresh success messages from the ingest stream.
+      tag: drop_cel_refresh_token_success
+      if: ctx.message instanceof String && ctx.message == 'Refresh token successful'
+  - drop:
+      description: Drops CEL informational expired-refresh messages from the ingest stream.
+      tag: drop_cel_refresh_token_force_reauth
+      if: ctx.message instanceof String && ctx.message == 'Refresh token expired, forcing re-auth'
+
   # remove agentless metadata
   - remove:
       description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
@@ -43,6 +52,14 @@ processors:
       field: event.kind
       tag: set_event_kind_event
       value: event
+
+  - fingerprint:
+      tag: fingerprint_with_id
+      fields:
+        - xm_cyber.risk_score.scenario.id
+        - xm_cyber.risk_score.graphData.fromDate
+      target_field: _id
+      ignore_missing: true
 
   # rename to snake case
   - script:
@@ -159,58 +176,53 @@ processors:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-  # Convert scenario.graph_data[] inner fields
-  - foreach:
-      tag: foreach_of_xm_cyber_risk_score_scenario_graph_data_from_date
-      if: ctx.xm_cyber?.risk_score?.scenario?.graph_data instanceof List
-      field: xm_cyber.risk_score.scenario.graph_data
-      processor:
-        date:
-          tag: date__ingest__value_from_date_into__ingest__value_from_date
-          field: _ingest._value.from_date
-          target_field: _ingest._value.from_date
-          formats:
-            - ISO8601
-          on_failure:
-            - remove:
-                tag: remove__ingest__value_from_date
-                field:
-                  - _ingest._value.from_date
-  - foreach:
-      tag: foreach_of_xm_cyber_risk_score_scenario_graph_data_to_date
-      if: ctx.xm_cyber?.risk_score?.scenario?.graph_data instanceof List
-      field: xm_cyber.risk_score.scenario.graph_data
-      processor:
-        date:
-          tag: date__ingest__value_to_date_into__ingest__value_to_date
-          field: _ingest._value.to_date
-          target_field: _ingest._value.to_date
-          formats:
-            - ISO8601
-          on_failure:
-            - remove:
-                tag: remove__ingest__value_to_date
-                field:
-                  - _ingest._value.to_date
-  - foreach:
-      tag: foreach_of_xm_cyber_risk_score_scenario_graph_data_score
-      if: ctx.xm_cyber?.risk_score?.scenario?.graph_data instanceof List
-      field: xm_cyber.risk_score.scenario.graph_data
-      processor:
-        convert:
-          tag: convert__ingest__value_score_to_long_scenario
-          field: _ingest._value.score
-          type: float
-          ignore_missing: true
-          on_failure:
-            - remove:
-                tag: remove__ingest__value_score_scenario
-                field:
-                  - _ingest._value.score
-            - append:
-                tag: append_error_message
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Convert graph_data inner fields (single object after splitting events per scenario/graphData entry)
+  - date:
+      tag: date_xm_cyber_risk_score_graph_data_from_date
+      if: ctx.xm_cyber?.risk_score?.graph_data?.from_date != null && ctx.xm_cyber.risk_score.graph_data.from_date != ''
+      field: xm_cyber.risk_score.graph_data.from_date
+      target_field: xm_cyber.risk_score.graph_data.from_date
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_xm_cyber_risk_score_graph_data_from_date
+            field:
+              - xm_cyber.risk_score.graph_data.from_date
+        - append:
+            tag: append_error_message_xm_cyber_risk_score_graph_data_from_date
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_xm_cyber_risk_score_graph_data_to_date
+      if: ctx.xm_cyber?.risk_score?.graph_data?.to_date != null && ctx.xm_cyber.risk_score.graph_data.to_date != ''
+      field: xm_cyber.risk_score.graph_data.to_date
+      target_field: xm_cyber.risk_score.graph_data.to_date
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_xm_cyber_risk_score_graph_data_to_date
+            field:
+              - xm_cyber.risk_score.graph_data.to_date
+        - append:
+            tag: append_error_message_xm_cyber_risk_score_graph_data_to_date
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_xm_cyber_risk_score_graph_data_score_to_float
+      field: xm_cyber.risk_score.graph_data.score
+      type: float
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_xm_cyber_risk_score_graph_data_score
+            field:
+              - xm_cyber.risk_score.graph_data.score
+        - append:
+            tag: append_error_message
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Map custom fields to corresponding ECS and related fields.
   - set:
@@ -233,10 +245,8 @@ processors:
       field: labels.risk_score
       copy_from: xm_cyber.risk_score.scenario.score
       ignore_empty_value: true
-  # Remove duplicate custom fields if preserve_duplicate_custom_fields are not enabled
   - remove:
-      tag: remove_custom_duplicate_fields
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      tag: remove_fields_mapped_to_ecs
       field:
         - xm_cyber.risk_score.scenario.name
         - xm_cyber.risk_score.scenario.grade
