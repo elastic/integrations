@@ -1,0 +1,81 @@
+config_version: 2
+interval: {{interval}}
+
+resource.url: {{url}}
+resource.timeout: {{http_client_timeout}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+# The large NDJSON download can intermittently fail with "read on closed
+# response body" (a transient HTTP/2 stream reset). These retries are the
+# mitigation: a fresh attempt almost always succeeds, so the agent self-heals
+# without a manual restart.
+resource.retry:
+  max_attempts: 5
+  wait_min: 10s
+  wait_max: 1m
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  # Include the data stream namespace so multiple Ticura integration instances
+  # (e.g., one per feed configuration) don't write their tracer logs into the
+  # same file. The trailing `*` is the standard CEL rotation wildcard.
+  filename: "../../logs/cel/http-request-trace-{{data_stream.namespace}}-*.ndjson"
+  maxbackups: 5
+
+state:
+  api_token: {{api_token}}
+
+redact:
+  fields:
+    - api_token
+  delete: true  # Remove api_token entirely from event documents (not just mask).
+
+program: |
+  state.with(
+    request("GET", state.url).with({
+      "Header": {
+        "x-api-key": [state.api_token],
+      }
+    }).do_request().as(resp, resp.StatusCode == 200 ?
+      {
+        "events": string(resp.Body).split("\n")
+          .filter(l, size(l) > 0)
+          .map(l, {"message": l.trim_space()}),
+        "want_more": false,
+      }
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET " + state.url + ": " + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  )
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
