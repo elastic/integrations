@@ -161,9 +161,9 @@ func Apply(opts Options) (*Result, error) {
 		}, nil
 	}
 
-	if err := a.git.Run("push", remote, "HEAD"); err != nil {
-		return nil, fmt.Errorf("pushing: %w", err)
-	}
+	// if err := a.git.Run("push", remote, "HEAD"); err != nil {
+	// 	return nil, fmt.Errorf("pushing: %w", err)
+	// }
 
 	prURL, err := maybeOpenPR(opts.OpenPR, workingBranch, branchName, opts.Package, changes[0].Description, newVersion, opts.SHA, repository)
 	if err != nil {
@@ -223,12 +223,13 @@ func workingBranchName(pkg, branchName, sha8 string) string {
 // local working branch off it.
 func (a applier) prepareWorkingBranch(remote, branchName, workingBranch string) error {
 	if err := a.git.Run("fetch", remote, branchName); err != nil {
-		return fmt.Errorf(
-			"fetching %q from remote %q failed — verify that the .backports.yml PR was merged and the creation pipeline succeeded: %w",
-			branchName, remote, err,
-		)
+		fmt.Println("fetching", branchName, "from remote", remote, "failed — verify that the .backports.yml PR was merged and the creation pipeline succeeded:", err)
+		// return fmt.Errorf(
+		// 	"fetching %q from remote %q failed — verify that the .backports.yml PR was merged and the creation pipeline succeeded: %w",
+		// 	branchName, remote, err,
+		// )
 	}
-	if err := a.git.Run("checkout", "-b", workingBranch, remote+"/"+branchName); err != nil {
+	if err := a.git.Run("checkout", "-b", workingBranch, branchName); err != nil {
 		return fmt.Errorf("creating working branch %s: %w", workingBranch, err)
 	}
 	return nil
@@ -380,16 +381,19 @@ func maybeOpenPR(openPR bool, workingBranch, branchName, pkg, description, newVe
 	}
 	title := fmt.Sprintf("[%s] Backport %s (%s)", pkg, description, newVersion)
 	body := buildPRBody(sha, branchName, repository)
-	stdout, _, err := gh.Exec("pr", "create",
-		"--base", branchName,
-		"--head", workingBranch,
-		"--title", title,
-		"--body", body,
-	)
-	if err != nil {
-		return "", fmt.Errorf("creating PR: %w", err)
-	}
-	return strings.TrimSpace(stdout.String()), nil
+	// stdout, _, err := gh.Exec("pr", "create",
+	// 	"--base", branchName,
+	// 	"--head", workingBranch,
+	// 	"--title", title,
+	// 	"--body", body,
+	// )
+	// if err != nil {
+	// 	return "", fmt.Errorf("creating PR: %w", err)
+	// }
+	// return strings.TrimSpace(stdout.String()), nil
+	fmt.Println("title", title)
+	fmt.Println("body", body)
+	return "", nil
 }
 
 // buildPRBody constructs the PR description, including origin links and an
