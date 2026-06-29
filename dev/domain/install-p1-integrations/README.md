@@ -21,6 +21,8 @@ Install all 47 [P1 domain integrations](../p1/) via Kibana Fleet, ingest pipelin
 | `ELASTIC_API_KEY_SECRET` | — | Raw API key secret |
 | `ELASTIC_USER` | `elastic` | Username for basic auth |
 | `ELASTIC_PASSWORD` | `changeme` | Password for basic auth |
+| `ELASTIC_SSL_VERIFY` | `true` | Set to `false` to skip TLS cert verification (local dev serverless with self-signed certs) |
+| `ELASTIC_SSL_CA_CERT` | — | Path to a custom CA bundle (`.pem`) when not using system CAs |
 
 ### Authentication
 
@@ -76,6 +78,29 @@ export ELASTIC_USER="elastic"
 export ELASTIC_PASSWORD="changeme"
 
 python3 dev/domain/install-p1-integrations/install_and_ingest.py
+```
+
+**Local serverless (self-signed TLS):**
+
+Local serverless exposes Kibana and Elasticsearch on **separate HTTPS ports**. Fleet install uses `KIBANA_URL`; fixture ingest and counts use `ES_URL` — both must be set correctly.
+
+```bash
+export ES_URL="https://localhost:9200"
+export KIBANA_URL="https://localhost:5601/"
+export ELASTIC_API_KEY="<encoded-api-key>"
+export ELASTIC_SSL_VERIFY=false
+
+python3 dev/domain/install-p1-integrations/install_and_ingest.py --insecure
+```
+
+`--insecure` is equivalent to `ELASTIC_SSL_VERIFY=false`. Use only for local development.
+
+If packages install via Fleet but ingest reports 0 saved docs, check `ES_URL` first — a wrong Elasticsearch address is a common cause (install succeeds through Kibana while bulk ingest hits the wrong host).
+
+For a custom CA instead of skipping verification:
+
+```bash
+export ELASTIC_SSL_CA_CERT="/path/to/ca.pem"
 ```
 
 Reports are written to `out/ingest_report_<run_id>.{json,md,csv}`.
@@ -160,7 +185,58 @@ python3 install_and_ingest.py --packages slack,snyk,github
 
 # Custom run ID (used in tags and report filenames)
 python3 install_and_ingest.py --run-id my-test-run
+
+# Local serverless: longer Fleet install timeouts
+python3 install_and_ingest.py --insecure --install-timeout 900 --install-wait 1200
 ```
+
+| Flag / env | Default | Description |
+| --- | --- | --- |
+| `--install-timeout` / `FLEET_INSTALL_TIMEOUT` | `600` | Seconds to wait for the Fleet install HTTP response |
+| `--install-wait` / `FLEET_INSTALL_WAIT` | `900` | Seconds to poll Fleet if the install connection drops |
+
+## Troubleshooting local serverless
+
+### `Remote end closed connection without response`
+
+This is usually **not** an API permissions problem. Permissions failures return HTTP **401/403** with a JSON body.
+
+`Remote end closed connection` means Kibana dropped the TCP connection while installing a heavy package (Fleet uses a state machine that can run for minutes). Common on resource-constrained local serverless.
+
+The script now:
+1. Calls `POST /api/fleet/setup` before installing
+2. Uses a **10-minute** install timeout (configurable)
+3. **Polls Fleet** after a dropped connection — if Kibana logs show `Starting installation of ...`, the install may still succeed
+
+If installs keep failing:
+- Install one package at a time: `--packages azure_ai_foundry`
+- Increase timeouts: `--install-timeout 1200 --install-wait 1800`
+- Prefer **basic auth** with the `elastic` superuser for local dev instead of a limited API key
+
+### Fleet API privileges
+
+Package install requires Kibana privileges: **`integrations-all`** and **`fleet-agent-policies-all`**.
+
+Local dev API keys created without Fleet roles will get HTTP 403, not a connection reset. Use:
+
+```bash
+export ELASTIC_USER="elastic"
+export ELASTIC_PASSWORD="changeme"
+```
+
+### Benign Kibana warnings during install
+
+These are usually safe to ignore:
+
+```
+Failed to import saved objects ... index-pattern ... logs-* ... conflict
+```
+
+The `logs-*` / `metrics-*` index patterns already exist from a prior package install.
+
+### Elasticsearch background errors (ELSER, transforms)
+
+Errors like ELSER allocation timeouts or transform permission failures in ES logs are **environment issues** on local serverless, not caused by this script. They may indicate the cluster is under memory pressure while Fleet installs assets.
 
 ## What gets ingested
 

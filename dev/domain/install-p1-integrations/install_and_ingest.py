@@ -12,6 +12,11 @@ Environment:
     KIBANA_API_KEY / ES_API_KEY   Per-service overrides (fall back to ELASTIC_API_KEY)
     ELASTIC_USER + ELASTIC_PASSWORD               Basic auth (default: elastic / changeme)
 
+  TLS (local dev serverless with self-signed certs):
+    ELASTIC_SSL_VERIFY=false    Disable certificate verification
+    ELASTIC_SSL_CA_CERT         Path to a custom CA bundle (optional)
+    --insecure                  CLI flag equivalent to ELASTIC_SSL_VERIFY=false
+
 Examples:
   python3 install_and_ingest.py
   ELASTIC_API_KEY=... python3 install_and_ingest.py
@@ -28,6 +33,7 @@ import csv
 import json
 import os
 import re
+import ssl
 import sys
 import time
 from dataclasses import dataclass, field
@@ -49,6 +55,37 @@ PACKAGE_TAG_PREFIX = "p1-ingest-"
 
 SKIP_FIXTURE_SUFFIXES = ("-expected.json", "-config.yml")
 SKIP_FIXTURE_NAMES = {"test-common-config.yml"}
+
+# Set by configure_http_ssl() before any HTTP calls.
+_HTTP_SSL_CONTEXT: ssl.SSLContext | None = None
+
+
+def _parse_ssl_verify_env() -> bool | None:
+    raw = os.environ.get("ELASTIC_SSL_VERIFY")
+    if raw is None:
+        return None
+    return raw.strip().lower() not in {"0", "false", "no", "off", "none"}
+
+
+def configure_http_ssl(*, verify: bool, ca_cert: str | None = None) -> None:
+    """Configure TLS for urllib. Use verify=False for local dev with self-signed certs."""
+    global _HTTP_SSL_CONTEXT
+    if not verify:
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        _HTTP_SSL_CONTEXT = ctx
+        return
+    if ca_cert:
+        _HTTP_SSL_CONTEXT = ssl.create_default_context(cafile=ca_cert)
+        return
+    _HTTP_SSL_CONTEXT = None
+
+
+def _urlopen(req: Request, *, timeout: int):
+    if _HTTP_SSL_CONTEXT is not None:
+        return urlopen(req, timeout=timeout, context=_HTTP_SSL_CONTEXT)
+    return urlopen(req, timeout=timeout)
 
 
 @dataclass
@@ -201,7 +238,7 @@ def http_json(
     for attempt in range(retries):
         req = Request(url, data=body, headers=req_headers, method=method)
         try:
-            with urlopen(req, timeout=timeout) as resp:
+            with _urlopen(req, timeout=timeout) as resp:
                 raw = resp.read()
                 status = resp.status
             last_error = None
@@ -211,7 +248,7 @@ def http_json(
             status = exc.code
             last_error = None
             break
-        except (URLError, ConnectionResetError, TimeoutError) as exc:
+        except (URLError, ConnectionResetError, TimeoutError, ConnectionError) as exc:
             last_error = exc
             if attempt + 1 < retries:
                 time.sleep(2 ** attempt)
@@ -417,20 +454,136 @@ def resolve_ingest_pipeline(es_url: str, auth: Auth | None, base_name: str) -> s
     return None
 
 
-def install_package(kibana_url: str, auth: Auth | None, package: str) -> tuple[bool, str | None]:
+FLEET_INSTALL_PRIVS = "integrations-all AND fleet-agent-policies-all"
+
+
+def _fleet_headers() -> dict[str, str]:
+    return {"kbn-xsrf": "true"}
+
+
+def ensure_fleet_setup(kibana_url: str, auth: Auth | None) -> None:
     status, body = http_json(
         "POST",
+        f"{kibana_url}/api/fleet/setup",
+        auth=auth,
+        headers=_fleet_headers(),
+        body=b"{}",
+        timeout=120,
+    )
+    if status not in {200, 201}:
+        detail = body if isinstance(body, str) else json.dumps(body)
+        raise RuntimeError(f"Fleet setup failed: HTTP {status}: {detail}")
+
+
+def get_package_item(kibana_url: str, auth: Auth | None, package: str) -> dict[str, Any] | None:
+    status, body = http_json(
+        "GET",
         f"{kibana_url}/api/fleet/epm/packages/{package}",
         auth=auth,
-        headers={"kbn-xsrf": "true"},
-        body=b"{}",
+        headers=_fleet_headers(),
+        timeout=60,
     )
+    if status != 200 or not isinstance(body, dict):
+        return None
+    item = body.get("item")
+    return item if isinstance(item, dict) else None
+
+
+def package_install_state(item: dict[str, Any] | None) -> str | None:
+    if not item:
+        return None
+    state = item.get("status") or item.get("install_status")
+    return state if isinstance(state, str) else None
+
+
+def wait_for_package_install(
+    kibana_url: str,
+    auth: Auth | None,
+    package: str,
+    *,
+    timeout: float,
+    poll_interval: float,
+) -> tuple[bool, str | None]:
+    deadline = time.time() + timeout
+    last_state: str | None = None
+    while time.time() < deadline:
+        last_state = package_install_state(get_package_item(kibana_url, auth, package))
+        if last_state == "installed":
+            return True, None
+        if last_state == "install_failed":
+            return False, "Fleet reported install_failed"
+        time.sleep(poll_interval)
+    return False, f"timed out waiting for install (last state: {last_state})"
+
+
+def install_package(
+    kibana_url: str,
+    auth: Auth | None,
+    package: str,
+    *,
+    install_timeout: int = 600,
+    poll_timeout: float = 900,
+    poll_interval: float = 5.0,
+) -> tuple[bool, str | None]:
+    item = get_package_item(kibana_url, auth, package)
+    state = package_install_state(item)
+    if state == "installed":
+        return True, "already installed"
+
+    if state == "installing":
+        print("  package already installing, waiting for Fleet...")
+        ok, err = wait_for_package_install(
+            kibana_url, auth, package, timeout=poll_timeout, poll_interval=poll_interval
+        )
+        return (True, "installed after wait") if ok else (False, err)
+
+    install_url = f"{kibana_url}/api/fleet/epm/packages/{package}?ignoreMappingUpdateErrors=true"
+    post_error: str | None = None
+    try:
+        status, body = http_json(
+            "POST",
+            install_url,
+            auth=auth,
+            headers=_fleet_headers(),
+            body=b"{}",
+            timeout=install_timeout,
+            retries=1,
+        )
+    except RuntimeError as exc:
+        post_error = str(exc)
+        status = 0
+        body = None
+
     if status in {200, 201}:
         return True, None
     if status == 409:
         return True, "already installed"
-    detail = body if isinstance(body, str) else json.dumps(body)
-    return False, f"HTTP {status}: {detail}"
+    if status in {401, 403}:
+        detail = body if isinstance(body, str) else json.dumps(body)
+        return (
+            False,
+            f"HTTP {status}: Fleet install requires {FLEET_INSTALL_PRIVS}. "
+            f"Use the elastic superuser or an API key with those privileges. Detail: {detail}",
+        )
+
+    if post_error or status not in {200, 201, 409}:
+        if post_error:
+            print(f"  install request interrupted ({post_error}), polling Fleet status...")
+        elif status:
+            detail = body if isinstance(body, str) else json.dumps(body)
+            print(f"  install returned HTTP {status}, polling Fleet status... ({detail})")
+        ok, poll_err = wait_for_package_install(
+            kibana_url, auth, package, timeout=poll_timeout, poll_interval=poll_interval
+        )
+        if ok:
+            note = "installed (recovered after interrupted request)" if post_error else f"installed (recovered after HTTP {status})"
+            return True, note
+        if post_error:
+            return False, f"{post_error}; poll result: {poll_err}"
+        detail = body if isinstance(body, str) else json.dumps(body)
+        return False, f"HTTP {status}: {detail}; poll result: {poll_err}"
+
+    return True, None
 
 
 def bulk_ingest(
@@ -469,7 +622,7 @@ def bulk_ingest(
             },
             method="POST",
         )
-        with urlopen(req, timeout=180) as resp:
+        with _urlopen(req, timeout=180) as resp:
             result = json.loads(resp.read().decode())
 
         submitted += len(chunk)
@@ -761,7 +914,31 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true", help="Discover fixtures and count docs only")
     parser.add_argument("--run-id", default=datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S"))
     parser.add_argument("--refresh-delay", type=float, default=2.0, help="Seconds to wait before counting")
+    parser.add_argument(
+        "--insecure",
+        action="store_true",
+        help="Disable TLS certificate verification (local dev with self-signed certs)",
+    )
+    parser.add_argument(
+        "--install-timeout",
+        type=int,
+        default=int(os.environ.get("FLEET_INSTALL_TIMEOUT", "600")),
+        help="Seconds to wait for Fleet install HTTP response (default: 600)",
+    )
+    parser.add_argument(
+        "--install-wait",
+        type=float,
+        default=float(os.environ.get("FLEET_INSTALL_WAIT", "900")),
+        help="Seconds to poll Fleet after an interrupted install (default: 900)",
+    )
     args = parser.parse_args()
+
+    ssl_verify = _parse_ssl_verify_env()
+    if ssl_verify is None:
+        ssl_verify = True
+    if args.insecure:
+        ssl_verify = False
+    configure_http_ssl(verify=ssl_verify, ca_cert=os.environ.get("ELASTIC_SSL_CA_CERT"))
 
     do_install = not args.ingest_only
     do_ingest = not args.install_only
@@ -805,7 +982,15 @@ def main() -> int:
     print(f"Kibana: {kibana_url}")
     print(f"Elasticsearch: {es_url}")
     print(f"Auth: kibana={kibana_auth.scheme if kibana_auth else 'none'}, es={es_auth.scheme if es_auth else 'none'}")
+    if not ssl_verify:
+        print("TLS: verification disabled (--insecure or ELASTIC_SSL_VERIFY=false)")
+    elif os.environ.get("ELASTIC_SSL_CA_CERT"):
+        print(f"TLS: custom CA {os.environ['ELASTIC_SSL_CA_CERT']}")
     print(f"Packages: {len(packages)}")
+
+    if do_install and not args.dry_run:
+        print("Running Fleet setup...")
+        ensure_fleet_setup(kibana_url, kibana_auth)
 
     for package in packages:
         report = IntegrationReport(package=package)
@@ -817,13 +1002,22 @@ def main() -> int:
                     report.installed = None
                     print("  [dry-run] skip install")
                 else:
-                    ok, err = install_package(kibana_url, kibana_auth, package)
+                    ok, err = install_package(
+                        kibana_url,
+                        kibana_auth,
+                        package,
+                        install_timeout=args.install_timeout,
+                        poll_timeout=args.install_wait,
+                    )
                     report.installed = ok
                     report.install_error = err
                     if ok:
                         print(f"  installed{' (' + err + ')' if err else ''}")
                     else:
                         print(f"  install FAILED: {err}")
+                    delay = float(os.environ.get("FLEET_INSTALL_DELAY", "0"))
+                    if delay > 0:
+                        time.sleep(delay)
 
             if do_ingest:
                 ingest_report = ingest_package_fixtures(
