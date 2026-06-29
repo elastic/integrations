@@ -443,6 +443,7 @@ func SyncBackportChangelog() error {
 	}
 
 	syncResult, err := changelog.CreateSyncPR(
+		"",
 		collectResult.EntriesTSV,
 		collectResult.WorkingBranch,
 		collectResult.BackportPRNumber,

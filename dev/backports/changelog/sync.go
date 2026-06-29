@@ -26,8 +26,15 @@ type SyncResult struct {
 
 // CreateSyncPR applies the changelog entries from entriesTSV onto main,
 // commits them to workingBranch, and opens a GitHub PR.
-func CreateSyncPR(entriesTSV, workingBranch, backportPRNumber, backportBranch, packagesDir, repository string) (*SyncResult, error) {
-	if err := gitutil.Run("checkout", "-b", workingBranch, "origin/main"); err != nil {
+// workDir is the repository root; an empty string uses the current working directory.
+func CreateSyncPR(workDir, entriesTSV, workingBranch, backportPRNumber, backportBranch, packagesDir, repository string) (*SyncResult, error) {
+	git := gitutil.Git{Dir: workDir}
+
+	if !filepath.IsAbs(packagesDir) {
+		packagesDir = filepath.Join(workDir, packagesDir)
+	}
+
+	if err := git.Run("checkout", "-b", workingBranch, "origin/main"); err != nil {
 		return nil, fmt.Errorf("creating working branch: %w", err)
 	}
 
@@ -60,24 +67,24 @@ func CreateSyncPR(entriesTSV, workingBranch, backportPRNumber, backportBranch, p
 		if err := InsertEntry(changelogPath, e.version, strings.TrimRight(string(entryBlock), "\n")); err != nil {
 			return nil, fmt.Errorf("inserting entry for %s: %w", e.pkg, err)
 		}
-		if err := gitutil.Run("add", changelogPath); err != nil {
+		if err := git.Run("add", changelogPath); err != nil {
 			return nil, err
 		}
 		applied = append(applied, e)
 	}
 
 	if len(applied) == 0 {
-		_ = gitutil.Run("checkout", backportBranch)
+		_ = git.Run("checkout", backportBranch)
 		return &SyncResult{NotFoundPackages: notFound, Outcome: "skipped"}, nil
 	}
 
 	commitMsg := buildCommitMessage(applied, backportPRNumber)
 	prTitle := buildPRTitle(applied, backportPRNumber)
 
-	if err := gitutil.Run("commit", "-m", commitMsg); err != nil {
+	if err := git.Run("commit", "-m", commitMsg); err != nil {
 		return nil, fmt.Errorf("committing: %w", err)
 	}
-	if err := gitutil.Run("push", "origin", workingBranch); err != nil {
+	if err := git.Run("push", "origin", workingBranch); err != nil {
 		return nil, fmt.Errorf("pushing: %w", err)
 	}
 
@@ -95,7 +102,7 @@ func CreateSyncPR(entriesTSV, workingBranch, backportPRNumber, backportBranch, p
 		return nil, fmt.Errorf("creating PR: %w", err)
 	}
 
-	_ = gitutil.Run("checkout", backportBranch)
+	_ = git.Run("checkout", backportBranch)
 	return &SyncResult{NotFoundPackages: notFound, Outcome: "success"}, nil
 }
 

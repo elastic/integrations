@@ -34,6 +34,7 @@ type Options struct {
 	Remote      string // git remote to fetch from and push to; default "origin"
 	PackagesDir string // path to packages dir; default "packages"
 	Repository  string // "org/repo" e.g. "elastic/integrations"
+	WorkDir     string // repository root; defaults to the current working directory
 }
 
 // Result is the structured output of Apply.
@@ -62,19 +63,22 @@ func Apply(opts Options) (*Result, error) {
 		return nil, fmt.Errorf("SHA must be at least 8 characters, got %q", opts.SHA)
 	}
 
+	workDir := opts.WorkDir
+	if workDir == "" {
+		wd, err := os.Getwd()
+		if err != nil {
+			return nil, fmt.Errorf("getting working directory: %w", err)
+		}
+		workDir = wd
+	}
+	git := gitutil.Git{Dir: workDir}
+
 	packagesDir := opts.PackagesDir
 	if packagesDir == "" {
 		packagesDir = "packages"
 	}
-	if filepath.IsAbs(packagesDir) {
-		cwd, err := os.Getwd()
-		if err != nil {
-			return nil, fmt.Errorf("getting working directory: %w", err)
-		}
-		packagesDir, err = filepath.Rel(cwd, packagesDir)
-		if err != nil {
-			return nil, fmt.Errorf("resolving packages dir: %w", err)
-		}
+	if !filepath.IsAbs(packagesDir) {
+		packagesDir = filepath.Join(workDir, packagesDir)
 	}
 	packagesDir = filepath.Clean(packagesDir)
 	remote := opts.Remote
@@ -96,12 +100,12 @@ func Apply(opts Options) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := checkBranchReady(branchName, opts.AsJSON); err != nil {
+	if err := checkBranchReady(filepath.Join(workDir, ".backports.yml"), branchName, opts.AsJSON); err != nil {
 		return nil, err
 	}
 
 	workingBranch := workingBranchName(opts.Package, branchName, sha8)
-	if err := prepareWorkingBranch(remote, branchName, workingBranch); err != nil {
+	if err := prepareWorkingBranch(git, remote, branchName, workingBranch); err != nil {
 		return nil, err
 	}
 
@@ -110,15 +114,15 @@ func Apply(opts Options) (*Result, error) {
 	success := false
 	defer func() {
 		if !success {
-			_ = gitutil.Run("checkout", "-")
-			_ = gitutil.Run("branch", "-D", workingBranch)
+			_ = git.Run("checkout", "-")
+			_ = git.Run("branch", "-D", workingBranch)
 		}
 	}()
 
 	changelogPath := filepath.Join(pkgDir, "changelog.yml")
 	manifestPath := filepath.Join(pkgDir, "manifest.yml")
 
-	conflict, err := cherryPickOrConflict(opts.SHA, branchName, opts.Package, changelogPath, manifestPath)
+	conflict, err := cherryPickOrConflict(git, opts.SHA, branchName, opts.Package, changelogPath, manifestPath)
 	if err != nil {
 		return nil, err
 	}
@@ -126,17 +130,17 @@ func Apply(opts Options) (*Result, error) {
 		return conflict, nil
 	}
 
-	changes, err := extractChangelogFields(opts.SHA, changelogPath)
+	changes, err := extractChangelogFields(git, workDir, opts.SHA, changelogPath)
 	if err != nil {
 		return nil, err
 	}
 
-	newVersion, err := resetAndWriteChanges(manifestPath, changelogPath, changes)
+	newVersion, err := resetAndWriteChanges(git, manifestPath, changelogPath, changes)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := commitChanges(pkgDir, opts.SHA, newVersion); err != nil {
+	if err := commitChanges(git, pkgDir, opts.SHA, newVersion); err != nil {
 		return nil, err
 	}
 
@@ -151,7 +155,7 @@ func Apply(opts Options) (*Result, error) {
 		}, nil
 	}
 
-	if err := gitutil.Run("push", remote, "HEAD"); err != nil {
+	if err := git.Run("push", remote, "HEAD"); err != nil {
 		return nil, fmt.Errorf("pushing: %w", err)
 	}
 
@@ -183,10 +187,10 @@ func resolvePackage(packagesDir, pkg string) (string, error) {
 	return dir, nil
 }
 
-// checkBranchReady verifies the branch is in .backports.yml.
+// checkBranchReady verifies the branch is in the backports inventory file.
 // An inactive branch is a warning in human mode and an error in JSON mode.
-func checkBranchReady(branchName string, asJSON bool) error {
-	result, err := backports.CheckActive(".backports.yml", branchName, time.Now().UTC())
+func checkBranchReady(backportsFile, branchName string, asJSON bool) error {
+	result, err := backports.CheckActive(backportsFile, branchName, time.Now().UTC())
 	if err != nil {
 		return fmt.Errorf(
 			"branch %q not found in .backports.yml — add an entry and open a PR to have it created first: %w",
@@ -211,14 +215,14 @@ func workingBranchName(pkg, branchName, sha8 string) string {
 
 // prepareWorkingBranch fetches the backport branch from remote and creates a
 // local working branch off it.
-func prepareWorkingBranch(remote, branchName, workingBranch string) error {
-	if err := gitutil.Run("fetch", remote, branchName); err != nil {
+func prepareWorkingBranch(git gitutil.Git, remote, branchName, workingBranch string) error {
+	if err := git.Run("fetch", remote, branchName); err != nil {
 		return fmt.Errorf(
 			"fetching %q from remote %q failed — verify that the .backports.yml PR was merged and the creation pipeline succeeded: %w",
 			branchName, remote, err,
 		)
 	}
-	if err := gitutil.Run("checkout", "-b", workingBranch, remote+"/"+branchName); err != nil {
+	if err := git.Run("checkout", "-b", workingBranch, remote+"/"+branchName); err != nil {
 		return fmt.Errorf("creating working branch %s: %w", workingBranch, err)
 	}
 	return nil
@@ -230,14 +234,14 @@ func prepareWorkingBranch(remote, branchName, workingBranch string) error {
 // conflict after that, it resets the index and returns a populated conflict
 // Result; the caller's defer is responsible for branch cleanup.
 // On success it returns (nil, nil).
-func cherryPickOrConflict(sha, branchName, pkg, changelogPath, manifestPath string) (*Result, error) {
-	cherryErr := gitutil.Run("cherry-pick", "-n", sha)
+func cherryPickOrConflict(git gitutil.Git, sha, branchName, pkg, changelogPath, manifestPath string) (*Result, error) {
+	cherryErr := git.Run("cherry-pick", "-n", sha)
 
 	// Always restore manifest and changelog to HEAD. They are the most likely
 	// source of spurious conflicts (version bump and entry differ per branch) and
 	// we overwrite them ourselves in resetAndWriteChanges anyway.
-	if err := gitutil.Run("checkout", "HEAD", "--", changelogPath, manifestPath); err != nil {
-		_ = gitutil.Run("reset", "--hard", "HEAD")
+	if err := git.Run("checkout", "HEAD", "--", changelogPath, manifestPath); err != nil {
+		_ = git.Run("reset", "--hard", "HEAD")
 		return nil, fmt.Errorf("restoring manifest/changelog after cherry-pick: %w", err)
 	}
 
@@ -248,9 +252,9 @@ func cherryPickOrConflict(sha, branchName, pkg, changelogPath, manifestPath stri
 	fmt.Fprintf(os.Stderr, "note: conflicts in %s and %s are discarded — these files are managed by the backport pipeline\n", changelogPath, manifestPath)
 
 	// cherry-pick failed; check whether non-manifest/changelog conflicts remain.
-	files, err := conflictingFiles()
+	files, err := conflictingFiles(git)
 	if err != nil {
-		_ = gitutil.Run("reset", "--hard", "HEAD")
+		_ = git.Run("reset", "--hard", "HEAD")
 		return nil, fmt.Errorf("checking conflict state after cherry-pick: %w", err)
 	}
 	if len(files) == 0 {
@@ -261,7 +265,7 @@ func cherryPickOrConflict(sha, branchName, pkg, changelogPath, manifestPath stri
 	// reset --hard instead of cherry-pick --abort: with -n, git does not always
 	// write CHERRY_PICK_HEAD, so --abort may fail and leave the index dirty.
 	// Branch checkout and deletion are left to the caller's defer.
-	_ = gitutil.Run("reset", "--hard", "HEAD")
+	_ = git.Run("reset", "--hard", "HEAD")
 	return &Result{
 		Status:           "conflict",
 		SHA:              sha,
@@ -276,8 +280,12 @@ func cherryPickOrConflict(sha, branchName, pkg, changelogPath, manifestPath stri
 
 // extractChangelogFields reads changelog.yml directly from the source commit
 // and returns the change items from its first (newest) entry.
-func extractChangelogFields(sha, changelogPath string) ([]changeItem, error) {
-	content, err := gitutil.Output("show", sha+":"+changelogPath)
+func extractChangelogFields(git gitutil.Git, workDir, sha, changelogPath string) ([]changeItem, error) {
+	relPath, err := filepath.Rel(workDir, changelogPath)
+	if err != nil {
+		return nil, fmt.Errorf("computing repo-relative path for %s: %w", changelogPath, err)
+	}
+	content, err := git.Output("show", sha+":"+relPath)
 	if err != nil {
 		return nil, fmt.Errorf("reading changelog from commit %s: %w", sha, err)
 	}
@@ -301,11 +309,11 @@ func extractChangelogFields(sha, changelogPath string) ([]changeItem, error) {
 // resetAndWriteChanges resets changelog.yml and manifest.yml to the backport-branch
 // state (discarding the cherry-picked version bump and entry), bumps the patch
 // version, and inserts a fresh changelog entry. Returns the new version string.
-func resetAndWriteChanges(manifestPath, changelogPath string, changes []changeItem) (string, error) {
+func resetAndWriteChanges(git gitutil.Git, manifestPath, changelogPath string, changes []changeItem) (string, error) {
 	// cherryPickOrConflict already restores these files on the success path, so
 	// this checkout is redundant in normal flow. It is kept here so this function
 	// remains self-contained and correct if ever called from a different context.
-	if err := gitutil.Run("checkout", "HEAD", "--", changelogPath, manifestPath); err != nil {
+	if err := git.Run("checkout", "HEAD", "--", changelogPath, manifestPath); err != nil {
 		return "", fmt.Errorf("resetting changelog and manifest: %w", err)
 	}
 	newVersion, err := bumpPatchVersion(manifestPath)
@@ -324,17 +332,17 @@ func resetAndWriteChanges(manifestPath, changelogPath string, changes []changeIt
 
 // commitChanges stages all package changes and commits with the original commit
 // message plus a cherry-pick annotation.
-func commitChanges(pkgDir, sha, newVersion string) error {
-	originalMsg, err := gitutil.Output("log", "--format=%B", "-n", "1", sha)
+func commitChanges(git gitutil.Git, pkgDir, sha, newVersion string) error {
+	originalMsg, err := git.Output("log", "--format=%B", "-n", "1", sha)
 	if err != nil {
 		return fmt.Errorf("reading original commit message for %s: %w", sha, err)
 	}
 	commitMsg := strings.TrimRight(originalMsg, "\n") +
 		fmt.Sprintf("\n\n(cherry picked from commit %s)\n\nBackport version: %s", sha, newVersion)
-	if err := gitutil.Run("add", pkgDir); err != nil {
+	if err := git.Run("add", pkgDir); err != nil {
 		return fmt.Errorf("staging changes: %w", err)
 	}
-	if err := gitutil.Run("commit", "-m", commitMsg); err != nil {
+	if err := git.Run("commit", "-m", commitMsg); err != nil {
 		return fmt.Errorf("committing: %w", err)
 	}
 	return nil
@@ -539,8 +547,8 @@ func buildEntryBlock(version string, changes []changeItem) (string, error) {
 }
 
 // conflictingFiles returns files in a conflict state after a failed cherry-pick.
-func conflictingFiles() ([]string, error) {
-	out, err := gitutil.Output("status", "--porcelain")
+func conflictingFiles(git gitutil.Git) ([]string, error) {
+	out, err := git.Output("status", "--porcelain")
 	if err != nil {
 		return nil, err
 	}

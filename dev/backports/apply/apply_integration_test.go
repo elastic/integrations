@@ -102,11 +102,6 @@ func setupIntegrationRepo(t *testing.T) (workDir, fixSHA string) {
 func TestApplyIntegration_DryRun(t *testing.T) {
 	workDir, fixSHA := setupIntegrationRepo(t)
 
-	origDir, err := os.Getwd()
-	require.NoError(t, err)
-	require.NoError(t, os.Chdir(workDir))
-	t.Cleanup(func() { _ = os.Chdir(origDir) })
-
 	result, err := Apply(Options{
 		SHA:         fixSHA,
 		Package:     "kubernetes",
@@ -115,6 +110,7 @@ func TestApplyIntegration_DryRun(t *testing.T) {
 		DryRun:      true,
 		PackagesDir: "packages",
 		Repository:  "elastic/integrations",
+		WorkDir:     workDir,
 	})
 	require.NoError(t, err)
 	require.NotNil(t, result)
@@ -135,7 +131,7 @@ func TestApplyIntegration_DryRun(t *testing.T) {
 	assert.Contains(t, string(changelogData), "Fix timeout in metrics collection")
 
 	// Verify the backport commit was created with the expected message.
-	commitMsg, err := gitutil.Output("log", "--format=%B", "-n", "1")
+	commitMsg, err := gitutil.Git{Dir: workDir}.Output("log", "--format=%B", "-n", "1")
 	require.NoError(t, err)
 	assert.Contains(t, commitMsg, "Fix timeout in metrics collection")
 	assert.Contains(t, commitMsg, "cherry picked from commit")
