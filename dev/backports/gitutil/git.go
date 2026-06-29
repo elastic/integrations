@@ -5,8 +5,11 @@
 package gitutil
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 // Git runs git commands in Dir. An empty Dir means the current working directory.
@@ -22,10 +25,15 @@ func (g Git) Run(args ...string) error {
 }
 
 // Output runs a git command and returns its stdout as a string.
+// On failure the returned error includes git's stderr output.
 func (g Git) Output(args ...string) (string, error) {
+	var stderr bytes.Buffer
 	cmd := exec.Command("git", args...)
 	cmd.Dir = g.Dir
+	cmd.Stderr = &stderr
 	out, err := cmd.Output()
-	return string(out), err
+	if err != nil {
+		return "", fmt.Errorf("%w: %s", err, strings.TrimSpace(stderr.String()))
+	}
+	return string(out), nil
 }
-

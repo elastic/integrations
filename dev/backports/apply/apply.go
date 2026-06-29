@@ -295,18 +295,11 @@ func (a applier) extractChangelogFields(sha, changelogPath string) ([]changeItem
 	if err != nil {
 		return nil, fmt.Errorf("reading changelog from commit %s: %w", sha, err)
 	}
-	var entries []changelogEntryYAML
-	if err := yaml.Unmarshal([]byte(content), &entries); err != nil {
-		return nil, fmt.Errorf("parsing changelog from commit %s: %w", sha, err)
-	}
-	if len(entries) == 0 {
+	changes := parseEntryFields(content)
+	if len(changes) == 0 {
 		return nil, fmt.Errorf("no changelog entries found in commit %s", sha)
 	}
-	changes := make([]changeItem, 0, len(entries[0].Changes))
-	for _, c := range entries[0].Changes {
-		changes = append(changes, changeItem{Description: c.Description, Type: c.Type, Link: c.Link})
-	}
-	if len(changes) == 0 || changes[0].Description == "" || changes[0].Type == "" {
+	if changes[0].Description == "" || changes[0].Type == "" || changes[0].Link == "" {
 		return nil, fmt.Errorf("no valid changelog entry found in commit %s", sha)
 	}
 	return changes, nil
