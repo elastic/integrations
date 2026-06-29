@@ -1,6 +1,6 @@
 # Recorded Future Integration
 
-The Recorded Future integration has three data streams:
+The Recorded Future integration has four data streams:
 
 * `threat`: Threat intelligence from the Recorded Future Connect
   API's [risklist endpoints](https://api.recordedfuture.com/v2/#!/Domain/Domain_Risk_Lists),
@@ -9,6 +9,9 @@ The Recorded Future integration has three data streams:
   Future's [API for Playbook Alerts](https://api.recordedfuture.com/playbook-alert).
 * `triggered_alert`: Triggered alerts data from the Recorded Future Connect
   API's [alerts endpoint](https://api.recordedfuture.com/v2/#!/Alerts/Alert_Notification_Search).
+* `identity_detection`: Identity exposure detections (compromised credentials
+  discovered in breach dumps and stealer malware logs) from Recorded Future's
+  [Identity Detections API](https://docs.recordedfuture.com/reference/identity-detections).
 
 For the `threat` data stream, you need to define the `entity` and `list` to
 fetch. The supported entities are `domain`, `hash`, `ip`, and `url`. Check the
@@ -99,3 +102,13 @@ This is the `playbook_alert` dataset.
 {{event "playbook_alert"}}
 
 {{fields "playbook_alert"}}
+
+### identity_detection
+
+This is the `identity_detection` dataset.
+
+#### Example
+
+{{event "identity_detection"}}
+
+{{fields "identity_detection"}}
