@@ -292,6 +292,9 @@ func extractChangelogFields(sha, changelogPath string) ([]changeItem, error) {
 // state (discarding the cherry-picked version bump and entry), bumps the patch
 // version, and inserts a fresh changelog entry. Returns the new version string.
 func resetAndWriteChanges(manifestPath, changelogPath string, changes []changeItem) (string, error) {
+	// cherryPickOrConflict already restores these files on the success path, so
+	// this checkout is redundant in normal flow. It is kept here so this function
+	// remains self-contained and correct if ever called from a different context.
 	if err := gitutil.Run("checkout", "HEAD", "--", changelogPath, manifestPath); err != nil {
 		return "", fmt.Errorf("resetting changelog and manifest: %w", err)
 	}
@@ -406,11 +409,10 @@ func resolveBranchName(target, packageName string) (string, error) {
 	return branch, nil
 }
 
-// manifestVersionRE matches the version scalar in manifest.yml, capturing:
-//
-//	group 1: "version: " prefix (including any opening quote)
-//	group 2: the raw version digits (stops at whitespace or a quote character)
-var manifestVersionRE = regexp.MustCompile(`(?m)^(version:\s*["']?)([0-9]+\.[0-9]+\.[0-9][^\s"']*)`)
+// manifestYAML is used to extract the version field from manifest.yml.
+type manifestYAML struct {
+	Version string `yaml:"version"`
+}
 
 // bumpPatchVersion reads manifestPath, increments the patch version by one,
 // writes the file back preserving existing formatting, and returns the new version.
@@ -423,22 +425,32 @@ func bumpPatchVersion(manifestPath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	idx := manifestVersionRE.FindSubmatchIndex(data)
-	if idx == nil {
+
+	var m manifestYAML
+	if err := yaml.Unmarshal(data, &m); err != nil {
+		return "", fmt.Errorf("parsing %s: %w", manifestPath, err)
+	}
+	if m.Version == "" {
 		return "", fmt.Errorf("version field not found in %s", manifestPath)
 	}
-	versionStr := string(data[idx[4]:idx[5]])
-	ver, err := semver.StrictNewVersion(versionStr)
+
+	ver, err := semver.StrictNewVersion(m.Version)
 	if err != nil {
-		return "", fmt.Errorf("parsing version %q from %s: %w", versionStr, manifestPath, err)
+		return "", fmt.Errorf("parsing version %q from %s: %w", m.Version, manifestPath, err)
 	}
 	newVersion := fmt.Sprintf("%d.%d.%d", ver.Major(), ver.Minor(), ver.Patch()+1)
 
-	var buf bytes.Buffer
-	buf.Write(data[:idx[4]])
-	buf.WriteString(newVersion)
-	buf.Write(data[idx[5]:])
-	if err := os.WriteFile(manifestPath, buf.Bytes(), info.Mode()); err != nil {
+	// Replace the version digits only on the line that starts with "version:",
+	// preserving quotes and surrounding fields.
+	lines := bytes.Split(data, []byte("\n"))
+	for i, line := range lines {
+		if bytes.HasPrefix(line, []byte("version:")) {
+			lines[i] = bytes.Replace(line, []byte(m.Version), []byte(newVersion), 1)
+			break
+		}
+	}
+	updated := bytes.Join(lines, []byte("\n"))
+	if err := os.WriteFile(manifestPath, updated, info.Mode()); err != nil {
 		return "", fmt.Errorf("writing %s: %w", manifestPath, err)
 	}
 	return newVersion, nil
