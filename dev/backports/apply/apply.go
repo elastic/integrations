@@ -52,6 +52,12 @@ type Result struct {
 // branchRE matches valid backport branch names (mirrors dev/backports/inventory.go).
 var branchRE = regexp.MustCompile(`^backport-[a-zA-Z0-9_]+-[0-9][0-9.]*x?$`)
 
+// applier holds the shared git context used by the apply pipeline steps.
+type applier struct {
+	git     gitutil.Git
+	workDir string
+}
+
 // Apply cherry-picks SHA onto the resolved backport branch, bumps the package's
 // patch version, writes a new changelog entry, and optionally opens a GitHub PR.
 // It uses the current working directory as the repository root.
@@ -71,7 +77,7 @@ func Apply(opts Options) (*Result, error) {
 		}
 		workDir = wd
 	}
-	git := gitutil.Git{Dir: workDir}
+	a := applier{git: gitutil.Git{Dir: workDir}, workDir: workDir}
 
 	packagesDir := opts.PackagesDir
 	if packagesDir == "" {
@@ -105,7 +111,7 @@ func Apply(opts Options) (*Result, error) {
 	}
 
 	workingBranch := workingBranchName(opts.Package, branchName, sha8)
-	if err := prepareWorkingBranch(git, remote, branchName, workingBranch); err != nil {
+	if err := a.prepareWorkingBranch(remote, branchName, workingBranch); err != nil {
 		return nil, err
 	}
 
@@ -114,15 +120,15 @@ func Apply(opts Options) (*Result, error) {
 	success := false
 	defer func() {
 		if !success {
-			_ = git.Run("checkout", "-")
-			_ = git.Run("branch", "-D", workingBranch)
+			_ = a.git.Run("checkout", "-")
+			_ = a.git.Run("branch", "-D", workingBranch)
 		}
 	}()
 
 	changelogPath := filepath.Join(pkgDir, "changelog.yml")
 	manifestPath := filepath.Join(pkgDir, "manifest.yml")
 
-	conflict, err := cherryPickOrConflict(git, opts.SHA, branchName, opts.Package, changelogPath, manifestPath)
+	conflict, err := a.cherryPickOrConflict(opts.SHA, branchName, opts.Package, changelogPath, manifestPath)
 	if err != nil {
 		return nil, err
 	}
@@ -130,17 +136,17 @@ func Apply(opts Options) (*Result, error) {
 		return conflict, nil
 	}
 
-	changes, err := extractChangelogFields(git, workDir, opts.SHA, changelogPath)
+	changes, err := a.extractChangelogFields(opts.SHA, changelogPath)
 	if err != nil {
 		return nil, err
 	}
 
-	newVersion, err := resetAndWriteChanges(git, manifestPath, changelogPath, changes)
+	newVersion, err := a.resetAndWriteChanges(manifestPath, changelogPath, changes)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := commitChanges(git, pkgDir, opts.SHA, newVersion); err != nil {
+	if err := a.commitChanges(pkgDir, opts.SHA, newVersion); err != nil {
 		return nil, err
 	}
 
@@ -155,7 +161,7 @@ func Apply(opts Options) (*Result, error) {
 		}, nil
 	}
 
-	if err := git.Run("push", remote, "HEAD"); err != nil {
+	if err := a.git.Run("push", remote, "HEAD"); err != nil {
 		return nil, fmt.Errorf("pushing: %w", err)
 	}
 
@@ -215,14 +221,14 @@ func workingBranchName(pkg, branchName, sha8 string) string {
 
 // prepareWorkingBranch fetches the backport branch from remote and creates a
 // local working branch off it.
-func prepareWorkingBranch(git gitutil.Git, remote, branchName, workingBranch string) error {
-	if err := git.Run("fetch", remote, branchName); err != nil {
+func (a applier) prepareWorkingBranch(remote, branchName, workingBranch string) error {
+	if err := a.git.Run("fetch", remote, branchName); err != nil {
 		return fmt.Errorf(
 			"fetching %q from remote %q failed — verify that the .backports.yml PR was merged and the creation pipeline succeeded: %w",
 			branchName, remote, err,
 		)
 	}
-	if err := git.Run("checkout", "-b", workingBranch, remote+"/"+branchName); err != nil {
+	if err := a.git.Run("checkout", "-b", workingBranch, remote+"/"+branchName); err != nil {
 		return fmt.Errorf("creating working branch %s: %w", workingBranch, err)
 	}
 	return nil
@@ -234,14 +240,14 @@ func prepareWorkingBranch(git gitutil.Git, remote, branchName, workingBranch str
 // conflict after that, it resets the index and returns a populated conflict
 // Result; the caller's defer is responsible for branch cleanup.
 // On success it returns (nil, nil).
-func cherryPickOrConflict(git gitutil.Git, sha, branchName, pkg, changelogPath, manifestPath string) (*Result, error) {
-	cherryErr := git.Run("cherry-pick", "-n", sha)
+func (a applier) cherryPickOrConflict(sha, branchName, pkg, changelogPath, manifestPath string) (*Result, error) {
+	cherryErr := a.git.Run("cherry-pick", "-n", sha)
 
 	// Always restore manifest and changelog to HEAD. They are the most likely
 	// source of spurious conflicts (version bump and entry differ per branch) and
 	// we overwrite them ourselves in resetAndWriteChanges anyway.
-	if err := git.Run("checkout", "HEAD", "--", changelogPath, manifestPath); err != nil {
-		_ = git.Run("reset", "--hard", "HEAD")
+	if err := a.git.Run("checkout", "HEAD", "--", changelogPath, manifestPath); err != nil {
+		_ = a.git.Run("reset", "--hard", "HEAD")
 		return nil, fmt.Errorf("restoring manifest/changelog after cherry-pick: %w", err)
 	}
 
@@ -252,9 +258,9 @@ func cherryPickOrConflict(git gitutil.Git, sha, branchName, pkg, changelogPath, 
 	fmt.Fprintf(os.Stderr, "note: conflicts in %s and %s are discarded — these files are managed by the backport pipeline\n", changelogPath, manifestPath)
 
 	// cherry-pick failed; check whether non-manifest/changelog conflicts remain.
-	files, err := conflictingFiles(git)
+	files, err := a.conflictingFiles()
 	if err != nil {
-		_ = git.Run("reset", "--hard", "HEAD")
+		_ = a.git.Run("reset", "--hard", "HEAD")
 		return nil, fmt.Errorf("checking conflict state after cherry-pick: %w", err)
 	}
 	if len(files) == 0 {
@@ -265,7 +271,7 @@ func cherryPickOrConflict(git gitutil.Git, sha, branchName, pkg, changelogPath, 
 	// reset --hard instead of cherry-pick --abort: with -n, git does not always
 	// write CHERRY_PICK_HEAD, so --abort may fail and leave the index dirty.
 	// Branch checkout and deletion are left to the caller's defer.
-	_ = git.Run("reset", "--hard", "HEAD")
+	_ = a.git.Run("reset", "--hard", "HEAD")
 	return &Result{
 		Status:           "conflict",
 		SHA:              sha,
@@ -280,12 +286,12 @@ func cherryPickOrConflict(git gitutil.Git, sha, branchName, pkg, changelogPath, 
 
 // extractChangelogFields reads changelog.yml directly from the source commit
 // and returns the change items from its first (newest) entry.
-func extractChangelogFields(git gitutil.Git, workDir, sha, changelogPath string) ([]changeItem, error) {
-	relPath, err := filepath.Rel(workDir, changelogPath)
+func (a applier) extractChangelogFields(sha, changelogPath string) ([]changeItem, error) {
+	relPath, err := filepath.Rel(a.workDir, changelogPath)
 	if err != nil {
 		return nil, fmt.Errorf("computing repo-relative path for %s: %w", changelogPath, err)
 	}
-	content, err := git.Output("show", sha+":"+relPath)
+	content, err := a.git.Output("show", sha+":"+relPath)
 	if err != nil {
 		return nil, fmt.Errorf("reading changelog from commit %s: %w", sha, err)
 	}
@@ -309,11 +315,11 @@ func extractChangelogFields(git gitutil.Git, workDir, sha, changelogPath string)
 // resetAndWriteChanges resets changelog.yml and manifest.yml to the backport-branch
 // state (discarding the cherry-picked version bump and entry), bumps the patch
 // version, and inserts a fresh changelog entry. Returns the new version string.
-func resetAndWriteChanges(git gitutil.Git, manifestPath, changelogPath string, changes []changeItem) (string, error) {
+func (a applier) resetAndWriteChanges(manifestPath, changelogPath string, changes []changeItem) (string, error) {
 	// cherryPickOrConflict already restores these files on the success path, so
 	// this checkout is redundant in normal flow. It is kept here so this function
 	// remains self-contained and correct if ever called from a different context.
-	if err := git.Run("checkout", "HEAD", "--", changelogPath, manifestPath); err != nil {
+	if err := a.git.Run("checkout", "HEAD", "--", changelogPath, manifestPath); err != nil {
 		return "", fmt.Errorf("resetting changelog and manifest: %w", err)
 	}
 	newVersion, err := bumpPatchVersion(manifestPath)
@@ -332,20 +338,39 @@ func resetAndWriteChanges(git gitutil.Git, manifestPath, changelogPath string, c
 
 // commitChanges stages all package changes and commits with the original commit
 // message plus a cherry-pick annotation.
-func commitChanges(git gitutil.Git, pkgDir, sha, newVersion string) error {
-	originalMsg, err := git.Output("log", "--format=%B", "-n", "1", sha)
+func (a applier) commitChanges(pkgDir, sha, newVersion string) error {
+	originalMsg, err := a.git.Output("log", "--format=%B", "-n", "1", sha)
 	if err != nil {
 		return fmt.Errorf("reading original commit message for %s: %w", sha, err)
 	}
 	commitMsg := strings.TrimRight(originalMsg, "\n") +
 		fmt.Sprintf("\n\n(cherry picked from commit %s)\n\nBackport version: %s", sha, newVersion)
-	if err := git.Run("add", pkgDir); err != nil {
+	if err := a.git.Run("add", pkgDir); err != nil {
 		return fmt.Errorf("staging changes: %w", err)
 	}
-	if err := git.Run("commit", "-m", commitMsg); err != nil {
+	if err := a.git.Run("commit", "-m", commitMsg); err != nil {
 		return fmt.Errorf("committing: %w", err)
 	}
 	return nil
+}
+
+// conflictingFiles returns files in a conflict state after a failed cherry-pick.
+func (a applier) conflictingFiles() ([]string, error) {
+	out, err := a.git.Output("status", "--porcelain")
+	if err != nil {
+		return nil, err
+	}
+	var files []string
+	for line := range strings.SplitSeq(string(out), "\n") {
+		if len(line) < 3 {
+			continue
+		}
+		xy := line[:2]
+		if strings.ContainsRune(xy, 'U') || xy == "AA" || xy == "DD" {
+			files = append(files, strings.TrimSpace(line[3:]))
+		}
+	}
+	return files, nil
 }
 
 // maybeOpenPR creates a GitHub PR if openPR is true, returning the PR URL.
@@ -544,23 +569,4 @@ func buildEntryBlock(version string, changes []changeItem) (string, error) {
 		return "", fmt.Errorf("marshalling changelog entry: %w", err)
 	}
 	return strings.TrimRight(string(out), "\n"), nil
-}
-
-// conflictingFiles returns files in a conflict state after a failed cherry-pick.
-func conflictingFiles(git gitutil.Git) ([]string, error) {
-	out, err := git.Output("status", "--porcelain")
-	if err != nil {
-		return nil, err
-	}
-	var files []string
-	for line := range strings.SplitSeq(string(out), "\n") {
-		if len(line) < 3 {
-			continue
-		}
-		xy := line[:2]
-		if strings.ContainsRune(xy, 'U') || xy == "AA" || xy == "DD" {
-			files = append(files, strings.TrimSpace(line[3:]))
-		}
-	}
-	return files, nil
 }
