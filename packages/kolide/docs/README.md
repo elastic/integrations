@@ -290,7 +290,8 @@ The `auth` data stream provides Kolide SSO authentication sessions, including th
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
-| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.location.lat | Longitude and latitude. | geo_point |
+| source.geo.location.lon | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
@@ -368,12 +369,14 @@ An example event for `auth` looks as following:
         "auth": {
             "agent_version": "1.4.0",
             "initial_status": "all_good",
-            "issues_displayed": {
-                "blocking_status": "will_block",
-                "id": "9999",
-                "link": "https://api.example.com/issues/9999",
-                "title": "macOS Firewall is Disabled"
-            },
+            "issues_displayed": [
+                {
+                    "blocking_status": "will_block",
+                    "id": "9999",
+                    "link": "https://api.example.com/issues/9999",
+                    "title": "macOS Firewall is Disabled"
+                }
+            ],
             "okta": {
                 "app_instance_id": "0oa1example2instance3",
                 "app_name": "Example Corp SSO"
@@ -805,6 +808,7 @@ The `audit` data stream provides the Kolide administrative audit log of console 
 | kolide.audit.target.count | Count of members or people associated with the audited object. | long |
 | kolide.audit.target.destination_name | Name of the log pipeline destination affected by the action. | keyword |
 | kolide.audit.target.destination_type | Type of the log pipeline destination (for example `Amazon S3`, `Splunk HEC`). | keyword |
+| kolide.audit.target.device_id | Numeric identifier of the device affected by the action. | keyword |
 | kolide.audit.target.device_serial | Serial number of the device affected by the action. | keyword |
 | kolide.audit.target.feature | Name of the feature whose restriction was changed for a user. | keyword |
 | kolide.audit.target.fim_category | Name of the osquery FIM (file integrity monitoring) category affected by the action. | keyword |
@@ -836,7 +840,8 @@ The `audit` data stream provides the Kolide administrative audit log of console 
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
-| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.location.lat | Longitude and latitude. | geo_point |
+| source.geo.location.lon | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |

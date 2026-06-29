@@ -10,6 +10,24 @@ processors:
       tag: set_ecs_version
       value: '9.4.0'
 
+  # --- CEL input only (Agentless metadata + collector error placeholders) ---
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  # --- end CEL-only ---
+
   # Webhook envelope: root `event` is a string (e.g. audit_log.recorded) and
   # collides with the ECS `event` object. Move envelope fields into `json` so
   # both inputs share the same working shape before webhook.yml runs.
@@ -83,13 +101,6 @@ processors:
       name: '{{ IngestPipeline "webhook" }}'
       tag: dispatch_webhook
       if: ctx.json?.event != null
-
-  # API path: default event.action until extended-mappings.yml classifies the description.
-  - set:
-      field: event.action
-      tag: set_event_action_api
-      value: audit_log
-      if: ctx.json?.event == null && ctx.event?.action == null
 
   # Actor (API): actor_info plus top-level actor_name on the audit_log object.
   - rename:
@@ -198,6 +209,15 @@ processors:
       name: '{{ IngestPipeline "extended-mappings" }}'
       tag: extended_mappings
       ignore_missing_pipeline: true
+
+  # Path-agnostic fallback: when extended-mappings.yml leaves event.action unset
+  # (description matched no prefix), default to the generic audit_log so both the
+  # API and webhook paths get ECS categorization from categorize.yml.
+  - set:
+      field: event.action
+      tag: set_event_action_fallback
+      value: audit_log
+      if: ctx.event?.action == null
 
   # ECS categorization from the resolved event.action.
   - pipeline:

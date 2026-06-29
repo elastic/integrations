@@ -9,6 +9,24 @@ processors:
       tag: set_ecs_version
       value: '9.4.0'
 
+  # --- CEL input only (Agentless metadata + collector error placeholders) ---
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  # --- end CEL-only ---
+
   # Webhook envelope at document root: `event` is a string (auth_logs.*), not ECS.
   # Move envelope fields into `json` so API and webhook inputs share one path.
   - rename:
@@ -82,6 +100,15 @@ processors:
       tag: set_event_id_sub_event
       value: '{{{json.id}}}:{{{json.sub_event_type}}}:{{{json.timestamp}}}'
       if: ctx.json?.sub_event_type != null && ctx.json?.sub_event_type != ''
+  # Session id (json.id) — API path. Captured before rename_event_id consumes
+  # json.id into event.id, so it is set on both sub-event and single-event API
+  # records. For webhook deliveries, session_id is extracted from 'auth_log_url'.
+  - set:
+      field: kolide.auth.session_id
+      tag: set_session_id
+      copy_from: json.id
+      ignore_empty_value: true
+      if: ctx.json?.event == null && ctx.kolide?.auth?.session_id == null && ctx.json?.id != null && ctx.json?.id != ''
   - rename:
       field: json.id
       target_field: event.id
@@ -94,14 +121,6 @@ processors:
       name: '{{ IngestPipeline "webhook" }}'
       tag: dispatch_webhook
       if: ctx.json?.event != null
-
-  # Session id (json.id) — only on the API path. For webhook deliveries, session_id is extracted from 'auth_log_url' instead.
-  - set:
-      field: kolide.auth.session_id
-      tag: set_session_id
-      copy_from: json.id
-      ignore_empty_value: true
-      if: ctx.kolide?.auth?.session_id == null && ctx.json?.id != null && ctx.json?.id != ''
 
   # API-only field extraction (skipped when json.event is set).
   # event.action: sub_event_type, or auth_log when the session has no sub-events.

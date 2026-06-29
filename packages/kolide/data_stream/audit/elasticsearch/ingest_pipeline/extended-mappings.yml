@@ -6,8 +6,9 @@ description: >-
   https://www.kolide.com/docs/admins/settings-admin-tools/audit-log#events.
   Event names are not in the API/webhook payload; they are derived from the
   description. Grok patterns use straight ASCII quotes (not typographic quotes).
-  Unmatched descriptions keep the generic audit_log / webhook default on
-  event.action.
+  Unmatched descriptions leave event.action unset here; default.yml then applies
+  a path-agnostic audit_log fallback before categorization so API and webhook
+  events behave identically.
 processors:
   # Classify event.action from description; set _tmp.cat to gate grok blocks below.
   # Most-specific prefix wins; unmatched descriptions leave event.action unchanged.
@@ -49,6 +50,7 @@ processors:
         // Devices.
         else if (m.startsWith('Changed device name from ')) { a = 'device_display_name_changed'; c = 'device'; }
         else if (m.startsWith('Cancelled pending deletion for ')) { a = 'canceled_device_removal'; c = 'device'; }
+        else if (m.startsWith('Requested data export for device ')) { a = 'device_data_export_requested'; c = 'device'; }
 
         // Device registrations.
         else if (m.startsWith('Approved pending device registration for ')) { a = 'device_registration_approved'; c = 'device_reg'; }
@@ -243,6 +245,16 @@ processors:
         - "^Cancelled pending deletion for '%{DATA:host.name}' \\(%{DATA:kolide.audit.target.device_serial}\\)$"
         - "^Cancelled pending deletion for '%{DATA:host.name}'$"
       tag: grok_device_deletion_cancelled
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'device'
+
+  # data export requested for a device: "Requested data export for device
+  # '{name}' (id {device_id})".
+  - grok:
+      field: message
+      patterns:
+        - "^Requested data export for device '%{DATA:host.name}' \\(id %{DATA:kolide.audit.target.device_id}\\)$"
+      tag: grok_device_data_export
       ignore_failure: true
       if: ctx._tmp?.cat == 'device'
 
