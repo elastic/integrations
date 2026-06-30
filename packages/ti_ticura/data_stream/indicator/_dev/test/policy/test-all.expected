@@ -18,28 +18,52 @@ inputs:
                 target: project
           program: |
             state.with(
+              // Step 1: with mode=url the Ticura API returns 200 + {"downloadUrl": "..."}
+              // (a short-lived direct blob URL) instead of a 307 redirect. Auto-following
+              // a 307 to the large feed body fails with "read on closed response body",
+              // so we resolve the URL here and download it directly in step 2.
               request("GET", state.url).with({
                 "Header": {
                   "x-api-key": [state.api_token],
                 }
-              }).do_request().as(resp, resp.StatusCode == 200 ?
-                {
-                  "events": string(resp.Body).split("\n")
-                    .filter(l, size(l) > 0)
-                    .map(l, {"message": l.trim_space()}),
-                  "want_more": false,
-                }
+              }).do_request().as(meta, meta.StatusCode == 200 ?
+                bytes(meta.Body).decode_json().as(m, has(m.downloadUrl) ?
+                  // Step 2: download the feed directly from the resolved URL (no redirect).
+                  request("GET", m.downloadUrl).do_request().as(resp, resp.StatusCode == 200 ?
+                    {
+                      "events": string(resp.Body).split("\n")
+                        .filter(l, size(l) > 0)
+                        .map(l, {"message": l.trim_space()}),
+                      "want_more": false,
+                    }
+                  :
+                    {
+                      "events": {
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": string(resp.Status),
+                          "message": "GET (feed download): " + (
+                            size(resp.Body) != 0 ? string(resp.Body) : string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                          ),
+                        },
+                      },
+                      "want_more": false,
+                    }
+                  )
+                :
+                  {
+                    "events": { "error": { "message": "Ticura API response missing downloadUrl: " + string(meta.Body) } },
+                    "want_more": false,
+                  }
+                )
               :
                 {
                   "events": {
                     "error": {
-                      "code": string(resp.StatusCode),
-                      "id": string(resp.Status),
+                      "code": string(meta.StatusCode),
+                      "id": string(meta.Status),
                       "message": "GET " + state.url + ": " + (
-                        size(resp.Body) != 0 ?
-                          string(resp.Body)
-                        :
-                          string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                        size(meta.Body) != 0 ? string(meta.Body) : string(meta.Status) + " (" + string(meta.StatusCode) + ")"
                       ),
                     },
                   },
@@ -65,7 +89,7 @@ inputs:
           resource.timeout: 60s
           resource.tracer:
             enabled: true
-            filename: ../../logs/cel/http-request-trace--*.ndjson
+            filename: ../../logs/cel/http-request-trace-*.ndjson
             maxbackups: 5
           resource.url: http://host.tld
           state:

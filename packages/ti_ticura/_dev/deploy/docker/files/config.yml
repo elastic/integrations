@@ -1,13 +1,30 @@
 rules:
+  # Each feed is served in TWO steps, matching the Ticura API contract:
+  #   1. GET <feed>?targetFormat=ECSV1&mode=url  -> 200 {"downloadUrl": "<blob URL>"}
+  #   2. GET <blob URL>                          -> 200 application/x-ndjson (the feed)
+  # The integration's CEL program resolves the URL in step 1 and downloads the
+  # feed directly in step 2 (no redirect). {{ hostname }}:{{ env "PORT" }}
+  # resolve to this mock's address so the agent can reach the blob path.
+
   # ── Standard feed (10 indicators, all IOC types) ─────────────────────────
   # Used by: test-default-config.yml, test-tracer-config.yml,
-  #          test-preserve-original-config.yml
+  #          test-preserve-original-config.yml, test-fields-config.yml
   - path: /v1/feeds/download/full
     methods: ["GET"]
     query_params:
       targetFormat: "ECSV1"
+      mode: "url"
     request_headers:
       x-api-key: "test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"downloadUrl": "http://{{ hostname }}:{{ env "PORT" }}/v1/feeds/download/blob"}
+  - path: /v1/feeds/download/blob
+    methods: ["GET"]
     responses:
       - status_code: 200
         headers:
@@ -15,6 +32,7 @@ rules:
             - "application/x-ndjson"
         body: |
           {{file "/files/ticura-feed.ndjson"}}
+
   # ── Expired-indicator feed (10 normal + 1 already-expired) ───────────────
   # Used by: test-expired-config.yml
   # The 11th indicator has ages_out in the past → the transform retention_policy
@@ -23,8 +41,18 @@ rules:
     methods: ["GET"]
     query_params:
       targetFormat: "ECSV1"
+      mode: "url"
     request_headers:
       x-api-key: "test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"downloadUrl": "http://{{ hostname }}:{{ env "PORT" }}/v1/feeds/expired/blob"}
+  - path: /v1/feeds/expired/blob
+    methods: ["GET"]
     responses:
       - status_code: 200
         headers:
@@ -32,6 +60,7 @@ rules:
             - "application/x-ndjson"
         body: |
           {{file "/files/ticura-feed-expired.ndjson"}}
+
   # ── Malformed-events feed (10 good + 2 malformed) ────────────────────────
   # Used by: test-malformed-config.yml
   # Two bad lines: one with no ticura block, one with ticura.indicator.uuid absent.
@@ -40,8 +69,18 @@ rules:
     methods: ["GET"]
     query_params:
       targetFormat: "ECSV1"
+      mode: "url"
     request_headers:
       x-api-key: "test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"downloadUrl": "http://{{ hostname }}:{{ env "PORT" }}/v1/feeds/malformed/blob"}
+  - path: /v1/feeds/malformed/blob
+    methods: ["GET"]
     responses:
       - status_code: 200
         headers:
@@ -49,6 +88,7 @@ rules:
             - "application/x-ndjson"
         body: |
           {{file "/files/ticura-feed-malformed.ndjson"}}
+
   # ── Update-detection feed (fingerprint-based _id) ────────────────────────
   # Used by: test-update-config.yml
   # 4 lines: the same uuid (upd00001) appears at TWO fingerprints (a content
@@ -60,8 +100,18 @@ rules:
     methods: ["GET"]
     query_params:
       targetFormat: "ECSV1"
+      mode: "url"
     request_headers:
       x-api-key: "test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"downloadUrl": "http://{{ hostname }}:{{ env "PORT" }}/v1/feeds/update/blob"}
+  - path: /v1/feeds/update/blob
+    methods: ["GET"]
     responses:
       - status_code: 200
         headers:
