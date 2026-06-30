@@ -1,0 +1,67 @@
+---
+description: >-
+  Receives all Kolide webhook events on a single endpoint. Routing to the
+  appropriate data stream (auth, issues, device, audit) is handled by the
+  routing_rules.yml declarations which compile to reroute processors.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.4.0'
+
+  # The webhook body arrives with a top-level `event` key that is a string
+  # (e.g. "audit_log.recorded"). ECS reserves `event` as an object, so we
+  # move it into a working `json` object so the routing_rules.yml conditions
+  # (which test ctx.json.event) can match correctly.
+  - rename:
+      field: event
+      target_field: json.event
+      tag: rename_webhook_event_to_json
+      ignore_missing: true
+      if: ctx.event instanceof String
+  - script:
+      lang: painless
+      tag: move_webhook_envelope_to_json
+      if: ctx.json?.event != null
+      description: >-
+        Move the remaining top-level webhook envelope fields (id, timestamp,
+        data) alongside json.event so the reroute processors receive all
+        envelope fields from ctx.json.
+      source: |-
+        if (ctx.containsKey('id')) { ctx.json.id = ctx.remove('id'); }
+        if (ctx.containsKey('timestamp')) { ctx.json.timestamp = ctx.remove('timestamp'); }
+        if (ctx.containsKey('data')) { ctx.json.data = ctx.remove('data'); }
+
+  - script:
+      description: Drops null/empty values recursively.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
