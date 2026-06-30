@@ -1,12 +1,28 @@
 - name: backstage
   type: group
   fields:
-    - name: audit
-      type: group
-      fields:
-        - name: severity_level
-          type: keyword
-          description: The severity level of the audit log registered by Backstage
-    - name: plugin
-      type: keyword
-      description: The plugin in backstage related to the audit log
+      - name: severity_level
+        type: keyword
+        description: The severity level of the audit log registered by Backstage
+      - name: plugin
+        type: keyword
+        description: The plugin in backstage related to the audit log
+      - name: meta
+        type: flattened
+        description: >-
+          Event-specific metadata emitted by the Backstage plugin. Shape varies per
+          event type; stored as `flattened` to preserve arbitrary keys without mapping
+          explosion. Well-known catalog-query keys are promoted to `backstage.audit.query.*`.
+      - name: query
+        type: group
+        fields:
+          - name: fields
+            type: keyword
+            description: The entity fields requested by the catalog query.
+          - name: type
+            type: keyword
+            description: The type of catalog query that was issued (e.g. "all").
+          - name: filter
+            type: flattened
+            description: >-
+              The catalog query filter conditions as key/value pairs. Declared `flattened` to store arbitrary filter keys (e.g. kind, relations.hasMember) without mapping explosion.
