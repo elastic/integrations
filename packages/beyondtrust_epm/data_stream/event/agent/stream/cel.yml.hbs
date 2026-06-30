@@ -65,31 +65,16 @@ program: |-
               "page_number": (has(body.pageCount) && int(state.page_number) < body.pageCount) ? (int(state.page_number) + 1) : 1,
               "want_more": has(body.pageCount) && int(state.page_number) < body.pageCount,
               "cursor": {
-                ?"max_ingested_time": (has(body.pageCount) && int(state.page_number) < body.pageCount) ?
-                  (
-                    (size(body.events) != 0) ?
-                      (
-                        has(state.?cursor.max_ingested_time) ?
-                          optional.of(max(state.cursor.max_ingested_time, body.events.map(e, e.event.ingested).max()))
-                        :
-                          optional.of(body.events.map(e, e.event.ingested).max())
-                      )
-                    :
-                      optional.none()
-                  )
-                :
-                  optional.none(),
-                ?"last_timestamp": (has(body.pageCount) && int(state.page_number) >= body.pageCount) ?
-                  (
-                    (size(body.events) != 0) ?
-                      (
-                        has(state.?cursor.max_ingested_time) ?
-                          optional.of(max(state.cursor.max_ingested_time, body.events.map(e, e.event.ingested).max()))
-                        :
-                          optional.of(body.events.map(e, e.event.ingested).max())
-                      )
-                    :
-                      optional.of(state.cursor.max_ingested_time)
+                ?"last_timestamp": (has(body.events) && size(body.events) > 0) ?
+                  (has(state.?cursor.last_timestamp) ?
+                    optional.of(
+                      max([
+                        state.cursor.last_timestamp,
+                        body.events[0].event.ingested
+                      ])
+                    )
+                  :
+                    optional.of(body.events[0].event.ingested)
                   )
                 :
                   state.?cursor.last_timestamp,
