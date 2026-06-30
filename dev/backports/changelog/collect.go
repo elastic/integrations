@@ -8,12 +8,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/cli/go-gh/v2"
 
+	"github.com/elastic/integrations/dev/backports/gitutil"
 	"github.com/elastic/integrations/dev/citools"
 )
 
@@ -46,14 +46,16 @@ func Collect(before, after, repository string) (*CollectResult, error) {
 		return &CollectResult{HasChanges: false}, nil
 	}
 
-	changelogs, err := changedChangelogs(before, after)
+	git := gitutil.Git{}
+
+	changelogs, err := changedChangelogs(git, before, after)
 	if err != nil {
 		return nil, fmt.Errorf("listing changed changelogs: %w", err)
 	}
 
 	var lines []string
 	for _, cl := range changelogs {
-		line, err := collectChangelogEntry(before, after, cl)
+		line, err := collectChangelogEntry(git, before, after, cl)
 		if err != nil {
 			return nil, err
 		}
@@ -86,7 +88,7 @@ func Collect(before, after, repository string) (*CollectResult, error) {
 // collectChangelogEntry processes a single changelog path cl and returns the
 // TSV line to record ("pkg\tversion\tentryFilePath"), or "" when there is
 // nothing new to sync for that changelog.
-func collectChangelogEntry(before, after, cl string) (string, error) {
+func collectChangelogEntry(git gitutil.Git, before, after, cl string) (string, error) {
 	pkgDir := filepath.Dir(cl)
 	// cl comes from a git diff, so it is a tracked file; its sibling manifest.yml
 	// must exist. A missing or unreadable manifest is a real error, not a skip.
@@ -95,7 +97,7 @@ func collectChangelogEntry(before, after, cl string) (string, error) {
 		return "", fmt.Errorf("reading manifest for %s: %w", pkgDir, err)
 	}
 
-	diff, err := gitDiff(before, after, cl)
+	diff, err := gitDiff(git, before, after, cl)
 	if err != nil {
 		return "", fmt.Errorf("diffing %s: %w", cl, err)
 	}
@@ -108,7 +110,7 @@ func collectChangelogEntry(before, after, cl string) (string, error) {
 		return "", nil
 	}
 
-	alreadyInMain, err := versionInMain(cl, ver)
+	alreadyInMain, err := versionInMain(git, cl, ver)
 	if err != nil {
 		return "", err
 	}
@@ -162,8 +164,8 @@ func syncPRExists(workingBranch string) (bool, error) {
 
 // changedChangelogs returns the paths of changelog.yml files that changed
 // between before and after.
-func changedChangelogs(before, after string) ([]string, error) {
-	out, err := exec.Command("git", "diff", "--name-only", before+".."+after, "--", "**/changelog.yml").Output()
+func changedChangelogs(git gitutil.Git, before, after string) ([]string, error) {
+	out, err := git.Output("diff", "--name-only", before+".."+after, "--", "**/changelog.yml")
 	if err != nil {
 		return nil, err
 	}
@@ -186,23 +188,23 @@ func manifestName(pkgDir string) (string, error) {
 }
 
 // gitDiff returns the unified diff for path between before and after.
-func gitDiff(before, after, path string) (string, error) {
-	out, err := exec.Command("git", "diff", before+".."+after, "--", path).Output()
+func gitDiff(git gitutil.Git, before, after, path string) (string, error) {
+	out, err := git.Output("diff", before+".."+after, "--", path)
 	if err != nil {
 		return "", err
 	}
-	return string(out), nil
+	return out, nil
 }
 
 // versionInMain checks whether version already appears in the main branch copy
 // of changelogPath.
-func versionInMain(changelogPath, version string) (bool, error) {
-	out, err := exec.Command("git", "show", "origin/main:"+changelogPath).Output()
+func versionInMain(git gitutil.Git, changelogPath, version string) (bool, error) {
+	out, err := git.Output("show", "origin/main:"+changelogPath)
 	if err != nil {
 		// file may not exist on main yet
 		return false, nil
 	}
-	return versionInContent(string(out), version), nil
+	return versionInContent(out, version), nil
 }
 
 // versionInContent reports whether version appears as a version header line
