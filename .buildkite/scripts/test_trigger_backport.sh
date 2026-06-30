@@ -62,12 +62,12 @@ EOF
 }
 
 # Run generate_trigger_pipeline into a fresh output file.
-# Usage: run_generate <old> <new> <dry_run> <pr_number> <out_file>
+# Usage: run_generate <old> <new> <dry_run> <pr_number> <out_file> [buildkite_pr] [buildkite_commit]
 run_generate() {
-    local old="$1" new="$2" dry_run="$3" pr_number="$4" out="$5"
+    local old="$1" new="$2" dry_run="$3" pr_number="$4" out="$5" buildkite_pr="${6:-}" buildkite_commit="${7:-}"
     : > "${out}"
     local exit_code=0
-    generate_trigger_pipeline "${old}" "${new}" "${dry_run}" "${pr_number}" "${out}" || exit_code=$?
+    generate_trigger_pipeline "${old}" "${new}" "${dry_run}" "${pr_number}" "${out}" "${buildkite_pr}" "${buildkite_commit}" || exit_code=$?
     assert_exit_code "generate_trigger_pipeline exits 0" "0" "${exit_code}"
 }
 
@@ -162,7 +162,7 @@ write_inventory "${NEW}" \
 MOCK_MAGE_CHECK_EXIT=2
 err_exit=0
 : > "${OUT}"
-generate_trigger_pipeline "${OLD}" "${NEW}" "true" "" "${OUT}" || err_exit=$?
+generate_trigger_pipeline "${OLD}" "${NEW}" "true" "" "${OUT}" "" "" || err_exit=$?
 MOCK_MAGE_CHECK_EXIT=0
 
 assert_exit_code "mage error: non-zero exit returned" "1" "${err_exit}"
@@ -181,7 +181,7 @@ write_inventory "${NEW}" \
 MOCK_MAGE_VALIDATE_EXIT=1
 val_exit=0
 : > "${OUT}"
-generate_trigger_pipeline "${OLD}" "${NEW}" "true" "" "${OUT}" || val_exit=$?
+generate_trigger_pipeline "${OLD}" "${NEW}" "true" "" "${OUT}" "" "" || val_exit=$?
 MOCK_MAGE_VALIDATE_EXIT=0
 
 assert_exit_code "validate failure: non-zero exit returned" "1" "${val_exit}"
@@ -214,9 +214,34 @@ write_inventory "${NEW}" \
 
 inv_exit=0
 : > "${OUT}"
-generate_trigger_pipeline "${OLD}" "${NEW}" "true" "" "${OUT}" || inv_exit=$?
+generate_trigger_pipeline "${OLD}" "${NEW}" "true" "" "${OUT}" "" "" || inv_exit=$?
 
 assert_exit_code "invalid old inventory: non-zero exit" "1" "${inv_exit}"
+
+# ---------------------------------------------------------------------------
+# Test: PR build — BUILDKITE_PULL_REQUEST and BUILDKITE_COMMIT written as comments
+# ---------------------------------------------------------------------------
+echo "--- PR build: buildkite_pr and buildkite_commit written as comments"
+
+write_inventory "${OLD}" \
+    "backport-aws-1.19" "aws" "1.19.5" "abc123" "false"
+write_inventory "${NEW}" \
+    "backport-aws-1.19" "aws" "1.19.5" "abc123" "false" \
+    "backport-aws-2.0"  "aws" "2.0.0"  "def456" "false"
+
+run_generate "${OLD}" "${NEW}" "false" "" "${OUT}" "42" "sha1234"
+
+assert_file_contains     "pr build: BUILDKITE_REFSPEC comment written" \
+    '# BUILDKITE_REFSPEC: "refs/pull/42/head"'  "${OUT}"
+assert_file_contains     "pr build: BUILDKITE_COMMIT comment written" \
+    '# BUILDKITE_COMMIT: "sha1234"'             "${OUT}"
+
+run_generate "${OLD}" "${NEW}" "false" "" "${OUT}" "false" ""
+
+assert_file_not_contains "non-pr build: BUILDKITE_REFSPEC comment absent" \
+    "BUILDKITE_REFSPEC"                         "${OUT}"
+assert_file_not_contains "non-pr build: BUILDKITE_COMMIT comment absent" \
+    "BUILDKITE_COMMIT"                          "${OUT}"
 
 # ---------------------------------------------------------------------------
 # Summary
