@@ -64,32 +64,37 @@ Organizations can enforce telemetry and verbosity gates fleet-wide via MDM profi
 
 For general instructions on installing integrations and deploying Elastic Agent, refer to the [Getting started guide](https://www.elastic.co/docs/solutions/observability/get-started).
 
+**Prerequisites:** Install this integration in Fleet before sending data. The installation creates the ingest pipeline, field mappings, and dashboards required for processing Claude Code events.
+
 Claude Code exports telemetry via OTLP. There are three deployment paths.
 
-### Option A: Elastic Agent OTLP receiver (recommended)
+### Option A: Managed OTLP (mOTLP) (recommended)
 
-Install this integration in Fleet. The Elastic Agent exposes an OTLP HTTP receiver on port 4318. Configure Claude Code to send events to the agent:
+If your Elastic Cloud deployment supports managed OTLP ingestion, point Claude Code directly at the Elastic Cloud OTLP endpoint — no agent or collector infrastructure required. Configure the environment:
+
+```bash
+export CLAUDE_CODE_ENABLE_TELEMETRY=1
+export OTEL_LOGS_EXPORTER=otlp
+export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+export OTEL_EXPORTER_OTLP_ENDPOINT="<your-elastic-cloud-otlp-endpoint>"
+export OTEL_RESOURCE_ATTRIBUTES="data_stream.dataset=claude_code.events"
+```
+
+### Option B: Elastic Agent OTLP receiver
+
+The Elastic Agent exposes an OTLP HTTP receiver on port 4318. Configure Claude Code to send events to the agent:
 
 ```bash
 export CLAUDE_CODE_ENABLE_TELEMETRY=1
 export OTEL_LOGS_EXPORTER=otlp
 export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 export OTEL_EXPORTER_OTLP_ENDPOINT="http://<agent-host>:4318"
-```
-
-Set the dataset resource attribute so events land in the correct data stream:
-
-```bash
 export OTEL_RESOURCE_ATTRIBUTES="data_stream.dataset=claude_code.events"
 ```
 
-### Option B: EDOT Collector
+### Option C: EDOT Collector
 
 Run the [Elastic Distribution of the OpenTelemetry Collector](https://github.com/elastic/elastic-agent) with an `otlp` receiver and an `elasticsearch` exporter. Configure the `data_stream.dataset` resource attribute as above. The collector routes events to `logs-claude_code.events.otel-*`.
-
-### Option C: Managed OTLP (mOTLP)
-
-If your Elastic Cloud deployment supports managed OTLP ingestion, point Claude Code directly at the Elastic Cloud OTLP endpoint. Set the `data_stream.dataset` resource attribute.
 
 ### Validation
 
