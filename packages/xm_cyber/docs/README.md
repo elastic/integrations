@@ -18,7 +18,7 @@ The integration uses the Elastic Agent CEL (Common Expression Language) input to
 2. Fetches data from the configured endpoint.
 3. Emits each record as an individual event for ingestion and enrichment via the built-in ingest pipeline
 
-## What do I need to use this integration?
+## What data does this integration collect?
 
 The XM Cyber integration collects the following types of data:
 
@@ -70,9 +70,8 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 3. Configure the integration settings:
    - **URL**: Your XM Cyber base URL, for example `https://your-org.clients.xmcyber.com`
    - **API Key**: Your XM Cyber API key.
-   - **Resolution**: Number of days used to aggregate the risk score results.
    - **Interval**: How often to poll for new data (default: `24h`).
-   - **Initial interval**: Time period to fetch risk score data for. Accepts a number of days (e.g. `30`) for a rolling window, or `YYYY_MM` (e.g. `2025_12`) for a specific month (default: `30`).
+   - **Initial interval**: How far back to fetch risk score data, in days (e.g. `30`, `90`, `200`). Default: `30`.
 4. Select **Save and continue** to save the integration.
 
 ### Validation
@@ -892,6 +891,7 @@ An example event for `entity_inventory` looks as following:
 | xm_cyber.risk_score.scenario.id |  | keyword |
 | xm_cyber.risk_score.scenario.name |  | keyword |
 | xm_cyber.risk_score.scenario.score |  | keyword |
+| xm_cyber.risk_score.scenario.score_float |  | float |
 | xm_cyber.risk_score.stats.grade |  | keyword |
 | xm_cyber.risk_score.stats.score |  | float |
 | xm_cyber.risk_score.stats.trend |  | long |
@@ -906,31 +906,31 @@ An example event for `risk_score` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-06-29T12:00:22.707Z",
+    "@timestamp": "2026-06-30T09:44:44.766Z",
     "agent": {
-        "ephemeral_id": "15b2b1cb-5b47-4b5d-a3a9-dfd6bf33db9c",
-        "id": "07662e5f-8e11-4007-8ce1-d486c7dfabae",
-        "name": "elastic-agent-63188",
+        "ephemeral_id": "b6ac094e-5cd8-4704-8021-ec79ee75dcfd",
+        "id": "a1de4b9b-4ce5-4f1b-9759-2e5cce11ec6c",
+        "name": "elastic-agent-73490",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.risk_score",
-        "namespace": "61719",
+        "namespace": "20364",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "07662e5f-8e11-4007-8ce1-d486c7dfabae",
+        "id": "a1de4b9b-4ce5-4f1b-9759-2e5cce11ec6c",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "xm_cyber.risk_score",
-        "ingested": "2026-06-29T12:00:25Z",
+        "ingested": "2026-06-30T09:44:47Z",
         "kind": "event",
         "original": "{\"avgGraphData\":[{\"date\":\"2025-12-03T00:00:00.000Z\",\"grade\":\"A\",\"score\":95}],\"graphData\":{\"campaigns\":null,\"fromDate\":\"2025-12-02T00:00:00.000Z\",\"grade\":\"A\",\"score\":95,\"toDate\":\"2025-12-03T00:00:00.000Z\"},\"scenario\":{\"grade\":\"B\",\"id\":\"02D8\",\"name\":\"(LG) Workstation to Servers\",\"score\":82},\"stats\":{\"grade\":\"A\",\"score\":90,\"trend\":1}}"
     },
@@ -963,7 +963,8 @@ An example event for `risk_score` looks as following:
                 "to_date": "2025-12-03T00:00:00.000Z"
             },
             "scenario": {
-                "id": "02D8"
+                "id": "02D8",
+                "score_float": 82
             },
             "stats": {
                 "grade": "A",

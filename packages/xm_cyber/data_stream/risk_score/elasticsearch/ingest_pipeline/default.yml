@@ -4,21 +4,15 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 9.3.0
+      value: 9.4.0
   - terminate:
       description: error message set and no data to process.
       tag: terminate_data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-
   - drop:
-      description: Drops CEL informational token-refresh success messages from the ingest stream.
-      tag: drop_cel_refresh_token_success
-      if: ctx.message instanceof String && ctx.message == 'Refresh token successful'
-  - drop:
-      description: Drops CEL informational expired-refresh messages from the ingest stream.
-      tag: drop_cel_refresh_token_force_reauth
-      if: ctx.message instanceof String && ctx.message == 'Refresh token expired, forcing re-auth'
-
+      description: Drop the CEL token-refresh placeholder event before JSON parsing.
+      tag: drop_cel_retry_placeholder
+      if: ctx.message instanceof String && ctx.message == 'retry'
   # remove agentless metadata
   - remove:
       description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
@@ -29,7 +23,6 @@ processors:
         - division
         - team
       ignore_missing: true
-
   # parse the event JSON
   - rename:
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
@@ -52,7 +45,6 @@ processors:
       field: event.kind
       tag: set_event_kind_event
       value: event
-
   - fingerprint:
       tag: fingerprint_with_id
       fields:
@@ -60,7 +52,6 @@ processors:
         - xm_cyber.risk_score.graphData.fromDate
       target_field: _id
       ignore_missing: true
-
   # rename to snake case
   - script:
       description: >
@@ -109,7 +100,6 @@ processors:
         if (ctx.xm_cyber?.risk_score != null) {
           ctx.xm_cyber.risk_score = convertToSnakeCase(ctx.xm_cyber.risk_score);
         }
-
   # Convert to Long
   - convert:
       field: xm_cyber.risk_score.stats.score
@@ -175,7 +165,6 @@ processors:
                 tag: append_error_message
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-
   # Convert graph_data inner fields (single object after splitting events per scenario/graphData entry)
   - date:
       tag: date_xm_cyber_risk_score_graph_data_from_date
@@ -223,7 +212,6 @@ processors:
             tag: append_error_message
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-
   # Map custom fields to corresponding ECS and related fields.
   - set:
       tag: set_labels_scenario_name_from_xm_cyber_risk_score_data_scenario_name
@@ -245,6 +233,21 @@ processors:
       field: labels.risk_score
       copy_from: xm_cyber.risk_score.scenario.score
       ignore_empty_value: true
+  - convert:
+      tag: convert_labels_risk_score_from_xm_cyber_risk_score_data_scenario_score
+      field: xm_cyber.risk_score.scenario.score
+      type: float
+      ignore_missing: true
+      target_field: xm_cyber.risk_score.scenario.score_float
+      on_failure:
+        - remove:
+            tag: remove_xm_cyber_risk_score_scenario_score
+            field:
+              - xm_cyber.risk_score.scenario.score
+        - append:
+            tag: append_error_message
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       tag: remove_fields_mapped_to_ecs
       field:
@@ -252,7 +255,6 @@ processors:
         - xm_cyber.risk_score.scenario.grade
         - xm_cyber.risk_score.scenario.score
       ignore_missing: true
-
   # Cleanup
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.

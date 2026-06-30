@@ -18,7 +18,7 @@ The integration uses the Elastic Agent CEL (Common Expression Language) input to
 2. Fetches data from the configured endpoint.
 3. Emits each record as an individual event for ingestion and enrichment via the built-in ingest pipeline
 
-## What do I need to use this integration?
+## What data does this integration collect?
 
 The XM Cyber integration collects the following types of data:
 
@@ -70,9 +70,8 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 3. Configure the integration settings:
    - **URL**: Your XM Cyber base URL, for example `https://your-org.clients.xmcyber.com`
    - **API Key**: Your XM Cyber API key.
-   - **Resolution**: Number of days used to aggregate the risk score results.
    - **Interval**: How often to poll for new data (default: `24h`).
-   - **Initial interval**: Time period to fetch risk score data for. Accepts a number of days (e.g. `30`) for a rolling window, or `YYYY_MM` (e.g. `2025_12`) for a specific month (default: `30`).
+   - **Initial interval**: How far back to fetch risk score data, in days (e.g. `30`, `90`, `200`). Default: `30`.
 4. Select **Save and continue** to save the integration.
 
 ### Validation
