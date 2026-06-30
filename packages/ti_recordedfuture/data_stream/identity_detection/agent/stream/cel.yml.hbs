@@ -109,23 +109,32 @@ program: |-
               ).as(max_created,
                 {
                   "events": (has(body.detections) && body.detections.size() > 0) ?
-                    body.detections.map(d, {"message":
-                      d.as(d,
-                        (state.?hash_password.orValue(false) && has(d.password) && has(d.password.cleartext)) ?
-                          d.with({"password": d.password.with({"cleartext": d.password.cleartext.hmac("sha256", bytes(state.?hashing_key.orValue(""))).hex()})})
-                        :
-                          d
-                      ).as(d,
-                        (state.?hash_cookies.orValue(false) && has(d.cookies) && d.cookies.size() > 0) ?
-                          d.with({"cookies": d.cookies.map(c,
-                            has(c.value) ?
-                              c.with({"value": c.value.hmac("sha256", bytes(state.?hashing_key.orValue(""))).hex()})
-                            :
-                              c
-                          )})
-                        :
-                          d
-                      ).encode_json()})
+                    body.detections.map(d,
+                      {
+                        "message": d.as(d,
+                          (state.?hash_password.orValue(false) && has(d.password) &&
+                          has(d.password.cleartext)) ?
+                            d.with({"password": d.password.with({"cleartext": d.password.cleartext.hmac("sha256", bytes(state.?hashing_key.orValue(""))).hex()})})
+                          :
+                            d
+                        ).as(d,
+                          (state.?hash_cookies.orValue(false) && has(d.cookies) &&
+                          d.cookies.size() > 0) ?
+                            d.with(
+                              {
+                                "cookies": d.cookies.map(c,
+                                  has(c.value) ?
+                                    c.with({"value": c.value.hmac("sha256", bytes(state.?hashing_key.orValue(""))).hex()})
+                                  :
+                                    c
+                                ),
+                              }
+                            )
+                          :
+                            d
+                        ).encode_json(),
+                      }
+                    )
                   :
                     [],
                   "want_more": next_offset != "",
@@ -138,7 +147,7 @@ program: |-
                   :
                     {
                       ?"last_timestamp": (max_created != "") ?
-                        optional.of(string(timestamp(max_created) + duration("1s")))
+                        optional.of(max_created)
                       :
                         state.?cursor.last_timestamp,
                     },

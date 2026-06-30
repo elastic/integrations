@@ -40,6 +40,13 @@ processors:
       tag: json_event_original
       target_field: recordedfuture.identity_detection
       if: ctx.event?.original != null
+  
+  - fingerprint:
+      fields:
+        - event.original
+      target_field: _id
+      tag: fingerprint_event_original
+      ignore_missing: true
 
   # normalize recordedfuture.identity_detection.* fields
   - script:
@@ -265,14 +272,26 @@ processors:
       value: event
   - append:
       field: event.category
+      tag: append_threat_into_event_category
+      value: threat
+      allow_duplicates: false
+  - append:
+      field: event.category
       tag: append_malware_into_event_category
       value: malware
+      allow_duplicates: false
+      if: ctx.recordedfuture?.identity_detection?.source_type != null && ctx.recordedfuture.identity_detection.source_type.toLowerCase().contains('malware')
+  - append:
+      field: event.type
+      tag: append_indicator_into_event_type
+      value: indicator
       allow_duplicates: false
   - append:
       field: event.type
       tag: append_info_into_event_type
       value: info
       allow_duplicates: false
+      if: ctx.event?.category != null && ctx.event.category.contains('malware')
 
   # host.*
   - set:
