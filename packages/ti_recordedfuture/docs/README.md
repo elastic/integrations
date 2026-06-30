@@ -13,6 +13,19 @@ The Recorded Future integration has four data streams:
   discovered in breach dumps and stealer malware logs) from Recorded Future's
   [Identity Detections API](https://docs.recordedfuture.com/reference/identity-detections).
 
+For the `identity_detection` data stream, the `Hash Password Cleartext` and
+`Hash Cookie Values` toggles are turned off by default. With both toggles off,
+any leaked password cleartext
+(`recordedfuture.identity_detection.password.cleartext`) and stolen cookie
+values (`recordedfuture.identity_detection.cookies.value`) returned by the API
+are stored in Elasticsearch as-is. To avoid storing these raw secret values,
+turn on `Hash Password Cleartext` and/or `Hash Cookie Values` and set a
+`Hashing Key`. When a toggle is on, the Elastic Agent replaces the corresponding
+value with a keyed `HMAC-SHA256` hash before the data reaches Elasticsearch, so
+the raw value is never indexed. The same `Hashing Key` is applied to both, and a
+stable key produces stable hashes, allowing correlation of the same leaked
+credential across detections.
+
 For the `threat` data stream, you need to define the `entity` and `list` to
 fetch. The supported entities are `domain`, `hash`, `ip`, and `url`. Check the
 Recorded Future documentation for the available lists for each entity or use the
