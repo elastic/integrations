@@ -1,0 +1,240 @@
+---
+description: Pipeline for processing group logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.3.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - drop:
+      tag: drop_retry_events
+      if: ctx.message == 'retry'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      tag: remove_agentless_tags
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      ignore_missing: true
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      if: ctx.event?.original == null
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+  - remove:
+      field:
+        - message
+      tag: remove_message
+      if: ctx.event?.original != null
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: ping_directory.group
+  - fingerprint:
+      tag: fingerprint_with_id
+      fields:
+        - ping_directory.group.id
+      target_field: _id
+      ignore_missing: true
+  - script:
+      description: >
+        Convert field names from camelCase to snake_case recursively.
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      source: |-
+        String camelToSnake(String str) {
+            def result = "";
+            for (int i = 0; i < str.length(); i++) {
+                char c = str.charAt(i);
+                if (Character.isUpperCase(c)) {
+                    if (i > 0 && Character.isLowerCase(str.charAt(i - 1))) {
+                        result += "_";
+                    }
+                    result += Character.toLowerCase(c);
+                } else {
+                    result += c;
+                }
+            }
+            return result;
+        }
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              String newKey = camelToSnake(entry.getKey());
+              newObj[newKey] = convertToSnakeCase(entry.getValue());
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+        if (ctx.ping_directory?.group != null) {
+          ctx.ping_directory.group = convertToSnakeCase(ctx.ping_directory.group);
+        }
+      on_failure:
+        - append:
+            tag: append_script_convert_camelcase_to_snake_case_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_iam_into_event_category
+      value: iam
+  - append:
+      field: event.type
+      tag: append_group_into_event_type
+      value: group
+  - set:
+      field: group.id
+      tag: set_group_id_from_group_id
+      copy_from: ping_directory.group.id
+      ignore_empty_value: true
+  - set:
+      field: group.name
+      tag: set_group_name_from_group_display_name
+      copy_from: ping_directory.group.display_name
+      ignore_empty_value: true
+  - script:
+      tag: script_append_members_to_related_user
+      description: >
+        Process group members (plain array or object with value array).
+        Extracts uid from DN, appends to related.user and user.id.
+        Stores remaining DN (without uid) deduplicated as plain string into members_metadata.
+      lang: painless
+      source: |
+        def members = ctx.ping_directory?.group?.members;
+        if (members instanceof Map && members.value instanceof List) {
+          members = members.value;
+        }
+        if (!(members instanceof List)) return;
+        if (ctx.related == null) ctx.related = new HashMap();
+        if (ctx.related.user == null) ctx.related.user = [];
+        if (ctx.user == null) ctx.user = new HashMap();
+        def uidList = new ArrayList();
+        def metaSet = new LinkedHashSet();
+        for (def member : members) {
+          if (!(member instanceof String)) continue;
+          def uid = null;
+          def dnWithoutUid = new ArrayList();
+          def parts = member.splitOnToken(',');
+          for (def part : parts) {
+            def kv = part.trim().splitOnToken('=');
+            if (kv.length == 2) {
+              def key = kv[0].trim().toLowerCase();
+              if (key == 'uid') {
+                uid = kv[1].trim();
+              } else {
+                dnWithoutUid.add(part.trim());
+              }
+            }
+          }
+          if (uid != null) {
+            if (!ctx.related.user.contains(uid)) {
+              ctx.related.user.add(uid);
+            }
+            if (!uidList.contains(uid)) {
+              uidList.add(uid);
+            }
+          }
+          if (!dnWithoutUid.isEmpty()) {
+            metaSet.add(String.join(',', dnWithoutUid));
+          }
+        }
+        if (!uidList.isEmpty()) {
+          ctx.user.id = uidList.size() == 1 ? uidList[0] : uidList;
+        }
+        if (!metaSet.isEmpty()) {
+          def metaList = new ArrayList(metaSet);
+          ctx.ping_directory.group.members_metadata = metaList.size() == 1 ? metaList[0] : metaList;
+        }
+        ctx.ping_directory.group.remove('members');
+      on_failure:
+        - append:
+            tag: append_script_append_members_to_related_user_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - ping_directory.group.id
+        - ping_directory.group.display_name
+      tag: remove_fields_mapped_to_ecs
+      ignore_missing: true
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+      on_failure:
+        - append:
+            tag: append_remove_null_values_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      if: ctx.error?.message != null
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      tag: append_pipeline_failure_message
+      field: error.message
+      value: |-
+        Processor '{{{_ingest.on_failure_processor_type}}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,162 @@
+rules:
+  - path: /directory/v1/authenticate
+    methods: ['POST']
+    request_headers:
+      Content-Type:
+        - 'application/json'
+    request_body: '{"credentials":{"authenticationType":"password","dn":"xxxx","staticPassword":"xxxx"}}'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "accessToken": "xxxx"
+          }
+          `}}
+  - path: /scim/v2/Groups
+    methods: ['GET']
+    query_params:
+      startIndex: 5
+      count: 2
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
+            "totalResults": 5,
+            "startIndex": 5,
+            "Resources": [
+              {
+                "displayName": "platform-admins",
+                "members": [
+                  "uid=john.doe,ou=People,dc=example,dc=com",
+                  "uid=alice.smith,ou=People,dc=example,dc=com"
+                ],
+                "id": "d1964i47-f0he-723i-1e27-057e01574h46",
+                "meta": {
+                  "resourceType": "Group",
+                  "location": "https://10.50.15.29:2443/scim/v2/Groups/d1964i47-f0he-723i-1e27-057e01574h46"
+                },
+                "schemas": [
+                  "urn:ietf:params:scim:schemas:core:2.0:Group"
+                ]
+              }
+            ]
+          }
+          `}}
+  - path: /scim/v2/Groups
+    methods: ['GET']
+    query_params:
+      startIndex: 3
+      count: 2
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
+            "totalResults": 5,
+            "startIndex": 3,
+            "Resources": [
+              {
+                "displayName": "engineering",
+                "members": [
+                  "uid=bob.jones,ou=Engineering,dc=example,dc=com"
+                ],
+                "id": "b8742g25-d8fc-501g-9c05-835c89352f24",
+                "meta": {
+                  "resourceType": "Group",
+                  "location": "https://10.50.15.29:2443/scim/v2/Groups/b8742g25-d8fc-501g-9c05-835c89352f24"
+                },
+                "schemas": [
+                  "urn:ietf:params:scim:schemas:core:2.0:Group"
+                ]
+              },
+              {
+                "displayName": "finance",
+                "members": [
+                  "uid=carol.white,ou=Finance,dc=corp,dc=internal"
+                ],
+                "id": "c9853h36-e9gd-612h-0d16-946d90463g35",
+                "meta": {
+                  "resourceType": "Group",
+                  "location": "https://10.50.15.29:2443/scim/v2/Groups/c9853h36-e9gd-612h-0d16-946d90463g35"
+                },
+                "schemas": [
+                  "urn:ietf:params:scim:schemas:core:2.0:Group"
+                ]
+              }
+            ]
+          }
+          `}}
+  - path: /scim/v2/Groups
+    methods: ['GET']
+    query_params:
+      startIndex: 1
+      count: 2
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
+            "totalResults": 5,
+            "startIndex": 1,
+            "Resources": [
+              {
+                "displayName": "security",
+                "members": [
+                  "uid=alice.smith,ou=People,dc=example,dc=com"
+                ],
+                "id": "a7631f14-c7eb-490f-8b94-724b78241e13",
+                "meta": {
+                  "resourceType": "Group",
+                  "location": "https://10.50.15.29:2443/scim/v2/Groups/a7631f14-c7eb-490f-8b94-724b78241e13"
+                },
+                "schemas": [
+                  "urn:ietf:params:scim:schemas:core:2.0:Group"
+                ]
+              },
+              {
+                "displayName": "test-group",
+                "members": {
+                  "value": [
+                    "uid=user.0,ou=People,dc=example,dc=com",
+                    "uid=user.1,ou=People,dc=example,dc=com",
+                    "uid=user.2,ou=People,dc=example,dc=com"
+                  ]
+                },
+                "id": "1a8e021b-c7b0-4bd9-8e2d-af5691c035ce",
+                "meta": {
+                  "resourceType": "Groups",
+                  "location": "https://example.com:443/scim/v2/Groups/1a8e021b-c7b0-4bd9-8e2d-af5691c035ce"
+                },
+                "schemas": [
+                  "urn:pingidentity:schemas:Group:1.0"
+                ]
+              }
+            ]
+          }
+          `}}
