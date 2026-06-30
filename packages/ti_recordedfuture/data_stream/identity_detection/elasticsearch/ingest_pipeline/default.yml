@@ -42,10 +42,6 @@ processors:
       if: ctx.event?.original != null
 
   # normalize recordedfuture.identity_detection.* fields
-  - remove:
-      field: recordedfuture.identity_detection.password.cleartext
-      tag: remove_password_cleartext
-      ignore_missing: true
   - script:
       lang: painless
       tag: script_flatten_password_hashes
@@ -83,15 +79,6 @@ processors:
       tag: rename_type_to_detection_type
       target_field: recordedfuture.identity_detection.detection_type
       ignore_missing: true
-  - foreach:
-      field: recordedfuture.identity_detection.cookies
-      if: ctx.recordedfuture?.identity_detection?.cookies instanceof List
-      tag: foreach_remove_cookie_values
-      processor:
-        remove:
-          field: _ingest._value.value
-          tag: remove_cookie_value
-          ignore_missing: true
   - date:
       field: recordedfuture.identity_detection.created
       tag: date_created

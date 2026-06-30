@@ -76,6 +76,34 @@ streams:
         required: false
         show_user: true
         description: Filter detections by target domain. Leave empty to ingest detections for all domains.
+      - name: hash_password
+        type: bool
+        title: Hash Password Cleartext
+        multi: false
+        required: false
+        show_user: true
+        secret: false
+        default: false
+        description: >-
+          When enabled, the leaked password cleartext value is replaced with a keyed hash (HMAC-SHA256) by the agent before the data reaches Elasticsearch. When disabled, the cleartext value is ingested as-is. Requires `Hashing Key` to be set.
+      - name: hash_cookies
+        type: bool
+        title: Hash Cookie Values
+        multi: false
+        required: false
+        show_user: true
+        default: false
+        description: >-
+          When enabled, stolen cookie values are replaced with a keyed hash (HMAC-SHA256) by the agent before the data reaches Elasticsearch. When disabled, the cookie values are ingested as-is. Requires `Hashing Key` to be set.
+      - name: hashing_key
+        type: password
+        title: Hashing Key
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+        description: >-
+          Secret key used to compute the HMAC-SHA256 hash for password and cookie values when hashing is enabled. The same key is applied to both. Keep this value secret and stable; a consistent key produces consistent hashes, allowing correlation of the same leaked credential across detections.
       - name: preserve_original_event
         required: false
         show_user: true

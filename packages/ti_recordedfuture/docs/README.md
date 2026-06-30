@@ -1586,6 +1586,7 @@ An example event for `identity_detection` looks as following:
 | recordedfuture.identity_detection.cookies.http |  | boolean |
 | recordedfuture.identity_detection.cookies.name |  | keyword |
 | recordedfuture.identity_detection.cookies.secure |  | boolean |
+| recordedfuture.identity_detection.cookies.value |  | keyword |
 | recordedfuture.identity_detection.created |  | date |
 | recordedfuture.identity_detection.detection_type |  | keyword |
 | recordedfuture.identity_detection.dump.breaches.breached |  | date |
@@ -1629,6 +1630,7 @@ An example event for `identity_detection` looks as following:
 | recordedfuture.identity_detection.malware_family.name |  | keyword |
 | recordedfuture.identity_detection.novel |  | boolean |
 | recordedfuture.identity_detection.organization_id |  | keyword |
+| recordedfuture.identity_detection.password.cleartext |  | keyword |
 | recordedfuture.identity_detection.password.cleartext_hint |  | keyword |
 | recordedfuture.identity_detection.password.hashes.md5 |  | keyword |
 | recordedfuture.identity_detection.password.hashes.md5_prefix |  | keyword |
