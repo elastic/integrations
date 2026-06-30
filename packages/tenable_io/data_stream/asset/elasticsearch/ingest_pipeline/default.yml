@@ -352,24 +352,62 @@ processors:
       field: host.os.name
       copy_from: tenable_io.asset.operating_systems
       ignore_empty_value: true
-  - convert:
-      field: json.ratings.acr.score
-      tag: convert_acr_score_to_long
-      type: long
-      target_field: tenable_io.asset.ratings.acr.score
-      ignore_missing: true
-      if: ctx.json?.ratings?.acr?.score != ''
+  - script:
+      if: ctx.json?.ratings?.acr?.score != null && ctx.json?.ratings?.acr?.score != ''
+      tag: ratings_acr_score_is_long
+      lang: painless
+      description: >-
+        Coerces the ACR rating score to a long. Tenable may send it as an
+        integer, a double, or a decimal string (e.g. "9.0"), so a plain
+        convert to long fails on the decimal forms.
+      source: >
+        if (ctx.tenable_io.asset.ratings == null) {
+          ctx.tenable_io.asset.ratings = [:];
+        }
+        if (ctx.tenable_io.asset.ratings.acr == null) {
+          ctx.tenable_io.asset.ratings.acr = [:];
+        }
+        if (ctx.json.ratings.acr.score instanceof String) {
+          try {
+            ctx.tenable_io.asset.ratings.acr.score = Long.parseLong(ctx.json.ratings.acr.score);
+          } catch (NumberFormatException e) {
+            ctx.tenable_io.asset.ratings.acr.score = (long) Double.parseDouble(ctx.json.ratings.acr.score);
+          }
+          return;
+        }
+        if (ctx.json.ratings.acr.score instanceof Number) {
+          ctx.tenable_io.asset.ratings.acr.score = (long)((Number) ctx.json.ratings.acr.score).doubleValue();
+        }
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: json.ratings.aes.score
-      tag: convert_aes_score_to_long
-      type: long
-      target_field: tenable_io.asset.ratings.aes.score
-      ignore_missing: true
-      if: ctx.json?.ratings?.aes?.score != ''
+  - script:
+      if: ctx.json?.ratings?.aes?.score != null && ctx.json?.ratings?.aes?.score != ''
+      tag: ratings_aes_score_is_long
+      lang: painless
+      description: >-
+        Coerces the AES rating score to a long. Tenable may send it as an
+        integer, a double, or a decimal string (e.g. "744.0"), so a plain
+        convert to long fails on the decimal forms.
+      source: >
+        if (ctx.tenable_io.asset.ratings == null) {
+          ctx.tenable_io.asset.ratings = [:];
+        }
+        if (ctx.tenable_io.asset.ratings.aes == null) {
+          ctx.tenable_io.asset.ratings.aes = [:];
+        }
+        if (ctx.json.ratings.aes.score instanceof String) {
+          try {
+            ctx.tenable_io.asset.ratings.aes.score = Long.parseLong(ctx.json.ratings.aes.score);
+          } catch (NumberFormatException e) {
+            ctx.tenable_io.asset.ratings.aes.score = (long) Double.parseDouble(ctx.json.ratings.aes.score);
+          }
+          return;
+        }
+        if (ctx.json.ratings.aes.score instanceof Number) {
+          ctx.tenable_io.asset.ratings.aes.score = (long)((Number) ctx.json.ratings.aes.score).doubleValue();
+        }
       on_failure:
         - append:
             field: error.message
