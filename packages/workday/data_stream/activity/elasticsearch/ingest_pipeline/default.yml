@@ -1,0 +1,315 @@
+---
+description: Pipeline for processing activity logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.3.0
+  - remove:
+      field:
+        - cloud.account.id
+        - cloud.availability_zone
+        - cloud.image.id
+        - cloud.instance.id
+        - cloud.instance.name
+        - cloud.machine.type
+        - cloud.provider
+        - cloud.region
+        - cloud.service.name
+        - host
+      tag: remove_agentless_fields
+      ignore_missing: true
+      if: ctx.input?.type == 'cel'
+  - terminate:
+      tag: data_collection_error
+      description: error message set and no data to process.
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+      if: ctx.event?.original == null
+  - remove:
+      field:
+        - message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+  - fingerprint:
+      fields:
+        - json.requestTime
+        - json.sessionId
+        - json.taskId
+      tag: fingerprint_activity
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+  - append:
+      field: event.category
+      tag: append_iam_into_event_category
+      value: iam
+  - rename:
+      field: json.activityAction
+      tag: rename_activityAction
+      target_field: workday.activity.activity_action
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_activity_activity_action
+      copy_from: workday.activity.activity_action
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      separator: \s+
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_event_action
+      separator: '-'
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.deviceType
+      tag: rename_deviceType
+      target_field: workday.activity.device_type
+      ignore_missing: true
+  - set:
+      field: device.type
+      tag: set_device_type_from_activity_device_type
+      copy_from: workday.activity.device_type
+      ignore_empty_value: true
+  - lowercase:
+      field: device.type
+      tag: lowercase_device_type
+      ignore_missing: true
+  - convert:
+      field: json.ipAddress
+      tag: convert_ipAddress_to_ip
+      target_field: workday.activity.ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.ipAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_activity_ip_address
+      copy_from: workday.activity.ip_address
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip_to_source_geo
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      tag: geoip_source_ip_to_source_as
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      tag: rename_source_as_asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source_as_organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_activity_ip_address_into_related_ip
+      value: '{{{workday.activity.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.workday?.activity?.ip_address != null
+  - date:
+      field: json.requestTime
+      tag: date_requestTime
+      target_field: workday.activity.request_time
+      formats:
+        - ISO8601
+      if: ctx.json?.requestTime != null && ctx.json.requestTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_activity_request_time
+      copy_from: workday.activity.request_time
+      ignore_empty_value: true
+  - rename:
+      field: json.sessionId
+      tag: rename_sessionId
+      target_field: workday.activity.session_id
+      ignore_missing: true
+  - rename:
+      field: json.systemAccount
+      tag: rename_systemAccount
+      target_field: workday.activity.system_account
+      ignore_missing: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_activity_system_account
+      copy_from: workday.activity.system_account
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_activity_system_account_into_related_user
+      value: '{{{workday.activity.system_account}}}'
+      allow_duplicates: false
+      if: ctx.workday?.activity?.system_account != null
+  - rename:
+      field: json.target.descriptor
+      tag: rename_target_descriptor
+      target_field: workday.activity.target.descriptor
+      ignore_missing: true
+  - rename:
+      field: json.target.href
+      tag: rename_target_href
+      target_field: workday.activity.target.href
+      ignore_missing: true
+  - rename:
+      field: json.target.id
+      tag: rename_target_id
+      target_field: workday.activity.target.id
+      ignore_missing: true
+  - rename:
+      field: json.taskDisplayName
+      tag: rename_taskDisplayName
+      target_field: workday.activity.task_display_name
+      ignore_missing: true
+  - rename:
+      field: json.taskId
+      tag: rename_taskId
+      target_field: workday.activity.task_id
+      ignore_missing: true
+  - convert:
+      field: json.userActivityEntryCount
+      tag: convert_userActivityEntryCount_to_long
+      target_field: workday.activity.user_activity_entry_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.userAgent
+      tag: rename_userAgent
+      target_field: workday.activity.user_agent
+      ignore_missing: true
+  - set:
+      field: user_agent.original
+      tag: set_user_agent_original_from_activity_user_agent
+      copy_from: workday.activity.user_agent
+      ignore_empty_value: true
+  - user_agent:
+      field: user_agent.original
+      tag: user_agent_original
+      if: ctx.user_agent?.original != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - workday.activity.ip_address
+        - workday.activity.request_time
+        - workday.activity.user_agent
+        - workday.activity.device_type
+        - workday.activity.system_account
+      tag: remove_activity_fields_mapped_with_ecs
+      ignore_missing: true
+  - remove:
+      field:
+        - json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{_ingest.on_failure_processor_type}}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false

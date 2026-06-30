@@ -65,6 +65,7 @@ program: |
       {
         // State management: preserve existing state from previous iteration
         "worklist": state.worklist,
+        "url": state.url,
         "batch_size": state.batch_size,
         "has_next": state.has_next,
         "next": state.next,
@@ -188,10 +189,21 @@ program: |
           }
         ).do_request().as(resp, (resp.StatusCode == 200) ?
           // Response Processing: Successfully got config rules list
-          resp.Body.decode_json().as(body,
+          resp.Body.decode_json().as(raw_body,
+            // Skip AWS service-linked rules. AWS owns these rules and blocks
+            // GetComplianceDetailsByConfigRule for them with an AccessDeniedException
+            // ("An AWS service owns ServiceLinkedConfigRule"). They are identified by a
+            // populated CreatedBy field, which AWS sets only for service-linked rules.
+            // Filtering them out of the worklist here avoids the blocked call entirely.
+            raw_body.with({
+              "ConfigRules": raw_body.?ConfigRules.orValue([]).filter(r,
+                r.?CreatedBy.orValue("") == ""
+              ),
+            }).as(body,
             {
               // State Update: Store the fetched config rules as worklist
               "worklist": body,
+              "url": state.url,
               "next": 0,
               "has_next": has(body.NextToken),
               "batch_size": state.batch_size,
@@ -238,11 +250,12 @@ program: |
                 ].join("\n").sha256().hex()
               ].join("\n"),
               ?"session_token": state.?session_token,
+              "url": state.url,
               "access_key": state.access_key,
               "secret_key": state.secret_key,
               "aws_region": state.aws_region,
               "tld": state.tld,
-            }
+            })
           )
         :
           // Error Handling: DescribeConfigRules request failed
@@ -263,6 +276,7 @@ program: |
             "want_more": false,
             "batch_size": state.batch_size,
             ?"session_token": state.?session_token,
+            "url": state.url,
             "access_key": state.access_key,
             "secret_key": state.secret_key,
             "aws_region": state.aws_region,
@@ -344,6 +358,7 @@ program: |
             "has_next": config_rules.has_next,
             "batch_size": config_rules.batch_size,
             ?"session_token": config_rules.?session_token,
+            "url": config_rules.url,
             "access_key": config_rules.access_key,
             "secret_key": config_rules.secret_key,
             "aws_region": config_rules.aws_region,
@@ -351,24 +366,45 @@ program: |
           }
         )
       :
-        // Error Handling: GetComplianceDetailsByConfigRule request failed
+        // Error Handling: GetComplianceDetailsByConfigRule request failed for this
+        // rule. Treat it as non-fatal: emit the error as an advancing (array) event
+        // and continue with the remaining rules instead of aborting the whole cycle.
+        // This prevents a single per-rule access error (for example a service-linked
+        // rule that slipped past the CreatedBy filter) from degrading the entire input
+        // and stopping all ingestion. The array form advances the cursor; the
+        // ingest pipeline's terminate processor handles the error event.
         {
-          "events": {
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": "GetComplianceDetailsByConfigRule: POST " + state.url.trim_right("/") + " " +
-              (
-                (size(resp.Body) != 0) ?
-                  string(resp.Body)
-                :
-                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-              ),
+          "events": [
+            {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GetComplianceDetailsByConfigRule: POST " + state.url.trim_right("/") + " " +
+                (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
             },
+          ],
+          "next_page": {
+            ?"rule_token": config_rules.?next_page.rule_token,
           },
-          "want_more": false,
+          "want_more": config_rules.has_next || (int(config_rules.next) + 1 < size(config_rules.worklist.ConfigRules)),
+          "next": (int(config_rules.next) + 1 < size(config_rules.worklist.ConfigRules)) ?
+            (int(config_rules.next) + 1)
+          :
+            0,
+          "worklist": (int(config_rules.next) + 1 < size(config_rules.worklist.ConfigRules)) ?
+            config_rules.worklist
+          :
+            {},
+          "has_next": config_rules.has_next,
           "batch_size": config_rules.batch_size,
           ?"session_token": config_rules.?session_token,
+          "url": config_rules.url,
           "access_key": config_rules.access_key,
           "secret_key": config_rules.secret_key,
           "aws_region": config_rules.aws_region,
@@ -376,17 +412,41 @@ program: |
         }
       )
     :
-      // Final State: No config rules found, return empty result
-      {
-        "events": [],
-        "want_more": false,
-        "batch_size": config_rules.batch_size,
-        ?"session_token": config_rules.?session_token,
-        "access_key": config_rules.access_key,
-        "secret_key": config_rules.secret_key,
-        "aws_region": config_rules.aws_region,
-        "tld": config_rules.tld,
-      }
+      // Final State: No config rules to process in this page. If DescribeConfigRules
+      // paginated (rule_token present) or another rule page is pending (has_next) —
+      // for example because every rule on this page was a filtered service-linked
+      // rule — emit a placeholder event so the cursor persists and continue fetching;
+      // otherwise return an empty result and stop.
+      (config_rules.?has_next.orValue(false) || has(config_rules.?next_page.rule_token)) ?
+        {
+          "events": [{"message": "retry"}],
+          "next_page": {
+            ?"rule_token": config_rules.?next_page.rule_token,
+          },
+          "want_more": true,
+          "next": 0,
+          "worklist": {},
+          "has_next": config_rules.?has_next.orValue(false),
+          "batch_size": config_rules.batch_size,
+          ?"session_token": config_rules.?session_token,
+          "url": config_rules.url,
+          "access_key": config_rules.access_key,
+          "secret_key": config_rules.secret_key,
+          "aws_region": config_rules.aws_region,
+          "tld": config_rules.tld,
+        }
+      :
+        {
+          "events": [],
+          "want_more": false,
+          "batch_size": config_rules.batch_size,
+          ?"session_token": config_rules.?session_token,
+          "url": config_rules.url,
+          "access_key": config_rules.access_key,
+          "secret_key": config_rules.secret_key,
+          "aws_region": config_rules.aws_region,
+          "tld": config_rules.tld,
+        }
   )
 tags:
 {{#if preserve_original_event}}
