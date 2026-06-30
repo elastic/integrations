@@ -48,11 +48,13 @@ backports_yml_changed() {
 }
 
 generate_trigger_pipeline() {
-    local old_inventory="$1"  # path to the pre-change inventory
-    local new_inventory="$2"  # path to the post-change inventory
-    local dry_run="$3"        # "true" or "false" — passed to the triggered build
-    local pr_number="$4"      # merged PR number, may be empty
-    local pipeline_file="$5"  # output file; written only if new entries are found
+    local old_inventory="$1"    # path to the pre-change inventory
+    local new_inventory="$2"    # path to the post-change inventory
+    local dry_run="$3"          # "true" or "false" — passed to the triggered build
+    local pr_number="$4"        # merged PR number, may be empty
+    local pipeline_file="$5"    # output file; written only if new entries are found
+    local buildkite_pr="${6:-}" # BUILDKITE_PULL_REQUEST value; empty or "false" means not a PR build
+    local buildkite_commit="${7:-}" # BUILDKITE_COMMIT value; only used when buildkite_pr is set
 
     if ! yq -e '.backports' "${old_inventory}" > /dev/null 2>&1; then
         echo "ERROR: old inventory is not valid YAML or missing 'backports' key: ${old_inventory}" >&2
@@ -127,11 +129,15 @@ generate_trigger_pipeline() {
         BASE_COMMIT: "${base_commit}"
         BACKPORT_BRANCH_NAME: "${branch}"
         REMOVE_OTHER_PACKAGES: "${remove_other_packages}"
-        # By default, this trigger step must execute the code from main branch,
-        # uncomment to test changes in backport_branch.sh in a Pull Request build.
-        # BUILDKITE_REFSPEC: "refs/pull/${BUILDKITE_PULL_REQUEST}/head"
-        # BUILDKITE_COMMIT: "${BUILDKITE_COMMIT}"
 EOF
+        # Only write PR-specific overrides when running inside a pull request build.
+        # Uncommenting them lets backport_branch.sh run from the PR's HEAD instead of main.
+        if [[ -n "${buildkite_pr}" ]] && [[ "${buildkite_pr}" != "false" ]]; then
+            cat >> "${pipeline_file}" <<EOF
+        # BUILDKITE_REFSPEC: "refs/pull/${buildkite_pr}/head"
+        # BUILDKITE_COMMIT: "${buildkite_commit}"
+EOF
+        fi
         if [[ -n "${pr_number}" ]]; then
             cat >> "${pipeline_file}" <<EOF
         PR_NUMBER: "${pr_number}"

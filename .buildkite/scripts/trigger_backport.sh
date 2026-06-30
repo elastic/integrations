@@ -86,7 +86,7 @@ main() {
 
     PIPELINE_FILE="$(mktemp --suffix=.yml)"
 
-    generate_trigger_pipeline "${OLD_INVENTORY}" "${NEW_INVENTORY}" "${dry_run}" "${pr_number}" "${PIPELINE_FILE}"
+    generate_trigger_pipeline "${OLD_INVENTORY}" "${NEW_INVENTORY}" "${dry_run}" "${pr_number}" "${PIPELINE_FILE}" "${BUILDKITE_PULL_REQUEST:-false}" "${BUILDKITE_COMMIT:-}"
 
     if [[ ! -s "${PIPELINE_FILE}" ]]; then
         echo "No new non-archived entries found, skipping ${label} trigger"
