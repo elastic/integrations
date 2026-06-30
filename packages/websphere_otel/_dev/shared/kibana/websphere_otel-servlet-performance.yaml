@@ -1,0 +1,317 @@
+dashboards:
+  - id: websphere_otel-servlet-performance
+    name: '[WebSphere OTel] Servlet Performance'
+    minimum_kibana_version: '8.18.0'
+    description: >-
+      Deep dive into servlet request processing: throughput, latency, errors,
+      and per-URI breakdown across WebSphere applications.
+    time_range:
+      from: "now-1h"
+      to: "now"
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+    filters:
+      - field: data_stream.dataset
+        equals: websphere.otel
+    controls:
+      - type: options
+        label: Host
+        data_view: metrics-*
+        field: host.name
+      - type: options
+        label: Application
+        data_view: metrics-*
+        field: attributes.appname
+
+    panels:
+      # ─── Navigation ─────────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: websphere_otel-overview
+            - label: Servlet Performance
+              dashboard: websphere_otel-servlet-performance
+            - label: Resource Pools
+              dashboard: websphere_otel-resource-pools
+            - label: JVM Health
+              dashboard: websphere_otel-jvm
+
+      # ─── Overview + KPIs ────────────────────────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [WebSphere OTel] Servlet Performance
+
+            Detailed analysis of servlet request processing:
+            - Request throughput by application and servlet
+            - Error rates and error distribution
+            - Concurrent request pressure
+            - Per-URI request breakdown
+            - JAX-WS web service metrics
+
+      - title: Total Request Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_servlet_requests_total IS NOT NULL
+            - STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total))
+          primary:
+            field: request_rate
+            label: Total Req/s
+            format:
+              type: number
+              decimals: 1
+              suffix: "/s"
+
+      - title: Total Error Rate
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_servlet_errors_total IS NOT NULL
+            - STATS error_rate = SUM(RATE(metrics.was_servlet_errors_total))
+          primary:
+            field: error_rate
+            label: Total Errors/s
+            format:
+              type: number
+              decimals: 2
+              suffix: "/s"
+
+      - title: Concurrent Requests
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_servlet_concurrent_requests IS NOT NULL
+            - STATS concurrent = SUM(LAST_OVER_TIME(metrics.was_servlet_concurrent_requests))
+          primary:
+            field: concurrent
+            label: Concurrent Requests
+            format:
+              type: number
+              decimals: 0
+
+      - title: Loaded Servlets
+        hide_title: true
+        size: {w: 8, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_servlet_loaded_total IS NOT NULL
+            - STATS loaded = SUM(RATE(metrics.was_servlet_loaded_total))
+          primary:
+            field: loaded
+            label: Servlets Loaded/s
+            format:
+              type: number
+              decimals: 2
+
+      - title: JAX-WS Request Rate
+        hide_title: true
+        size: {w: 16, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_jaxws_requestsReceived_total IS NOT NULL
+            - STATS jaxws_rate = SUM(RATE(metrics.was_jaxws_requestsReceived_total))
+          primary:
+            field: jaxws_rate
+            label: JAX-WS Req/s
+            format:
+              type: number
+              decimals: 2
+              suffix: "/s"
+
+      - title: JAX-WS Successful Rate
+        hide_title: true
+        size: {w: 16, h: 6}
+        esql:
+          type: metric
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_jaxws_requestsSuccessful_total IS NOT NULL
+            - STATS jaxws_ok = SUM(RATE(metrics.was_jaxws_requestsSuccessful_total))
+          primary:
+            field: jaxws_ok
+            label: JAX-WS OK/s
+            format:
+              type: number
+              decimals: 2
+              suffix: "/s"
+
+      # ─── Request Analysis ──────────────────────────────────────────────
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Request Analysis'
+
+      - title: Servlet Request Rate by Application
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_servlet_requests_total IS NOT NULL
+            - STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.appname
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: request_rate
+              label: Requests/s
+              format:
+                type: number
+                decimals: 1
+          breakdown:
+            field: attributes.appname
+          legend:
+            visible: show
+            position: right
+
+      - title: Servlet Error Rate by Application
+        size: {w: 24, h: 12}
+        esql:
+          type: area
+          mode: stacked
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_servlet_errors_total IS NOT NULL
+            - STATS error_rate = SUM(RATE(metrics.was_servlet_errors_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.appname
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: error_rate
+              label: Errors/s
+              format:
+                type: number
+                decimals: 2
+          breakdown:
+            field: attributes.appname
+          legend:
+            visible: show
+            position: right
+
+      - title: Concurrent Requests Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: line
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_servlet_concurrent_requests IS NOT NULL
+            - STATS concurrent = SUM(LAST_OVER_TIME(metrics.was_servlet_concurrent_requests)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.appname
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: concurrent
+              label: Concurrent
+              format:
+                type: number
+                decimals: 0
+          breakdown:
+            field: attributes.appname
+          legend:
+            visible: show
+            position: right
+
+      - title: JAX-WS Requests Over Time
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_jaxws_requestsReceived_total IS NOT NULL
+            - STATS received = SUM(RATE(metrics.was_jaxws_requestsReceived_total)), successful = SUM(RATE(metrics.was_jaxws_requestsSuccessful_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: received
+              label: Received/s
+              format:
+                type: number
+                decimals: 2
+            - field: successful
+              label: Successful/s
+              format:
+                type: number
+                decimals: 2
+
+      # ─── Detail ────────────────────────────────────────────────────────
+      - hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Servlet Detail'
+
+      - title: Top Servlets by Request Rate
+        size: {w: 24, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_servlet_requests_total IS NOT NULL
+            - STATS request_rate = SUM(RATE(metrics.was_servlet_requests_total)), error_rate = SUM(RATE(metrics.was_servlet_errors_total)) BY attributes.appname, attributes.servlet
+            - EVAL error_pct = CASE(request_rate > 0, error_rate / request_rate, 0)
+            - SORT request_rate DESC
+            - LIMIT 20
+          breakdowns:
+            - field: attributes.appname
+              label: Application
+            - field: attributes.servlet
+              label: Servlet
+          metrics:
+            - field: request_rate
+              label: Req/s
+              format:
+                type: number
+                decimals: 2
+            - field: error_pct
+              label: Error %
+              format:
+                type: percent
+                decimals: 2
+
+      - title: Top URIs by Request Rate
+        size: {w: 24, h: 15}
+        esql:
+          type: datatable
+          query:
+            - TS metrics-websphere.otel-default
+            - WHERE metrics.was_servlet_uri_requests_total IS NOT NULL
+            - STATS request_rate = SUM(RATE(metrics.was_servlet_uri_requests_total)) BY attributes.appname, attributes.uri
+            - SORT request_rate DESC
+            - LIMIT 20
+          breakdowns:
+            - field: attributes.appname
+              label: Application
+            - field: attributes.uri
+              label: URI
+          metrics:
+            - field: request_rate
+              label: Req/s
+              format:
+                type: number
+                decimals: 2
