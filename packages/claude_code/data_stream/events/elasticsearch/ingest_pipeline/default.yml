@@ -1,6 +1,26 @@
 ---
 description: Pipeline for processing Claude Code OTel events.
 processors:
+  - script:
+      tag: set_event_original
+      lang: painless
+      description: Preserve the raw OTel event for forensic analysis.
+      if: >-
+        (ctx.tags instanceof List && ctx.tags.contains('preserve_original_event'))
+        || (ctx.attributes instanceof Map && ctx.attributes.containsKey('elastic.preserve_original_event') && ctx.attributes.get('elastic.preserve_original_event') == 'true')
+      source: >
+        ctx.event = ctx.event ?: [:];
+        ctx.event.original = Json.dump(ctx);
+        ctx.tags = ctx.tags ?: [];
+        if (!ctx.tags.contains('preserve_original_event')) {
+          ctx.tags.add('preserve_original_event');
+        }
+
+  - remove:
+      tag: remove_preserve_original_event_marker
+      field: attributes.elastic.preserve_original_event
+      ignore_missing: true
+
   - set:
       tag: set_ecs_version
       field: ecs.version
@@ -65,7 +85,7 @@ processors:
   - script:
       tag: ecs_categorization
       lang: painless
-      description: Set ECS event.kind, event.category, and event.type from event_name.
+      description: Set ECS event.kind, event.category, and event.type.
       if: ctx.event_name != null
       params:
         categories:
@@ -175,73 +195,170 @@ processors:
         - attributes.tool_input_flattened
       if: ctx.attributes?.tool_input_flattened != null && ctx.attributes.tool_input_flattened instanceof Map && ctx.attributes.tool_input_flattened.isEmpty()
       ignore_missing: true
-
-  - script:
-      tag: flatten_attributes_to_root
-      lang: painless
-      description: >-
-        Move OTel log record attributes from attributes.* to root level so they
-        match the explicit field mappings in the package component template.
+  - rename:
+      tag: rename_prompt_to_prompt_text
+      field: attributes.prompt
+      target_field: attributes.prompt_text
+      ignore_missing: true
+  - dot_expander:
+      tag: expand_attributes
+      field: "*"
+      path: attributes
       if: ctx.attributes != null
-      source: >
-        def attrs = ctx.attributes;
-        for (def entry : new ArrayList(attrs.entrySet())) {
-          def key = entry.getKey();
-          def val = entry.getValue();
-          if (key == 'event' && val instanceof Map) {
-            ctx.event = ctx.event ?: new HashMap();
-            for (def e : ((Map)val).entrySet()) {
-              ctx.event[e.getKey()] = e.getValue();
-            }
-          } else if (key.startsWith('user.')) {
-            ctx.user = ctx.user ?: new HashMap();
-            ctx.user[key.substring(5)] = val;
-          } else if (key == 'error') {
-            if (val instanceof Map) {
-              def err = (Map)val;
-              if (err.containsKey('message')) {
-                ctx.error_detail = err.message;
-              }
-              if (err.containsKey('type')) {
-                ctx.error_type = err.type;
-              }
-              if (err.containsKey('code')) {
-                ctx.error_code = err.code;
-              }
-            } else {
-              ctx.error_detail = val;
-            }
-          } else if (key == 'prompt' && !(val instanceof Map)) {
-            ctx.prompt_text = val;
-          } else {
-            ctx[key] = val;
-          }
-        }
-        ctx.remove('attributes');
+  - rename:
+      tag: namespace_attributes_to_claude_code_events
+      field: attributes
+      target_field: claude_code.events
+      ignore_missing: true
+
+  # Remove OTel infrastructure fields.
+  - remove:
+      tag: remove_otel_infrastructure
+      field:
+        - body
+        - event_name
+      ignore_missing: true
+
+  # Convert numeric OTel attributes from strings to their declared types.
+  - convert:
+      tag: convert_duration_ms
+      field: claude_code.events.duration_ms
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_event_sequence
+      field: claude_code.events.event.sequence
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_tool_input_size_bytes
+      field: claude_code.events.tool_input_size_bytes
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_tool_result_size_bytes
+      field: claude_code.events.tool_result_size_bytes
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_input_tokens
+      field: claude_code.events.input_tokens
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_output_tokens
+      field: claude_code.events.output_tokens
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_cache_read_tokens
+      field: claude_code.events.cache_read_tokens
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_cache_creation_tokens
+      field: claude_code.events.cache_creation_tokens
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_cost_usd
+      field: claude_code.events.cost_usd
+      type: double
+      ignore_missing: true
+  - convert:
+      tag: convert_cost_usd_micros
+      field: claude_code.events.cost_usd_micros
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_prompt_length
+      field: claude_code.events.prompt_length
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_num_hooks
+      field: claude_code.events.num_hooks
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_num_success
+      field: claude_code.events.num_success
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_num_blocking
+      field: claude_code.events.num_blocking
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_num_non_blocking_error
+      field: claude_code.events.num_non_blocking_error
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_num_cancelled
+      field: claude_code.events.num_cancelled
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_total_duration_ms
+      field: claude_code.events.total_duration_ms
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_agent_path_count
+      field: claude_code.events.agent_path_count
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_command_path_count
+      field: claude_code.events.command_path_count
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_skill_path_count
+      field: claude_code.events.skill_path_count
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_is_plugin
+      field: claude_code.events.is_plugin
+      type: boolean
+      ignore_missing: true
+  - convert:
+      tag: convert_has_hooks
+      field: claude_code.events.has_hooks
+      type: boolean
+      ignore_missing: true
+  - convert:
+      tag: convert_has_mcp
+      field: claude_code.events.has_mcp
+      type: boolean
+      ignore_missing: true
 
   - set:
       tag: set_event_action
       field: event.action
-      copy_from: event_name
-      if: ctx.event_name != null
+      copy_from: claude_code.events.event.name
+      if: ctx.claude_code?.events?.event?.name != null
 
   - script:
       tag: set_event_duration
       lang: painless
-      if: ctx.duration_ms != null
+      if: ctx.claude_code?.events?.duration_ms != null
       source: >
-        ctx.event.duration = ((long)ctx.duration_ms) * 1000000L;
+        ctx.event.duration = ((long)ctx.claude_code.events.duration_ms) * 1000000L;
 
   - set:
       tag: set_event_outcome_success
       field: event.outcome
       value: success
-      if: ctx.success == 'true'
+      if: ctx.claude_code?.events?.success == 'true'
   - set:
       tag: set_event_outcome_failure
       field: event.outcome
       value: failure
-      if: "ctx.success == 'false' || ctx.event_name == 'api_error' || ctx.event_name == 'api_retries_exhausted'"
+      if: "ctx.claude_code?.events?.success == 'false' || ctx.claude_code?.events?.event?.name == 'api_error' || ctx.claude_code?.events?.event?.name == 'api_retries_exhausted'"
   - set:
       tag: set_event_outcome_unknown
       field: event.outcome
@@ -256,28 +373,54 @@ processors:
   - set:
       tag: set_event_reason
       field: event.reason
-      copy_from: error_detail
-      if: ctx.error_detail != null
+      copy_from: claude_code.events.error
+      if: ctx.claude_code?.events?.error != null
 
   - append:
       tag: append_related_user_email
       field: related.user
-      value: "{{{user.email}}}"
+      value: "{{{claude_code.events.user.email}}}"
       allow_duplicates: false
-      if: ctx.user?.email != null
+      if: ctx.claude_code?.events?.user?.email != null
   - append:
       tag: append_related_user_id
       field: related.user
-      value: "{{{user.id}}}"
+      value: "{{{claude_code.events.user.id}}}"
       allow_duplicates: false
-      if: ctx.user?.id != null
+      if: ctx.claude_code?.events?.user?.id != null
 
   - append:
       tag: append_related_hosts
       field: related.hosts
-      value: "{{{server_name}}}"
+      value: "{{{claude_code.events.server_name}}}"
       allow_duplicates: false
-      if: ctx.server_name != null
+      if: ctx.claude_code?.events?.server_name != null
+
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null/empty values.
+      tag: remove_nulls
+      source: |-
+        void handleMap(Map map) {
+            map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+            });
+        }
+        void handleList(List list) {
+            list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+            });
+        }
+        handleMap(ctx);
 
   - set:
       tag: set_pipeline_error_to_event_kind
