@@ -230,14 +230,20 @@ processors:
       target_field: cisco_ise.log.authen_method
       ignore_failure: true
       ignore_missing: true
+  - gsub:
+      tag: gsub_cisco_ise_log_avpair_start_time_18d7aae2
+      field: cisco_ise.log.avpair.start_time
+      pattern: '^(\d{13})\d+$'
+      replacement: '$1'
+      if: ctx.cisco_ise?.log?.avpair?.start_time instanceof String && ctx.cisco_ise.log.avpair.start_time.length() > 13
   - date:
       tag: date_cisco_ise_log_avpair_start_time_to_cisco_ise_log_avpair_start_time_14a86abc
       field: cisco_ise.log.avpair.start_time
       target_field: cisco_ise.log.avpair.start_time
-      if: ctx.cisco_ise?.log?.avpair?.start_time != "0"
+      if: ctx.cisco_ise?.log?.avpair?.start_time instanceof String && ctx.cisco_ise.log.avpair.start_time != "0" && ctx.cisco_ise.log.avpair.start_time.length() > 11
       ignore_failure: true
       formats:
-        - UNIX
+        - UNIX_MS
       on_failure:
         - append:
             tag: append_error_message_336d8edf
@@ -245,6 +251,22 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
         - remove:
             tag: remove_cisco_ise_log_avpair_start_time_5e92f9e8
+            field: cisco_ise.log.avpair.start_time
+  - date:
+      tag: date_cisco_ise_log_avpair_start_time_to_cisco_ise_log_avpair_start_time_d36d45b4
+      field: cisco_ise.log.avpair.start_time
+      target_field: cisco_ise.log.avpair.start_time
+      if: ctx.cisco_ise?.log?.avpair?.start_time instanceof String && ctx.cisco_ise.log.avpair.start_time != "0" && ctx.cisco_ise.log.avpair.start_time.length() <= 11
+      ignore_failure: true
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            tag: append_error_message_01bb50cf
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+        - remove:
+            tag: remove_cisco_ise_log_avpair_start_time_c5682880
             field: cisco_ise.log.avpair.start_time
   - convert:
       tag: convert_cisco_ise_log_avpair_priv-lvl_to_cisco_ise_log_avpair_priv_lvl_a50b742a
@@ -320,13 +342,19 @@ processors:
         - remove:
             tag: remove_cisco_ise_log_avpair_elapsed_time_bbb2e1da
             field: cisco_ise.log.avpair.elapsed_time
+  - gsub:
+      tag: gsub_cisco_ise_log_avpair_stop_time_58f81d66
+      field: cisco_ise.log.avpair.stop_time
+      pattern: '^(\d{13})\d+$'
+      replacement: '$1'
+      if: ctx.cisco_ise?.log?.avpair?.stop_time instanceof String && ctx.cisco_ise.log.avpair.stop_time.length() > 13
   - date:
       tag: date_cisco_ise_log_avpair_stop_time_to_cisco_ise_log_avpair_stop_time_56ddb9d2
       field: cisco_ise.log.avpair.stop_time
       target_field: cisco_ise.log.avpair.stop_time
-      if: ctx.cisco_ise?.log?.avpair?.stop_time != null
+      if: ctx.cisco_ise?.log?.avpair?.stop_time instanceof String && ctx.cisco_ise.log.avpair.stop_time.length() > 11
       formats:
-        - UNIX
+        - UNIX_MS
       on_failure:
         - append:
             tag: append_error_message_b41ead5f
@@ -334,6 +362,21 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
         - remove:
             tag: remove_cisco_ise_log_avpair_stop_time_957b9244
+            field: cisco_ise.log.avpair.stop_time
+  - date:
+      tag: date_cisco_ise_log_avpair_stop_time_to_cisco_ise_log_avpair_stop_time_1ed00c1c
+      field: cisco_ise.log.avpair.stop_time
+      target_field: cisco_ise.log.avpair.stop_time
+      if: ctx.cisco_ise?.log?.avpair?.stop_time instanceof String && ctx.cisco_ise.log.avpair.stop_time.length() <= 11
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            tag: append_error_message_e38b21fd
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+        - remove:
+            tag: remove_cisco_ise_log_avpair_stop_time_96ac7296
             field: cisco_ise.log.avpair.stop_time
   - rename:
       tag: rename_cisco_ise_log_log_details_AcctRequest-Flags_to_cisco_ise_log_acct_request_flags_80b316bb
