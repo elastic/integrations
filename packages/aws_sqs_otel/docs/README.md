@@ -2,7 +2,7 @@
 
 This package contains Kibana assets for monitoring SQS queues with AWS CloudWatch metrics collected by the OpenTelemetry Collector.
 
-The package is **content only**. It provides a curated metrics dashboard, but it does not configure data collection. Configure the OpenTelemetry Collector CloudWatch receiver to collect the required AWS service metrics and export them to Elasticsearch.
+The package is **content only**. It provides a curated metrics dashboard, but it does not configure data collection. Use the **AWS CloudWatch OpenTelemetry Input Package** (`aws_cloudwatch_input_otel`) to configure the OpenTelemetry Collector CloudWatch receiver and collect the required AWS service metrics into Elasticsearch.
 
 ## Data requirements
 
@@ -22,7 +22,7 @@ This package includes one pre-built Kibana dashboard:
 |---|---|
 | [AWS OTel] SQS | AWS SQS dashboard for CloudWatch metrics collected by the OpenTelemetry Collector. |
 
-## Alerting Rule Template
+## Alerting Rule Templates
 Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
 
 For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
@@ -36,8 +36,8 @@ Alert rule templates require Elastic Stack version 9.2.0 or later.
 
 | Name | Description |
 |---|---|
-| [AWS SQS OTel] High backlog | Alerts when a queue's visible message backlog stays above the configured depth across the evaluation window, indicating consumers are not keeping up with producers. Pair with the oldest-message-age alert/SLO, which captures processing lag directly. |
 | [AWS SQS OTel] DLQ has messages | Alerts when any dead-letter queue has one or more visible messages. Any message in a DLQ represents a processing failure and warrants immediate investigation. |
+| [AWS SQS OTel] High backlog | Alerts when a queue's visible message backlog stays above the configured depth across the evaluation window, indicating consumers are not keeping up with producers. Pair with the oldest-message-age alert/SLO, which captures processing lag directly. |
 | [AWS SQS OTel] In-flight saturation | Alerts when in-flight messages approach the standard-queue limit (~120,000), indicating stuck consumers or processing bottlenecks. |
 | [AWS SQS OTel] Oldest message age high | Alerts when the oldest unprocessed message on a queue exceeds a configurable age threshold. This is the headline SQS processing-lag signal. |
 
