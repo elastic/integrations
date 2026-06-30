@@ -1,7 +1,5 @@
 # Custom Unix Logs Integration for Elastic
 
-> **Note**: This AI-assisted guide was validated by our engineers. You may need to adjust the steps to match your environment.
-
 ## Overview
 
 The Custom Unix Logs integration for Elastic enables you to collect data through a stream-oriented Unix domain socket. It's a flexible solution for ingesting logs from local processes and applications into the Elastic Stack. By using this integration, you can centralize your log data, making it easier to monitor, search, and analyze your environment's activity.
