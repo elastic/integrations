@@ -206,7 +206,10 @@ processors:
       tag: append_event_category_malware
       value: malware
       allow_duplicates: false
-      if: ctx.zscaler_zia?.sandbox_verdict?.threat?.indicator?.name != null
+      if: >-
+        ctx.zscaler_zia?.sandbox_verdict?.threat?.indicator?.name != null &&
+        ctx.zscaler_zia.sandbox_verdict.threat.indicator.name != 'None' &&
+        !ctx.zscaler_zia.sandbox_verdict.verdict.toLowerCase().contains('benign')
   - append:
       field: event.type
       tag: append_event_type_info
