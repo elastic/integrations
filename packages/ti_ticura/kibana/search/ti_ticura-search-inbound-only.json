@@ -1,0 +1,39 @@
+{
+    "id": "ti_ticura-search-inbound-only",
+    "type": "search",
+    "namespaces": [
+        "default"
+    ],
+    "migrationVersion": {
+        "search": "8.0.0"
+    },
+    "attributes": {
+        "title": "[Ticura] Inbound-only threat indicators",
+        "description": "Indicators Ticura flagged as inbound-only (threats originating from outside, targeting your environment). Useful for ingress-monitoring detection rules.",
+        "columns": [
+            "threat.indicator.type",
+            "threat.indicator.name",
+            "threat.indicator.ip",
+            "threat.indicator.geo.country_iso_code",
+            "event.severity",
+            "ticura.indicator.additional_info.threat_types"
+        ],
+        "sort": [
+            [
+                "event.severity",
+                "desc"
+            ]
+        ],
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": "{\"filter\": [], \"query\": {\"language\": \"kuery\", \"query\": \"event.module:\\\"ti_ticura\\\" and labels.is_ioc_transform_source:false and ticura.indicator.is_inbound:true\"}, \"indexRefName\": \"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+        }
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        }
+    ],
+    "coreMigrationVersion": "8.8.0"
+}
