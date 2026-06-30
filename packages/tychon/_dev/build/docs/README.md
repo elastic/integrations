@@ -1,11 +1,11 @@
-# TYCHON Elastic Managed Integration
+# TYCHON Agentless
 
-[TYCHON Elastic Managed Integration](https://tychon.io/products/tychon-agentless/) is an integration that lets you collect TYCHON's gold source Master Endpoint Record data from endpoints, including vulnerability and STIG results, without heavy resource use or software installation. You can then investigate the TYCHON data using Elastic's analytics, visualizations, and dashboards. [Contact us to learn more.](https://tychon.io/request-a-pilot/).
+[TYCHON Agentless](https://tychon.io/products/tychon-agentless/) is an integration that lets you collect TYCHON's gold source Master Endpoint Record data from endpoints, including vulnerability and STIG results, without heavy resource use or software installation. You can then investigate the TYCHON data using Elastic's analytics, visualizations, and dashboards. [Contact us to learn more.](https://tychon.io/request-a-pilot/).
 
 ## Compatibility
 
 * This integration supports Windows and RedHat/CENTOS Endpoint Operating Systems.
-* This integration requires a TYCHON Elastic Managed Integration license.
+* This integration requires a TYCHON Agentless license.
 * This integration requires [TYCHON Vulnerability Definition](https://support.tychon.io/) files.
 * The Linux Endpoint requires RedHat's [OpenScap](https://www.open-scap.org/tools/openscap-base/) to be installed for STIG and CVE to report data.
 
@@ -31,7 +31,7 @@ TYCHON connects to open ports on the computer and reports back if it is hosting 
 
 ### DISA Continuous Monitoring and Risk Scoring Data
 
-TYCHON Elastic Managed Integration will generate the complete Master Endpoint Record for reporting to CMRS, this dataset is unsearchable and encoded but required to send to DISA.
+TYCHON Agentless will generate the complete Master Endpoint Record for reporting to CMRS, this dataset is unsearchable and encoded but required to send to DISA.
 
 {{fields "cmrs"}}
 
