@@ -22,7 +22,7 @@ You add the integration once for each AWS service you want to monitor.
 
 This integration can be deployed in two ways:
 
-- **Agentless** (default): Elastic manages the collector for you, with no infrastructure to run. This is the recommended option for most users.
+- **Elastic Managed** (default): Elastic manages the collector for you, with no infrastructure to run. This is the recommended option for most users.
 - **Elastic Agent**: Run the collector on your own Elastic Agent.
 
 ## Supported services

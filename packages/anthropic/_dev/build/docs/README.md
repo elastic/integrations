@@ -82,13 +82,13 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 Elastic Agent polls the Anthropic Compliance API and ships collected events to Elasticsearch, where they are processed by the integration's ingest pipeline.
 
-### Agentless deployment
+### Elastic Managed deployment
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Refer to [Agentless integrations](https://www.elastic.co/docs/reference/fleet/agentless-integrations) for more information.
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Refer to [Elastic Managed integrations](https://www.elastic.co/docs/reference/fleet/agentless-integrations) for more information.
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the underlying agent infrastructure.
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the underlying agent infrastructure.
 
-To use an agentless deployment, select **Anthropic** in **Management → Integrations**, click **Add Anthropic**, and choose the agentless option when configuring the integration. Provide the Compliance Access Key or Admin API Key as described in [Onboard / configure](#onboard--configure); Elastic manages the underlying collection infrastructure for you.
+To use an Elastic Managed deployment, select **Anthropic** in **Management → Integrations**, click **Add Anthropic**, and choose the Elastic Managed option when configuring the integration. Provide the Compliance Access Key or Admin API Key as described in [Onboard / configure](#onboard--configure); Elastic manages the underlying collection infrastructure for you.
 
 ### Onboard / configure
 
