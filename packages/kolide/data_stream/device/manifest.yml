@@ -1,0 +1,80 @@
+title: "device"
+type: logs
+streams:
+  - input: cel
+    title: "Kolide devices via the REST API"
+    description: |-
+      Collect the full Kolide device inventory from the Kolide REST API (GET /devices)
+      on every poll. The /devices endpoint exposes no modified-since cursor, so each
+      interval re-collects the complete collection; the ingest pipeline assigns a
+      content-based document `_id` so unchanged devices are overwritten and any change
+      is captured as a new document.
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: How often the Kolide REST API is polled. Supports seconds, minutes, and hours.
+        required: true
+        show_user: true
+        default: 5m
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: Number of records to request per page (per_page, 1-100).
+        required: true
+        show_user: false
+        default: 100
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out.
+        required: false
+        show_user: false
+        default: 30s
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        description: URL of the proxy to use, for example `http://proxy:3128`.
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: TLS settings. See the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+        required: false
+        show_user: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        description: >-
+          The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging.
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - forwarded
+          - kolide-device
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        required: false
+        show_user: false
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false
