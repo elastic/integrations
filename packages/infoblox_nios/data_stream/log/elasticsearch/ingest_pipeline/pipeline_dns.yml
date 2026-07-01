@@ -13,7 +13,7 @@ processors:
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} updating zone '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA}\\): %{VIEW}?query failed %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA:infoblox_nios.log.dns.before_query}\\): rewriting query name %{DATA} to '%{DATA:infoblox_nios.log.dns.after_query}', type %{DATA:dns.question.type}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA}\\): %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} %{DATA:infoblox_nios.log.dns.header_flags} \\(%{IP:server.ip}\\)$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA}\\): %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} %{DATA:infoblox_nios.log.dns.header_flags} \\(%{IP:server.ip}\\)(?:\\s*%{ECS_CLIENT_SUBNET})?$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA}\\): transfer of '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*CEF:0\\|Infoblox\\|NIOS\\|%{GREEDYDATA:infoblox_nios.log.dns.version}\\|RPZ-%{DATA:dns.answers.type}\\|%{DATA:infoblox_nios.log.dns.answers_policy}\\|\\d+\\|app=DNS dst=%{IP:server.ip} src=%{IP:client.ip} spt=%{NUMBER:client.port:long} view=%{DATA:infoblox_nios.log.dns.view_name} qtype=%{WORD:dns.question.type} msg=%{GREEDYDATA:infoblox_nios.log.dns.message}$"
@@ -24,6 +24,7 @@ processors:
       pattern_definitions:
         CLIENT: 'client (?:%{DATA} )?%{IP:client.ip}#%{NUMBER:client.port:long}:?'
         VIEW: 'view %{DATA:infoblox_nios.log.view}: '
+        ECS_CLIENT_SUBNET: '\[ECS(?: %{IP:infoblox_nios.log.dns.ecs_client_subnet.ip}(?:/%{NUMBER:infoblox_nios.log.dns.ecs_client_subnet.prefix_length:long}(?:/%{NUMBER:infoblox_nios.log.dns.ecs_client_subnet.scope_prefix_length:long})?)?)?\]'
   - date:
       field: _tmp.timestamp
       target_field: _tmp.timestamp
@@ -215,6 +216,27 @@ processors:
       if: ctx.server?.ip != null
       allow_duplicates: false
       ignore_failure: true
+  - convert:
+      field: infoblox_nios.log.dns.ecs_client_subnet.ip
+      tag: convert_ecs_client_subnet_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: infoblox_nios.log.dns.ecs_client_subnet.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: related.ip
+      tag: append_ecs_client_subnet_ip_to_related
+      value: '{{{infoblox_nios.log.dns.ecs_client_subnet.ip}}}'
+      allow_duplicates: false
+      if: ctx.infoblox_nios?.log?.dns?.ecs_client_subnet?.ip != null
   - foreach:
       field: dns.answers.name
       if: ctx.dns?.answers?.name != null
