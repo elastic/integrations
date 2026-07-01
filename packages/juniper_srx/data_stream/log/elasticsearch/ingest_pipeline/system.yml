@@ -351,6 +351,12 @@ processors:
     source: >-
         ctx.juniper.srx.system = ctx.juniper.srx.system.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().replace(' ', '_').replace('-', '_').toLowerCase(), e -> e.getValue().trim()));
 
+# Drop juniper.srx.system.if_trace: the k-v extractor above surfaces it from IF_TRACE messages, but it duplicates `message` (message minus the "IF_TRACE: " prefix).
+- remove:
+    tag: remove_juniper_srx_system_if_trace
+    field: juniper.srx.system.if_trace
+    ignore_missing: true
+
 #######################
 ## SRX System Fields ##
 #######################
@@ -412,7 +418,10 @@ processors:
             - "-"
             - "Not-Available"
     source: >-
-        ctx?.juniper?.srx?.system.entrySet().removeIf(entry -> params.values.contains(entry.getValue()));
+        ctx.juniper.srx.system.entrySet().removeIf(entry -> params.values.contains(entry.getValue()));
+        if (ctx.juniper.srx.system.isEmpty()) {
+          ctx.juniper.srx.remove('system');
+        }
 
 # Copy `message_brief` into `message` if not already exists. This ensures unpased/unstructured data to be present in `message`.
 - set:
