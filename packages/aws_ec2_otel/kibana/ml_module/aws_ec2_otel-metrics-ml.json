@@ -1,0 +1,195 @@
+{
+    "id": "aws_ec2_otel-metrics-ml",
+    "type": "ml-module",
+    "migrationVersion": {
+        "search": "7.9.3"
+    },
+    "references": [],
+    "attributes": {
+        "id": "aws_ec2_otel-metrics-ml",
+        "title": "AWS EC2 instance resources (OpenTelemetry)",
+        "description": "Detect anomalies in EC2 instance resource metrics (CPU, burstable CPU credit balance, network egress) streamed from CloudWatch via the OpenTelemetry firehose receiver. Modelled per instance against its own history, so credit-balance depletion and CPU/network drift are caught before they cross the static alert thresholds or exhaust burst capacity.",
+        "type": "AWS metrics",
+        "logo": {
+            "icon": "logoAWSMono"
+        },
+        "defaultIndexPattern": "metrics-aws.ec2.otel-*",
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "term": {
+                            "Namespace": "AWS/EC2"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "InstanceId"
+                        }
+                    }
+                ],
+                "must_not": {
+                    "terms": {
+                        "_tier": [
+                            "data_frozen",
+                            "data_cold"
+                        ]
+                    }
+                }
+            }
+        },
+        "jobs": [
+            {
+                "id": "aws_ec2_instance_resource_anomaly",
+                "config": {
+                    "groups": [
+                        "aws",
+                        "ec2",
+                        "otel"
+                    ],
+                    "description": "AWS EC2: detect instances whose resource usage has drifted unusually relative to their own history - sustained CPU elevation below the alert threshold, a burstable (T-family) CPU credit balance draining toward exhaustion, or anomalous network egress. The static alert rules cover hard threshold breaches and status-check failures; this job covers the gradual drift and credit depletion that precede them, with the instance, auto-scaling group, region, and account as influencers.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "summary_count_field_name": "doc_count",
+                        "detectors": [
+                            {
+                                "detector_description": "Anomalous CPU utilization",
+                                "function": "high_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/EC2/CPUUtilization",
+                                "by_field_name": "InstanceId",
+                                "partition_field_name": "cloud.region"
+                            },
+                            {
+                                "detector_description": "Anomalous drop in CPU credit balance (burst-exhaustion trajectory)",
+                                "function": "low_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/EC2/CPUCreditBalance",
+                                "by_field_name": "InstanceId",
+                                "partition_field_name": "cloud.region"
+                            },
+                            {
+                                "detector_description": "Anomalous network egress",
+                                "function": "high_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/EC2/NetworkOut",
+                                "by_field_name": "InstanceId",
+                                "partition_field_name": "cloud.region"
+                            }
+                        ],
+                        "influencers": [
+                            "InstanceId",
+                            "AutoScalingGroupName",
+                            "cloud.region",
+                            "cloud.account.id"
+                        ]
+                    },
+                    "analysis_limits": {
+                        "model_memory_limit": "128mb"
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "model_plot_config": {
+                        "enabled": false,
+                        "annotations_enabled": true
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-aws-ec2-otel-metrics-ml"
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-aws_ec2_instance_resource_anomaly",
+                "job_id": "aws_ec2_instance_resource_anomaly",
+                "config": {
+                    "job_id": "aws_ec2_instance_resource_anomaly",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "indices_options": {
+                        "allow_no_indices": true
+                    },
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "stat": "Average"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "MetricName": [
+                                            "CPUUtilization",
+                                            "CPUCreditBalance",
+                                            "NetworkOut"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "InstanceId"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "aggregations": {
+                        "buckets": {
+                            "composite": {
+                                "size": 1000,
+                                "sources": [
+                                    {
+                                        "date": {
+                                            "date_histogram": {
+                                                "field": "@timestamp",
+                                                "fixed_interval": "900s"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cloud.region": {
+                                            "terms": {
+                                                "field": "cloud.region"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "InstanceId": {
+                                            "terms": {
+                                                "field": "InstanceId"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "aggregations": {
+                                "@timestamp": {
+                                    "max": {
+                                        "field": "@timestamp"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/EC2/CPUUtilization": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/EC2/CPUUtilization"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/EC2/CPUCreditBalance": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/EC2/CPUCreditBalance"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/EC2/NetworkOut": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/EC2/NetworkOut"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}
