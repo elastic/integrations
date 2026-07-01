@@ -97,7 +97,6 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
-| log.offset | Log offset. | long |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | xm_cyber.product.affected_critical_assets | Affected critical assets count for this product. | long |
@@ -118,31 +117,31 @@ An example event for `product` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-05-13T11:44:04.838Z",
+    "@timestamp": "2026-07-01T15:33:52.609Z",
     "agent": {
-        "ephemeral_id": "13e22d2c-7ced-4d9a-afb5-e94d8b620438",
-        "id": "af2eda72-a3ff-4eb2-8bf9-ee73ee225eb9",
-        "name": "elastic-agent-64555",
+        "ephemeral_id": "a3795845-fbb9-4b88-aaed-2a8e09ad0848",
+        "id": "18ef6aa4-8616-4cd9-b863-9b4c16279260",
+        "name": "elastic-agent-41139",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.product",
-        "namespace": "15554",
+        "namespace": "21831",
         "type": "logs"
     },
     "ecs": {
         "version": "9.3.0"
     },
     "elastic_agent": {
-        "id": "af2eda72-a3ff-4eb2-8bf9-ee73ee225eb9",
+        "id": "18ef6aa4-8616-4cd9-b863-9b4c16279260",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "xm_cyber.product",
-        "ingested": "2026-05-13T11:44:07Z",
+        "ingested": "2026-07-01T15:33:55Z",
         "kind": "event",
         "original": "{\"affectedCriticalAssets\":2,\"chokePointsFoundOn\":0,\"devicesFoundOn\":2,\"productName\":\"wget\",\"productOperatingSystems\":[\"Linux sles 12.5 Server\"],\"productVulnerabilities\":1,\"productsCriticalAssetsAtRisk\":0,\"vendor\":null}"
     },
@@ -151,7 +150,6 @@ An example event for `product` looks as following:
     },
     "tags": [
         "preserve_original_event",
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "xm_cyber-product"
     ],
