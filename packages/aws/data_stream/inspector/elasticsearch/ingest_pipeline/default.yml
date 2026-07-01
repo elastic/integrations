@@ -1295,6 +1295,20 @@ processors:
       tag: rename_status
       target_field: aws.inspector.status
       ignore_missing: true
+  # Map the Inspector finding status to the ECS vulnerability lifecycle field so
+  # remediated findings can be filtered out on the Vulnerability Findings page.
+  # SUPPRESSED findings remain 'open' because the vulnerability is still present; users
+  # who want to hide them can filter on NOT aws.inspector.status: SUPPRESSED.
+  - set:
+      field: vulnerability.status
+      tag: set_vulnerability_status_open
+      value: open
+      if: ctx.aws?.inspector?.status == 'ACTIVE' || ctx.aws?.inspector?.status == 'SUPPRESSED'
+  - set:
+      field: vulnerability.status
+      tag: set_vulnerability_status_fixed
+      value: fixed
+      if: ctx.aws?.inspector?.status == 'CLOSED'
   - rename:
       field: json.title
       tag: rename_title
