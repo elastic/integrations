@@ -3,7 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
-    "description": "Alerts when peak database connections exceed a threshold. CloudWatch does not publish max_connections — set the threshold against your engine limit and normal baseline.",
+    "description": "Alerts when average database connections exceed a threshold. Uses the Average statistic per AWS recommended alarms. CloudWatch does not publish max_connections — set the threshold against your engine limit and normal baseline.",
     "name": "[AWS RDS OTel] Database connections high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -23,13 +23,13 @@
     },
     "artifacts": {
       "investigation_guide": {
-        "blob": "## Database Connections High\n\n### Triage\n1. Compare peak connections to the engine `max_connections` setting (not in CloudWatch).\n2. Check for connection leaks — idle sessions accumulating over time.\n3. Review application deploys or traffic spikes that increased connection demand.\n4. Inspect `FreeableMemory` — each connection consumes memory.\n\n### Mitigation\n- Enable connection pooling (PgBouncer, RDS Proxy, application pool).\n- Fix connection leaks in application code.\n- Increase `max_connections` only if memory allows; prefer pooling first."
+        "blob": "## Database Connections High\n\n### Triage\n1. Compare average connections to the engine `max_connections` setting (not in CloudWatch).\n2. Check for connection leaks — idle sessions accumulating over time.\n3. Review application deploys or traffic spikes that increased connection demand.\n4. Inspect `FreeableMemory` — each connection consumes memory.\n\n### Mitigation\n- Enable connection pooling (PgBouncer, RDS Proxy, application pool).\n- Fix connection leaks in application code.\n- Increase `max_connections` only if memory allows; prefer pooling first."
       }
     },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-aws.rds.otel-*\n| WHERE Namespace == \"AWS/RDS\"\n    AND MetricName == \"DatabaseConnections\"\n    AND stat == \"Maximum\"\n| STATS max_connections = MAX(`metrics.amazonaws.com/AWS/RDS/DatabaseConnections`)\n    BY DBInstanceIdentifier, cloud.region\n// Peak connection count — set relative to max_connections and baseline (default: 100)\n| WHERE max_connections > 100\n| SORT max_connections DESC"
+        "esql": "FROM metrics-aws.rds.otel-*\n| WHERE Namespace == \"AWS/RDS\"\n    AND MetricName == \"DatabaseConnections\"\n    AND stat == \"Average\"\n| STATS avg_connections = AVG(`metrics.amazonaws.com/AWS/RDS/DatabaseConnections`)\n    BY DBInstanceIdentifier, cloud.region\n// Average connection count — set relative to max_connections and baseline (default: 100)\n| WHERE avg_connections > 100\n| SORT avg_connections DESC"
       },
       "size": 0,
       "threshold": [

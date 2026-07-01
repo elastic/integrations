@@ -1,0 +1,178 @@
+---
+description: >-
+  Pipeline for categorizing ECS event fields for Kolide audit_log events. Maps
+  the resolved event.action to event.kind/category/type/outcome using an exact
+  lookup table. Actions not present in the table fall back to a verb-derived
+  categorization (creation/deletion/access/change) under the configuration
+  category.
+processors:
+  - script:
+      lang: painless
+      tag: set_ecs_categorization
+      description: Map Kolide audit event.action to ECS categorization fields using exact lookups with a verb-derived fallback.
+      if: ctx.event?.action != null
+      params:
+        exact:
+          # Developers: API keys & webhooks.
+          api_key_created: { category: ['iam', 'configuration'], type: ['creation'] }
+          api_key_deleted: { category: ['iam', 'configuration'], type: ['deletion'] }
+          api_key_secret_rotated: { category: ['iam', 'configuration'], type: ['change'] }
+          api_key_secret_viewed: { category: ['iam', 'configuration'], type: ['access'], outcome: success }
+          updated_api_key: { category: ['iam', 'configuration'], type: ['change'] }
+          webhook_created: { category: ['configuration'], type: ['creation'] }
+          webhook_deleted: { category: ['configuration'], type: ['deletion'] }
+          webhook_enabled: { category: ['configuration'], type: ['change'] }
+          webhook_disabled: { category: ['configuration'], type: ['change'] }
+          webhook_url_changed: { category: ['configuration'], type: ['change'] }
+          webhook_event_subscriptions_changed: { category: ['configuration'], type: ['change'] }
+          webhook_signing_secret_viewed: { category: ['iam', 'configuration'], type: ['access'], outcome: success }
+          webhook_signing_secret_rolled: { category: ['iam', 'configuration'], type: ['change'] }
+          # SSO / IdP / SCIM.
+          idp_settings_changed: { category: ['iam', 'configuration'], type: ['change'] }
+          identity_provider_activated: { category: ['iam', 'configuration'], type: ['change'] }
+          updated_sso_configuration: { category: ['iam', 'configuration'], type: ['change'] }
+          updated_saml_configuration: { category: ['iam', 'configuration'], type: ['change'] }
+          saml_webhook_verification: { category: ['iam', 'configuration'], type: ['info'] }
+          factor_sequencing_changed: { category: ['iam', 'configuration'], type: ['change'] }
+          webhook_token_generated: { category: ['iam', 'configuration'], type: ['creation'] }
+          scim_provider_bearer_token_generated: { category: ['iam', 'configuration'], type: ['creation'] }
+          # Admin users / team members.
+          kolide_team_member_created: { category: ['iam', 'configuration'], type: ['creation', 'user'] }
+          kolide_team_member_invited: { category: ['iam', 'configuration'], type: ['creation', 'user'] }
+          kolide_team_member_deleted: { category: ['iam', 'configuration'], type: ['deletion', 'user'] }
+          user_added: { category: ['iam', 'configuration'], type: ['creation', 'user'] }
+          user_access_changed: { category: ['iam', 'configuration'], type: ['change', 'user'] }
+          user_feature_restriction_changed: { category: ['iam', 'configuration'], type: ['change', 'user'] }
+          invitations_revoked_because_inviter_access_changed: { category: ['iam', 'configuration'], type: ['change', 'user'] }
+          factor_enrollment_reset: { category: ['iam', 'configuration'], type: ['change', 'user'] }
+          factor_enrollment_verified: { category: ['iam', 'configuration'], type: ['change', 'user'] }
+          # Device registrations (IAM authorization decisions).
+          device_registration_approved: { category: ['iam', 'configuration'], type: ['change'], outcome: success }
+          device_registration_self_approved: { category: ['iam', 'configuration'], type: ['change'], outcome: success }
+          device_registration_denied: { category: ['iam', 'configuration'], type: ['change'], outcome: failure }
+          device_registration_reopened: { category: ['iam', 'configuration'], type: ['change'] }
+          device_registration_removed: { category: ['iam', 'configuration'], type: ['deletion'] }
+          device_registration_auth_mode_changed: { category: ['iam', 'configuration'], type: ['change'] }
+          device_registration_configuration_changed: { category: ['iam', 'configuration'], type: ['change'] }
+          tofu_device_registration_re_enabled: { category: ['iam', 'configuration'], type: ['change'] }
+          # Exemption requests (IAM authorization decisions).
+          exemption_request_approved: { category: ['iam', 'configuration'], type: ['change'], outcome: success }
+          exemption_request_denied: { category: ['iam', 'configuration'], type: ['change'], outcome: failure }
+          exemption_request_reopened: { category: ['iam', 'configuration'], type: ['change'] }
+          exemption_request_withdrawn: { category: ['iam', 'configuration'], type: ['change'] }
+          issue_exempted: { category: ['configuration'], type: ['change'] }
+          check_marked_as_out_of_scope: { category: ['configuration'], type: ['change'] }
+          # People.
+          person_record_merged: { category: ['iam', 'configuration'], type: ['change', 'user'] }
+          person_record_unmerged: { category: ['iam', 'configuration'], type: ['change', 'user'] }
+          # Checks.
+          check_deleted: { category: ['configuration'], type: ['deletion'] }
+          check_reverted: { category: ['configuration'], type: ['change'] }
+          check_updated: { category: ['configuration'], type: ['change'] }
+          check_published: { category: ['configuration'], type: ['creation'] }
+          check_configuration_changed: { category: ['configuration'], type: ['change'] }
+          updated_check_device_trust_settings: { category: ['configuration'], type: ['change'] }
+          check_paused: { category: ['configuration'], type: ['change'] }
+          check_enabled: { category: ['configuration'], type: ['change'] }
+          # Devices.
+          device_display_name_changed: { category: ['configuration'], type: ['change'] }
+          canceled_device_removal: { category: ['configuration'], type: ['change'] }
+          device_removed: { category: ['configuration'], type: ['deletion'] }
+          device_deletion_requested: { category: ['configuration'], type: ['change'] }
+          device_data_export_requested: { category: ['configuration'], type: ['access'] }
+          duplicate_device_found: { category: ['configuration'], type: ['info'] }
+          # Managed web app.
+          managed_app_created: { category: ['configuration'], type: ['creation'] }
+          managed_app_deleted: { category: ['configuration'], type: ['deletion'] }
+          managed_app_updated: { category: ['configuration'], type: ['change'] }
+          managed_app_sign_on_settings_updated: { category: ['configuration'], type: ['change'] }
+          managed_app_direct_assigned_people_membership_changed: { category: ['configuration'], type: ['change'] }
+          managed_app_person_groups_membership_changed: { category: ['configuration'], type: ['change'] }
+          # Groups.
+          device_group_created: { category: ['configuration'], type: ['creation'] }
+          device_group_deleted: { category: ['configuration'], type: ['deletion'] }
+          device_group_memberships_removed: { category: ['configuration'], type: ['change'] }
+          # Log pipeline.
+          device_property_logger_added: { category: ['configuration'], type: ['creation'] }
+          device_property_logger_removed: { category: ['configuration'], type: ['deletion'] }
+          enabled_log_pipeline_destination: { category: ['configuration'], type: ['change'] }
+          disabled_log_pipeline_destination: { category: ['configuration'], type: ['change'] }
+          deleted_log_pipeline_destination: { category: ['configuration'], type: ['deletion'] }
+          updated_log_pipeline_destination: { category: ['configuration'], type: ['change'] }
+          created_log_pipeline_destination: { category: ['configuration'], type: ['creation'] }
+          logging_pipeline_enabled: { category: ['configuration'], type: ['change'] }
+          logging_pipeline_disabled: { category: ['configuration'], type: ['change'] }
+          osquery_decorator_changed: { category: ['configuration'], type: ['change'] }
+          osquery_fim_category_changed: { category: ['configuration'], type: ['change'] }
+          discovery_query_changed: { category: ['configuration'], type: ['change'] }
+          osquery_pack_query_changed: { category: ['configuration'], type: ['change'] }
+          osquery_pack_changed: { category: ['configuration'], type: ['change'] }
+          updated_osquery_options: { category: ['configuration'], type: ['change'] }
+          reset_osquery_options: { category: ['configuration'], type: ['change'] }
+          # Live queries.
+          live_query_created_and_run: { category: ['configuration'], type: ['creation'] }
+          live_query_updated_and_run: { category: ['configuration'], type: ['change'] }
+          live_query_deleted: { category: ['configuration'], type: ['deletion'] }
+          live_query_published: { category: ['configuration'], type: ['change'] }
+          live_query_unpublished: { category: ['configuration'], type: ['change'] }
+          live_query_csv_exported: { category: ['configuration'], type: ['access'] }
+          live_query_single_result_csv_exported: { category: ['configuration'], type: ['access'] }
+          # Integrations.
+          vanta_integration_created: { category: ['configuration'], type: ['creation'] }
+          vanta_integration_deleted: { category: ['configuration'], type: ['deletion'] }
+          oauth_grant_importer_for_google_workspace_integration_created: { category: ['configuration'], type: ['creation'] }
+          oauth_grant_importer_for_google_workspace_integration_deleted: { category: ['configuration'], type: ['deletion'] }
+          # Device management providers.
+          device_management_provider_added: { category: ['configuration'], type: ['creation'] }
+          device_management_provider_updated: { category: ['configuration'], type: ['change'] }
+          device_management_provider_deleted: { category: ['configuration'], type: ['deletion'] }
+          # Restrictions / settings.
+          osquery_blocklist_updated: { category: ['configuration'], type: ['change'] }
+          auto_snooze_policy_changed: { category: ['configuration'], type: ['change'] }
+          feature_restriction_changed: { category: ['configuration'], type: ['change'] }
+          privacy_center_configuration_changed: { category: ['configuration'], type: ['change'] }
+          end_user_remediation_configuration_changed: { category: ['configuration'], type: ['change'] }
+          extended_device_compliance_configuration_changed: { category: ['configuration'], type: ['change'] }
+          billing_email_updated: { category: ['configuration'], type: ['change'] }
+          # Generic wrapper where the inner verb was not resolved.
+          audit_log: { category: ['configuration'], type: ['change'] }
+      source: |-
+        def action = ctx.event.action;
+        ctx.event.kind = 'event';
+
+        if (params.exact.containsKey(action)) {
+          def m = params.exact[action];
+          ctx.event.category = new ArrayList(m.category);
+          ctx.event.type = new ArrayList(m.type);
+          if (m.containsKey('outcome')) {
+            ctx.event.outcome = m.outcome;
+          }
+        } else {
+          // Verb-derived fallback for actions not in the lookup table.
+          String type = 'change';
+          if (action.endsWith('_created') || action.endsWith('_added') ||
+              action.endsWith('_invited') || action.endsWith('_generated') ||
+              action.endsWith('_created_and_run')) {
+            type = 'creation';
+          } else if (action.endsWith('_deleted') || action.endsWith('_removed')) {
+            type = 'deletion';
+          }
+          ctx.event.category = ['configuration'];
+          ctx.event.type = [type];
+        }
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

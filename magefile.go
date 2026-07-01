@@ -229,6 +229,16 @@ func ValidateBackportsInventory() error {
 	return backports.ValidateInventory(".backports.yml", "packages")
 }
 
+// ValidateBackportBranchName checks that the given branch name is valid for the given package.
+// The branch must match backport-<package>-<suffix> and start with "backport-<packageName>-".
+func ValidateBackportBranchName(packageName, branch string) error {
+	if err := backports.ValidateBranchName(packageName, branch); err != nil {
+		return err
+	}
+	fmt.Printf("Branch name %q is valid for package %q.\n", branch, packageName)
+	return nil
+}
+
 // ListPackages lists all packages found under the packages directory.
 func ListPackages() error {
 	const packagesDir = "packages"
@@ -322,6 +332,26 @@ func IsVersionLessThanLogsDBGA(version string) error {
 		return nil
 	}
 	fmt.Println("false")
+	return nil
+}
+
+// AddBackportEntry adds a new entry to .backports.yml for the given package and
+// base version. The branch name is derived as backport-<package>-<major>.<minor>,
+// archived is set to false, and maintained_until to null. The base commit is
+// resolved via dev/scripts/get_release_commit.sh. The entry is inserted in
+// sorted order (by package name ascending, then by version descending — newest first).
+func AddBackportEntry(packageName, baseVersion string) error {
+	baseCommit, err := sh.Output("bash", "dev/scripts/get_release_commit.sh", "-p", packageName, "-v", baseVersion)
+	if err != nil {
+		return fmt.Errorf("resolving base commit for %s@%s: %w", packageName, baseVersion, err)
+	}
+	commit := strings.TrimSpace(baseCommit)
+	branch, err := backports.AddEntry(".backports.yml", packageName, baseVersion, commit, "packages")
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Added: branch=%s base_commit=%s\n", branch, commit)
+	fmt.Printf("Tip: if you need a custom branch name, edit the 'branch' field in .backports.yml before opening the PR (must start with \"backport-%s-\").\n", packageName)
 	return nil
 }
 

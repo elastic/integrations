@@ -1,0 +1,23 @@
+- source_dataset: kolide.webhook
+  rules:
+    - target_dataset: kolide.auth
+      if: ctx?.json?.event == 'auth_logs.success' || ctx?.json?.event == 'auth_logs.failure'
+      namespace:
+        - '{{data_stream.namespace}}'
+        - default
+    - target_dataset: kolide.issues
+      if: ctx?.json?.event == 'issues.new' || ctx?.json?.event == 'issues.resolved'
+      namespace:
+        - '{{data_stream.namespace}}'
+        - default
+    - target_dataset: kolide.device
+      if: >-
+        ctx?.json?.event == 'devices.created' || ctx?.json?.event == 'devices.registered' || ctx?.json?.event == 'devices.destroyed' || ctx?.json?.event == 'device_trust.status_changed'
+      namespace:
+        - '{{data_stream.namespace}}'
+        - default
+    - target_dataset: kolide.audit
+      if: ctx?.json?.event == 'audit_log.recorded'
+      namespace:
+        - '{{data_stream.namespace}}'
+        - default

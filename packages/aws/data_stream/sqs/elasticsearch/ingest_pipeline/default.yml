@@ -3,50 +3,62 @@ description: "Pipeline for SQS metrics"
 
 processors:
   - dot_expander:
+      tag: dot_expander_*_c2762c23
       field: "*"
       ignore_failure: true
   - set:
+      tag: set_cloud_account_name_20733914
       field: cloud.account.name
       copy_from: cloud.account.id
       override: false
       ignore_empty_value: true
   - rename:
+      tag: rename_aws_sqs_metrics_ApproximateAgeOfOldestMessage_max_to_aws_sqs_oldest_message_age_sec_c95b50a9
       field: aws.sqs.metrics.ApproximateAgeOfOldestMessage.max
       target_field: aws.sqs.oldest_message_age.sec
       ignore_missing: true
   - rename:
+      tag: rename_aws_sqs_metrics_ApproximateNumberOfMessagesDelayed_avg_to_aws_sqs_messages_delayed_ca6073c1
       field: aws.sqs.metrics.ApproximateNumberOfMessagesDelayed.avg
       target_field: aws.sqs.messages.delayed
       ignore_missing: true
   - rename:
+      tag: rename_aws_sqs_metrics_ApproximateNumberOfMessagesNotVisible_avg_to_aws_sqs_messages_not_visible_8a0a8f4e
       field: aws.sqs.metrics.ApproximateNumberOfMessagesNotVisible.avg
       target_field: aws.sqs.messages.not_visible
       ignore_missing: true
   - rename:
+      tag: rename_aws_sqs_metrics_ApproximateNumberOfMessagesVisible_avg_to_aws_sqs_messages_visible_1942dde5
       field: aws.sqs.metrics.ApproximateNumberOfMessagesVisible.avg
       target_field: aws.sqs.messages.visible
       ignore_missing: true
   - rename:
+      tag: rename_aws_sqs_metrics_NumberOfMessagesDeleted_sum_to_aws_sqs_messages_deleted_853d108e
       field: aws.sqs.metrics.NumberOfMessagesDeleted.sum
       target_field: aws.sqs.messages.deleted
       ignore_missing: true
   - rename:
+      tag: rename_aws_sqs_metrics_NumberOfMessagesReceived_sum_to_aws_sqs_messages_received_2f8e5010
       field: aws.sqs.metrics.NumberOfMessagesReceived.sum
       target_field: aws.sqs.messages.received
       ignore_missing: true
   - rename:
+      tag: rename_aws_sqs_metrics_NumberOfMessagesSent_sum_to_aws_sqs_messages_sent_64cf391a
       field: aws.sqs.metrics.NumberOfMessagesSent.sum
       target_field: aws.sqs.messages.sent
       ignore_missing: true
   - rename:
+      tag: rename_aws_sqs_metrics_NumberOfEmptyReceives_sum_to_aws_sqs_empty_receives_0684a641
       field: aws.sqs.metrics.NumberOfEmptyReceives.sum
       target_field: aws.sqs.empty_receives
       ignore_missing: true
   - rename:
+      tag: rename_aws_sqs_metrics_SentMessageSize_avg_to_aws_sqs_sent_message_size_bytes_dd16fb4e
       field: aws.sqs.metrics.SentMessageSize.avg
       target_field: aws.sqs.sent_message_size.bytes
       ignore_missing: true
   - remove:
+      tag: remove_8f371c74
       field:
         - aws.sqs.metrics
       if: ctx.agent?.type != "firehose"
@@ -60,4 +72,4 @@ on_failure:
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'

@@ -1,0 +1,91 @@
+---
+description: >-
+  Webhook-specific field extraction for Kolide device events (devices.created,
+  devices.registered, devices.destroyed, device_trust.status_changed). Invoked
+  from default.yml when json.event is set.
+processors:
+  # --- event.id: webhook envelope ULID. ---
+  - convert:
+      field: json.id
+      target_field: event.id
+      type: string
+      tag: convert_event_id
+      ignore_missing: true
+      
+  # event.kind / event.category / event.type are assigned centrally by
+  # categorization.yml based on the resolved event.action.
+
+  # --- event.action: Kolide webhook event name (json.event). ---
+  - set:
+      field: event.action
+      tag: set_event_action_webhook
+      copy_from: json.event
+      if: ctx.json?.event != null
+
+  # --- Host (device) ---
+  - rename:
+      field: json.data.device_name
+      target_field: host.name
+      tag: rename_host_name_webhook
+      ignore_missing: true
+  - convert:
+      field: json.data.device_id
+      target_field: host.id
+      type: string
+      tag: convert_host_id_webhook
+      ignore_missing: true
+
+  # --- Owner (registered_owner) ---
+  - rename:
+      field: json.data.registered_owner.email
+      target_field: user.email
+      tag: rename_user_email_webhook
+      ignore_missing: true
+  - rename:
+      field: json.data.registered_owner.name
+      target_field: user.name
+      tag: rename_user_name_webhook
+      ignore_missing: true
+  - convert:
+      field: json.data.registered_owner.id
+      target_field: user.id
+      type: string
+      tag: convert_user_id_webhook
+      ignore_missing: true
+
+  # --- Kolide custom device fields (webhook) ---
+  - rename:
+      field: json.data.device_status
+      target_field: kolide.device.device_status
+      tag: rename_kolide_device_status
+      ignore_missing: true
+  - rename:
+      field: json.data.device_url
+      target_field: kolide.device.device_url
+      tag: rename_kolide_device_url_webhook
+      ignore_missing: true
+
+  # Webhook: fingerprint event.id (per-delivery ULID).
+  - fingerprint:
+      fields:
+        - event.id
+      target_field: _id
+      method: SHA-256
+      tag: fingerprint_event_id
+      if: ctx.event?.original == null && ctx.event?.id != null && ctx.event.id != ''
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
