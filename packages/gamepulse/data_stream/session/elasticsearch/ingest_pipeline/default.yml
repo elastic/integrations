@@ -1,0 +1,49 @@
+---
+description: >
+  Ingest pipeline for GamePulse session documents.
+  Sets @timestamp, validates required identification fields, and normalises
+  hardware vendor strings. Fired once at session start and once at session end.
+processors:
+  - set:
+      field: "@timestamp"
+      value: "{{{_ingest.timestamp}}}"
+      if: "ctx['@timestamp'] == null"
+
+  - script:
+      description: "Validate required session identification fields are present"
+      lang: painless
+      source: |
+        def sid = ctx.gamepulse?.session?.id;
+        if (sid == null || sid.isEmpty()) {
+          throw new Exception('gamepulse.session.id is required');
+        }
+        def name = ctx.gamepulse?.game?.name;
+        if (name == null || name.isEmpty()) {
+          throw new Exception('gamepulse.game.name is required');
+        }
+
+  - lowercase:
+      field: gamepulse.hardware.gpu.vendor
+      ignore_missing: true
+      description: "Normalise GPU vendor (AMD -> amd, NVIDIA -> nvidia)"
+
+  - lowercase:
+      field: gamepulse.game.graphics_api
+      ignore_missing: true
+
+  - trim:
+      field: gamepulse.game.name
+      ignore_missing: true
+
+  - lowercase:
+      field: host.os.type
+      ignore_missing: true
+      description: "Normalise OS type (Linux -> linux, Windows -> windows)"
+
+on_failure:
+  - set:
+      field: _ingest.pipeline_error
+      value: "{{_ingest.on_failure_message}}"
+  - set:
+      field: _ingest.failed_pipeline
+      value: "gamepulse-session"

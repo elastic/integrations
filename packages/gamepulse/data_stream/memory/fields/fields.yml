@@ -1,0 +1,79 @@
+# ECS fields used in this data stream
+- name: host.name
+  external: ecs
+  dimension: true
+
+# Session context
+- name: gamepulse
+  type: group
+  fields:
+    - name: session
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          dimension: true
+          description: "Unique session identifier (UUID)"
+        - name: agent_version
+          type: keyword
+          description: "Version of the GamePulse collector agent"
+        - name: label
+          type: keyword
+          description: "Optional user-supplied annotation for this session (e.g. 'after-driver-update')"
+
+    - name: game
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: "Game title"
+        - name: steam_app_id
+          type: long
+          description: "Steam application ID (present only when source == steam)"
+        - name: source
+          type: keyword
+          description: "Detection source: steam | lutris | heroic | bottles | user_specified | auto_detected"
+        - name: launcher
+          type: keyword
+          description: "Human-readable launcher name (e.g. Steam, Lutris, Heroic — Epic)"
+
+    # Memory-specific metrics
+    - name: memory
+      type: group
+      fields:
+        - name: system_used_mb
+          type: integer
+          metric_type: gauge
+          description: "System-wide memory in use in megabytes (excludes buffers/cache)"
+        - name: game_rss_mb
+          type: integer
+          metric_type: gauge
+          description: "Game process resident set size (RSS) in megabytes"
+        - name: virtual_mb
+          type: integer
+          metric_type: gauge
+          description: "Game process virtual memory size in megabytes"
+        - name: page_cache_mb
+          type: integer
+          metric_type: gauge
+          description: "System page cache size in megabytes"
+        - name: shared_mb
+          type: integer
+          metric_type: gauge
+          description: "Shared memory in use in megabytes"
+        - name: swap_used_mb
+          type: integer
+          metric_type: gauge
+          description: "Swap space in use in megabytes (includes zram/zswap)"
+        - name: page_faults_major
+          type: long
+          metric_type: counter
+          description: "Cumulative major page faults for the game process (disk access required)"
+        - name: page_faults_minor
+          type: long
+          metric_type: counter
+          description: "Cumulative minor page faults for the game process (no disk access)"
+        - name: oom_events
+          type: integer
+          metric_type: counter
+          description: "Out-of-memory kill events observed in this interval"

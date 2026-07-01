@@ -1,0 +1,134 @@
+# ECS fields used in this data stream
+- name: host.name
+  external: ecs
+  dimension: true
+
+# Session context
+- name: gamepulse
+  type: group
+  fields:
+    - name: session
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          dimension: true
+          description: "Unique session identifier (UUID)"
+        - name: agent_version
+          type: keyword
+          description: "Version of the GamePulse collector agent"
+        - name: label
+          type: keyword
+          description: "Optional user-supplied annotation for this session (e.g. 'after-driver-update')"
+
+    - name: game
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: "Game title"
+        - name: steam_app_id
+          type: long
+          description: "Steam application ID (present only when source == steam)"
+        - name: source
+          type: keyword
+          description: "Detection source: steam | lutris | heroic | bottles | user_specified | auto_detected"
+        - name: launcher
+          type: keyword
+          description: "Human-readable launcher name (e.g. Steam, Lutris, Heroic — Epic)"
+
+    # Storage-specific metrics
+    - name: storage
+      type: group
+      fields:
+        - name: read_mbps
+          type: float
+          metric_type: gauge
+          description: "Storage read throughput for the game drive in MB/s"
+        - name: write_mbps
+          type: float
+          metric_type: gauge
+          description: "Storage write throughput for the game drive in MB/s"
+        - name: read_iops
+          type: long
+          metric_type: gauge
+          description: "Storage read operations per second for the game drive"
+        - name: write_iops
+          type: long
+          metric_type: gauge
+          description: "Storage write operations per second for the game drive"
+        - name: io_latency_read_us
+          type: group
+          fields:
+            - name: avg
+              type: long
+              metric_type: gauge
+              description: "Average read I/O latency in microseconds"
+            - name: p50
+              type: long
+              metric_type: gauge
+              description: "Median read I/O latency in microseconds"
+            - name: p95
+              type: long
+              metric_type: gauge
+              description: "95th percentile read I/O latency in microseconds"
+            - name: p99
+              type: long
+              metric_type: gauge
+              description: "99th percentile read I/O latency in microseconds"
+        - name: io_latency_write_us
+          type: group
+          fields:
+            - name: avg
+              type: long
+              metric_type: gauge
+              description: "Average write I/O latency in microseconds"
+            - name: p50
+              type: long
+              metric_type: gauge
+              description: "Median write I/O latency in microseconds"
+            - name: p95
+              type: long
+              metric_type: gauge
+              description: "95th percentile write I/O latency in microseconds"
+            - name: p99
+              type: long
+              metric_type: gauge
+              description: "99th percentile write I/O latency in microseconds"
+        - name: queue_depth_current
+          type: integer
+          metric_type: gauge
+          description: "Current I/O queue depth"
+        - name: queue_depth_max
+          type: integer
+          metric_type: gauge
+          description: "Maximum I/O queue depth observed in this interval"
+        - name: io_wait_pct
+          type: float
+          metric_type: gauge
+          unit: percent
+          description: "CPU I/O wait percentage (time CPU was idle waiting for I/O)"
+        - name: merged_reads
+          type: long
+          metric_type: counter
+          description: "Cumulative merged read operations (from /proc/diskstats)"
+        - name: merged_writes
+          type: long
+          metric_type: counter
+          description: "Cumulative merged write operations (from /proc/diskstats)"
+        - name: game_process_read_mb
+          type: float
+          metric_type: counter
+          description: "Cumulative megabytes read by the game process (from /proc/{pid}/io)"
+        - name: game_process_write_mb
+          type: float
+          metric_type: counter
+          description: "Cumulative megabytes written by the game process"
+        - name: game_process_read_ops
+          type: long
+          metric_type: counter
+          description: "Cumulative read syscall count by the game process"
+        - name: drive_temperature_c
+          type: float
+          metric_type: gauge
+          description: "Game drive temperature in Celsius (NVMe/SATA SMART)"

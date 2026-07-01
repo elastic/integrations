@@ -1,0 +1,31 @@
+---
+description: >
+  Ingest pipeline for GamePulse eBPF kernel telemetry metrics.
+  Sets @timestamp and validates probe availability metadata.
+  eBPF data arrives pre-aggregated at 1-second intervals from the Rust/Aya daemon.
+processors:
+  - set:
+      field: "@timestamp"
+      value: "{{{_ingest.timestamp}}}"
+      if: "ctx['@timestamp'] == null"
+
+  - trim:
+      field: gamepulse.game.name
+      ignore_missing: true
+
+  - script:
+      description: "Validate session ID is present"
+      lang: painless
+      source: |
+        def sid = ctx.gamepulse?.session?.id;
+        if (sid == null || sid.isEmpty()) {
+          throw new Exception('gamepulse.session.id is required in eBPF documents');
+        }
+
+on_failure:
+  - set:
+      field: _ingest.pipeline_error
+      value: "{{_ingest.on_failure_message}}"
+  - set:
+      field: _ingest.failed_pipeline
+      value: "gamepulse-ebpf"
