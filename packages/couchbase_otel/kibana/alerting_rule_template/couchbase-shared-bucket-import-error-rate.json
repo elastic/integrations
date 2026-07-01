@@ -1,0 +1,39 @@
+{
+  "id": "couchbase-shared-bucket-import-error-rate",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Couchbase] Shared bucket import error rate",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "couchbase",
+      "sync-gateway",
+      "errors"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-couchbase.miscellaneous-default\n| STATS import_err_rate = SUM(RATE(couchbase.miscellaneous.shared_bucket.import.documents.errors.count))\n  BY couchbase.miscellaneous.database.name\n| WHERE import_err_rate > 0.01\n| SORT import_err_rate DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "couchbase.miscellaneous.database.name",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

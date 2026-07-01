@@ -1,0 +1,36 @@
+{
+  "id": "couchbase-n1ql-query-latency-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Couchbase] N1QL query latency high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "couchbase",
+      "latency"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-couchbase.query_index-default\n| STATS avg_request_time_sec = AVG(couchbase.query_index.query.request_time.avg)\n| WHERE avg_request_time_sec > 1.0"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "all",
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

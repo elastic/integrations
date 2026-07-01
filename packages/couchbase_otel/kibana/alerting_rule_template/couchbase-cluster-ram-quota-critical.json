@@ -1,0 +1,36 @@
+{
+  "id": "couchbase-cluster-ram-quota-critical",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Couchbase] Cluster RAM quota critically high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "couchbase",
+      "saturation"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-couchbase.cluster-default\n| WHERE couchbase.cluster.ram.quota.total.value.bytes > 0\n| EVAL ram_quota_used_pct =\n  couchbase.cluster.ram.quota.used.value.bytes * 100.0\n  / couchbase.cluster.ram.quota.total.value.bytes\n| STATS peak_cluster_ram_quota_pct = MAX(ram_quota_used_pct)\n| WHERE peak_cluster_ram_quota_pct > 90.0"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "all",
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

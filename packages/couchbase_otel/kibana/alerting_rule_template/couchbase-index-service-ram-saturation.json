@@ -1,0 +1,36 @@
+{
+  "id": "couchbase-index-service-ram-saturation",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "name": "[Couchbase] Index service RAM saturation",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "couchbase",
+      "saturation"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-couchbase.query_index-default\n| STATS peak_index_ram_pct = MAX(couchbase.query_index.ram.pct)\n| WHERE peak_index_ram_pct > 90.0"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "all",
+      "excludeHitsFromPreviousRun": false
+    }
+  }
+}

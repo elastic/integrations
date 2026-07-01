@@ -1,0 +1,53 @@
+{
+  "attributes": {
+    "name": "[Couchbase OTel] N1QL query latency 99.5% rolling 30 days",
+    "description": "Ensures 99.5% compliance over 30 rolling days that 95% of 1-minute windows show average N1QL query execution time (couchbase.query_index.query.request_time.avg, seconds) below 1s per collecting host, reflecting responsive SQL++ workloads for applications using the Query Service.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"couchbase.query_index\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "avg",
+              "field": "couchbase.query_index.query.request_time.avg",
+              "filter": ""
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 1.0
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "couchbase",
+      "otel"
+    ],
+    "groupBy": [
+      "host.name"
+    ]
+  },
+  "id": "couchbase_otel-n1ql-query-latency-99.5-Rolling30Days",
+  "type": "slo_template",
+  "artifacts": {
+    "dashboards": [
+      {
+        "id": "couchbase_otel-cluster-overview"
+      }
+    ]
+  }
+}
