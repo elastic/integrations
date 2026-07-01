@@ -31,6 +31,7 @@ streams:
           the paths contain no variable! Refer to the [integration
           documentation](https://www.elastic.co/guide/en/integrations/current/kubernetes.html)
           for more details.
+          **This field is ignored when 'singleInput' is enabled**.
       - name: symlinks
         type: bool
         title: Use Symlinks
@@ -104,6 +105,46 @@ streams:
           enabled: true # This must be set to `true`
           offset: 0
           length: 1024
+      - name: singleInput
+        type: bool
+        title: Single input
+        multi: false
+        required: false
+        show_user: false
+        default: false
+        description: >-
+          When selected, Elastic Agent will create a single input to collect all container logs on the node. 
+          This is useful when you want to avoid creating a separate input for each container.
+      - name: pathsSingleInput
+        type: text
+        title: Kubernetes container log path for single input
+        default: 
+          - /var/log/pods/*/*/*.log
+        multi: true
+        required: false
+        show_user: false
+        description: >-
+          When "Single input" is selected, use this configuration to set the path for the input. 
+      - name: matcherYaml
+        title: Matcher settings for add_kubernetes_metadata processor.
+        show_user: false
+        description: >
+          See available matchers in [processor documentation](https://www.elastic.co/docs/reference/beats/filebeat/add-kubernetes-metadata#_matchers).
+          **This field is only applicabled when 'singleInput' is enabled**.
+        type: yaml
+        default: |
+          logs_path:
+            logs_path: "/var/log/pods/"
+            resource_type: "pod"
+      - name: indexerYaml
+        title: Indexer settings for add_kubernetes_metadata processor.
+        show_user: false
+        description: >
+          See available indexers in [processor documentation](https://www.elastic.co/docs/reference/beats/filebeat/add-kubernetes-metadata#_indexers).
+          **This field is only applicabled when 'singleInput' is enabled**.
+        type: yaml
+        default: |
+          - pod_uid:
       - name: custom
         title: Custom configurations
         show_user: false
