@@ -234,7 +234,7 @@ processors:
       copy_from: xm_cyber.risk_score.scenario.score
       ignore_empty_value: true
   - convert:
-      tag: convert_labels_risk_score_from_xm_cyber_risk_score_data_scenario_score
+      tag: convert_xm_cyber_risk_score_scenario_score_to_float
       field: xm_cyber.risk_score.scenario.score
       type: float
       ignore_missing: true
@@ -262,24 +262,24 @@ processors:
       lang: painless
       source: |-
         void handleMap(Map map) {
-        map.values().removeIf(v -> {
-        	if (v instanceof Map) {
-        	handleMap(v);
-        	} else if (v instanceof List) {
-        	handleList(v);
-        	}
-        	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
-        });
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
         void handleList(List list) {
-        list.removeIf(v -> {
-        	if (v instanceof Map) {
-        	handleMap(v);
-        	} else if (v instanceof List) {
-        	handleList(v);
-        	}
-        	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
-        });
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
         handleMap(ctx);
   - set:

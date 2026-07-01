@@ -878,23 +878,23 @@ An example event for `entity_inventory` looks as following:
 | log.offset | Log offset. | long |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
-| xm_cyber.risk_score.avg_graph_data.date |  | date |
-| xm_cyber.risk_score.avg_graph_data.grade |  | keyword |
-| xm_cyber.risk_score.avg_graph_data.score |  | float |
-| xm_cyber.risk_score.graph_data.campaigns |  | keyword |
-| xm_cyber.risk_score.graph_data.from_date |  | date |
-| xm_cyber.risk_score.graph_data.grade |  | keyword |
-| xm_cyber.risk_score.graph_data.score |  | float |
-| xm_cyber.risk_score.graph_data.to_date |  | date |
-| xm_cyber.risk_score.resolution |  | integer |
-| xm_cyber.risk_score.scenario.grade |  | keyword |
-| xm_cyber.risk_score.scenario.id |  | keyword |
-| xm_cyber.risk_score.scenario.name |  | keyword |
-| xm_cyber.risk_score.scenario.score |  | keyword |
-| xm_cyber.risk_score.scenario.score_float |  | float |
-| xm_cyber.risk_score.stats.grade |  | keyword |
-| xm_cyber.risk_score.stats.score |  | float |
-| xm_cyber.risk_score.stats.trend |  | long |
+| xm_cyber.risk_score.avg_graph_data.date | The date of the average graph data point. | date |
+| xm_cyber.risk_score.avg_graph_data.grade | The risk grade for the average graph data point. | keyword |
+| xm_cyber.risk_score.avg_graph_data.score | The average risk score for the given date. | float |
+| xm_cyber.risk_score.graph_data.campaigns | The campaigns associated with the risk score graph data. | keyword |
+| xm_cyber.risk_score.graph_data.from_date | The start date of the time window for the graph data. | date |
+| xm_cyber.risk_score.graph_data.grade | The risk grade for the scenario within the given time window. | keyword |
+| xm_cyber.risk_score.graph_data.score | The risk score for the scenario within the given time window. | float |
+| xm_cyber.risk_score.graph_data.to_date | The end date of the time window for the graph data. | date |
+| xm_cyber.risk_score.resolution | The resolution (granularity in days) of the risk score graph data. | integer |
+| xm_cyber.risk_score.scenario.grade | The risk grade of the attack scenario. | keyword |
+| xm_cyber.risk_score.scenario.id | The unique identifier of the attack scenario. | keyword |
+| xm_cyber.risk_score.scenario.name | The name of the attack scenario. | keyword |
+| xm_cyber.risk_score.scenario.score | The risk score of the scenario as a keyword label. | keyword |
+| xm_cyber.risk_score.scenario.score_float | The risk score of the scenario as a floating-point number. | float |
+| xm_cyber.risk_score.stats.grade | The overall risk grade across all scenarios. | keyword |
+| xm_cyber.risk_score.stats.score | The overall risk score across all scenarios. | float |
+| xm_cyber.risk_score.stats.trend | The trend of the risk score compared to the previous period (positive means improving, negative means worsening). | long |
 | xm_cyber.risk_score.time_id | The time window for the risk score report. | keyword |
 
 
@@ -906,31 +906,31 @@ An example event for `risk_score` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-06-30T09:44:44.766Z",
+    "@timestamp": "2026-07-01T06:36:35.341Z",
     "agent": {
-        "ephemeral_id": "b6ac094e-5cd8-4704-8021-ec79ee75dcfd",
-        "id": "a1de4b9b-4ce5-4f1b-9759-2e5cce11ec6c",
-        "name": "elastic-agent-73490",
+        "ephemeral_id": "3611556a-015f-4824-bcd3-d952390f2aa5",
+        "id": "26f65bf6-8eda-4621-b409-d49e6ad56049",
+        "name": "elastic-agent-44928",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.risk_score",
-        "namespace": "20364",
+        "namespace": "51482",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "a1de4b9b-4ce5-4f1b-9759-2e5cce11ec6c",
+        "id": "26f65bf6-8eda-4621-b409-d49e6ad56049",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "xm_cyber.risk_score",
-        "ingested": "2026-06-30T09:44:47Z",
+        "ingested": "2026-07-01T06:36:38Z",
         "kind": "event",
         "original": "{\"avgGraphData\":[{\"date\":\"2025-12-03T00:00:00.000Z\",\"grade\":\"A\",\"score\":95}],\"graphData\":{\"campaigns\":null,\"fromDate\":\"2025-12-02T00:00:00.000Z\",\"grade\":\"A\",\"score\":95,\"toDate\":\"2025-12-03T00:00:00.000Z\"},\"scenario\":{\"grade\":\"B\",\"id\":\"02D8\",\"name\":\"(LG) Workstation to Servers\",\"score\":82},\"stats\":{\"grade\":\"A\",\"score\":90,\"trend\":1}}"
     },

@@ -40,14 +40,12 @@ program: |
             (authResp.StatusCode == 200) ?
               authResp.Body.decode_json().as(ao,
                 {
-                  "ok": true,
                   "access": ao.accessToken,
                   "refresh": ao.refreshToken,
                 }
               )
             :
               {
-                "ok": false,
                 "err_code": string(authResp.StatusCode),
                 "err_status": authResp.Status,
                 "err_body": (size(authResp.Body) != 0) ? string(authResp.Body) : authResp.Status,
@@ -55,12 +53,11 @@ program: |
           )
         :
           {
-            "ok": true,
             ?"access": state.?cursor.access_token,
             ?"refresh": state.?cursor.refresh_token,
           }
       ).as(tok,
-        !tok.ok ?
+        !has(tok.access) ?
           {
             "events": {
               "error": {
