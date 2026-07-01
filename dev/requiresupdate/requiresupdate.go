@@ -80,6 +80,7 @@ func Run() error {
 
 	var summaries []packageSummary
 	var errs []string
+	eligible := 0
 
 	for _, pkgPath := range paths {
 		manifest, err := citools.ReadPackageManifest(filepath.Join(pkgPath, citools.ManifestFileName))
@@ -92,6 +93,7 @@ func Run() error {
 		if !manifest.HasRequires() {
 			continue
 		}
+		eligible++
 
 		summary, err := processPackage(pkgPath, manifest.Name, dryRun)
 		if err != nil {
@@ -104,6 +106,7 @@ func Run() error {
 	}
 
 	printSummary(summaries, dryRun)
+	printScanStats(len(paths), eligible, len(summaries), len(errs))
 
 	if jsonOut := os.Getenv("REQUIRES_UPDATE_JSON_OUT"); jsonOut != "" {
 		if err := writeJSONReport(summaries, jsonOut); err != nil {
@@ -226,6 +229,25 @@ func writeJSONReport(summaries []packageSummary, path string) error {
 		return err
 	}
 	return os.WriteFile(path, data, 0644)
+}
+
+// printScanStats prints a one-line scan summary distinguishing "nothing to do
+// because adoption of requires: is low" from "the walk found nothing due to a
+// bug" — both currently produce an empty JSON report. Also appended to
+// $GITHUB_STEP_SUMMARY when set, so it's visible without opening the job log.
+func printScanStats(total, eligible, withProposals, errored int) {
+	line := fmt.Sprintf("Scanned %d packages, %d eligible (requires: present), %d with proposals, %d errored.\n",
+		total, eligible, withProposals, errored)
+	fmt.Print(line)
+
+	if summaryPath := os.Getenv("GITHUB_STEP_SUMMARY"); summaryPath != "" {
+		f, err := os.OpenFile(summaryPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return
+		}
+		defer f.Close()
+		fmt.Fprint(f, line)
+	}
 }
 
 func printSummary(summaries []packageSummary, dryRun bool) {

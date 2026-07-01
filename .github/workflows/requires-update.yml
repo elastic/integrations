@@ -3,8 +3,11 @@ name: Update required package versions
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 9 * * 1'
+  # Manual-only for now: adoption of `requires:` blocks is just starting (first
+  # package is landing). Re-enable the schedule once a manual run has been
+  # verified end-to-end against a real package (PR/issue creation included).
+  # schedule:
+  #   - cron: '0 9 * * 1'
 
 permissions:
   contents: read
@@ -47,6 +50,7 @@ jobs:
         run: git fetch origin
 
       - name: Run RequiresUpdate
+        id: requires_update
         env:
           REQUIRES_UPDATE_JSON_OUT: /tmp/requires-update.json
         run: |
@@ -57,3 +61,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash .github/scripts/requires-update.sh /tmp/requires-update.json
+
+      - name: Fail if RequiresUpdate reported errors
+        # continue-on-error above lets already-succeeded packages still get a
+        # PR/issue when one package errors, but that must not make the job
+        # look green — otherwise a real failure and "nothing to do" (today's
+        # expected state) are indistinguishable in the Actions UI.
+        if: always() && steps.requires_update.outcome == 'failure'
+        run: |
+          echo "::error::RequiresUpdate reported errors — see the 'Run RequiresUpdate' step log above."
+          exit 1
