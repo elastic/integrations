@@ -212,6 +212,9 @@ func issueBody(s packageSummary) string {
 	for _, p := range s.skipped {
 		fmt.Fprintf(&b, "- **%s**: %s\n", p.Package, p.Warning)
 	}
+	if s.ownerMismatch != "" {
+		fmt.Fprintf(&b, "\n> **Note:** codeowner mismatch — %s\n", s.ownerMismatch)
+	}
 	fmt.Fprintf(&b, "\n/cc @%s\n", s.codeowner)
 	return b.String()
 }
@@ -232,6 +235,9 @@ func prBody(s packageSummary) string {
 		for _, p := range s.skipped {
 			fmt.Fprintf(&b, "- ⚠️ **%s**: %s\n", p.Package, p.Warning)
 		}
+	}
+	if s.ownerMismatch != "" {
+		fmt.Fprintf(&b, "\n> **Note:** codeowner mismatch — %s\n", s.ownerMismatch)
 	}
 	return b.String()
 }

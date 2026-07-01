@@ -45,13 +45,19 @@ type updateResult struct {
 	NewVersion string     `json:"new_version,omitempty"`
 }
 
+// defaultOwner is the catch-all team used when a package has no resolvable
+// codeowner (neither CODEOWNERS nor the manifest's owner.github field), so a
+// proposal never gets dropped for lack of somewhere to send it.
+const defaultOwner = "elastic/ecosystem"
+
 type packageSummary struct {
-	path      string
-	name      string
-	applied   []proposal
-	skipped   []proposal
-	codeowner string   // bare "org/team", no leading '@'
-	files     []string // paths written to disk, relative to repo root; empty on dry-run
+	path          string
+	name          string
+	applied       []proposal
+	skipped       []proposal
+	codeowner     string   // bare "org/team", no leading '@'
+	ownerMismatch string   // non-empty if CODEOWNERS and the manifest fallback disagreed; describes both values
+	files         []string // paths written to disk, relative to repo root; empty on dry-run
 }
 
 // Run walks all integration packages, runs elastic-package requires update,
@@ -71,6 +77,11 @@ func Run() error {
 		return fmt.Errorf("listing packages: %w", err)
 	}
 
+	owners, err := codeowners.LoadOwners(codeowners.DefaultCodeownersPath)
+	if err != nil {
+		return fmt.Errorf("loading codeowners: %w", err)
+	}
+
 	var summaries []packageSummary
 	var errs []string
 	eligible := 0
@@ -88,7 +99,7 @@ func Run() error {
 		}
 		eligible++
 
-		summary, err := processPackage(pkgPath, manifest.Name, dryRun)
+		summary, err := processPackage(pkgPath, manifest.Name, dryRun, owners)
 		if err != nil {
 			errs = append(errs, fmt.Sprintf("%s: %v", manifest.Name, err))
 			continue
@@ -113,7 +124,7 @@ func Run() error {
 	return nil
 }
 
-func processPackage(pkgPath, pkgName string, dryRun bool) (*packageSummary, error) {
+func processPackage(pkgPath, pkgName string, dryRun bool, owners *codeowners.Owners) (*packageSummary, error) {
 	args := []string{"requires", "update", "--changelog", "--format", "json"}
 	if dryRun {
 		args = append(args, "--dry-run")
@@ -150,10 +161,7 @@ func processPackage(pkgPath, pkgName string, dryRun bool) (*packageSummary, erro
 		return nil, nil
 	}
 
-	owner, err := resolveOwner(pkgName, result.Codeowner)
-	if err != nil {
-		return nil, fmt.Errorf("resolving codeowner: %w", err)
-	}
+	res := resolveOwner(owners, pkgName, result.Codeowner)
 
 	var writtenFiles []string
 	if result.NewVersion != "" {
@@ -164,34 +172,45 @@ func processPackage(pkgPath, pkgName string, dryRun bool) (*packageSummary, erro
 	}
 
 	return &packageSummary{
-		path:      pkgPath,
-		name:      pkgName,
-		applied:   applied,
-		skipped:   skipped,
-		codeowner: owner,
-		files:     writtenFiles,
+		path:          pkgPath,
+		name:          pkgName,
+		applied:       applied,
+		skipped:       skipped,
+		codeowner:     res.owner,
+		ownerMismatch: res.mismatch,
+		files:         writtenFiles,
 	}, nil
 }
 
-// resolveOwner returns the package's codeowner as a bare "org/team" string
-// (no leading '@'), preferring CODEOWNERS over the JSON fallback field.
-func resolveOwner(pkgName, fallback string) (string, error) {
-	owners, err := codeowners.PackageOwners(pkgName, "", codeowners.DefaultCodeownersPath)
-	if err != nil || len(owners) == 0 {
-		if fallback != "" {
-			return fallback, nil
+// ownerResolution is the result of reconciling CODEOWNERS against the
+// package manifest's own owner.github fallback field.
+type ownerResolution struct {
+	owner    string // bare "org/team", no leading '@'; never empty
+	mismatch string // non-empty if CODEOWNERS and the fallback disagreed; describes both values
+}
+
+// resolveOwner reconciles the package's codeowner, preferring CODEOWNERS over
+// the JSON fallback field (sourced from the package manifest's owner.github).
+// Falls back to defaultOwner when neither source resolves one, so a proposal
+// never gets dropped for lack of somewhere to send it.
+func resolveOwner(owners *codeowners.Owners, pkgName, fallback string) ownerResolution {
+	teams, err := owners.PackageOwners(pkgName, "")
+	if err != nil || len(teams) == 0 {
+		owner := fallback
+		if owner == "" {
+			owner = defaultOwner
 		}
-		return "", fmt.Errorf("no codeowner found for %s: %w", pkgName, err)
+		return ownerResolution{owner: owner}
 	}
 	// CODEOWNERS entries carry a '@' prefix; the JSON fallback field does
 	// not — normalize to the bare form so callers get a consistent value
 	// regardless of which path resolved it.
-	primary := strings.TrimPrefix(owners[0], "@")
+	primary := strings.TrimPrefix(teams[0], "@")
+	res := ownerResolution{owner: primary}
 	if fallback != "" && primary != fallback {
-		fmt.Fprintf(os.Stderr, "warning: codeowner mismatch for %s: CODEOWNERS=%s JSON=%s (using CODEOWNERS)\n",
-			pkgName, primary, fallback)
+		res.mismatch = fmt.Sprintf("CODEOWNERS=%s manifest owner.github=%s (using CODEOWNERS)", primary, fallback)
 	}
-	return primary, nil
+	return res
 }
 
 // printScanStats prints a one-line scan summary distinguishing "nothing to do
@@ -235,14 +254,21 @@ func printSummary(summaries []packageSummary, dryRun bool) {
 	for _, team := range teams {
 		fmt.Printf("## %s\n", team)
 		for _, s := range groups[team] {
-			fmt.Printf("  %s\n", s.name)
-			for _, p := range s.applied {
-				fmt.Printf("    [%s] %s: %s → %s\n", p.Kind, p.Package, p.Current, p.Proposed)
-			}
-			for _, p := range s.skipped {
-				fmt.Printf("    [SKIPPED] %s (kibana constraint): %s\n", p.Package, p.Warning)
-			}
+			printPackageSummary(s)
 		}
 		fmt.Println()
+	}
+}
+
+func printPackageSummary(s packageSummary) {
+	fmt.Printf("  %s\n", s.name)
+	if s.ownerMismatch != "" {
+		fmt.Printf("    [OWNER MISMATCH] %s\n", s.ownerMismatch)
+	}
+	for _, p := range s.applied {
+		fmt.Printf("    [%s] %s: %s → %s\n", p.Kind, p.Package, p.Current, p.Proposed)
+	}
+	for _, p := range s.skipped {
+		fmt.Printf("    [SKIPPED] %s (kibana constraint): %s\n", p.Package, p.Warning)
 	}
 }

@@ -75,3 +75,31 @@ func TestIssueBody(t *testing.T) {
 	assert.Contains(t, body, "**foo**: requires kibana >=9.0.0")
 	assert.Contains(t, body, "/cc @elastic/some-team")
 }
+
+func TestIssueBodyOwnerMismatch(t *testing.T) {
+	body := issueBody(packageSummary{
+		codeowner: "elastic/some-team",
+		ownerMismatch: "CODEOWNERS=elastic/some-team manifest owner.github=elastic/other-team " +
+			"(using CODEOWNERS)",
+		skipped: []proposal{
+			{Package: "foo", Warning: "requires kibana >=9.0.0"},
+		},
+	})
+
+	assert.Contains(t, body, "codeowner mismatch")
+	assert.Contains(t, body, "elastic/other-team")
+	assert.Contains(t, body, "/cc @elastic/some-team")
+}
+
+func TestPRBodyOwnerMismatch(t *testing.T) {
+	body := prBody(packageSummary{
+		applied: []proposal{
+			{Kind: "input", Package: "apache", Current: "1.2.0", Proposed: "1.3.0"},
+		},
+		ownerMismatch: "CODEOWNERS=elastic/some-team manifest owner.github=elastic/other-team " +
+			"(using CODEOWNERS)",
+	})
+
+	assert.Contains(t, body, "codeowner mismatch")
+	assert.Contains(t, body, "elastic/other-team")
+}
