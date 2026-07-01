@@ -1,8 +1,8 @@
 {
     "attributes": {
-        "description": "Forensic pack for malware execution and injection detection \u2014 unsigned executables, file hash analysis, suspicious service detection, and process injection indicators (RWX memory, PPID spoofing) across all platforms.",
+        "description": "Forensic pack for malware execution and injection detection — unsigned executables, file hash analysis, suspicious service detection, process injection indicators (RWX memory, PPID spoofing), and suspicious open-handle activity on Windows (registry-credential targets, known-bad mutexes, lateral-movement named pipes via process_open_handles, requires osquery v5.23.0+) across all platforms.",
         "name": "forensic-malware-execution",
-        "version": 1,
+        "version": 2,
         "queries": [
             {
                 "id": "suspicious_processes_windows_elastic",
@@ -1300,10 +1300,138 @@
                         }
                     }
                 ]
+            },
+            {
+                "id": "open_handles_suspicious_windows_elastic",
+                "query": "-- Windows Open Handles: Suspicious Handle Detection (enriched)\n-- Source: process_open_handles (v5.23.0+).\n-- Scope: Key, Mutant, File handle types (those with a populated 'name' column).\n-- Performance: detection runs over a materialized CTE; hash + authenticode enrichment\n--              is applied only to surviving holder processes via correlated subqueries.\n\nWITH all_handles AS (\n    SELECT\n        p.pid,\n        p.name AS process_name,\n        TRIM(p.path) AS process_path,\n        p.cmdline,\n        p.uid AS user_sid,\n        p.parent AS ppid,\n        datetime(p.start_time, 'unixepoch') AS process_start_time,\n        oh.value AS handle_value,\n        oh.type AS handle_type,\n        oh.name AS handle_name,\n        oh.access AS handle_access,\n        oh.attributes AS handle_attributes,\n        oh.count AS handle_reference_count,\n        oh.raw_pointer_count AS handle_raw_pointer_count,\n        oh.error_stage AS handle_error_stage,\n        oh.error_code AS handle_error_code\n    FROM processes p\n    JOIN process_open_handles oh ON oh.pid = p.pid\n    WHERE p.pid > 4 AND p.path IS NOT NULL AND p.path != ''\n)\nSELECT\n    ah.pid,\n    ah.process_name,\n    ah.process_path,\n    ah.cmdline,\n    ah.user_sid,\n    ah.process_start_time,\n    ah.ppid,\n    (SELECT name FROM processes WHERE pid = ah.ppid) AS parent_name,\n    (SELECT TRIM(path) FROM processes WHERE pid = ah.ppid) AS parent_path,\n    ah.handle_value,\n    ah.handle_type,\n    ah.handle_name,\n    ah.handle_access,\n    ah.handle_attributes,\n    ah.handle_reference_count,\n    ah.handle_raw_pointer_count,\n    ah.handle_error_stage,\n    ah.handle_error_code,\n\n    -- Flag 1: Registry Key handles into credential-relevant hives.\n    -- IFEO is intentionally excluded — every modern Windows process opens it on\n    -- startup so the OS can check for an attached debugger.\n    CASE\n        WHEN ah.handle_type = 'Key' AND (\n            upper(ah.handle_name) LIKE '%\\REGISTRY\\MACHINE\\SAM%'\n            OR upper(ah.handle_name) LIKE '%\\REGISTRY\\MACHINE\\SECURITY%'\n            OR upper(ah.handle_name) LIKE '%\\REGISTRY\\MACHINE\\SYSTEM\\CONTROLSET___\\CONTROL\\LSA%'\n        )\n        AND lower(ah.process_name) NOT IN (\n            'lsass.exe', 'services.exe', 'wininit.exe', 'system',\n            'svchost.exe', 'winlogon.exe', 'smss.exe'\n        )\n        THEN 1 ELSE 0\n    END AS sensitive_registry_flag,\n\n    -- Flag 2: known-bad mutex names (Mutant handles)\n    CASE\n        WHEN ah.handle_type = 'Mutant' AND (\n            lower(ah.handle_name) LIKE '%\\msf-mutex%'\n            OR lower(ah.handle_name) LIKE '%mimikatz%'\n            OR lower(ah.handle_name) LIKE '%meterpreter%'\n            OR lower(ah.handle_name) LIKE '%powersploit%'\n            OR lower(ah.handle_name) LIKE '%qbot%'\n            OR lower(ah.handle_name) LIKE '%emotet%'\n            OR lower(ah.handle_name) LIKE '%trickbot%'\n            OR lower(ah.handle_name) LIKE '%redline%'\n            OR lower(ah.handle_name) LIKE '%agenttesla%'\n            OR lower(ah.handle_name) LIKE '%lokibot%'\n            OR lower(ah.handle_name) LIKE '%lockbit%'\n            OR lower(ah.handle_name) LIKE '%conti%'\n            OR lower(ah.handle_name) LIKE '%revil%'\n        )\n        THEN 1 ELSE 0\n    END AS suspicious_mutex_flag,\n\n    -- Flag 3: named-pipe lateral-movement / C2 patterns.\n    -- 'mojo.*' is intentionally excluded — Chromium/Edge/WebView2 use\n    -- \\Device\\NamedPipe\\...\\mojo.<pid>.<tid>.<rand> for legitimate IPC.\n    CASE\n        WHEN ah.handle_type = 'File' AND lower(ah.handle_name) LIKE '\\device\\namedpipe\\%' AND (\n            lower(ah.handle_name) LIKE '%\\psexesvc%'\n            OR lower(ah.handle_name) LIKE '%\\paexec%'\n            OR lower(ah.handle_name) LIKE '%\\remcom%'\n            OR lower(ah.handle_name) LIKE '%\\msagent_%'\n            OR lower(ah.handle_name) LIKE '%\\status_%'\n            OR lower(ah.handle_name) LIKE '%\\postex_%'\n            OR lower(ah.handle_name) LIKE '%\\msse-%'\n            OR lower(ah.handle_name) LIKE '%\\win_svc%'\n            OR lower(ah.handle_name) LIKE '%\\bypassuac%'\n            OR lower(ah.handle_name) LIKE '%\\keylogger%'\n            OR lower(ah.handle_name) LIKE '%\\browser_key_pipe%'\n            OR lower(ah.handle_name) LIKE '%\\r77%'\n            OR (\n                (\n                    lower(ah.handle_name) LIKE '%\\srvsvc'\n                    OR lower(ah.handle_name) LIKE '%\\samr'\n                    OR lower(ah.handle_name) LIKE '%\\lsarpc'\n                    OR lower(ah.handle_name) LIKE '%\\netlogon'\n                    OR lower(ah.handle_name) LIKE '%\\spoolss'\n                    OR lower(ah.handle_name) LIKE '%\\wkssvc'\n                    OR lower(ah.handle_name) LIKE '%\\ntsvcs'\n                )\n                AND lower(ah.process_name) NOT IN (\n                    'services.exe', 'lsass.exe', 'svchost.exe',\n                    'spoolsv.exe', 'wininit.exe', 'system'\n                )\n            )\n        )\n        THEN 1 ELSE 0\n    END AS named_pipe_flag,\n\n    (SELECT md5    FROM hash         WHERE path = ah.process_path) AS process_md5,\n    (SELECT sha1   FROM hash         WHERE path = ah.process_path) AS process_sha1,\n    (SELECT sha256 FROM hash         WHERE path = ah.process_path) AS process_sha256,\n    (SELECT subject_name FROM authenticode WHERE path = ah.process_path) AS signature_signer,\n    (SELECT result       FROM authenticode WHERE path = ah.process_path) AS signature_status,\n    concat('https://www.virustotal.com/gui/file/', (SELECT sha256 FROM hash WHERE path = ah.process_path)) AS vt_link\nFROM all_handles ah\nWHERE\n    (CASE WHEN ah.handle_type = 'Key' AND (\n            upper(ah.handle_name) LIKE '%\\REGISTRY\\MACHINE\\SAM%'\n            OR upper(ah.handle_name) LIKE '%\\REGISTRY\\MACHINE\\SECURITY%'\n            OR upper(ah.handle_name) LIKE '%\\REGISTRY\\MACHINE\\SYSTEM\\CONTROLSET___\\CONTROL\\LSA%'\n        ) AND lower(ah.process_name) NOT IN (\n            'lsass.exe', 'services.exe', 'wininit.exe', 'system',\n            'svchost.exe', 'winlogon.exe', 'smss.exe'\n        ) THEN 1 ELSE 0 END)\n    +\n    (CASE WHEN ah.handle_type = 'Mutant' AND (\n            lower(ah.handle_name) LIKE '%\\msf-mutex%'\n            OR lower(ah.handle_name) LIKE '%mimikatz%'\n            OR lower(ah.handle_name) LIKE '%meterpreter%'\n            OR lower(ah.handle_name) LIKE '%powersploit%'\n            OR lower(ah.handle_name) LIKE '%qbot%'\n            OR lower(ah.handle_name) LIKE '%emotet%'\n            OR lower(ah.handle_name) LIKE '%trickbot%'\n            OR lower(ah.handle_name) LIKE '%redline%'\n            OR lower(ah.handle_name) LIKE '%agenttesla%'\n            OR lower(ah.handle_name) LIKE '%lokibot%'\n            OR lower(ah.handle_name) LIKE '%lockbit%'\n            OR lower(ah.handle_name) LIKE '%conti%'\n            OR lower(ah.handle_name) LIKE '%revil%'\n        ) THEN 1 ELSE 0 END)\n    +\n    (CASE WHEN ah.handle_type = 'File' AND lower(ah.handle_name) LIKE '\\device\\namedpipe\\%' AND (\n            lower(ah.handle_name) LIKE '%\\psexesvc%'\n            OR lower(ah.handle_name) LIKE '%\\paexec%'\n            OR lower(ah.handle_name) LIKE '%\\remcom%'\n            OR lower(ah.handle_name) LIKE '%\\msagent_%'\n            OR lower(ah.handle_name) LIKE '%\\status_%'\n            OR lower(ah.handle_name) LIKE '%\\postex_%'\n            OR lower(ah.handle_name) LIKE '%\\msse-%'\n            OR lower(ah.handle_name) LIKE '%\\win_svc%'\n            OR lower(ah.handle_name) LIKE '%\\bypassuac%'\n            OR lower(ah.handle_name) LIKE '%\\keylogger%'\n            OR lower(ah.handle_name) LIKE '%\\browser_key_pipe%'\n            OR lower(ah.handle_name) LIKE '%\\r77%'\n            OR (\n                (\n                    lower(ah.handle_name) LIKE '%\\srvsvc'\n                    OR lower(ah.handle_name) LIKE '%\\samr'\n                    OR lower(ah.handle_name) LIKE '%\\lsarpc'\n                    OR lower(ah.handle_name) LIKE '%\\netlogon'\n                    OR lower(ah.handle_name) LIKE '%\\spoolss'\n                    OR lower(ah.handle_name) LIKE '%\\wkssvc'\n                    OR lower(ah.handle_name) LIKE '%\\ntsvcs'\n                )\n                AND lower(ah.process_name) NOT IN (\n                    'services.exe', 'lsass.exe', 'svchost.exe',\n                    'spoolsv.exe', 'wininit.exe', 'system'\n                )\n            )\n        ) THEN 1 ELSE 0 END)\n    > 0\nORDER BY\n    CASE\n        WHEN ah.handle_type = 'Key'    THEN 1\n        WHEN ah.handle_type = 'Mutant' THEN 2\n        WHEN ah.handle_type = 'File'   THEN 3\n        ELSE 4\n    END,\n    ah.pid;",
+                "interval": 3600,
+                "platform": "windows",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.open_handles_suspicious"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "process_name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "process_path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "process_start_time"
+                        }
+                    },
+                    {
+                        "key": "process.parent.pid",
+                        "value": {
+                            "field": "ppid"
+                        }
+                    },
+                    {
+                        "key": "process.parent.name",
+                        "value": {
+                            "field": "parent_name"
+                        }
+                    },
+                    {
+                        "key": "process.parent.executable",
+                        "value": {
+                            "field": "parent_path"
+                        }
+                    },
+                    {
+                        "key": "process.hash.md5",
+                        "value": {
+                            "field": "process_md5"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha1",
+                        "value": {
+                            "field": "process_sha1"
+                        }
+                    },
+                    {
+                        "key": "process.hash.sha256",
+                        "value": {
+                            "field": "process_sha256"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.subject_name",
+                        "value": {
+                            "field": "signature_signer"
+                        }
+                    },
+                    {
+                        "key": "process.code_signature.status",
+                        "value": {
+                            "field": "signature_status"
+                        }
+                    },
+                    {
+                        "key": "user.id",
+                        "value": {
+                            "field": "user_sid"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "process",
+                                "open_handles",
+                                "credential_access",
+                                "lateral_movement",
+                                "windows"
+                            ]
+                        }
+                    }
+                ]
             }
         ]
     },
-    "coreMigrationVersion": "9.3.0",
+    "coreMigrationVersion": "9.4.2",
     "id": "osquery_manager-b3f6a7c8-d9e0-4f1a-3b2c-4d5e6f7a8b9c",
     "references": [],
     "type": "osquery-pack-asset"
