@@ -54,17 +54,15 @@ type packageSummary struct {
 	files     []string // paths written to disk, relative to repo root; empty on dry-run
 }
 
-// teamJSON is the per-team record written by writeJSONReport.
-type teamJSON struct {
-	Slug     string        `json:"slug"`
-	Packages []packageJSON `json:"packages"`
-}
-
+// packageJSON is the per-package record written by writeJSONReport. Each
+// entry becomes one PR (or, if all proposals were skipped, one issue) — see
+// .github/scripts/requires-update.sh.
 type packageJSON struct {
-	Name    string     `json:"name"`
-	Files   []string   `json:"files"`
-	Applied []proposal `json:"applied"`
-	Skipped []proposal `json:"skipped"`
+	Name      string     `json:"name"`
+	Codeowner string     `json:"codeowner"`
+	Files     []string   `json:"files"`
+	Applied   []proposal `json:"applied"`
+	Skipped   []proposal `json:"skipped"`
 }
 
 // Run walks all integration packages, runs elastic-package requires update,
@@ -198,30 +196,19 @@ func resolveOwner(pkgName, fallback string) (string, error) {
 }
 
 func writeJSONReport(summaries []packageSummary, path string) error {
-	groups := make(map[string][]packageSummary)
-	for _, s := range summaries {
-		groups[s.codeowner] = append(groups[s.codeowner], s)
-	}
+	sorted := make([]packageSummary, len(summaries))
+	copy(sorted, summaries)
+	sort.Slice(sorted, func(i, j int) bool { return sorted[i].name < sorted[j].name })
 
-	teams := make([]string, 0, len(groups))
-	for t := range groups {
-		teams = append(teams, t)
-	}
-	sort.Strings(teams)
-
-	out := make([]teamJSON, 0, len(teams))
-	for _, team := range teams {
-		slug := strings.TrimPrefix(team, "@elastic/")
-		pkgs := make([]packageJSON, 0, len(groups[team]))
-		for _, s := range groups[team] {
-			pkgs = append(pkgs, packageJSON{
-				Name:    s.name,
-				Files:   s.files,
-				Applied: s.applied,
-				Skipped: s.skipped,
-			})
-		}
-		out = append(out, teamJSON{Slug: slug, Packages: pkgs})
+	out := make([]packageJSON, 0, len(sorted))
+	for _, s := range sorted {
+		out = append(out, packageJSON{
+			Name:      s.name,
+			Codeowner: s.codeowner,
+			Files:     s.files,
+			Applied:   s.applied,
+			Skipped:   s.skipped,
+		})
 	}
 
 	data, err := json.MarshalIndent(out, "", "  ")
