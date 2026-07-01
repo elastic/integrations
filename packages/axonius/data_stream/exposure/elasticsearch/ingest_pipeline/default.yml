@@ -1,0 +1,668 @@
+---
+description: Pipeline for processing exposure logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.3.0
+  - terminate:
+      description: error message set and no data to process.
+      tag: terminate_data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+  - remove:
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+      tag: remove_agentless_tags
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: axonius.exposure
+  # Fingerprint the full raw payload because the Axonius API does not expose a stable entity ID for exposure assets; the transform keys on this value for deduplication.
+  - fingerprint:
+      fields:
+        - event.original
+      tag: fingerprint_event_original
+      target_field: axonius.exposure.transform_unique_id
+      ignore_missing: true
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: vulnerability
+      tag: category_vulnerability
+  - append:
+      field: event.type
+      value: info
+      tag: type_info
+  - script:
+      tag: script_rename_fields
+      lang: painless
+      description: Renames all axonius.exposure.event.data.* fields to root level (removes event.data prefix). Prefixes conflicting keys with 'data_' to avoid overwriting custom data-stream-root-level fields.
+      source: |-
+        if (ctx.axonius?.exposure?.event?.data instanceof Map) {
+          Map eventData = ctx.axonius.exposure.event.data;
+          for (String key : new ArrayList(eventData.keySet())) {
+            if (ctx.axonius.exposure.containsKey(key)) {
+              ctx.axonius.exposure['data_' + key] = eventData[key];
+            } else {
+              ctx.axonius.exposure[key] = eventData[key];
+            }
+          }
+          ctx.axonius.exposure.event.remove('data');
+        }
+
+  - convert:
+      field: axonius.exposure.adapter_list_length
+      tag: convert_adapter_list_length_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.exposure.adapter_list_length
+            ignore_missing: true
+            tag: remove_adapter_list_length_to_long
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: axonius.exposure.event.accurate_for_datetime
+      tag: date_event_accurate_for_datetime
+      target_field: axonius.exposure.event.accurate_for_datetime
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.axonius?.exposure?.event?.accurate_for_datetime != null && ctx.axonius.exposure.event.accurate_for_datetime != ''
+      on_failure:
+        - remove:
+            field: axonius.exposure.event.accurate_for_datetime
+            ignore_missing: true
+            tag: remove_event_accurate_for_datetime
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_exposure_event_accurate_for_datetime
+      copy_from: axonius.exposure.event.accurate_for_datetime
+      ignore_empty_value: true
+  - date:
+      field: axonius.exposure.accurate_for_datetime
+      tag: date_accurate_for_datetime
+      target_field: axonius.exposure.accurate_for_datetime
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.axonius?.exposure?.accurate_for_datetime != null && ctx.axonius.exposure.accurate_for_datetime != ''
+      on_failure:
+        - remove:
+            field: axonius.exposure.accurate_for_datetime
+            ignore_missing: true
+            tag: remove_accurate_for_datetime
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: axonius.exposure.added
+      tag: date_added
+      target_field: axonius.exposure.added
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.axonius?.exposure?.added != null && ctx.axonius.exposure.added != ''
+      on_failure:
+        - remove:
+            field: axonius.exposure.added
+            ignore_missing: true
+            tag: remove_added
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: axonius.exposure.cisa_date_added
+      tag: date_cisa_date_added
+      target_field: axonius.exposure.cisa_date_added
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.axonius?.exposure?.cisa_date_added != null && ctx.axonius.exposure.cisa_date_added != ''
+      on_failure:
+        - remove:
+            field: axonius.exposure.cisa_date_added
+            ignore_missing: true
+            tag: remove_cisa_date_added
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: axonius.exposure.creation_date
+      tag: date_creation_date
+      target_field: axonius.exposure.creation_date
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.axonius?.exposure?.creation_date != null && ctx.axonius.exposure.creation_date != ''
+      on_failure:
+        - remove:
+            field: axonius.exposure.creation_date
+            ignore_missing: true
+            tag: remove_creation_date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_exposure_creation_date
+      copy_from: axonius.exposure.creation_date
+      ignore_empty_value: true
+  - append:
+      field: vulnerability.description
+      tag: append_vulnerability_description_from_exposure_cve_description
+      value: '{{{axonius.exposure.cve_description}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.exposure?.cve_description != null
+  - append:
+      field: vulnerability.id
+      tag: append_axonius_exposure_cve_id_into_vulnerability_id
+      value: '{{{axonius.exposure.cve_id}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.exposure?.cve_id != null
+  - foreach:
+      field: axonius.exposure.cve_list
+      tag: foreach_cve_list
+      if: ctx.axonius?.exposure?.cve_list instanceof List
+      processor:
+        append:
+          field: vulnerability.id
+          tag: append_cve_list_into_vulnerability_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: axonius.exposure.cve_references
+      tag: foreach_cve_references_url
+      if: ctx.axonius?.exposure?.cve_references instanceof List
+      processor:
+        append:
+          field: vulnerability.reference
+          tag: append_cve_references_url_into_vulnerability_reference
+          value: '{{{_ingest._value.url}}}'
+          allow_duplicates: false
+  - set:
+      field: vulnerability.severity
+      tag: set_vulnerability_severity_from_exposure_cve_severity
+      copy_from: axonius.exposure.cve_severity
+      ignore_empty_value: true
+  - convert:
+      field: axonius.exposure.cvss
+      tag: convert_cvss_to_float
+      type: float
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.exposure.cvss
+            ignore_missing: true
+            tag: remove_cvss_to_float
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.score.base
+      tag: set_vulnerability_score_base_from_exposure_cvss
+      copy_from: axonius.exposure.cvss
+      ignore_empty_value: true
+  - convert:
+      field: axonius.exposure.cvss2_score
+      tag: convert_cvss2_score_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.exposure.cvss2_score
+            ignore_missing: true
+            tag: remove_cvss2_score_to_double
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: axonius.exposure.cvss2_score_num
+      tag: convert_cvss2_score_num_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.exposure.cvss2_score_num
+            ignore_missing: true
+            tag: remove_cvss2_score_num_to_double
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: axonius.exposure.cvss3_score
+      tag: convert_cvss3_score_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.exposure.cvss3_score
+            ignore_missing: true
+            tag: remove_cvss3_score_to_double
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: axonius.exposure.cvss3_score_num
+      tag: convert_cvss3_score_num_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.exposure.cvss3_score_num
+            ignore_missing: true
+            tag: remove_cvss3_score_num_to_double
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.score.version
+      tag: set_vulnerability_score_version_from_exposure_cvss_version
+      copy_from: axonius.exposure.cvss_version
+      ignore_empty_value: true
+  - set:
+      field: message
+      tag: set_message_from_exposure_desc
+      copy_from: axonius.exposure.desc
+      ignore_empty_value: true
+  - date:
+      field: axonius.exposure.due_date
+      tag: date_due_date
+      target_field: axonius.exposure.due_date
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.axonius?.exposure?.due_date != null && ctx.axonius.exposure.due_date != ''
+      on_failure:
+        - remove:
+            field: axonius.exposure.due_date
+            ignore_missing: true
+            tag: remove_due_date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: axonius.exposure.exploitability_score
+      tag: convert_exploitability_score_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.exposure.exploitability_score
+            ignore_missing: true
+            tag: remove_exploitability_score_to_double
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: axonius.exposure.__fields_to_unset__
+      tag: rename___fields_to_unset__
+      target_field: axonius.exposure.fields_to_unset
+      ignore_missing: true
+  - date:
+      field: axonius.exposure.first_seen
+      tag: date_first_seen
+      target_field: axonius.exposure.first_seen
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.axonius?.exposure?.first_seen != null && ctx.axonius.exposure.first_seen != ''
+      on_failure:
+        - remove:
+            field: axonius.exposure.first_seen
+            ignore_missing: true
+            tag: remove_first_seen
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_exposure_hash_id_into_related_hash
+      value: '{{{axonius.exposure.hash_id}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.exposure?.hash_id != null
+  - convert:
+      field: axonius.exposure.impact_score
+      tag: convert_impact_score_to_float
+      type: float
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.exposure.impact_score
+            ignore_missing: true
+            tag: remove_impact_score_to_float
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: axonius.exposure.is_cve
+      tag: convert_is_cve_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.exposure.is_cve
+            ignore_missing: true
+            tag: remove_is_cve_to_boolean
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: axonius.exposure.last_fetch
+      tag: date_last_fetch
+      target_field: axonius.exposure.last_fetch
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.axonius?.exposure?.last_fetch != null && ctx.axonius.exposure.last_fetch != ''
+      on_failure:
+        - remove:
+            field: axonius.exposure.last_fetch
+            ignore_missing: true
+            tag: remove_last_fetch
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: axonius.exposure.last_modified_date
+      tag: date_last_modified_date
+      target_field: axonius.exposure.last_modified_date
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.axonius?.exposure?.last_modified_date != null && ctx.axonius.exposure.last_modified_date != ''
+      on_failure:
+        - remove:
+            field: axonius.exposure.last_modified_date
+            ignore_missing: true
+            tag: remove_last_modified_date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: axonius.exposure.nvd_publish_age
+      tag: convert_nvd_publish_age_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.exposure.nvd_publish_age
+            ignore_missing: true
+            tag: remove_nvd_publish_age_to_long
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: axonius.exposure.percentile
+      tag: convert_percentile_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.exposure.percentile
+            ignore_missing: true
+            tag: remove_percentile_to_double
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: axonius.exposure.publish_date
+      tag: date_publish_date
+      target_field: axonius.exposure.publish_date
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+        - yyyy-MM-dd
+        - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+      if: ctx.axonius?.exposure?.publish_date != null && ctx.axonius.exposure.publish_date != ''
+      on_failure:
+        - remove:
+            field: axonius.exposure.publish_date
+            ignore_missing: true
+            tag: remove_publish_date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.exposure.qualys_agent_vuln
+      tag: foreach_qualys_agent_vuln_first_found
+      if: ctx.axonius?.exposure?.qualys_agent_vuln instanceof List
+      processor:
+        date:
+          field: _ingest._value.first_found
+          tag: date_qualys_agent_vuln_first_found
+          target_field: _ingest._value.first_found
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+            - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+          on_failure:
+            - remove:
+                field: _ingest._value.first_found
+                ignore_missing: true
+  - foreach:
+      field: axonius.exposure.qualys_agent_vuln
+      tag: foreach_qualys_agent_vuln_last_found
+      if: ctx.axonius?.exposure?.qualys_agent_vuln instanceof List
+      processor:
+        date:
+          field: _ingest._value.last_found
+          tag: date_qualys_agent_vuln_last_found
+          target_field: _ingest._value.last_found
+          formats:
+            - EEE, dd MMM yyyy HH:mm:ss 'GMT'
+            - yyyy-MM-dd
+            - EEE,dd MMM yyyy HH:mm:ss 'GMT'
+          on_failure:
+            - remove:
+                field: _ingest._value.last_found
+                ignore_missing: true
+  - foreach:
+      field: axonius.exposure.qualys_agent_vuln
+      tag: foreach_qualys_agent_vuln_severity
+      if: ctx.axonius?.exposure?.qualys_agent_vuln instanceof List
+      processor:
+        convert:
+          field: _ingest._value.severity
+          tag: convert_qualys_agent_vuln_severity_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.severity
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.exposure.qualys_agent_vuln
+      tag: foreach_qualys_agent_vuln_qualys_cve_id
+      if: ctx.axonius?.exposure?.qualys_agent_vuln instanceof List
+      processor:
+        append:
+          field: vulnerability.id
+          tag: append_qualys_agent_vuln_qualys_cve_id_into_vulnerability_id
+          value: '{{{_ingest._value.qualys_cve_id}}}'
+          allow_duplicates: false
+  - convert:
+      field: axonius.exposure.score
+      tag: convert_score_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.exposure.score
+            ignore_missing: true
+            tag: remove_score_to_double
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hash
+      tag: append_exposure_solution_hash_id_into_related_hash
+      value: '{{{axonius.exposure.solution_hash_id}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.exposure?.solution_hash_id != null
+  - append:
+      field: vulnerability.id
+      tag: append_axonius_exposure_tenable_vuln_cve_into_vulnerability_id
+      value: '{{{axonius.exposure.tenable_vuln.cve}}}'
+      allow_duplicates: false
+      if: ctx.axonius?.exposure?.tenable_vuln?.cve != null
+  - convert:
+      field: axonius.exposure.tenable_vuln.has_been_mitigated
+      tag: convert_tenable_vuln_has_been_mitigated_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.exposure.tenable_vuln.has_been_mitigated
+            ignore_missing: true
+            tag: remove_tenable_vuln_has_been_mitigated_to_boolean
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: axonius.exposure.tenable_vuln.mitigated
+      tag: convert_tenable_vuln_mitigated_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.exposure.tenable_vuln.mitigated
+            ignore_missing: true
+            tag: remove_tenable_vuln_mitigated_to_boolean
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: axonius.exposure.used_in_ransomware
+      tag: convert_used_in_ransomware_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: axonius.exposure.used_in_ransomware
+            ignore_missing: true
+            tag: remove_used_in_ransomware_to_boolean
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: axonius.exposure.cve_references
+      tag: foreach_axonius_exposure_cve_references
+      if: ctx.axonius?.exposure?.cve_references instanceof List
+      processor:
+        remove:
+          field: _ingest._value.url
+          tag: remove_cve_references_url
+          ignore_missing: true
+  - foreach:
+      field: axonius.exposure.qualys_agent_vuln
+      tag: foreach_axonius_exposure_qualys_agent_vuln
+      if: ctx.axonius?.exposure?.qualys_agent_vuln instanceof List
+      processor:
+        remove:
+          field: _ingest._value.qualys_cve_id
+          tag: remove_qualys_agent_vuln_qualys_cve_id
+          ignore_missing: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-vulnerability-instance" }}'
+      tag: pipeline-vulnerability-instance
+      if: >-
+        ctx.axonius?.exposure?.asset_type == 'vulnerability_instances'
+  - remove:
+      field:
+        - axonius.exposure.event.accurate_for_datetime
+        - axonius.exposure.creation_date
+        - axonius.exposure.cve_description
+        - axonius.exposure.cve_id
+        - axonius.exposure.cve_list
+        - axonius.exposure.cve_severity
+        - axonius.exposure.cvss
+        - axonius.exposure.cvss_version
+        - axonius.exposure.desc
+        - axonius.exposure.tenable_vuln.cve
+        - axonius.exposure.axonius_risk_score
+        - axonius.exposure.cisa.desc
+        - axonius.exposure.msrc.cve_id
+        - axonius.exposure.epss.cve_id
+        - axonius.exposure.cisa.cve_id
+      tag: remove_exposure_fields_mapped_to_ecs
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

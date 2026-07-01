@@ -1,0 +1,177 @@
+rules:
+  # Round 2+ (convergence): the cursor is the exact max record timestamp from
+  # round 1 (2024-03-11T23:14:09Z), so the initial query carries that timestamp.
+  # Return an empty page so polling converges and hit_count stays stable. (Against
+  # the real inclusive API the boundary record is re-returned and collapses via the
+  # _id fingerprint; the mock returns empty for simplicity.) Must precede the
+  # page-1 catch-all so it wins for the advanced-cursor query.
+  - path: /auth_logs
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+      query: 'timestamp>2024-03-11T23:14:09Z'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data": [], "pagination": {"next": "", "next_cursor": "", "current_cursor": "", "count": 0}}
+  # Round 1 — Page 1: initial request (per_page + query time filter, no cursor).
+  # Returns one event and a next-page link with a cursor token.
+  - path: /auth_logs
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+      query: '{q:.*}'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": [
+              {
+                "id": "3374648",
+                "timestamp": "2024-03-11T21:28:17Z",
+                "person_name": "Alice Johnson",
+                "person_email": "user@example.com",
+                "person_info": {"identifier": "3", "link": "https://api.example.com/people/3"},
+                "device_info": {"identifier": "1", "link": "https://api.example.com/devices/1"},
+                "result": "Success",
+                "initial_status": "all_good",
+                "ip_address": "198.51.100.23",
+                "agent_version": "1.4.0",
+                "country": "United States",
+                "city": "New York",
+                "browser_name": "Chrome",
+                "browser_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                "okta_app_instance_id": "0oa1example2instance3",
+                "okta_app_name": "Example Corp SSO",
+                "issues_displayed": [
+                  {"title": "macOS Firewall is Disabled", "blocking_status": "will_block", "id": "9999", "link": "https://api.example.com/issues/9999"}
+                ],
+                "events": [
+                  {"timestamp": "2024-03-11T21:28:17Z", "event_type": "sign_in_attempt", "event_description": "The end-user was redirected to Kolide via a valid SAML request"},
+                  {"timestamp": "2024-03-11T21:28:19Z", "event_type": "sign_in_success", "event_description": "The end-user clicked Continue to Sign In"}
+                ]
+              }
+            ],
+            "pagination": {
+              "next": "http://{{ hostname }}:{{ env "PORT" }}/auth_logs?per_page={{ .request.vars.per_page }}&cursor=CURSORPAGE2",
+              "current_cursor": "",
+              "next_cursor": "CURSORPAGE2",
+              "count": 1
+            }
+          }
+  # Round 1 — Page 2: follows pagination.next (cursor=CURSORPAGE2).
+  - path: /auth_logs
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+      cursor: 'CURSORPAGE2'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": [
+              {
+                "id": "3374649",
+                "timestamp": "2024-03-11T22:05:42Z",
+                "person_name": "Bob Smith",
+                "person_email": "bob@example.com",
+                "person_info": {"identifier": "4", "link": "https://api.example.com/people/4"},
+                "device_info": {"identifier": "2", "link": "https://api.example.com/devices/2"},
+                "result": "Fail",
+                "initial_status": "will_block",
+                "ip_address": "203.0.113.45",
+                "agent_version": "1.4.0",
+                "country": "United States",
+                "city": "Austin",
+                "browser_name": "Firefox",
+                "browser_user_agent": "Mozilla/5.0 (X11; Linux x86_64; rv:124.0) Gecko/20100101 Firefox/124.0",
+                "okta_app_instance_id": "0oa1example2instance4",
+                "okta_app_name": "Example Corp SSO",
+                "issues_displayed": [],
+                "events": [
+                  {"timestamp": "2024-03-11T22:05:42Z", "event_type": "sign_in_attempt", "event_description": "The end-user was redirected to Kolide via a valid SAML request"},
+                  {"timestamp": "2024-03-11T22:05:50Z", "event_type": "sign_in_failure", "event_description": "Device is blocked"}
+                ]
+              }
+            ],
+            "pagination": {
+              "next": "http://{{ hostname }}:{{ env "PORT" }}/auth_logs?per_page={{ .request.vars.per_page }}&cursor=CURSORPAGE3",
+              "current_cursor": "CURSORPAGE2",
+              "next_cursor": "CURSORPAGE3",
+              "count": 1
+            }
+          }
+  # Round 1 — Page 3 (terminal): cursor=CURSORPAGE3, empty next/next_cursor stops pagination.
+  - path: /auth_logs
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+      cursor: 'CURSORPAGE3'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": [
+              {
+                "id": "3374650",
+                "timestamp": "2024-03-11T23:14:09Z",
+                "person_name": "Carol Diaz",
+                "person_email": "carol@example.com",
+                "person_info": {"identifier": "5", "link": "https://api.example.com/people/5"},
+                "device_info": {"identifier": "3", "link": "https://api.example.com/devices/3"},
+                "result": "Success",
+                "initial_status": "all_good",
+                "ip_address": "198.51.100.77",
+                "agent_version": "1.4.1",
+                "country": "Canada",
+                "city": "Toronto",
+                "browser_name": "Safari",
+                "browser_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+                "okta_app_instance_id": "0oa1example2instance5",
+                "okta_app_name": "Example Corp SSO",
+                "issues_displayed": [],
+                "events": [
+                  {"timestamp": "2024-03-11T23:14:09Z", "event_type": "sign_in_attempt", "event_description": "The end-user was redirected to Kolide via a valid SAML request"},
+                  {"timestamp": "2024-03-11T23:14:12Z", "event_type": "sign_in_success", "event_description": "The end-user clicked Continue to Sign In"}
+                ]
+              }
+            ],
+            "pagination": {
+              "next": "",
+              "current_cursor": "CURSORPAGE3",
+              "next_cursor": "",
+              "count": 1
+            }
+          }

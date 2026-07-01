@@ -36,7 +36,25 @@ func PackageOwners(packageName, dataStream, codeownersPath string) ([]string, er
 	if err != nil {
 		return nil, fmt.Errorf("failed to read CODEOWNERS file: %w", err)
 	}
-	packagePath := fmt.Sprintf("/packages/%s", packageName)
+	// look for the path of the package taking into account nested directories
+	packagePath := ""
+	for path := range owners.owners {
+		if !strings.HasSuffix(path, "/"+packageName) {
+			continue
+		}
+		// Verify the path is a valid package path: /packages/<name> or /packages/<category>/<name>.
+		// This prevents matching data stream paths or other sub-paths that happen to end with the package name.
+		if path == "/packages/"+packageName {
+			packagePath = path
+			break
+		}
+		// Check for a nested package path: /packages/<category>/<name>, where <category> is a single path segment.
+		prefix := strings.TrimSuffix(path, "/"+packageName)
+		if strings.HasPrefix(prefix, "/packages/") && !strings.Contains(prefix[len("/packages/"):], "/") {
+			packagePath = path
+			break
+		}
+	}
 	packageTeams, found := owners.owners[packagePath]
 	if !found {
 		return nil, fmt.Errorf("no owner found for package %s", packageName)
@@ -119,7 +137,8 @@ func readGithubOwners(codeownersPath string) (*githubOwners, error) {
 		}
 		path, owners := fields[0], fields[1:]
 
-		// It is ok to overwrite because latter lines have precedence in these files.
+		// remove trailing slash from path
+		path = strings.TrimSuffix(path, "/")
 		codeowners.owners[path] = owners
 	}
 	if err := scanner.Err(); err != nil {

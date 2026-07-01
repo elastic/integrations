@@ -60,25 +60,25 @@ Elastic Agent is required to stream data from the syslog or log file receiver an
 
 ### Set up steps in Squid Proxy
 
-You can configure Squid Proxy to send logs to Elastic using local log files, UDP, or TCP. Follow the steps below for your preferred method:
+You can configure Squid Proxy to send logs to Elastic using local log files, UDP, or TCP. The integration parses both Squid's built-in `squid` (native) format and an `extensive` format that exposes additional fields used by the dashboard (client port, HTTP version, header/body sizes, request headers, error details, and TLS SNI on OpenSSL builds). Follow the steps below for your preferred method:
 
 #### Configure local log file (filestream)
 
 1. Open the Squid configuration file using `sudo nano /etc/squid/squid.conf` (replace with your actual configuration path).
-2. Locate or add the `access_log` directive to write to a local file: `access_log stdio:/var/log/squid/access.log squid`.
-3. Verify the native format is defined to ensure compatibility: `logformat squid %ts.%03tu %6tr %>a %Ss/%03>Hs %<st %rm %ru %[un %Sh/%<a %mt`.
+2. Locate or add the `access_log` directive to write to a local file. For the native format: `access_log stdio:/var/log/squid/access.log squid`. For the extensive format: `access_log stdio:/var/log/squid/access.log extensive`.
+3. Make sure the chosen `logformat` is defined in `squid.conf`. See [Supported log formats](#supported-log-formats) for the exact format strings.
 4. Save the file and restart the Squid service: `sudo systemctl restart squid`.
 5. Check that data is being written to the file: `tail -f /var/log/squid/access.log`.
 
 #### Configure UDP network export
 
-1. Open `squid.conf` and add the network target: `access_log udp://<AGENT_IP>:9537 squid`. Replace `<AGENT_IP>` with the IP address of your Elastic Agent host (replace with your actual value).
+1. Open `squid.conf` and add the network target: `access_log udp://<AGENT_IP>:9537 squid` (or `extensive` instead of `squid` for the extensive format). Replace `<AGENT_IP>` with the IP address of your Elastic Agent host (replace with your actual value).
 2. Restart Squid to begin streaming: `sudo systemctl restart squid`.
 3. (Optional) Verify that packets are leaving the host: `sudo tcpdump -i any udp port 9537`.
 
 #### Configure TCP network export
 
-1. Open `squid.conf` and add the network target: `access_log tcp://<AGENT_IP>:9537 squid`. Replace `<AGENT_IP>` with the IP address of your Elastic Agent host (replace with your actual value).
+1. Open `squid.conf` and add the network target: `access_log tcp://<AGENT_IP>:9537 squid` (or `extensive` instead of `squid` for the extensive format). Replace `<AGENT_IP>` with the IP address of your Elastic Agent host (replace with your actual value).
 2. Restart the service: `sudo systemctl restart squid`.
 3. Check the connection status: `ss -ant | grep 9537`.
 
@@ -154,11 +154,11 @@ For help with Elastic ingest tools, refer to the [Common problems](https://www.e
 ### Common configuration issues
 
 If you encounter issues with the Squid Proxy integration, check the following scenarios:
-- Logs are not parsed correctly: Ensure the `access_log` directive in `squid.conf` includes the `squid` keyword at the end. This integration is specifically designed to parse the native Squid log format.
+- Logs are not parsed correctly: Ensure the `access_log` directive in `squid.conf` ends with either the `squid` keyword (native format) or `extensive` (with the corresponding `logformat extensive ...` directive defined). Any other custom format will not parse.
 - Port is already in use: When using TCP or UDP collection, verify that no other service is using port `9537` on the Elastic Agent host. You can check for existing listeners by running `sudo lsof -i :9537`.
 - Permission denied errors: If you're using the filestream input, check that the Elastic Agent user has read permissions for the Squid log files, typically located in `/var/log/squid/`.
 - Logs are not appearing in Kibana: Verify that firewalls on both the Squid server and the Elastic Agent host allow traffic on the configured port. By default, this integration uses port `9537`.
-- Grok parsing failures: Look for `_grokparsefailure` tags in Discover. These usually occur if the `logformat` in your Squid configuration has been customized or modified from the standard native format.
+- Grok parsing failures: Look for `_grokparsefailure` tags in Discover. These usually occur if the `logformat` in your Squid configuration has been customized — only the `squid` (native) and `extensive` formats documented here are supported.
 - Event timestamps are incorrect: Synchronize the system clocks on both the Squid server and the Elastic Agent host using NTP to prevent events from appearing with future timestamps or arriving late.
 
 ## Performance and scaling
@@ -176,7 +176,7 @@ The choice of protocol and input type affects both performance and reliability:
 Squid Proxy can generate significant log volumes. You can manage this load using the following methods:
 - Use Squid ACLs to filter traffic at the source.
 - Configure the `access_log` directive to only log specific event types.
-- Ensure that the `logformat` remains in the "native" style, as the parser for this integration depends on this specific structure for accurate processing.
+- Use the `squid` (native) or `extensive` logformat documented above — the parser depends on this exact structure.
 
 ### Elastic Agent scaling
 For high-throughput environments, you can scale your deployment using these strategies:
@@ -184,6 +184,24 @@ For high-throughput environments, you can scale your deployment using these stra
 - If you're using centralized network-based collection, deploy multiple Elastic Agents behind a network load balancer to distribute the ingest load evenly across multiple CPU cores.
 
 ## Reference
+
+### Supported log formats
+
+The integration parses two Squid `logformat` definitions. Reference the chosen one by name in the `access_log` directive.
+
+`squid` (native) — ships with Squid, no `logformat` directive needed:
+
+```
+logformat squid %ts.%03tu %6tr %>a %Ss/%03>Hs %<st %rm %ru %[un %Sh/%<a %mt
+```
+
+`extensive` — adds client port, HTTP version, header/body sizes, request headers, error details, and TLS SNI (on OpenSSL builds with `ssl_bump`). Add this directive to `squid.conf`:
+
+```
+logformat extensive %ts.%03tu %6tr %>a %>p %Ss/%03>Hs %<st %>st %<sh %>sh %<sH %rm %ru %rv %[un %Sh/%<a %<p %mt %err_code %err_detail "%{Referer}>h" "%{User-Agent}>h" "%{Host}>h" "%{X-Forwarded-For}>h" "%ssl::>sni" %note
+```
+
+Drop the `"%ssl::>sni"` token on builds without OpenSSL — the integration handles both variants.
 
 ### Vendor documentation
 
@@ -200,7 +218,7 @@ For more details on Squid logging and configuration, refer to the official docum
 
 #### log
 
-The `log` data stream provides events from Squid Proxy of the following types: access logs in both native and common log formats.
+The `log` data stream provides events from Squid Proxy access logs in either the native (`squid`) or `extensive` logformat.
 
 ##### log fields
 

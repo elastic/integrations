@@ -3,32 +3,40 @@ description: Pipeline for AWS Route53 Logs
 
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_cloud_provider_208bdd6b
       field: cloud.provider
       value: aws
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_7afdca3c
       field: event.category
       value: network
   - append:
+      tag: append_event_type_7ca1b382
       field: event.type
       value: protocol
   - rename:
+      tag: rename_message_to_event_original_c74b1d7e
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - grok:
+      tag: grok_event_original_a6b208c8
       field: event.original
       patterns:
         - '%{BASE10NUM} %{TIMESTAMP_ISO8601:_tmp.timestamp} %{DATA:aws.route53.hosted_zone_id} %{DATA:_tmp.question} %{WORD:dns.question.type} %{WORD:dns.response_code} %{WORD:network.transport} %{EDGE_LOCATION:aws.route53.edge_location} %{IP:source.address} (%{SUBNET:aws.route53.edns_client_subnet}|-)'
@@ -36,62 +44,76 @@ processors:
         EDGE_LOCATION: '[A-Z]{3}\d+(-[A-Z]+\d+)?'
         SUBNET: '%{IP}/[0-9]+'
   - date:
+      tag: date__tmp_timestamp_to_timestamp_b4a5e43c
       field: _tmp.timestamp
       target_field: '@timestamp'
       ignore_failure: true
       formats:
         - ISO8601
   - set:
+      tag: set_event_outcome_60bb549d
       field: event.outcome
       value: success
       if: ctx.dns?.response_code == "NOERROR"
   - set:
+      tag: set_event_outcome_25111b1a
       field: event.outcome
       value: failure
       if: ctx.dns?.response_code != "NOERROR"
   - registered_domain:
+      tag: registered_domain__tmp_question_to_dns_question_2c9f6754
       field: _tmp.question
       target_field: dns.question
       ignore_missing: true
       if: '!ctx._tmp?.question.endsWith("in-addr.arpa")'
   - rename:
+      tag: rename_dns_question_domain_to_dns_question_name_88a92ba9
       field: dns.question.domain
       target_field: dns.question.name
       ignore_missing: true
   - convert:
+      tag: convert_source_address_to_source_ip_48c76f83
       field: source.address
       target_field: source.ip
       type: ip
       ignore_missing: true
   - lowercase:
+      tag: lowercase_network_transport_bc8c1c12
       field: network.transport
       ignore_missing: true
   - set:
+      tag: set_network_protocol_96a840d1
       field: network.protocol
       value: dns
   - set:
+      tag: set_network_type_b7f5a7f1
       field: network.type
       value: ipv4
       if: 'ctx.source?.ip != null && ctx.source?.ip.contains(".")'
   - set:
+      tag: set_network_type_9ad17ef3
       field: network.type
       value: ipv6
       if: 'ctx.source?.ip != null && ctx.source?.ip.contains(":")'
   - set:
+      tag: set_network_iana_number_c83eed1a
       field: network.iana_number
       value: '6'
       if: ctx.network?.transport == "tcp"
   - set:
+      tag: set_network_iana_number_c552b054
       field: network.iana_number
       value: '17'
       if: ctx.network?.transport == "udp"
   # IP Geolocation Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -100,22 +122,27 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - append:
+      tag: append_related_ip_9f6befce
       field: related.ip
       value: "{{source.ip}}"
       if: ctx.source?.ip != null
   - append:
+      tag: append_related_hosts_28a2d1ad
       field: related.hosts
       value: "{{dns.question.name}}"
       if: ctx.dns?.question?.name != null
   - remove:
+      tag: remove_3f4f84fc
       field:
         - _tmp
       ignore_missing: true
@@ -128,4 +155,4 @@ on_failure:
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'

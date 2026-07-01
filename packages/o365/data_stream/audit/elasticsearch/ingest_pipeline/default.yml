@@ -26,7 +26,7 @@ processors:
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - script:
       tag: set_event_original
-      if: ctx.event?.original == null
+      if: ctx.event?.original == null && (ctx.tags != null && ctx.tags.contains('preserve_original_event'))
       source: |-
         ctx.event = ctx.event ?: [:];
         ctx.event.original = Json.dump(ctx.o365audit)
@@ -46,6 +46,33 @@ processors:
       tag: append_event_category_4595ee28
       field: event.category
       value: web
+  - script:
+      tag: script_normalize_numbers
+      description: |
+        Normalize fields from o365audit or CEL that need to be compared to
+        strings or indexed as keyword values without scientific notation.
+      if: ctx.o365audit != null
+      lang: painless
+      params:
+        fields:
+          - RecordType
+          - ActorYammerUserId
+          - TargetYammerUserId
+          - YammerNetworkId
+          - Version
+          - InternalLogonType
+          - LogonType
+          - RunningTime
+          - FileSize
+      source: |-
+        for (def field : params.fields) {
+          def value = ctx.o365audit[field];
+          if (value instanceof Number) {
+            ctx.o365audit[field] = ((Number)value).longValue().toString();
+          } else if (value instanceof String && (value.indexOf('e') >= 0 || value.indexOf('E') >= 0)) {
+            ctx.o365audit[field] = new BigDecimal(value).toBigIntegerExact().toString();
+          }
+        }
   - fingerprint:
       tag: fingerprint_443be558
       fields:
@@ -94,33 +121,6 @@ processors:
       copy_from: o365audit.FileSize
       ignore_empty_value: true
       override: false
-  - script:
-      tag: convert_file_size_to_long
-      if: ctx.file?.size != null
-      source: |-
-        if (ctx.file.size instanceof long || ctx.file.size instanceof int) {
-          return;
-        }
-        if (ctx.file.size instanceof double) {
-          ctx.file.size = (long) ctx.file.size;
-          return;
-        }
-        try {
-          // Attempt to parse as long to prevent inexact integer conversion.
-          ctx.file.size = Long.parseLong(ctx.file.size);
-        }
-        catch (NumberFormatException e) {
-          // But fall back to float parsing for cases where we failed.
-          ctx.file.size = (long) Double.parseDouble(ctx.file.size);
-        }
-      on_failure:
-        - remove:
-            tag: remove_file_size_d74cf399
-            field: file.size
-        - append:
-            tag: append_error_message_974b7657
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - set:
       tag: set_process_name_fa24cee1
@@ -196,17 +196,6 @@ processors:
       field: o365audit.Id
       target_field: event.id
       ignore_missing: true
-  - convert:
-      field: o365audit.ListBaseType
-      type: string
-      tag: convert-listbasetype-to-string
-      if: ctx.o365audit?.ListBaseType != null
-      on_failure:
-        - append:
-            tag: append_error_message_8375c352
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-
   - rename:
       tag: rename_o365audit_ClientIPAddress_to_client__temp_bda6b6c2
       field: o365audit.ClientIPAddress
@@ -224,12 +213,11 @@ processors:
       target_field: client._temp
       ignore_missing: true
       if: ctx.client?._temp == null
-  - convert:
-      tag: convert_o365audit_UserId_to_user_id_ecdabea0
-      field: o365audit.UserId
-      target_field: user.id
-      type: string
-      ignore_missing: true
+  - set:
+      tag: set_o365audit_UserId_to_user_id_ecdabea0
+      field: user.id
+      copy_from: o365audit.UserId
+      ignore_empty_value: true
   - rename:
       tag: rename_o365audit_Workload_to_event_provider_360cf1ce
       field: o365audit.Workload
@@ -634,12 +622,11 @@ processors:
       target_field: user.email
       ignore_missing: true
       if: ctx.event?.code == "ExchangeItem"
-  - convert:
-      tag: convert_o365audit_LogonUserSid_to_user_id_0c48c9b2
-      field: o365audit.LogonUserSid
-      target_field: user.id
-      type: string
-      ignore_missing: true
+  - set:
+      tag: set_o365audit_LogonUserSid_to_user_id_0c48c9b2
+      field: user.id
+      copy_from: o365audit.LogonUserSid
+      ignore_empty_value: true
       if: 'ctx.user?.id == null && ctx.o365audit?.LogonUserSid != null && ctx.event?.code == "ExchangeItem"'
   - rename:
       tag: rename_o365audit_LogonUserDisplayName_to_user_full_name_3b466445
@@ -896,12 +883,11 @@ processors:
       value: info
       allow_duplicates: false
       if: ctx.event?.code == "SecurityComplianceAlerts"
-  - convert:
-      tag: convert_o365audit_AlertEntityId_to_user_id_83931794
-      field: o365audit.AlertEntityId
-      target_field: user.id
-      type: string
-      ignore_missing: true
+  - set:
+      tag: set_o365audit_AlertEntityId_to_user_id_83931794
+      field: user.id
+      copy_from: o365audit.AlertEntityId
+      ignore_empty_value: true
       if: 'ctx.user?.id == null && ctx.event?.code == "SecurityComplianceAlerts" && ctx.rule?.ruleset == "User"'
   - rename:
       tag: rename_o365audit_AlertEntityId_to_user_email_a7322129
@@ -1125,12 +1111,11 @@ processors:
       target_field: user.email
       ignore_missing: true
       if: ctx.event?.code == "Yammer"
-  - convert:
-      tag: convert_o365audit_ActorYammerUserId_to_user_id_a114ca12
-      field: o365audit.ActorYammerUserId
-      target_field: user.id
-      type: string
-      ignore_missing: true
+  - set:
+      tag: set_o365audit_ActorYammerUserId_to_user_id_a114ca12
+      field: user.id
+      copy_from: o365audit.ActorYammerUserId
+      ignore_empty_value: true
       if: 'ctx.user?.id == null && ctx.event?.code == "Yammer"'
   - rename:
       tag: rename_o365audit_FileId_to_file_inode_c45b06ed
@@ -1156,16 +1141,6 @@ processors:
       target_field: destination.user.email
       ignore_missing: true
       if: ctx.event?.code == "Yammer"
-  - script:
-      tag: script_d6527ed5
-      description: Ensure that user IDs are not rendered with e-notation, general fallback for all other cases.
-      if: ctx.o365audit?.TargetYammerUserId != null
-      source: |-
-        if (ctx.o365audit.TargetYammerUserId instanceof double) {
-          ctx.o365audit.TargetYammerUserId = ((long)ctx.o365audit.TargetYammerUserId).toString();
-        } else {
-          ctx.o365audit.TargetYammerUserId = ctx.o365audit.TargetYammerUserId.toString();
-        }
   - rename:
       tag: rename_o365audit_TargetYammerUserId_to_destination_user_id_98d0b8d9
       field: o365audit.TargetYammerUserId
@@ -1530,21 +1505,6 @@ processors:
       copy_from: user.domain
       if: ctx.user?.domain != null && ctx.host?.name == null
   # Convert field values
-  - convert:
-      tag: convert_o365audit_AzureActiveDirectoryEventType_82b67126
-      field: o365audit.AzureActiveDirectoryEventType
-      type: string
-      ignore_missing: true
-  - convert:
-      tag: convert_o365audit_RecordType_2ef06f8d
-      field: o365audit.RecordType
-      type: string
-      ignore_missing: true
-  - convert:
-      tag: convert_o365audit_UserType_3067be7b
-      field: o365audit.UserType
-      type: string
-      ignore_missing: true
   - set:
       field: event.provider
       description: UserType contains info about event.provider and not user. Populate event.provider if not already present.
@@ -1552,94 +1512,6 @@ processors:
       if: ctx.event?.provider == null && ctx.o365audit?.UserType != null && ctx.o365audit.UserType != ''
       tag: set_event_provider
       ignore_empty_value: true
-  - foreach:
-      tag: foreach_o365audit_Actor_cea9f90a
-      field: o365audit.Actor
-      if: ctx.o365audit?.Actor instanceof List
-      processor:
-        convert:
-          field: _ingest._value.Type
-          tag: convert_actor_type_to_string
-          type: string
-          ignore_missing: true
-  - foreach:
-      tag: foreach_o365audit_Target_0a80e51c
-      field: o365audit.Target
-      if: ctx.o365audit?.Target instanceof List
-      processor:
-        convert:
-          field: _ingest._value.Type
-          tag: convert_target_type_to_string
-          type: string
-          ignore_missing: true
-  - script:
-      tag: script_cadf6d43
-      description: Ensure that versions are not rendered with e-notation, general fallback for all other cases.
-      if: ctx.o365audit?.Version != null
-      source: |-
-        if (ctx.o365audit.Version instanceof double) {
-          ctx.o365audit.Version = ((long)ctx.o365audit.Version).toString();
-        } else {
-          ctx.o365audit.Version = ctx.o365audit.Version.toString();
-        }
-  - script:
-      tag: script_631a7dd5
-      description: Ensure that internal logon types are not rendered with e-notation, general fallback for all other cases.
-      if: ctx.o365audit?.InternalLogonType != null
-      source: |-
-        if (ctx.o365audit.InternalLogonType instanceof double) {
-          ctx.o365audit.InternalLogonType = ((long)ctx.o365audit.InternalLogonType).toString();
-        } else {
-          ctx.o365audit.InternalLogonType = ctx.o365audit.InternalLogonType.toString();
-        }
-  - script:
-      tag: script_eab6f972
-      description: Ensure that logon types are not rendered with e-notation, general fallback for all other cases.
-      if: ctx.o365audit?.LogonType != null
-      source: |-
-        if (ctx.o365audit.LogonType instanceof double) {
-          ctx.o365audit.LogonType = ((long)ctx.o365audit.LogonType).toString();
-        } else {
-          ctx.o365audit.LogonType = ctx.o365audit.LogonType.toString();
-        }
-  - script:
-      tag: script_2a18231b
-      description: Ensure that user IDs are not rendered with e-notation, general fallback for all other cases.
-      if: ctx.o365audit?.ActorYammerUserId != null
-      source: |-
-        if (ctx.o365audit.ActorYammerUserId instanceof double) {
-          ctx.o365audit.ActorYammerUserId = ((long)ctx.o365audit.ActorYammerUserId).toString();
-        } else {
-          ctx.o365audit.ActorYammerUserId = ctx.o365audit.ActorYammerUserId.toString();
-        }
-  - script:
-      tag: script_61d54c44
-      description: Ensure that network IDs are not rendered with e-notation, general fallback for all other cases.
-      if: ctx.o365audit?.YammerNetworkId != null
-      source: |-
-        if (ctx.o365audit.YammerNetworkId instanceof double) {
-          ctx.o365audit.YammerNetworkId = ((long)ctx.o365audit.YammerNetworkId).toString();
-        } else {
-          ctx.o365audit.YammerNetworkId = ctx.o365audit.YammerNetworkId.toString();
-        }
-  - script:
-      tag: convert_runningtime
-      description: Ensure that RunningTime is not rendered with e-notation or other numeric
-      if: ctx.o365audit?.RunningTime != null
-      source: |-
-        if (ctx.o365audit.RunningTime instanceof double) {
-          ctx.o365audit.RunningTime = ((long)ctx.o365audit.RunningTime).toString();
-        } else {
-          ctx.o365audit.RunningTime = ctx.o365audit.RunningTime.toString();
-        }
-  - script:
-      tag: convert_operationcount
-      description: Ensure that OperationCount is rendered as a long
-      if: ctx.o365audit?.OperationCount != null
-      source: |-
-        if (ctx.o365audit.OperationCount instanceof Number) {
-          ctx.o365audit.OperationCount = ((Number)ctx.o365audit.OperationCount).longValue();
-        }
   - append:
       field: email.message_id
       value: "{{{o365audit.InternetMessageId}}}"
@@ -1717,26 +1589,43 @@ processors:
   - script:
       tag: script_item_attachments
       if: ctx.o365audit?.Item?.Attachments != null && ctx.o365audit.Item.Attachments != ''
-      description: Parse attachments from Item.Attachments.
+      description: >-
+        Parse attachments from Item.Attachments. Uses string operations instead of
+        a regex to avoid hitting the Painless regex character limit on long filenames
+        that contain parentheses (e.g. versioned document names).
       source: |-
         ctx.email = ctx.email ?: [:];
         ctx.email.attachments = [];
-        
-        // Split semicolon-delimited attachment string into individual attachment entries
+
         def attachmentList = ctx.o365audit.Item.Attachments.splitOnToken(';');
-        
+
         for (def attachment : attachmentList) {
+          def att = attachment.trim();
+          if (att.isEmpty() || !att.endsWith(')')) continue;
+
+          // Find the size marker at the end: " (<digits>b)"
+          int lastSep = att.lastIndexOf(' (');
+          if (lastSep < 0) continue;
+
+          def maybeSize = att.substring(lastSep + 2, att.length() - 1);
+          if (!maybeSize.endsWith('b')) continue;
+
+          def sizeStr = maybeSize.substring(0, maybeSize.length() - 1);
+          long sizeVal;
+          try { sizeVal = Long.parseLong(sizeStr); } catch (Exception e) { continue; }
+
+          def filename = att.substring(0, lastSep).trim();
+          if (filename.isEmpty()) continue;
+
+          int dotIdx = filename.lastIndexOf('.');
+          if (dotIdx < 0) continue;
+
           def attachmentObj = [:];
-          
-          // Parse pattern: "filename.extension (sizeb)"
-          def matcher = /^(.+?)\.([^.]+)\s*\((\d+)b\)$/.matcher(attachment);
-          if (matcher.matches()) {
-            attachmentObj.file = [:];
-            attachmentObj.file.extension = matcher.group(2);
-            attachmentObj.file.name = matcher.group(1) + '.' + matcher.group(2);
-            attachmentObj.file.size = Long.parseLong(matcher.group(3));
-            ctx.email.attachments.add(attachmentObj);
-          } 
+          attachmentObj.file = [:];
+          attachmentObj.file.extension = filename.substring(dotIdx + 1);
+          attachmentObj.file.name = filename;
+          attachmentObj.file.size = sizeVal;
+          ctx.email.attachments.add(attachmentObj);
         }
       on_failure:
         - append:
@@ -1830,28 +1719,6 @@ processors:
         - remove:
             tag: remove_o365audit_Data_sip_95693a2c
             field: o365audit.Data.sip
-            ignore_missing: true
-  - convert:
-      tag: convert_o365_audit_SensitivityLabelEventData_ActionSourceDetail_d6510954
-      field: o365.audit.SensitivityLabelEventData.ActionSourceDetail
-      type: long
-      ignore_missing: true
-      if: ctx.o365?.audit?.SensitivityLabelEventData?.ActionSourceDetail != ''
-      on_failure:
-        - remove:
-            tag: remove_o365_audit_SensitivityLabelEventData_ActionSourceDetail_ac8ae560
-            field: o365.audit.SensitivityLabelEventData.ActionSourceDetail
-            ignore_missing: true
-  - convert:
-      tag: convert_o365_audit_SensitivityLabelEventData_LabelEventType_d04ddf88
-      field: o365.audit.SensitivityLabelEventData.LabelEventType
-      type: long
-      ignore_missing: true
-      if: ctx.o365?.audit?.SensitivityLabelEventData?.LabelEventType != ''
-      on_failure:
-        - remove:
-            tag: remove_o365_audit_SensitivityLabelEventData_LabelEventType_468846e8
-            field: o365.audit.SensitivityLabelEventData.LabelEventType
             ignore_missing: true
   - date:
       tag: date_o365audit_Data_at_to_o365audit_Data_at_650b1b31
@@ -2131,50 +1998,12 @@ processors:
       tag: rename_messages_exchange
       description: 'move generic Messages field to the ExchangeAggregatedMessages field type'
       if: ctx.o365audit?.Messages != null && ctx.o365audit.RecordType == "50"
-  - script:
-      tag: convert_exchange_message_size_to_long
-      if: ctx.o365audit?.ExchangeAggregatedMessages != null
-      lang: painless
-      source: |
-        for (def i = 0; i < ctx.o365audit.ExchangeAggregatedMessages.length; i++) {
-          if (ctx.o365audit.ExchangeAggregatedMessages[i].MessageItems == null) {
-             continue;
-          }
-          for (def j = 0; j < ctx.o365audit.ExchangeAggregatedMessages[i].MessageItems.length; j++) {
-            def size = ctx.o365audit.ExchangeAggregatedMessages[i].MessageItems[j].SizeInBytes;
-            if (size instanceof String) {
-              ctx.o365audit.ExchangeAggregatedMessages[i].MessageItems[j].SizeInBytes = Long.parseLong(size);
-            } else {
-              ctx.o365audit.ExchangeAggregatedMessages[i].MessageItems[j].SizeInBytes = (long)size;
-            }
-          }
-        }
-
   - rename:
       field: o365audit.Folders
       target_field: o365audit.ExchangeAggregatedFolders
       tag: rename_folders_exchange
       description: 'move generic Folders field to the O365 ExchangeAggregatedFolders field type'
       if: ctx.o365audit?.Folders != null && ctx.o365audit.RecordType == "50"
-  - script:
-      tag: convert_exchange_folder_size_to_long
-      if: ctx.o365audit?.ExchangeAggregatedFolders != null
-      lang: painless
-      source: |
-        for (def i = 0; i < ctx.o365audit.ExchangeAggregatedFolders.length; i++) {
-          if (ctx.o365audit.ExchangeAggregatedFolders[i].FolderItems == null) {
-              continue;
-          }
-          for (def j = 0; j < ctx.o365audit.ExchangeAggregatedFolders[i].FolderItems.length; j++) {
-            def size = ctx.o365audit.ExchangeAggregatedFolders[i].FolderItems[j].SizeInBytes;
-            if (size instanceof String) {
-              ctx.o365audit.ExchangeAggregatedFolders[i].FolderItems[j].SizeInBytes = Long.parseLong(size);
-            } else {
-              ctx.o365audit.ExchangeAggregatedFolders[i].FolderItems[j].SizeInBytes = (long)size;
-            }
-          }
-        }
-
   - script:
       description: Handle _tmp.entities.ThreatDetectionMethods containing list of lists.
       lang: painless

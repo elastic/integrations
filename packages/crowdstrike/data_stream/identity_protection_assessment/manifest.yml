@@ -27,8 +27,7 @@ streams:
         type: text
         title: Identity data sources
         description: >-
-          DataSource values used to discover domains using the Identity Protection GraphQL API.
-          Allowed values include: `SNIFFER`, `ACTIVE_DIRECTORY`, `ADFS`, `OKTA`, `AZURE`, `PING_IDENTITY`, `AWS`.
+          DataSource values used to discover domains using the Identity Protection GraphQL API. Allowed values include: `SNIFFER`, `ACTIVE_DIRECTORY`, `ADFS`, `OKTA`, `AZURE`, `PING_IDENTITY`, `AWS`.
         multi: true
         required: false
         show_user: true
@@ -49,6 +48,15 @@ streams:
         show_user: false
         description: >-
           The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. Disabling the request tracer will delete any stored traces. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
+      - name: max_executions
+        type: integer
+        title: Maximum Executions
+        description: >-
+          Maximum number of CEL program re-evaluations per collection interval. High-volume environments with large result sets may need a higher value to complete pagination within a single interval.
+        default: 1000
+        multi: false
+        required: true
+        show_user: false
       - name: tags
         type: text
         title: Tags
@@ -79,10 +87,7 @@ streams:
         show_user: true
         title: Populate nested assessment factors
         description: >-
-          When enabled, duplicates risk factor entries into `crowdstrike.idp.security_assessment.assessment_factors_nested`
-          as an Elasticsearch [nested](https://www.elastic.co/guide/en/elasticsearch/reference/current/nested.html) field,
-          so you can run queries that correlate `risk_factor_type`, `likelihood`, and `severity` within the same factor object.
-          When disabled, only the flattened `assessment_factors` structure is stored.
+          When enabled, duplicates risk factor entries into `crowdstrike.idp.security_assessment.assessment_factors_nested` as an Elasticsearch [nested](https://www.elastic.co/guide/en/elasticsearch/reference/current/nested.html) field, so you can run queries that correlate `risk_factor_type`, `likelihood`, and `severity` within the same factor object. When disabled, only the flattened `assessment_factors` structure is stored.
         type: bool
         multi: false
         default: false

@@ -1,0 +1,217 @@
+config_version: 2
+interval: {{interval}}
+max_executions: {{max_executions}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if proxy_headers}}
+resource.proxy_headers: {{proxy_headers}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if rate_limit}}
+resource.rate_limit.limit: {{rate_limit}}
+{{/if}}
+resource.url: {{url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+state:
+  initial_interval: {{initial_interval}}
+  batch_size: {{batch_size}}
+  query: >-
+    query GetTimelineEvents($startTime: DateTimeInput, $first: Int, $after: Cursor) {
+      timeline(
+        startTime: $startTime
+        first: $first
+        after: $after
+        sortOrder: ASCENDING
+        activityQuery: {
+          authenticationTypes: [DOMAIN_LOGIN, LDAP_AUTHENTICATION, KERBEROS_AUTHENTICATION]
+        }
+        types: [
+          SUCCESSFUL_AUTHENTICATION
+          FAILED_AUTHENTICATION
+          SERVICE_ACCESS
+          LDAP_SEARCH
+          ACCOUNT_CREATED
+          PASSWORD_CHANGE
+          ACCOUNT_ENABLED
+          ACCOUNT_DISABLED
+          ACCOUNT_LOCKED
+          PRIVILEGE_ESCALATION
+        ]
+      ) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          eventId
+          eventType
+          eventSeverity
+          eventLabel
+          timestamp
+          startTime
+          endTime
+          ... on TimelineUserOnEndpointActivityEvent {
+            userDisplayName
+            userEntity { primaryDisplayName emailAddresses }
+            endpointDisplayName
+            endpointEntity { primaryDisplayName }
+            targetEndpointEntity { primaryDisplayName }
+            ipAddress
+            hostName
+            activeDirectorySiteName
+            networkTag
+            networkType
+            operatingSystemInfo { name displayName family version }
+            protocolType
+            protocolVersion
+            geoLocation { country city }
+            ispClassification
+            ispDomain
+            ipAddressReputations
+            targetServiceDisplayName
+            targetServiceIdentifier
+            targetServiceType
+            targetServiceDescription
+            dataSourceVendorName
+          }
+          ... on TimelineAuthenticationEvent {
+            authenticationType
+            kerberosEncryptionTypes
+            ldapSecurityType
+            tlsVersion
+            smbDialect
+          }
+          ... on TimelineLdapSearchEvent {
+            ldapSearchFilterSample
+            ldapSearchAttributes
+            ldapSearchScope
+            ldapSearchSizeLimit
+            ldapSearchQuerySignatures
+          }
+          ... on TimelineEntityEvent {
+            entity {
+              primaryDisplayName
+              secondaryDisplayName
+              type
+              accounts {
+                ... on ActiveDirectoryAccountDescriptor {
+                  samAccountName
+                  servicePrincipalNames
+                  objectSid
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+redact:
+  fields: ~
+program: |-
+  state.with(
+    (
+      state.?want_more.orValue(false) ?
+        state.start_time
+      :
+        state.?cursor.last_timestamp.orValue(
+          (now - duration(state.initial_interval)).format(time_layout.RFC3339Nano)
+        )
+    ).as(start_time,
+      post_request(
+        state.url.trim_right("/") + "/identity-protection/combined/graphql/v1",
+        "application/json",
+        {
+          "query": state.query,
+          "variables": {
+            "startTime": start_time,
+            "first": int(state.batch_size),
+            ?"after": state.?cursor.end_cursor,
+          },
+        }.encode_json()
+      ).do_request().as(resp, (resp.StatusCode == 200) ?
+        resp.Body.decode_json().as(body,
+          (size(body.?errors.orValue([])) > 0) ?
+            {
+              "events": {
+                "error": {
+                  "code": "graphql",
+                  "message": "POST " + state.url.trim_right("/") + "/identity-protection/combined/graphql/v1: " + body.errors.map(e, string(e.message)).join("; "),
+                },
+              },
+              "want_more": false,
+            }
+          : has(body.?data.timeline) ?
+            {
+              "events": body.data.timeline.?nodes.orValue([]).map(node,
+                {
+                  "message": node.encode_json(),
+                }
+              ),
+              "start_time": start_time,
+              "cursor": {
+                ?"end_cursor": body.data.timeline.pageInfo.hasNextPage ?
+                  optional.of(body.data.timeline.pageInfo.endCursor)
+                :
+                  optional.none(),
+                ?"last_timestamp": (!body.data.timeline.pageInfo.hasNextPage && body.data.timeline.?nodes.orValue([]).size() > 0) ?
+                  optional.of(body.data.timeline.nodes.last().timestamp)
+                :
+                  state.?cursor.last_timestamp,
+              },
+              "want_more": body.data.timeline.pageInfo.hasNextPage,
+            }
+          :
+            {
+              "events": [],
+              "want_more": false,
+            }
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "POST " + state.url.trim_right("/") + "/identity-protection/combined/graphql/v1: " + (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "want_more": false,
+        }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -1,0 +1,294 @@
+---
+description: >-
+  Kolide audit_log ingest pipeline. Normalizes REST API (CEL) and webhook
+  deliveries into a common shape, then delegates webhook-specific extraction to
+  webhook.yml and description parsing to extended-mappings.yml. Event names are
+  documented at https://www.kolide.com/docs/admins/settings-admin-tools/audit-log.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.4.0'
+
+  # --- CEL input only (Agentless metadata + collector error placeholders) ---
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  # --- end CEL-only ---
+
+  # Webhook envelope: root `event` is a string (e.g. audit_log.recorded) and
+  # collides with the ECS `event` object. Move envelope fields into `json` so
+  # both inputs share the same working shape before webhook.yml runs.
+  - rename:
+      field: event
+      tag: rename_webhook_event_envelope
+      target_field: json.event
+      ignore_missing: true
+      if: ctx.event instanceof String
+      description: Move the webhook envelope `event` (a string) out of the way of the ECS `event` object.
+  - script:
+      lang: painless
+      tag: move_webhook_envelope_to_json
+      if: ctx.json?.event != null && ctx.data != null
+      description: Move the remaining webhook envelope fields into the working json object. event.original is set by the input when preserve_original_event is enabled.
+      source: |-
+        if (ctx.containsKey('id')) { ctx.json.id = ctx.remove('id'); }
+        if (ctx.containsKey('timestamp')) { ctx.json.timestamp = ctx.remove('timestamp'); }
+        if (ctx.containsKey('data')) { ctx.json.data = ctx.remove('data'); }
+
+  # CEL/API path (JSE00001): `message` is a JSON string of one audit_log object.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json_cel
+      if: ctx.json == null && ctx.event?.original != null
+      description: Decode the CEL message (a JSON string of one audit_log object) into the working json object.
+
+  # --- S3 (Log Pipeline) input only ---
+  # aws-s3 deliveries carry the envelope {type, timestamp, data}. Lift `data` up
+  # to json.* and map the flat actor/IP fields the API path expects nested / from
+  # the webhook branch.
+  - pipeline:
+      name: '{{ IngestPipeline "s3" }}'
+      tag: dispatch_s3
+      if: ctx.json?.type == 'audit_log'
+  # --- end S3-only ---
+
+  # Common normalization: @timestamp and event.id from the audit_log object.
+  - date:
+      field: json.timestamp
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: date_timestamp
+      if: ctx.json?.timestamp != null
+
+  # event.id: webhook envelope ULID (json.id) / API audit_log id (json.id).
+  - rename:
+      field: json.id
+      target_field: event.id
+      tag: rename_event_id
+      ignore_missing: true
+      if: ctx.event?.id == null
+
+  # Webhook path: extract actor, source IP, and message via webhook.yml.
+  - pipeline:
+      name: '{{ IngestPipeline "webhook" }}'
+      tag: dispatch_webhook
+      if: ctx.json?.event != null
+
+  # Actor (API): actor_info plus top-level actor_name on the audit_log object.
+  - rename:
+      field: json.actor_info.actor_name
+      target_field: user.name
+      tag: rename_user_name_api
+      ignore_missing: true
+      if: ctx.user?.name == null
+  - rename:
+      field: json.actor_name
+      target_field: user.name
+      tag: rename_user_name_api_toplevel
+      ignore_missing: true
+      if: ctx.user?.name == null
+  - remove:
+      field: json.actor_name
+      tag: remove_actor_name_toplevel
+      ignore_missing: true
+
+  - rename:
+      field: json.actor_info.actor_email
+      target_field: user.email
+      tag: rename_user_email_api
+      ignore_missing: true
+      if: ctx.user?.email == null
+
+  - rename:
+      field: json.actor_info.actor_type
+      target_field: kolide.audit.actor_type
+      tag: rename_actor_type_api
+      ignore_missing: true
+      if: ctx.kolide?.audit?.actor_type == null
+
+  # Human-readable audit description (API).
+  - rename:
+      field: json.description
+      target_field: message
+      tag: rename_message_api
+      ignore_missing: true
+      if: ctx.message == null
+
+  # Flag non-human actors (ApiKey/System) so automated activity is easy to filter.
+  - set:
+      field: kolide.audit.actor_automated
+      tag: set_actor_automated_true
+      value: true
+      if: ctx.kolide?.audit?.actor_type == 'ApiKey' || ctx.kolide?.audit?.actor_type == 'System'
+  - set:
+      field: kolide.audit.actor_automated
+      tag: set_actor_automated_false
+      value: false
+      if: ctx.kolide?.audit?.actor_type != null && ctx.kolide?.audit?.actor_type != 'ApiKey' && ctx.kolide?.audit?.actor_type != 'System'
+
+  # Source IP geo/ASN enrichment (source.ip is set by the webhook path).
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+      tag: enrich_source_geo
+      if: ctx.source?.ip != null && ctx.source?.geo == null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      tag: enrich_source_asn
+      if: ctx.source?.ip != null && ctx.source?.as == null
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+      tag: rename_source_asn
+      if: ctx.source?.as?.number == null
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+      tag: rename_source_as_org
+      if: ctx.source?.as?.organization?.name == null
+
+  # --- related.* enrichment ---
+  - append:
+      field: related.user
+      tag: append_related_user_name
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_related_user_email
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - append:
+      field: related.ip
+      tag: append_related_ip_source
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+
+  # Parse description into ECS/custom fields; classify event.action per Kolide docs.
+  - pipeline:
+      name: '{{ IngestPipeline "extended-mappings" }}'
+      tag: extended_mappings
+      ignore_missing_pipeline: true
+
+  # Path-agnostic fallback: when extended-mappings.yml leaves event.action unset
+  # (description matched no prefix), default to the generic audit_log so both the
+  # API and webhook paths get ECS categorization from categorize.yml.
+  - set:
+      field: event.action
+      tag: set_event_action_fallback
+      value: audit_log
+      if: ctx.event?.action == null
+
+  # ECS categorization from the resolved event.action.
+  - pipeline:
+      name: '{{ IngestPipeline "categorize" }}'
+      tag: categorize
+      ignore_missing_pipeline: true
+
+  # Deduplication: CEL cursor uses an inclusive (>=) boundary and may re-fetch
+  # the last record; fingerprint event.id so re-collected docs overwrite by _id.
+  - fingerprint:
+      fields:
+        - event.id
+      target_field: _id
+      method: SHA-256
+      tag: fingerprint_event_id
+      if: ctx.event?.id != null && ctx.event.id != ''
+  # S3 (Log Pipeline) audit deliveries carry no id field, so event.id is unset.
+  # Fingerprint the raw object instead, so a re-delivered S3 object (aws-s3 is
+  # at-least-once) deduplicates to the same _id.
+  - fingerprint:
+      fields:
+        - event.original
+      target_field: _id
+      method: SHA-256
+      tag: fingerprint_event_original_s3
+      if: ctx.event?.id == null && ctx.event?.original != null
+
+  # Cleanup temporary fields.
+  - remove:
+      field:
+        - json
+        - data
+      tag: remove_temp_fields
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+  - script:
+      description: Drops null/empty values recursively.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);      
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
