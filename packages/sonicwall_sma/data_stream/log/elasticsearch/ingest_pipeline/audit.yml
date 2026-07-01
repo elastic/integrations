@@ -1,0 +1,223 @@
+---
+description: Pipeline for parsing SonicWall SMA audit events
+processors:
+  - kv:
+      field: message
+      field_split: " (?=[A-Za-z][A-Za-z0-9]+='?)"
+      value_split: '='
+      trim_value: "'"
+      target_field: _temp.audit
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: _temp.audit.Src
+      target_field: source.address
+      ignore_missing: true
+  - rename:
+      field: _temp.audit.Dest
+      target_field: destination.address
+      ignore_missing: true
+  - rename:
+      field: _temp.audit.VirtualHost
+      target_field: url.domain
+      ignore_missing: true
+      if: ctx._temp?.audit?.VirtualHost != null && ctx._temp.audit.VirtualHost != '-' && ctx._temp.audit.VirtualHost != ''
+  - rename:
+      field: _temp.audit.ApplicationName
+      target_field: sonicwall_sma.log.application_name
+      ignore_missing: true
+      if: ctx._temp?.audit?.ApplicationName != null && ctx._temp.audit.ApplicationName != ''
+  - rename:
+      field: _temp.audit.PlatformPrefix
+      target_field: sonicwall_sma.log.platform_prefix
+      ignore_missing: true
+      if: ctx._temp?.audit?.PlatformPrefix != null && ctx._temp.audit.PlatformPrefix != ''
+  - rename:
+      field: _temp.audit.EquipmentId
+      target_field: sonicwall_sma.log.equipment_id
+      ignore_missing: true
+      if: ctx._temp?.audit?.EquipmentId != null && ctx._temp.audit.EquipmentId != '-'
+  - rename:
+      field: _temp.audit.SessionKey
+      target_field: sonicwall_sma.log.session_key
+      ignore_missing: true
+      if: ctx._temp?.audit?.SessionKey != null && ctx._temp.audit.SessionKey != ''
+  - rename:
+      field: _temp.audit.TunnelVersion
+      target_field: sonicwall_sma.log.tunnel.version
+      ignore_missing: true
+  - rename:
+      field: _temp.audit.HTTPVersion
+      target_field: sonicwall_sma.log.http.version_hex
+      ignore_missing: true
+  - dissect:
+      field: _temp.audit.User
+      pattern: '(%{user.email})@(%{user.domain})'
+      if: ctx._temp?.audit?.User != null && ctx._temp.audit.User != '-'
+      ignore_failure: true
+  - set:
+      field: user.name
+      copy_from: user.email
+      if: ctx.user?.email != null && ctx.user?.name == null
+      ignore_empty_value: true
+  - date:
+      field: _temp.audit.StartTime
+      target_field: event.start
+      formats:
+        - dd/MMM/yyyy HH:mm:ss Z
+      if: ctx._temp?.audit?.StartTime != null
+      ignore_failure: true
+  - dissect:
+      field: _temp.audit.Request
+      pattern: '%{http.request.method} %{url.original} HTTP/%{http.version}'
+      if: ctx._temp?.audit?.Request != null
+      ignore_failure: true
+  - set:
+      field: http.request.method
+      copy_from: _temp.audit.Method
+      if: ctx.http?.request?.method == null && ctx._temp?.audit?.Method != null
+      ignore_empty_value: true
+  - convert:
+      field: _temp.audit.Status
+      target_field: http.response.status_code
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: _temp.audit.Bytes
+      target_field: http.response.bytes
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: _temp.audit.SrcBytes
+      target_field: source.bytes
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: _temp.audit.DstBytes
+      target_field: destination.bytes
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - grok:
+      field: source.address
+      patterns:
+        - '^%{IP:source.ip}:%{POSINT:source.port:long}$'
+        - '^%{IP:source.ip}$'
+      ignore_missing: true
+      ignore_failure: true
+  - grok:
+      field: destination.address
+      patterns:
+        - '^%{IP:destination.ip}:%{POSINT:destination.port:long}$'
+        - '^%{IP:destination.ip}$'
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: event.action
+      copy_from: _temp.audit.Command
+      if: ctx._temp?.audit?.Command != null
+      ignore_empty_value: true
+  - grok:
+      field: _temp.audit.Command
+      patterns:
+        - '^%{DATA:_temp.audit.command_family}:%{WORD:network.transport}$'
+      if: ctx._temp?.audit?.Command != null
+      ignore_failure: true
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+  - append:
+      field: event.category
+      value: network
+      allow_duplicates: false
+      if: ctx._temp?.audit?.Command != null
+  - append:
+      field: event.type
+      value: connection
+      allow_duplicates: false
+      if: ctx._temp?.audit?.Command != null
+  - append:
+      field: event.category
+      value: web
+      allow_duplicates: false
+      if: ctx._temp?.audit?.Request != null
+  - append:
+      field: event.type
+      value: access
+      allow_duplicates: false
+      if: ctx._temp?.audit?.Request != null
+  - set:
+      field: network.protocol
+      value: http
+      if: ctx._temp?.audit?.Request != null
+  - set:
+      field: event.action
+      copy_from: http.request.method
+      if: ctx.event?.action == null && ctx.http?.request?.method != null
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx._temp?.audit?.Error == '0'
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx._temp?.audit?.Error != null && ctx._temp.audit.Error != '0'
+  - set:
+      field: error.code
+      copy_from: _temp.audit.Error
+      if: ctx._temp?.audit?.Error != null && ctx._temp.audit.Error != '0'
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.event?.outcome == null && ctx.http?.response?.status_code != null && ctx.http.response.status_code < 400
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.event?.outcome == null && ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400
+  - script:
+      lang: painless
+      if: ctx._temp?.audit?.Duration != null
+      source: |
+        try {
+          def seconds = Double.parseDouble(ctx._temp.audit.Duration.toString());
+          ctx.event = ctx.event != null ? ctx.event : new HashMap();
+          ctx.event.duration = (long)(seconds * 1000000000L);
+        } catch (Exception ignored) {
+        }
+  - script:
+      lang: painless
+      if: ctx.source?.bytes != null || ctx.destination?.bytes != null
+      source: |
+        long total = 0L;
+        if (ctx.source?.bytes != null) {
+          total += ((Number) ctx.source.bytes).longValue();
+        }
+        if (ctx.destination?.bytes != null) {
+          total += ((Number) ctx.destination.bytes).longValue();
+        }
+        ctx.network = ctx.network != null ? ctx.network : new HashMap();
+        ctx.network.bytes = total;
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - remove:
+      field:
+        - _temp.audit
+      ignore_missing: true
