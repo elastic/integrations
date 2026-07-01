@@ -1,0 +1,194 @@
+{
+    "id": "aws_lambda_otel-activity-ml",
+    "type": "ml-module",
+    "migrationVersion": {
+        "search": "7.9.3"
+    },
+    "references": [],
+    "attributes": {
+        "id": "aws_lambda_otel-activity-ml",
+        "title": "AWS Lambda function errors and throttles (OpenTelemetry)",
+        "description": "Detect anomalous rates of Lambda errors, throttles, and dead-letter failures (the per-bucket Sum statistic) streamed from CloudWatch via the OpenTelemetry firehose receiver. Each function is modelled against its own history, so an elevation in error or throttle rate that is abnormal for that function is caught even when it stays below the fixed error-rate alert thresholds.",
+        "type": "AWS metrics",
+        "logo": {
+            "icon": "logoAWSMono"
+        },
+        "defaultIndexPattern": "metrics-aws.lambda.otel-*",
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "term": {
+                            "Namespace": "AWS/Lambda"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "FunctionName"
+                        }
+                    }
+                ],
+                "must_not": {
+                    "terms": {
+                        "_tier": [
+                            "data_frozen",
+                            "data_cold"
+                        ]
+                    }
+                }
+            }
+        },
+        "jobs": [
+            {
+                "id": "aws_lambda_function_error_anomaly",
+                "config": {
+                    "groups": [
+                        "aws",
+                        "lambda",
+                        "otel"
+                    ],
+                    "description": "AWS Lambda: detect functions producing unusual rates of errors, throttles, or dead-letter failures relative to that function's own history. The threshold-based alert rules cover hard error-rate and throttle-rate breaches; this job catches per-function rate elevations that drift below any fixed threshold, with the function, region, and account surfaced as influencers for attribution.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "summary_count_field_name": "doc_count",
+                        "detectors": [
+                            {
+                                "detector_description": "Anomalous error rate",
+                                "function": "high_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/Lambda/Errors",
+                                "by_field_name": "FunctionName",
+                                "partition_field_name": "cloud.region"
+                            },
+                            {
+                                "detector_description": "Anomalous throttle rate",
+                                "function": "high_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/Lambda/Throttles",
+                                "by_field_name": "FunctionName",
+                                "partition_field_name": "cloud.region"
+                            },
+                            {
+                                "detector_description": "Anomalous dead-letter delivery failures",
+                                "function": "high_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/Lambda/DeadLetterErrors",
+                                "by_field_name": "FunctionName",
+                                "partition_field_name": "cloud.region"
+                            }
+                        ],
+                        "influencers": [
+                            "FunctionName",
+                            "cloud.region",
+                            "cloud.account.id"
+                        ]
+                    },
+                    "analysis_limits": {
+                        "model_memory_limit": "64mb"
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "model_plot_config": {
+                        "enabled": false,
+                        "annotations_enabled": true
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-aws-lambda-otel-activity-ml"
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-aws_lambda_function_error_anomaly",
+                "job_id": "aws_lambda_function_error_anomaly",
+                "config": {
+                    "job_id": "aws_lambda_function_error_anomaly",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "indices_options": {
+                        "allow_no_indices": true
+                    },
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "stat": "Sum"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "MetricName": [
+                                            "Errors",
+                                            "Throttles",
+                                            "DeadLetterErrors"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "FunctionName"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "aggregations": {
+                        "buckets": {
+                            "composite": {
+                                "size": 1000,
+                                "sources": [
+                                    {
+                                        "date": {
+                                            "date_histogram": {
+                                                "field": "@timestamp",
+                                                "fixed_interval": "900s"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cloud.region": {
+                                            "terms": {
+                                                "field": "cloud.region"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "FunctionName": {
+                                            "terms": {
+                                                "field": "FunctionName"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "aggregations": {
+                                "@timestamp": {
+                                    "max": {
+                                        "field": "@timestamp"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/Lambda/Errors": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/Lambda/Errors"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/Lambda/Throttles": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/Lambda/Throttles"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/Lambda/DeadLetterErrors": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/Lambda/DeadLetterErrors"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

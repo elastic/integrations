@@ -1,0 +1,181 @@
+{
+    "id": "aws_lambda_otel-metrics-ml",
+    "type": "ml-module",
+    "migrationVersion": {
+        "search": "7.9.3"
+    },
+    "references": [],
+    "attributes": {
+        "id": "aws_lambda_otel-metrics-ml",
+        "title": "AWS Lambda function performance (OpenTelemetry)",
+        "description": "Detect anomalies in Lambda function duration and concurrency streamed from CloudWatch via the OpenTelemetry firehose receiver. Each function is modelled against its own history, so latency drift and concurrency climbing toward the account limit are caught before they cross the static alert thresholds or begin to throttle.",
+        "type": "AWS metrics",
+        "logo": {
+            "icon": "logoAWSMono"
+        },
+        "defaultIndexPattern": "metrics-aws.lambda.otel-*",
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "term": {
+                            "Namespace": "AWS/Lambda"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "FunctionName"
+                        }
+                    }
+                ],
+                "must_not": {
+                    "terms": {
+                        "_tier": [
+                            "data_frozen",
+                            "data_cold"
+                        ]
+                    }
+                }
+            }
+        },
+        "jobs": [
+            {
+                "id": "aws_lambda_function_performance_anomaly",
+                "config": {
+                    "groups": [
+                        "aws",
+                        "lambda",
+                        "otel"
+                    ],
+                    "description": "AWS Lambda: detect functions whose average duration or concurrency has drifted unusually relative to that function's own history - latency creeping up (a slow dependency, cold-start regression, or larger payloads) or concurrency climbing toward the account limit before throttling begins. The static alert rules cover hard duration/concurrency breaches; this job covers the sub-threshold drift, with the function, region, and account as influencers.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "summary_count_field_name": "doc_count",
+                        "detectors": [
+                            {
+                                "detector_description": "Anomalous average duration (latency drift)",
+                                "function": "high_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/Lambda/Duration",
+                                "by_field_name": "FunctionName",
+                                "partition_field_name": "cloud.region"
+                            },
+                            {
+                                "detector_description": "Anomalous concurrent executions (saturation trajectory)",
+                                "function": "high_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions",
+                                "by_field_name": "FunctionName",
+                                "partition_field_name": "cloud.region"
+                            }
+                        ],
+                        "influencers": [
+                            "FunctionName",
+                            "cloud.region",
+                            "cloud.account.id"
+                        ]
+                    },
+                    "analysis_limits": {
+                        "model_memory_limit": "128mb"
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "model_plot_config": {
+                        "enabled": false,
+                        "annotations_enabled": true
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-aws-lambda-otel-metrics-ml"
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-aws_lambda_function_performance_anomaly",
+                "job_id": "aws_lambda_function_performance_anomaly",
+                "config": {
+                    "job_id": "aws_lambda_function_performance_anomaly",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "indices_options": {
+                        "allow_no_indices": true
+                    },
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "stat": "Average"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "MetricName": [
+                                            "Duration",
+                                            "ConcurrentExecutions"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "FunctionName"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "aggregations": {
+                        "buckets": {
+                            "composite": {
+                                "size": 1000,
+                                "sources": [
+                                    {
+                                        "date": {
+                                            "date_histogram": {
+                                                "field": "@timestamp",
+                                                "fixed_interval": "900s"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cloud.region": {
+                                            "terms": {
+                                                "field": "cloud.region"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "FunctionName": {
+                                            "terms": {
+                                                "field": "FunctionName"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "aggregations": {
+                                "@timestamp": {
+                                    "max": {
+                                        "field": "@timestamp"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/Lambda/Duration": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/Lambda/Duration"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}
