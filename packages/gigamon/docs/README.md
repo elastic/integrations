@@ -210,8 +210,15 @@ An example event for `ami` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| gigamon.ami.TcpRttAppMax |  | double |
+| gigamon.ami.TcpRttAppMean |  | double |
+| gigamon.ami.TcpRttAppMin |  | double |
+| gigamon.ami.TcpRttMax |  | double |
+| gigamon.ami.TcpRttMean |  | double |
+| gigamon.ami.TcpRttMin |  | double |
 | gigamon.ami.app_id |  | keyword |
 | gigamon.ami.app_name |  | keyword |
+| gigamon.ami.app_tags |  | keyword |
 | gigamon.ami.device_inbound_interface |  | keyword |
 | gigamon.ami.dns_ancount |  | long |
 | gigamon.ami.dns_arcount |  | long |
@@ -260,6 +267,7 @@ An example event for `ami` looks as following:
 | gigamon.ami.http_mime_type |  | keyword |
 | gigamon.ami.http_referer |  | keyword |
 | gigamon.ami.http_request_size |  | long |
+| gigamon.ami.http_response_ts |  | double |
 | gigamon.ami.http_rtt |  | double |
 | gigamon.ami.http_server |  | keyword |
 | gigamon.ami.http_server_agent |  | keyword |
