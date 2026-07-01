@@ -1,0 +1,152 @@
+title: Akamai SIEM Logs (OpenTelemetry)
+type: logs
+elasticsearch:
+  # The receiver emits bodymap-mode documents that are routed to the existing
+  # akamai.siem dataset (see the data_stream.dataset stream var), not to an
+  # .otel-suffixed data stream. Fleet's permission generator assumes otelcol
+  # streams write to <dataset>.otel-* and would scope the agent API key to
+  # logs-akamai.siem.otel-<namespace>; dynamic_dataset/dynamic_namespace widen
+  # the grant to logs-*-* (same as OTel input packages) so writes to
+  # logs-akamai.siem-<namespace> are authorized.
+  dynamic_dataset: true
+  dynamic_namespace: true
+streams:
+  - input: otelcol
+    template_path: otelcol.yml.hbs
+    title: Akamai SIEM logs via OTel receiver
+    description: Collect Akamai SIEM logs with the OpenTelemetry akamai_siem receiver. Requires Elastic Agent and Elastic Stack version 9.5.0 or later. Events are routed to the akamai.siem dataset and processed by its ingest pipeline.
+    enabled: false
+    vars:
+      # Variable names mirror the CEL (Beats) `siem` stream so the two
+      # collection modes present the same configuration surface. They render
+      # into the receiver's native config keys in otelcol.yml.hbs.
+      - name: api_host
+        type: text
+        title: API Host
+        description: API Hostname in the form of http(s)://akzz-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.luna.akamaiapis.net without path
+        multi: false
+        required: true
+        show_user: true
+        default: https://akzz-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.luna.akamaiapis.net
+      - name: client_token
+        type: password
+        title: Client Token
+        description: Client token provided by "Credentials" ui
+        multi: false
+        required: true
+        show_user: true
+        secret: true
+      - name: client_secret
+        type: password
+        title: Client Secret
+        description: Client secret provided by "Credentials" ui
+        multi: false
+        required: true
+        show_user: true
+        secret: true
+      - name: access_token
+        type: password
+        title: Access Token
+        description: Access token provided by "Authorizations" ui
+        multi: false
+        required: true
+        show_user: true
+        secret: true
+      - name: config_ids
+        type: text
+        title: Config IDs
+        description: Unique identifier for each security configuration, provided as a semicolon-separated string. To report on more than one configuration, separate the integer identifiers with semicolons. ex. 12892;29182;82912
+        multi: false
+        required: true
+        show_user: true
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: false
+        show_user: true
+        default: 60s
+      - name: interval
+        type: text
+        title: Interval
+        description: Interval at which the logs will be pulled. The value must be between 2m and 1h. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 1h
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: Initial interval to poll for events on the first run. Default is the maximum allowed value of 12 hours (Akamai API limit). Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 12h
+      - name: event_limit
+        type: integer
+        title: Event Limit
+        description: Defines the approximate maximum number of security events each fetch returns. The default limit is 10000 and the maximum limit available is 600000.
+        multi: false
+        required: false
+        show_user: false
+        default: 10000
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+        multi: false
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: >-
+          SSL configuration options, provided as a YAML block (as in the CEL input). This block is rendered into the receiver's `tls:` settings, so it uses the OpenTelemetry configtls schema (e.g. `ca_file`/`ca_pem`, `cert_file`/`cert_pem`, `key_file`/`key_pem`, `insecure_skip_verify`, `min_version`, `max_version`) rather than the Beats `ssl` keys (`certificate_authorities`, `verification_mode`, ...).
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        description: >-
+          Tags added to each event. Mirrors the CEL input's tags; a transform processor writes them into each event so that filters and saved searches relying on tags (e.g. `forwarded`, `akamai-siem`) keep working.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - akamai-siem
+          - forwarded
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: namespace
+        type: text
+        title: Data Stream Namespace
+        description: Must match the namespace configured on the integration policy. The receiver writes this value into each event body so that data_stream.namespace filters and mappings stay consistent with the target data stream.
+        multi: false
+        required: true
+        show_user: true
+        default: default
+      - name: data_stream.dataset
+        type: text
+        title: Dataset
+        description: Dataset used by Fleet to route events. Defaults to akamai.siem so events are processed by the existing Akamai SIEM ingest pipeline and stored in logs-akamai.siem-<namespace>. Do not change unless you know what you are doing.
+        multi: false
+        required: true
+        show_user: false
+        default: akamai.siem
+      - name: enable_storage
+        type: bool
+        title: Enable Cursor Persistence
+        description: >-
+          Declares a file_storage OpenTelemetry extension and references it from the akamai_siem receiver so the receiver persists its poll cursor across agent restarts. Enabled by default. Requires Elastic Stack 9.5.0 or later, where Fleet rewrites the renamed storage-extension reference into the receiver configuration. When disabled, the receiver re-fetches the Initial Interval window after a restart; replayed events are deduplicated by the ingest pipeline's event.original fingerprint within the same backing index.
+        multi: false
+        required: false
+        show_user: false
+        default: true
