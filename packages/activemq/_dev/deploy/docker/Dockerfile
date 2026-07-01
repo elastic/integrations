@@ -1,6 +1,6 @@
-FROM eclipse-temurin:11-jre
+FROM eclipse-temurin:17-jre
 
-ARG SERVICE_VERSION=${SERVICE_VERSION:-5.17.1}
+ARG SERVICE_VERSION=${SERVICE_VERSION:-6.2.2}
 ENV ACTIVEMQ_VERSION=${SERVICE_VERSION}
 
 ENV ACTIVEMQ_HOME /opt/activemq
@@ -31,4 +31,4 @@ EXPOSE $ACTIVEMQ_STOMP $ACTIVEMQ_REST
 HEALTHCHECK --interval=1s --retries=90 CMD nc -w 1 -v 127.0.0.1 $ACTIVEMQ_STOMP </dev/null && \
     nc -w 1 -v 127.0.0.1 $ACTIVEMQ_REST </dev/null
 
-CMD ["/bin/sh", "-c", "bin/activemq console & ./entrypoint.d/entrypoint.sh"]
+CMD ["/bin/sh", "-c", "./entrypoint.d/entrypoint.sh"]
