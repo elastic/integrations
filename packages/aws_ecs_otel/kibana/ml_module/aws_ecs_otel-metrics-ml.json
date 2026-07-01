@@ -1,0 +1,182 @@
+{
+    "id": "aws_ecs_otel-metrics-ml",
+    "type": "ml-module",
+    "migrationVersion": {
+        "search": "7.9.3"
+    },
+    "references": [],
+    "attributes": {
+        "id": "aws_ecs_otel-metrics-ml",
+        "title": "AWS ECS service resources (OpenTelemetry)",
+        "description": "Detect anomalies in ECS service CPU and memory utilization streamed from CloudWatch via the OpenTelemetry firehose receiver. Memory is modelled per service (within its cluster) against its own history to catch slow leaks that affect a service's tasks before any single task crosses a hard threshold - the ECS analogue of per-workload memory modelling on Kubernetes.",
+        "type": "AWS metrics",
+        "logo": {
+            "icon": "logoAWSMono"
+        },
+        "defaultIndexPattern": "metrics-aws.ecs.otel-*",
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "term": {
+                            "Namespace": "AWS/ECS"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "ServiceName"
+                        }
+                    }
+                ],
+                "must_not": {
+                    "terms": {
+                        "_tier": [
+                            "data_frozen",
+                            "data_cold"
+                        ]
+                    }
+                }
+            }
+        },
+        "jobs": [
+            {
+                "id": "aws_ecs_service_resource_anomaly",
+                "config": {
+                    "groups": [
+                        "aws",
+                        "ecs",
+                        "otel"
+                    ],
+                    "description": "AWS ECS: detect services whose CPU or memory utilization has grown unusually relative to that service's own history, partitioned by cluster. Catches slow memory-leak trajectories that affect a service across task recycling before any individual task crosses a hard threshold, and sustained CPU drift. Per-service threshold breaches are covered by the alert rules; this job covers the sub-threshold drift, with the service, cluster, region, and account as influencers.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "summary_count_field_name": "doc_count",
+                        "detectors": [
+                            {
+                                "detector_description": "Anomalous service memory utilization (leak trajectory)",
+                                "function": "high_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/ECS/MemoryUtilization",
+                                "by_field_name": "ServiceName",
+                                "partition_field_name": "ClusterName"
+                            },
+                            {
+                                "detector_description": "Anomalous service CPU utilization",
+                                "function": "high_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/ECS/CPUUtilization",
+                                "by_field_name": "ServiceName",
+                                "partition_field_name": "ClusterName"
+                            }
+                        ],
+                        "influencers": [
+                            "ServiceName",
+                            "ClusterName",
+                            "cloud.region",
+                            "cloud.account.id"
+                        ]
+                    },
+                    "analysis_limits": {
+                        "model_memory_limit": "64mb"
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "model_plot_config": {
+                        "enabled": false,
+                        "annotations_enabled": true
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-aws-ecs-otel-metrics-ml"
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-aws_ecs_service_resource_anomaly",
+                "job_id": "aws_ecs_service_resource_anomaly",
+                "config": {
+                    "job_id": "aws_ecs_service_resource_anomaly",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "indices_options": {
+                        "allow_no_indices": true
+                    },
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "stat": "Average"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "MetricName": [
+                                            "MemoryUtilization",
+                                            "CPUUtilization"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "ServiceName"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "aggregations": {
+                        "buckets": {
+                            "composite": {
+                                "size": 1000,
+                                "sources": [
+                                    {
+                                        "date": {
+                                            "date_histogram": {
+                                                "field": "@timestamp",
+                                                "fixed_interval": "900s"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "ClusterName": {
+                                            "terms": {
+                                                "field": "ClusterName"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "ServiceName": {
+                                            "terms": {
+                                                "field": "ServiceName"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "aggregations": {
+                                "@timestamp": {
+                                    "max": {
+                                        "field": "@timestamp"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/ECS/MemoryUtilization": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/ECS/MemoryUtilization"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/ECS/CPUUtilization": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/ECS/CPUUtilization"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}
