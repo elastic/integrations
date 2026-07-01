@@ -1,0 +1,133 @@
+dataset: kolide.webhook
+title: "webhook"
+type: logs
+streams:
+  - input: http_endpoint
+    title: "Kolide events via webhooks"
+    description: |-
+      Receive all Kolide webhook events on a single endpoint. Events are automatically routed to the appropriate data stream (auth, issues, device, audit) based on the Kolide event type field.
+    template_path: http_endpoint.yml.hbs
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: |-
+          Bind address for the HTTP listener. Use 0.0.0.0 to listen on all interfaces.
+        required: true
+        show_user: true
+        default: localhost
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: |-
+          Bind port for the HTTP listener.
+        required: true
+        show_user: true
+        default: 9550
+      - name: url
+        type: text
+        title: URL Path
+        description: |-
+          The URL path to accept Kolide webhook requests on. Register this path in the Kolide webhook endpoint settings.
+        required: true
+        show_user: true
+        default: /kolide/webhook
+      - name: hmac_header
+        type: text
+        title: HMAC Header
+        description: |-
+          The name of the header that contains the HMAC signature. Kolide places the signature in the `Authorization` header.
+        required: false
+        show_user: false
+        default: Authorization
+      - name: hmac_key
+        type: password
+        title: Webhook Signing Secret
+        description: |-
+          The signing secret from the Kolide webhook endpoint settings. Kolide uses this to compute an HMAC-SHA256 signature over the raw request body and sends it in the `Authorization` header. Shown once when the endpoint is created in Kolide.
+        required: false
+        show_user: true
+        secret: true
+      - name: hmac_type
+        type: text
+        title: HMAC Type
+        description: |-
+          The hash algorithm used for HMAC comparison. Kolide uses `sha256`.
+        required: false
+        show_user: false
+        default: sha256
+      - name: hmac_prefix
+        type: text
+        title: HMAC Prefix
+        description: |-
+          The prefix for the signature value. Kolide sends a bare lowercase hex digest with no prefix, so leave this empty.
+        required: false
+        show_user: false
+        default: ""
+      - name: secret_header
+        type: text
+        title: Webhook Identifier Header
+        description: |-
+          The header Kolide uses to send the per-endpoint identifier. Kolide always uses `X-Kolide-Webhook-Identifier`.
+        required: false
+        show_user: false
+        secret: false
+        default: X-Kolide-Webhook-Identifier
+      - name: secret_value
+        type: password
+        title: Webhook Identifier
+        description: |-
+          The per-endpoint identifier value from the Kolide webhook settings. Kolide sends this in the `X-Kolide-Webhook-Identifier` header on every request.
+        required: false
+        show_user: true
+        secret: true
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        description: |-
+          Preserves a raw copy of the original event, added to the field `event.original`.
+        required: true
+        show_user: true
+        default: false
+      - name: ssl
+        type: yaml
+        title: TLS
+        description: |-
+          Options for enabling TLS for the listening webhook endpoint. See the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for a list of all options.
+        required: false
+        show_user: false
+        default: |
+          enabled: false
+          certificate: "/etc/pki/client/cert.pem"
+          key: "/etc/pki/client/cert.key"
+      - name: tags
+        type: text
+        title: Tags
+        description: |-
+          Tags to include in the published event.
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - forwarded
+          - kolide-webhook
+      - name: processors
+        type: yaml
+        title: Processors
+        description: |-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        required: false
+        show_user: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        description: |-
+          The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging.
+        required: false
+        show_user: false
+elasticsearch:
+  dynamic_dataset: true
+  dynamic_namespace: true
+  index_template:
+    mappings:
+      subobjects: false

@@ -1,0 +1,51 @@
+{
+  "attributes": {
+    "name": "[AWS EC2 OTel] Status check availability 99.5% rolling 30 days",
+    "description": "Per-instance SLO that treats each 5-minute window as healthy when the CloudWatch StatusCheckFailed metric (Maximum statistic) is below 1, meaning neither the system nor instance status check reported a failure. Targets 99.5% of rolling 30-day windows as healthy. This is the primary EC2 platform-availability signal: a failed check indicates AWS-detected impairment requiring recover or reboot. Application-only failures while checks remain at 0 are outside this data source and should be monitored separately.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"aws.ec2.otel\" AND Namespace: \"AWS/EC2\" AND MetricName: \"StatusCheckFailed\" AND stat: \"Maximum\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "metrics.amazonaws.com/AWS/EC2/StatusCheckFailed"
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 1
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "5m"
+    },
+    "tags": [
+      "aws_ec2",
+      "otel"
+    ],
+    "groupBy": [
+      "cloud.region",
+      "InstanceId"
+    ],
+    "artifacts": {
+      "dashboards": [
+        { "id": "aws_ec2_otel-45f45575-d519-4a70-a50c-2195c0c9f916" }
+      ]
+    }
+  },
+  "id": "aws_ec2_otel-status-check-availability-99.5-Rolling30Days",
+  "type": "slo_template"
+}

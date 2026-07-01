@@ -1,4 +1,4 @@
-# Prometheus Input Package
+# Prometheus (Kubernetes)
 
 The Prometheus Input package allows you to collect metrics from [Prometheus Exporters (Collectors)](https://prometheus.io/docs/instrumenting/exporters/) and gives you the flexibility to add custom mappings and ingest pipelines.
 
@@ -107,4 +107,4 @@ For the list of all supported SSL configuration options, check the [Client confi
 
 ### Datastream dataset name
 
-By using the Prometheus Input Package, you can add your own dataset name, to which the events get added. You can collect Prometheus metrics from different services by adding multiple instances of the Input package. Metrics can be filtered based on the dataset name.
+By using this integration, you can add your own dataset name, to which the events get added. You can collect Prometheus metrics from different services by adding multiple instances of the Input package. Metrics can be filtered based on the dataset name.

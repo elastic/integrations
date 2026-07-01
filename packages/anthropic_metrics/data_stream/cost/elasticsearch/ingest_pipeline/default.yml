@@ -1,0 +1,162 @@
+---
+description: Pipeline for parsing Anthropic organization cost report events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+  - script:
+      tag: remove_null_fields
+      lang: painless
+      if: ctx.json != null
+      source: >-
+        if (ctx.json.containsKey('workspace_id') && ctx.json.workspace_id == null) {
+          ctx.json.workspace_id = 'Default';
+        }
+        ctx.json.entrySet().removeIf(e -> e.getValue() == null);
+  - convert:
+      field: json.amount
+      type: double
+      ignore_missing: true
+      tag: convert_amount_to_double
+  - date:
+      field: json.bucket_start_time
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      if: ctx.json?.bucket_start_time != null
+      tag: date_bucket_start_time_to_timestamp
+  - date:
+      field: json.bucket_start_time
+      target_field: anthropic.cost.bucket_start_time
+      formats:
+        - ISO8601
+      if: ctx.json?.bucket_start_time != null
+      tag: date_bucket_start_time
+  - date:
+      field: json.bucket_end_time
+      target_field: anthropic.cost.bucket_end_time
+      formats:
+        - ISO8601
+      if: ctx.json?.bucket_end_time != null
+      tag: date_bucket_end_time
+  - rename:
+      field: json.workspace_id
+      target_field: anthropic.cost.workspace_id
+      ignore_missing: true
+      tag: rename_workspace_id
+  - rename:
+      field: json.description
+      target_field: anthropic.cost.description
+      ignore_missing: true
+      tag: rename_description
+  - rename:
+      field: json.inference_geo
+      target_field: anthropic.cost.inference_geo
+      ignore_missing: true
+      tag: rename_inference_geo
+  - rename:
+      field: json.model
+      target_field: anthropic.cost.model
+      ignore_missing: true
+      tag: rename_model
+  - rename:
+      field: json.service_tier
+      target_field: anthropic.cost.service_tier
+      ignore_missing: true
+      tag: rename_service_tier
+  - rename:
+      field: json.cost_type
+      target_field: anthropic.cost.cost_type
+      ignore_missing: true
+      tag: rename_cost_type
+  - rename:
+      field: json.token_type
+      target_field: anthropic.cost.token_type
+      ignore_missing: true
+      tag: rename_token_type
+  - rename:
+      field: json.context_window
+      target_field: anthropic.cost.context_window
+      ignore_missing: true
+      tag: rename_context_window
+  - rename:
+      field: json.amount
+      target_field: anthropic.cost.amount
+      ignore_missing: true
+      tag: rename_amount
+  - rename:
+      field: json.currency
+      target_field: anthropic.cost.currency
+      ignore_missing: true
+      tag: rename_currency
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category_api
+      value: api
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event_tag
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
