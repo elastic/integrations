@@ -1,0 +1,160 @@
+---
+description: Pipeline for parsing Pulse Connect Secure authentication events
+processors:
+  - append:
+      field: event.category
+      value:
+        - authentication
+  - set:
+      field: event.action
+      value: agent-login
+      if: ctx.message instanceof String && ctx.message.startsWith('Agent login ')
+  - set:
+      field: event.action
+      value: primary-authentication
+      if: ctx.message instanceof String && ctx.message.startsWith('Primary authentication ')
+  - set:
+      field: event.action
+      value: secondary-authentication
+      if: ctx.message instanceof String && ctx.message.startsWith('Secondary authentication ')
+  - set:
+      field: event.action
+      value: login
+      if: ctx.message instanceof String && ctx.message.startsWith('Login ')
+  - set:
+      field: event.action
+      value: source-ip-restriction-check
+      if: ctx.message instanceof String && ctx.message.startsWith('Source IP realm restrictions ')
+  - set:
+      field: event.action
+      value: user-limit-restriction-check
+      if: ctx.message instanceof String && ctx.message.startsWith('User Limit realm restrictions ')
+  - set:
+      field: event.action
+      value: unauthenticated-connection
+      if: ctx.message instanceof String && ctx.message.startsWith('Connection from IP ')
+  - set:
+      field: event.action
+      value: access-denied
+      if: ctx.message instanceof String && ctx.message.startsWith('User ') && ctx.message.contains('denied access as the client version')
+  - append:
+      field: event.type
+      value:
+        - start
+      if: >-
+        ctx.message instanceof String
+        && (
+          ctx.message.startsWith('Agent login ')
+          || ctx.message.startsWith('Primary authentication ')
+          || ctx.message.startsWith('Secondary authentication ')
+          || ctx.message.startsWith('Login ')
+        )
+  - append:
+      field: event.type
+      value:
+        - info
+      if: >-
+        ctx.message instanceof String
+        && (
+          ctx.message.startsWith('Source IP realm restrictions ')
+          || ctx.message.startsWith('User Limit realm restrictions ')
+          || ctx.message.startsWith('Connection from IP ')
+          || (ctx.message.startsWith('User ') && ctx.message.contains('denied access as the client version'))
+        )
+  - set:
+      field: pulse_secure.restriction.type
+      value: source_ip
+      if: ctx.message instanceof String && ctx.message.startsWith('Source IP realm restrictions ')
+  - set:
+      field: pulse_secure.restriction.type
+      value: user_limit
+      if: ctx.message instanceof String && ctx.message.startsWith('User Limit realm restrictions ')
+  - set:
+      field: event.outcome
+      value: success
+      if: >-
+        ctx._tmp?.auth_result != null
+        && (
+          ctx._tmp.auth_result.toLowerCase().contains('success')
+          || ctx._tmp.auth_result.toLowerCase().contains('succeed')
+          || ctx._tmp.auth_result.toLowerCase().contains('pass')
+        )
+  - set:
+      field: event.outcome
+      value: failure
+      if: >-
+        ctx._tmp?.auth_result != null
+        && (
+          ctx._tmp.auth_result.toLowerCase().contains('fail')
+          || ctx._tmp.auth_result.toLowerCase().contains('denied')
+          || ctx._tmp.auth_result.toLowerCase().contains('partial')
+        )
+  - set:
+      field: event.outcome
+      value: success
+      if: >-
+        ctx._tmp?.restriction_result != null
+        && (
+          ctx._tmp.restriction_result.toLowerCase().contains('success')
+          || ctx._tmp.restriction_result.toLowerCase().contains('succeed')
+          || ctx._tmp.restriction_result.toLowerCase().contains('pass')
+        )
+  - set:
+      field: event.outcome
+      value: failure
+      if: >-
+        ctx._tmp?.restriction_result != null
+        && (
+          ctx._tmp.restriction_result.toLowerCase().contains('fail')
+          || ctx._tmp.restriction_result.toLowerCase().contains('denied')
+          || ctx._tmp.restriction_result.toLowerCase().contains('partial')
+        )
+  - append:
+      field: event.category
+      value:
+        - network
+      if: ctx.message instanceof String && ctx.message.startsWith('Connection from IP ')
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.message instanceof String && ctx.message.startsWith('Connection from IP ')
+  - set:
+      field: client.address
+      copy_from: _tmp.connection_ip
+      if: ctx._tmp?.connection_ip != null
+  - set:
+      field: client.ip
+      copy_from: _tmp.connection_ip
+      if: ctx._tmp?.connection_ip != null
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.message instanceof String && ctx.message.startsWith('User ') && ctx.message.contains('denied access as the client version')
+  - set:
+      field: event.reason
+      value: Client version lower than minimum configured
+      if: ctx.message instanceof String && ctx.message.startsWith('User ') && ctx.message.contains('denied access as the client version') && ctx.event?.reason == null
+  - set:
+      field: user.name
+      copy_from: _tmp.denied_user
+      if: ctx._tmp?.denied_user != null && ctx.user?.name == null
+  - script:
+      if: ctx._tmp?.secondary_auth_target instanceof String
+      lang: painless
+      source: |
+        if (!(ctx.pulse_secure?.auth_server instanceof Map) || !(ctx.pulse_secure.auth_server.secondary instanceof Map)) {
+          return;
+        }
+
+        String target = ctx._tmp.secondary_auth_target.trim();
+        if (target.length() == 0) {
+          return;
+        }
+
+        int separator = target.lastIndexOf('/');
+        String method = separator > -1 ? target.substring(separator + 1).trim() : target;
+        if (method.length() == 0) {
+          return;
+        }
+
+        ctx.pulse_secure.auth_server.secondary.name = method;

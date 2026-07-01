@@ -3,7 +3,7 @@ description: Pipeline for parsing Pulse Connect Secure logs
 processors:
   - set:
       field: ecs.version
-      value: '8.11.0'
+      value: '9.3.0'
   - rename:
       field: message
       target_field: event.original
@@ -21,10 +21,127 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - '^(<%{NONNEGINT:log.syslog.priority:long}>%{NUMBER}?|%{SYSLOGTIMESTAMP} %{SYSLOGHOST:host.hostname} %{INT}) %{TIMESTAMP_ISO8601:_tmp.timestamp} (%{IP:observer.ip}|%{HOSTNAME:observer.hostname}) PulseSecure: - - - %{DATE2} - %{SYSLOGHOST:observer.name} - \[%{IPORHOST:client.address}\] (%{DATA}::)?(%{HOSTNAME:user.domain}(?:\\){1,2})?%{USERNAME:user.name}?(@%{USERNAME:user.domain})?\(%{DATA:pulse_secure.realm}?\)\[%{DATA:pulse_secure.role}\](?::?\[%{DATA:pulse_secure.session.id_short}\])? - %{GREEDYDATA:message}'
+        - '^%{SYSLOGTIMESTAMP:_tmp.syslog_header_timestamp} %{NOTSPACE:host.hostname}(?: %{INT})? %{TIMESTAMP_ISO8601:_tmp.timestamp} %{NOTSPACE:_tmp.sender} PulseSecure: - - - %{DATE2:_tmp.device_timestamp} - %{NOTSPACE:observer.name} - \[%{IPORHOST:client.address}\] %{DATA:_tmp.actor_block} - %{GREEDYDATA:message}'
+        - '^<%{NONNEGINT:log.syslog.priority:long}>%{NONNEGINT:log.syslog.version} %{TIMESTAMP_ISO8601:_tmp.timestamp} %{NOTSPACE:_tmp.sender} PulseSecure: - - - %{DATE2:_tmp.device_timestamp} - %{NOTSPACE:observer.name} - \[%{IPORHOST:client.address}\] %{DATA:_tmp.actor_block} - %{GREEDYDATA:message}'
       pattern_definitions:
         TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
         DATE2: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{HOUR}:?%{MINUTE}(?::?%{SECOND})?'
+  - grok:
+      field: _tmp.actor_block
+      patterns:
+        - '^(?:%{DATA:pulse_secure.namespace}::)?%{DATA:_tmp.principal}\(%{DATA:pulse_secure.realm}\)\[%{DATA:pulse_secure.role}\](?:\[%{DATA:pulse_secure.session.id_short}\])?$'
+      ignore_failure: true
+  - script:
+      if: ctx._tmp != null
+      lang: painless
+      source: |
+        String trimToNull(String value) {
+          if (value == null) {
+            return null;
+          }
+          value = value.trim();
+          return value.length() == 0 ? null : value;
+        }
+
+        List splitCommaSeparated(String raw) {
+          raw = trimToNull(raw);
+          if (raw == null) {
+            return null;
+          }
+          List values = new ArrayList();
+          for (String part : raw.splitOnToken(",")) {
+            String value = trimToNull(part);
+            if (value != null) {
+              values.add(value);
+            }
+          }
+          return values.isEmpty() ? null : values;
+        }
+
+        String sender = trimToNull(ctx._tmp.sender);
+        if (sender != null) {
+          if (ctx.observer == null) {
+            ctx.observer = new HashMap();
+          }
+          if (/^((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$/.matcher(sender).matches()) {
+            List observerIps = new ArrayList();
+            observerIps.add(sender);
+            ctx.observer.ip = observerIps;
+          } else {
+            ctx.observer.hostname = sender;
+          }
+        }
+
+        if (ctx.pulse_secure instanceof Map) {
+          String namespace = trimToNull(ctx.pulse_secure.namespace instanceof String ? ctx.pulse_secure.namespace : null);
+          if (namespace == null) {
+            ctx.pulse_secure.remove("namespace");
+          } else {
+            ctx.pulse_secure.namespace = namespace;
+          }
+
+          String realm = trimToNull(ctx.pulse_secure.realm instanceof String ? ctx.pulse_secure.realm : null);
+          if (realm == null) {
+            ctx.pulse_secure.remove("realm");
+          } else {
+            ctx.pulse_secure.realm = realm;
+          }
+
+          String role = trimToNull(ctx.pulse_secure.role instanceof String ? ctx.pulse_secure.role : null);
+          if (role == null) {
+            ctx.pulse_secure.remove("role");
+          } else {
+            ctx.pulse_secure.role = role;
+          }
+
+          if (ctx.pulse_secure.session instanceof Map) {
+            String shortId = trimToNull(ctx.pulse_secure.session.id_short instanceof String ? ctx.pulse_secure.session.id_short : null);
+            if (shortId == null) {
+              ctx.pulse_secure.session.remove("id_short");
+            } else {
+              ctx.pulse_secure.session.id_short = shortId;
+            }
+          }
+        }
+
+        String principal = trimToNull(ctx._tmp.principal instanceof String ? ctx._tmp.principal : null);
+        if (principal != null) {
+          principal = principal.replace("\\\\", "\\");
+          if (ctx.user == null) {
+            ctx.user = new HashMap();
+          }
+          if (principal.contains("@")) {
+            int atIndex = principal.indexOf("@");
+            ctx.user.name = trimToNull(principal.substring(0, atIndex));
+            String domain = trimToNull(principal.substring(atIndex + 1));
+            if (domain != null) {
+              ctx.user.domain = domain;
+            }
+          } else if (principal.contains("\\")) {
+            int separator = principal.lastIndexOf("\\");
+            String domain = trimToNull(principal.substring(0, separator));
+            String name = trimToNull(principal.substring(separator + 1));
+            if (domain != null) {
+              ctx.user.domain = domain;
+            }
+            if (name != null) {
+              ctx.user.name = name;
+            }
+          } else {
+            ctx.user.name = principal;
+          }
+        }
+
+        List roles = null;
+        if (ctx.pulse_secure instanceof Map && ctx.pulse_secure.role instanceof String) {
+          roles = splitCommaSeparated(ctx.pulse_secure.role);
+        }
+        if (roles != null) {
+          if (ctx.user == null) {
+            ctx.user = new HashMap();
+          }
+          ctx.user.roles = roles;
+        }
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
@@ -41,62 +158,155 @@ processors:
   - set:
       field: event.created
       copy_from: '@timestamp'
+  - grok:
+      field: message
+      patterns:
+        - '^Agent login %{WORD:_tmp.auth_result} for %{DATA:_tmp.auth_target} %{SESSION} from %{IP:_tmp.auth_source_ip} with %{GREEDYDATA:user_agent.original}\.?$'
+        - '^VPN Tunneling: Session %{WORD:_tmp.session_state} for user(?: %{DATA:_tmp.vpn_user_label})?\s+%{SESSION} with %{WORD:_tmp.assigned_ip_version} address %{IP:client.nat.ip}(?:, hostname %{GREEDYDATA:host.name})?$'
+        - '^VPN Tunneling: User with IP %{IP:client.nat.ip} connected with %{WORD:pulse_secure.transport_mode} transport mode\.?$'
+        - '^Session resumed from user agent ''%{GREEDYDATA:user_agent.original}'' %{SESSION}\.?$'
+        - '^Login %{WORD:_tmp.auth_result} using auth server %{DATA:pulse_secure.auth_server.primary.name} \(%{DATA:pulse_secure.auth_server.primary.type}\)\. Reason: %{GREEDYDATA:event.reason}$'
+        - '^Login %{WORD:_tmp.auth_result}\. Reason: %{GREEDYDATA:event.reason}$'
+        - '^Primary authentication %{WORD:_tmp.auth_result} for %{DATA:_tmp.auth_target} from %{IP:_tmp.auth_source_ip}$'
+        - '^Primary authentication %{WORD:_tmp.auth_result} for %{GREEDYDATA:_tmp.auth_target}$'
+        - '^Secondary authentication %{WORD:_tmp.auth_result} for %{DATA:_tmp.secondary_auth_target} from %{IP:_tmp.auth_source_ip}$'
+        - '^Source IP realm restrictions %{DATA:_tmp.restriction_result} for %{GREEDYDATA:_tmp.restriction_target}$'
+        - '^User Limit realm restrictions %{DATA:_tmp.restriction_result} for %{GREEDYDATA:_tmp.restriction_target}$'
+        - '^Session timed out for %{DATA:_tmp.session_target} %{SESSION} due to inactivity \(last access at %{DATA:pulse_secure.session.last_access}\)\. %{GREEDYDATA:event.reason}$'
+        - '^Closed connection to %{DATA:_tmp.connection_target} after %{NUMBER:_tmp.connection_seconds:double} seconds, with %{NUMBER:pulse_secure.bandwidth.read:long} bytes read(?: \(in %{NUMBER:pulse_secure.bandwidth.read_chunks:long} chunks\))? and %{NUMBER:pulse_secure.bandwidth.written:long} bytes written(?: \(in %{NUMBER:pulse_secure.bandwidth.written_chunks:long} chunks\))?(?: %{SESSION})?\.?\s*?$'
+        - '^Logout from %{IP:_tmp.logout_ip} %{SESSION}$'
+        - '^WebRequest completed, %{WORD:http.request.method} to %{NOTSPACE:url.original} from %{IP:destination.ip} result=%{NUMBER:http.response.status_code:long} sent=%{NUMBER:pulse_secure.web_request.bytes_sent:long} received=%{NUMBER:pulse_secure.web_request.bytes_received:long} in %{NUMBER:_tmp.web_seconds:double} seconds$'
+        - '^Session:\[%{DATA:pulse_secure.session.id_short}\] for user:\[%{DATA:_tmp.deleted_user}\] with roles:\[%{DATA:_tmp.deleted_roles}\] deleted\. Bandwidth consumed \[%{DATA:_tmp.bandwidth_consumed}\] bytes$'
+        - '^Session:\[%{DATA:pulse_secure.session.id_short}\] deleted\. Bandwidth consumed \[%{DATA:_tmp.bandwidth_consumed}\] bytes$'
+        - '^:Client connection done for %{NOTSPACE:pulse_secure.session.id}, reason code %{NUMBER:pulse_secure.connection.reason_code:long}$'
+        - '^Session created for user: \[%{DATA:_tmp.created_user}\] from \[%{IP:_tmp.auth_source_ip}\] with primary auth-server type: \[%{DATA:pulse_secure.auth_server.primary.type}\], primary auth-server name: \[%{DATA:pulse_secure.auth_server.primary.name}\], secondary auth-server type: \[%{DATA:pulse_secure.auth_server.secondary.type}\], secondary auth-servername: \[%{DATA:pulse_secure.auth_server.secondary.name}\], secondary auth-server user: \[%{DATA:pulse_secure.auth_server.secondary.user}\], mac-address: \[%{DATA:client.mac}\]\.$'
+        - '^Host Checker Compliance Result - \[''%{DATA:pulse_secure.host_checker.status}''\] on host \[''%{IP:_tmp.host_checker_host}''\] from address \[''%{DATA:client.mac}''\] for user \[''%{DATA:_tmp.host_checker_user}''\], passed_hc_policies:\[''%{DATA:_tmp.hc_passed}''\], failed_hc_policies:\[''%{DATA:_tmp.hc_failed}''\], failed_reasons: \[''%{GREEDYDATA:_tmp.hc_failed_reasons}''\]\.$'
+        - '^Host Checker policy ''%{DATA:pulse_secure.host_checker.policy}'' %{WORD:_tmp.host_checker_result} on host ''%{IP:_tmp.host_checker_host}'' address ''%{DATA:client.mac}''\s+for user ''%{DATA:_tmp.host_checker_user}''(?: reason ''%{DATA:_tmp.hc_failed_reasons}'')?(?:\s+session ''%{NOTSPACE:pulse_secure.session.id}'')?\.?$'
+        - '^Connection from IP %{IP:_tmp.connection_ip} not authenticated yet \(URL=%{DATA:url.original}\)$'
+        - '^Syslog server %{IP:destination.ip} \(facility %{DATA:pulse_secure.syslog.facility}, filter %{DATA:pulse_secure.syslog.filter}, type %{WORD:pulse_secure.syslog.type}, interface %{DATA:pulse_secure.syslog.interface}\) removed from Events logs$'
+        - '^No new virus signature list available from ''%{GREEDYDATA:url.original}''\.$'
+        - '^The current virus signature list imported %{WORD:_tmp.operation_result}\.$'
+        - '^The current virus signature list downloaded %{WORD:_tmp.operation_result} from ''%{GREEDYDATA:url.original}''$'
+        - '^Integrity Checker Tool: Periodic Scan %{WORD:_tmp.integrity_phase}!$'
+        - '^Integrity Scan Completed: Integrity Scan Results : Matched Files %{NUMBER:pulse_secure.integrity.matched_files:long}, Newly Detected Files %{NUMBER:pulse_secure.integrity.new_files:long}, Mismatched Files %{NUMBER:pulse_secure.integrity.mismatched_files:long}$'
+        - '^User Accounts modified\. Removed username %{DATA:user.target.name} from authentication server %{DATA:pulse_secure.auth_server.primary.name}\.$'
+        - '^User %{DATA:_tmp.denied_user} denied access as the client version ''%{DATA:pulse_secure.client.version}'' is lower than the minimum client version configured$'
+      pattern_definitions:
+        SESSION: '\(session:\s*%{NOTSPACE:pulse_secure.session.id}\)'
+      ignore_failure: true
+  - grok:
+      field: _tmp.connection_target
+      patterns:
+        - '^%{IP:destination.ip}$'
+        - '^%{DATA:pulse_secure.connection.target} port %{INT:destination.port:long}$'
+      ignore_failure: true
+      if: ctx._tmp?.connection_target != null && ctx._tmp.connection_target != ''
+  - set:
+      field: destination.address
+      copy_from: _tmp.connection_target
+      if: ctx._tmp?.connection_target != null
+  - set:
+      field: event.kind
+      value: event
+  - pipeline:
+      name: '{{ IngestPipeline "auth" }}'
+      if: >-
+        if (!(ctx.message instanceof String)) {
+          return false;
+        }
+        String message = ctx.message;
+        return message.startsWith("Agent login ")
+          || message.startsWith("Primary authentication ")
+          || message.startsWith("Secondary authentication ")
+          || message.startsWith("Login ")
+          || message.startsWith("Source IP realm restrictions ")
+          || message.startsWith("User Limit realm restrictions ")
+          || message.startsWith("Connection from IP ")
+          || (message.startsWith("User ") && message.contains("denied access as the client version"));
+  - pipeline:
+      name: '{{ IngestPipeline "vpn" }}'
+      if: "ctx.message instanceof String && ctx.message.startsWith('VPN Tunneling: ')"
+  - pipeline:
+      name: '{{ IngestPipeline "session" }}'
+      if: >-
+        if (!(ctx.message instanceof String)) {
+          return false;
+        }
+        String message = ctx.message;
+        return message.startsWith("Session resumed")
+          || message.startsWith("Session timed out")
+          || message.startsWith("Closed connection to ")
+          || message.startsWith("Logout from ")
+          || message.startsWith("Session:[")
+          || message.startsWith(":Client connection done")
+          || message.startsWith("Session created for user:");
+  - pipeline:
+      name: '{{ IngestPipeline "host_checker" }}'
+      if: ctx.message instanceof String && (ctx.message.startsWith('Host Checker Compliance Result') || ctx.message.startsWith('Host Checker policy '))
+  - pipeline:
+      name: '{{ IngestPipeline "config" }}'
+      if: >-
+        if (!(ctx.message instanceof String)) {
+          return false;
+        }
+        String message = ctx.message;
+        return message.startsWith("Syslog server ")
+          || message.startsWith("No new virus signature list")
+          || message.startsWith("The current virus signature list imported")
+          || message.startsWith("The current virus signature list downloaded")
+          || message.startsWith("Integrity Checker Tool: Periodic Scan Started")
+          || message.startsWith("Integrity Checker Tool: Periodic Scan Finished")
+          || message.startsWith("Integrity Scan Completed")
+          || message.startsWith("User Accounts modified");
+  - pipeline:
+      name: '{{ IngestPipeline "web_request" }}'
+      if: ctx.message instanceof String && ctx.message.startsWith('WebRequest completed,')
+  - set:
+      field: network.type
+      copy_from: _tmp.assigned_ip_version
+      if: ctx._tmp?.assigned_ip_version != null
+  - set:
+      field: url.full
+      copy_from: url.original
+      if: ctx.url?.original instanceof String && ctx.url.original.contains('://')
+  - set:
+      field: url.path
+      copy_from: url.original
+      if: ctx.url?.path == null && ctx.url?.original instanceof String && ctx.url.original.startsWith('/')
+  - append:
+      field: event.category
+      value:
+        - network
+      if: ctx.event?.category == null
+  - append:
+      field: event.type
+      value:
+        - info
+      if: ctx.event?.type == null
+  - lowercase:
+      field: network.type
+      ignore_missing: true
+  - uri_parts:
+      field: url.full
+      ignore_failure: true
+      if: ctx.url?.full != null
   - convert:
       field: client.address
       target_field: client.ip
       type: ip
       ignore_missing: true
-  - set:
-      field: event.kind
-      value: event
-  - set:
-      field: event.category
-      value: [network]
-  - grok:
-      field: message
-      patterns:
-        - 'Agent login %{WORD:_tmp.outcome} for %{DATA}%{SESSION} from %{IP} with %{GREEDYDATA:user_agent.original}.'
-        - 'VPN Tunneling: Session %{WORD:_tmp.type} for user %{SESSION} with %{NOTSPACE:network.type} address %{IP:client.nat.ip}(, hostname %{HOSTNAME:host.name})?'
-        - "Session %{WORD} from user agent '%{GREEDYDATA:user_agent.original}' %{SESSION}."
-        - 'Login %{WORD:_tmp.outcome}( %{GREEDYDATA})?. Reason: %{GREEDYDATA:event.reason}'
-        - '^Primary authentication %{WORD_tmp.outcome}'
-        - '%{SESSION}'
-      pattern_definitions:
-        SESSION: \(session:%{SPACE}%{NOTSPACE:pulse_secure.session.id}\)
       ignore_failure: true
-  - lowercase:
-      field: network.type
+  - uppercase:
+      field: client.mac
       ignore_missing: true
   - user_agent:
       field: user_agent.original
       ignore_failure: true
       ignore_missing: true
-  - set:
-      field: event.outcome
-      value: failure
-      if: 'ctx._tmp?.outcome != null && ["failed"].contains(ctx._tmp?.outcome)'
-  - set:
-      field: event.outcome
-      value: success
-      if: 'ctx._tmp?.outcome != null && ["successful", "succeeded"].contains(ctx._tmp?.outcome)'
-  - append:
-      field: event.type
-      value:
-        - connection
-        - start
-      if: ctx._tmp?.type != null && ctx._tmp?.type == "started"
-  - append:
-      field: event.type
-      value:
-        - connection
-        - end
-      if: ctx._tmp?.type != null && ctx._tmp?.type == "ended"
-  # IP Geolocation Lookup
   - geoip:
       field: client.ip
       target_field: client.geo
       ignore_missing: true
-  # IP Autonomous System (AS) Lookup
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: client.ip
@@ -114,15 +324,68 @@ processors:
       target_field: client.as.organization.name
       ignore_missing: true
   - set:
-      field: source
-      copy_from: client
+      field: source.address
+      copy_from: client.address
+      if: ctx.client?.address != null
   - set:
-      field: observer.ip
-      value: ['{{{observer.ip}}}']
-      if: ctx.observer?.ip instanceof String
+      field: source.ip
+      copy_from: client.ip
+      if: ctx.client?.ip != null
+  - set:
+      field: source.nat.ip
+      copy_from: client.nat.ip
+      if: ctx.client?.nat?.ip != null
+  - set:
+      field: source.as
+      copy_from: client.as
+      if: ctx.client?.as != null
+  - set:
+      field: source.geo
+      copy_from: client.geo
+      if: ctx.client?.geo != null
+  - set:
+      field: source.mac
+      copy_from: client.mac
+      if: ctx.client?.mac != null
+  - script:
+      lang: painless
+      source: |
+        void appendUnique(List values, def value) {
+          if (value == null) {
+            return;
+          }
+          if (value instanceof List) {
+            for (def item : value) {
+              appendUnique(values, item);
+            }
+            return;
+          }
+          if (!values.contains(value)) {
+            values.add(value);
+          }
+        }
+
+        List relatedIps = new ArrayList();
+        appendUnique(relatedIps, ctx.client?.ip);
+        appendUnique(relatedIps, ctx.client?.nat?.ip);
+        appendUnique(relatedIps, ctx.destination?.ip);
+        appendUnique(relatedIps, ctx.observer?.ip);
+        if (!relatedIps.isEmpty()) {
+          ctx.related = ctx.related instanceof Map ? ctx.related : new HashMap();
+          ctx.related.ip = relatedIps;
+        }
+
+        List relatedUsers = new ArrayList();
+        appendUnique(relatedUsers, ctx.user?.name);
+        appendUnique(relatedUsers, ctx.user?.target?.name);
+        if (!relatedUsers.isEmpty()) {
+          ctx.related = ctx.related instanceof Map ? ctx.related : new HashMap();
+          ctx.related.user = relatedUsers;
+        }
   - remove:
       field:
         - _tmp
+        - message
       ignore_missing: true
 on_failure:
   - set:

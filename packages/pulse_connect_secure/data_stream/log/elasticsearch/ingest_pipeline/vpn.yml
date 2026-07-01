@@ -1,0 +1,43 @@
+---
+description: Pipeline for parsing Pulse Connect Secure VPN events
+processors:
+  - set:
+      field: event.action
+      value: vpn-session-start
+      if: "ctx.message instanceof String && ctx.message.startsWith('VPN Tunneling: Session started')"
+  - set:
+      field: event.action
+      value: vpn-session-end
+      if: "ctx.message instanceof String && ctx.message.startsWith('VPN Tunneling: Session ended')"
+  - set:
+      field: event.action
+      value: vpn-tunnel-connected
+      if: "ctx.message instanceof String && ctx.message.startsWith('VPN Tunneling: User with IP ')"
+  - append:
+      field: event.category
+      value:
+        - network
+        - session
+  - append:
+      field: event.type
+      value:
+        - connection
+  - append:
+      field: event.type
+      value:
+        - start
+      if: "ctx.message instanceof String && ctx.message.startsWith('VPN Tunneling: Session started')"
+  - append:
+      field: event.type
+      value:
+        - end
+      if: "ctx.message instanceof String && ctx.message.startsWith('VPN Tunneling: Session ended')"
+  - append:
+      field: event.type
+      value:
+        - info
+      if: "ctx.message instanceof String && ctx.message.startsWith('VPN Tunneling: User with IP ')"
+  - set:
+      field: event.outcome
+      value: success
+      if: "ctx.message instanceof String && ctx.message.startsWith('VPN Tunneling: Session started')"
