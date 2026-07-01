@@ -1,0 +1,283 @@
+- name: ti_speculus_taxii.stix
+  type: group
+  description: STIX 2.1 fields that don't match ECS, including Speculus `x_speculus_*` extension properties.
+  fields:
+    - name: id
+      type: keyword
+      description: >
+        The ID of the indicator.
+
+    - name: confidence
+      type: integer
+      description: >
+        The confidence that the creator has in the correctness of their data, in the range 0-100. For Speculus this is the underlying risk score.
+
+    - name: created
+      type: date
+      description: >
+        The time at which the STIX Indicator Object was originally created.
+
+    - name: created_by_ref
+      type: keyword
+      description: >
+        The id property of the identity object that describes the entity that created this object.
+
+    - name: indicator_types
+      type: keyword
+      description: >
+        The STIX indicator types that categorize this indicator, for example malicious-activity.
+
+    - name: ioc_expiration_date
+      type: date
+      description: >
+        The expiration date of the indicator. It can be defined from the source event, by the revoked or valid_until fields, or from the integration configuration by ioc_expiration_duration.
+
+    - name: ioc_expiration_duration
+      type: keyword
+      description: >
+        The configured expiration duration for the indicator.
+
+    - name: ioc_expiration_reason
+      type: keyword
+      description: >
+        Reason why the indicator is expired. Defined by the integration in the ingest pipeline.
+
+    - name: modified
+      type: date
+      description: >
+        Date of the last modification.
+
+    - name: name
+      type: keyword
+      description: >
+        Short descriptive name for the indicator.
+
+    - name: description
+      type: keyword
+      description: >
+        Human-readable description of the indicator.
+
+    - name: labels
+      type: keyword
+      description: >
+        STIX labels classifying the indicator (e.g. risk level, proxy type, activity category).
+
+    - name: object_marking_refs
+      type: keyword
+      description: >
+        A list of id properties of marking-definition objects that apply to this object.
+
+    - name: pattern
+      type: keyword
+      description: >
+        The detection pattern for the indicator.
+
+    - name: pattern_type
+      type: keyword
+      description: >
+        The pattern language used in this indicator, which is always "stix".
+
+    - name: revoked
+      type: boolean
+      description: >
+        Indicates whether the object has been revoked.
+
+    - name: spec_version
+      type: keyword
+      description: >
+        The version of the STIX specification used to represent this object. The value of this property must be 2.1.
+
+    - name: type
+      type: keyword
+      description: >
+        Type of the STIX Object.
+
+    - name: valid_from
+      type: date
+      description: >
+        The time from which the indicator is considered a valid indicator.
+
+    - name: valid_until
+      type: date
+      description: >
+        The time at which the indicator should no longer be considered a valid indicator.
+
+    - name: modified_at
+      type: date
+      description: >
+        ECS-style alias of `modified` emitted by the Speculus feed.
+
+    - name: x_speculus_score
+      type: integer
+      description: >
+        Speculus risk score for the indicator (0-100).
+
+    - name: x_speculus_risk
+      type: keyword
+      description: >
+        Speculus risk classification (low, medium, high, very high).
+
+    - name: x_speculus_activity
+      type: keyword
+      description: >
+        Observed malicious activity category (e.g. C2, Botnet, Phishing, Scanner).
+
+    - name: x_speculus_attribution
+      type: keyword
+      description: >
+        Named threat actor, malware family, or tool attributed to the indicator.
+
+    - name: x_speculus_first_seen
+      type: date
+      description: >
+        First time Speculus observed the indicator.
+
+    - name: x_speculus_last_seen
+      type: date
+      description: >
+        Most recent time Speculus observed the indicator.
+
+    - name: x_speculus_is_scanner
+      type: boolean
+      description: >
+        Whether the indicator is a known commercial scanner.
+
+    - name: x_speculus_scanner_name
+      type: keyword
+      description: >
+        Name of the commercial scanner, when identified (e.g. Censys, Shodan).
+
+    - name: x_speculus_is_tor_node
+      type: boolean
+      description: >
+        Whether the indicator is a Tor exit node.
+
+    - name: x_speculus_is_blacklisted
+      type: boolean
+      description: >
+        Whether the indicator appears on third-party reputation blacklists.
+
+    - name: x_speculus_is_datacenter
+      type: boolean
+      description: >
+        Whether the indicator is a datacenter address.
+
+    - name: x_speculus_vpn_proxy
+      type: boolean
+      description: >
+        Whether the indicator is a VPN or public proxy.
+
+    - name: x_speculus_cloud_provider
+      type: group
+      fields:
+        - name: provider
+          type: keyword
+          description: Cloud provider name (AWS, Azure, GCP, Google).
+        - name: region
+          type: keyword
+          description: Cloud region.
+        - name: service
+          type: keyword
+          description: Cloud service.
+    - name: x_speculus_residential_proxy
+      type: group
+      fields:
+        - name: type
+          type: keyword
+          description: Residential proxy type.
+        - name: provider
+          type: keyword
+          description: Residential proxy provider name.
+        - name: first_seen
+          type: date
+          description: First time the proxy was observed.
+        - name: last_seen
+          type: date
+          description: Most recent time the proxy was observed.
+        - name: days_seen
+          type: integer
+          description: Number of distinct days the proxy was observed.
+    - name: x_speculus_identity
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: The IP address.
+        - name: connection_type
+          type: keyword
+          description: Connection type (e.g. wireless, wired).
+        - name: isp
+          type: keyword
+          description: Internet service provider name.
+        - name: org
+          type: keyword
+          description: Organization name associated with the IP.
+        - name: asn
+          type: long
+          description: Autonomous system number associated with the IP.
+    - name: x_speculus_location
+      type: group
+      fields:
+        - name: city
+          type: keyword
+          description: City name.
+        - name: country
+          type: keyword
+          description: Country name.
+        - name: country_code
+          type: keyword
+          description: ISO country code.
+        - name: lat
+          type: double
+          description: Latitude.
+        - name: lon
+          type: double
+          description: Longitude.
+- name: _conf
+  type: group
+  description: >
+    Internal CEL-input plumbing, renamed/removed by the ingest pipeline before indexing. Declared here only to satisfy mapping validation against transient pipeline state.
+
+  fields:
+    - name: ioc_expiration_duration
+      type: keyword
+- name: threat.feed.name
+  external: ecs
+  type: constant_keyword
+  value: Speculus TAXII
+- name: threat.feed.reference
+  external: ecs
+- name: threat.indicator.confidence
+  external: ecs
+- name: threat.indicator.description
+  external: ecs
+- name: threat.indicator.ip
+  external: ecs
+- name: threat.indicator.name
+  external: ecs
+- name: threat.indicator.type
+  external: ecs
+- name: threat.indicator.provider
+  external: ecs
+- name: threat.indicator.first_seen
+  external: ecs
+- name: threat.indicator.last_seen
+  external: ecs
+- name: threat.indicator.modified_at
+  external: ecs
+- name: threat.indicator.marking.tlp
+  external: ecs
+- name: threat.indicator.as.number
+  external: ecs
+- name: threat.indicator.as.organization.name
+  external: ecs
+- name: threat.indicator.geo.location
+  external: ecs
+- name: threat.indicator.geo.country_iso_code
+  external: ecs
+- name: threat.indicator.geo.country_name
+  external: ecs
+- name: threat.indicator.geo.city_name
+  external: ecs
+- name: related.ip
+  external: ecs
