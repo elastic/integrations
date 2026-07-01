@@ -1,0 +1,222 @@
+rules:
+  # Page 2 — offset token from page 1 next_offset
+  - path: /identity/detections
+    methods: ['POST']
+    request_body: /.*"offset":"MTc4MDQxNTExOTA5Nw==:MjAyNi0wNi0wMlQxNTozMDozNzoyNjM5NDBhYmY2MWJlMjA4ZjRiNjQ2NTFhZDMxZWZiMQ==".*/
+    request_headers:
+      Content-Type:
+        - 'application/json'
+      X-RFToken:
+        - 'xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {
+            "total": 396118,
+            "detections": [
+              {
+                "id": "a1b2c3d4e5f6789012345678901234ab",
+                "novel": false,
+                "type": "Vip",
+                "source_type": "DatabaseDumps",
+                "subject": "thor.odinson@norsegods.online",
+                "password": {
+                  "type": "clear",
+                  "hashes": [
+                    {"algorithm": "SHA256", "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
+                  ],
+                  "properties": ["Letter", "Number", "UpperCase", "LowerCase"],
+                  "cleartext_hint": "th"
+                },
+                "authorization_service": {
+                  "url": "https://norsegods.online/login",
+                  "domain": "norsegods.online",
+                  "fqdn": "norsegods.online",
+                  "technology": [],
+                  "protocols": ["https"]
+                },
+                "cookies": [],
+                "malware_family": {"name": "RedLine", "id": "AbCdEf"},
+                "dump": {
+                  "name": "Database Dump 2026-06-02",
+                  "source": "s3://rf-id-outbox/database_dumps/raw/2026-06-02/demo/redline/abc12345.zip",
+                  "description": "Credential data from a database dump.",
+                  "downloaded": "2026-06-02T15:30:37.000Z",
+                  "compromise": {
+                    "exfiltration_date": "2026-06-02T12:45:00.000Z",
+                    "os": "Windows 11 Pro",
+                    "os_username": "demo_user_thor",
+                    "timezone": "UTC+01:00",
+                    "computer_name": "DEMO-PC-THOR01",
+                    "antivirus": ["Windows Defender"]
+                  },
+                  "infrastructure": {"ip": "203.0.113.42"},
+                  "location": {"country": {"name": "Norway", "displayName": "Norway", "countryCode": "578", "alpha2Code": "NO", "alpha3Code": "NOR"}}
+                },
+                "created": "2026-06-02T15:45:19.173Z"
+              }
+            ]
+          }
+  # Round 2 — cursor-resumed polling cycle
+  - path: /identity/detections
+    methods: ['POST']
+    request_body: /.*"gte":"2026-06-02T15:45:19\.173Z".*/
+    request_headers:
+      Content-Type:
+        - 'application/json'
+      X-RFToken:
+        - 'xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"total": 0, "detections": []}
+  # Regression guard — cursor regressed to initial lookback window
+  - path: /identity/detections
+    methods: ['POST']
+    request_body: /.*"gte":"2020-.*"/
+    request_headers:
+      Content-Type:
+        - 'application/json'
+      X-RFToken:
+        - 'xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {
+            "total": 1,
+            "detections": [
+              {
+                "id": "regression-guard-should-not-appear",
+                "novel": false,
+                "type": "Workforce",
+                "source_type": "MalwareLogs",
+                "subject": "regression@example.com",
+                "password": {"type": "clear", "hashes": [], "properties": []},
+                "authorization_service": {"url": "https://example.com", "domain": "example.com", "fqdn": "example.com", "technology": [], "protocols": ["https"]},
+                "cookies": [],
+                "created": "2020-01-01T00:00:00.000Z"
+              }
+            ]
+          }
+  # Page 1 — initial request without offset token (catch-all; must be last)
+  - path: /identity/detections
+    methods: ['POST']
+    request_headers:
+      Content-Type:
+        - 'application/json'
+      X-RFToken:
+        - 'xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {
+            "total": 396118,
+            "detections": [
+              {
+                "id": "51fd9e2c9b580752b15b71f87b5ad707",
+                "novel": false,
+                "type": "Workforce",
+                "source_type": "MalwareLogs",
+                "subject": "jordan.jordan@norsegods.online",
+                "password": {
+                  "type": "clear",
+                  "hashes": [
+                    {"algorithm": "SHA1", "hash": "1465901e291d3d7e0bb5b49ca30e8f23ecf8101a"},
+                    {"algorithm": "SHA256", "hash": "ca5275502d9ea63318a04f0f04d16c48aef8cbc701ec537794b3177b20dd7bdc"},
+                    {"algorithm": "NTLM", "hash": "aa2a03d64366cb33750ebeae0578bc31"},
+                    {"algorithm": "MD5", "hash": "bd55f770e6676d31e4e5697cf3665c91"}
+                  ],
+                  "properties": ["Letter", "Number", "Symbol", "UpperCase", "LowerCase", "AtLeast12Characters"],
+                  "cleartext_hint": "wt",
+                  "cleartext": "REDACTME123!"
+                },
+                "authorization_service": {
+                  "url": "https://norsegods.online/user/account",
+                  "domain": "norsegods.online",
+                  "fqdn": "norsegods.online",
+                  "technology": [],
+                  "protocols": ["https"]
+                },
+                "cookies": [],
+                "malware_family": {"name": "LummaC2", "id": "nlflWX"},
+                "dump": {
+                  "name": "Stealer Malware Logs 2026-06-02",
+                  "source": "s3://rf-id-outbox/malware_logs/raw/2026-06-02/demo/lumma/754749a1.zip",
+                  "description": "This credential data was derived from stealer malware logs.",
+                  "downloaded": "2026-06-02T15:30:37.000Z",
+                  "compromise": {
+                    "exfiltration_date": "2026-06-02T12:45:00.000Z",
+                    "os": "Windows 10 Pro (10.0.19045) x64",
+                    "os_username": "demo_user_hwattt",
+                    "malware_file": "C:\\Users\\demo_user_hwattt\\Desktop\\Release\\New-Inst.exe",
+                    "timezone": "UTC+02:00",
+                    "computer_name": "DEMO-PC-K3OCF7OT",
+                    "antivirus": ["Windows Defender"]
+                  },
+                  "infrastructure": {"ip": "203.0.113.234"},
+                  "location": {"country": {"name": "Poland", "displayName": "Poland", "countryCode": "616", "alpha2Code": "PL", "alpha3Code": "POL"}}
+                },
+                "created": "2026-06-02T15:45:19.173Z"
+              },
+              {
+                "id": "6bfef2aafe63ba8ad9752f29e7fcfbb9",
+                "novel": true,
+                "type": "External",
+                "source_type": "MalwareLogs",
+                "subject": "aegir.ymirsson@norsegods.online",
+                "password": {
+                  "type": "clear",
+                  "hashes": [
+                    {"algorithm": "SHA256", "hash_prefix": "b82d246e"},
+                    {"algorithm": "NTLM", "hash": "0eda17a1607b2e519a7f2baf3884dfc6"}
+                  ],
+                  "properties": ["Letter", "Number", "UpperCase", "LowerCase", "AtLeast12Characters"],
+                  "cleartext_hint": "ja"
+                },
+                "authorization_service": {
+                  "url": "https://norsegods.online/DesktopWeb/",
+                  "domain": "norsegods.online",
+                  "fqdn": "norsegods.online",
+                  "technology": [
+                    {"name": "Virtual Desktop", "id": "Ig409I"},
+                    {"name": "Citrix Virtual Apps and Desktops", "id": "ZNkiC2", "category": "Ig409I"}
+                  ],
+                  "protocols": ["https"]
+                },
+                "cookies": [
+                  {"dns": ".norsegods.online", "name": "session_id", "http": true, "expiration": "2026-08-25T09:57:39.000Z", "secure": true, "value": "3a2d5f8b-9e4c-4a1d-b8f9-c6e7d8f9a0b1"}
+                ],
+                "malware_family": {"name": "Vidar", "id": "YuDlEm"},
+                "dump": {
+                  "name": "Stealer Malware Logs 2026-06-02",
+                  "source": "s3://rf-id-outbox/malware_logs/raw/2026-06-02/demo/vidar/9ab54b58.zip",
+                  "description": "This credential data was derived from stealer malware logs.",
+                  "downloaded": "2026-06-02T15:30:37.000Z",
+                  "compromise": {
+                    "exfiltration_date": "2026-06-02T12:45:00.000Z",
+                    "os": "Windows 10 Enterprise",
+                    "os_username": "demo_user_sxwxml",
+                    "timezone": "UTC+05:00",
+                    "computer_name": "DEMO-ANNHDOFG",
+                    "antivirus": ["Windows Defender"]
+                  },
+                  "infrastructure": {"ip": "198.51.100.137"},
+                  "location": {"country": {"name": "France", "displayName": "France", "countryCode": "250", "alpha2Code": "FR", "alpha3Code": "FRA"}}
+                },
+                "created": "2026-06-02T15:45:19.097Z"
+              }
+            ],
+            "next_offset": "MTc4MDQxNTExOTA5Nw==:MjAyNi0wNi0wMlQxNTozMDozNzoyNjM5NDBhYmY2MWJlMjA4ZjRiNjQ2NTFhZDMxZWZiMQ=="
+          }
