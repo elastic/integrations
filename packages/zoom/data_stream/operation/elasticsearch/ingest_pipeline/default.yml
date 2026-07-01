@@ -82,7 +82,11 @@ processors:
       field: event.category
       tag: append_event_category_iam
       value: iam
-      if: ctx.zoom?.opeartion?.category_type != null && ['user', 'user_settings', 'account', 'sub_account', 'role'].contains(ctx.zoom.operation.category_type)
+      if: >-
+        ctx.zoom?.operation?.category_type != null && (
+          ctx.zoom.operation.category_type.toLowerCase().contains('user') ||
+          ctx.zoom.operation.category_type.toLowerCase().contains('role')
+        )
   - append:
       field: event.type
       tag: append_event_type_info
@@ -113,22 +117,23 @@ processors:
   # user.*
   - rename:
       field: zoom.operation.operator
-      target_field: user.email
+      target_field: user.name
       ignore_missing: true
-      tag: rename_operation_operator_to_user_email
+      tag: rename_operation_operator_to_user_name
   - set:
-      field: user.name
-      tag: set_user_name_from_email
-      copy_from: user.email
+      field: user.email
+      tag: set_user_email_from_name
+      copy_from: user.name
       ignore_empty_value: true
+      if: ctx.user?.name != null && ctx.user.name.contains('@')
 
   # related.*
   - append:
       field: related.user
-      tag: append_user_email_to_related_user
-      value: '{{{user.email}}}'
+      tag: append_user_name_to_related_user
+      value: '{{{user.name}}}'
       allow_duplicates: false
-      if: ctx.user?.email != null
+      if: ctx.user?.name != null
 
   # cleanup
   - remove:

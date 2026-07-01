@@ -373,24 +373,24 @@ An example event for `operation` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-06-14T10:00:00.000Z",
+    "@timestamp": "2026-06-30T10:00:00.000Z",
     "agent": {
-        "ephemeral_id": "03b6f4fb-dfde-44c9-87b9-2e42dbf545f7",
-        "id": "429eb285-b0ae-49a4-84ed-7f45cca62e58",
-        "name": "elastic-agent-31060",
+        "ephemeral_id": "a27de421-f379-4e1d-97f0-7ed86cbc7b34",
+        "id": "d25559f7-7e41-4055-9878-700d25fd2a0c",
+        "name": "elastic-agent-83451",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "zoom.operation",
-        "namespace": "62815",
+        "namespace": "64346",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "429eb285-b0ae-49a4-84ed-7f45cca62e58",
+        "id": "d25559f7-7e41-4055-9878-700d25fd2a0c",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -398,10 +398,11 @@ An example event for `operation` looks as following:
         "action": "update",
         "agent_id_status": "verified",
         "category": [
-            "configuration"
+            "configuration",
+            "iam"
         ],
         "dataset": "zoom.operation",
-        "ingested": "2026-06-15T13:03:44Z",
+        "ingested": "2026-07-01T13:05:20Z",
         "kind": "event",
         "type": [
             "info",
