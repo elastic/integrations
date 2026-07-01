@@ -1,0 +1,46 @@
+---
+description: Pipeline for parsing HPE Aruba ClearPass Policy Manager accounting events
+processors:
+  - set:
+      field: event.action
+      value: radius-accounting
+      if: ctx.event?.action == null
+  - append:
+      field: event.category
+      value:
+        - network
+        - session
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value:
+        - info
+      allow_duplicates: false
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.aruba_cppm?.common?.error_code != null && ctx.aruba_cppm.common.error_code != '' && ctx.aruba_cppm.common.error_code != '0'
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.event?.outcome == null
+  - set:
+      field: error.code
+      copy_from: aruba_cppm.common.error_code
+      if: ctx.aruba_cppm?.common?.error_code != null && ctx.aruba_cppm.common.error_code != '' && ctx.aruba_cppm.common.error_code != '0'
+      ignore_empty_value: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

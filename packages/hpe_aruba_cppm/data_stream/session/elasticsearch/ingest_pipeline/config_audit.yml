@@ -1,0 +1,50 @@
+---
+description: Pipeline for parsing HPE Aruba ClearPass Policy Manager configuration audit events
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value:
+        - configuration
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value:
+        - change
+      allow_duplicates: false
+  - set:
+      field: event.action
+      copy_from: aruba_cppm.cppm_config_audit.action
+      ignore_empty_value: true
+      if: ctx.event?.action == null && ctx.aruba_cppm?.cppm_config_audit?.action != null
+  - set:
+      field: user.name
+      copy_from: aruba_cppm.cppm_config_audit.updated_by
+      ignore_empty_value: true
+      if: ctx.user?.name == null && ctx.aruba_cppm?.cppm_config_audit?.updated_by != null
+  - set:
+      field: event.reason
+      copy_from: aruba_cppm.cppm_config_audit.category
+      ignore_empty_value: true
+      if: ctx.event?.reason == null && ctx.aruba_cppm?.cppm_config_audit?.category != null
+  - set:
+      field: message
+      value: 'Configuration audit action {{{aruba_cppm.cppm_config_audit.action}}} on {{{aruba_cppm.cppm_config_audit.name}}}'
+      if: ctx.message == null && ctx.aruba_cppm?.cppm_config_audit?.action != null && ctx.aruba_cppm?.cppm_config_audit?.name != null
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
