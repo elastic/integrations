@@ -34,7 +34,7 @@ type Options struct {
 	Remote      string // git remote to fetch from and push to; default "origin"
 	PackagesDir string // path to packages dir; default "packages"
 	Repository  string // "org/repo" e.g. "elastic/integrations"
-	WorkDir     string // repository root; defaults to the current working directory
+	WorkDir     string // absolute path to the repository root; defaults to the current working directory
 }
 
 // Result is the structured output of Apply.
@@ -76,6 +76,10 @@ func Apply(opts Options) (*Result, error) {
 			return nil, fmt.Errorf("getting working directory: %w", err)
 		}
 		workDir = wd
+	}
+	workDir, err := filepath.Abs(workDir)
+	if err != nil {
+		return nil, fmt.Errorf("resolving work dir: %w", err)
 	}
 	a := applier{git: gitutil.Git{Dir: workDir}, workDir: workDir}
 
