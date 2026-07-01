@@ -16,18 +16,32 @@ processors:
         IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
       on_failure:
         - set:
+            tag: set__tmp_invalid_ip_bee79126
             field: _tmp.invalid_ip
             value: "{{_ingest._value}}"
         - append:
+            tag: append_error_message_5cc5cb03
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_network_forwarded_ip_aa3cb3ed
       field: network.forwarded_ip
       value: "{{_tmp.valid_ip}}"
       if: ctx._tmp.valid_ip != null && ctx._tmp.valid_ip != ""
       allow_duplicates: false
   - append:
+      tag: append__tmp_invalid_ips_86b45edc
       field: _tmp.invalid_ips
       value: "{{_tmp.invalid_ip}}"
       if: ctx._tmp.invalid_ip != null && ctx._tmp.invalid_ip != ""
       allow_duplicates: false
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'

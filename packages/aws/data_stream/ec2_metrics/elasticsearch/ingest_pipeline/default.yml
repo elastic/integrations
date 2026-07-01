@@ -3,14 +3,17 @@ description: "Pipeline for EC2 metrics"
 
 processors:
   - dot_expander:
+      tag: dot_expander_*_c2762c23
       field: "*"
       ignore_failure: true
   - set:
+      tag: set_cloud_account_name_20733914
       field: cloud.account.name
       copy_from: cloud.account.id
       override: false
       ignore_empty_value: true
   - script:
+      tag: script_682928e2
       lang: painless
       description: This script converts aws.ec2.metrics.CPUUtilization.avg from percentage to decimal.
       source: |
@@ -18,36 +21,43 @@ processors:
             ctx.aws.ec2.metrics.CPUUtilization.avg = ctx.aws.ec2.metrics.CPUUtilization.avg / 100;
         }
   - rename:
+      tag: rename_aws_ec2_metrics_CPUUtilization_avg_to_host_cpu_usage_c2a42cb4
       field: aws.ec2.metrics.CPUUtilization.avg
       target_field: host.cpu.usage
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_aws_ec2_metrics_NetworkIn_sum_to_host_network_ingress_bytes_dabf5cc1
       field: aws.ec2.metrics.NetworkIn.sum
       target_field: host.network.ingress.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_aws_ec2_metrics_NetworkOut_sum_to_host_network_egress_bytes_17a73fa2
       field: aws.ec2.metrics.NetworkOut.sum
       target_field: host.network.egress.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_aws_ec2_metrics_NetworkPacketsIn_sum_to_host_network_ingress_packets_b05e0f26
       field: aws.ec2.metrics.NetworkPacketsIn.sum
       target_field: host.network.ingress.packets
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_aws_ec2_metrics_NetworkPacketsOut_sum_to_host_network_egress_packets_e7b45209
       field: aws.ec2.metrics.NetworkPacketsOut.sum
       target_field: host.network.egress.packets
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_aws_ec2_metrics_DiskReadBytes_sum_to_host_disk_read_bytes_5e316e1c
       field: aws.ec2.metrics.DiskReadBytes.sum
       target_field: host.disk.read.bytes
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_aws_ec2_metrics_DiskWriteBytes_sum_to_host_disk_write_bytes_391326ee
       field: aws.ec2.metrics.DiskWriteBytes.sum
       target_field: host.disk.write.bytes
       ignore_missing: true
@@ -61,4 +71,4 @@ on_failure:
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
