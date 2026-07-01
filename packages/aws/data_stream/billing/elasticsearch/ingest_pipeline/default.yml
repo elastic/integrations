@@ -2,14 +2,17 @@
 description: "Pipeline for AWS Billing"
 processors:
   - dot_expander:
+      tag: dot_expander_*_c2762c23
       field: "*"
       ignore_failure: true
   - set:
+      tag: set_cloud_account_name_20733914
       field: cloud.account.name
       copy_from: cloud.account.id
       override: false
       ignore_empty_value: true
   - fingerprint:
+      tag: fingerprint_deb4df05
       fields: ["aws.billing.group_by"]
       target_field: 'aws.billing.group_by.fingerprint'
       ignore_missing: true
@@ -22,4 +25,4 @@ on_failure:
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'

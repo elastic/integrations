@@ -1,0 +1,48 @@
+{
+  "id": "aws_sqs_otel-dlq-messages-present",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when any dead-letter queue has one or more visible messages. Any message in a DLQ represents a processing failure and warrants immediate investigation.",
+    "name": "[AWS SQS OTel] DLQ has messages",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_sqs",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## DLQ Has Messages\n\nAny message in a dead-letter queue means the pipeline dropped work after exceeding `maxReceiveCount` on the source queue.\n\n### Triage Steps\n1. Identify the source queue (DLQ name usually mirrors the primary queue, e.g. `orders-dlq` → `orders`).\n2. Inspect DLQ messages in the AWS console or via `ReceiveMessage` to find poison payloads or recurring error patterns.\n3. Check consumer logs and error rates for the service that processes the source queue.\n4. Verify redrive policy and `maxReceiveCount` are configured as expected.\n5. After fixing the root cause, redrive or manually reprocess DLQ messages.\n\n### Customisation\n- Tune the `LIKE \"*dlq*\"` pattern in the ES|QL query to match your DLQ naming convention (e.g. `*deadletter*`).\n- Threshold is `> 0` by design — even one DLQ message is actionable."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.sqs.otel-*\n// Dead-letter queues: tune the LIKE pattern to match your naming convention\n| WHERE Namespace == \"AWS/SQS\"\n    AND MetricName == \"ApproximateNumberOfMessagesVisible\"\n    AND stat == \"Maximum\"\n    AND QueueName LIKE \"*dlq*\"\n| STATS dlq_depth = MAX(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)\n    BY QueueName, cloud.region\n// Any message in a DLQ indicates processing failure — tune threshold if needed\n| WHERE dlq_depth > 0"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "QueueName",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

@@ -170,9 +170,12 @@ processors:
   - script:
       lang: painless
       tag: script_tz_mapping
-      if: ctx.event?.timezone == null && ctx._conf?.tz_map != null &&ctx.fortinet?.firewall?.timezone != null && ctx.fortinet?.firewall?.timezone != ''
+      if: >- 
+        (ctx.fortinet?.firewall?.timezone != null && ctx.fortinet?.firewall?.timezone != '') ||
+        (ctx.event?.timezone != null && ctx.event?.timezone != '') &&
+        ctx._conf?.tz_map != null
       source: |
-        def tz = ctx.fortinet?.firewall?.timezone;
+        def tz = ctx.fortinet?.firewall?.timezone != null ? ctx.fortinet?.firewall?.timezone : ctx.event?.timezone;
         for (def item : ctx._conf.tz_map) {
           if (item.tz_match_value == tz) {
             ctx.event.timezone = item.tz_replace_value;

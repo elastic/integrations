@@ -8,7 +8,7 @@ Currently, there are six different pipelines:
 - https://buildkite.com/elastic/integrations-publish: pipeline to publish the new versions of packages. More info at [section](#publish-packages).
 - https://buildkite.com/elastic/integrations-schedule-daily/: pipeline running every night to test packages in different scenarios. More info at [section](#daily-job).
 - https://buildkite.com/elastic/integrations-schedule-weekly/: pipeline running once per week to test packages in different scenarios. More info at [section](#weekly-job).
-- https://buildkite.com/elastic/integrations-backport/: pipeline to create backport branches (just from UI). More info at [section](#backport-branches-pipeline).
+- https://buildkite.com/elastic/integrations-backport/: pipeline to create backport branches. Triggered automatically when a new entry is merged into `.backports.yml`, or manually from the UI by members of the `ecosystem` team. More info at [section](#backport-branches-pipeline).
 
 ## Pull Requests and pushes to specific branches
 
@@ -223,8 +223,19 @@ be used in each pipeline are detailed in the corresponding sections of each pipe
 **Note**: Available only to Elastic employees.
 
 Releasing hotfixes from earlier versions of packages requires creating `backport-*` branches from specific commits in the `main` branch.
-In order to help with this task of creating these branches, there exists a pipeline that just can be triggered
-from the UI: https://buildkite.com/elastic/integrations-backport/
+The pipeline https://buildkite.com/elastic/integrations-backport/ handles this creation and can be triggered in two ways:
+
+- **Automatically (recommended)**: when a PR adding a new entry to `.backports.yml` is merged into `main`, the `integrations` pipeline detects the change and triggers the backport pipeline automatically. A comment is posted on the merged PR reporting success or failure of the branch creation.
+- **Manually from the UI**: restricted to members of the `ecosystem` Buildkite team.
+
+As part of the PR that modifies `.backports.yml`, CI automatically:
+- Validates the new inventory schema (`check-backports-inventory` step).
+- Runs a **dry run** of the branch creation (`trigger-backport-dryrun` step), verifying the commit exists and the branch does not already exist, without pushing anything.
+
+By default, the created branch only contains the target package — all other packages in `packages/` are removed to keep the branch lean.
+
+The pipeline can also be triggered manually from the UI (restricted to members of the `ecosystem` team). The following parameters can be configured when triggering manually:
+- **REMOVE_OTHER_PACKAGES**: If `true`, only the target package is kept in the `packages/` directory; all others are removed. Default: `true`.
 
 More information about this pipeline and how to create these hotfixes in:
 https://www.elastic.co/guide/en/integrations-developer/current/developer-workflow-support-old-package.html

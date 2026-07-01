@@ -1,0 +1,99 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Monitors kernel logs for segfault messages from sensitive processes. A segfault, or segmentation fault, is an error that occurs when a program tries to access a memory location that it's not allowed to access, typically leading to program termination. A segfault can be an indication of malicious behavior if it results from attempts to exploit buffer overflows, inject shared objects, or other vulnerabilities in software to execute arbitrary code or disrupt its normal operation.",
+        "from": "now-9m",
+        "index": [
+            "logs-system.syslog-*",
+            "filebeat-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Segfault from Sensitive Process Detected",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Segfault from Sensitive Process Detected\n\nThis alert flags a Linux kernel-reported segmentation fault in a sensitive service or authentication-related process, which matters because unexpected crashes in these programs often mark memory corruption, exploit attempts, or deliberate disruption around privileged execution and credential handling. An attacker might feed a crafted request to sshd, sudo, pkexec, or a web daemon to trigger a crash while exploiting a buffer overflow or forcing a malicious library load to gain code execution or access secrets.\n\n### Possible investigation steps\n\n- Correlate the crash timestamp with application, authentication, and reverse-proxy logs plus inbound connections to identify the exact user action, request, or source IP that immediately preceded the fault.\n- Determine whether the executable and loaded libraries changed recently by comparing package version, file hashes, ownership, and recent writes in system paths, and note any recent upgrades that could explain a benign stability issue.\n- Collect the core dump, journald entries, and surrounding kernel messages to extract the faulting address, signal details, stack trace, and library references, which can help distinguish a known software bug from memory-corruption or injection activity.\n- Review adjacent endpoint telemetry on the same host for exploitation indicators such as abnormal child processes, privilege-escalation attempts, ptrace activity, unexpected environment manipulation, dropped shared objects, or new outbound connections after the crash.\n- If the crashed service handles authentication or privileged actions, scope impact by identifying failed or successful logins, credential access attempts, service restarts, and user disruption, then isolate and patch the host if crashes recur or align with suspicious activity.\n\n### False positive analysis\n\n- A legitimate package upgrade or service restart can expose a software bug in a sensitive daemon such as sshd, nginx, or sudo; verify by checking for recent version or library changes, planned maintenance, and the absence of suspicious requests or follow-on process activity around the crash time.\n- An approved configuration change or normal user action can trigger an edge-case parsing error that crashes services such as httpd, rsyslogd, or openvpn; verify by reviewing recent config edits and service logs to confirm the segfault aligns with the authorized change and does not coincide with anomalous authentication or network events.\n\n### Response and remediation\n\n- Isolate the affected Linux host from the network, stop the crashing sensitive service, and block the source IPs, URLs, or client requests that immediately preceded the segfault to prevent additional exploitation.\n- Preserve the core dump, journald history, and the crashing binary for evidence, then escalate to incident response immediately if the crash was followed by root shell activity, successful sudo or pkexec use, access to /etc/shadow or credential stores, or similar segfaults on multiple hosts.\n- Remove attacker persistence by deleting unauthorized shared objects, LD_PRELOAD entries, cron jobs, systemd units, startup scripts, web shells, modified SSH authorized_keys files, and any trojanized copies of the affected executable or its libraries.\n- Restore the system to a known-good state by rebuilding from a trusted image or reinstalling affected packages from signed repositories, validate file integrity before reconnecting it, and rotate passwords, SSH keys, API tokens, and service secrets that may have been exposed on the host.\n- Harden the environment by patching the vulnerable service and dependent libraries, enforcing SELinux or AppArmor and least-privilege service accounts, restricting who can read core dumps, and adding detections for repeated crashes, unexpected library loads, and child processes spawned by sensitive services.\n",
+        "query": "host.os.type:linux and event.dataset:system.syslog and process.name:kernel and\nmessage:(\n  segfault and (\n    agetty or apache2 or atd or auditbeat or auditd or beacon-chain or besu or chage or\n    chfn or chsh or clef or cron or crond or dbus-broker or dbus-daemon or dnsmasq or\n    elastic-agent or erigon or ethrex or ethsigner or geth or getty or gpasswd or\n    grandine or httpd or krb5_child or ldap_child or lighthouse or lodestar or login or\n    logrotate or named or nethermind or newgrp or nginx or nslcd or op-batcher or\n    op-challenger or op-conductor or op-geth or op-node or op-proposer or openvpn or\n    osqueryd or passwd or pkexec or polkitd or proftpd or prysm or reth or rsyslogd or\n    smbd or ssh or sshd or sssd or sssd_nss or sssd_pam or su or sudo or sudoedit or\n    systemd-logind or teku or unix_chkpwd or vsftpd or web3signer\n  )\n)\n",
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "01e244f0-fef9-4102-903f-9788052b2c91",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Execution",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/"
+                    },
+                    {
+                        "id": "T1212",
+                        "name": "Exploitation for Credential Access",
+                        "reference": "https://attack.mitre.org/techniques/T1212/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1203",
+                        "name": "Exploitation for Client Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1203/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "01e244f0-fef9-4102-903f-9788052b2c91_1",
+    "type": "security-rule"
+}

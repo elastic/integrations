@@ -1,0 +1,48 @@
+{
+    "id": "aws_elb_metrics_otel-target-response-time-high",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when average target response time exceeds a tunable threshold. Indicates typical backend latency degradation even when error rates remain low.",
+        "name": "[AWS ELB OTel] High Application Load Balancer target response time (average)",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws",
+            "aws_elb"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## High Target Response Time (Average)\n\nRising average `TargetResponseTime` means backends are slow to begin sending response headers — users experience degraded latency even without HTTP errors.\n\n### Triage Steps\n1. Identify the affected load balancer, target group, and region.\n2. Check backend CPU, memory, and thread pool saturation on target instances.\n3. Review downstream dependency latency (databases, APIs) for the affected service.\n4. Compare with the tail latency alert (`Maximum` stat) to see if a few slow requests or systemic slowness is driving the average up.\n5. Check whether traffic has shifted to fewer healthy targets (see `UnHealthyHostCount`).\n\n### Tuning\n- Adjust the `avg_response_time > 2.0` threshold (seconds) to match your latency SLO.\n- CloudWatch percentiles are not available in this data source; use the tail (`Maximum`) alert for worst-case latency."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-aws.elb.otel-*\n| WHERE Namespace == \"AWS/ApplicationELB\"\n    AND MetricName == \"TargetResponseTime\"\n    AND stat == \"Average\"\n| STATS avg_response_time = AVG(`metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`)\n    BY LoadBalancer, TargetGroup, cloud.region\n// Alert threshold in seconds — tune to match your latency SLO (default 2.0s)\n| WHERE avg_response_time > 2.0\n| SORT avg_response_time DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "TargetGroup",
+            "termSize": 50,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

@@ -1,0 +1,48 @@
+{
+  "id": "aws_rds_otel-read-latency-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when peak read I/O latency exceeds a threshold. Uses the Maximum statistic for worst-case tail latency. Correlate with DiskQueueDepth and ReadIOPS for storage bottlenecks.",
+    "name": "[AWS RDS OTel] Read latency high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_rds",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Read Latency High\n\n### Triage\n1. Check `DiskQueueDepth` — climbing queue depth with plateauing `ReadIOPS` indicates I/O saturation.\n2. On gp2 volumes, inspect `BurstBalance` for depleted burst credits.\n3. Review provisioned IOPS vs actual `ReadIOPS`/`WriteIOPS`.\n4. Sustained latency above your workload baseline can indicate storage contention.\n\n### Mitigation\n- Upgrade storage type (gp2 → gp3/io2) or increase provisioned IOPS.\n- Reduce read-heavy query load or add read replicas.\n- Investigate missing indexes causing excessive table scans."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.rds.otel-*\n| WHERE Namespace == \"AWS/RDS\"\n    AND MetricName == \"ReadLatency\"\n    AND stat == \"Maximum\"\n| STATS max_read_latency = MAX(`metrics.amazonaws.com/AWS/RDS/ReadLatency`)\n    BY DBInstanceIdentifier, cloud.region\n// Seconds per I/O — adjust sensitivity (default: 50 ms)\n| WHERE max_read_latency > 0.05\n| SORT max_read_latency DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "DBInstanceIdentifier",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

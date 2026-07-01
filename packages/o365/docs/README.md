@@ -277,6 +277,10 @@ An example event for `audit` looks as following:
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
+| email.attachments.file.size | Attachment file size in bytes. | long |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -522,6 +526,7 @@ An example event for `audit` looks as following:
 | o365.audit.ResultStatus |  | keyword |
 | o365.audit.RunningTime |  | keyword |
 | o365.audit.SecurityComplianceCenterEventType |  | keyword |
+| o365.audit.Sender |  | object |
 | o365.audit.SenderIP |  | keyword |
 | o365.audit.SenderIp |  | keyword |
 | o365.audit.SensitiveInfoDetectionIsIncluded |  | boolean |

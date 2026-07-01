@@ -178,6 +178,18 @@ program: |
               "want_more": tail(work.worklist.incidents)[?0].hasValue() || int(work.worklist.page) != int(work.worklist.total_pages)
             })
           :
+            // Skip incidents that have been deleted or are no longer accessible.
+            resp.StatusCode == 404 || resp.StatusCode == 410 ?
+              {
+                "events": [{"retry": true}],
+                "worklist": (tail(work.worklist.incidents)[?0].hasValue()) ? work.worklist.with({ "incidents": tail(work.worklist.incidents) }) : {},
+                "next": {
+                  "jwt_token": work.next.jwt_token,
+                  ?"page": work.?next.page,
+                },
+                "want_more": tail(work.worklist.incidents)[?0].hasValue() || int(work.worklist.page) != int(work.worklist.total_pages)
+              }
+            :
             // Generate a new token if expired; otherwise, report an error
             resp.StatusCode == 403 ?
               resp.Body.decode_json().as(body,
@@ -251,7 +263,8 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
 {{processors}}
 {{/if}}

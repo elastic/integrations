@@ -1,7 +1,7 @@
-format_version: "3.3.2"
+format_version: "3.6.1"
 name: box_events
 title: Box Events
-version: "3.2.0"
+version: "3.4.0"
 description: "Collect logs from Box with Elastic Agent"
 type: integration
 categories:
@@ -101,6 +101,8 @@ policy_templates:
         enabled: true
       agentless:
         enabled: true
+        is_default: true
+        release: beta
         organization: security
         division: engineering
         team: security-service-integrations
@@ -108,6 +110,10 @@ policy_templates:
       - type: httpjson
         title: "Collect BOX Events via API"
         description: "Collecting events from BOX via API"
+        show_divider: false
+        sections:
+          - name: auth_settings
+            title: Authentication Settings
         vars:
           - name: client_id
             type: password
@@ -118,13 +124,7 @@ policy_templates:
             required: true
             show_user: true
             secret: true
-          - name: enable_request_tracer
-            type: bool
-            title: Enable request tracing
-            multi: false
-            required: false
-            show_user: false
-            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+            section: auth_settings
           - name: client_secret
             type: password
             title: Client Secret
@@ -134,14 +134,7 @@ policy_templates:
             required: true
             show_user: true
             secret: true
-          - name: api_url
-            type: text
-            title: API URL
-            description: URL to interact with the BOX api.
-            default: https://api.box.com
-            multi: false
-            required: true
-            show_user: false
+            section: auth_settings
           - name: box_subject_id
             type: password
             title: Box Subject ID
@@ -151,6 +144,15 @@ policy_templates:
             required: true
             show_user: true
             secret: true
+            section: auth_settings
+          - name: api_url
+            type: text
+            title: API URL
+            description: URL to interact with the BOX api.
+            default: https://api.box.com
+            multi: false
+            required: true
+            show_user: false
           - name: box_subject_type
             type: text
             title: Box Subject Type
@@ -159,6 +161,7 @@ policy_templates:
             multi: false
             required: true
             show_user: false
+            section: auth_settings
           - name: grant_type
             type: text
             title: Grant Type
@@ -167,6 +170,14 @@ policy_templates:
             multi: false
             required: true
             show_user: false
+            section: auth_settings
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
 owner:
   github: elastic/security-service-integrations
   type: elastic

@@ -1,0 +1,442 @@
+format_version: 3.5.0
+name: aws_cloudwatch_input_otel
+title: "AWS CloudWatch (OpenTelemetry)"
+version: 0.4.0
+source:
+  license: "Elastic-2.0"
+description: "Collect AWS CloudWatch metrics for selected AWS services (EC2, RDS, SQS, ELB, Lambda, Fargate) using the OpenTelemetry Collector awscloudwatch receiver."
+type: input
+categories:
+  - aws
+  - cloud
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.5.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: /img/logo_aws_cloudwatch_otel.svg
+    title: AWS CloudWatch OpenTelemetry logo
+    size: 32x32
+    type: image/svg+xml
+
+# --- Package-level (shared) variables ---
+# Defined once here and inherited by every policy template below — credentials,
+# region, and receiver tunables are not duplicated per service.
+vars:
+  - name: region
+    type: text
+    title: AWS Region
+    description: AWS region to query CloudWatch metrics from (for example, `us-east-1`).
+    required: true
+    show_user: true
+  # --- Inline AWS credentials (rendered into env vars on the collector process) ---
+  - name: access_key_id
+    type: password
+    title: AWS Access Key ID
+    description: Mapped to `AWS_ACCESS_KEY_ID` on the collector process when an IAM role is not available.
+    required: false
+    show_user: true
+    secret: true
+  - name: secret_access_key
+    type: password
+    title: AWS Secret Access Key
+    description: Mapped to `AWS_SECRET_ACCESS_KEY`.
+    required: false
+    show_user: true
+    secret: true
+  - name: session_token
+    type: password
+    title: AWS Session Token
+    description: Mapped to `AWS_SESSION_TOKEN` for temporary STS credentials.
+    required: false
+    show_user: true
+    secret: true
+  - name: role_arn
+    type: text
+    title: AWS Role ARN
+    description: Mapped to `AWS_ROLE_ARN`.
+    required: false
+    show_user: false
+  - name: external_id
+    type: password
+    title: AWS External ID
+    description: Mapped to `AWS_ROLE_EXTERNAL_ID`.
+    required: false
+    show_user: false
+    secret: true
+# Adding a new service is a manifest-only change.
+policy_templates:
+  - name: aws.ec2
+    type: metrics
+    title: AWS EC2 OpenTelemetry Metrics
+    description: Collect AWS/EC2 CloudWatch metrics.
+    input: otelcol
+    template_path: input.yml.hbs
+    icons:
+      - src: /img/logo_ec2.svg
+        title: AWS EC2 logo
+        size: 32x32
+        type: image/svg+xml
+    deployment_modes: &deployment_modes
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        is_default: true
+        release: beta
+        organization: observability
+        division: engineering
+        team: obs-infraobs-integrations
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/EC2"
+        required: true
+        show_user: false
+      - name: autodiscover_limit
+        type: integer
+        title: Autodiscover Limit
+        description: Maximum number of metrics to enumerate for this namespace. Higher values pick up more metrics but cost more API calls.
+        default: 100
+        required: false
+        show_user: false
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        description: How often the receiver polls CloudWatch. EC2 basic monitoring publishes at 5-minute resolution.
+        default: 5m
+        required: false
+        show_user: false
+      - name: period
+        type: duration
+        title: Period
+        description: CloudWatch aggregation window. Must match the metric resolution (5m for EC2 basic monitoring, 1m for detailed monitoring).
+        default: 5m
+        required: false
+        show_user: true
+      - name: delay
+        type: duration
+        title: Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 5m
+        required: false
+        show_user: false
+      # required: true to fetch metrics appropriately as the metrics only needed is fetched.
+      - name: autodiscover_aggregation
+        type: text
+        multi: true
+        title: Aggregation Statistics
+        description: CloudWatch statistics applied to every discovered metric for this namespace.
+        default:
+          - Average
+          - Sum
+          - Maximum
+        required: true
+        show_user: false
+
+  - name: aws.lambda
+    type: metrics
+    title: AWS Lambda OpenTelemetry Metrics
+    description: Collect AWS/Lambda CloudWatch metrics.
+    input: otelcol
+    template_path: input.yml.hbs
+    icons:
+      - src: /img/logo_lambda.svg
+        title: AWS Lambda logo
+        size: 32x32
+        type: image/svg+xml
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/Lambda"
+        required: true
+        show_user: false
+      - name: autodiscover_limit
+        type: integer
+        title: Autodiscover Limit
+        description: Maximum number of metrics to enumerate for this namespace. Higher values pick up more metrics but cost more API calls.
+        default: 100
+        required: false
+        show_user: false
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        description: How often the receiver polls CloudWatch.
+        default: 1m
+        required: false
+        show_user: false
+      - name: period
+        type: duration
+        title: Period
+        description: CloudWatch aggregation window. Must match the metric resolution.
+        default: 1m
+        required: false
+        show_user: true
+      - name: delay
+        type: duration
+        title: Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 5m
+        required: false
+        show_user: false
+      - name: autodiscover_aggregation
+        type: text
+        multi: true
+        title: Aggregation Statistics
+        description: CloudWatch statistics applied to every discovered metric for this namespace.
+        default:
+          - Maximum
+          - Average
+          - Sum
+        required: true
+        show_user: false
+
+  - name: aws.rds
+    type: metrics
+    title: AWS RDS OpenTelemetry Metrics
+    description: Collect AWS/RDS CloudWatch metrics.
+    input: otelcol
+    template_path: input.yml.hbs
+    icons:
+      - src: /img/logo_rds.svg
+        title: AWS RDS logo
+        size: 32x32
+        type: image/svg+xml
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/RDS"
+        required: true
+        show_user: false
+      - name: autodiscover_limit
+        type: integer
+        title: Autodiscover Limit
+        description: Maximum number of metrics to enumerate for this namespace. Higher values pick up more metrics but cost more API calls.
+        default: 100
+        required: false
+        show_user: false
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        description: How often the receiver polls CloudWatch.
+        default: 1m
+        required: false
+        show_user: false
+      - name: period
+        type: duration
+        title: Period
+        description: CloudWatch aggregation window. Must match the metric resolution.
+        default: 1m
+        required: false
+        show_user: true
+      - name: delay
+        type: duration
+        title: Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 5m
+        required: false
+        show_user: false
+      - name: autodiscover_aggregation
+        type: text
+        multi: true
+        title: Aggregation Statistics
+        description: CloudWatch statistics applied to every discovered metric for this namespace.
+        default:
+          - Average
+          - Maximum
+        required: true
+        show_user: false
+
+  - name: aws.sqs
+    type: metrics
+    title: AWS SQS OpenTelemetry Metrics
+    description: Collect AWS/SQS CloudWatch metrics.
+    input: otelcol
+    template_path: input.yml.hbs
+    icons:
+      - src: /img/logo_sqs.svg
+        title: AWS SQS logo
+        size: 32x32
+        type: image/svg+xml
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/SQS"
+        required: true
+        show_user: false
+      - name: autodiscover_limit
+        type: integer
+        title: Autodiscover Limit
+        description: Maximum number of metrics to enumerate for this namespace. Higher values pick up more metrics but cost more API calls.
+        default: 100
+        required: false
+        show_user: false
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        description: How often the receiver polls CloudWatch.
+        default: 1m
+        required: false
+        show_user: false
+      - name: period
+        type: duration
+        title: Period
+        description: CloudWatch aggregation window. Must match the metric resolution.
+        default: 1m
+        required: false
+        show_user: true
+      - name: delay
+        type: duration
+        title: Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 5m
+        required: false
+        show_user: false
+      - name: autodiscover_aggregation
+        type: text
+        multi: true
+        title: Aggregation Statistics
+        description: CloudWatch statistics applied to every discovered metric for this namespace.
+        default:
+          - Maximum
+          - Sum
+        required: true
+        show_user: false
+
+  - name: aws.elb
+    type: metrics
+    title: AWS Application ELB OpenTelemetry Metrics
+    description: Collect AWS/ApplicationELB CloudWatch metrics.
+    input: otelcol
+    template_path: input.yml.hbs
+    icons:
+      - src: /img/logo_elb.svg
+        title: AWS ELB logo
+        size: 32x32
+        type: image/svg+xml
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/ApplicationELB"
+        required: true
+        show_user: false
+      - name: autodiscover_limit
+        type: integer
+        title: Autodiscover Limit
+        description: Maximum number of metrics to enumerate for this namespace. Higher values pick up more metrics but cost more API calls.
+        default: 100
+        required: false
+        show_user: false
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        description: How often the receiver polls CloudWatch.
+        default: 1m
+        required: false
+        show_user: false
+      - name: period
+        type: duration
+        title: Period
+        description: CloudWatch aggregation window. Must match the metric resolution.
+        default: 1m
+        required: false
+        show_user: true
+      - name: delay
+        type: duration
+        title: Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 5m
+        required: false
+        show_user: false
+      - name: autodiscover_aggregation
+        type: text
+        multi: true
+        title: Aggregation Statistics
+        description: CloudWatch statistics applied to every discovered metric for this namespace.
+        default:
+          - Maximum
+          - Average
+          - Sum
+        required: true
+        show_user: false
+
+  - name: aws.ecs
+    type: metrics
+    title: AWS ECS OpenTelemetry Metrics
+    description: Collect AWS/ECS CloudWatch metrics.
+    input: otelcol
+    template_path: input.yml.hbs
+    icons:
+      - src: /img/logo_ecs.svg
+        title: AWS ECS logo
+        size: 32x32
+        type: image/svg+xml
+    deployment_modes: *deployment_modes
+    vars:
+      - name: namespace
+        type: text
+        title: CloudWatch Namespace
+        description: CloudWatch namespace this template scrapes. Fixed per service.
+        default: "AWS/ECS"
+        required: true
+        show_user: false
+      - name: autodiscover_limit
+        type: integer
+        title: Autodiscover Limit
+        description: Maximum number of metrics to enumerate for this namespace. Higher values pick up more metrics but cost more API calls.
+        default: 100
+        required: false
+        show_user: false
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        description: How often the receiver polls CloudWatch.
+        default: 1m
+        required: false
+        show_user: false
+      - name: period
+        type: duration
+        title: Period
+        description: CloudWatch aggregation window. Must match the metric resolution.
+        default: 1m
+        required: false
+        show_user: true
+      - name: delay
+        type: duration
+        title: Delay
+        description: How far back from now each scrape's query window ends. Increase if metrics arrive late from CloudWatch.
+        default: 5m
+        required: false
+        show_user: false
+      - name: autodiscover_aggregation
+        type: text
+        multi: true
+        title: Aggregation Statistics
+        description: CloudWatch statistics applied to every discovered metric for this namespace.
+        default:
+          - Average
+          - Maximum
+          - Sum
+        required: true
+        show_user: false
+
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic
