@@ -48,9 +48,9 @@ func publishIssue(s packageSummary, preview bool) error {
 
 	if preview {
 		fmt.Printf("======================================== ISSUE\n"+
-			"Package: %s\nOwner:   @%s\n\nIssue title: %s\n\nIssue body:\n%s"+
+			"Package: %s\nOwners:  %s\n\nIssue title: %s\n\nIssue body:\n%s"+
 			"========================================\n\n",
-			s.name, s.codeowner, title, body)
+			s.name, mentions(s.codeowners), title, body)
 		return nil
 	}
 
@@ -79,9 +79,9 @@ func publishPR(s packageSummary, preview bool) error {
 
 	if preview {
 		fmt.Printf("======================================== PR\n"+
-			"Package: %s\nOwner:   @%s\nBranch:  %s\nFiles:\n  %s\n\nPR title: %s\n\nPR body:\n%s"+
+			"Package: %s\nOwners:  %s\nBranch:  %s\nFiles:\n  %s\n\nPR title: %s\n\nPR body:\n%s"+
 			"========================================\n\n",
-			s.name, s.codeowner, branch, strings.Join(s.files, "\n  "), title, body)
+			s.name, mentions(s.codeowners), branch, strings.Join(s.files, "\n  "), title, body)
 		return nil
 	}
 
@@ -101,7 +101,7 @@ func publishPR(s packageSummary, preview bool) error {
 		return fmt.Errorf("pushing: %w", err)
 	}
 
-	prNumber, err := createOrUpdatePR(branch, title, body, s.codeowner)
+	prNumber, err := createOrUpdatePR(branch, title, body, s.codeowners)
 	if err != nil {
 		return fmt.Errorf("creating/updating PR: %w", err)
 	}
@@ -109,9 +109,10 @@ func publishPR(s packageSummary, preview bool) error {
 	return fixupChangelogLinks(s, branch, prNumber)
 }
 
-// createOrUpdatePR opens a PR for branch, or updates the body of an existing
-// open one, and returns the PR number for changelog link fixup.
-func createOrUpdatePR(branch, title, body, codeowner string) (string, error) {
+// createOrUpdatePR opens a PR for branch, requesting a review from every team
+// in codeowners, or updates the body of an existing open one, and returns the
+// PR number for changelog link fixup.
+func createOrUpdatePR(branch, title, body string, codeowners []string) (string, error) {
 	stdout, _, err := gh.Exec("pr", "list", "--head", branch, "--state", "open", "--json", "number,url")
 	if err != nil {
 		return "", err
@@ -130,14 +131,18 @@ func createOrUpdatePR(branch, title, body, codeowner string) (string, error) {
 		return fmt.Sprintf("%d", prs[0].Number), nil
 	}
 
-	stdout, _, err = gh.Exec("pr", "create",
+	args := []string{
+		"pr", "create",
 		"--base", "main",
 		"--head", branch,
 		"--title", title,
 		"--label", "automation",
-		"--reviewer", "@"+codeowner,
 		"--body", body,
-	)
+	}
+	for _, owner := range codeowners {
+		args = append(args, "--reviewer", "@"+owner)
+	}
+	stdout, _, err = gh.Exec(args...)
 	if err != nil {
 		return "", fmt.Errorf("creating PR: %w", err)
 	}
@@ -215,8 +220,18 @@ func issueBody(s packageSummary) string {
 	if s.ownerMismatch != "" {
 		fmt.Fprintf(&b, "\n> **Note:** codeowner mismatch — %s\n", s.ownerMismatch)
 	}
-	fmt.Fprintf(&b, "\n/cc @%s\n", s.codeowner)
+	fmt.Fprintf(&b, "\n/cc %s\n", mentions(s.codeowners))
 	return b.String()
+}
+
+// mentions formats owners (bare "org/team" entries) as space-separated
+// GitHub @mentions, e.g. "@elastic/team-a @elastic/team-b".
+func mentions(owners []string) string {
+	mentioned := make([]string, len(owners))
+	for i, o := range owners {
+		mentioned[i] = "@" + o
+	}
+	return strings.Join(mentioned, " ")
 }
 
 func prBody(s packageSummary) string {

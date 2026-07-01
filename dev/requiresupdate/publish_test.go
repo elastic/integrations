@@ -66,7 +66,7 @@ func TestPRBody(t *testing.T) {
 
 func TestIssueBody(t *testing.T) {
 	body := issueBody(packageSummary{
-		codeowner: "elastic/some-team",
+		codeowners: []string{"elastic/some-team"},
 		skipped: []proposal{
 			{Package: "foo", Warning: "requires kibana >=9.0.0"},
 		},
@@ -76,9 +76,20 @@ func TestIssueBody(t *testing.T) {
 	assert.Contains(t, body, "/cc @elastic/some-team")
 }
 
+func TestIssueBodyMultipleOwners(t *testing.T) {
+	body := issueBody(packageSummary{
+		codeowners: []string{"elastic/team-a", "elastic/team-b"},
+		skipped: []proposal{
+			{Package: "foo", Warning: "requires kibana >=9.0.0"},
+		},
+	})
+
+	assert.Contains(t, body, "/cc @elastic/team-a @elastic/team-b")
+}
+
 func TestIssueBodyOwnerMismatch(t *testing.T) {
 	body := issueBody(packageSummary{
-		codeowner: "elastic/some-team",
+		codeowners: []string{"elastic/some-team"},
 		ownerMismatch: "CODEOWNERS=elastic/some-team manifest owner.github=elastic/other-team " +
 			"(using CODEOWNERS)",
 		skipped: []proposal{

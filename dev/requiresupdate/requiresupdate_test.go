@@ -21,46 +21,65 @@ func TestResolveOwner(t *testing.T) {
 		title        string
 		pkgName      string
 		fallback     string
-		wantOwner    string
+		wantOwners   []string
 		wantMismatch bool
 	}{
 		{
-			title:     "CODEOWNERS only",
-			pkgName:   "aws",
-			fallback:  "",
-			wantOwner: "elastic/obs-infraobs-integrations",
+			title:      "CODEOWNERS only",
+			pkgName:    "aws",
+			fallback:   "",
+			wantOwners: []string{"elastic/obs-infraobs-integrations"},
 		},
 		{
-			title:     "CODEOWNERS agrees with manifest fallback",
-			pkgName:   "aws",
-			fallback:  "elastic/obs-infraobs-integrations",
-			wantOwner: "elastic/obs-infraobs-integrations",
+			title:      "CODEOWNERS agrees with manifest fallback",
+			pkgName:    "aws",
+			fallback:   "elastic/obs-infraobs-integrations",
+			wantOwners: []string{"elastic/obs-infraobs-integrations"},
 		},
 		{
 			title:        "CODEOWNERS disagrees with manifest fallback",
 			pkgName:      "aws",
 			fallback:     "elastic/other-team",
-			wantOwner:    "elastic/obs-infraobs-integrations",
+			wantOwners:   []string{"elastic/obs-infraobs-integrations"},
 			wantMismatch: true,
 		},
 		{
-			title:     "no CODEOWNERS entry, manifest fallback used",
-			pkgName:   "unknown-package",
-			fallback:  "elastic/fallback-team",
-			wantOwner: "elastic/fallback-team",
+			title:      "no CODEOWNERS entry, manifest fallback used",
+			pkgName:    "unknown-package",
+			fallback:   "elastic/fallback-team",
+			wantOwners: []string{"elastic/fallback-team"},
 		},
 		{
-			title:     "no CODEOWNERS entry and no fallback falls back to the default owner",
-			pkgName:   "unknown-package",
-			fallback:  "",
-			wantOwner: defaultOwner,
+			title:      "no CODEOWNERS entry and no fallback falls back to the default owner",
+			pkgName:    "unknown-package",
+			fallback:   "",
+			wantOwners: []string{defaultOwner},
+		},
+		{
+			title:      "CODEOWNERS lists multiple teams, all are kept",
+			pkgName:    "multi_owner",
+			fallback:   "",
+			wantOwners: []string{"elastic/team-a", "elastic/team-b"},
+		},
+		{
+			title:      "CODEOWNERS lists multiple teams, fallback matches one of them",
+			pkgName:    "multi_owner",
+			fallback:   "elastic/team-b",
+			wantOwners: []string{"elastic/team-a", "elastic/team-b"},
+		},
+		{
+			title:        "CODEOWNERS lists multiple teams, fallback matches none of them",
+			pkgName:      "multi_owner",
+			fallback:     "elastic/other-team",
+			wantOwners:   []string{"elastic/team-a", "elastic/team-b"},
+			wantMismatch: true,
 		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
 			res := resolveOwner(owners, c.pkgName, c.fallback)
-			assert.Equal(t, c.wantOwner, res.owner)
+			assert.Equal(t, c.wantOwners, res.owners)
 			if c.wantMismatch {
 				assert.NotEmpty(t, res.mismatch)
 				assert.Contains(t, res.mismatch, c.fallback)

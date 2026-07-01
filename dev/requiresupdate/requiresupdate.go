@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 
@@ -55,7 +56,7 @@ type packageSummary struct {
 	name          string
 	applied       []proposal
 	skipped       []proposal
-	codeowner     string   // bare "org/team", no leading '@'
+	codeowners    []string // bare "org/team" entries, no leading '@'; every team owning this package
 	ownerMismatch string   // non-empty if CODEOWNERS and the manifest fallback disagreed; describes both values
 	files         []string // paths written to disk, relative to repo root; empty on dry-run
 }
@@ -176,7 +177,7 @@ func processPackage(pkgPath, pkgName string, dryRun bool, owners *codeowners.Own
 		name:          pkgName,
 		applied:       applied,
 		skipped:       skipped,
-		codeowner:     res.owner,
+		codeowners:    res.owners,
 		ownerMismatch: res.mismatch,
 		files:         writtenFiles,
 	}, nil
@@ -185,14 +186,15 @@ func processPackage(pkgPath, pkgName string, dryRun bool, owners *codeowners.Own
 // ownerResolution is the result of reconciling CODEOWNERS against the
 // package manifest's own owner.github fallback field.
 type ownerResolution struct {
-	owner    string // bare "org/team", no leading '@'; never empty
-	mismatch string // non-empty if CODEOWNERS and the fallback disagreed; describes both values
+	owners   []string // bare "org/team" entries, no leading '@'; never empty
+	mismatch string   // non-empty if CODEOWNERS and the fallback disagreed; describes both values
 }
 
-// resolveOwner reconciles the package's codeowner, preferring CODEOWNERS over
-// the JSON fallback field (sourced from the package manifest's owner.github).
-// Falls back to defaultOwner when neither source resolves one, so a proposal
-// never gets dropped for lack of somewhere to send it.
+// resolveOwner reconciles the package's codeowner(s), preferring CODEOWNERS
+// (which may list more than one owning team) over the JSON fallback field
+// (sourced from the package manifest's owner.github, which only ever names
+// one team). Falls back to defaultOwner when neither source resolves one, so
+// a proposal never gets dropped for lack of somewhere to send it.
 func resolveOwner(owners *codeowners.Owners, pkgName, fallback string) ownerResolution {
 	teams, err := owners.PackageOwners(pkgName, "")
 	if err != nil || len(teams) == 0 {
@@ -200,15 +202,19 @@ func resolveOwner(owners *codeowners.Owners, pkgName, fallback string) ownerReso
 		if owner == "" {
 			owner = defaultOwner
 		}
-		return ownerResolution{owner: owner}
+		return ownerResolution{owners: []string{owner}}
 	}
 	// CODEOWNERS entries carry a '@' prefix; the JSON fallback field does
 	// not — normalize to the bare form so callers get a consistent value
 	// regardless of which path resolved it.
-	primary := strings.TrimPrefix(teams[0], "@")
-	res := ownerResolution{owner: primary}
-	if fallback != "" && primary != fallback {
-		res.mismatch = fmt.Sprintf("CODEOWNERS=%s manifest owner.github=%s (using CODEOWNERS)", primary, fallback)
+	bare := make([]string, len(teams))
+	for i, t := range teams {
+		bare[i] = strings.TrimPrefix(t, "@")
+	}
+	res := ownerResolution{owners: bare}
+	if fallback != "" && !slices.Contains(bare, fallback) {
+		res.mismatch = fmt.Sprintf("CODEOWNERS=%s manifest owner.github=%s (using CODEOWNERS)",
+			strings.Join(bare, ","), fallback)
 	}
 	return res
 }
@@ -235,7 +241,8 @@ func printScanStats(total, eligible, withProposals, errored int) {
 func printSummary(summaries []packageSummary, dryRun bool) {
 	groups := make(map[string][]packageSummary)
 	for _, s := range summaries {
-		groups[s.codeowner] = append(groups[s.codeowner], s)
+		key := strings.Join(s.codeowners, ", ")
+		groups[key] = append(groups[key], s)
 	}
 
 	teams := make([]string, 0, len(groups))
