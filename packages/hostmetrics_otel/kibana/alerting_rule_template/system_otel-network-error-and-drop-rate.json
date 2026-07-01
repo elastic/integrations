@@ -1,0 +1,56 @@
+{
+  "id": "system_otel-network-error-and-drop-rate",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Fires when the sum of per-second RATEs for `system.network.errors` and `system.network.dropped` for a host (all interfaces) exceeds 0.1 (combined errors+drops per second). Uses the TS time-series source. Tune the final threshold; use packet-normalised rate in a fork if you need % of traffic.",
+    "name": "[System Host Metrics OTel] Network error and drop rate above threshold",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "hostmetrics",
+      "high"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "flapping": {
+      "lookBackWindow": 8,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Interface errors or drops\n\n1. Per-interface `device` and `direction` on the **Network** dashboard.\n2. Coalesce: NIC duplex mismatch, bad cable, or kernel buffer size (`drops`).\n3. This roll-up sums all interfaces; for pin-pointing, duplicate the query with `BY` `device`.\n\n**Tune** Set `0.1` in `bad_per_sec > 0.1` \u2014 events per second, not a ratio."
+      },
+      "dashboards": [
+        {
+          "id": "hostmetrics_otel-overview"
+        },
+        {
+          "id": "hostmetrics_otel-network"
+        }
+      ]
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-hostmetricsreceiver.otel-*\n| STATS e = SUM(RATE(`metrics.system.network.errors`)), dr = SUM(RATE(`metrics.system.network.dropped`)) BY `host.name`\n| EVAL bad_per_sec = e + dr\n| WHERE bad_per_sec > 0.1\n| SORT bad_per_sec DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

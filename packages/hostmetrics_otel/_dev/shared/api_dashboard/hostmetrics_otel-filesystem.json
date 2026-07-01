@@ -1,0 +1,553 @@
+{
+  "title": "[System Host OTel] Filesystem",
+  "description": "Mountpoint capacity, used bytes, and inode headroom to prevent runaway growth.",
+  "time_range": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "options": {
+    "use_margins": true,
+    "sync_cursor": true,
+    "sync_tooltips": false,
+    "sync_colors": false,
+    "auto_apply_filters": true
+  },
+  "query": {
+    "expression": "",
+    "language": "kql"
+  },
+  "refresh_interval": {
+    "pause": true,
+    "value": 60000
+  },
+  "access_control": {},
+  "filters": [
+    {
+      "type": "condition",
+      "condition": {
+        "field": "data_stream.dataset",
+        "operator": "is",
+        "value": "hostmetricsreceiver.otel"
+      }
+    }
+  ],
+  "pinned_panels": [
+    {
+      "type": "options_list_control",
+      "width": "medium",
+      "config": {
+        "data_view_id": "metrics-*",
+        "field_name": "resource.attributes.host.name",
+        "title": "Host"
+      }
+    }
+  ],
+  "panels": [
+    {
+      "type": "markdown",
+      "grid": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 8
+      },
+      "config": {
+        "content": "## [System Host OTel] Filesystem\n\nPer-mountpoint space and inode foot-print from the host metrics stream to catch capacity and inode fatigue.\n- Used, free, and reserved space as bytes in stacked trends\n- Same breakdown for inode usage where reported\n- Tables ordered by the largest used bytes and inode use",
+        "hide_title": true,
+        "settings": {
+          "open_links_in_new_tab": true
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 16,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "m1",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.filesystem.usage` IS NOT NULL AND attributes.state == \"used\"\n| STATS uby = MAX(LAST_OVER_TIME(`system.filesystem.usage`)) BY m = attributes.mountpoint\n| STATS tused2 = SUM(uby)"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "tused2",
+            "label": "Bytes used all mounts",
+            "format": {
+              "type": "bytes"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 24,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "m2",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.filesystem.usage` IS NOT NULL AND attributes.state == \"free\"\n| STATS fby = MAX(LAST_OVER_TIME(`system.filesystem.usage`)) BY mf = attributes.mountpoint\n| STATS tfree2 = SUM(fby)"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "tfree2",
+            "label": "Bytes free all mounts",
+            "format": {
+              "type": "bytes"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 32,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "m3",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.filesystem.inodes.usage` IS NOT NULL AND attributes.state == \"used\"\n| STATS iu2 = MAX(LAST_OVER_TIME(`system.filesystem.inodes.usage`)) BY mi = attributes.mountpoint\n| STATS isum2 = SUM(iu2)"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "isum2",
+            "label": "Inodes used all mounts",
+            "format": {
+              "type": "number",
+              "compact": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 40,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "m4",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.filesystem.inodes.usage` IS NOT NULL AND attributes.state == \"free\"\n| STATS if2 = MAX(LAST_OVER_TIME(`system.filesystem.inodes.usage`)) BY mf2 = attributes.mountpoint\n| STATS ifs2 = SUM(if2)"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "ifs2",
+            "label": "Inodes free all mounts",
+            "format": {
+              "type": "number",
+              "compact": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 8,
+        "w": 48,
+        "h": 12
+      },
+      "config": {
+        "type": "xy",
+        "title": "Space bytes by state",
+        "filters": [],
+        "legend": {
+          "placement": "inside",
+          "position": "top_right"
+        },
+        "axis": {
+          "x": {
+            "scale": "temporal",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          },
+          "y": {
+            "domain": {
+              "type": "fit"
+            },
+            "scale": "linear",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {},
+          "fitting": {
+            "type": "none"
+          },
+          "points": {},
+          "areas": {},
+          "bars": {}
+        },
+        "layers": [
+          {
+            "type": "area",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.filesystem.usage` IS NOT NULL\n| STATS fsb = MAX(AVG_OVER_TIME(`system.filesystem.usage`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.state\n| SORT time_bucket ASC"
+            },
+            "x": {
+              "column": "time_bucket",
+              "label": "Time"
+            },
+            "y": [
+              {
+                "column": "fsb",
+                "format": {
+                  "type": "bytes"
+                },
+                "label": "Bytes"
+              }
+            ],
+            "breakdown_by": {
+              "column": "attributes.state",
+              "label": "State"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 20,
+        "w": 48,
+        "h": 12
+      },
+      "config": {
+        "type": "xy",
+        "title": "Per-mount used bytes trend",
+        "filters": [],
+        "legend": {
+          "placement": "inside",
+          "position": "top_right"
+        },
+        "axis": {
+          "x": {
+            "scale": "temporal",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          },
+          "y": {
+            "domain": {
+              "type": "fit"
+            },
+            "scale": "linear",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {},
+          "fitting": {
+            "type": "none"
+          },
+          "points": {},
+          "areas": {},
+          "bars": {}
+        },
+        "layers": [
+          {
+            "type": "line",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.filesystem.usage` IS NOT NULL AND attributes.state == \"used\"\n| STATS mused = MAX(AVG_OVER_TIME(`system.filesystem.usage`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.mountpoint\n| SORT time_bucket ASC"
+            },
+            "x": {
+              "column": "time_bucket",
+              "label": "Time"
+            },
+            "y": [
+              {
+                "column": "mused",
+                "format": {
+                  "type": "bytes"
+                },
+                "label": "Used bytes"
+              }
+            ],
+            "breakdown_by": {
+              "column": "attributes.mountpoint",
+              "label": "Mount"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 32,
+        "w": 48,
+        "h": 10
+      },
+      "config": {
+        "type": "xy",
+        "title": "Inodes by state",
+        "filters": [],
+        "legend": {
+          "placement": "inside",
+          "position": "top_right"
+        },
+        "axis": {
+          "x": {
+            "scale": "temporal",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          },
+          "y": {
+            "domain": {
+              "type": "fit"
+            },
+            "scale": "linear",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {},
+          "fitting": {
+            "type": "none"
+          },
+          "points": {},
+          "areas": {},
+          "bars": {}
+        },
+        "layers": [
+          {
+            "type": "area",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.filesystem.inodes.usage` IS NOT NULL\n| STATS ino = MAX(AVG_OVER_TIME(`system.filesystem.inodes.usage`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.state\n| SORT time_bucket ASC"
+            },
+            "x": {
+              "column": "time_bucket",
+              "label": "Time"
+            },
+            "y": [
+              {
+                "column": "ino",
+                "format": {
+                  "type": "number",
+                  "decimals": 0
+                },
+                "label": "Inodes"
+              }
+            ],
+            "breakdown_by": {
+              "column": "attributes.state",
+              "label": "State"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 42,
+        "w": 24,
+        "h": 12
+      },
+      "config": {
+        "type": "data_table",
+        "title": "Mounts by used space",
+        "filters": [],
+        "styling": {
+          "density": {
+            "mode": "expanded"
+          }
+        },
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.filesystem.usage` IS NOT NULL AND attributes.state == \"used\"\n| STATS uby2 = MAX(LAST_OVER_TIME(`system.filesystem.usage`)) BY mp = attributes.mountpoint, ftype = attributes.type\n| SORT uby2 DESC\n| LIMIT 30"
+        },
+        "metrics": [
+          {
+            "column": "uby2",
+            "label": "Used bytes",
+            "format": {
+              "type": "bytes"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "column": "mp",
+            "label": "Mount",
+            "format": {
+              "type": "custom",
+              "pattern": "0"
+            },
+            "collapse_by": "min"
+          },
+          {
+            "column": "ftype",
+            "label": "Filesystem",
+            "format": {
+              "type": "custom",
+              "pattern": "0"
+            },
+            "collapse_by": "min"
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 24,
+        "y": 42,
+        "w": 24,
+        "h": 12
+      },
+      "config": {
+        "type": "data_table",
+        "title": "Inode use by mount",
+        "filters": [],
+        "styling": {
+          "density": {
+            "mode": "expanded"
+          }
+        },
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.filesystem.inodes.usage` IS NOT NULL AND attributes.state == \"used\"\n| STATS iu3 = MAX(LAST_OVER_TIME(`system.filesystem.inodes.usage`)) BY mp2 = attributes.mountpoint, fty2 = attributes.type\n| SORT iu3 DESC\n| LIMIT 30"
+        },
+        "metrics": [
+          {
+            "column": "iu3",
+            "label": "Used inodes",
+            "format": {
+              "type": "number",
+              "compact": true
+            }
+          }
+        ],
+        "rows": [
+          {
+            "column": "mp2",
+            "label": "Mount",
+            "format": {
+              "type": "custom",
+              "pattern": "0"
+            },
+            "collapse_by": "min"
+          },
+          {
+            "column": "fty2",
+            "label": "Filesystem",
+            "format": {
+              "type": "custom",
+              "pattern": "0"
+            },
+            "collapse_by": "min"
+          }
+        ]
+      }
+    }
+  ]
+}

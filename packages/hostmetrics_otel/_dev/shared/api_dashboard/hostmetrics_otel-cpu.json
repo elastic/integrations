@@ -1,0 +1,618 @@
+{
+  "title": "[System Host OTel] CPU and load",
+  "description": "CPU time, utilization, per-core headroom, and load averages for host capacity triage.",
+  "time_range": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "options": {
+    "use_margins": true,
+    "sync_cursor": true,
+    "sync_tooltips": false,
+    "sync_colors": false,
+    "auto_apply_filters": true
+  },
+  "query": {
+    "expression": "",
+    "language": "kql"
+  },
+  "refresh_interval": {
+    "pause": true,
+    "value": 60000
+  },
+  "access_control": {},
+  "filters": [
+    {
+      "type": "condition",
+      "condition": {
+        "field": "data_stream.dataset",
+        "operator": "is",
+        "value": "hostmetricsreceiver.otel"
+      }
+    }
+  ],
+  "pinned_panels": [
+    {
+      "type": "options_list_control",
+      "width": "medium",
+      "config": {
+        "data_view_id": "metrics-*",
+        "field_name": "resource.attributes.host.name",
+        "title": "Host"
+      }
+    }
+  ],
+  "panels": [
+    {
+      "type": "markdown",
+      "grid": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 8
+      },
+      "config": {
+        "content": "## [System Host OTel] CPU and load\n\nUse this view when investigating compute saturation: how busy cores are, how time is spent, and how load compares to the CPU count.\n- Cumulative CPU time as a per-second share by state from counters\n- Per-state utilization gauges averaged over the time range\n- Per-core non-idle share and all three load averages with time",
+        "hide_title": true,
+        "settings": {
+          "open_links_in_new_tab": true
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 16,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "m1",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.cpu.load_average.1m` IS NOT NULL\n| STATS l1m = MAX(LAST_OVER_TIME(`system.cpu.load_average.1m`))"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "l1m",
+            "label": "Load 1m",
+            "format": {
+              "type": "number",
+              "decimals": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 24,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "m2",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.cpu.logical.count` IS NOT NULL\n| STATS ncpu = MAX(LAST_OVER_TIME(`system.cpu.logical.count`))"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "ncpu",
+            "label": "Logical CPUs",
+            "format": {
+              "type": "number",
+              "decimals": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 32,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "m3",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.cpu.utilization` IS NOT NULL AND attributes.state == \"idle\"\n| STATS idu = AVG(AVG_OVER_TIME(`system.cpu.utilization`))\n| EVAL busy = 1 - idu"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "busy",
+            "label": "CPU non-idle",
+            "format": {
+              "type": "percent",
+              "decimals": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 40,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "m4",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.cpu.utilization` IS NOT NULL AND attributes.state != \"idle\"\n| STATS pcpu = MAX(AVG_OVER_TIME(`system.cpu.utilization`))"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "pcpu",
+            "label": "Peak non-idle util",
+            "format": {
+              "type": "percent",
+              "decimals": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 16,
+        "y": 4,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "m5",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.cpu.load_average.5m` IS NOT NULL\n| STATS l5k = MAX(LAST_OVER_TIME(`system.cpu.load_average.5m`))"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "l5k",
+            "label": "Load 5m",
+            "format": {
+              "type": "number",
+              "decimals": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 24,
+        "y": 4,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "m6",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.cpu.load_average.15m` IS NOT NULL\n| STATS l15k = MAX(LAST_OVER_TIME(`system.cpu.load_average.15m`))"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "l15k",
+            "label": "Load 15m",
+            "format": {
+              "type": "number",
+              "decimals": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 32,
+        "y": 4,
+        "w": 16,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "m7",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.cpu.utilization` IS NOT NULL AND attributes.state == \"user\"\n| STATS ushare = AVG(AVG_OVER_TIME(`system.cpu.utilization`))"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "ushare",
+            "label": "User mode share",
+            "format": {
+              "type": "percent",
+              "decimals": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 8,
+        "w": 48,
+        "h": 12
+      },
+      "config": {
+        "type": "xy",
+        "title": "CPU time by state",
+        "filters": [],
+        "legend": {
+          "placement": "inside",
+          "position": "top_right"
+        },
+        "axis": {
+          "x": {
+            "scale": "temporal",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          },
+          "y": {
+            "domain": {
+              "type": "fit"
+            },
+            "scale": "linear",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {},
+          "fitting": {
+            "type": "none"
+          },
+          "points": {},
+          "areas": {},
+          "bars": {}
+        },
+        "layers": [
+          {
+            "type": "area",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.cpu.time` IS NOT NULL\n| STATS tsec = SUM(RATE(`system.cpu.time`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.state\n| SORT time_bucket ASC"
+            },
+            "x": {
+              "column": "time_bucket",
+              "label": "Time"
+            },
+            "y": [
+              {
+                "column": "tsec",
+                "format": {
+                  "type": "number",
+                  "decimals": 2
+                },
+                "label": "CPU seconds per second"
+              }
+            ],
+            "breakdown_by": {
+              "column": "attributes.state",
+              "label": "State"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 12
+      },
+      "config": {
+        "type": "xy",
+        "title": "Load averages",
+        "filters": [],
+        "legend": {
+          "placement": "inside",
+          "position": "top_right"
+        },
+        "axis": {
+          "x": {
+            "scale": "temporal",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          },
+          "y": {
+            "domain": {
+              "type": "fit"
+            },
+            "scale": "linear",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {},
+          "fitting": {
+            "type": "none"
+          },
+          "points": {},
+          "areas": {},
+          "bars": {}
+        },
+        "layers": [
+          {
+            "type": "line",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.cpu.load_average.1m` IS NOT NULL\n| STATS l1m = MAX(LAST_OVER_TIME(`system.cpu.load_average.1m`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+            },
+            "x": {
+              "column": "time_bucket",
+              "label": "Time"
+            },
+            "y": [
+              {
+                "column": "l1m",
+                "label": "Load 1m",
+                "format": {
+                  "type": "number",
+                  "decimals": 2
+                }
+              }
+            ]
+          },
+          {
+            "type": "line",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.cpu.load_average.5m` IS NOT NULL\n| STATS l5m = MAX(LAST_OVER_TIME(`system.cpu.load_average.5m`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+            },
+            "x": {
+              "column": "time_bucket",
+              "label": "Time"
+            },
+            "y": [
+              {
+                "column": "l5m",
+                "label": "Load 5m",
+                "format": {
+                  "type": "number",
+                  "decimals": 2
+                }
+              }
+            ]
+          },
+          {
+            "type": "line",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.cpu.load_average.15m` IS NOT NULL\n| STATS l15m = MAX(LAST_OVER_TIME(`system.cpu.load_average.15m`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+            },
+            "x": {
+              "column": "time_bucket",
+              "label": "Time"
+            },
+            "y": [
+              {
+                "column": "l15m",
+                "label": "Load 15m",
+                "format": {
+                  "type": "number",
+                  "decimals": 2
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 24,
+        "y": 20,
+        "w": 24,
+        "h": 12
+      },
+      "config": {
+        "type": "heatmap",
+        "title": "Per-core non-idle share",
+        "filters": [],
+        "legend": {
+          "size": "m",
+          "visibility": "visible"
+        },
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.cpu.utilization` IS NOT NULL AND attributes.state == \"idle\"\n| STATS iu = MAX(AVG_OVER_TIME(`system.cpu.utilization`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.cpu\n| EVAL nidle = 1.0 - iu\n| SORT time_bucket ASC"
+        },
+        "x": {
+          "column": "time_bucket",
+          "label": "Time",
+          "format": {
+            "type": "custom",
+            "pattern": "0"
+          }
+        },
+        "y": {
+          "column": "attributes.cpu",
+          "label": "Core",
+          "format": {
+            "type": "custom",
+            "pattern": "0"
+          }
+        },
+        "metric": {
+          "column": "nidle",
+          "label": "Non-idle",
+          "format": {
+            "type": "percent",
+            "decimals": 0
+          }
+        },
+        "styling": {
+          "cells": {
+            "labels": {
+              "visible": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 32,
+        "w": 48,
+        "h": 10
+      },
+      "config": {
+        "type": "data_table",
+        "title": "Utilization by state and core",
+        "filters": [],
+        "styling": {
+          "density": {
+            "mode": "expanded"
+          }
+        },
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.cpu.utilization` IS NOT NULL\n| STATS uavg = AVG(AVG_OVER_TIME(`system.cpu.utilization`)) BY st = attributes.state, core = attributes.cpu\n| SORT uavg DESC\n| LIMIT 30"
+        },
+        "metrics": [
+          {
+            "column": "uavg",
+            "label": "Mean utilization",
+            "format": {
+              "type": "percent",
+              "decimals": 0
+            }
+          }
+        ],
+        "rows": [
+          {
+            "column": "st",
+            "label": "State",
+            "format": {
+              "type": "custom",
+              "pattern": "0"
+            },
+            "collapse_by": "min"
+          },
+          {
+            "column": "core",
+            "label": "Core",
+            "format": {
+              "type": "custom",
+              "pattern": "0"
+            },
+            "collapse_by": "min"
+          }
+        ]
+      }
+    }
+  ]
+}

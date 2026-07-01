@@ -1,0 +1,404 @@
+{
+  "title": "[System Host OTel] Memory",
+  "description": "Physical memory usage, utilization by state, and time trends for OOM and pressure checks.",
+  "time_range": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "options": {
+    "use_margins": true,
+    "sync_cursor": true,
+    "sync_tooltips": false,
+    "sync_colors": false,
+    "auto_apply_filters": true
+  },
+  "query": {
+    "expression": "",
+    "language": "kql"
+  },
+  "refresh_interval": {
+    "pause": true,
+    "value": 60000
+  },
+  "access_control": {},
+  "filters": [
+    {
+      "type": "condition",
+      "condition": {
+        "field": "data_stream.dataset",
+        "operator": "is",
+        "value": "hostmetricsreceiver.otel"
+      }
+    }
+  ],
+  "pinned_panels": [
+    {
+      "type": "options_list_control",
+      "width": "medium",
+      "config": {
+        "data_view_id": "metrics-*",
+        "field_name": "resource.attributes.host.name",
+        "title": "Host"
+      }
+    }
+  ],
+  "panels": [
+    {
+      "type": "markdown",
+      "grid": {
+        "x": 0,
+        "y": 0,
+        "w": 16,
+        "h": 8
+      },
+      "config": {
+        "content": "## [System Host OTel] Memory\n\nPhysical memory from the host metrics receiver: how much is used, free, or inactive, and the total used ratio over time.\n- Used physical bytes split by state on one trend\n- Total used share as a line with adaptive buckets\n- Snapshot table of mean utilization by state for the time range",
+        "hide_title": true,
+        "settings": {
+          "open_links_in_new_tab": true
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 16,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "mem u",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.memory.utilization` IS NOT NULL AND attributes.state == \"used\"\n| STATS u = AVG(AVG_OVER_TIME(`system.memory.utilization`))"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "u",
+            "label": "Used share",
+            "format": {
+              "type": "percent",
+              "decimals": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 24,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "mem f",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.memory.utilization` IS NOT NULL AND attributes.state == \"free\"\n| STATS f = AVG(AVG_OVER_TIME(`system.memory.utilization`))"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "f",
+            "label": "Free share",
+            "format": {
+              "type": "percent",
+              "decimals": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 32,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "metric",
+        "title": "mem i",
+        "hide_title": true,
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.memory.utilization` IS NOT NULL AND attributes.state == \"inactive\"\n| STATS ina = AVG(AVG_OVER_TIME(`system.memory.utilization`))"
+        },
+        "styling": {
+          "icon": {
+            "name": "compute"
+          }
+        },
+        "metrics": [
+          {
+            "type": "primary",
+            "column": "ina",
+            "label": "Inactive share",
+            "format": {
+              "type": "percent",
+              "decimals": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 40,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "config": {
+        "type": "gauge",
+        "title": "Memory pressure",
+        "filters": [],
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.memory.utilization` IS NOT NULL AND attributes.state == \"used\"\n| STATS gu = AVG(AVG_OVER_TIME(`system.memory.utilization`))"
+        },
+        "metric": {
+          "column": "gu",
+          "label": "Used share",
+          "format": {
+            "type": "percent",
+            "decimals": 0
+          }
+        },
+        "styling": {
+          "shape": {
+            "type": "arc"
+          }
+        }
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 8,
+        "w": 48,
+        "h": 12
+      },
+      "config": {
+        "type": "xy",
+        "title": "Bytes by state",
+        "filters": [],
+        "legend": {
+          "placement": "inside",
+          "position": "top_right"
+        },
+        "axis": {
+          "x": {
+            "scale": "temporal",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          },
+          "y": {
+            "domain": {
+              "type": "fit"
+            },
+            "scale": "linear",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {},
+          "fitting": {
+            "type": "none"
+          },
+          "points": {},
+          "areas": {},
+          "bars": {}
+        },
+        "layers": [
+          {
+            "type": "area",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.memory.usage` IS NOT NULL\n| STATS kb = MAX(AVG_OVER_TIME(`system.memory.usage`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.state\n| SORT time_bucket ASC"
+            },
+            "x": {
+              "column": "time_bucket",
+              "label": "Time"
+            },
+            "y": [
+              {
+                "column": "kb",
+                "format": {
+                  "type": "bytes"
+                },
+                "label": "Bytes"
+              }
+            ],
+            "breakdown_by": {
+              "column": "attributes.state",
+              "label": "State"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 20,
+        "w": 48,
+        "h": 12
+      },
+      "config": {
+        "type": "xy",
+        "title": "Used share over time",
+        "filters": [],
+        "legend": {
+          "placement": "inside",
+          "position": "top_right"
+        },
+        "axis": {
+          "x": {
+            "scale": "temporal",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          },
+          "y": {
+            "domain": {
+              "type": "fit"
+            },
+            "scale": "linear",
+            "labels": {
+              "orientation": "horizontal"
+            },
+            "grid": {
+              "visible": true
+            },
+            "ticks": {
+              "visible": true
+            }
+          }
+        },
+        "styling": {
+          "overlays": {},
+          "fitting": {
+            "type": "none"
+          },
+          "points": {},
+          "areas": {},
+          "bars": {}
+        },
+        "layers": [
+          {
+            "type": "line",
+            "data_source": {
+              "type": "esql",
+              "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.memory.utilization` IS NOT NULL AND attributes.state == \"used\"\n| STATS uu = MAX(AVG_OVER_TIME(`system.memory.utilization`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+            },
+            "x": {
+              "column": "time_bucket",
+              "label": "Time"
+            },
+            "y": [
+              {
+                "column": "uu",
+                "label": "Used ratio",
+                "format": {
+                  "type": "percent",
+                  "decimals": 1
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "vis",
+      "grid": {
+        "x": 0,
+        "y": 32,
+        "w": 48,
+        "h": 12
+      },
+      "config": {
+        "type": "data_table",
+        "title": "Mean memory utilization by state",
+        "filters": [],
+        "styling": {
+          "density": {
+            "mode": "expanded"
+          }
+        },
+        "data_source": {
+          "type": "esql",
+          "query": "TS metrics-hostmetricsreceiver.otel-*\n| WHERE data_stream.dataset == \"hostmetricsreceiver.otel\"\n| WHERE `system.memory.utilization` IS NOT NULL\n| STATS mavg = AVG(AVG_OVER_TIME(`system.memory.utilization`)) BY st = attributes.state\n| SORT mavg DESC"
+        },
+        "metrics": [
+          {
+            "column": "mavg",
+            "label": "Mean utilization",
+            "format": {
+              "type": "percent",
+              "decimals": 1
+            }
+          }
+        ],
+        "rows": [
+          {
+            "column": "st",
+            "label": "State",
+            "format": {
+              "type": "custom",
+              "pattern": "0"
+            },
+            "collapse_by": "min"
+          }
+        ]
+      }
+    }
+  ]
+}

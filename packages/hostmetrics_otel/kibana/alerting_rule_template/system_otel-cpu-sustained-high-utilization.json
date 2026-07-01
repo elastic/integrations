@@ -1,0 +1,56 @@
+{
+  "id": "system_otel-cpu-sustained-high-utilization",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Fires when every logical CPU is heavily utilised in the lookback window. Uses idle utilisation: non-idle share per core is 1.0 minus the idle state ratio, then the coolest core in the window must still exceed 90% non-idle. Tune 0.9 in the ESQL to match your SLO. Requires 2 consecutive positive evaluations to reduce flapping from short spikes.",
+    "name": "[System Host Metrics OTel] CPU sustained high on all cores",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "hostmetrics",
+      "critical"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## CPU high on all cores\n\n1. In Dashboards, open the host **CPU** view and check per-`cpu` and `state` breakdown.\n2. Compare `system.cpu.load_average.5m` to `system.cpu.logical.count`.\n3. Identify top processes (outside this dataset if process scraper is enabled).\n\n**Tune** Lower `0.9` in the ESQL to alert earlier (e.g. 0.85)."
+      },
+      "dashboards": [
+        {
+          "id": "hostmetrics_otel-overview"
+        },
+        {
+          "id": "hostmetrics_otel-cpu"
+        }
+      ]
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-hostmetricsreceiver.otel-*\n// Idle state util is idle fraction; non-idle share approximates 1 - idle for that row.\n| WHERE `attributes.state` == \"idle\"\n| WHERE `metrics.system.cpu.utilization` IS NOT NULL\n| EVAL non_idle = 1.0 - `metrics.system.cpu.utilization`\n| STATS per_core_peak = MAX(non_idle) BY `host.name`, `attributes.cpu`\n// Coolest core in the window: if its peak non-idle is still > threshold, all cores are hot.\n| STATS min_coolest_core = MIN(per_core_peak) BY `host.name`\n| WHERE min_coolest_core > 0.9\n| SORT min_coolest_core DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}
