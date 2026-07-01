@@ -1,7 +1,18 @@
 version: '2.3'
 services:
+  # The Spring Boot version is selected by the active variant defined in
+  # _dev/deploy/variants.yml (DOCKER_FILE env var):
+  #   - v4.0.6 (default): JDK 25, Jolokia 2.x, /actuator/httpexchanges endpoint.
+  #   - v2.3.12: JDK 8, Jolokia 1.x, legacy /actuator/httptrace endpoint.
+  # Data streams whose collection works identically on both versions
+  # (audit_events, gc, memory, threading) iterate transparently across variants.
+  # The http_trace data stream needs to exercise version-specific endpoints, so
+  # it provides its own multi-service deploy at
+  # data_stream/http_trace/_dev/deploy/docker that overrides this one.
   spring_boot:
-    build: .
+    build:
+      context: .
+      dockerfile: ${DOCKER_FILE:-Dockerfile.v4.0.6}
     hostname: springboot
     ports:
       - 8090
