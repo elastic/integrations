@@ -1,0 +1,233 @@
+{
+    "id": "aws_rds_otel-metrics-ml",
+    "type": "ml-module",
+    "migrationVersion": {
+        "search": "7.9.3"
+    },
+    "references": [],
+    "attributes": {
+        "id": "aws_rds_otel-metrics-ml",
+        "title": "AWS RDS instance resources (OpenTelemetry)",
+        "description": "Detect anomalies in RDS instance resource metrics (connections, CPU, latency, memory, disk queue) streamed from CloudWatch via the OpenTelemetry firehose receiver. Each metric is modelled per DB instance against that instance's own history, so slow drift below the fixed alert thresholds is caught before it becomes an outage.",
+        "type": "AWS metrics",
+        "logo": {
+            "icon": "logoAWSMono"
+        },
+        "defaultIndexPattern": "metrics-aws.rds.otel-*",
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "term": {
+                            "Namespace": "AWS/RDS"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "DBInstanceIdentifier"
+                        }
+                    }
+                ],
+                "must_not": {
+                    "terms": {
+                        "_tier": [
+                            "data_frozen",
+                            "data_cold"
+                        ]
+                    }
+                }
+            }
+        },
+        "jobs": [
+            {
+                "id": "aws_rds_instance_resource_anomaly",
+                "config": {
+                    "groups": [
+                        "aws",
+                        "rds",
+                        "otel"
+                    ],
+                    "description": "AWS RDS: detect DB instances whose resource usage has drifted unusually relative to that instance's own history - a connection count climbing toward the pool ceiling, latency creeping up, freeable memory sinking, or disk queue building. Catches slow trajectories that stay below the static threshold-based alert rules until they tip into an incident. Per-instance threshold breaches are covered by the alert rules; this job covers the sub-threshold drift, with the instance, region, and account surfaced as influencers for attribution.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "summary_count_field_name": "doc_count",
+                        "detectors": [
+                            {
+                                "detector_description": "Anomalous DB connection count (pool-exhaustion trajectory)",
+                                "function": "high_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/RDS/DatabaseConnections",
+                                "by_field_name": "DBInstanceIdentifier",
+                                "partition_field_name": "cloud.region"
+                            },
+                            {
+                                "detector_description": "Anomalous CPU utilization",
+                                "function": "high_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/RDS/CPUUtilization",
+                                "by_field_name": "DBInstanceIdentifier",
+                                "partition_field_name": "cloud.region"
+                            },
+                            {
+                                "detector_description": "Anomalous read latency",
+                                "function": "high_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/RDS/ReadLatency",
+                                "by_field_name": "DBInstanceIdentifier",
+                                "partition_field_name": "cloud.region"
+                            },
+                            {
+                                "detector_description": "Anomalous write latency",
+                                "function": "high_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/RDS/WriteLatency",
+                                "by_field_name": "DBInstanceIdentifier",
+                                "partition_field_name": "cloud.region"
+                            },
+                            {
+                                "detector_description": "Anomalous drop in freeable memory (memory-pressure trajectory)",
+                                "function": "low_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/RDS/FreeableMemory",
+                                "by_field_name": "DBInstanceIdentifier",
+                                "partition_field_name": "cloud.region"
+                            },
+                            {
+                                "detector_description": "Anomalous disk queue depth (I/O saturation building)",
+                                "function": "high_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/RDS/DiskQueueDepth",
+                                "by_field_name": "DBInstanceIdentifier",
+                                "partition_field_name": "cloud.region"
+                            }
+                        ],
+                        "influencers": [
+                            "DBInstanceIdentifier",
+                            "cloud.region",
+                            "cloud.account.id"
+                        ]
+                    },
+                    "analysis_limits": {
+                        "model_memory_limit": "128mb"
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "model_plot_config": {
+                        "enabled": false,
+                        "annotations_enabled": true
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-aws-rds-otel-metrics-ml"
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-aws_rds_instance_resource_anomaly",
+                "job_id": "aws_rds_instance_resource_anomaly",
+                "config": {
+                    "job_id": "aws_rds_instance_resource_anomaly",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "indices_options": {
+                        "allow_no_indices": true
+                    },
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "stat": "Average"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "MetricName": [
+                                            "DatabaseConnections",
+                                            "CPUUtilization",
+                                            "ReadLatency",
+                                            "WriteLatency",
+                                            "FreeableMemory",
+                                            "DiskQueueDepth"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "DBInstanceIdentifier"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "aggregations": {
+                        "buckets": {
+                            "composite": {
+                                "size": 1000,
+                                "sources": [
+                                    {
+                                        "date": {
+                                            "date_histogram": {
+                                                "field": "@timestamp",
+                                                "fixed_interval": "900s"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cloud.region": {
+                                            "terms": {
+                                                "field": "cloud.region"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "DBInstanceIdentifier": {
+                                            "terms": {
+                                                "field": "DBInstanceIdentifier"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "aggregations": {
+                                "@timestamp": {
+                                    "max": {
+                                        "field": "@timestamp"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/RDS/DatabaseConnections": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/RDS/DatabaseConnections"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/RDS/CPUUtilization": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/RDS/CPUUtilization"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/RDS/ReadLatency": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/RDS/ReadLatency"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/RDS/WriteLatency": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/RDS/WriteLatency"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/RDS/FreeableMemory": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/RDS/FreeableMemory"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/RDS/DiskQueueDepth": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/RDS/DiskQueueDepth"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}
