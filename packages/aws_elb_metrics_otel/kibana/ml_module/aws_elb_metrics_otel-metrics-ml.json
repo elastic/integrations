@@ -1,0 +1,182 @@
+{
+    "id": "aws_elb_metrics_otel-metrics-ml",
+    "type": "ml-module",
+    "migrationVersion": {
+        "search": "7.9.3"
+    },
+    "references": [],
+    "attributes": {
+        "id": "aws_elb_metrics_otel-metrics-ml",
+        "title": "AWS Application Load Balancer target health (OpenTelemetry)",
+        "description": "Detect anomalies in ALB target response time and unhealthy-host count streamed from CloudWatch via the OpenTelemetry firehose receiver. Each target group is modelled against its own history, so latency drift and intermittent host unhealthiness are caught before they cross the static alert thresholds.",
+        "type": "AWS metrics",
+        "logo": {
+            "icon": "logoAWSMono"
+        },
+        "defaultIndexPattern": "metrics-aws.elb.otel-*",
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "term": {
+                            "Namespace": "AWS/ApplicationELB"
+                        }
+                    },
+                    {
+                        "exists": {
+                            "field": "TargetGroup"
+                        }
+                    }
+                ],
+                "must_not": {
+                    "terms": {
+                        "_tier": [
+                            "data_frozen",
+                            "data_cold"
+                        ]
+                    }
+                }
+            }
+        },
+        "jobs": [
+            {
+                "id": "aws_elb_target_latency_anomaly",
+                "config": {
+                    "groups": [
+                        "aws",
+                        "elb",
+                        "otel"
+                    ],
+                    "description": "AWS ALB: detect target groups whose response time or unhealthy-host count has drifted unusually relative to that target group's own history - a backend slowing down or hosts flapping in and out of health. The static alert rules cover hard latency and unhealthy-host breaches; this job covers the sub-threshold drift, with the target group, load balancer, region, and account as influencers.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "summary_count_field_name": "doc_count",
+                        "detectors": [
+                            {
+                                "detector_description": "Anomalous target response time (latency drift)",
+                                "function": "high_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime",
+                                "by_field_name": "TargetGroup",
+                                "partition_field_name": "cloud.region"
+                            },
+                            {
+                                "detector_description": "Anomalous unhealthy-host count",
+                                "function": "high_mean",
+                                "field_name": "metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount",
+                                "by_field_name": "TargetGroup",
+                                "partition_field_name": "cloud.region"
+                            }
+                        ],
+                        "influencers": [
+                            "TargetGroup",
+                            "LoadBalancer",
+                            "cloud.region",
+                            "cloud.account.id"
+                        ]
+                    },
+                    "analysis_limits": {
+                        "model_memory_limit": "64mb"
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "model_plot_config": {
+                        "enabled": false,
+                        "annotations_enabled": true
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-aws-elb-metrics-otel-metrics-ml"
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-aws_elb_target_latency_anomaly",
+                "job_id": "aws_elb_target_latency_anomaly",
+                "config": {
+                    "job_id": "aws_elb_target_latency_anomaly",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "indices_options": {
+                        "allow_no_indices": true
+                    },
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "stat": "Average"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "MetricName": [
+                                            "TargetResponseTime",
+                                            "UnHealthyHostCount"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "TargetGroup"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "aggregations": {
+                        "buckets": {
+                            "composite": {
+                                "size": 1000,
+                                "sources": [
+                                    {
+                                        "date": {
+                                            "date_histogram": {
+                                                "field": "@timestamp",
+                                                "fixed_interval": "900s"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cloud.region": {
+                                            "terms": {
+                                                "field": "cloud.region"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "TargetGroup": {
+                                            "terms": {
+                                                "field": "TargetGroup"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "aggregations": {
+                                "@timestamp": {
+                                    "max": {
+                                        "field": "@timestamp"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime"
+                                    }
+                                },
+                                "metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount": {
+                                    "avg": {
+                                        "field": "metrics.amazonaws.com/AWS/ApplicationELB/UnHealthyHostCount"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}
