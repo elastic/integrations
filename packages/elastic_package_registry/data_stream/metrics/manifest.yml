@@ -1,10 +1,14 @@
 title: "Prometheus Metrics"
 type: metrics
+# dataset is the default form. this overrides the dataset set on the required input.
+# if not defined, fleet overrides the dataset with the default (packag_name.stream_type)
+dataset: elastic_package_registry.metrics
 streams:
-  - input: prometheus/metrics
+  - package: prometheus_input
     enabled: true
     title: Elastic Package Registry metrics
     description: Collect Prometheus metrics from Elastic Package Registry
+    template_path: stream.yml.hbs
     vars:
       - name: period
         type: text
@@ -43,7 +47,6 @@ streams:
         show_user: false
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/metricbeat/current/filtering-and-enhancing-data.html) for details.
-
       - name: tags
         type: text
         title: Tags
