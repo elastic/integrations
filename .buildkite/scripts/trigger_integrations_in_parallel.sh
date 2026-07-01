@@ -41,6 +41,16 @@ echo "Checking with commits: from: '${from}' to: '${to}'"
 # This variable does not exist in builds triggered automatically
 GITHUB_PR_TRIGGER_COMMENT="${GITHUB_PR_TRIGGER_COMMENT:-""}"
 
+# One-off path for PR 19907: run full package coverage against the
+# elastic-package LogsDB Columnar implementation under test.
+if [[ "${BUILDKITE_PULL_REQUEST:-"false"}" == "19907" ]]; then
+    echo "--- Enable one-off LogsDB Columnar full test mode for PR 19907"
+    export FORCE_CHECK_ALL="true"
+    export STACK_VERSION="9.5.0-SNAPSHOT"
+    export STACK_LOGSDB_ENABLED="true"
+    export STACK_LOGSDB_COLUMNAR_ENABLED="true"
+fi
+
 if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-test-stack" && "${GITHUB_PR_TRIGGER_COMMENT}" =~ ^/test\ stack ]]; then
     echo "--- Stack version set from Github comment"
     STACK_VERSION=$(echo "$GITHUB_PR_TRIGGER_COMMENT" | cut -d " " -f 3)
@@ -74,6 +84,8 @@ for package_path in ${PACKAGE_LIST}; do
       env:
         STACK_VERSION: "${STACK_VERSION}"
         FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"
+        STACK_LOGSDB_ENABLED: "${STACK_LOGSDB_ENABLED:-false}"
+        STACK_LOGSDB_COLUMNAR_ENABLED: "${STACK_LOGSDB_COLUMNAR_ENABLED:-false}"
         SERVERLESS: "false"
         UPLOAD_SAFE_LOGS: ${UPLOAD_SAFE_LOGS}
       plugins:
