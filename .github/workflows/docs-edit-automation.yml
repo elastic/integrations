@@ -6,7 +6,11 @@ on:
       - opened
       - synchronize
     paths:
-      - 'packages/*/_dev/build/docs/README.md'
+      # Match any markdown source file under a package's _dev/build/docs/
+      # directory, including future nested package directories. This covers
+      # both the package-level README.md and per-integration/per-data-stream
+      # files such as cloudtrail.md, activitylogs.md, gke.md, etc.
+      - 'packages/**/_dev/build/docs/*.md'
 
 jobs:
   help-with-docs:
@@ -27,6 +31,7 @@ jobs:
         id: analyze
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_REF: ${{ github.head_ref }}
         run: |
           echo "🔍 Analyzing documentation changes..."
 
@@ -35,18 +40,33 @@ jobs:
             echo "Error: Failed to fetch PR files"
             exit 1
           fi
-          CHANGED_DOCS=$(echo "$PR_FILES" | grep '^packages/.*/_dev/build/docs/README\.md$' || true)
+          # Match any *.md file directly under a package's _dev/build/docs/,
+          # including future nested package directories such as
+          # packages/nginx/nginx_otel/_dev/build/docs/README.md.
+          CHANGED_DOCS=$(echo "$PR_FILES" | grep -E '^packages/.+/_dev/build/docs/[^/]+\.md$' || true)
           
           if [ -z "$CHANGED_DOCS" ]; then
-            echo "no_docs_changes=true" >> $GITHUB_OUTPUT
+            {
+              echo "no_docs_changes=true"
+              echo "change_type="
+              echo "version_bump="
+              echo "label="
+              echo "changelog_desc_b64="
+              echo "packages_needing_update="
+              echo "packages_already_done="
+              echo "packages_missing_manifest="
+              echo "packages_missing_changelog="
+            } >> "$GITHUB_OUTPUT"
             exit 0
           fi
+
+          echo "no_docs_changes=false" >> "$GITHUB_OUTPUT"
           
           # Determine change type from branch name
           CHANGE_TYPE="enhancement"
           VERSION_BUMP="minor"
           LABEL="enhancement"
-          if [[ "${{ github.head_ref }}" =~ ^docs-bugfix/ ]]; then
+          if [[ "$HEAD_REF" =~ ^docs-bugfix/ ]]; then
             CHANGE_TYPE="bugfix"
             VERSION_BUMP="patch"
             LABEL="bugfix"
@@ -63,60 +83,81 @@ jobs:
             CHANGELOG_DESC="Fix documentation"
           fi
           
-          # Check for custom changelog description in PR body
-          if echo "$PR_BODY" | grep -qi "^changelog:"; then
-            CUSTOM_DESC=$(echo "$PR_BODY" | grep -i "^changelog:" | sed 's/^changelog://i' | xargs)
-            if [ -n "$CUSTOM_DESC" ]; then
-              # Escape quotes and special characters for safe command generation
-              CHANGELOG_DESC=$(echo "$CUSTOM_DESC" | sed 's/"/\\"/g' | sed "s/'/\\'/g")
-            fi
+          # Use the first changelog: line, preserving internal whitespace.
+          CUSTOM_DESC=$(printf '%s\n' "$PR_BODY" \
+            | sed -n 's/^[Cc][Hh][Aa][Nn][Gg][Ee][Ll][Oo][Gg]:[[:space:]]*//p' \
+            | sed -n '1{s/[[:space:]]*$//;p;}')
+          if [ -n "$CUSTOM_DESC" ]; then
+            CHANGELOG_DESC="$CUSTOM_DESC"
           fi
           
-          echo "change_type=$CHANGE_TYPE" >> $GITHUB_OUTPUT
-          echo "version_bump=$VERSION_BUMP" >> $GITHUB_OUTPUT
-          echo "label=$LABEL" >> $GITHUB_OUTPUT
-          echo "changelog_desc=$CHANGELOG_DESC" >> $GITHUB_OUTPUT
+          echo "change_type=$CHANGE_TYPE" >> "$GITHUB_OUTPUT"
+          echo "version_bump=$VERSION_BUMP" >> "$GITHUB_OUTPUT"
+          echo "label=$LABEL" >> "$GITHUB_OUTPUT"
+          CHANGELOG_DESC_B64=$(printf '%s' "$CHANGELOG_DESC" | base64 | tr -d '\n')
+          echo "changelog_desc_b64=$CHANGELOG_DESC_B64" >> "$GITHUB_OUTPUT"
           
           # Get all changed files from PR to check what's already updated
           # Reuse the PR_FILES we already fetched to avoid another API call
           ALL_CHANGED_FILES="$PR_FILES"
           
-          # Find packages that need updates vs already done
+          # Collect unique package paths from the changed doc files.
+          # A single PR can touch multiple .md files in the same package
+          # (e.g. cloudtrail.md and s3.md under packages/aws/_dev/build/docs/),
+          # so we dedupe before classifying.
+          CHANGED_PACKAGES=$(echo "$CHANGED_DOCS" \
+            | sed -n 's|^packages/\(.*\)/_dev/build/docs/[^/]*\.md$|\1|p' \
+            | sort -u)
+
+          # Find packages that need updates vs already done.
+          # A package is complete only when both metadata files changed.
           PACKAGES_NEEDING_UPDATE=""
           PACKAGES_ALREADY_DONE=""
-          
-          while IFS= read -r doc_file; do
-            [ -z "$doc_file" ] && continue
-            
-            PACKAGE=$(echo "$doc_file" | sed 's|^packages/\([^/]*\)/.*|\1|')
-            
+          PACKAGES_MISSING_MANIFEST=""
+          PACKAGES_MISSING_CHANGELOG=""
+
+          while IFS= read -r PACKAGE; do
+            [ -z "$PACKAGE" ] && continue
+
             # Check if manifest.yml or changelog.yml are in the changed files
-            MANIFEST_CHANGED=$(echo "$ALL_CHANGED_FILES" | grep "^packages/$PACKAGE/manifest.yml$" || true)
-            CHANGELOG_CHANGED=$(echo "$ALL_CHANGED_FILES" | grep "^packages/$PACKAGE/changelog.yml$" || true)
-            
+            MANIFEST_CHANGED=$(echo "$ALL_CHANGED_FILES" | grep -Fx "packages/$PACKAGE/manifest.yml" || true)
+            CHANGELOG_CHANGED=$(echo "$ALL_CHANGED_FILES" | grep -Fx "packages/$PACKAGE/changelog.yml" || true)
+
             if [ -z "$MANIFEST_CHANGED" ] && [ -z "$CHANGELOG_CHANGED" ]; then
               PACKAGES_NEEDING_UPDATE="$PACKAGES_NEEDING_UPDATE $PACKAGE"
-            else
+            elif [ -n "$MANIFEST_CHANGED" ] && [ -n "$CHANGELOG_CHANGED" ]; then
               PACKAGES_ALREADY_DONE="$PACKAGES_ALREADY_DONE $PACKAGE"
+            elif [ -z "$MANIFEST_CHANGED" ]; then
+              PACKAGES_MISSING_MANIFEST="$PACKAGES_MISSING_MANIFEST $PACKAGE"
+            else
+              PACKAGES_MISSING_CHANGELOG="$PACKAGES_MISSING_CHANGELOG $PACKAGE"
             fi
-            
-          done <<< "$CHANGED_DOCS"
+
+          done <<< "$CHANGED_PACKAGES"
+
+          PACKAGES_NEEDING_UPDATE=$(printf '%s' "$PACKAGES_NEEDING_UPDATE" | xargs)
+          PACKAGES_ALREADY_DONE=$(printf '%s' "$PACKAGES_ALREADY_DONE" | xargs)
+          PACKAGES_MISSING_MANIFEST=$(printf '%s' "$PACKAGES_MISSING_MANIFEST" | xargs)
+          PACKAGES_MISSING_CHANGELOG=$(printf '%s' "$PACKAGES_MISSING_CHANGELOG" | xargs)
           
-          echo "packages_needing_update=$PACKAGES_NEEDING_UPDATE" >> $GITHUB_OUTPUT
-          echo "packages_already_done=$PACKAGES_ALREADY_DONE" >> $GITHUB_OUTPUT
+          echo "packages_needing_update=$PACKAGES_NEEDING_UPDATE" >> "$GITHUB_OUTPUT"
+          echo "packages_already_done=$PACKAGES_ALREADY_DONE" >> "$GITHUB_OUTPUT"
+          echo "packages_missing_manifest=$PACKAGES_MISSING_MANIFEST" >> "$GITHUB_OUTPUT"
+          echo "packages_missing_changelog=$PACKAGES_MISSING_CHANGELOG" >> "$GITHUB_OUTPUT"
 
       - name: Comment with exact commands (same-repo PRs)
-        if: steps.analyze.outputs.packages_needing_update && github.event.pull_request.head.repo.fork == false
+        if: steps.analyze.outputs.packages_needing_update != '' && github.event.pull_request.head.repo.fork == false
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PACKAGES="${{ steps.analyze.outputs.packages_needing_update }}"
           CHANGE_TYPE="${{ steps.analyze.outputs.change_type }}"
           VERSION_BUMP="${{ steps.analyze.outputs.version_bump }}"
-          CHANGELOG_DESC="${{ steps.analyze.outputs.changelog_desc }}"
+          CHANGELOG_DESC=$(printf '%s' "${{ steps.analyze.outputs.changelog_desc_b64 }}" | base64 --decode)
+          CHANGELOG_DESC_ARG=$(printf '%q' "$CHANGELOG_DESC")
 
           # Create clean package list for the for loop
-          PACKAGE_LIST=$(echo $PACKAGES | xargs)
+          PACKAGE_LIST=$(printf '%s' "$PACKAGES" | xargs)
           
           # Safety check for empty package list
           if [ -z "$PACKAGE_LIST" ]; then
@@ -131,7 +172,7 @@ jobs:
             echo '```bash'
             echo "for pkg in ${PACKAGE_LIST}; do"
             echo '  cd packages/$pkg'
-            echo "  elastic-package changelog add --type $CHANGE_TYPE --description \"$CHANGELOG_DESC\" --link \"https://github.com/${{ github.repository }}/pull/$PR_NUMBER\" --next $VERSION_BUMP"
+            echo "  elastic-package changelog add --type $CHANGE_TYPE --description $CHANGELOG_DESC_ARG --link \"https://github.com/${{ github.repository }}/pull/$PR_NUMBER\" --next $VERSION_BUMP"
             echo "  elastic-package build"
             echo "  cd ../.."
             echo "done"
@@ -148,6 +189,11 @@ jobs:
             echo "Note: These packages already updated: \`${{ steps.analyze.outputs.packages_already_done }}\`" >> "$COMMENT_FILE"
           fi
 
+          if [ -n "${{ steps.analyze.outputs.packages_missing_manifest }}" ] || [ -n "${{ steps.analyze.outputs.packages_missing_changelog }}" ]; then
+            echo "" >> "$COMMENT_FILE"
+            echo "Note: Some packages have incomplete metadata updates. The incomplete metadata report will list affected packages." >> "$COMMENT_FILE"
+          fi
+
           if ! gh pr comment "$PR_NUMBER" --body-file "$COMMENT_FILE"; then
             {
               echo "## 📋 Documentation follow-up"
@@ -157,14 +203,15 @@ jobs:
           fi
 
       - name: Show commands in summary (fork PRs)
-        if: steps.analyze.outputs.packages_needing_update && github.event.pull_request.head.repo.fork == true
+        if: steps.analyze.outputs.packages_needing_update != '' && github.event.pull_request.head.repo.fork == true
         run: |
           PACKAGES="${{ steps.analyze.outputs.packages_needing_update }}"
           CHANGE_TYPE="${{ steps.analyze.outputs.change_type }}"
           VERSION_BUMP="${{ steps.analyze.outputs.version_bump }}"
-          CHANGELOG_DESC="${{ steps.analyze.outputs.changelog_desc }}"
+          CHANGELOG_DESC=$(printf '%s' "${{ steps.analyze.outputs.changelog_desc_b64 }}" | base64 --decode)
+          CHANGELOG_DESC_ARG=$(printf '%q' "$CHANGELOG_DESC")
 
-          PACKAGE_LIST=$(echo $PACKAGES | xargs)
+          PACKAGE_LIST=$(printf '%s' "$PACKAGES" | xargs)
 
           if [ -z "$PACKAGE_LIST" ]; then
             exit 0
@@ -178,7 +225,7 @@ jobs:
             echo '```bash'
             echo "for pkg in ${PACKAGE_LIST}; do"
             echo '  cd packages/$pkg'
-            echo "  elastic-package changelog add --type $CHANGE_TYPE --description \"$CHANGELOG_DESC\" --link \"https://github.com/${{ github.repository }}/pull/$PR_NUMBER\" --next $VERSION_BUMP"
+            echo "  elastic-package changelog add --type $CHANGE_TYPE --description $CHANGELOG_DESC_ARG --link \"https://github.com/${{ github.repository }}/pull/$PR_NUMBER\" --next $VERSION_BUMP"
             echo "  elastic-package build"
             echo "  cd ../.."
             echo "done"
@@ -192,17 +239,54 @@ jobs:
               echo ""
               echo "Note: These packages already updated: \`${{ steps.analyze.outputs.packages_already_done }}\`"
             fi
+            if [ -n "${{ steps.analyze.outputs.packages_missing_manifest }}" ] || [ -n "${{ steps.analyze.outputs.packages_missing_changelog }}" ]; then
+              echo ""
+              echo "Note: Some packages have incomplete metadata updates. Details are included in the incomplete metadata section below."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Report incomplete metadata updates
+        if: steps.analyze.outputs.packages_missing_manifest != '' || steps.analyze.outputs.packages_missing_changelog != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          COMMENT_FILE=$(mktemp)
+          {
+            echo "Documentation metadata updates are incomplete for one or more packages."
+            echo ""
+            if [ -n "${{ steps.analyze.outputs.packages_missing_manifest }}" ]; then
+              echo "- Missing \`manifest.yml\` update for: \`${{ steps.analyze.outputs.packages_missing_manifest }}\`"
+            fi
+            if [ -n "${{ steps.analyze.outputs.packages_missing_changelog }}" ]; then
+              echo "- Missing \`changelog.yml\` update for: \`${{ steps.analyze.outputs.packages_missing_changelog }}\`"
+            fi
+            echo ""
+            echo "Please make sure each package with documentation changes has both a manifest version bump and a changelog entry. The helper is not generating exact commands for these packages because rerunning \`elastic-package changelog add\` after a partial update could duplicate or over-bump metadata."
+          } > "$COMMENT_FILE"
+
+          {
+            echo "## Incomplete documentation metadata"
+            echo
+            cat "$COMMENT_FILE"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${{ github.event.pull_request.head.repo.fork }}" = "false" ]; then
+            if ! gh pr comment "$PR_NUMBER" --body-file "$COMMENT_FILE"; then
+              echo "" >> "$GITHUB_STEP_SUMMARY"
+              echo "Warning: Failed to add the incomplete metadata PR comment." >> "$GITHUB_STEP_SUMMARY"
+            fi
+          fi
+
       - name: Add labels
+        if: steps.analyze.outputs.label != ''
         run: |
           echo "Please add the following labels — '${{ steps.analyze.outputs.label }}' and 'documentation'" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Handle edge cases
-        if: steps.analyze.outputs.no_docs_changes == 'true' || (steps.analyze.outputs.packages_needing_update == '' && steps.analyze.outputs.packages_already_done != '')
+        if: steps.analyze.outputs.no_docs_changes == 'true' || (steps.analyze.outputs.packages_needing_update == '' && steps.analyze.outputs.packages_already_done != '' && steps.analyze.outputs.packages_missing_manifest == '' && steps.analyze.outputs.packages_missing_changelog == '')
         run: |
           if [ "${{ steps.analyze.outputs.no_docs_changes }}" = "true" ]; then
-            MESSAGE="No documentation files (packages/*/_dev/build/docs/README.md) were changed in this PR."
+            MESSAGE="No documentation source files (packages/**/_dev/build/docs/*.md) were changed in this PR."
           else
             MESSAGE="All packages with documentation changes already have updated changelogs and manifests."
           fi
