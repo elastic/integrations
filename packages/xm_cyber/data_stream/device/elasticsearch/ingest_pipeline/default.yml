@@ -10,15 +10,11 @@ processors:
       tag: terminate_data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
 
-  # drop CEL informational refresh-token messages
+  # drop CEL token-refresh placeholder before JSON parsing
   - drop:
-      description: Drops CEL informational token-refresh success messages from the ingest stream.
-      tag: drop_cel_refresh_token_success
-      if: ctx.message instanceof String && ctx.message == 'Refresh token successful'
-  - drop:
-      description: Drops CEL informational expired-refresh messages from the ingest stream.
-      tag: drop_cel_refresh_token_force_reauth
-      if: ctx.message instanceof String && ctx.message == 'Refresh token expired, forcing re-auth'
+      description: Drop the CEL token-refresh placeholder event before JSON parsing.
+      tag: drop_cel_retry_placeholder
+      if: ctx.message instanceof String && ctx.message == 'retry'
 
   # remove agentless metadata
   - remove:
@@ -45,7 +41,6 @@ processors:
       if: ctx.event?.original != null
       field: message
       ignore_missing: true
-
   - json:
       tag: json_event_original_into_xm_cyber_device
       field: event.original
@@ -65,11 +60,9 @@ processors:
       tag: append_event_type_info
       field: event.type
       value: info
-
   - script:
       description: >
-        Convert field names from camelCase to snake_case recursively under
-        xm_cyber.device (including nested apps and active_cves_safe_version entries).
+        Convert field names from camelCase to snake_case recursively under xm_cyber.device (including nested apps and active_cves_safe_version entries).
       tag: script_convert_camelcase_to_snake_case
       lang: painless
       source: |-
@@ -604,11 +597,9 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # ----- Remove duplicate vendor fields that have been mapped to ECS -----
-  # Users can opt-out of removal by setting the `preserve_duplicate_custom_fields` tag.
   - remove:
-      description: Remove vendor-specific fields that are duplicated to ECS unless the `preserve_duplicate_custom_fields` tag is set.
-      tag: remove_duplicate_custom_fields
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      description: Remove vendor-specific fields that are duplicated to ECS.
+      tag: remove_fields_mapped_to_ecs
       ignore_missing: true
       field:
         - xm_cyber.device.device_id
@@ -647,14 +638,12 @@ processors:
           });
         }
         handleMap(ctx);
-
   - append:
       tag: append_preserve_on_collector_error
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
-
 on_failure:
   - append:
       tag: pipeline_on_failure_error_message
